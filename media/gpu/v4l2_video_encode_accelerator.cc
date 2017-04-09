@@ -767,7 +767,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         break;
 
       case V4L2_MEMORY_DMABUF:
-        qbuf.m.planes[i].m.fd = frame->dmabuf_fd(i);
+        qbuf.m.planes[i].m.fd = frame->DmabufFd(i);
         DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
         break;
 

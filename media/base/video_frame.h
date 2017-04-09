@@ -63,8 +63,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     STORAGE_OWNED_MEMORY = 3,  // VideoFrame has allocated its own data buffer.
     STORAGE_SHMEM = 4,         // Pixels are backed by Shared Memory.
 #if defined(OS_LINUX)
-    // TODO(mcasas): Consider turning this type into STORAGE_NATIVE or another
-    // meaningful name and handle it appropriately in all cases.
+    // TODO(mcasas): Consider turning this type into STORAGE_NATIVE
+    // based on the idea of using this same enum value for both DMA
+    // buffers on Linux and CVPixelBuffers on Mac (which currently use
+    // STORAGE_UNOWNED_MEMORY) and handle it appropriately in all cases.
     STORAGE_DMABUFS = 5,  // Each plane is stored into a DmaBuf.
 #endif
     STORAGE_MOJO_SHARED_BUFFER = 6,
@@ -339,8 +341,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #if defined(OS_LINUX)
   // Returns backing DmaBuf file descriptor for given |plane|, if present, or
   // -1 if not.
-  // TODO(mcasas): Rename to DmabufFd() to comply with Style Guide.
-  int dmabuf_fd(size_t plane) const;
+  int DmabufFd(size_t plane) const;
 
   // Duplicates internally the |fds_in|, overwriting the current ones. Returns
   // false if something goes wrong, and leaves all internal fds closed.
@@ -351,8 +352,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
 #if defined(OS_MACOSX)
   // Returns the backing CVPixelBuffer, if present.
-  // TODO(mcasas): Rename to CvPixelBuffer() to comply with Style Guide.
-  CVPixelBufferRef cv_pixel_buffer() const;
+  CVPixelBufferRef CvPixelBuffer() const;
 #endif
 
   // Sets the mailbox release callback.

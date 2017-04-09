@@ -123,7 +123,7 @@ TEST(VideoFrameMac, CheckWrapperFrame) {
 
     auto frame = VideoFrame::WrapCVPixelBuffer(pb.get(), kTimestamp);
     ASSERT_TRUE(frame.get());
-    EXPECT_EQ(pb.get(), frame->cv_pixel_buffer());
+    EXPECT_EQ(pb.get(), frame->CvPixelBuffer());
     EXPECT_EQ(format_pair.chrome, frame->format());
 
     frame = nullptr;

@@ -35,8 +35,8 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   base::ScopedCFTypeRef<CVPixelBufferRef> pixel_buffer;
 
   // If the frame is backed by a pixel buffer, just return that buffer.
-  if (frame.cv_pixel_buffer()) {
-    pixel_buffer.reset(frame.cv_pixel_buffer(), base::scoped_policy::RETAIN);
+  if (frame.CvPixelBuffer()) {
+    pixel_buffer.reset(frame.CvPixelBuffer(), base::scoped_policy::RETAIN);
     return pixel_buffer;
   }
 

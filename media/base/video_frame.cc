@@ -441,7 +441,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   if (frame->storage_type() == STORAGE_DMABUFS) {
     std::vector<int> original_fds;
     for (size_t i = 0; i < kMaxPlanes; ++i)
-      original_fds.push_back(frame->dmabuf_fd(i));
+      original_fds.push_back(frame->DmabufFd(i));
     if (!wrapping_frame->DuplicateFileDescriptors(original_fds)) {
       LOG(DFATAL) << __func__ << " Couldn't duplicate fds.";
       return nullptr;
@@ -723,7 +723,7 @@ size_t VideoFrame::shared_memory_offset() const {
 }
 
 #if defined(OS_LINUX)
-int VideoFrame::dmabuf_fd(size_t plane) const {
+int VideoFrame::DmabufFd(size_t plane) const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
   DCHECK(IsValidPlane(plane, format_));
   return dmabuf_fds_[plane].get();
@@ -763,7 +763,7 @@ void VideoFrame::AddSharedMemoryHandle(base::SharedMemoryHandle handle) {
 }
 
 #if defined(OS_MACOSX)
-CVPixelBufferRef VideoFrame::cv_pixel_buffer() const {
+CVPixelBufferRef VideoFrame::CvPixelBuffer() const {
   return cv_pixel_buffer_.get();
 }
 #endif

@@ -668,7 +668,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
       qbuf.m.planes[i].m.userptr =
           reinterpret_cast<unsigned long>(input_record.frame->data(i));
     } else {
-      qbuf.m.planes[i].m.fd = input_record.frame->dmabuf_fd(i);
+      qbuf.m.planes[i].m.fd = input_record.frame->DmabufFd(i);
     }
   }
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
