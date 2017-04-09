@@ -34,19 +34,19 @@ class V8TestInterface {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceImplementation* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestInterfaceImplementation>();
+    return ToScriptWrappable(object)->ToImpl<TestInterfaceImplementation>();
   }
   CORE_EXPORT static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestInterfaceImplementation>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceImplementation>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceImplementation>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceImplementation>());
   }
   static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
   CORE_EXPORT static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
   CORE_EXPORT static void updateWrapperTypeInfo(InstallTemplateFunction, InstallRuntimeEnabledFunction, PreparePrototypeAndInterfaceObjectFunction);
@@ -223,7 +223,7 @@ class V8TestInterface {
 
 template <>
 struct NativeValueTraits<TestInterfaceImplementation> : public NativeValueTraitsBase<TestInterfaceImplementation> {
-  CORE_EXPORT static TestInterfaceImplementation* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceImplementation* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

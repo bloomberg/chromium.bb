@@ -26,7 +26,7 @@ class ScriptState;
 
 class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<StringSequenceCallbackFunctionLongSequenceArg>, public TraceWrapperBase {
  public:
-  static StringSequenceCallbackFunctionLongSequenceArg* create(ScriptState*, v8::Local<v8::Value> callback);
+  static StringSequenceCallbackFunctionLongSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~StringSequenceCallbackFunctionLongSequenceArg() = default;
 
@@ -36,7 +36,7 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
   bool call(ScriptWrappable* scriptWrappable, const Vector<int32_t>& arg, Vector<String>& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -48,7 +48,7 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
 
 template <>
 struct NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg> : public NativeValueTraitsBase<StringSequenceCallbackFunctionLongSequenceArg> {
-  CORE_EXPORT static StringSequenceCallbackFunctionLongSequenceArg* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static StringSequenceCallbackFunctionLongSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

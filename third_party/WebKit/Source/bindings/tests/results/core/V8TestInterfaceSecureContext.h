@@ -32,17 +32,17 @@ class V8TestInterfaceSecureContext {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceSecureContext* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestInterfaceSecureContext>();
+    return ToScriptWrappable(object)->ToImpl<TestInterfaceSecureContext>();
   }
   CORE_EXPORT static TestInterfaceSecureContext* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestInterfaceSecureContext>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceSecureContext>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceSecureContext>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceSecureContext>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
   CORE_EXPORT static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
   // Callback functions
@@ -70,7 +70,7 @@ class V8TestInterfaceSecureContext {
 
 template <>
 struct NativeValueTraits<TestInterfaceSecureContext> : public NativeValueTraitsBase<TestInterfaceSecureContext> {
-  CORE_EXPORT static TestInterfaceSecureContext* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceSecureContext* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

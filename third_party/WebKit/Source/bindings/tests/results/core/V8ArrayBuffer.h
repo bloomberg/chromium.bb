@@ -31,13 +31,13 @@ class V8ArrayBuffer {
   CORE_EXPORT static TestArrayBuffer* toImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestArrayBuffer>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestArrayBuffer>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestArrayBuffer>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestArrayBuffer>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 
@@ -46,7 +46,7 @@ class V8ArrayBuffer {
 
 template <>
 struct NativeValueTraits<TestArrayBuffer> : public NativeValueTraitsBase<TestArrayBuffer> {
-  CORE_EXPORT static TestArrayBuffer* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestArrayBuffer* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

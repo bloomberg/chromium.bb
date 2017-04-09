@@ -76,27 +76,27 @@ DoubleOrStringOrDoubleOrStringSequence::~DoubleOrStringOrDoubleOrStringSequence(
 DoubleOrStringOrDoubleOrStringSequence& DoubleOrStringOrDoubleOrStringSequence::operator=(const DoubleOrStringOrDoubleOrStringSequence&) = default;
 
 DEFINE_TRACE(DoubleOrStringOrDoubleOrStringSequence) {
-  visitor->trace(m_doubleOrStringSequence);
+  visitor->Trace(m_doubleOrStringSequence);
 }
 
 void V8DoubleOrStringOrDoubleOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrStringOrDoubleOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsArray()) {
-    HeapVector<DoubleOrString> cppValue = toImplArray<HeapVector<DoubleOrString>>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<DoubleOrString> cppValue = ToImplArray<HeapVector<DoubleOrString>>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDoubleOrStringSequence(cppValue);
     return;
   }
 
   if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDouble(cppValue);
     return;
@@ -104,7 +104,7 @@ void V8DoubleOrStringOrDoubleOrStringSequence::toImpl(v8::Isolate* isolate, v8::
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -120,16 +120,16 @@ v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence& impl, v8
     case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeDoubleOrStringSequence:
       return ToV8(impl.getAsDoubleOrStringSequence(), creationContext, isolate);
     case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     default:
       NOTREACHED();
   }
   return v8::Local<v8::Value>();
 }
 
-DoubleOrStringOrDoubleOrStringSequence NativeValueTraits<DoubleOrStringOrDoubleOrStringSequence>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrStringOrDoubleOrStringSequence NativeValueTraits<DoubleOrStringOrDoubleOrStringSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   DoubleOrStringOrDoubleOrStringSequence impl;
-  V8DoubleOrStringOrDoubleOrStringSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8DoubleOrStringOrDoubleOrStringSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

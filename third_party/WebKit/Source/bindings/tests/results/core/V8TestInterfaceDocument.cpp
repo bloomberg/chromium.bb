@@ -32,7 +32,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::trace, V8TestInterfaceDocument::traceWrappers, nullptr, "TestInterfaceDocument", &V8Document::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Dependent };
+const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::Trace, V8TestInterfaceDocument::TraceWrappers, nullptr, "TestInterfaceDocument", &V8Document::wrapperTypeInfo, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kNodeClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kDependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -40,7 +40,7 @@ const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedde
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceDocument.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceDocument::s_wrapperTypeInfo = V8TestInterfaceDocument::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceDocument::wrapper_type_info_ = V8TestInterfaceDocument::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -49,8 +49,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestInterfaceDocument::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestInterfaceDocument::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestInterfaceDocument is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -62,7 +62,7 @@ static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& i
 
   TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
 
-  v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
+  V8SetReturnValueFast(info, WTF::GetPtr(impl->location()), impl);
 }
 
 static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -71,18 +71,18 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
 
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceDocument* proxyImpl = V8TestInterfaceDocument::toImpl(holder);
-  Location* impl = WTF::getPtr(proxyImpl->location());
+  Location* impl = WTF::GetPtr(proxyImpl->location());
   if (!impl)
     return;
 
-  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceDocument", "location");
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceDocument", "location");
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
+  if (!cppValue.Prepare())
     return;
 
-  impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
+  impl->setHref(CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
 }
 
 } // namespace TestInterfaceDocumentV8Internal
@@ -98,12 +98,12 @@ void V8TestInterfaceDocument::locationAttributeSetterCallback(const v8::Function
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
-    {"location", V8TestInterfaceDocument::locationAttributeGetterCallback, V8TestInterfaceDocument::locationAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::AllWorlds},
+    {"location", V8TestInterfaceDocument::locationAttributeGetterCallback, V8TestInterfaceDocument::locationAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
 };
 
 static void installV8TestInterfaceDocumentTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interfaceName, V8Document::domTemplate(isolate, world), V8TestInterfaceDocument::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interface_name, V8Document::domTemplate(isolate, world), V8TestInterfaceDocument::internalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
@@ -113,29 +113,29 @@ static void installV8TestInterfaceDocumentTemplate(v8::Isolate* isolate, const D
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register DOM constants, attributes and operations.
-  V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors));
+  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors));
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceDocumentTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceDocumentTemplate);
 }
 
 bool V8TestInterfaceDocument::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceDocument::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestInterfaceDocument.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceDocument.");
   return nativeValue;
 }
 

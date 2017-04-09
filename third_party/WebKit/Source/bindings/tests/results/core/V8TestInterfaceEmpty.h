@@ -32,24 +32,24 @@ class V8TestInterfaceEmpty {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceEmpty* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestInterfaceEmpty>();
+    return ToScriptWrappable(object)->ToImpl<TestInterfaceEmpty>();
   }
   CORE_EXPORT static TestInterfaceEmpty* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestInterfaceEmpty>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceEmpty>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceEmpty>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceEmpty>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 };
 
 template <>
 struct NativeValueTraits<TestInterfaceEmpty> : public NativeValueTraitsBase<TestInterfaceEmpty> {
-  CORE_EXPORT static TestInterfaceEmpty* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceEmpty* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

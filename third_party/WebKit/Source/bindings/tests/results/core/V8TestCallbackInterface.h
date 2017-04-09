@@ -21,7 +21,7 @@ namespace blink {
 
 class V8TestCallbackInterface final : public TestCallbackInterface {
  public:
-  static V8TestCallbackInterface* create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
+  static V8TestCallbackInterface* Create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
     return new V8TestCallbackInterface(callback, scriptState);
   }
 

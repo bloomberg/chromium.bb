@@ -32,17 +32,17 @@ class V8TestCallbackFunctions {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestCallbackFunctions* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestCallbackFunctions>();
+    return ToScriptWrappable(object)->ToImpl<TestCallbackFunctions>();
   }
   CORE_EXPORT static TestCallbackFunctions* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestCallbackFunctions>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestCallbackFunctions>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestCallbackFunctions>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestCallbackFunctions>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 
@@ -64,7 +64,7 @@ class V8TestCallbackFunctions {
 
 template <>
 struct NativeValueTraits<TestCallbackFunctions> : public NativeValueTraitsBase<TestCallbackFunctions> {
-  CORE_EXPORT static TestCallbackFunctions* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestCallbackFunctions* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

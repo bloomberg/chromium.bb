@@ -27,7 +27,7 @@ class HTMLDivElement;
 
 class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionInterfaceArg* create(ScriptState*, v8::Local<v8::Value> callback);
+  static VoidCallbackFunctionInterfaceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionInterfaceArg() = default;
 
@@ -37,7 +37,7 @@ class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollect
   bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -49,7 +49,7 @@ class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollect
 
 template <>
 struct NativeValueTraits<VoidCallbackFunctionInterfaceArg> : public NativeValueTraitsBase<VoidCallbackFunctionInterfaceArg> {
-  CORE_EXPORT static VoidCallbackFunctionInterfaceArg* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static VoidCallbackFunctionInterfaceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

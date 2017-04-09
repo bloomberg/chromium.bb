@@ -64,12 +64,12 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDouble(cppValue);
     return;
@@ -77,7 +77,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -91,16 +91,16 @@ v8::Local<v8::Value> ToV8(const DoubleOrString& impl, v8::Local<v8::Object> crea
     case DoubleOrString::SpecificTypeDouble:
       return v8::Number::New(isolate, impl.getAsDouble());
     case DoubleOrString::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     default:
       NOTREACHED();
   }
   return v8::Local<v8::Value>();
 }
 
-DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrString NativeValueTraits<DoubleOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   DoubleOrString impl;
-  V8DoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8DoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

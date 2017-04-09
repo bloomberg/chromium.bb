@@ -30,7 +30,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8DataView::trace, V8DataView::traceWrappers, nullptr, "DataView", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8DataView::Trace, V8DataView::TraceWrappers, nullptr, "DataView", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -38,7 +38,7 @@ const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestDataView.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestDataView::s_wrapperTypeInfo = V8DataView::wrapperTypeInfo;
+const WrapperTypeInfo& TestDataView::wrapper_type_info_ = V8DataView::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -47,42 +47,42 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestDataView::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestDataView::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestDataView is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
 TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsDataView());
-  ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+  ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
   if (scriptWrappable)
-    return scriptWrappable->toImpl<TestDataView>();
+    return scriptWrappable->ToImpl<TestDataView>();
 
   v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
   v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
   TestDataView* typedArray = nullptr;
   if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestDataView::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    typedArray = TestDataView::Create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
   } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestDataView::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    typedArray = TestDataView::Create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
   } else {
     NOTREACHED();
   }
-  v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
+  v8::Local<v8::Object> associatedWrapper = typedArray->AssociateWithWrapper(v8::Isolate::GetCurrent(), typedArray->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);
 
-  return typedArray->toImpl<TestDataView>();
+  return typedArray->ToImpl<TestDataView>();
 }
 
 TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestDataView* NativeValueTraits<TestDataView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestDataView* NativeValueTraits<TestDataView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestDataView* nativeValue = V8DataView::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to DataView.");
+    exceptionState.ThrowTypeError("Unable to convert value to DataView.");
   return nativeValue;
 }
 

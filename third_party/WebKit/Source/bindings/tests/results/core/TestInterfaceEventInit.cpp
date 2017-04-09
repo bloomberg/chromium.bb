@@ -23,7 +23,7 @@ TestInterfaceEventInit::TestInterfaceEventInit(const TestInterfaceEventInit&) = 
 TestInterfaceEventInit& TestInterfaceEventInit::operator=(const TestInterfaceEventInit&) = default;
 
 bool TestInterfaceEventInit::hasStringMember() const {
-  return !m_stringMember.isNull();
+  return !m_stringMember.IsNull();
 }
 String TestInterfaceEventInit::stringMember() const {
   return m_stringMember;
@@ -33,7 +33,7 @@ void TestInterfaceEventInit::setStringMember(String value) {
 }
 
 DEFINE_TRACE(TestInterfaceEventInit) {
-  EventInit::trace(visitor);
+  EventInit::Trace(visitor);
 }
 
 }  // namespace blink

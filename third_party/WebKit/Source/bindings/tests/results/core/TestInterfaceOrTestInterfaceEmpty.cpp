@@ -63,15 +63,15 @@ TestInterfaceOrTestInterfaceEmpty::~TestInterfaceOrTestInterfaceEmpty() = defaul
 TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(const TestInterfaceOrTestInterfaceEmpty&) = default;
 
 DEFINE_TRACE(TestInterfaceOrTestInterfaceEmpty) {
-  visitor->trace(m_testInterface);
-  visitor->trace(m_testInterfaceEmpty);
+  visitor->Trace(m_testInterface);
+  visitor->Trace(m_testInterfaceEmpty);
 }
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -86,7 +86,7 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local
     return;
   }
 
-  exceptionState.throwTypeError("The provided value is not of type '(TestInterface or TestInterfaceEmpty)'");
+  exceptionState.ThrowTypeError("The provided value is not of type '(TestInterface or TestInterfaceEmpty)'");
 }
 
 v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -103,9 +103,9 @@ v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Loc
   return v8::Local<v8::Value>();
 }
 
-TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceOrTestInterfaceEmpty impl;
-  V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

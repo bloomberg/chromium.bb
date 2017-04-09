@@ -64,7 +64,7 @@ void V8FloatOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsBoolean()) {
@@ -73,16 +73,16 @@ void V8FloatOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   if (v8Value->IsNumber()) {
-    float cppValue = NativeValueTraits<IDLFloat>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    float cppValue = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setFloat(cppValue);
     return;
   }
 
   {
-    float cppValue = NativeValueTraits<IDLFloat>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    float cppValue = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setFloat(cppValue);
     return;
@@ -94,7 +94,7 @@ v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> crea
     case FloatOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case FloatOrBoolean::SpecificTypeBoolean:
-      return v8Boolean(impl.getAsBoolean(), isolate);
+      return V8Boolean(impl.getAsBoolean(), isolate);
     case FloatOrBoolean::SpecificTypeFloat:
       return v8::Number::New(isolate, impl.getAsFloat());
     default:
@@ -103,9 +103,9 @@ v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> crea
   return v8::Local<v8::Value>();
 }
 
-FloatOrBoolean NativeValueTraits<FloatOrBoolean>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+FloatOrBoolean NativeValueTraits<FloatOrBoolean>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   FloatOrBoolean impl;
-  V8FloatOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8FloatOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

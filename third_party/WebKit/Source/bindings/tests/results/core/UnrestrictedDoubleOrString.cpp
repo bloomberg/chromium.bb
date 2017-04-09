@@ -64,12 +64,12 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setUnrestrictedDouble(cppValue);
     return;
@@ -77,7 +77,7 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -89,7 +89,7 @@ v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
     case UnrestrictedDoubleOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case UnrestrictedDoubleOrString::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     case UnrestrictedDoubleOrString::SpecificTypeUnrestrictedDouble:
       return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
     default:
@@ -98,9 +98,9 @@ v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
   return v8::Local<v8::Value>();
 }
 
-UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   UnrestrictedDoubleOrString impl;
-  V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

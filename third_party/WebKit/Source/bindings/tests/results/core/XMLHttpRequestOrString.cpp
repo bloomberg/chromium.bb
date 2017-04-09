@@ -59,14 +59,14 @@ XMLHttpRequestOrString::~XMLHttpRequestOrString() = default;
 XMLHttpRequestOrString& XMLHttpRequestOrString::operator=(const XMLHttpRequestOrString&) = default;
 
 DEFINE_TRACE(XMLHttpRequestOrString) {
-  visitor->trace(m_xmlHttpRequest);
+  visitor->Trace(m_xmlHttpRequest);
 }
 
 void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, XMLHttpRequestOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
@@ -77,7 +77,7 @@ void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -89,7 +89,7 @@ v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString& impl, v8::Local<v8::Obje
     case XMLHttpRequestOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case XMLHttpRequestOrString::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     case XMLHttpRequestOrString::SpecificTypeXMLHttpRequest:
       return ToV8(impl.getAsXMLHttpRequest(), creationContext, isolate);
     default:
@@ -98,9 +98,9 @@ v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString& impl, v8::Local<v8::Obje
   return v8::Local<v8::Value>();
 }
 
-XMLHttpRequestOrString NativeValueTraits<XMLHttpRequestOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+XMLHttpRequestOrString NativeValueTraits<XMLHttpRequestOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   XMLHttpRequestOrString impl;
-  V8XMLHttpRequestOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8XMLHttpRequestOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

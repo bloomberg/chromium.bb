@@ -33,19 +33,19 @@ class V8TestInterfaceGarbageCollected {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceGarbageCollected* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestInterfaceGarbageCollected>();
+    return ToScriptWrappable(object)->ToImpl<TestInterfaceGarbageCollected>();
   }
   CORE_EXPORT static TestInterfaceGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestInterfaceGarbageCollected>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceGarbageCollected>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
   }
   static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
+  static const int eventListenerCacheIndex = kV8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 1;
 
   // Callback functions
 
@@ -66,7 +66,7 @@ class V8TestInterfaceGarbageCollected {
 
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollected> : public NativeValueTraitsBase<TestInterfaceGarbageCollected> {
-  CORE_EXPORT static TestInterfaceGarbageCollected* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceGarbageCollected* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

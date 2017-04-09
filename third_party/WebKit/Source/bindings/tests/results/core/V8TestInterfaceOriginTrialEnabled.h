@@ -32,17 +32,17 @@ class V8TestInterfaceOriginTrialEnabled {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestInterfaceOriginTrialEnabled* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestInterfaceOriginTrialEnabled>();
+    return ToScriptWrappable(object)->ToImpl<TestInterfaceOriginTrialEnabled>();
   }
   CORE_EXPORT static TestInterfaceOriginTrialEnabled* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceOriginTrialEnabled>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceOriginTrialEnabled>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceOriginTrialEnabled>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 
@@ -61,7 +61,7 @@ class V8TestInterfaceOriginTrialEnabled {
 
 template <>
 struct NativeValueTraits<TestInterfaceOriginTrialEnabled> : public NativeValueTraitsBase<TestInterfaceOriginTrialEnabled> {
-  CORE_EXPORT static TestInterfaceOriginTrialEnabled* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceOriginTrialEnabled* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

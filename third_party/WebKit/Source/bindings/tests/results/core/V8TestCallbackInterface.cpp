@@ -25,30 +25,30 @@ namespace blink {
 
 V8TestCallbackInterface::V8TestCallbackInterface(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : m_scriptState(scriptState) {
-  m_callback.set(scriptState->isolate(), callback);
+  m_callback.Set(scriptState->GetIsolate(), callback);
 }
 
 V8TestCallbackInterface::~V8TestCallbackInterface() {}
 
 DEFINE_TRACE(V8TestCallbackInterface) {
-  TestCallbackInterface::trace(visitor);
+  TestCallbackInterface::Trace(visitor);
 }
 
 void V8TestCallbackInterface::voidMethod() {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
   v8::Local<v8::Value> *argv = 0;
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                0,
                                argv,
@@ -56,21 +56,21 @@ void V8TestCallbackInterface::voidMethod() {
 }
 
 bool V8TestCallbackInterface::booleanMethod() {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return true;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return true;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
   v8::Local<v8::Value> *argv = 0;
 
-  v8::Isolate* isolate = m_scriptState->isolate();
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
                                executionContext,
                                v8::Undefined(isolate),
                                0,
@@ -80,21 +80,21 @@ bool V8TestCallbackInterface::booleanMethod() {
 }
 
 void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> boolArgHandle = v8Boolean(boolArg, m_scriptState->isolate());
+  v8::Local<v8::Value> boolArgHandle = V8Boolean(boolArg, m_scriptState->GetIsolate());
   v8::Local<v8::Value> argv[] = { boolArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -102,21 +102,21 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 }
 
 void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> sequenceArgHandle = ToV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> sequenceArgHandle = ToV8(sequenceArg, m_scriptState->GetContext()->Global(), m_scriptState->GetIsolate());
   v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -124,21 +124,21 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
 }
 
 void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> floatArgHandle = v8::Number::New(m_scriptState->isolate(), floatArg);
+  v8::Local<v8::Value> floatArgHandle = v8::Number::New(m_scriptState->GetIsolate(), floatArg);
   v8::Local<v8::Value> argv[] = { floatArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -146,21 +146,21 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->GetContext()->Global(), m_scriptState->GetIsolate());
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -168,22 +168,22 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
-  v8::Local<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
+  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->GetContext()->Global(), m_scriptState->GetIsolate());
+  v8::Local<v8::Value> stringArgHandle = V8String(m_scriptState->GetIsolate(), stringArg);
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                v8::Undefined(isolate),
                                2,
                                argv,
@@ -191,22 +191,22 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 }
 
 void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) {
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> thisHandle = thisValue.v8Value();
+  ScriptState::Scope scope(m_scriptState.Get());
+  v8::Local<v8::Value> thisHandle = thisValue.V8Value();
 
-  v8::Local<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
+  v8::Local<v8::Value> stringArgHandle = V8String(m_scriptState->GetIsolate(), stringArg);
   v8::Local<v8::Value> argv[] = { stringArgHandle };
 
-  v8::Isolate* isolate = m_scriptState->isolate();
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                thisHandle,
                                1,
                                argv,

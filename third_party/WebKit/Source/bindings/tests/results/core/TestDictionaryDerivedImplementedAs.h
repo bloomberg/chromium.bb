@@ -45,7 +45,7 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const;
   void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>&);
 
-  v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
+  v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   DECLARE_VIRTUAL_TRACE();
 
  private:

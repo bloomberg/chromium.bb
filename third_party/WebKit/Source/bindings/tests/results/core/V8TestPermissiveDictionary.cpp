@@ -21,12 +21,12 @@ static const v8::Eternal<v8::Name>* eternalV8TestPermissiveDictionaryKeys(v8::Is
   static const char* const kKeys[] = {
     "booleanMember",
   };
-  return V8PerIsolateData::from(isolate)->findOrCreateEternalNameCache(
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
       kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
 }
 
 void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState) {
-  if (isUndefinedOrNull(v8Value)) {
+  if (IsUndefinedOrNull(v8Value)) {
     return;
   }
   if (!v8Value->IsObject()) {
@@ -41,20 +41,20 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> booleanMemberValue;
   if (!v8Object->Get(context, keys[0].Get(isolate)).ToLocal(&booleanMemberValue)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
   if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    bool booleanMember = NativeValueTraits<IDLBoolean>::nativeValue(isolate, booleanMemberValue, exceptionState);
-    if (exceptionState.hadException())
+    bool booleanMember = NativeValueTraits<IDLBoolean>::NativeValue(isolate, booleanMemberValue, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setBooleanMember(booleanMember);
   }
 }
 
-v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const {
+v8::Local<v8::Value> TestPermissiveDictionary::ToV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const {
   v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
   if (!toV8TestPermissiveDictionary(*this, v8Object, creationContext, isolate))
     return v8::Undefined(isolate);
@@ -67,18 +67,18 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
   v8::Local<v8::Value> booleanMemberValue;
   bool booleanMemberHasValueOrDefault = false;
   if (impl.hasBooleanMember()) {
-    booleanMemberValue = v8Boolean(impl.booleanMember(), isolate);
+    booleanMemberValue = V8Boolean(impl.booleanMember(), isolate);
     booleanMemberHasValueOrDefault = true;
   }
   if (booleanMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), booleanMemberValue))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), booleanMemberValue))) {
     return false;
   }
 
   return true;
 }
 
-TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestPermissiveDictionary impl;
   V8TestPermissiveDictionary::toImpl(isolate, value, impl, exceptionState);
   return impl;

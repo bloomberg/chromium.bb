@@ -130,17 +130,17 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::operator=(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord&) = default;
 
 DEFINE_TRACE(NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord) {
-  visitor->trace(m_event);
-  visitor->trace(m_node);
-  visitor->trace(m_stringByteStringOrNodeListRecord);
-  visitor->trace(m_xmlHttpRequest);
+  visitor->Trace(m_event);
+  visitor->Trace(m_node);
+  visitor->Trace(m_stringByteStringOrNodeListRecord);
+  visitor->Trace(m_xmlHttpRequest);
 }
 
 void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8Event::hasInstance(v8Value, isolate)) {
@@ -162,16 +162,16 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
   }
 
   if (v8Value->IsArray()) {
-    Vector<int32_t> cppValue = toImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    Vector<int32_t> cppValue = ToImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setLongSequence(cppValue);
     return;
   }
 
   if (v8Value->IsObject()) {
-    HeapVector<std::pair<String, ByteStringOrNodeList>> cppValue = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<std::pair<String, ByteStringOrNodeList>> cppValue = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setStringByteStringOrNodeListRecord(cppValue);
     return;
@@ -179,7 +179,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -197,7 +197,7 @@ v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStrin
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeNode:
       return ToV8(impl.getAsNode(), creationContext, isolate);
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeStringByteStringOrNodeListRecord:
       return ToV8(impl.getAsStringByteStringOrNodeListRecord(), creationContext, isolate);
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeXMLHttpRequest:
@@ -208,9 +208,9 @@ v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStrin
   return v8::Local<v8::Value>();
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NativeValueTraits<NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NativeValueTraits<NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord impl;
-  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

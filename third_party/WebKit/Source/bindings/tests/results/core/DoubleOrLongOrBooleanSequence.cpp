@@ -59,35 +59,35 @@ DoubleOrLongOrBooleanSequence::~DoubleOrLongOrBooleanSequence() = default;
 DoubleOrLongOrBooleanSequence& DoubleOrLongOrBooleanSequence::operator=(const DoubleOrLongOrBooleanSequence&) = default;
 
 DEFINE_TRACE(DoubleOrLongOrBooleanSequence) {
-  visitor->trace(m_longOrBooleanSequence);
+  visitor->Trace(m_longOrBooleanSequence);
 }
 
 void V8DoubleOrLongOrBooleanSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrLongOrBooleanSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsArray()) {
-    HeapVector<LongOrBoolean> cppValue = toImplArray<HeapVector<LongOrBoolean>>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<LongOrBoolean> cppValue = ToImplArray<HeapVector<LongOrBoolean>>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setLongOrBooleanSequence(cppValue);
     return;
   }
 
   if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDouble(cppValue);
     return;
   }
 
   {
-    double cppValue = NativeValueTraits<IDLDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDouble(cppValue);
     return;
@@ -108,9 +108,9 @@ v8::Local<v8::Value> ToV8(const DoubleOrLongOrBooleanSequence& impl, v8::Local<v
   return v8::Local<v8::Value>();
 }
 
-DoubleOrLongOrBooleanSequence NativeValueTraits<DoubleOrLongOrBooleanSequence>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrLongOrBooleanSequence NativeValueTraits<DoubleOrLongOrBooleanSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   DoubleOrLongOrBooleanSequence impl;
-  V8DoubleOrLongOrBooleanSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8DoubleOrLongOrBooleanSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

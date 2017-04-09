@@ -64,19 +64,19 @@ BooleanOrElementSequence::~BooleanOrElementSequence() = default;
 BooleanOrElementSequence& BooleanOrElementSequence::operator=(const BooleanOrElementSequence&) = default;
 
 DEFINE_TRACE(BooleanOrElementSequence) {
-  visitor->trace(m_elementSequence);
+  visitor->Trace(m_elementSequence);
 }
 
 void V8BooleanOrElementSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrElementSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsArray()) {
-    HeapVector<Member<Element>> cppValue = toMemberNativeArray<Element>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<Member<Element>> cppValue = ToMemberNativeArray<Element>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setElementSequence(cppValue);
     return;
@@ -98,7 +98,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Ob
     case BooleanOrElementSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrElementSequence::SpecificTypeBoolean:
-      return v8Boolean(impl.getAsBoolean(), isolate);
+      return V8Boolean(impl.getAsBoolean(), isolate);
     case BooleanOrElementSequence::SpecificTypeElementSequence:
       return ToV8(impl.getAsElementSequence(), creationContext, isolate);
     default:
@@ -107,9 +107,9 @@ v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Ob
   return v8::Local<v8::Value>();
 }
 
-BooleanOrElementSequence NativeValueTraits<BooleanOrElementSequence>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+BooleanOrElementSequence NativeValueTraits<BooleanOrElementSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   BooleanOrElementSequence impl;
-  V8BooleanOrElementSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8BooleanOrElementSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

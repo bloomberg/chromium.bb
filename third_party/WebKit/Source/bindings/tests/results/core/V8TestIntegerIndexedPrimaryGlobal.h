@@ -33,15 +33,15 @@ class V8TestIntegerIndexedPrimaryGlobal {
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
   static TestIntegerIndexedPrimaryGlobal* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestIntegerIndexedPrimaryGlobal>();
+    return ToScriptWrappable(object)->ToImpl<TestIntegerIndexedPrimaryGlobal>();
   }
   CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestIntegerIndexedPrimaryGlobal>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestIntegerIndexedPrimaryGlobal>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
   }
   static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
@@ -51,7 +51,7 @@ class V8TestIntegerIndexedPrimaryGlobal {
   static void namedPropertyQueryCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Integer>&);
   static void namedPropertyDeleterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Boolean>&);
   static void namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 
@@ -72,7 +72,7 @@ class V8TestIntegerIndexedPrimaryGlobal {
 
 template <>
 struct NativeValueTraits<TestIntegerIndexedPrimaryGlobal> : public NativeValueTraitsBase<TestIntegerIndexedPrimaryGlobal> {
-  CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

@@ -64,14 +64,14 @@ TestInterfaceOrLong::~TestInterfaceOrLong() = default;
 TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) = default;
 
 DEFINE_TRACE(TestInterfaceOrLong) {
-  visitor->trace(m_testInterface);
+  visitor->Trace(m_testInterface);
 }
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -81,16 +81,16 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
-    if (exceptionState.hadException())
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    if (exceptionState.HadException())
       return;
     impl.setLong(cppValue);
     return;
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
-    if (exceptionState.hadException())
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    if (exceptionState.HadException())
       return;
     impl.setLong(cppValue);
     return;
@@ -111,9 +111,9 @@ v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object>
   return v8::Local<v8::Value>();
 }
 
-TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceOrLong impl;
-  V8TestInterfaceOrLong::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8TestInterfaceOrLong::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

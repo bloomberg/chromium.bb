@@ -34,7 +34,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::domTemplate, V8TestInterfaceConstructor::trace, V8TestInterfaceConstructor::traceWrappers, nullptr, "TestInterfaceConstructor", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::domTemplate, V8TestInterfaceConstructor::Trace, V8TestInterfaceConstructor::TraceWrappers, nullptr, "TestInterfaceConstructor", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -42,7 +42,7 @@ const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbe
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceConstructor::s_wrapperTypeInfo = V8TestInterfaceConstructor::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceConstructor::wrapper_type_info_ = V8TestInterfaceConstructor::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -51,8 +51,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestInterfaceConstructor::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestInterfaceConstructor::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestInterfaceConstructor is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -60,23 +60,23 @@ static_assert(
 namespace TestInterfaceConstructorV8Internal {
 
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, exceptionState);
-  if (exceptionState.hadException()) {
+  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, exceptionState);
+  if (exceptionState.HadException()) {
     return;
   }
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
 
   double doubleArg;
   V8StringResource<> stringArg;
@@ -87,72 +87,72 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   HeapVector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
   Dictionary optionalDictionaryArg;
   TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
-  doubleArg = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.hadException())
+  doubleArg = NativeValueTraits<IDLDouble>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
     return;
 
   stringArg = info[1];
-  if (!stringArg.prepare())
+  if (!stringArg.Prepare())
     return;
 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!testInterfaceEmptyArg) {
-    exceptionState.throwTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
+    exceptionState.ThrowTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
 
     return;
   }
 
-  if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
-    exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
+  if (!IsUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
+    exceptionState.ThrowTypeError("parameter 4 ('dictionaryArg') is not an object.");
 
     return;
   }
-  dictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[3], exceptionState);
-  if (exceptionState.hadException())
+  dictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[3], exceptionState);
+  if (exceptionState.HadException())
     return;
 
-  sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
-  if (exceptionState.hadException())
+  sequenceStringArg = ToImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
+  if (exceptionState.HadException())
     return;
 
-  sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
-  if (exceptionState.hadException())
+  sequenceDictionaryArg = ToImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
+  if (exceptionState.HadException())
     return;
 
-  sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
-  if (exceptionState.hadException())
+  sequenceLongOrTestDictionaryArg = ToImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
+  if (exceptionState.HadException())
     return;
 
-  if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
-    exceptionState.throwTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
+  if (!IsUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
+    exceptionState.ThrowTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
 
     return;
   }
-  optionalDictionaryArg = NativeValueTraits<Dictionary>::nativeValue(info.GetIsolate(), info[7], exceptionState);
-  if (exceptionState.hadException())
+  optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[7], exceptionState);
+  if (exceptionState.HadException())
     return;
 
   optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
   if (!optionalTestInterfaceEmptyArg) {
-    exceptionState.throwTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
+    exceptionState.ThrowTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
 
     return;
   }
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
-  if (exceptionState.hadException()) {
+  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
+  if (exceptionState.HadException()) {
     return;
   }
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
 
   V8StringResource<> arg;
   V8StringResource<> optArg;
@@ -163,68 +163,68 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
     --numArgsPassed;
   }
   arg = info[0];
-  if (!arg.prepare())
+  if (!arg.Prepare())
     return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
-    if (exceptionState.hadException()) {
+    ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+    Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+    TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, arg, exceptionState);
+    if (exceptionState.HadException()) {
       return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+    wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+    V8SetReturnValue(info, wrapper);
     return;
   }
   optArg = info[1];
-  if (!optArg.prepare())
+  if (!optArg.Prepare())
     return;
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, optArg, exceptionState);
-  if (exceptionState.hadException()) {
+  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, arg, optArg, exceptionState);
+  if (exceptionState.HadException()) {
     return;
   }
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
 
   V8StringResource<> arg;
   V8StringResource<> arg2;
   V8StringResource<> arg3;
   arg = info[0];
-  if (!arg.prepare())
+  if (!arg.Prepare())
     return;
 
   arg2 = info[1];
-  if (!arg2.prepare())
+  if (!arg2.Prepare())
     return;
 
   arg3 = info[2];
-  if (!arg3.prepare())
+  if (!arg3.Prepare())
     return;
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
-  if (exceptionState.hadException()) {
+  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
+  if (exceptionState.HadException()) {
     return;
   }
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
   switch (std::min(9, info.Length())) {
     case 0:
       if (true) {
@@ -270,13 +270,13 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       break;
     default:
       if (info.Length() >= 0) {
-        exceptionState.throwTypeError(ExceptionMessages::invalidArity("[0, 1, 2, 3, 7, 8, 9]", info.Length()));
+        exceptionState.ThrowTypeError(ExceptionMessages::InvalidArity("[0, 1, 2, 3, 7, 8, 9]", info.Length()));
         return;
       }
-      exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
+      exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(0, info.Length()));
       return;
   }
-  exceptionState.throwTypeError("No matching constructor signature.");
+  exceptionState.ThrowTypeError("No matching constructor signature.");
 }
 
 } // namespace TestInterfaceConstructorV8Internal
@@ -287,27 +287,27 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructorConstructor::domTemplate, V8TestInterfaceConstructor::trace, V8TestInterfaceConstructor::traceWrappers, nullptr, "TestInterfaceConstructor", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructorConstructor::domTemplate, V8TestInterfaceConstructor::Trace, V8TestInterfaceConstructor::TraceWrappers, nullptr, "TestInterfaceConstructor", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
 
 static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (!info.IsConstructCall()) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("Audio"));
     return;
   }
 
-  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-    v8SetReturnValue(info, info.Holder());
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
     return;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
@@ -320,49 +320,49 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     --numArgsPassed;
   }
   arg = info[0];
-  if (!arg.prepare())
+  if (!arg.Prepare())
     return;
 
   if (UNLIKELY(numArgsPassed <= 1)) {
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
-    if (exceptionState.hadException()) {
+    ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+    Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+    TestInterfaceConstructor* impl = TestInterfaceConstructor::CreateForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
+    if (exceptionState.HadException()) {
       return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
-    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
+    wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
+    V8SetReturnValue(info, wrapper);
     return;
   }
   optArg = info[1];
-  if (!optArg.prepare())
+  if (!optArg.Prepare())
     return;
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-  Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);
-  if (exceptionState.hadException()) {
+  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::CreateForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);
+  if (exceptionState.HadException()) {
     return;
   }
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructorConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  v8::Local<v8::FunctionTemplate> result = data->findInterfaceTemplate(world, &domTemplateKey);
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  v8::Local<v8::FunctionTemplate> result = data->FindInterfaceTemplate(world, &domTemplateKey);
   if (!result.IsEmpty())
     return result;
 
   result = v8::FunctionTemplate::New(isolate, V8TestInterfaceConstructorConstructorCallback);
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceConstructor::internalFieldCount);
-  result->SetClassName(v8AtomicString(isolate, "Audio"));
+  result->SetClassName(V8AtomicString(isolate, "Audio"));
   result->Inherit(V8TestInterfaceConstructor::domTemplate(isolate, world));
-  data->setInterfaceTemplate(world, &domTemplateKey, result);
+  data->SetInterfaceTemplate(world, &domTemplateKey, result);
   return result;
 }
 
@@ -370,40 +370,40 @@ void V8TestInterfaceConstructorConstructor::NamedConstructorAttributeGetter(
     v8::Local<v8::Name> propertyName,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Context> creationContext = info.Holder()->CreationContext();
-  V8PerContextData* perContextData = V8PerContextData::from(creationContext);
+  V8PerContextData* perContextData = V8PerContextData::From(creationContext);
   if (!perContextData) {
     // TODO(yukishiino): Return a valid named constructor even after the context is detached
     return;
   }
 
-  v8::Local<v8::Function> namedConstructor = perContextData->constructorForType(&V8TestInterfaceConstructorConstructor::wrapperTypeInfo);
+  v8::Local<v8::Function> namedConstructor = perContextData->ConstructorForType(&V8TestInterfaceConstructorConstructor::wrapperTypeInfo);
 
   // Set the prototype of named constructors to the regular constructor.
-  auto privateProperty = V8PrivateProperty::getNamedConstructorInitialized(info.GetIsolate());
+  auto privateProperty = V8PrivateProperty::GetNamedConstructorInitialized(info.GetIsolate());
   v8::Local<v8::Context> currentContext = info.GetIsolate()->GetCurrentContext();
-  v8::Local<v8::Value> privateValue = privateProperty.getOrEmpty(namedConstructor);
+  v8::Local<v8::Value> privateValue = privateProperty.GetOrEmpty(namedConstructor);
 
   if (privateValue.IsEmpty()) {
-    v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestInterfaceConstructor::wrapperTypeInfo);
-    v8::Local<v8::Value> interfacePrototype = interface->Get(currentContext, v8AtomicString(info.GetIsolate(), "prototype")).ToLocalChecked();
-    bool result = namedConstructor->Set(currentContext, v8AtomicString(info.GetIsolate(), "prototype"), interfacePrototype).ToChecked();
+    v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestInterfaceConstructor::wrapperTypeInfo);
+    v8::Local<v8::Value> interfacePrototype = interface->Get(currentContext, V8AtomicString(info.GetIsolate(), "prototype")).ToLocalChecked();
+    bool result = namedConstructor->Set(currentContext, V8AtomicString(info.GetIsolate(), "prototype"), interfacePrototype).ToChecked();
     if (!result)
       return;
-    privateProperty.set(namedConstructor, v8::True(info.GetIsolate()));
+    privateProperty.Set(namedConstructor, v8::True(info.GetIsolate()));
   }
 
-  v8SetReturnValue(info, namedConstructor);
+  V8SetReturnValue(info, namedConstructor);
 }
 
 void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
   if (!info.IsConstructCall()) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor"));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceConstructor"));
     return;
   }
 
-  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-    v8SetReturnValue(info, info.Holder());
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
     return;
   }
 
@@ -412,7 +412,7 @@ void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackI
 
 static void installV8TestInterfaceConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor::internalFieldCount);
   interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor::constructorCallback);
   interfaceTemplate->SetLength(0);
 
@@ -427,25 +427,25 @@ static void installV8TestInterfaceConstructorTemplate(v8::Isolate* isolate, cons
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructorTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructorTemplate);
 }
 
 bool V8TestInterfaceConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceConstructor::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceConstructor* V8TestInterfaceConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceConstructor* NativeValueTraits<TestInterfaceConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceConstructor* NativeValueTraits<TestInterfaceConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceConstructor* nativeValue = V8TestInterfaceConstructor::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestInterfaceConstructor.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceConstructor.");
   return nativeValue;
 }
 

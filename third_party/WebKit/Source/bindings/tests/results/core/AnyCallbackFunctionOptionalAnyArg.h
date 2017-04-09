@@ -26,7 +26,7 @@ class ScriptState;
 
 class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollectedFinalized<AnyCallbackFunctionOptionalAnyArg>, public TraceWrapperBase {
  public:
-  static AnyCallbackFunctionOptionalAnyArg* create(ScriptState*, v8::Local<v8::Value> callback);
+  static AnyCallbackFunctionOptionalAnyArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~AnyCallbackFunctionOptionalAnyArg() = default;
 
@@ -36,7 +36,7 @@ class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollec
   bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -48,7 +48,7 @@ class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollec
 
 template <>
 struct NativeValueTraits<AnyCallbackFunctionOptionalAnyArg> : public NativeValueTraitsBase<AnyCallbackFunctionOptionalAnyArg> {
-  CORE_EXPORT static AnyCallbackFunctionOptionalAnyArg* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static AnyCallbackFunctionOptionalAnyArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

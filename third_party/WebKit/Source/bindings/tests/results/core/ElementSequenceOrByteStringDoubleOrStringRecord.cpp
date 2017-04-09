@@ -65,34 +65,34 @@ ElementSequenceOrByteStringDoubleOrStringRecord::~ElementSequenceOrByteStringDou
 ElementSequenceOrByteStringDoubleOrStringRecord& ElementSequenceOrByteStringDoubleOrStringRecord::operator=(const ElementSequenceOrByteStringDoubleOrStringRecord&) = default;
 
 DEFINE_TRACE(ElementSequenceOrByteStringDoubleOrStringRecord) {
-  visitor->trace(m_byteStringDoubleOrStringRecord);
-  visitor->trace(m_elementSequence);
+  visitor->Trace(m_byteStringDoubleOrStringRecord);
+  visitor->Trace(m_elementSequence);
 }
 
 void V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ElementSequenceOrByteStringDoubleOrStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsArray()) {
-    HeapVector<Member<Element>> cppValue = toMemberNativeArray<Element>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<Member<Element>> cppValue = ToMemberNativeArray<Element>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setElementSequence(cppValue);
     return;
   }
 
   if (v8Value->IsObject()) {
-    HeapVector<std::pair<String, DoubleOrString>> cppValue = NativeValueTraits<IDLRecord<IDLByteString, DoubleOrString>>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    HeapVector<std::pair<String, DoubleOrString>> cppValue = NativeValueTraits<IDLRecord<IDLByteString, DoubleOrString>>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setByteStringDoubleOrStringRecord(cppValue);
     return;
   }
 
-  exceptionState.throwTypeError("The provided value is not of type '(sequence<Element> or record<ByteString, (double or DOMString)>)'");
+  exceptionState.ThrowTypeError("The provided value is not of type '(sequence<Element> or record<ByteString, (double or DOMString)>)'");
 }
 
 v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -109,9 +109,9 @@ v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord&
   return v8::Local<v8::Value>();
 }
 
-ElementSequenceOrByteStringDoubleOrStringRecord NativeValueTraits<ElementSequenceOrByteStringDoubleOrStringRecord>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+ElementSequenceOrByteStringDoubleOrStringRecord NativeValueTraits<ElementSequenceOrByteStringDoubleOrStringRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   ElementSequenceOrByteStringDoubleOrStringRecord impl;
-  V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

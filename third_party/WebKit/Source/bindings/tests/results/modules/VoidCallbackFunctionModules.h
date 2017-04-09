@@ -26,7 +26,7 @@ class ScriptState;
 
 class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionModules* create(ScriptState*, v8::Local<v8::Value> callback);
+  static VoidCallbackFunctionModules* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionModules() = default;
 
@@ -36,7 +36,7 @@ class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollected
   bool call(ScriptWrappable* scriptWrappable);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -48,7 +48,7 @@ class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollected
 
 template <>
 struct NativeValueTraits<VoidCallbackFunctionModules> : public NativeValueTraitsBase<VoidCallbackFunctionModules> {
-  MODULES_EXPORT static VoidCallbackFunctionModules* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  MODULES_EXPORT static VoidCallbackFunctionModules* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

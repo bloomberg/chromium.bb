@@ -66,18 +66,18 @@ class V8TestInterfaceGarbageCollectedOrString final {
 CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> : public NativeValueTraitsBase<TestInterfaceGarbageCollectedOrString> {
-  CORE_EXPORT static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceGarbageCollectedOrString NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

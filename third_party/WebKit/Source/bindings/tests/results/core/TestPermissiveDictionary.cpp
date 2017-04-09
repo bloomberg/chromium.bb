@@ -35,7 +35,7 @@ void TestPermissiveDictionary::setBooleanMember(bool value) {
 }
 
 DEFINE_TRACE(TestPermissiveDictionary) {
-  IDLDictionaryBase::trace(visitor);
+  IDLDictionaryBase::Trace(visitor);
 }
 
 }  // namespace blink

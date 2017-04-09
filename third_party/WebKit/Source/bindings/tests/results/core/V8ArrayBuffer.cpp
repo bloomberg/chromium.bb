@@ -30,7 +30,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8ArrayBuffer::trace, V8ArrayBuffer::traceWrappers, nullptr, "ArrayBuffer", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8ArrayBuffer::Trace, V8ArrayBuffer::TraceWrappers, nullptr, "ArrayBuffer", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -38,7 +38,7 @@ const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0,
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestArrayBuffer.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestArrayBuffer::s_wrapperTypeInfo = V8ArrayBuffer::wrapperTypeInfo;
+const WrapperTypeInfo& TestArrayBuffer::wrapper_type_info_ = V8ArrayBuffer::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -47,8 +47,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestArrayBuffer::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestArrayBuffer::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestArrayBuffer is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -57,19 +57,19 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsArrayBuffer());
   v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
   if (v8buffer->IsExternal()) {
-    const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
+    const WrapperTypeInfo* wrapperTypeInfo = ToWrapperTypeInfo(object);
     CHECK(wrapperTypeInfo);
-    CHECK_EQ(wrapperTypeInfo->ginEmbedder, gin::kEmbedderBlink);
-    return toScriptWrappable(object)->toImpl<TestArrayBuffer>();
+    CHECK_EQ(wrapperTypeInfo->gin_embedder, gin::kEmbedderBlink);
+    return ToScriptWrappable(object)->ToImpl<TestArrayBuffer>();
   }
 
   // Transfer the ownership of the allocated memory to an ArrayBuffer without
   // copying.
   v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-  WTF::ArrayBufferContents::DataHandle data(v8Contents.Data(), WTF::ArrayBufferContents::freeMemory);
-  WTF::ArrayBufferContents contents(std::move(data), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
-  TestArrayBuffer* buffer = TestArrayBuffer::create(contents);
-  v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
+  WTF::ArrayBufferContents::DataHandle data(v8Contents.Data(), WTF::ArrayBufferContents::FreeMemory);
+  WTF::ArrayBufferContents contents(std::move(data), v8Contents.ByteLength(), WTF::ArrayBufferContents::kNotShared);
+  TestArrayBuffer* buffer = TestArrayBuffer::Create(contents);
+  v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);
 
   return buffer;
@@ -79,10 +79,10 @@ TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
   return value->IsArrayBuffer() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestArrayBuffer* NativeValueTraits<TestArrayBuffer>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestArrayBuffer* NativeValueTraits<TestArrayBuffer>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestArrayBuffer* nativeValue = V8ArrayBuffer::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to ArrayBuffer.");
+    exceptionState.ThrowTypeError("Unable to convert value to ArrayBuffer.");
   return nativeValue;
 }
 

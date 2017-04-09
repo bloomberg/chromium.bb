@@ -57,15 +57,15 @@ TestInterface2OrUint8Array::~TestInterface2OrUint8Array() = default;
 TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInterface2OrUint8Array&) = default;
 
 DEFINE_TRACE(TestInterface2OrUint8Array) {
-  visitor->trace(m_testInterface2);
-  visitor->trace(m_uint8Array);
+  visitor->Trace(m_testInterface2);
+  visitor->Trace(m_uint8Array);
 }
 
 void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8TestInterface2::hasInstance(v8Value, isolate)) {
@@ -80,7 +80,7 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
     return;
   }
 
-  exceptionState.throwTypeError("The provided value is not of type '(TestInterface2 or Uint8Array)'");
+  exceptionState.ThrowTypeError("The provided value is not of type '(TestInterface2 or Uint8Array)'");
 }
 
 v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -97,9 +97,9 @@ v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::
   return v8::Local<v8::Value>();
 }
 
-TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterface2OrUint8Array impl;
-  V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

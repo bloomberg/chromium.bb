@@ -69,18 +69,18 @@ class V8TestInterface2OrUint8Array final {
 CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestInterface2OrUint8Array> : public NativeValueTraitsBase<TestInterface2OrUint8Array> {
-  CORE_EXPORT static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterface2OrUint8Array NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

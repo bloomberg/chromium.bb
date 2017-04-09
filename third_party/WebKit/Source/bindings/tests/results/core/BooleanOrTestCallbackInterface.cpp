@@ -59,14 +59,14 @@ BooleanOrTestCallbackInterface::~BooleanOrTestCallbackInterface() = default;
 BooleanOrTestCallbackInterface& BooleanOrTestCallbackInterface::operator=(const BooleanOrTestCallbackInterface&) = default;
 
 DEFINE_TRACE(BooleanOrTestCallbackInterface) {
-  visitor->trace(m_testCallbackInterface);
+  visitor->Trace(m_testCallbackInterface);
 }
 
 void V8BooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
@@ -91,7 +91,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<
     case BooleanOrTestCallbackInterface::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrTestCallbackInterface::SpecificTypeBoolean:
-      return v8Boolean(impl.getAsBoolean(), isolate);
+      return V8Boolean(impl.getAsBoolean(), isolate);
     case BooleanOrTestCallbackInterface::SpecificTypeTestCallbackInterface:
       return ToV8(impl.getAsTestCallbackInterface(), creationContext, isolate);
     default:
@@ -100,9 +100,9 @@ v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<
   return v8::Local<v8::Value>();
 }
 
-BooleanOrTestCallbackInterface NativeValueTraits<BooleanOrTestCallbackInterface>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+BooleanOrTestCallbackInterface NativeValueTraits<BooleanOrTestCallbackInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   BooleanOrTestCallbackInterface impl;
-  V8BooleanOrTestCallbackInterface::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8BooleanOrTestCallbackInterface::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

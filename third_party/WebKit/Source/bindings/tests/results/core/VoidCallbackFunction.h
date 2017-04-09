@@ -26,7 +26,7 @@ class ScriptState;
 
 class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<VoidCallbackFunction>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunction* create(ScriptState*, v8::Local<v8::Value> callback);
+  static VoidCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunction() = default;
 
@@ -36,7 +36,7 @@ class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<
   bool call(ScriptWrappable* scriptWrappable);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -48,7 +48,7 @@ class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<
 
 template <>
 struct NativeValueTraits<VoidCallbackFunction> : public NativeValueTraitsBase<VoidCallbackFunction> {
-  CORE_EXPORT static VoidCallbackFunction* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static VoidCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

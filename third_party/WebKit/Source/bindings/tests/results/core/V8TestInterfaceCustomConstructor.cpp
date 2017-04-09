@@ -27,7 +27,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::trace, V8TestInterfaceCustomConstructor::traceWrappers, nullptr, "TestInterfaceCustomConstructor", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::Trace, V8TestInterfaceCustomConstructor::TraceWrappers, nullptr, "TestInterfaceCustomConstructor", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -35,7 +35,7 @@ const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin:
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCustomConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceCustomConstructor::s_wrapperTypeInfo = V8TestInterfaceCustomConstructor::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = V8TestInterfaceCustomConstructor::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -44,8 +44,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestInterfaceCustomConstructor::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestInterfaceCustomConstructor::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestInterfaceCustomConstructor is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -56,12 +56,12 @@ namespace TestInterfaceCustomConstructorV8Internal {
 
 void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (!info.IsConstructCall()) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceCustomConstructor"));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceCustomConstructor"));
     return;
   }
 
-  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-    v8SetReturnValue(info, info.Holder());
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
     return;
   }
 
@@ -70,7 +70,7 @@ void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCal
 
 static void installV8TestInterfaceCustomConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceCustomConstructor::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceCustomConstructor::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount);
   interfaceTemplate->SetCallHandler(V8TestInterfaceCustomConstructor::constructorCallback);
   interfaceTemplate->SetLength(0);
 
@@ -85,25 +85,25 @@ static void installV8TestInterfaceCustomConstructorTemplate(v8::Isolate* isolate
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceCustomConstructorTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceCustomConstructorTemplate);
 }
 
 bool V8TestInterfaceCustomConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceCustomConstructor::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceCustomConstructor* NativeValueTraits<TestInterfaceCustomConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceCustomConstructor* NativeValueTraits<TestInterfaceCustomConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceCustomConstructor* nativeValue = V8TestInterfaceCustomConstructor::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestInterfaceCustomConstructor.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceCustomConstructor.");
   return nativeValue;
 }
 

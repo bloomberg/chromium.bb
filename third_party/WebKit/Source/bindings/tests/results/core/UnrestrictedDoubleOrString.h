@@ -64,18 +64,18 @@ class V8UnrestrictedDoubleOrString final {
 CORE_EXPORT v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl, v8::Local<v8::Object> creationContext) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl, v8::Local<v8::Object> creationContext) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<UnrestrictedDoubleOrString> : public NativeValueTraitsBase<UnrestrictedDoubleOrString> {
-  CORE_EXPORT static UnrestrictedDoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static UnrestrictedDoubleOrString NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

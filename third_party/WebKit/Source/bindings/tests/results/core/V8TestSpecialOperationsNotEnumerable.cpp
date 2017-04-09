@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperationsNotEnumerable::domTemplate, V8TestSpecialOperationsNotEnumerable::trace, V8TestSpecialOperationsNotEnumerable::traceWrappers, nullptr, "TestSpecialOperationsNotEnumerable", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperationsNotEnumerable::domTemplate, V8TestSpecialOperationsNotEnumerable::Trace, V8TestSpecialOperationsNotEnumerable::TraceWrappers, nullptr, "TestSpecialOperationsNotEnumerable", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -36,7 +36,7 @@ const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = { 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestSpecialOperationsNotEnumerable.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::s_wrapperTypeInfo = V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo;
+const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::wrapper_type_info_ = V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -45,8 +45,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestSpecialOperationsNotEnumerable::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestSpecialOperationsNotEnumerable::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestSpecialOperationsNotEnumerable is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -55,10 +55,10 @@ namespace TestSpecialOperationsNotEnumerableV8Internal {
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
-  String result = impl->anonymousNamedGetter(name);
-  if (result.isNull())
+  String result = impl->AnonymousNamedGetter(name);
+  if (result.IsNull())
     return;
-  v8SetReturnValueString(info, result, info.GetIsolate());
+  V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -71,8 +71,8 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   if (index >= impl->length())
     return;  // Returns undefined due to out-of-range.
 
-  String result = impl->anonymousIndexedGetter(index);
-  v8SetReturnValueString(info, result, info.GetIsolate());
+  String result = impl->AnonymousIndexedGetter(index);
+  V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 } // namespace TestSpecialOperationsNotEnumerableV8Internal
@@ -80,7 +80,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 void V8TestSpecialOperationsNotEnumerable::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
-  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetter(propertyName, info);
 }
@@ -91,7 +91,7 @@ void V8TestSpecialOperationsNotEnumerable::indexedPropertyGetterCallback(uint32_
 
 static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
@@ -111,25 +111,25 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Isolate* iso
 }
 
 v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestSpecialOperationsNotEnumerableTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestSpecialOperationsNotEnumerableTemplate);
 }
 
 bool V8TestSpecialOperationsNotEnumerable::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestSpecialOperationsNotEnumerable::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestSpecialOperationsNotEnumerable* nativeValue = V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestSpecialOperationsNotEnumerable.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestSpecialOperationsNotEnumerable.");
   return nativeValue;
 }
 

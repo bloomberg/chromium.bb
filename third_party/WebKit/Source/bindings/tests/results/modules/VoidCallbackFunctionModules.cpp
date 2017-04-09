@@ -22,43 +22,43 @@
 namespace blink {
 
 // static
-VoidCallbackFunctionModules* VoidCallbackFunctionModules::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
-  if (isUndefinedOrNull(callback))
+VoidCallbackFunctionModules* VoidCallbackFunctionModules::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+  if (IsUndefinedOrNull(callback))
     return nullptr;
   return new VoidCallbackFunctionModules(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
 VoidCallbackFunctionModules::VoidCallbackFunctionModules(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), this, callback) {
-  DCHECK(!m_callback.isEmpty());
+    m_callback(scriptState->GetIsolate(), this, callback) {
+  DCHECK(!m_callback.IsEmpty());
 }
 
 DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionModules) {
-  visitor->traceWrappers(m_callback.cast<v8::Value>());
+  visitor->TraceWrappers(m_callback.Cast<v8::Value>());
 }
 
 bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
-  if (m_callback.isEmpty())
+  if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return false;
 
-  ExecutionContext* context = m_scriptState->getExecutionContext();
+  ExecutionContext* context = m_scriptState->GetExecutionContext();
   DCHECK(context);
-  if (context->isContextSuspended() || context->isContextDestroyed())
+  if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Isolate* isolate = m_scriptState->isolate();
+  ScriptState::Scope scope(m_scriptState.Get());
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->context()->Global(),
+      m_scriptState->GetContext()->Global(),
       isolate);
 
   v8::Local<v8::Value> *argv = nullptr;
@@ -66,7 +66,7 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   exceptionCatcher.SetVerbose(true);
 
   v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+  if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
                                     context,
                                     thisValue,
                                     0,
@@ -78,10 +78,10 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   return true;
 }
 
-VoidCallbackFunctionModules* NativeValueTraits<VoidCallbackFunctionModules>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  VoidCallbackFunctionModules* nativeValue = VoidCallbackFunctionModules::create(ScriptState::current(isolate), value);
+VoidCallbackFunctionModules* NativeValueTraits<VoidCallbackFunctionModules>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  VoidCallbackFunctionModules* nativeValue = VoidCallbackFunctionModules::Create(ScriptState::Current(isolate), value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to VoidCallbackFunctionModules.");
+    exceptionState.ThrowTypeError("Unable to convert value to VoidCallbackFunctionModules.");
   return nativeValue;
 }
 

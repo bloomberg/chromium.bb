@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8Uint8ClampedArray::trace, V8Uint8ClampedArray::traceWrappers, nullptr, "Uint8ClampedArray", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8Uint8ClampedArray::Trace, V8Uint8ClampedArray::TraceWrappers, nullptr, "Uint8ClampedArray", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -40,42 +40,42 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestUint8ClampedArray::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestUint8ClampedArray::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestUint8ClampedArray is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
 TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsUint8ClampedArray());
-  ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+  ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
   if (scriptWrappable)
-    return scriptWrappable->toImpl<TestUint8ClampedArray>();
+    return scriptWrappable->ToImpl<TestUint8ClampedArray>();
 
   v8::Local<v8::Uint8ClampedArray> v8View = object.As<v8::Uint8ClampedArray>();
   v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
   TestUint8ClampedArray* typedArray = nullptr;
   if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
+    typedArray = TestUint8ClampedArray::Create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
   } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
+    typedArray = TestUint8ClampedArray::Create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
   } else {
     NOTREACHED();
   }
-  v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
+  v8::Local<v8::Object> associatedWrapper = typedArray->AssociateWithWrapper(v8::Isolate::GetCurrent(), typedArray->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);
 
-  return typedArray->toImpl<TestUint8ClampedArray>();
+  return typedArray->ToImpl<TestUint8ClampedArray>();
 }
 
 TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsUint8ClampedArray() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestUint8ClampedArray* nativeValue = V8Uint8ClampedArray::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to Uint8ClampedArray.");
+    exceptionState.ThrowTypeError("Unable to convert value to Uint8ClampedArray.");
   return nativeValue;
 }
 

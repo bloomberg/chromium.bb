@@ -26,7 +26,7 @@ class ScriptState;
 
 class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>, public TraceWrapperBase {
  public:
-  static LongCallbackFunction* create(ScriptState*, v8::Local<v8::Value> callback);
+  static LongCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~LongCallbackFunction() = default;
 
@@ -36,7 +36,7 @@ class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<
   bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.newLocal(isolate);
+    return m_callback.NewLocal(isolate);
   }
 
  private:
@@ -48,7 +48,7 @@ class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<
 
 template <>
 struct NativeValueTraits<LongCallbackFunction> : public NativeValueTraitsBase<LongCallbackFunction> {
-  CORE_EXPORT static LongCallbackFunction* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static LongCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

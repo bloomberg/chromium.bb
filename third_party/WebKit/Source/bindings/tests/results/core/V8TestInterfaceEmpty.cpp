@@ -26,7 +26,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEmpty::domTemplate, V8TestInterfaceEmpty::trace, V8TestInterfaceEmpty::traceWrappers, nullptr, "TestInterfaceEmpty", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEmpty::domTemplate, V8TestInterfaceEmpty::Trace, V8TestInterfaceEmpty::TraceWrappers, nullptr, "TestInterfaceEmpty", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -34,7 +34,7 @@ const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBl
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceEmpty.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceEmpty::s_wrapperTypeInfo = V8TestInterfaceEmpty::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceEmpty::wrapper_type_info_ = V8TestInterfaceEmpty::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -43,8 +43,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestInterfaceEmpty::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestInterfaceEmpty::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestInterfaceEmpty is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -55,7 +55,7 @@ namespace TestInterfaceEmptyV8Internal {
 
 static void installV8TestInterfaceEmptyTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEmpty::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEmpty::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
@@ -68,25 +68,25 @@ static void installV8TestInterfaceEmptyTemplate(v8::Isolate* isolate, const DOMW
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEmptyTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEmptyTemplate);
 }
 
 bool V8TestInterfaceEmpty::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceEmpty::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceEmpty* V8TestInterfaceEmpty::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceEmpty* NativeValueTraits<TestInterfaceEmpty>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceEmpty* NativeValueTraits<TestInterfaceEmpty>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceEmpty* nativeValue = V8TestInterfaceEmpty::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestInterfaceEmpty.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceEmpty.");
   return nativeValue;
 }
 

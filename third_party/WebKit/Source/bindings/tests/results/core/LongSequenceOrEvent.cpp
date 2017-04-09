@@ -59,14 +59,14 @@ LongSequenceOrEvent::~LongSequenceOrEvent() = default;
 LongSequenceOrEvent& LongSequenceOrEvent::operator=(const LongSequenceOrEvent&) = default;
 
 DEFINE_TRACE(LongSequenceOrEvent) {
-  visitor->trace(m_event);
+  visitor->Trace(m_event);
 }
 
 void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongSequenceOrEvent& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8Event::hasInstance(v8Value, isolate)) {
@@ -76,14 +76,14 @@ void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   if (v8Value->IsArray()) {
-    Vector<int32_t> cppValue = toImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
-    if (exceptionState.hadException())
+    Vector<int32_t> cppValue = ToImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setLongSequence(cppValue);
     return;
   }
 
-  exceptionState.throwTypeError("The provided value is not of type '(sequence<long> or Event)'");
+  exceptionState.ThrowTypeError("The provided value is not of type '(sequence<long> or Event)'");
 }
 
 v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -100,9 +100,9 @@ v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object>
   return v8::Local<v8::Value>();
 }
 
-LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongSequenceOrEvent impl;
-  V8LongSequenceOrEvent::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8LongSequenceOrEvent::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

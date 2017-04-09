@@ -33,17 +33,17 @@ class V8TestSpecialOperations {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static TestSpecialOperations* toImpl(v8::Local<v8::Object> object) {
-    return toScriptWrappable(object)->toImpl<TestSpecialOperations>();
+    return ToScriptWrappable(object)->ToImpl<TestSpecialOperations>();
   }
   CORE_EXPORT static TestSpecialOperations* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->trace(scriptWrappable->toImpl<TestSpecialOperations>());
+  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->Trace(scriptWrappable->ToImpl<TestSpecialOperations>());
   }
-  static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->traceWrappers(scriptWrappable->toImpl<TestSpecialOperations>());
+  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappers(scriptWrappable->ToImpl<TestSpecialOperations>());
   }
-  static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 
   // Callback functions
 
@@ -59,7 +59,7 @@ class V8TestSpecialOperations {
 
 template <>
 struct NativeValueTraits<TestSpecialOperations> : public NativeValueTraitsBase<TestSpecialOperations> {
-  CORE_EXPORT static TestSpecialOperations* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestSpecialOperations* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

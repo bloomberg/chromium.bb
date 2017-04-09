@@ -31,18 +31,18 @@ class V8TestDictionaryDerivedImplementedAs {
 CORE_EXPORT bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> creationContext) {
-  v8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> creationContext) {
+  V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestDictionaryDerivedImplementedAs> : public NativeValueTraitsBase<TestDictionaryDerivedImplementedAs> {
-  CORE_EXPORT static TestDictionaryDerivedImplementedAs nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestDictionaryDerivedImplementedAs NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

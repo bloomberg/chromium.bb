@@ -62,15 +62,15 @@ NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
 
 DEFINE_TRACE(NodeOrNodeList) {
-  visitor->trace(m_node);
-  visitor->trace(m_nodeList);
+  visitor->Trace(m_node);
+  visitor->Trace(m_nodeList);
 }
 
 void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8Node::hasInstance(v8Value, isolate)) {
@@ -85,7 +85,7 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     return;
   }
 
-  exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
+  exceptionState.ThrowTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
 v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -102,9 +102,9 @@ v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> crea
   return v8::Local<v8::Value>();
 }
 
-NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+NodeOrNodeList NativeValueTraits<NodeOrNodeList>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   NodeOrNodeList impl;
-  V8NodeOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8NodeOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

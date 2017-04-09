@@ -29,7 +29,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestException::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestException::domTemplate, V8TestException::trace, V8TestException::traceWrappers, nullptr, "TestException", 0, WrapperTypeInfo::WrapperTypeExceptionPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestException::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestException::domTemplate, V8TestException::Trace, V8TestException::TraceWrappers, nullptr, "TestException", 0, WrapperTypeInfo::kWrapperTypeExceptionPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kNotInheritFromActiveScriptWrappable, WrapperTypeInfo::kIndependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -37,7 +37,7 @@ const WrapperTypeInfo V8TestException::wrapperTypeInfo = { gin::kEmbedderBlink, 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestException.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& TestException::s_wrapperTypeInfo = V8TestException::wrapperTypeInfo;
+const WrapperTypeInfo& TestException::wrapper_type_info_ = V8TestException::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -46,8 +46,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&TestException::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&TestException::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "TestException is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -59,7 +59,7 @@ static void readonlyUnsignedShortAttributeAttributeGetter(const v8::FunctionCall
 
   TestException* impl = V8TestException::toImpl(holder);
 
-  v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
+  V8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
 
 static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -67,32 +67,32 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
 
   TestException* impl = V8TestException::toImpl(holder);
 
-  v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
+  V8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestException* impl = V8TestException::toImpl(info.Holder());
 
-  v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
+  V8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestException");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestException");
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   uint16_t argument;
-  argument = NativeValueTraits<IDLUnsignedShort>::nativeValue(info.GetIsolate(), info[0], exceptionState, NormalConversion);
-  if (exceptionState.hadException())
+  argument = NativeValueTraits<IDLUnsignedShort>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  if (exceptionState.HadException())
     return;
 
-  TestException* impl = TestException::create(argument);
+  TestException* impl = TestException::Create(argument);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestException::wrapperTypeInfo, wrapper);
-  v8SetReturnValue(info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestException::wrapperTypeInfo, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 } // namespace TestExceptionV8Internal
@@ -110,22 +110,22 @@ void V8TestException::toStringMethodCallback(const v8::FunctionCallbackInfo<v8::
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestExceptionAccessors[] = {
-    {"readonlyUnsignedShortAttribute", V8TestException::readonlyUnsignedShortAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::AllWorlds},
-    {"readonlyStringAttribute", V8TestException::readonlyStringAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::AllWorlds},
+    {"readonlyUnsignedShortAttribute", V8TestException::readonlyUnsignedShortAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
+    {"readonlyStringAttribute", V8TestException::readonlyStringAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestExceptionMethods[] = {
-    {"toString", V8TestException::toStringMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
+    {"toString", V8TestException::toStringMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };
 
 void V8TestException::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (!info.IsConstructCall()) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestException"));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestException"));
     return;
   }
 
-  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-    v8SetReturnValue(info, info.Holder());
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
     return;
   }
 
@@ -134,7 +134,7 @@ void V8TestException::constructorCallback(const v8::FunctionCallbackInfo<v8::Val
 
 static void installV8TestExceptionTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestException::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestException::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount);
   interfaceTemplate->SetCallHandler(V8TestException::constructorCallback);
   interfaceTemplate->SetLength(1);
 
@@ -147,33 +147,33 @@ static void installV8TestExceptionTemplate(v8::Isolate* isolate, const DOMWrappe
 
   // Register DOM constants, attributes and operations.
   const V8DOMConfiguration::ConstantConfiguration V8TestExceptionConstants[] = {
-      {"UNSIGNED_SHORT_CONSTANT", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+      {"UNSIGNED_SHORT_CONSTANT", 1, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
   };
-  V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants));
-  V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors));
-  V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionMethods, WTF_ARRAY_LENGTH(V8TestExceptionMethods));
+  V8DOMConfiguration::InstallConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants));
+  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors));
+  V8DOMConfiguration::InstallMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionMethods, WTF_ARRAY_LENGTH(V8TestExceptionMethods));
 }
 
 v8::Local<v8::FunctionTemplate> V8TestException::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestExceptionTemplate);
+  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestExceptionTemplate);
 }
 
 bool V8TestException::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
 }
 
 v8::Local<v8::Object> V8TestException::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestException* NativeValueTraits<TestException>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestException* NativeValueTraits<TestException>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestException* nativeValue = V8TestException::toImplWithTypeCheck(isolate, value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to TestException.");
+    exceptionState.ThrowTypeError("Unable to convert value to TestException.");
   return nativeValue;
 }
 

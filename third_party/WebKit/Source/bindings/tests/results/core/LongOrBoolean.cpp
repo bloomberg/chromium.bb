@@ -64,7 +64,7 @@ void V8LongOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsBoolean()) {
@@ -73,16 +73,16 @@ void V8LongOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
   }
 
   if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
-    if (exceptionState.hadException())
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    if (exceptionState.HadException())
       return;
     impl.setLong(cppValue);
     return;
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(isolate, v8Value, exceptionState, NormalConversion);
-    if (exceptionState.hadException())
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    if (exceptionState.HadException())
       return;
     impl.setLong(cppValue);
     return;
@@ -94,7 +94,7 @@ v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creat
     case LongOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case LongOrBoolean::SpecificTypeBoolean:
-      return v8Boolean(impl.getAsBoolean(), isolate);
+      return V8Boolean(impl.getAsBoolean(), isolate);
     case LongOrBoolean::SpecificTypeLong:
       return v8::Integer::New(isolate, impl.getAsLong());
     default:
@@ -103,9 +103,9 @@ v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creat
   return v8::Local<v8::Value>();
 }
 
-LongOrBoolean NativeValueTraits<LongOrBoolean>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+LongOrBoolean NativeValueTraits<LongOrBoolean>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongOrBoolean impl;
-  V8LongOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8LongOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

@@ -50,7 +50,7 @@ void TestEnumOrDouble::setTestEnum(String value) {
       "EnumValue2",
       "EnumValue3",
   };
-  if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
     NOTREACHED();
     return;
   }
@@ -75,12 +75,12 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setDouble(cppValue);
     return;
@@ -88,7 +88,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     const char* validValues[] = {
         "",
@@ -96,7 +96,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         "EnumValue2",
         "EnumValue3",
     };
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
       return;
     impl.setTestEnum(cppValue);
     return;
@@ -110,16 +110,16 @@ v8::Local<v8::Value> ToV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> cr
     case TestEnumOrDouble::SpecificTypeDouble:
       return v8::Number::New(isolate, impl.getAsDouble());
     case TestEnumOrDouble::SpecificTypeTestEnum:
-      return v8String(isolate, impl.getAsTestEnum());
+      return V8String(isolate, impl.getAsTestEnum());
     default:
       NOTREACHED();
   }
   return v8::Local<v8::Value>();
 }
 
-TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestEnumOrDouble impl;
-  V8TestEnumOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8TestEnumOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

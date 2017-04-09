@@ -40,7 +40,7 @@ TestDictionary::TestDictionary(const TestDictionary&) = default;
 TestDictionary& TestDictionary::operator=(const TestDictionary&) = default;
 
 bool TestDictionary::hasAnyMember() const {
-  return !(m_anyMember.isEmpty() || m_anyMember.isNull() || m_anyMember.isUndefined());
+  return !(m_anyMember.IsEmpty() || m_anyMember.IsNull() || m_anyMember.IsUndefined());
 }
 ScriptValue TestDictionary::anyMember() const {
   return m_anyMember;
@@ -71,7 +71,7 @@ void TestDictionary::setCreateMember(bool value) {
   m_hasCreateMember = true;
 }
 bool TestDictionary::hasDictionaryMember() const {
-  return !m_dictionaryMember.isUndefinedOrNull();
+  return !m_dictionaryMember.IsUndefinedOrNull();
 }
 Dictionary TestDictionary::dictionaryMember() const {
   return m_dictionaryMember;
@@ -126,7 +126,7 @@ void TestDictionary::setElementOrNullMemberToNull() {
   m_elementOrNullMember = Member<Element>();
 }
 bool TestDictionary::hasEnumMember() const {
-  return !m_enumMember.isNull();
+  return !m_enumMember.IsNull();
 }
 String TestDictionary::enumMember() const {
   return m_enumMember;
@@ -188,7 +188,7 @@ void TestDictionary::setLongMember(int32_t value) {
   m_hasLongMember = true;
 }
 bool TestDictionary::hasObjectMember() const {
-  return !(m_objectMember.isEmpty() || m_objectMember.isNull() || m_objectMember.isUndefined());
+  return !(m_objectMember.IsEmpty() || m_objectMember.IsNull() || m_objectMember.IsUndefined());
 }
 ScriptValue TestDictionary::objectMember() const {
   return m_objectMember;
@@ -197,7 +197,7 @@ void TestDictionary::setObjectMember(ScriptValue value) {
   m_objectMember = value;
 }
 bool TestDictionary::hasObjectOrNullMember() const {
-  return !(m_objectOrNullMember.isEmpty() || m_objectOrNullMember.isNull() || m_objectOrNullMember.isUndefined());
+  return !(m_objectOrNullMember.IsEmpty() || m_objectOrNullMember.IsNull() || m_objectOrNullMember.IsUndefined());
 }
 ScriptValue TestDictionary::objectOrNullMember() const {
   return m_objectOrNullMember;
@@ -218,7 +218,7 @@ void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
   m_otherDoubleOrStringMember = value;
 }
 bool TestDictionary::hasPrefixGetMember() const {
-  return !(m_prefixGetMember.isEmpty() || m_prefixGetMember.isNull() || m_prefixGetMember.isUndefined());
+  return !(m_prefixGetMember.IsEmpty() || m_prefixGetMember.IsNull() || m_prefixGetMember.IsUndefined());
 }
 ScriptValue TestDictionary::getPrefixGetMember() const {
   return m_prefixGetMember;
@@ -271,7 +271,7 @@ void TestDictionary::setStringArrayMember(const Vector<String>& value) {
   m_hasStringArrayMember = true;
 }
 bool TestDictionary::hasStringMember() const {
-  return !m_stringMember.isNull();
+  return !m_stringMember.IsNull();
 }
 String TestDictionary::stringMember() const {
   return m_stringMember;
@@ -280,7 +280,7 @@ void TestDictionary::setStringMember(String value) {
   m_stringMember = value;
 }
 bool TestDictionary::hasStringOrNullMember() const {
-  return !m_stringOrNullMember.isNull();
+  return !m_stringOrNullMember.IsNull();
 }
 String TestDictionary::stringOrNullMember() const {
   return m_stringOrNullMember;
@@ -428,25 +428,25 @@ void TestDictionary::setUnrestrictedDoubleMember(double value) {
 }
 
 DEFINE_TRACE(TestDictionary) {
-  visitor->trace(m_doubleOrStringMember);
-  visitor->trace(m_doubleOrStringSequenceMember);
-  visitor->trace(m_elementOrNullMember);
-  visitor->trace(m_eventTargetMember);
-  visitor->trace(m_garbageCollectedRecordMember);
-  visitor->trace(m_internalDictionarySequenceMember);
-  visitor->trace(m_otherDoubleOrStringMember);
-  visitor->trace(m_testInterface2OrUint8ArrayMember);
-  visitor->trace(m_testInterfaceGarbageCollectedMember);
-  visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
-  visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
-  visitor->trace(m_testInterfaceMember);
-  visitor->trace(m_testInterfaceOrNullMember);
-  visitor->trace(m_testInterfaceSequenceMember);
-  visitor->trace(m_testObjectSequenceMember);
-  visitor->trace(m_uint8ArrayMember);
-  visitor->trace(m_unionInRecordMember);
-  visitor->trace(m_unionWithTypedefs);
-  IDLDictionaryBase::trace(visitor);
+  visitor->Trace(m_doubleOrStringMember);
+  visitor->Trace(m_doubleOrStringSequenceMember);
+  visitor->Trace(m_elementOrNullMember);
+  visitor->Trace(m_eventTargetMember);
+  visitor->Trace(m_garbageCollectedRecordMember);
+  visitor->Trace(m_internalDictionarySequenceMember);
+  visitor->Trace(m_otherDoubleOrStringMember);
+  visitor->Trace(m_testInterface2OrUint8ArrayMember);
+  visitor->Trace(m_testInterfaceGarbageCollectedMember);
+  visitor->Trace(m_testInterfaceGarbageCollectedOrNullMember);
+  visitor->Trace(m_testInterfaceGarbageCollectedSequenceMember);
+  visitor->Trace(m_testInterfaceMember);
+  visitor->Trace(m_testInterfaceOrNullMember);
+  visitor->Trace(m_testInterfaceSequenceMember);
+  visitor->Trace(m_testObjectSequenceMember);
+  visitor->Trace(m_uint8ArrayMember);
+  visitor->Trace(m_unionInRecordMember);
+  visitor->Trace(m_unionWithTypedefs);
+  IDLDictionaryBase::Trace(visitor);
 }
 
 }  // namespace blink

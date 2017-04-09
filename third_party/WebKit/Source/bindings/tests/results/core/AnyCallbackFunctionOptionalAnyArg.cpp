@@ -23,52 +23,52 @@
 namespace blink {
 
 // static
-AnyCallbackFunctionOptionalAnyArg* AnyCallbackFunctionOptionalAnyArg::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
-  if (isUndefinedOrNull(callback))
+AnyCallbackFunctionOptionalAnyArg* AnyCallbackFunctionOptionalAnyArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+  if (IsUndefinedOrNull(callback))
     return nullptr;
   return new AnyCallbackFunctionOptionalAnyArg(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
 AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), this, callback) {
-  DCHECK(!m_callback.isEmpty());
+    m_callback(scriptState->GetIsolate(), this, callback) {
+  DCHECK(!m_callback.IsEmpty());
 }
 
 DEFINE_TRACE_WRAPPERS(AnyCallbackFunctionOptionalAnyArg) {
-  visitor->traceWrappers(m_callback.cast<v8::Value>());
+  visitor->TraceWrappers(m_callback.Cast<v8::Value>());
 }
 
 bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue) {
-  if (m_callback.isEmpty())
+  if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return false;
 
-  ExecutionContext* context = m_scriptState->getExecutionContext();
+  ExecutionContext* context = m_scriptState->GetExecutionContext();
   DCHECK(context);
-  if (context->isContextSuspended() || context->isContextDestroyed())
+  if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Isolate* isolate = m_scriptState->isolate();
+  ScriptState::Scope scope(m_scriptState.Get());
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->context()->Global(),
+      m_scriptState->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> optionalAnyArgArgument = optionalAnyArg.v8Value();
+  v8::Local<v8::Value> optionalAnyArgArgument = optionalAnyArg.V8Value();
   v8::Local<v8::Value> argv[] = { optionalAnyArgArgument };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
   v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+  if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
                                     context,
                                     thisValue,
                                     1,
@@ -77,15 +77,15 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
     return false;
   }
 
-  ScriptValue cppValue = ScriptValue(ScriptState::current(m_scriptState->isolate()), v8ReturnValue);
+  ScriptValue cppValue = ScriptValue(ScriptState::Current(m_scriptState->GetIsolate()), v8ReturnValue);
   returnValue = cppValue;
   return true;
 }
 
-AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<AnyCallbackFunctionOptionalAnyArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  AnyCallbackFunctionOptionalAnyArg* nativeValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(isolate), value);
+AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<AnyCallbackFunctionOptionalAnyArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  AnyCallbackFunctionOptionalAnyArg* nativeValue = AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(isolate), value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to AnyCallbackFunctionOptionalAnyArg.");
+    exceptionState.ThrowTypeError("Unable to convert value to AnyCallbackFunctionOptionalAnyArg.");
   return nativeValue;
 }
 

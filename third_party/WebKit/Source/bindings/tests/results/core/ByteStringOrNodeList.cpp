@@ -63,14 +63,14 @@ ByteStringOrNodeList::~ByteStringOrNodeList() = default;
 ByteStringOrNodeList& ByteStringOrNodeList::operator=(const ByteStringOrNodeList&) = default;
 
 DEFINE_TRACE(ByteStringOrNodeList) {
-  visitor->trace(m_nodeList);
+  visitor->Trace(m_nodeList);
 }
 
 void V8ByteStringOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (V8NodeList::hasInstance(v8Value, isolate)) {
@@ -80,8 +80,8 @@ void V8ByteStringOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   {
-    V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::nativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.hadException())
+    V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
       return;
     impl.setByteString(cppValue);
     return;
@@ -93,7 +93,7 @@ v8::Local<v8::Value> ToV8(const ByteStringOrNodeList& impl, v8::Local<v8::Object
     case ByteStringOrNodeList::SpecificTypeNone:
       return v8::Null(isolate);
     case ByteStringOrNodeList::SpecificTypeByteString:
-      return v8String(isolate, impl.getAsByteString());
+      return V8String(isolate, impl.getAsByteString());
     case ByteStringOrNodeList::SpecificTypeNodeList:
       return ToV8(impl.getAsNodeList(), creationContext, isolate);
     default:
@@ -102,9 +102,9 @@ v8::Local<v8::Value> ToV8(const ByteStringOrNodeList& impl, v8::Local<v8::Object
   return v8::Local<v8::Value>();
 }
 
-ByteStringOrNodeList NativeValueTraits<ByteStringOrNodeList>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+ByteStringOrNodeList NativeValueTraits<ByteStringOrNodeList>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   ByteStringOrNodeList impl;
-  V8ByteStringOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8ByteStringOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

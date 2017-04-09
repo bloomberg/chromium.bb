@@ -78,15 +78,15 @@ StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = 
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
 
 DEFINE_TRACE(StringOrArrayBufferOrArrayBufferView) {
-  visitor->trace(m_arrayBuffer);
-  visitor->trace(m_arrayBufferView);
+  visitor->Trace(m_arrayBuffer);
+  visitor->Trace(m_arrayBufferView);
 }
 
 void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   if (v8Value->IsArrayBuffer()) {
@@ -103,7 +103,7 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
 
   {
     V8StringResource<> cppValue = v8Value;
-    if (!cppValue.prepare(exceptionState))
+    if (!cppValue.Prepare(exceptionState))
       return;
     impl.setString(cppValue);
     return;
@@ -119,16 +119,16 @@ v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBufferView:
       return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
-      return v8String(isolate, impl.getAsString());
+      return V8String(isolate, impl.getAsString());
     default:
       NOTREACHED();
   }
   return v8::Local<v8::Value>();
 }
 
-StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   StringOrArrayBufferOrArrayBufferView impl;
-  V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

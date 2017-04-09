@@ -24,53 +24,53 @@
 namespace blink {
 
 // static
-LongCallbackFunction* LongCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
-  if (isUndefinedOrNull(callback))
+LongCallbackFunction* LongCallbackFunction::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+  if (IsUndefinedOrNull(callback))
     return nullptr;
   return new LongCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
 LongCallbackFunction::LongCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), this, callback) {
-  DCHECK(!m_callback.isEmpty());
+    m_callback(scriptState->GetIsolate(), this, callback) {
+  DCHECK(!m_callback.IsEmpty());
 }
 
 DEFINE_TRACE_WRAPPERS(LongCallbackFunction) {
-  visitor->traceWrappers(m_callback.cast<v8::Value>());
+  visitor->TraceWrappers(m_callback.Cast<v8::Value>());
 }
 
 bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue) {
-  if (m_callback.isEmpty())
+  if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return false;
 
-  ExecutionContext* context = m_scriptState->getExecutionContext();
+  ExecutionContext* context = m_scriptState->GetExecutionContext();
   DCHECK(context);
-  if (context->isContextSuspended() || context->isContextDestroyed())
+  if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Isolate* isolate = m_scriptState->isolate();
+  ScriptState::Scope scope(m_scriptState.Get());
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->context()->Global(),
+      m_scriptState->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->isolate(), num1);
-  v8::Local<v8::Value> num2Argument = v8::Integer::New(m_scriptState->isolate(), num2);
+  v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->GetIsolate(), num1);
+  v8::Local<v8::Value> num2Argument = v8::Integer::New(m_scriptState->GetIsolate(), num2);
   v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
   v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+  if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
                                     context,
                                     thisValue,
                                     2,
@@ -79,17 +79,17 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
     return false;
   }
 
-  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(m_scriptState->isolate(), v8ReturnValue, exceptionState, NormalConversion);
-  if (exceptionState.hadException())
+  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(m_scriptState->GetIsolate(), v8ReturnValue, exceptionState, kNormalConversion);
+  if (exceptionState.HadException())
     return false;
   returnValue = cppValue;
   return true;
 }
 
-LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  LongCallbackFunction* nativeValue = LongCallbackFunction::create(ScriptState::current(isolate), value);
+LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  LongCallbackFunction* nativeValue = LongCallbackFunction::Create(ScriptState::Current(isolate), value);
   if (!nativeValue)
-    exceptionState.throwTypeError("Unable to convert value to LongCallbackFunction.");
+    exceptionState.ThrowTypeError("Unable to convert value to LongCallbackFunction.");
   return nativeValue;
 }
 
