@@ -56,15 +56,16 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
                             overlays_supported);
       if (overlays_supported) {
         scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
-            make_scoped_refptr(
-                new DirectCompositionSurfaceWin(delegate, surface_handle));
-        if (!egl_surface->Initialize(std::move(vsync_provider)))
+            make_scoped_refptr(new DirectCompositionSurfaceWin(
+                std::move(vsync_provider), delegate, surface_handle));
+        if (!egl_surface->Initialize())
           return nullptr;
         surface = egl_surface;
       } else {
-        scoped_refptr<ChildWindowSurfaceWin> egl_surface = make_scoped_refptr(
-            new ChildWindowSurfaceWin(delegate, surface_handle));
-        if (!egl_surface->Initialize(std::move(vsync_provider)))
+        scoped_refptr<ChildWindowSurfaceWin> egl_surface =
+            make_scoped_refptr(new ChildWindowSurfaceWin(
+                std::move(vsync_provider), delegate, surface_handle));
+        if (!egl_surface->Initialize())
           return nullptr;
         surface = egl_surface;
       }

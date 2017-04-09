@@ -130,7 +130,7 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   TestImageTransportSurfaceDelegate delegate;
 
   scoped_refptr<DirectCompositionSurfaceWin> surface1(
-      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
   EXPECT_TRUE(surface1->Initialize());
   surface1->SetEnableDCLayers(true);
@@ -162,7 +162,7 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   EXPECT_TRUE(context1->IsCurrent(surface1.get()));
 
   scoped_refptr<DirectCompositionSurfaceWin> surface2(
-      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
   EXPECT_TRUE(surface2->Initialize());
 
@@ -194,7 +194,7 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   TestImageTransportSurfaceDelegate delegate;
 
   scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
   EXPECT_TRUE(surface->Initialize());
 
@@ -248,7 +248,7 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
   TestImageTransportSurfaceDelegate delegate;
 
   scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
   EXPECT_TRUE(surface->Initialize());
 
@@ -289,7 +289,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   TestImageTransportSurfaceDelegate delegate;
   scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
   EXPECT_TRUE(surface->Initialize());
   surface->SetEnableDCLayers(true);
@@ -396,8 +396,8 @@ class DirectCompositionPixelTest : public testing::Test {
   void InitializeSurface() {
     static_cast<ui::PlatformWindow*>(&window_)->Show();
 
-    surface_ =
-        new DirectCompositionSurfaceWin(delegate_.AsWeakPtr(), window_.hwnd());
+    surface_ = new DirectCompositionSurfaceWin(nullptr, delegate_.AsWeakPtr(),
+                                               window_.hwnd());
     EXPECT_TRUE(surface_->Initialize());
   }
 

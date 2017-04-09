@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -708,7 +709,9 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
   return g_display;
 }
 
-NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
+    EGLNativeWindowType window,
+    std::unique_ptr<gfx::VSyncProvider> vsync_provider)
     : window_(window),
       size_(1, 1),
       enable_fixed_size_angle_(false),
@@ -716,6 +719,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
       supports_post_sub_buffer_(false),
       supports_swap_buffer_with_damage_(false),
       flips_vertically_(false),
+      vsync_provider_external_(std::move(vsync_provider)),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
   if (window)
@@ -732,13 +736,8 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
 }
 
 bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
-  format_ = format;
-  return Initialize(nullptr);
-}
-
-bool NativeViewGLSurfaceEGL::Initialize(
-    std::unique_ptr<gfx::VSyncProvider> sync_provider) {
   DCHECK(!surface_);
+  format_ = format;
 
   if (!GetDisplay()) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
@@ -810,10 +809,10 @@ bool NativeViewGLSurfaceEGL::Initialize(
   supports_swap_buffer_with_damage_ =
       g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage;
 
-  if (sync_provider)
-    vsync_provider_ = std::move(sync_provider);
-  else if (EGLSyncControlVSyncProvider::IsSupported())
-    vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
+  if (!vsync_provider_external_ && EGLSyncControlVSyncProvider::IsSupported()) {
+    vsync_provider_internal_ =
+        base::MakeUnique<EGLSyncControlVSyncProvider>(surface_);
+  }
   return true;
 }
 
@@ -822,6 +821,8 @@ bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
 }
 
 void NativeViewGLSurfaceEGL::Destroy() {
+  vsync_provider_internal_ = nullptr;
+
   if (surface_) {
     if (!eglDestroySurface(GetDisplay(), surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
@@ -1022,7 +1023,8 @@ gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes() {
 }
 
 gfx::VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
-  return vsync_provider_.get();
+  return vsync_provider_external_ ? vsync_provider_external_.get()
+                                  : vsync_provider_internal_.get();
 }
 
 bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(

@@ -4,14 +4,26 @@
 
 #include "ui/ozone/platform/cast/gl_surface_cast.h"
 
+#include "base/memory/ptr_util.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/cast/gl_ozone_egl_cast.h"
+
+namespace {
+// Target fixed 30fps.
+// TODO(halliwell): We might need to customize this value on various devices
+// or make it dynamic that throttles framerate if device is overheating.
+const base::TimeDelta kVSyncInterval = base::TimeDelta::FromSeconds(2) / 59.9;
+}  // namespace
 
 namespace ui {
 
 GLSurfaceCast::GLSurfaceCast(gfx::AcceleratedWidget widget,
                              GLOzoneEglCast* parent)
-    : NativeViewGLSurfaceEGL(parent->GetNativeWindow()),
+    : NativeViewGLSurfaceEGL(
+          parent->GetNativeWindow(),
+          base::MakeUnique<gfx::FixedVSyncProvider>(base::TimeTicks(),
+                                                    kVSyncInterval)),
       widget_(widget),
       parent_(parent),
       supports_swap_buffer_with_bounds_(

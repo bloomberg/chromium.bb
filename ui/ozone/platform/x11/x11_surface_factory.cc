@@ -38,7 +38,7 @@ class GLSurfaceEGLOzoneX11 : public gl::NativeViewGLSurfaceEGL {
 };
 
 GLSurfaceEGLOzoneX11::GLSurfaceEGLOzoneX11(EGLNativeWindowType window)
-    : NativeViewGLSurfaceEGL(window) {}
+    : NativeViewGLSurfaceEGL(window, nullptr) {}
 
 EGLConfig GLSurfaceEGLOzoneX11::GetConfig() {
   // Try matching the window depth with an alpha channel, because we're worried

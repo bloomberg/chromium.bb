@@ -8,8 +8,6 @@ import("//testing/test.gni")
 
 source_set("graphics") {
   sources = [
-    "cast_vsync_settings.cc",
-    "cast_vsync_settings.h",
     "cast_window_manager.h",
   ]
 

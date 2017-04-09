@@ -21,9 +21,10 @@
 namespace gpu {
 
 ChildWindowSurfaceWin::ChildWindowSurfaceWin(
+    std::unique_ptr<gfx::VSyncProvider> vsync_provider,
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     HWND parent_window)
-    : gl::NativeViewGLSurfaceEGL(0),
+    : gl::NativeViewGLSurfaceEGL(0, std::move(vsync_provider)),
       child_window_(delegate, parent_window),
       alpha_(true),
       first_swap_(true) {

@@ -88,7 +88,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit NativeViewGLSurfaceEGL(EGLNativeWindowType window);
+  NativeViewGLSurfaceEGL(EGLNativeWindowType window,
+                         std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
   // Implement GLSurface.
   using GLSurfaceEGL::Initialize;
@@ -115,10 +116,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
 
-  // Create a NativeViewGLSurfaceEGL with an externally provided
-  // gfx::VSyncProvider. Takes ownership of the gfx::VSyncProvider.
-  virtual bool Initialize(std::unique_ptr<gfx::VSyncProvider> sync_provider);
-
   // Takes care of the platform dependant bits, of any, for creating the window.
   virtual bool InitializeNativeWindow();
 
@@ -143,7 +140,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool supports_swap_buffer_with_damage_;
   bool flips_vertically_;
 
-  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
 
   int swap_interval_;
 

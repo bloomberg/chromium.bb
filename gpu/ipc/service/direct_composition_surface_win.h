@@ -24,6 +24,7 @@ class DCLayerTree;
 class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
  public:
   DirectCompositionSurfaceWin(
+      std::unique_ptr<gfx::VSyncProvider> vsync_provider,
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
       HWND parent_window);
 
@@ -60,8 +61,6 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   // scheduled with ScheduleDCLayer, as it's automatically placed in the layer
   // tree at z-order 0.
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
-
-  bool Initialize(std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
   const base::win::ScopedComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;

@@ -649,9 +649,12 @@ bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
 }
 
 DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
+    std::unique_ptr<gfx::VSyncProvider> vsync_provider,
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     HWND parent_window)
-    : gl::GLSurfaceEGL(), child_window_(delegate, parent_window) {}
+    : gl::GLSurfaceEGL(),
+      child_window_(delegate, parent_window),
+      vsync_provider_(std::move(vsync_provider)) {}
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
   Destroy();
@@ -707,12 +710,6 @@ bool DirectCompositionSurfaceWin::InitializeNativeWindow() {
   bool result = child_window_.Initialize();
   window_ = child_window_.window();
   return result;
-}
-
-bool DirectCompositionSurfaceWin::Initialize(
-    std::unique_ptr<gfx::VSyncProvider> vsync_provider) {
-  vsync_provider_ = std::move(vsync_provider);
-  return Initialize(gl::GLSurfaceFormat());
 }
 
 bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {

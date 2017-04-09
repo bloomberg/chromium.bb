@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/graphics/cast_vsync_settings.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "ui/aura/client/window_parenting_client.h"
 
@@ -24,8 +23,7 @@ class CastFocusClientAura;
 class CastWindowTreeHost;
 
 class CastWindowManagerAura : public CastWindowManager,
-                              public aura::client::WindowParentingClient,
-                              private CastVSyncSettings::Observer {
+                              public aura::client::WindowParentingClient {
  public:
   ~CastWindowManagerAura() override;
 
@@ -44,9 +42,6 @@ class CastWindowManagerAura : public CastWindowManager,
 
   // This class should only be instantiated by CastWindowManager::Create.
   explicit CastWindowManagerAura(bool enable_input);
-
-  // CastVSyncSettings::Observer implementation:
-  void OnVSyncIntervalChanged(base::TimeDelta interval) override;
 
   void Setup();
 

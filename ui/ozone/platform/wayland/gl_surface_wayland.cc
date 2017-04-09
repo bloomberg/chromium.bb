@@ -27,7 +27,8 @@ std::unique_ptr<wl_egl_window, EGLWindowDeleter> CreateWaylandEglWindow(
 
 GLSurfaceWayland::GLSurfaceWayland(WaylandEglWindowPtr egl_window)
     : NativeViewGLSurfaceEGL(
-          reinterpret_cast<EGLNativeWindowType>(egl_window.get())),
+          reinterpret_cast<EGLNativeWindowType>(egl_window.get()),
+          nullptr),
       egl_window_(std::move(egl_window)) {
   DCHECK(egl_window_);
 }
