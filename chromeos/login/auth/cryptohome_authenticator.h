@@ -92,6 +92,9 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
                                       // cryptohome after a login failure.
     FAILED_OLD_ENCRYPTION = 24,       // Login failed, cryptohome is encrypted
                                       // in old format.
+    FAILED_PREVIOUS_MIGRATION_INCOMPLETE = 25,  // Login failed, cryptohome is
+                                                // partially encrypted in old
+                                                // format.
   };
 
   CryptohomeAuthenticator(scoped_refptr<base::TaskRunner> task_runner,
@@ -165,7 +168,7 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
 
   void OnOffTheRecordAuthSuccess();
   void OnPasswordChangeDetected();
-  void OnOldEncryptionDetected();
+  void OnOldEncryptionDetected(bool has_incomplete_migration);
 
  protected:
   ~CryptohomeAuthenticator() override;

@@ -58,6 +58,13 @@ void EncryptionMigrationScreenHandler::SetUserContext(
   user_context_ = user_context;
 }
 
+void EncryptionMigrationScreenHandler::SetShouldResume(bool should_resume) {
+  if (current_ui_state_ == INITIAL && should_resume) {
+    // TODO(fukino): Wait until the battery gets enough level.
+    StartMigration();
+  }
+}
+
 void EncryptionMigrationScreenHandler::SetContinueLoginCallback(
     ContinueLoginCallback callback) {
   continue_login_callback_ = std::move(callback);
@@ -86,6 +93,7 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
 }
 
 void EncryptionMigrationScreenHandler::HandleStartMigration() {
+  // TODO(fukino): Wait until the battery gets enough level.
   StartMigration();
 }
 

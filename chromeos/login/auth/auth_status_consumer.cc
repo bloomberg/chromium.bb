@@ -11,7 +11,8 @@ void AuthStatusConsumer::OnPasswordChangeDetected() {
 }
 
 void AuthStatusConsumer::OnOldEncryptionDetected(
-    const UserContext& user_context) {
+    const UserContext& user_context,
+    bool has_incomplete_migration) {
   NOTREACHED();
 }
 

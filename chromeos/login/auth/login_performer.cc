@@ -107,11 +107,12 @@ void LoginPerformer::OnPasswordChangeDetected() {
   }
 }
 
-void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context) {
+void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context,
+                                             bool has_incomplete_migration) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   if (delegate_)
-    delegate_->OnOldEncryptionDetected(user_context);
+    delegate_->OnOldEncryptionDetected(user_context, has_incomplete_migration);
   else
     NOTREACHED();
 }

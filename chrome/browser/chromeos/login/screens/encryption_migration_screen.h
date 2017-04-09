@@ -34,6 +34,9 @@ class EncryptionMigrationScreen
   // Sets the UserContext for a user whose cryptohome should be migrated.
   void SetUserContext(const UserContext& user_context);
 
+  // Sets whether the migration process should resume the previous one or not.
+  void SetShouldResume(bool should_resume);
+
   // Sets a callback, which should be called when the user want to log in to the
   // session from the migration UI.
   void SetContinueLoginCallback(ContinueLoginCallback callback);

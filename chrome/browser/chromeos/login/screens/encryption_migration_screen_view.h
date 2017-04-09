@@ -37,6 +37,7 @@ class EncryptionMigrationScreenView {
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void SetUserContext(const UserContext& user_context) = 0;
+  virtual void SetShouldResume(bool should_resume) = 0;
   virtual void SetContinueLoginCallback(ContinueLoginCallback callback) = 0;
 };
 

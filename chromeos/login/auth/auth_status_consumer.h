@@ -121,7 +121,8 @@ class CHROMEOS_EXPORT AuthStatusConsumer {
   // The same password didn't work both online and offline.
   virtual void OnPasswordChangeDetected();
   // The cryptohome is encrypted in old format and needs migration.
-  virtual void OnOldEncryptionDetected(const UserContext& user_context);
+  virtual void OnOldEncryptionDetected(const UserContext& user_context,
+                                       bool has_incomplete_migration);
 };
 
 }  // namespace chromeos

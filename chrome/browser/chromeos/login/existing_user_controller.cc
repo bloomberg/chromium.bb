@@ -617,7 +617,8 @@ void ExistingUserController::ShowKioskAutolaunchScreen() {
 }
 
 void ExistingUserController::ShowEncryptionMigrationScreen(
-    const UserContext& user_context) {
+    const UserContext& user_context,
+    bool has_incomplete_migration) {
   host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
 
   EncryptionMigrationScreen* migration_screen =
@@ -625,6 +626,7 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
           host_->GetWizardController()->current_screen());
   DCHECK(migration_screen);
   migration_screen->SetUserContext(user_context);
+  migration_screen->SetShouldResume(has_incomplete_migration);
   migration_screen->SetContinueLoginCallback(base::BindOnce(
       &ExistingUserController::ContinuePerformLogin, weak_factory_.GetWeakPtr(),
       login_performer_->auth_mode()));
@@ -868,8 +870,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
 }
 
 void ExistingUserController::OnOldEncryptionDetected(
-    const UserContext& user_context) {
-  ShowEncryptionMigrationScreen(user_context);
+    const UserContext& user_context,
+    bool has_incomplete_migration) {
+  ShowEncryptionMigrationScreen(user_context, has_incomplete_migration);
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {

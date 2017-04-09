@@ -25,6 +25,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;
   void SetUserContext(const UserContext& user_context) override;
+  void SetShouldResume(bool should_resume) override;
   void SetContinueLoginCallback(ContinueLoginCallback callback) override;
 
   // BaseScreenHandler implementation:
