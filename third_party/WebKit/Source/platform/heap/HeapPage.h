@@ -97,11 +97,11 @@ const uint8_t kReuseForbiddenZapValue = 0x2c;
 // TODO(kojii): We actually need __msan_poison/unpoison here, but it'll be
 // added later.
 #define SET_MEMORY_INACCESSIBLE(address, size) \
-  FreeList::zapFreedMemory(address, size);
+  FreeList::ZapFreedMemory(address, size);
 #define SET_MEMORY_ACCESSIBLE(address, size) memset((address), 0, (size))
 #define CHECK_MEMORY_INACCESSIBLE(address, size)     \
   ASAN_UNPOISON_MEMORY_REGION(address, size);        \
-  FreeList::checkFreedMemoryIsZapped(address, size); \
+  FreeList::CheckFreedMemoryIsZapped(address, size); \
   ASAN_POISON_MEMORY_REGION(address, size)
 #elif DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define SET_MEMORY_INACCESSIBLE(address, size) \
