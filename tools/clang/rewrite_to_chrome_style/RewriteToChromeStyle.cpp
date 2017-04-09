@@ -26,8 +26,8 @@
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
-#include "clang/Lex/MacroArgs.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Lex/MacroArgs.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -37,6 +37,7 @@
 #include "llvm/Support/ErrorOr.h"
 #include "llvm/Support/LineIterator.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/Path.h"
 #include "llvm/Support/TargetSelect.h"
 
 #include "EditTracker.h"
@@ -50,9 +51,6 @@ namespace {
 
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
-const char kGeneratedFileRegex[] = "^gen/|/gen/";
-const char kGeneratedFileExclusionRegex[] =
-    "(^gen/|/gen/).*/ComputedStyleBase\\.h$";
 const char kGMockMethodNamePrefix[] = "gmock_";
 const char kMethodBlocklistParamName[] = "method-blocklist";
 
@@ -516,12 +514,22 @@ AST_MATCHER(clang::Decl, isDeclInGeneratedFile) {
   if (!file_entry)
     return false;
 
-  static llvm::Regex exclusion_regex(kGeneratedFileExclusionRegex);
-  if (exclusion_regex.match(file_entry->getName()))
-    return false;
-
-  static llvm::Regex generated_file_regex(kGeneratedFileRegex);
-  return generated_file_regex.match(file_entry->getName());
+  bool is_generated_file = false;
+  bool is_computed_style_base_cpp =
+      llvm::sys::path::filename(file_entry->getName())
+          .equals("ComputedStyleBase.h");
+  for (auto it = llvm::sys::path::begin(file_entry->getName());
+       it != llvm::sys::path::end(file_entry->getName()); ++it) {
+    if (it->equals("gen")) {
+      is_generated_file = true;
+      break;
+    }
+  }
+  // ComputedStyleBase is intentionally not treated as a generated file, since
+  // style definitions are split between generated and non-generated code. It's
+  // easier to have the tool just automatically rewrite references to generated
+  // code as well, with a small manual patch to fix the code generators.
+  return is_generated_file && !is_computed_style_base_cpp;
 }
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
