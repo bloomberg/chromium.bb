@@ -32,7 +32,9 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
+// In SHARED_INTERMEDIATE_DIR
+#include "widevine_cdm_version.h"  // NOLINT(build/include)
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -801,8 +803,8 @@ MediaDrmBridge::MediaDrmBridge(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
     : scheme_uuid_(scheme_uuid),
+      storage_(url::Origin(security_origin), create_storage_cb),
       create_fetcher_cb_(create_fetcher_cb),
-      create_storage_cb_(create_storage_cb),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
@@ -896,8 +898,8 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
     return;
 
   // We have to use scoped_ptr to pass ScopedJavaGlobalRef with a callback.
-  // TODO(yucliu): Check whether we can simply pass j_media_crypto_->obj() in the
-  // callback.
+  // TODO(yucliu): Check whether we can simply pass j_media_crypto_->obj() in
+  // the callback.
   base::ResetAndReturn(&media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
            IsProtectedSurfaceRequired());

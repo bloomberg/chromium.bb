@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 
@@ -37,20 +38,28 @@ class MediaDrmStorageBridge {
         // Mime type for the license.
         private final String mMimeType;
 
+        @CalledByNative("PersistentInfo")
+        private static PersistentInfo create(byte[] emeId, byte[] keySetId, String mime) {
+            return new PersistentInfo(emeId, keySetId, mime);
+        }
+
         PersistentInfo(byte[] emeId, byte[] keySetId, String mime) {
             mEmeId = emeId;
             mKeySetId = keySetId;
             mMimeType = mime;
         }
 
+        @CalledByNative("PersistentInfo")
         byte[] emeId() {
             return mEmeId;
         }
 
+        @CalledByNative("PersistentInfo")
         byte[] keySetId() {
             return mKeySetId;
         }
 
+        @CalledByNative("PersistentInfo")
         String mimeType() {
             return mMimeType;
         }

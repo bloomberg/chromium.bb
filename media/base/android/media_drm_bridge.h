@@ -311,9 +311,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // The callback to create a ProvisionFetcher.
   CreateFetcherCB create_fetcher_cb_;
 
-  // The callback to create a MediaDrmStorage.
-  CreateStorageCB create_storage_cb_;
-
   // The ProvisionFetcher that requests and receives provisioning data.
   // Non-null iff when a provision request is pending.
   std::unique_ptr<ProvisionFetcher> provision_fetcher_;

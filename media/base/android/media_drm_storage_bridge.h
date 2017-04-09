@@ -7,10 +7,15 @@
 
 #include <jni.h>
 #include <memory>
+#include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/android/android_util.h"
+#include "media/base/android/media_drm_storage.h"
+#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -24,7 +29,8 @@ class MediaDrmStorageBridge {
  public:
   static bool RegisterMediaDrmStorageBridge(JNIEnv* env);
 
-  MediaDrmStorageBridge();
+  MediaDrmStorageBridge(const url::Origin& origin,
+                        const CreateStorageCB& create_storage_cb);
   ~MediaDrmStorageBridge();
 
   // The following OnXXX functions are called by Java. The functions will post
@@ -61,9 +67,21 @@ class MediaDrmStorageBridge {
                    const base::android::JavaParamRef<jobject>& j_callback);
 
  private:
+  void RunAndroidBoolCallback(JavaObjectPtr j_callback, bool success);
+  void OnSessionDataLoaded(
+      JavaObjectPtr j_callback,
+      const std::string& session_id,
+      std::unique_ptr<MediaDrmStorage::SessionData> session_data);
+
+  MediaDrmStorage* GetStorageImpl();
+
+  CreateStorageCB create_storage_cb_;
+  std::unique_ptr<MediaDrmStorage> impl_;
+
+  const url::Origin origin_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaDrmStorageBridge> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmStorageBridge);

@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/media_export.h"
 #include "url/origin.h"
 
@@ -20,10 +21,12 @@ namespace media {
 
 // Allows MediaDrmBridge to store and retrieve persistent data. This is needed
 // for features like per-origin provisioning and persistent license support.
-class MEDIA_EXPORT MediaDrmStorage {
+class MEDIA_EXPORT MediaDrmStorage
+    : public base::SupportsWeakPtr<MediaDrmStorage> {
  public:
   struct SessionData {
     SessionData(std::vector<uint8_t> key_set_id, std::string mime_type);
+    SessionData(const SessionData& other);
     ~SessionData();
 
     std::vector<uint8_t> key_set_id;
