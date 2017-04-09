@@ -227,7 +227,7 @@ class CrossThreadPersistentRegion final {
   static bool ShouldTracePersistentNode(Visitor*, PersistentNode*);
 
 #if defined(ADDRESS_SANITIZER)
-  void unpoisonCrossThreadPersistents();
+  void UnpoisonCrossThreadPersistents();
 #endif
 
  private:

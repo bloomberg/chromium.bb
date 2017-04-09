@@ -386,7 +386,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
   // The allocation pool for nodes is one big chunk that ASAN has no insight
   // into, so it can cloak errors. Make it as small as possible to force nodes
   // to be allocated individually where ASAN can see them.
-  static const size_t m_poolSize = 1;
+  static const size_t kPoolSize = 1;
 #else
   static const size_t kPoolSize = inlineCapacity;
 #endif

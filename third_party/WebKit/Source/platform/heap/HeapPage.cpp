@@ -60,25 +60,25 @@
 // from its Vector.
 #define ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize)          \
   do {                                                                \
-    BasePage* page = pageFromObject(object);                          \
+    BasePage* page = PageFromObject(object);                          \
     ASSERT(page);                                                     \
-    bool isContainer =                                                \
-        ThreadState::isVectorArenaIndex(page->arena()->arenaIndex()); \
-    if (!isContainer && page->isLargeObjectPage())                    \
-      isContainer =                                                   \
-          static_cast<LargeObjectPage*>(page)->isVectorBackingPage(); \
-    if (isContainer)                                                  \
+    bool is_container =                                               \
+        ThreadState::IsVectorArenaIndex(page->Arena()->ArenaIndex()); \
+    if (!is_container && page->IsLargeObjectPage())                   \
+      is_container =                                                  \
+          static_cast<LargeObjectPage*>(page)->IsVectorBackingPage(); \
+    if (is_container)                                                 \
       ANNOTATE_DELETE_BUFFER(object, objectSize, 0);                  \
   } while (0)
 
 // A vector backing store represented by a large object is marked
 // so that when it is finalized, its ASan annotation will be
 // correctly retired.
-#define ASAN_MARK_LARGE_VECTOR_CONTAINER(arena, largeObject)            \
-  if (ThreadState::isVectorArenaIndex(arena->arenaIndex())) {           \
-    BasePage* largePage = pageFromObject(largeObject);                  \
-    ASSERT(largePage->isLargeObjectPage());                             \
-    static_cast<LargeObjectPage*>(largePage)->setIsVectorBackingPage(); \
+#define ASAN_MARK_LARGE_VECTOR_CONTAINER(arena, largeObject)             \
+  if (ThreadState::IsVectorArenaIndex(arena->ArenaIndex())) {            \
+    BasePage* large_page = PageFromObject(largeObject);                  \
+    ASSERT(largePage->isLargeObjectPage());                              \
+    static_cast<LargeObjectPage*>(large_page)->SetIsVectorBackingPage(); \
   }
 #else
 #define ENABLE_ASAN_CONTAINER_ANNOTATIONS 0
@@ -102,7 +102,7 @@ void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   if (gc_info->HasFinalizer())
     gc_info->finalize_(object);
 
-  ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize);
+  ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
 }
 
 BaseArena::BaseArena(ThreadState* state, int index)
@@ -235,9 +235,9 @@ void BaseArena::PrepareForSweep() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseArena::poisonArena() {
-  for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
-    page->poisonUnmarkedObjects();
+void BaseArena::PoisonArena() {
+  for (BasePage* page = first_unswept_page_; page; page = page->Next())
+    page->PoisonUnmarkedObjects();
 }
 #endif
 
@@ -342,7 +342,7 @@ Address BaseArena::AllocateLargeObject(size_t allocation_size,
       GetThreadState()->Arena(BlinkGC::kLargeObjectArenaIndex));
   Address large_object = large_object_arena->AllocateLargeObjectPage(
       allocation_size, gc_info_index);
-  ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
+  ASAN_MARK_LARGE_VECTOR_CONTAINER(this, large_object);
   return large_object;
 }
 
@@ -981,7 +981,7 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 // If ASan is supported we add allocationGranularity bytes to the allocated
 // space and poison that to detect overflows
 #if defined(ADDRESS_SANITIZER)
-  largeObjectSize += allocationGranularity;
+  large_object_size += kAllocationGranularity;
 #endif
 
   GetThreadState()->ShouldFlushHeapDoesNotContainCache();
@@ -1362,7 +1362,8 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
   size_t marked_object_size = 0;
   NormalPageArena* page_arena = ArenaForNormalPage();
 #if defined(ADDRESS_SANITIZER)
-  bool isVectorArena = ThreadState::isVectorArenaIndex(pageArena->arenaIndex());
+  bool is_vector_arena =
+      ThreadState::IsVectorArenaIndex(page_arena->ArenaIndex());
 #endif
   HeapCompact* compact = page_arena->GetThreadState()->Heap().Compaction();
   for (Address header_address = Payload(); header_address < PayloadEnd();) {
@@ -1432,8 +1433,8 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
       // store object, let go of the container annotations.
       // Do that by unpoisoning the payload entirely.
       ASAN_UNPOISON_MEMORY_REGION(header, sizeof(HeapObjectHeader));
-      if (isVectorArena)
-        ASAN_UNPOISON_MEMORY_REGION(payload, payloadSize);
+      if (is_vector_arena)
+        ASAN_UNPOISON_MEMORY_REGION(payload, payload_size);
 #endif
       // Use a non-overlapping copy, if possible.
       if (current_page == this)
@@ -1497,20 +1498,20 @@ void NormalPage::MakeConsistentForMutator() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void NormalPage::poisonUnmarkedObjects() {
-  for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
+void NormalPage::PoisonUnmarkedObjects() {
+  for (Address header_address = Payload(); header_address < PayloadEnd();) {
     HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(headerAddress);
+        reinterpret_cast<HeapObjectHeader*>(header_address);
     ASSERT(header->size() < blinkPagePayloadSize());
     // Check if a free list entry first since we cannot call
     // isMarked on a free list entry.
-    if (header->isFree()) {
-      headerAddress += header->size();
+    if (header->IsFree()) {
+      header_address += header->size();
       continue;
     }
-    if (!header->isMarked())
-      ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
-    headerAddress += header->size();
+    if (!header->IsMarked())
+      ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
+    header_address += header->size();
   }
 }
 #endif
@@ -1691,7 +1692,7 @@ LargeObjectPage::LargeObjectPage(PageMemory* storage,
       payload_size_(payload_size)
 #if ENABLE(ASAN_CONTAINER_ANNOTATIONS)
       ,
-      m_isVectorBackingPage(false)
+      is_vector_backing_page_(false)
 #endif
 {
 }
@@ -1721,10 +1722,10 @@ void LargeObjectPage::MakeConsistentForMutator() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void LargeObjectPage::poisonUnmarkedObjects() {
-  HeapObjectHeader* header = heapObjectHeader();
-  if (!header->isMarked())
-    ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+void LargeObjectPage::PoisonUnmarkedObjects() {
+  HeapObjectHeader* header = GetHeapObjectHeader();
+  if (!header->IsMarked())
+    ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
 }
 #endif
 

@@ -347,14 +347,14 @@ ALWAYS_INLINE float NoBarrierLoad(volatile const float* ptr) {
 
 #if defined(ADDRESS_SANITIZER)
 
-NO_SANITIZE_ADDRESS ALWAYS_INLINE void asanUnsafeReleaseStore(
+NO_SANITIZE_ADDRESS ALWAYS_INLINE void AsanUnsafeReleaseStore(
     volatile unsigned* ptr,
     unsigned value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
 
-NO_SANITIZE_ADDRESS ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(
+NO_SANITIZE_ADDRESS ALWAYS_INLINE unsigned AsanUnsafeAcquireLoad(
     volatile const unsigned* ptr) {
   unsigned value = *ptr;
   MEMORY_BARRIER();

@@ -583,8 +583,8 @@ class PLATFORM_EXPORT ThreadState {
   void EagerSweep();
 
 #if defined(ADDRESS_SANITIZER)
-  void poisonEagerArena();
-  void poisonAllHeaps();
+  void PoisonEagerArena();
+  void PoisonAllHeaps();
 #endif
 
   void RemoveAllPages();
@@ -650,7 +650,7 @@ class PLATFORM_EXPORT ThreadState {
   void (*perform_cleanup_)(v8::Isolate*);
 
 #if defined(ADDRESS_SANITIZER)
-  void* m_asanFakeStack;
+  void* asan_fake_stack_;
 #endif
 
   // PersistentNodes that are stored in static references;

@@ -119,7 +119,7 @@ ThreadState::ThreadState()
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
 #if defined(ADDRESS_SANITIZER)
-      m_asanFakeStack(__asan_get_current_fake_stack()),
+      asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
 #if defined(LEAK_SANITIZER)
       m_disabledStaticPersistentsRegistration(0),
@@ -219,23 +219,23 @@ void ThreadState::RunTerminationGC() {
 NO_SANITIZE_ADDRESS
 void ThreadState::VisitAsanFakeStackForPointer(Visitor* visitor, Address ptr) {
 #if defined(ADDRESS_SANITIZER)
-  Address* start = reinterpret_cast<Address*>(m_startOfStack);
-  Address* end = reinterpret_cast<Address*>(m_endOfStack);
-  Address* fakeFrameStart = nullptr;
-  Address* fakeFrameEnd = nullptr;
-  Address* maybeFakeFrame = reinterpret_cast<Address*>(ptr);
-  Address* realFrameForFakeFrame = reinterpret_cast<Address*>(
-      __asan_addr_is_in_fake_stack(m_asanFakeStack, maybeFakeFrame,
-                                   reinterpret_cast<void**>(&fakeFrameStart),
-                                   reinterpret_cast<void**>(&fakeFrameEnd)));
-  if (realFrameForFakeFrame) {
+  Address* start = reinterpret_cast<Address*>(start_of_stack_);
+  Address* end = reinterpret_cast<Address*>(end_of_stack_);
+  Address* fake_frame_start = nullptr;
+  Address* fake_frame_end = nullptr;
+  Address* maybe_fake_frame = reinterpret_cast<Address*>(ptr);
+  Address* real_frame_for_fake_frame = reinterpret_cast<Address*>(
+      __asan_addr_is_in_fake_stack(asan_fake_stack_, maybe_fake_frame,
+                                   reinterpret_cast<void**>(&fake_frame_start),
+                                   reinterpret_cast<void**>(&fake_frame_end)));
+  if (real_frame_for_fake_frame) {
     // This is a fake frame from the asan fake stack.
-    if (realFrameForFakeFrame > end && start > realFrameForFakeFrame) {
+    if (real_frame_for_fake_frame > end && start > real_frame_for_fake_frame) {
       // The real stack address for the asan fake frame is
       // within the stack range that we need to scan so we need
       // to visit the values in the fake frame.
-      for (Address* p = fakeFrameStart; p < fakeFrameEnd; ++p)
-        m_heap->checkAndMarkPointer(visitor, *p);
+      for (Address* p = fake_frame_start; p < fake_frame_end; ++p)
+        heap_->CheckAndMarkPointer(visitor, *p);
     }
   }
 #endif
@@ -899,7 +899,7 @@ void ThreadState::PreSweep(BlinkGC::GCType gc_type) {
   Compact();
 
 #if defined(ADDRESS_SANITIZER)
-  poisonAllHeaps();
+  PoisonAllHeaps();
 #endif
 
   if (gc_type == BlinkGC::kGCWithSweep) {
@@ -913,32 +913,34 @@ void ThreadState::PreSweep(BlinkGC::GCType gc_type) {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void ThreadState::poisonAllHeaps() {
-  CrossThreadPersistentRegion::LockScope persistentLock(
-      ProcessHeap::crossThreadPersistentRegion());
+void ThreadState::PoisonAllHeaps() {
+  CrossThreadPersistentRegion::LockScope persistent_lock(
+      ProcessHeap::GetCrossThreadPersistentRegion());
   // Poisoning all unmarked objects in the other arenas.
-  for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
-    m_arenas[i]->poisonArena();
+  for (int i = 1; i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->PoisonArena();
   // CrossThreadPersistents in unmarked objects may be accessed from other
   // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
   // that would be fine.
-  ProcessHeap::crossThreadPersistentRegion().unpoisonCrossThreadPersistents();
+  ProcessHeap::GetCrossThreadPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
 }
 
-void ThreadState::poisonEagerArena() {
-  CrossThreadPersistentRegion::LockScope persistentLock(
-      ProcessHeap::crossThreadPersistentRegion());
-  m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena();
+void ThreadState::PoisonEagerArena() {
+  CrossThreadPersistentRegion::LockScope persistent_lock(
+      ProcessHeap::GetCrossThreadPersistentRegion());
+  arenas_[BlinkGC::kEagerSweepArenaIndex]->PoisonArena();
   // CrossThreadPersistents in unmarked objects may be accessed from other
   // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
   // that would be fine.
-  ProcessHeap::crossThreadPersistentRegion().unpoisonCrossThreadPersistents();
+  ProcessHeap::GetCrossThreadPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
 }
 #endif
 
 void ThreadState::EagerSweep() {
 #if defined(ADDRESS_SANITIZER)
-  poisonEagerArena();
+  PoisonEagerArena();
 #endif
   ASSERT(CheckThread());
   // Some objects need to be finalized promptly and cannot be handled
@@ -1109,21 +1111,21 @@ void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
 // it falls in between current stack frame and stack start and use an arbitrary
 // high enough value for it.  Don't adjust stack marker in any other case to
 // match behavior of code running without AddressSanitizer.
-NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(
-    void* scopeMarker) {
-  Address start = reinterpret_cast<Address>(WTF::getStackStart());
+NO_SANITIZE_ADDRESS static void* AdjustScopeMarkerForAdressSanitizer(
+    void* scope_marker) {
+  Address start = reinterpret_cast<Address>(WTF::GetStackStart());
   Address end = reinterpret_cast<Address>(&start);
   RELEASE_ASSERT(end < start);
 
-  if (end <= scopeMarker && scopeMarker < start)
-    return scopeMarker;
+  if (end <= scope_marker && scope_marker < start)
+    return scope_marker;
 
   // 256 is as good an approximation as any else.
-  const size_t bytesToCopy = sizeof(Address) * 256;
-  if (static_cast<size_t>(start - end) < bytesToCopy)
+  const size_t kBytesToCopy = sizeof(Address) * 256;
+  if (static_cast<size_t>(start - end) < kBytesToCopy)
     return start;
 
-  return end + bytesToCopy;
+  return end + kBytesToCopy;
 }
 #endif
 
@@ -1142,8 +1144,8 @@ void ThreadState::EnterSafePoint(BlinkGC::StackState stack_state,
                                  void* scope_marker) {
   ASSERT(CheckThread());
 #ifdef ADDRESS_SANITIZER
-  if (stackState == BlinkGC::HeapPointersOnStack)
-    scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
+  if (stack_state == BlinkGC::kHeapPointersOnStack)
+    scope_marker = AdjustScopeMarkerForAdressSanitizer(scope_marker);
 #endif
   ASSERT(stack_state == BlinkGC::kNoHeapPointersOnStack || scope_marker);
   RunScheduledGC(stack_state);

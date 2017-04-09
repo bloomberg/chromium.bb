@@ -392,7 +392,7 @@ class BasePage {
   virtual void InvalidateObjectStartBitmap() = 0;
 
 #if defined(ADDRESS_SANITIZER)
-  virtual void poisonUnmarkedObjects() = 0;
+  virtual void PoisonUnmarkedObjects() = 0;
 #endif
 
   // Check if the given address points to an object in this heap page. If so,
@@ -476,7 +476,7 @@ class NormalPage final : public BasePage {
     object_start_bit_map_computed_ = false;
   }
 #if defined(ADDRESS_SANITIZER)
-  void poisonUnmarkedObjects() override;
+  void PoisonUnmarkedObjects() override;
 #endif
   void CheckAndMarkPointer(Visitor*, Address) override;
 #if DCHECK_IS_ON()
@@ -558,7 +558,7 @@ class LargeObjectPage final : public BasePage {
   void MakeConsistentForMutator() override;
   void InvalidateObjectStartBitmap() override {}
 #if defined(ADDRESS_SANITIZER)
-  void poisonUnmarkedObjects() override;
+  void PoisonUnmarkedObjects() override;
 #endif
   void CheckAndMarkPointer(Visitor*, Address) override;
 #if DCHECK_IS_ON()
@@ -596,14 +596,14 @@ class LargeObjectPage final : public BasePage {
   }
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-  void setIsVectorBackingPage() { m_isVectorBackingPage = true; }
-  bool isVectorBackingPage() const { return m_isVectorBackingPage; }
+  void SetIsVectorBackingPage() { is_vector_backing_page_ = true; }
+  bool IsVectorBackingPage() const { return is_vector_backing_page_; }
 #endif
 
  private:
   size_t payload_size_;
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-  bool m_isVectorBackingPage;
+  bool is_vector_backing_page_;
 #endif
 };
 
@@ -719,7 +719,7 @@ class PLATFORM_EXPORT BaseArena {
   size_t ObjectPayloadSizeForTesting();
   void PrepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-  void poisonArena();
+  void PoisonArena();
 #endif
   Address LazySweep(size_t, size_t gc_info_index);
   void SweepUnsweptPage();

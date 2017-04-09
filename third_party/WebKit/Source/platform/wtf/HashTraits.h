@@ -60,7 +60,7 @@ struct GenericHashTraitsBase<false, T> {
 // The starting table size. Can be overridden when we know beforehand that a
 // hash table will have at least N entries.
 #if defined(MEMORY_SANITIZER_INITIAL_SIZE)
-  static const unsigned minimumTableSize = 1;
+  static const unsigned kMinimumTableSize = 1;
 #else
   static const unsigned kMinimumTableSize = 8;
 #endif

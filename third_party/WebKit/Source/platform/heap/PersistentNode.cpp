@@ -175,17 +175,17 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 }
 
 #if defined(ADDRESS_SANITIZER)
-void CrossThreadPersistentRegion::unpoisonCrossThreadPersistents() {
-  MutexLocker lock(m_mutex);
-  int persistentCount = 0;
-  for (PersistentNodeSlots* slots = m_persistentRegion->m_slots; slots;
-       slots = slots->m_next) {
-    for (int i = 0; i < PersistentNodeSlots::slotCount; ++i) {
-      const PersistentNode& node = slots->m_slot[i];
-      if (!node.isUnused()) {
-        ASAN_UNPOISON_MEMORY_REGION(node.self(),
+void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
+  MutexLocker lock(mutex_);
+  int persistent_count = 0;
+  for (PersistentNodeSlots* slots = persistent_region_->slots_; slots;
+       slots = slots->next_) {
+    for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
+      const PersistentNode& node = slots->slot_[i];
+      if (!node.IsUnused()) {
+        ASAN_UNPOISON_MEMORY_REGION(node.Self(),
                                     sizeof(CrossThreadPersistent<void*>));
-        ++persistentCount;
+        ++persistent_count;
       }
     }
   }

@@ -705,28 +705,27 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
         !other_source_begin) {  // Our buffer is inline, theirs is not.
       DCHECK_EQ(Buffer(), InlineBuffer());
       DCHECK_NE(other.Buffer(), other.InlineBuffer());
-      ANNOTATE_DELETE_BUFFER(m_buffer, inlineCapacity, m_size);
+      ANNOTATE_DELETE_BUFFER(buffer_, inlineCapacity, size_);
       buffer_ = other.Buffer();
       other.buffer_ = other.InlineBuffer();
       std::swap(size_, other.size_);
-      ANNOTATE_NEW_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
+      ANNOTATE_NEW_BUFFER(other.buffer_, inlineCapacity, other.size_);
     } else if (!this_source_begin &&
                other_source_begin) {  // Their buffer is inline, ours is not.
       DCHECK_NE(Buffer(), InlineBuffer());
       DCHECK_EQ(other.Buffer(), other.InlineBuffer());
-      ANNOTATE_DELETE_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
+      ANNOTATE_DELETE_BUFFER(other.buffer_, inlineCapacity, other.size_);
       other.buffer_ = Buffer();
       buffer_ = InlineBuffer();
       std::swap(size_, other.size_);
-      ANNOTATE_NEW_BUFFER(m_buffer, inlineCapacity, m_size);
+      ANNOTATE_NEW_BUFFER(buffer_, inlineCapacity, size_);
     } else {  // Both buffers are inline.
       DCHECK(this_source_begin);
       DCHECK(other_source_begin);
       DCHECK_EQ(Buffer(), InlineBuffer());
       DCHECK_EQ(other.Buffer(), other.InlineBuffer());
-      ANNOTATE_CHANGE_SIZE(m_buffer, inlineCapacity, m_size, other.m_size);
-      ANNOTATE_CHANGE_SIZE(other.m_buffer, inlineCapacity, other.m_size,
-                           m_size);
+      ANNOTATE_CHANGE_SIZE(buffer_, inlineCapacity, size_, other.size_);
+      ANNOTATE_CHANGE_SIZE(other.buffer_, inlineCapacity, other.size_, size_);
       std::swap(size_, other.size_);
     }
 
@@ -1219,7 +1218,7 @@ class Vector
       if (LIKELY(!Base::Buffer()))
         return;
     }
-    ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
+    ANNOTATE_DELETE_BUFFER(begin(), Capacity(), size_);
     if (LIKELY(size_) &&
         !(Allocator::kIsGarbageCollected && this->HasOutOfLineBuffer())) {
       TypeOperations::Destruct(begin(), end());
@@ -1284,7 +1283,7 @@ inline Vector<T, inlineCapacity, Allocator>::Vector() {
                 "Cannot put raw pointers to garbage-collected classes into "
                 "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
 
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), 0);
   size_ = 0;
 }
 
@@ -1302,7 +1301,7 @@ inline Vector<T, inlineCapacity, Allocator>::Vector(size_t size) : Base(size) {
                 "Cannot put raw pointers to garbage-collected classes into "
                 "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
 
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), size);
   size_ = size;
   TypeOperations::Initialize(begin(), end());
 }
@@ -1326,7 +1325,7 @@ inline Vector<T, inlineCapacity, Allocator>::Vector(size_t size, const T& val)
   //               "Cannot put raw pointers to garbage-collected classes into "
   //               "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
 
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), size);
   size_ = size;
   TypeOperations::UninitializedFill(begin(), end(), val);
 }
@@ -1334,7 +1333,7 @@ inline Vector<T, inlineCapacity, Allocator>::Vector(size_t size, const T& val)
 template <typename T, size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>::Vector(const Vector& other)
     : Base(other.Capacity()) {
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), other.size());
   size_ = other.size();
   TypeOperations::UninitializedCopy(other.begin(), other.end(), begin());
 }
@@ -1344,7 +1343,7 @@ template <size_t otherCapacity>
 Vector<T, inlineCapacity, Allocator>::Vector(
     const Vector<T, otherCapacity, Allocator>& other)
     : Base(other.Capacity()) {
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), other.size());
   size_ = other.size();
   TypeOperations::UninitializedCopy(other.begin(), other.end(), begin());
 }
@@ -1363,7 +1362,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, other.size());
   std::copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
@@ -1392,7 +1391,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, other.size());
   std::copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
@@ -1419,7 +1418,7 @@ operator=(Vector<T, inlineCapacity, Allocator>&& other) {
 template <typename T, size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>::Vector(std::initializer_list<T> elements)
     : Base(elements.size()) {
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), elements.size());
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), elements.size());
   size_ = elements.size();
   TypeOperations::UninitializedCopy(elements.begin(), elements.end(), begin());
 }
@@ -1435,7 +1434,7 @@ operator=(std::initializer_list<T> elements) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, elements.size());
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, elements.size());
   std::copy(elements.begin(), elements.begin() + size_, begin());
   TypeOperations::UninitializedCopy(elements.begin() + size_, elements.end(),
                                     end());
@@ -1485,7 +1484,7 @@ void Vector<T, inlineCapacity, Allocator>::Fill(const T& val, size_t new_size) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, new_size);
   std::fill(begin(), end(), val);
   TypeOperations::UninitializedFill(end(), begin() + new_size, val);
   size_ = new_size;
@@ -1545,11 +1544,11 @@ inline void Vector<T, inlineCapacity, Allocator>::Resize(size_t size) {
   if (size <= size_) {
     TypeOperations::Destruct(begin() + size, end());
     ClearUnusedSlots(begin() + size, end());
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
+    ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size);
   } else {
     if (size > Capacity())
       ExpandCapacity(size);
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
+    ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size);
     TypeOperations::Initialize(end(), begin() + size);
   }
 
@@ -1561,7 +1560,7 @@ void Vector<T, inlineCapacity, Allocator>::Shrink(size_t size) {
   DCHECK_LE(size, size_);
   TypeOperations::Destruct(begin() + size, end());
   ClearUnusedSlots(begin() + size, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size);
   size_ = size;
 }
 
@@ -1570,7 +1569,7 @@ void Vector<T, inlineCapacity, Allocator>::Grow(size_t size) {
   DCHECK_GE(size, size_);
   if (size > Capacity())
     ExpandCapacity(size);
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size);
   TypeOperations::Initialize(end(), begin() + size);
   size_ = size;
 }
@@ -1586,21 +1585,21 @@ void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
     return;
   }
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-  size_t oldCapacity = capacity();
+  size_t old_capacity = Capacity();
 #endif
   // The Allocator::isGarbageCollected check is not needed.  The check is just
   // a static hint for a compiler to indicate that Base::expandBuffer returns
   // false if Allocator is a PartitionAllocator.
   if (Allocator::kIsGarbageCollected && Base::ExpandBuffer(new_capacity)) {
-    ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
+    ANNOTATE_CHANGE_CAPACITY(begin(), old_capacity, size_, Capacity());
     return;
   }
   T* old_end = end();
   Base::AllocateExpandedBuffer(new_capacity);
-  ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
+  ANNOTATE_NEW_BUFFER(begin(), Capacity(), size_);
   TypeOperations::Move(old_buffer, old_end, begin());
   ClearUnusedSlots(old_buffer, old_end);
-  ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
+  ANNOTATE_DELETE_BUFFER(old_buffer, old_capacity, size_);
   Base::DeallocateBuffer(old_buffer);
 }
 
@@ -1610,9 +1609,9 @@ inline void Vector<T, inlineCapacity, Allocator>::ReserveInitialCapacity(
   DCHECK(!size_);
   DCHECK(Capacity() == INLINE_CAPACITY);
   if (initial_capacity > INLINE_CAPACITY) {
-    ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
+    ANNOTATE_DELETE_BUFFER(begin(), Capacity(), size_);
     Base::AllocateBuffer(initial_capacity);
-    ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
+    ANNOTATE_NEW_BUFFER(begin(), Capacity(), size_);
   }
 }
 
@@ -1626,28 +1625,28 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(size_t new_capacity) {
 
   T* old_buffer = begin();
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-  size_t oldCapacity = capacity();
+  size_t old_capacity = Capacity();
 #endif
   if (new_capacity > 0) {
     if (Base::ShrinkBuffer(new_capacity)) {
-      ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
+      ANNOTATE_CHANGE_CAPACITY(begin(), old_capacity, size_, Capacity());
       return;
     }
 
     T* old_end = end();
     Base::AllocateBuffer(new_capacity);
     if (begin() != old_buffer) {
-      ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
+      ANNOTATE_NEW_BUFFER(begin(), Capacity(), size_);
       TypeOperations::Move(old_buffer, old_end, begin());
       ClearUnusedSlots(old_buffer, old_end);
-      ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
+      ANNOTATE_DELETE_BUFFER(old_buffer, old_capacity, size_);
     }
   } else {
     Base::ResetBufferPointer();
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-    if (oldBuffer != begin()) {
-      ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
-      ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
+    if (old_buffer != begin()) {
+      ANNOTATE_NEW_BUFFER(begin(), Capacity(), size_);
+      ANNOTATE_DELETE_BUFFER(old_buffer, old_capacity, size_);
     }
 #endif
   }
@@ -1664,7 +1663,7 @@ template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
   DCHECK(Allocator::IsAllocationAllowed());
   if (LIKELY(size() != Capacity())) {
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
+    ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ + 1);
     new (NotNull, end()) T(std::forward<U>(val));
     ++size_;
     return;
@@ -1681,7 +1680,7 @@ ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
   if (UNLIKELY(size() == Capacity()))
     ExpandCapacity(size() + 1);
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ + 1);
   T* t = new (NotNull, end()) T(std::forward<Args>(args)...);
   ++size_;
   return *t;
@@ -1699,7 +1698,7 @@ void Vector<T, inlineCapacity, Allocator>::Append(const U* data,
   }
   RELEASE_ASSERT(new_size >= size_);
   T* dest = end();
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, new_size);
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
       data, &data[data_size], dest);
   size_ = new_size;
@@ -1715,7 +1714,7 @@ NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(
   ptr = ExpandCapacity(size() + 1, ptr);
   DCHECK(begin());
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ + 1);
   new (NotNull, end()) T(std::forward<U>(*ptr));
   ++size_;
 }
@@ -1763,7 +1762,7 @@ inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
     data = ExpandCapacity(size() + 1, data);
     DCHECK(begin());
   }
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ + 1);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + 1);
   new (NotNull, spot) T(std::forward<U>(*data));
@@ -1783,7 +1782,7 @@ void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
     DCHECK(begin());
   }
   RELEASE_ASSERT(new_size >= size_);
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, new_size);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + data_size);
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
@@ -1826,7 +1825,7 @@ inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position) {
   spot->~T();
   TypeOperations::MoveOverlapping(spot + 1, end(), spot);
   ClearUnusedSlots(end() - 1, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - 1);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ - 1);
   --size_;
 }
 
@@ -1842,7 +1841,7 @@ inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position,
   TypeOperations::Destruct(begin_spot, end_spot);
   TypeOperations::MoveOverlapping(end_spot, end(), begin_spot);
   ClearUnusedSlots(end() - length, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - length);
+  ANNOTATE_CHANGE_SIZE(begin(), Capacity(), size_, size_ - length);
   size_ -= length;
 }
 

@@ -26,11 +26,11 @@ class ContiguousContainerBase::Buffer {
     capacity_ = WTF::Partitions::BufferActualSize(buffer_size);
     begin_ = end_ =
         static_cast<char*>(WTF::Partitions::BufferMalloc(capacity_, type_name));
-    ANNOTATE_NEW_BUFFER(m_begin, m_capacity, 0);
+    ANNOTATE_NEW_BUFFER(begin_, capacity_, 0);
   }
 
   ~Buffer() {
-    ANNOTATE_DELETE_BUFFER(m_begin, m_capacity, usedCapacity());
+    ANNOTATE_DELETE_BUFFER(begin_, capacity_, UsedCapacity());
     WTF::Partitions::BufferFree(begin_);
   }
 
@@ -41,8 +41,8 @@ class ContiguousContainerBase::Buffer {
 
   void* Allocate(size_t object_size) {
     ASSERT(UnusedCapacity() >= object_size);
-    ANNOTATE_CHANGE_SIZE(m_begin, m_capacity, usedCapacity(),
-                         usedCapacity() + objectSize);
+    ANNOTATE_CHANGE_SIZE(begin_, capacity_, UsedCapacity(),
+                         UsedCapacity() + object_size);
     void* result = end_;
     end_ += object_size;
     return result;
@@ -50,8 +50,8 @@ class ContiguousContainerBase::Buffer {
 
   void DeallocateLastObject(void* object) {
     RELEASE_ASSERT(begin_ <= object && object < end_);
-    ANNOTATE_CHANGE_SIZE(m_begin, m_capacity, usedCapacity(),
-                         static_cast<char*>(object) - m_begin);
+    ANNOTATE_CHANGE_SIZE(begin_, capacity_, UsedCapacity(),
+                         static_cast<char*>(object) - begin_);
     end_ = static_cast<char*>(object);
   }
 
