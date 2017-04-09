@@ -504,11 +504,31 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif
 
+static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
+  const int bsize = xd->mi[0]->mbmi.sb_type;
+  const struct macroblockd_plane *pd = &xd->plane[plane];
+#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+  const BLOCK_SIZE plane_bsize =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#endif  // CONFIG_CHROMA_2X2
+#else
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+#endif
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+  const TX_SIZE tx_size = get_tx_size(plane, xd);
+  const uint8_t txh_unit = tx_size_high_unit[tx_size];
+  return row * max_blocks_wide + col * txh_unit;
+}
+
 static void predict_and_reconstruct_intra_block(
     AV1_COMMON *cm, MACROBLOCKD *const xd, aom_reader *const r,
     MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
   PLANE_TYPE plane_type = get_plane_type(plane);
-  const int block_idx = (row << 1) + col;
+  const int block_idx = get_block_idx(xd, plane, row, col);
 #if CONFIG_PVQ
   (void)r;
 #endif
@@ -563,7 +583,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   if (tx_size == plane_tx_size) {
     PLANE_TYPE plane_type = get_plane_type(plane);
-    int block_idx = (blk_row << 1) + blk_col;
+    int block_idx = get_block_idx(xd, plane, blk_row, blk_col);
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);
 #if CONFIG_LV_MAP
     (void)segment_id;
@@ -610,7 +630,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    int plane, int row, int col,
                                    TX_SIZE tx_size) {
   PLANE_TYPE plane_type = get_plane_type(plane);
-  int block_idx = (row << 1) + col;
+  int block_idx = get_block_idx(xd, plane, row, col);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #if CONFIG_PVQ
   int eob;

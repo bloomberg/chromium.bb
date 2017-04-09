@@ -864,6 +864,27 @@ int av1_is_intra_filter_switchable(int angle);
 #define FIXED_TX_TYPE 0
 #endif
 
+// Converts block_index for given transform size to index of the block in raster
+// order.
+static INLINE int av1_block_index_to_raster_order(TX_SIZE tx_size,
+                                                  int block_idx) {
+  // For transform size 4x8, the possible block_idx values are 0 & 2, because
+  // block_idx values are incremented in steps of size 'tx_width_unit x
+  // tx_height_unit'. But, for this transform size, block_idx = 2 corresponds to
+  // block number 1 in raster order, inside an 8x8 MI block.
+  // For any other transform size, the two indices are equivalent.
+  return (tx_size == TX_4X8 && block_idx == 2) ? 1 : block_idx;
+}
+
+// Inverse of above function.
+// Note: only implemented for transform sizes 4x4, 4x8 and 8x4 right now.
+static INLINE int av1_raster_order_to_block_index(TX_SIZE tx_size,
+                                                  int raster_order) {
+  assert(tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
+  // We ensure that block indices are 0 & 2 if tx size is 4x8 or 8x4.
+  return (tx_size == TX_4X4) ? raster_order : (raster_order > 0) ? 2 : 0;
+}
+
 static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
                                           const MACROBLOCKD *xd, int block_idx,
                                           TX_SIZE tx_size) {
@@ -879,12 +900,14 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 }
 
 static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
-                                  int block_idx, TX_SIZE tx_size) {
+                                  int block, TX_SIZE tx_size) {
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
 
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+
   if (FIXED_TX_TYPE)
-    return get_default_tx_type(plane_type, xd, block_idx, tx_size);
+    return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
 
 #if CONFIG_EXT_TX
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
@@ -921,10 +944,10 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
     return DCT_DCT;
   else  // Sub8x8 Intra OR UV-Intra
     return intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
-                                             ? get_y_mode(mi, block_idx)
+                                             ? get_y_mode(mi, block_raster_idx)
                                              : mbmi->uv_mode];
 #else   // CONFIG_EXT_TX
-  (void)block_idx;
+  (void)block;
   if (plane_type != PLANE_TYPE_Y || xd->lossless[mbmi->segment_id] ||
       txsize_sqr_map[tx_size] >= TX_32X32)
     return DCT_DCT;

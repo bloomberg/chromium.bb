@@ -2256,14 +2256,14 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                          plane);
 }
 
-void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane,
-                                    int block_raster_idx, int blk_col,
-                                    int blk_row, TX_SIZE tx_size) {
+void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
+                                    int blk_col, int blk_row, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  int block_raster_idx = av1_block_index_to_raster_order(tx_size, block_idx);
   PREDICTION_MODE mode =
       (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
   av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
