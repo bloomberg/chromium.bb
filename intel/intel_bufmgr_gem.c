@@ -659,7 +659,6 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
 	} else {
 		return false;
 	}
-	return (ret == 0 && busy.busy);
 }
 
 static int
