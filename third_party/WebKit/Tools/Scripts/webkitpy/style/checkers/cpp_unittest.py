@@ -3643,8 +3643,6 @@ class WebKitStyleTest(CppStyleTestBase):
             'foo.cpp')
 
     def test_names(self):
-        name_underscore_error_message = (" is incorrectly named. Don't use underscores in your identifier names."
-                                         '  [readability/naming/underscores] [4]')
         name_tooshort_error_message = (" is incorrectly named. Don't use the single letter 'l' as an identifier name."
                                        '  [readability/naming] [4]')
 
@@ -3653,19 +3651,7 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint('size_t bufferSize;', '')
         self.assert_lint('class HTMLDocument;', '')
         self.assert_lint('String mimeType();', '')
-        self.assert_lint('size_t buffer_size;',
-                         'buffer_size' + name_underscore_error_message)
         self.assert_lint('short m_length;', '')
-        self.assert_lint('short _length;',
-                         '_length' + name_underscore_error_message)
-        self.assert_lint('short length_;',
-                         'length_' + name_underscore_error_message)
-        self.assert_lint('unsigned _length;',
-                         '_length' + name_underscore_error_message)
-        self.assert_lint('unsigned long _length;',
-                         '_length' + name_underscore_error_message)
-        self.assert_lint('unsigned long long _length;',
-                         '_length' + name_underscore_error_message)
 
         # Allow underscores in Objective C files.
         self.assert_lint('unsigned long long _length;',
@@ -3696,105 +3682,21 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint('size_t l;', 'l' + name_tooshort_error_message)
         self.assert_lint('long long l;', 'l' + name_tooshort_error_message)
 
-        # Pointers, references, functions, templates, and adjectives.
-        self.assert_lint('char* under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('const int UNDER_SCORE;',
-                         'UNDER_SCORE' + name_underscore_error_message)
-        self.assert_lint('static inline const char const& const under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('WebCore::LayoutObject* under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('int func_name();',
-                         'func_name' + name_underscore_error_message)
-        self.assert_lint('RefPtr<LayoutObject*> under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('WTF::Vector<WTF::RefPtr<const LayoutObject* const>> under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('int under_score[];',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('struct dirent* under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('long under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('long long under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('long double under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('long long int under_score;',
-                         'under_score' + name_underscore_error_message)
-
         # Declarations in control statement.
-        self.assert_lint('if (int under_score = 42) {',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('else if (int under_score = 42) {',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('for (int under_score = 42; cond; i++) {',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('while (foo & under_score = bar) {',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('for (foo * under_score = p; cond; i++) {',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('for (foo * under_score; cond; i++) {',
-                         'under_score' + name_underscore_error_message)
         self.assert_lint('while (foo & value_in_thirdparty_library) {', '')
         self.assert_lint('while (foo * value_in_thirdparty_library) {', '')
         self.assert_lint('if (mli && S_OK == mli->foo()) {', '')
 
         # More member variables and functions.
         self.assert_lint('int SomeClass::s_validName', '')
-        self.assert_lint('int m_under_score;',
-                         'm_under_score' + name_underscore_error_message)
-        self.assert_lint('int SomeClass::s_under_score = 0;',
-                         'SomeClass::s_under_score' + name_underscore_error_message)
-        self.assert_lint('int SomeClass::under_score = 0;',
-                         'SomeClass::under_score' + name_underscore_error_message)
 
         # Other statements.
         self.assert_lint('return INT_MAX;', '')
-        self.assert_lint('return_t under_score;',
-                         'under_score' + name_underscore_error_message)
-        self.assert_lint('goto under_score;',
-                         'under_score' + name_underscore_error_message)
         self.assert_lint('delete static_cast<Foo*>(p);', '')
-
-        # Multiple variables in one line.
-        self.assert_lint('void myFunction(int variable1, int another_variable);',
-                         'another_variable' + name_underscore_error_message)
-        self.assert_lint('int variable1, another_variable;',
-                         'another_variable' + name_underscore_error_message)
-        self.assert_lint('int first_variable, secondVariable;',
-                         'first_variable' + name_underscore_error_message)
-        self.assert_lint('void my_function(int variable_1, int variable_2);',
-                         ['my_function' + name_underscore_error_message,
-                          'variable_1' + name_underscore_error_message,
-                          'variable_2' + name_underscore_error_message])
-        self.assert_lint('for (int variable_1, variable_2;;) {',
-                         ['variable_1' + name_underscore_error_message,
-                          'variable_2' + name_underscore_error_message])
-
-        # There is an exception for op code functions but only in the JavaScriptCore directory.
-        self.assert_lint('void this_op_code(int var1, int var2)', '', 'Source/JavaScriptCore/foo.cpp')
-        self.assert_lint('void op_code(int var1, int var2)', '', 'Source/JavaScriptCore/foo.cpp')
-        self.assert_lint('void this_op_code(int var1, int var2)', 'this_op_code' + name_underscore_error_message)
 
         # GObject requires certain magical names in class declarations.
         self.assert_lint('void webkit_dom_object_init();', '')
         self.assert_lint('void webkit_dom_object_class_init();', '')
-
-        # There is an exception for GTK+ API.
-        self.assert_lint('void webkit_web_view_load(int var1, int var2)', '', 'Source/Webkit/gtk/webkit/foo.cpp')
-        self.assert_lint('void webkit_web_view_load(int var1, int var2)', '', 'Source/Webkit2/UIProcess/gtk/foo.cpp')
-
-        # Test that this doesn't also apply to files not in a 'gtk' directory.
-        self.assert_lint('void webkit_web_view_load(int var1, int var2)',
-                         'webkit_web_view_load is incorrectly named. Don\'t use underscores in your identifier names.'
-                         '  [readability/naming/underscores] [4]', 'Source/Webkit/webkit/foo.cpp')
-        # Test that this doesn't also apply to names that don't start with 'webkit_'.
-        self.assert_lint_one_of_many_errors_re(
-            'void otherkit_web_view_load(int var1, int var2)',
-            'otherkit_web_view_load is incorrectly named. Don\'t use underscores in your identifier names.'
-            '  [readability/naming/underscores] [4]', 'Source/Webkit/webkit/foo.cpp')
 
         # There is an exception for some unit tests that begin with "tst_".
         self.assert_lint('void tst_QWebFrame::arrayObjectEnumerable(int var1, int var2)', '')
@@ -3828,15 +3730,9 @@ class WebKitStyleTest(CppStyleTestBase):
         # vm_throw is allowed as well.
         self.assert_lint('int vm_throw;', '')
 
-        # Bitfields.
-        self.assert_lint('unsigned _fillRule : 1;',
-                         '_fillRule' + name_underscore_error_message)
-
         # new operators in initialization.
         self.assert_lint('OwnPtr<uint32_t> variable(new uint32_t);', '')
         self.assert_lint('OwnPtr<uint32_t> variable(new (expr) uint32_t);', '')
-        self.assert_lint('OwnPtr<uint32_t> under_score(new uint32_t);',
-                         'under_score' + name_underscore_error_message)
 
         # Conversion operator declaration.
         self.assert_lint('operator int64_t();', '')
