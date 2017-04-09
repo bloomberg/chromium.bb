@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_DETAILED_VIEW_H_
 #define ASH_SYSTEM_NETWORK_NETWORK_DETAILED_VIEW_H_
 
-#include "ash/common/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "chromeos/network/network_state_handler.h"
 
 namespace ash {

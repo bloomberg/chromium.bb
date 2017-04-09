@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 
-#include "ash/common/ash_layout_constants.h"
-#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/common/frame/header_painter_util.h"
+#include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/header_painter_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_properties.h"

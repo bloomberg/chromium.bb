@@ -9,11 +9,11 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm/window_animation_types.h"
-#include "ash/common/wm/workspace_controller.h"
-#include "ash/common/wm_window.h"
+#include "ash/shelf/wm_shelf.h"
+#include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
+#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

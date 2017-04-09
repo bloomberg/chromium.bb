@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
+#include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "base/macros.h"
 
 namespace ash {

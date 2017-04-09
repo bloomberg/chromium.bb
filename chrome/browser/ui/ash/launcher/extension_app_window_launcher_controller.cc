@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
-#include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/wm_window.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"

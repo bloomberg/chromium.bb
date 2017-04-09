@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/wm_shelf_observer.h"
-#include "ash/common/shell_observer.h"
+#include "ash/shelf/wm_shelf_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate.h"
 #include "ui/events/event_handler.h"

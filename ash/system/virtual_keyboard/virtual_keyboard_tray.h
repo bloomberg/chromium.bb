@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 #define ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
-#include "ash/common/keyboard/keyboard_ui_observer.h"
-#include "ash/common/system/tray/tray_background_view.h"
+#include "ash/keyboard/keyboard_ui_observer.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 

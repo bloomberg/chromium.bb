@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_bezel_event_handler.h"
 
-#include "ash/common/shelf/wm_shelf.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"

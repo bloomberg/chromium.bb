@@ -4,14 +4,14 @@
 
 #include "ash/system/audio/tray_audio.h"
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"

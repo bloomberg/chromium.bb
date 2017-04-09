@@ -123,7 +123,7 @@
 #endif  // ENABLE_EXTENSIONS
 
 #if defined(USE_ASH)
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #endif  // USE_ASH
 
 #if defined(USE_OZONE)

@@ -13,10 +13,10 @@
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(USE_ASH)
-#include "ash/common/system/system_notifier.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

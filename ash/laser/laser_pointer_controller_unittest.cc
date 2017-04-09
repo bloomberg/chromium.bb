@@ -4,11 +4,11 @@
 
 #include "ash/laser/laser_pointer_controller.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/laser/laser_pointer_controller_test_api.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {

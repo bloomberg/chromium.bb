@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/update/tray_update.h"
-#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/update/tray_update.h"
+#include "ash/wm_shell.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"

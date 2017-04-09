@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"

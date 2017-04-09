@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/global_shortcut_listener_chromeos.h"
 
-#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "content/public/browser/browser_thread.h"
 

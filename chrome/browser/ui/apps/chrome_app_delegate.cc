@@ -44,7 +44,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 #if defined(USE_ASH)
-#include "ash/common/shelf/shelf_constants.h"  // nogncheck
+#include "ash/shelf/shelf_constants.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)

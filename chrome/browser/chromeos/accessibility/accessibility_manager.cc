@@ -10,17 +10,17 @@
 #include <memory>
 #include <utility>
 
+#include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
-#include "ash/common/ash_constants.h"
-#include "ash/common/shelf/shelf_layout_manager.h"
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"

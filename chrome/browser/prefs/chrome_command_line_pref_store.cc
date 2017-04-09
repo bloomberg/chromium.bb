@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

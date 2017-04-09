@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/session/session_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/wm_window_test_api.h"
 #include "base/memory/ptr_util.h"

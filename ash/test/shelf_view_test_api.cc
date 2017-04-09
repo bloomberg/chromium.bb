@@ -4,11 +4,11 @@
 
 #include "ash/test/shelf_view_test_api.h"
 
-#include "ash/common/shelf/overflow_button.h"
-#include "ash/common/shelf/shelf_button.h"
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_model.h"
-#include "ash/common/shelf/shelf_view.h"
+#include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/views/animation/bounds_animator.h"

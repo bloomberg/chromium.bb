@@ -7,7 +7,7 @@
 
 #include <iosfwd>
 
-#include "ash/common/shelf/overflow_button.h"
+#include "ash/shelf/overflow_button.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/accelerators/accelerator_controller_delegate.h"
+#include "ash/accelerators/accelerator_controller_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

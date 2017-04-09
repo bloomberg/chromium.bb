@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/wm/system_modal_container_event_filter.h"
-#include "ash/common/wm_shell.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
+#include "ash/wm_shell.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 

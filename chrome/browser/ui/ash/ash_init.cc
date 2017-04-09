@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/ash_init.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/accessibility_types.h"
 #include "ash/aura/wm_shell_aura.h"
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/accessibility_types.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"

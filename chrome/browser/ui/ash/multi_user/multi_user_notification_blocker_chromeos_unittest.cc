@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/macros.h"

@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/common/wm_shell.h"
+#include "ash/wm_shell.h"
 #include "base/macros.h"
 
 namespace aura {

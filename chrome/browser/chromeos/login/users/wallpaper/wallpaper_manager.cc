@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/ash_constants.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

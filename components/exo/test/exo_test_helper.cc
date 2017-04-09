@@ -4,10 +4,10 @@
 
 #include "components/exo/test/exo_test_helper.h"
 
-#include "ash/common/wm/window_positioner.h"
-#include "ash/common/wm/window_positioning_utils.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_positioner.h"
+#include "ash/wm/window_positioning_utils.h"
+#include "ash/wm_window.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"

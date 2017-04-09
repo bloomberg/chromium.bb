@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shelf/wm_shelf.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"

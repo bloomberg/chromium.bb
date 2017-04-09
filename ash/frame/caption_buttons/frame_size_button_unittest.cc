@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/frame/caption_buttons/frame_size_button.h"
+#include "ash/frame/caption_buttons/frame_size_button.h"
 
-#include "ash/common/ash_layout_constants.h"
-#include "ash/common/frame/caption_buttons/frame_caption_button.h"
-#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/common/wm/window_state.h"
+#include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/window.h"

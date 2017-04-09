@@ -8,8 +8,8 @@
 
 #include <deque>
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"

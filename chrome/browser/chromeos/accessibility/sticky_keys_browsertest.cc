@@ -4,11 +4,11 @@
 
 #include <stddef.h>
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"

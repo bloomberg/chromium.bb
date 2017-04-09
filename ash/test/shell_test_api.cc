@@ -4,10 +4,10 @@
 
 #include "ash/test/shell_test_api.h"
 
-#include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf_delegate.h"
+#include "ash/palette_delegate.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 
 namespace ash {

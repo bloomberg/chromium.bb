@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "ash/common/system/status_area_widget.h"
-#include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

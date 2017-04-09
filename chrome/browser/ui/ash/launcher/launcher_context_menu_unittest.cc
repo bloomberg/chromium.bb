@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/app/chrome_command_ids.h"

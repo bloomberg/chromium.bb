@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_SCREEN_SECURITY_SCREEN_CAPTURE_TRAY_ITEM_H_
 #define ASH_SYSTEM_SCREEN_SECURITY_SCREEN_CAPTURE_TRAY_ITEM_H_
 
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "base/macros.h"

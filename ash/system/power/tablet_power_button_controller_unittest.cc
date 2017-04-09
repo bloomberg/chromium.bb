@@ -6,18 +6,18 @@
 
 #include <memory>
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/session/session_controller.h"
-#include "ash/common/test/test_session_controller_client.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/lock_state_controller_test_api.h"
+#include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"

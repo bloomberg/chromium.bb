@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/system/toast/toast_manager.h"
-#include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

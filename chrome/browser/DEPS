@@ -78,7 +78,7 @@ include_rules = [
   # Code in chrome should not use ash::SessionStateDelegate and friends.
   # Instead, use SessionManager/UserManager/SessionControllerClient directly
   # since they are part of chrome.
-  "-ash/common/session",
+  "-ash/session",
 
   # Explicitly disallow using SyncMessageFilter to prevent browser from
   # sending synchronous IPC messages on non-UI threads.

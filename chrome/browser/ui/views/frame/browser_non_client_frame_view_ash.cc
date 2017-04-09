@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "ash/common/ash_layout_constants.h"
-#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/common/frame/default_header_painter.h"
-#include "ash/common/frame/frame_border_hit_test.h"
-#include "ash/common/frame/header_painter_util.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/default_header_painter.h"
+#include "ash/frame/frame_border_hit_test.h"
+#include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
+#include "ash/wm_window.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"

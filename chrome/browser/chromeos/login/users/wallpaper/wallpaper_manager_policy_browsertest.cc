@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"

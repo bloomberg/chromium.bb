@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"

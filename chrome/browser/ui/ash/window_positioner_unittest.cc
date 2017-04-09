@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/window_positioner.h"
+#include "ash/wm/window_positioner.h"
 
 #include <utility>
 
-#include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_resizer.h"
+#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"

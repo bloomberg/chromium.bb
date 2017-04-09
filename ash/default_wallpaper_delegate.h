@@ -6,7 +6,7 @@
 #define ASH_DEFAULT_WALLPAPER_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/wallpaper/wallpaper_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_properties.h"
 
-#include "ash/common/wm/window_state.h"
+#include "ash/wm/window_state.h"
 
 DECLARE_UI_CLASS_PROPERTY_TYPE(ash::wm::WindowState*);
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);

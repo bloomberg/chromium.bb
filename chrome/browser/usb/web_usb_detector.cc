@@ -32,7 +32,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/system/system_notifier.h"  // nogncheck
+#include "ash/system/system_notifier.h"  // nogncheck
 #endif
 
 namespace {

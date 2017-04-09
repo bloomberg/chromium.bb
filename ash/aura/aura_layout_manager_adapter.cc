@@ -4,8 +4,8 @@
 
 #include "ash/aura/aura_layout_manager_adapter.h"
 
-#include "ash/common/wm_layout_manager.h"
-#include "ash/common/wm_window.h"
+#include "ash/wm_layout_manager.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 

@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"

@@ -8,10 +8,10 @@
 #include <list>
 #include <memory>
 
-#include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf_delegate.h"
+#include "ash/shelf/shelf_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

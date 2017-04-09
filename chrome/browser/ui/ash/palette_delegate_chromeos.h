@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/common/palette_delegate.h"
+#include "ash/palette_delegate.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

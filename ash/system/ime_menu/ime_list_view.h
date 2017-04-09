@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_IME_MENU_IME_LIST_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/ime_info.h"
-#include "ash/common/system/tray/tray_details_view.h"
+#include "ash/system/tray/ime_info.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ash {

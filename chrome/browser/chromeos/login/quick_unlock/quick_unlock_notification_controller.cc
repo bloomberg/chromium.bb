@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"

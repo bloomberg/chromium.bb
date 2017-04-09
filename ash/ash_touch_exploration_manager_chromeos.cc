@@ -4,13 +4,13 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_window.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/audio/chromeos_sounds.h"

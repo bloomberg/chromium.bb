@@ -4,7 +4,7 @@
 
 #include "ash/wm/session_state_animator.h"
 
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"

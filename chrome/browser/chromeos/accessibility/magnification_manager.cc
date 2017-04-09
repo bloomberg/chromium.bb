@@ -7,7 +7,7 @@
 #include <limits>
 #include <memory>
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"

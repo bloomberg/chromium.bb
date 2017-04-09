@@ -4,7 +4,7 @@
 
 #include "ash/laser/laser_pointer_controller.h"
 
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
 #include "ash/system/palette/palette_utils.h"

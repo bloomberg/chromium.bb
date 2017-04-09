@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

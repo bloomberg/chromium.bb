@@ -4,7 +4,7 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"

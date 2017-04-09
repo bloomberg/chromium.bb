@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"

@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/keyboard/keyboard_ui.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/keyboard/keyboard.mojom.h"

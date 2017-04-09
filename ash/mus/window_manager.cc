@@ -8,11 +8,7 @@
 
 #include <utility>
 
-#include "ash/common/drag_drop/drag_image_view.h"
-#include "ash/common/session/session_controller.h"
-#include "ash/common/wm/container_finder.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_window.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
@@ -31,9 +27,13 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/container_finder.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "services/service_manager/public/cpp/connector.h"

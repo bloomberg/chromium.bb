@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
 #define ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
 
-#include "ash/common/system/tray/system_tray_item.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/power_manager_client.h"

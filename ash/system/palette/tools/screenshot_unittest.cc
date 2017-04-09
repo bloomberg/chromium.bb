@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/test/test_palette_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
@@ -11,6 +10,7 @@
 #include "ash/system/palette/tools/capture_screen_action.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_palette_delegate.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 

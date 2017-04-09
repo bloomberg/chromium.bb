@@ -6,15 +6,15 @@
 
 #include <memory>
 
-#include "ash/common/login_status.h"
-#include "ash/common/shelf/shelf_model.h"
-#include "ash/common/test/test_shelf_delegate.h"
-#include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/login_status.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_shelf_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/user_metrics_recorder_test_api.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/test/histogram_tester.h"
 #include "ui/aura/window.h"
 

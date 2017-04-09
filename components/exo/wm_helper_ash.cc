@@ -4,12 +4,12 @@
 
 #include "components/exo/wm_helper_ash.h"
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm_shell.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/display/manager/display_manager.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 
-#include "ash/common/shelf/shelf_alignment_menu.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/shelf/shelf_alignment_menu.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"

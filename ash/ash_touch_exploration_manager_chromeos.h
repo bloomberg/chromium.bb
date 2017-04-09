@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/accessibility_observer.h"
+#include "ash/system/accessibility_observer.h"
 #include "base/macros.h"
 #include "ui/chromeos/touch_accessibility_enabler.h"
 #include "ui/chromeos/touch_exploration_controller.h"

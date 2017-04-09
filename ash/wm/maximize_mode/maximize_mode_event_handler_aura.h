@@ -6,7 +6,7 @@
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {

@@ -4,9 +4,9 @@
 
 #include "ash/system/power/video_activity_notifier.h"
 
-#include "ash/common/session/session_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 

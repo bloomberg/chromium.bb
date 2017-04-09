@@ -4,11 +4,11 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"

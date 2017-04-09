@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/content/shell_content_state.h"
+#include "ash/wm_window.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/session_util.h"

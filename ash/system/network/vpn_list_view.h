@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
-#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/system/network/network_list_view_base.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 

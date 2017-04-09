@@ -4,9 +4,9 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

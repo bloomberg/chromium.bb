@@ -4,8 +4,8 @@
 
 #include "ash/accelerators/accelerator_delegate.h"
 
-#include "ash/common/accelerators/accelerator_router.h"
-#include "ash/common/wm_window.h"
+#include "ash/accelerators/accelerator_router.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 

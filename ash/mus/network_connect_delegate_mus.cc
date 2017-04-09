@@ -4,8 +4,8 @@
 
 #include "ash/mus/network_connect_delegate_mus.h"
 
-#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_controller.h"
 #include "base/logging.h"
 
 namespace ash {

@@ -6,9 +6,9 @@
 #define ASH_SYSTEM_SUPERVISED_TRAY_SUPERVISED_USER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/system/supervised/custodian_info_tray_observer.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
 #include <utility>
 #include <vector>
 
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "ui/display/manager/display_manager.h"

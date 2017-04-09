@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"

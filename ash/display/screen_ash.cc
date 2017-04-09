@@ -4,13 +4,13 @@
 
 #include "ash/display/screen_ash.h"
 
-#include "ash/common/shelf/shelf_widget.h"
-#include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/wm/root_window_finder.h"
+#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"

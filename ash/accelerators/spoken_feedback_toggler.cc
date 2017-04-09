@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "ash/accelerators/key_hold_detector.h"
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_delegate.h"
+#include "ash/accessibility_types.h"
 #include "ash/shell.h"
 #include "ui/events/event.h"
 

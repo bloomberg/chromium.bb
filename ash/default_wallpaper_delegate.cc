@@ -4,8 +4,8 @@
 
 #include "ash/default_wallpaper_delegate.h"
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {

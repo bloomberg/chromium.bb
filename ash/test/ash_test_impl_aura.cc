@@ -4,14 +4,14 @@
 
 #include "ash/test/ash_test_impl_aura.h"
 
-#include "ash/common/test/ash_test.h"
-#include "ash/common/wm_window.h"
 #include "ash/mus/test/ash_test_impl_mus.h"
 #include "ash/public/cpp/config.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/test/ash_test.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/display/display_layout.h"

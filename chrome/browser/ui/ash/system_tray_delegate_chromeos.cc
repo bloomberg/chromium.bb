@@ -13,16 +13,16 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/login_status.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/system/date/clock_observer.h"
-#include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/system/tray_accessibility.h"
+#include "ash/login_status.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/system/date/clock_observer.h"
+#include "ash/system/ime/ime_observer.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/rotation/tray_rotation_lock.h"
 #include "ash/system/session/logout_button_observer.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray_accessibility.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

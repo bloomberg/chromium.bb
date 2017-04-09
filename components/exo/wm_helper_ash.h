@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_EXO_WM_HELPER_ASH_H_
 #define COMPONENTS_EXO_WM_HELPER_ASH_H_
 
-#include "ash/common/shell_observer.h"
-#include "ash/common/system/accessibility_observer.h"
-#include "ash/common/wm_display_observer.h"
+#include "ash/shell_observer.h"
+#include "ash/system/accessibility_observer.h"
+#include "ash/wm_display_observer.h"
 #include "base/macros.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/cursor_client_observer.h"

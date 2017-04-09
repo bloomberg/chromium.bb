@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
-#include "ash/common/focus_cycler.h"
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm_shell.h"
+#include "ash/focus_cycler.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"

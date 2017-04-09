@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/shell_observer.h"
-#include "ash/common/wm/lock_state_observer.h"
+#include "ash/shell_observer.h"
+#include "ash/wm/lock_state_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

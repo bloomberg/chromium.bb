@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "ash/common/drag_drop/drag_image_view.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/drag_drop/drag_drop_tracker.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"

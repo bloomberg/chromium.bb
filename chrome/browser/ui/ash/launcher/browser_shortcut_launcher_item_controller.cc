@@ -7,13 +7,13 @@
 #include <limits>
 #include <vector>
 
-#include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
-#include "ash/common/wm_window.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shelf/shelf_delegate.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"

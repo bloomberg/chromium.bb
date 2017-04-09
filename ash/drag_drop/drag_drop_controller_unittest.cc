@@ -4,8 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
-#include "ash/common/drag_drop/drag_image_view.h"
 #include "ash/drag_drop/drag_drop_tracker.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"

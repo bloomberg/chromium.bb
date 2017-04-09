@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/new_window_controller.h"
+#include "ash/new_window_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

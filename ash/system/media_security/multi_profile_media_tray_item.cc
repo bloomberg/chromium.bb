@@ -4,15 +4,15 @@
 
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
 
-#include "ash/common/ash_view_ids.h"
-#include "ash/common/media_controller.h"
-#include "ash/common/session/session_controller.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_item_view.h"
-#include "ash/common/wm_shell.h"
+#include "ash/ash_view_ids.h"
+#include "ash/media_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_view.h"
+#include "ash/wm_shell.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 

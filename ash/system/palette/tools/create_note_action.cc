@@ -4,7 +4,7 @@
 
 #include "ash/system/palette/tools/create_note_action.h"
 
-#include "ash/common/palette_delegate.h"
+#include "ash/palette_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

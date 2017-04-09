@@ -21,7 +21,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
-#include "ash/common/shelf/shelf_delegate.h"  // nogncheck
+#include "ash/shelf/shelf_delegate.h"  // nogncheck
 #include "ash/shell.h"                        // nogncheck
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"  // nogncheck
 #endif

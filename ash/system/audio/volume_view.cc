@@ -6,15 +6,15 @@
 
 #include <algorithm>
 
-#include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/system/tray/actionable_view.h"
-#include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_utils.h"
-#include "ash/common/system/tray/tri_view.h"
-#include "ash/common/wm_shell.h"
+#include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tri_view.h"
+#include "ash/wm_shell.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"

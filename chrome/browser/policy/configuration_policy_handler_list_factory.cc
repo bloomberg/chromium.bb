@@ -64,7 +64,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"

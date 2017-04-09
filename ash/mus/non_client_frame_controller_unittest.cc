@@ -4,7 +4,7 @@
 
 #include "ash/mus/non_client_frame_controller.h"
 
-#include "ash/common/ash_layout_constants.h"
+#include "ash/ash_layout_constants.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/test/ash_test_base.h"

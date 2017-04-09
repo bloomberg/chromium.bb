@@ -4,9 +4,9 @@
 
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 
-#include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"

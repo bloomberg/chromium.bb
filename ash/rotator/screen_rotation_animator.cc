@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"

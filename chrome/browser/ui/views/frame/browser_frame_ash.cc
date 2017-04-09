@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm/window_state_delegate.h"
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"

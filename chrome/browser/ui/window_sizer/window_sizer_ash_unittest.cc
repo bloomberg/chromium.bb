@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/wm/window_positioner.h"
-#include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_positioner.h"
+#include "ash/wm/window_resizer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_util.h"

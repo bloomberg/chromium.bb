@@ -8,8 +8,8 @@
 #include <unordered_map>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
-#include "ash/common/wm_display_observer.h"
+#include "ash/shell_observer.h"
+#include "ash/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"

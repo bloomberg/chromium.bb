@@ -6,7 +6,7 @@
 #define ASH_DISPLAY_PROJECTING_OBSERVER_CHROMEOS_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 

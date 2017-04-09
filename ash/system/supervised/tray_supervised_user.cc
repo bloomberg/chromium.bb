@@ -6,13 +6,13 @@
 
 #include <utility>
 
-#include "ash/common/login_status.h"
-#include "ash/common/system/system_notifier.h"
-#include "ash/common/system/tray/label_tray_view.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/tray_constants.h"
+#include "ash/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
+#include "ash/system/tray/label_tray_view.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "ui/gfx/paint_vector_icon.h"

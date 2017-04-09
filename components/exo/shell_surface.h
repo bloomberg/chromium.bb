@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/wm/window_state_observer.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"

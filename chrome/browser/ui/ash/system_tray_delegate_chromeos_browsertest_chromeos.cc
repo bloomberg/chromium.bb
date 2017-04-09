@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "ash/common/system/date/date_view.h"
-#include "ash/common/system/date/system_info_default_view.h"
-#include "ash/common/system/date/tray_system_info.h"
-#include "ash/common/system/tray/system_tray.h"
 #include "ash/shell.h"
+#include "ash/system/date/date_view.h"
+#include "ash/system/date/system_info_default_view.h"
+#include "ash/system/date/tray_system_info.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

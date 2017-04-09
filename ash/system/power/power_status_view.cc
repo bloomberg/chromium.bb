@@ -4,12 +4,12 @@
 
 #include "ash/system/power/power_status_view.h"
 
-#include "ash/common/system/tray/fixed_sized_image_view.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_style.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"

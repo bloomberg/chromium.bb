@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_KEYBOARD_BRIGHTNESS_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/system/keyboard_brightness_control_delegate.h"
+#include "ash/system/keyboard_brightness_control_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

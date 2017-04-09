@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
-#include "ash/common/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_constants.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"

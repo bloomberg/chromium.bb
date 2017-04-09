@@ -4,8 +4,8 @@
 
 #include "ash/mus/screen_mus.h"
 
-#include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_window.h"
+#include "ash/wm/root_window_finder.h"
+#include "ash/wm_window.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"

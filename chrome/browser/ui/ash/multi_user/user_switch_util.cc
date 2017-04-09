@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_security/screen_tray_item.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "ui/base/l10n/l10n_util.h"
 

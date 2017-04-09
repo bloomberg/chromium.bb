@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "ash/common/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_constants.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser.h"

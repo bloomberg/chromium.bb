@@ -5,9 +5,9 @@
 #ifndef ASH_SYSTEM_ENTERPRISE_TRAY_ENTERPRISE_H_
 #define ASH_SYSTEM_ENTERPRISE_TRAY_ENTERPRISE_H_
 
-#include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
-#include "ash/common/multi_profile_uma.h"
-#include "ash/common/shell_delegate.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"

@@ -5,7 +5,7 @@
 #ifndef ASH_SHELF_SHELF_WINDOW_TARGETER_H_
 #define ASH_SHELF_SHELF_WINDOW_TARGETER_H_
 
-#include "ash/common/shelf/wm_shelf_observer.h"
+#include "ash/shelf/wm_shelf_observer.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"

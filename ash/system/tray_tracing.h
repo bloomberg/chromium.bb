@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRACING_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/tray_image_item.h"
+#include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 
 namespace views {

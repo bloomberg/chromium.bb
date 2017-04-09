@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_observer.h"
-#include "ash/common/shell_observer.h"
-#include "ash/common/system/tray/tray_background_view.h"
+#include "ash/palette_delegate.h"
+#include "ash/session/session_state_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/system/palette/palette_tool_manager.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/devices/input_device_event_observer.h"

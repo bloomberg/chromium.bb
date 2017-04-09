@@ -7,12 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
@@ -24,6 +19,11 @@
 #include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/screen_orientation_controller_test_api.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"

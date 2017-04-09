@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/ash_switches.h"
 #include "ash/rotator/screen_rotation_animator.h"
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_shell.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/rotator/test/screen_rotation_animator_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"

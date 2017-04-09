@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/common/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/wallpaper.mojom.h"

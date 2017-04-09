@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 
 #include <utility>
 #include <vector>
 
-#include "ash/common/shelf/shelf_layout_manager.h"
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/system/status_area_widget.h"
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
-#include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/screen_layout_observer.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
+#include "ash/test/test_system_tray_delegate.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

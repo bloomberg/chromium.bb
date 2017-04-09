@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

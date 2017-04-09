@@ -4,9 +4,9 @@
 
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"

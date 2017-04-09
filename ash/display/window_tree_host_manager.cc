@@ -10,8 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/system/tray/system_tray.h"
+#include "ash/ash_switches.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
@@ -24,6 +23,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"

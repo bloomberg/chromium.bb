@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"

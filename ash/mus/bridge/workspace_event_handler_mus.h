@@ -5,7 +5,7 @@
 #ifndef ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_
 #define ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_
 
-#include "ash/common/wm/workspace/workspace_event_handler.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/macros.h"
 
 namespace aura {

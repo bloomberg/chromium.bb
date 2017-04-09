@@ -4,9 +4,9 @@
 
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
-#include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm_shell.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 

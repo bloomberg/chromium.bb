@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/system/toast/toast_manager.h"
 #include "ash/shell.h"
+#include "ash/system/toast/toast_manager.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

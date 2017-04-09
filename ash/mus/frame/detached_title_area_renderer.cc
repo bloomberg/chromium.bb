@@ -4,11 +4,11 @@
 
 #include "ash/mus/frame/detached_title_area_renderer.h"
 
-#include "ash/common/frame/header_view.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_window.h"
+#include "ash/frame/header_view.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/window_manager.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"

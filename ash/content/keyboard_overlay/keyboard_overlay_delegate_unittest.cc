@@ -4,8 +4,8 @@
 
 #include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"

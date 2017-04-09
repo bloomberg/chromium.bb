@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/system/tray/default_system_tray_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

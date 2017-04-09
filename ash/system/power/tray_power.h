@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/system/power/power_status.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
 namespace message_center {

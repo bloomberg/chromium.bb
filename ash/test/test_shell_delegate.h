@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/shell_delegate.h"
-#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/shell_delegate.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 
 namespace keyboard {

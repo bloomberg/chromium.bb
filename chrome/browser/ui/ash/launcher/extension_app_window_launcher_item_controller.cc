@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 
-#include "ash/common/wm/window_state.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"

@@ -4,8 +4,8 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings_factory_aura.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {

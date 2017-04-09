@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/wm/window_state.h"
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"

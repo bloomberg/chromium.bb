@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/ash_util.h"
 
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/mojo_interface_factory.h"
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/mojo_interface_factory.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"

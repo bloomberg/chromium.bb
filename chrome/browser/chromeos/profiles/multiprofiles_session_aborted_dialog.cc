@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

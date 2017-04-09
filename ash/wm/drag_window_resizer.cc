@@ -4,13 +4,13 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
-#include "ash/common/wm/window_positioning_utils.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_window.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"
 #include "ash/wm/drag_window_controller.h"
+#include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"

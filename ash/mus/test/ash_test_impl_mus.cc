@@ -4,8 +4,8 @@
 
 #include "ash/mus/test/ash_test_impl_mus.h"
 
-#include "ash/common/test/ash_test.h"
-#include "ash/common/wm_window.h"
+#include "ash/test/ash_test.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"

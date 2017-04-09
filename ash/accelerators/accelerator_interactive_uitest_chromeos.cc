@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller.h"
 
-#include "ash/common/shell_observer.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
 #include "ash/system/network/network_observer.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_interactive_ui_test_base.h"
 #include "ash/test/test_screenshot_delegate.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"

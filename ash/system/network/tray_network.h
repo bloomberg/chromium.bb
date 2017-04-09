@@ -8,10 +8,10 @@
 #include <memory>
 #include <set>
 
-#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/network/network_portal_detector_observer.h"
 #include "ash/system/network/tray_network_state_observer.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 

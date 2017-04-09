@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"

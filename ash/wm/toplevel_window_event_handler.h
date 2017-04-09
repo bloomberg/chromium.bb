@@ -6,8 +6,8 @@
 #define ASH_WM_TOPLEVEL_WINDOW_EVENT_HANDLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_toplevel_window_event_handler.h"
-#include "ash/common/wm/wm_types.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "ash/wm/wm_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"

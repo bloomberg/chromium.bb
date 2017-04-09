@@ -6,11 +6,11 @@
 
 #include <memory>
 
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/test/ash_test.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "ash/test/ash_test.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {

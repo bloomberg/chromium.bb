@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 
-#include "ash/common/login_status.h"
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm_shell.h"
+#include "ash/login_status.h"
 #include "ash/root_window_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_detailed_view.h"
 #include "ash/system/network/tray_network.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

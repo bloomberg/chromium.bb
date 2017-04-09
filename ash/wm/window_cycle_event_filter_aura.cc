@@ -4,10 +4,10 @@
 
 #include "ash/wm/window_cycle_event_filter_aura.h"
 
-#include "ash/common/accelerators/debug_commands.h"
-#include "ash/common/wm/window_cycle_controller.h"
-#include "ash/common/wm/window_cycle_list.h"
+#include "ash/accelerators/debug_commands.h"
 #include "ash/shell.h"
+#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_cycle_list.h"
 #include "ui/events/event.h"
 
 namespace ash {

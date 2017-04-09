@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "ash/system/network/network_detailed_view.h"
 #include "ash/system/network/network_list_delegate.h"
 #include "base/macros.h"

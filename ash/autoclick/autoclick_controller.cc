@@ -6,10 +6,10 @@
 
 #include "ash/autoclick/common/autoclick_controller_common.h"
 #include "ash/autoclick/common/autoclick_controller_common_delegate.h"
-#include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/root_window_finder.h"
+#include "ash/wm_window.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"

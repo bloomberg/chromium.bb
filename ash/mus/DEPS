@@ -10,8 +10,7 @@ include_rules = [
   "+services/service_manager/public",
   "+services/tracing/public",
 ]
-# Shelf code is being moved into //ash/common. Please ask jamescook@ or msw@
-# before adding items here. http://crbug.com/615155
+# TODO(jamescook): Are these still needed now that //ash/common is gone?
 specific_include_rules = {
   "root_window_controller.cc": [
     "+ash/shelf/shelf_layout_manager.h",

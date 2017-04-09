@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/system/session/session_length_limit_observer.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

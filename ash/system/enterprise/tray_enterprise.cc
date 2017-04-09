@@ -4,12 +4,12 @@
 
 #include "ash/system/enterprise/tray_enterprise.h"
 
-#include "ash/common/login_status.h"
-#include "ash/common/system/tray/label_tray_view.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/system/tray/label_tray_view.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 

@@ -4,13 +4,13 @@
 
 #include "ash/display/screen_position_controller.h"
 
-#include "ash/common/wm/window_positioning_utils.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/dip_util.h"

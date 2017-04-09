@@ -76,7 +76,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(USE_ASH)
-#include "ash/common/shelf/shelf_delegate.h"  // nogncheck
+#include "ash/shelf/shelf_delegate.h"  // nogncheck
 #include "ash/shell.h"                        // nogncheck
 #endif
 

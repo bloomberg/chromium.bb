@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
-#include "ash/common/multi_profile_uma.h"
+#include "ash/multi_profile_uma.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"

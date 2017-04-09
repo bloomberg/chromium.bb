@@ -42,7 +42,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/ash_layout_constants.h"
+#include "ash/ash_layout_constants.h"
 #endif
 
 #if !defined(OS_CHROMEOS)

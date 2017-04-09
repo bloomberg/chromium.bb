@@ -118,7 +118,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/accessibility_types.h"  // nogncheck
+#include "ash/accessibility_types.h"  // nogncheck
 #include "ash/shell.h"  // nogncheck
 #include "ash/system/devicetype_utils.h"  // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
@@ -150,7 +150,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/wm_shell.h"  // nogncheck
+#include "ash/wm_shell.h"  // nogncheck
 #endif
 
 using base::UserMetricsAction;

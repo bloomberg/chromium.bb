@@ -40,10 +40,10 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
-#include "ash/common/accelerators/accelerator_commands.h"  // nogncheck
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"  // nogncheck
-#include "ash/common/wm/window_state.h"  // nogncheck
+#include "ash/accelerators/accelerator_commands.h"  // nogncheck
 #include "ash/shell.h"                   // nogncheck
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"  // nogncheck
+#include "ash/wm/window_state.h"  // nogncheck
 #include "ash/wm/window_state_aura.h"  // nogncheck
 #include "ui/wm/core/coordinate_conversion.h"  // nogncheck
 #endif

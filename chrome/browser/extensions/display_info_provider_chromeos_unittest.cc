@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/screen_orientation_controller_test_api.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"

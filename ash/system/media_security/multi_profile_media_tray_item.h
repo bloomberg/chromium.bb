@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_MEDIA_SECURITY_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
 #define ASH_SYSTEM_MEDIA_SECURITY_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
 
-#include "ash/common/system/tray/system_tray_item.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
 namespace ash {

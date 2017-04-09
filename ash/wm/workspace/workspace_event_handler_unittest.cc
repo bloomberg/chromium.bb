@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/workspace/workspace_event_handler.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/workspace_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
+#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
+#include "ash/wm_shell.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"

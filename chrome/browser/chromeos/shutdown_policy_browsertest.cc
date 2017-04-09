@@ -5,12 +5,12 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/login_status.h"
-#include "ash/common/system/tiles/tiles_default_view.h"
-#include "ash/common/system/tiles/tray_tiles.h"
-#include "ash/common/system/tray/system_tray.h"
+#include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tiles/tiles_default_view.h"
+#include "ash/system/tiles/tray_tiles.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"

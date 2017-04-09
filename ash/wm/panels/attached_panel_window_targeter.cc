@@ -4,10 +4,10 @@
 
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm/panels/panel_layout_manager.h"
-#include "ash/common/wm_window.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {

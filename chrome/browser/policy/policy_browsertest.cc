@@ -196,10 +196,10 @@
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
+#include "ash/accessibility_types.h"
 #include "ash/aura/wm_shell_aura.h"
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/accelerators/accelerator_table.h"
-#include "ash/common/accessibility_types.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"

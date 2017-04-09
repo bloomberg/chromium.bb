@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_BLUETOOTH_TRAY_BLUETOOTH_H_
 #define ASH_SYSTEM_BLUETOOTH_TRAY_BLUETOOTH_H_
 
-#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
 namespace ash {

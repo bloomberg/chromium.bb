@@ -10,14 +10,14 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/test/ash_test.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/mus/test/wm_test_base.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/test/ash_test.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 

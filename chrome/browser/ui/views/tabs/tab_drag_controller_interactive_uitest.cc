@@ -61,15 +61,15 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
+#include "ash/wm/root_window_finder.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"

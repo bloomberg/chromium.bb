@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"

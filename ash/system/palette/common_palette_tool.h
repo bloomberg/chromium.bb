@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_PALETTE_COMMON_PALETTE_TOOL_H_
 #define ASH_SYSTEM_PALETTE_COMMON_PALETTE_TOOL_H_
 
-#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/system/palette/palette_tool.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/wm/wm_toplevel_window_event_handler.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"

@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/test/test_session_controller_client.h"
+#include "ash/test/test_session_controller_client.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"

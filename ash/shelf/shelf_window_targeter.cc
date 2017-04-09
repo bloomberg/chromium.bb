@@ -4,10 +4,10 @@
 
 #include "ash/shelf/shelf_window_targeter.h"
 
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/wm_shelf.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {

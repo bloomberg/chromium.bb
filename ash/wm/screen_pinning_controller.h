@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_display_observer.h"
+#include "ash/wm_display_observer.h"
 #include "base/macros.h"
 
 namespace aura {

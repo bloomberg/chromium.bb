@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/ui/screen_capture_notification_ui_chromeos.h"
 
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 
 namespace chromeos {
 

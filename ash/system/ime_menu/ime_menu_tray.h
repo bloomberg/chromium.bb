@@ -6,10 +6,10 @@
 #define ASH_SYSTEM_IME_MENU_IME_MENU_TRAY_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/tray/ime_info.h"
-#include "ash/common/system/tray/tray_background_view.h"
-#include "ash/common/system/tray/tray_bubble_wrapper.h"
+#include "ash/system/ime/ime_observer.h"
+#include "ash/system/tray/ime_info.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
 #include "ui/keyboard/keyboard_controller_observer.h"

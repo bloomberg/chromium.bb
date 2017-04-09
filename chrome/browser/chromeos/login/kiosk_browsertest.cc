@@ -6,9 +6,9 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
-#include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"

@@ -6,12 +6,12 @@
 
 #include <stdint.h>
 
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"

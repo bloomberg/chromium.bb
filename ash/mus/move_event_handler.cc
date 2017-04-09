@@ -4,8 +4,8 @@
 
 #include "ash/mus/move_event_handler.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
+#include "ash/wm_window.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/window.h"

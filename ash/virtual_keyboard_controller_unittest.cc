@@ -7,12 +7,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/command_line.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"

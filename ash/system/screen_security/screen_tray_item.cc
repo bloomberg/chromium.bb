@@ -4,11 +4,11 @@
 
 #include "ash/system/screen_security/screen_tray_item.h"
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_style.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/label_button.h"

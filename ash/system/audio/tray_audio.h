@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/tray_image_item.h"
+#include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power_manager_client.h"

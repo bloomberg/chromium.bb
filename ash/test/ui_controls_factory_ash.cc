@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm_window.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"

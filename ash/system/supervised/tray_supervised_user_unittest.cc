@@ -4,9 +4,9 @@
 
 #include "ash/system/supervised/tray_supervised_user.h"
 
-#include "ash/common/login_status.h"
-#include "ash/common/test/ash_test.h"
-#include "ash/common/test/test_system_tray_delegate.h"
+#include "ash/login_status.h"
+#include "ash/test/ash_test.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"

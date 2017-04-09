@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

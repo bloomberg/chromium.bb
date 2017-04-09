@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/workspace/workspace_event_handler.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
 

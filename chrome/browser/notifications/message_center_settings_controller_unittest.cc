@@ -27,7 +27,7 @@
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/system/system_notifier.h"
+#include "ash/system/system_notifier.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #endif

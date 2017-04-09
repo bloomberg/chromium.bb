@@ -4,13 +4,13 @@
 
 #include "ash/system/power/tablet_power_button_controller.h"
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/session/session_controller.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/accessibility_delegate.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm_shell.h"
 #include "base/time/default_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/events/devices/input_device_manager.h"

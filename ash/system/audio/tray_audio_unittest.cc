@@ -4,8 +4,8 @@
 
 #include "ash/system/audio/tray_audio.h"
 
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/test/ash_test.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/test/ash_test.h"
 
 namespace ash {
 

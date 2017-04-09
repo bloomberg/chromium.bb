@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/common/frame/header_painter.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/ash_constants.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/header_painter.h"
 #include "ash/shell.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"

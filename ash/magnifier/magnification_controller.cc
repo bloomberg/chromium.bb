@@ -7,14 +7,14 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/timer.h"

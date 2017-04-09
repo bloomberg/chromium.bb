@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/signin_error_notifier_ash.h"
 
-#include "ash/common/system/system_notifier.h"
+#include "ash/system/system_notifier.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

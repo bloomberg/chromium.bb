@@ -4,7 +4,7 @@
 
 #include "ash/system/keyboard_brightness_controller.h"
 
-#include "ash/common/wm_shell.h"
+#include "ash/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"

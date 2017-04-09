@@ -6,14 +6,14 @@
 
 #include <stddef.h>
 
-#include "ash/common/system/tray/system_menu_button.h"
-#include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_list_delegate.h"
+#include "ash/system/tray/system_menu_button.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_style.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"

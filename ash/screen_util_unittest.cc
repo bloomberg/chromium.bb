@@ -4,12 +4,12 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
