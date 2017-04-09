@@ -1560,6 +1560,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                                            *(args->t_left + blk_row));
   RD_STATS this_rd_stats;
 
+  assert(tx_size == get_tx_size(plane, xd));
+
   av1_init_rd_stats(&this_rd_stats);
 
   if (args->exit_early) return;
@@ -1577,15 +1579,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
-    struct macroblockd_plane *const pd = &xd->plane[plane];
-    tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-    PLANE_TYPE plane_type = get_plane_type(plane);
-    const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-    const int dst_stride = pd->dst.stride;
-    uint8_t *dst =
-        &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-    av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
-                                p->eobs[block]);
+    av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+                                       p->eobs[block]);
     dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
                tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
                OUTPUT_HAS_DECODED_PIXELS);
