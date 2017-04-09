@@ -90,232 +90,234 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
   ~LocalFrameClient() override {}
 
-  virtual bool hasWebView() const = 0;  // mainly for assertions
+  virtual bool HasWebView() const = 0;  // mainly for assertions
 
-  virtual void dispatchWillSendRequest(ResourceRequest&) = 0;
-  virtual void dispatchDidReceiveResponse(const ResourceResponse&) = 0;
-  virtual void dispatchDidLoadResourceFromMemoryCache(
+  virtual void DispatchWillSendRequest(ResourceRequest&) = 0;
+  virtual void DispatchDidReceiveResponse(const ResourceResponse&) = 0;
+  virtual void DispatchDidLoadResourceFromMemoryCache(
       const ResourceRequest&,
       const ResourceResponse&) = 0;
 
-  virtual void dispatchDidHandleOnloadEvents() = 0;
-  virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
-  virtual void dispatchDidNavigateWithinPage(HistoryItem*,
+  virtual void DispatchDidHandleOnloadEvents() = 0;
+  virtual void DispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
+  virtual void DispatchDidNavigateWithinPage(HistoryItem*,
                                              HistoryCommitType,
-                                             bool contentInitiated) {}
-  virtual void dispatchWillCommitProvisionalLoad() = 0;
-  virtual void dispatchDidStartProvisionalLoad(DocumentLoader*,
+                                             bool content_initiated) {}
+  virtual void DispatchWillCommitProvisionalLoad() = 0;
+  virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
                                                ResourceRequest&) = 0;
-  virtual void dispatchDidReceiveTitle(const String&) = 0;
-  virtual void dispatchDidChangeIcons(IconType) = 0;
-  virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
-  virtual void dispatchDidFailProvisionalLoad(const ResourceError&,
+  virtual void DispatchDidReceiveTitle(const String&) = 0;
+  virtual void DispatchDidChangeIcons(IconType) = 0;
+  virtual void DispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
+  virtual void DispatchDidFailProvisionalLoad(const ResourceError&,
                                               HistoryCommitType) = 0;
-  virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
-  virtual void dispatchDidFinishDocumentLoad() = 0;
-  virtual void dispatchDidFinishLoad() = 0;
-  virtual void dispatchDidChangeThemeColor() = 0;
+  virtual void DispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
+  virtual void DispatchDidFinishDocumentLoad() = 0;
+  virtual void DispatchDidFinishLoad() = 0;
+  virtual void DispatchDidChangeThemeColor() = 0;
 
-  virtual NavigationPolicy decidePolicyForNavigation(
+  virtual NavigationPolicy DecidePolicyForNavigation(
       const ResourceRequest&,
       DocumentLoader*,
       NavigationType,
       NavigationPolicy,
-      bool shouldReplaceCurrentEntry,
-      bool isClientRedirect,
+      bool should_replace_current_entry,
+      bool is_client_redirect,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
-          shouldCheckMainWorldContentSecurityPolicy) = 0;
+          should_check_main_world_content_security_policy) = 0;
 
-  virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
-  virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;
+  virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
+  virtual void DispatchWillSubmitForm(HTMLFormElement*) = 0;
 
-  virtual void didStartLoading(LoadStartType) = 0;
-  virtual void progressEstimateChanged(double progressEstimate) = 0;
-  virtual void didStopLoading() = 0;
+  virtual void DidStartLoading(LoadStartType) = 0;
+  virtual void ProgressEstimateChanged(double progress_estimate) = 0;
+  virtual void DidStopLoading() = 0;
 
-  virtual void loadURLExternally(const ResourceRequest&,
+  virtual void LoadURLExternally(const ResourceRequest&,
                                  NavigationPolicy,
-                                 const String& suggestedName,
-                                 bool replacesCurrentHistoryItem) = 0;
-  virtual void loadErrorPage(int reason) = 0;
+                                 const String& suggested_name,
+                                 bool replaces_current_history_item) = 0;
+  virtual void LoadErrorPage(int reason) = 0;
 
-  virtual bool navigateBackForward(int offset) const = 0;
+  virtual bool NavigateBackForward(int offset) const = 0;
 
   // Another page has accessed the initial empty document of this frame. It is
   // no longer safe to display a provisional URL, since a URL spoof is now
   // possible.
-  virtual void didAccessInitialDocument() {}
+  virtual void DidAccessInitialDocument() {}
 
   // This frame has displayed inactive content (such as an image) from an
   // insecure source.  Inactive content cannot spread to other frames.
-  virtual void didDisplayInsecureContent() = 0;
+  virtual void DidDisplayInsecureContent() = 0;
 
   // This frame contains a form that submits to an insecure target url.
-  virtual void didContainInsecureFormAction() = 0;
+  virtual void DidContainInsecureFormAction() = 0;
 
   // The indicated security origin has run active content (such as a script)
   // from an insecure source.  Note that the insecure content can spread to
   // other frames in the same origin.
-  virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) = 0;
-  virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
-  virtual void didDispatchPingLoader(const KURL&) = 0;
+  virtual void DidRunInsecureContent(SecurityOrigin*, const KURL&) = 0;
+  virtual void DidDetectXSS(const KURL&, bool did_block_entire_page) = 0;
+  virtual void DidDispatchPingLoader(const KURL&) = 0;
 
   // The frame displayed content with certificate errors with given URL.
-  virtual void didDisplayContentWithCertificateErrors(const KURL&) = 0;
+  virtual void DidDisplayContentWithCertificateErrors(const KURL&) = 0;
   // The frame ran content with certificate errors with the given URL.
-  virtual void didRunContentWithCertificateErrors(const KURL&) = 0;
+  virtual void DidRunContentWithCertificateErrors(const KURL&) = 0;
 
   // Will be called when |PerformanceTiming| events are updated
-  virtual void didChangePerformanceTiming() {}
+  virtual void DidChangePerformanceTiming() {}
 
   // Will be called when a particular loading code path has been used. This
   // propogates renderer loading behavior to the browser process for histograms.
-  virtual void didObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
+  virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 
   // Transmits the change in the set of watched CSS selectors property that
   // match any element on the frame.
-  virtual void selectorMatchChanged(const Vector<String>& addedSelectors,
-                                    const Vector<String>& removedSelectors) = 0;
+  virtual void SelectorMatchChanged(
+      const Vector<String>& added_selectors,
+      const Vector<String>& removed_selectors) = 0;
 
-  virtual DocumentLoader* createDocumentLoader(LocalFrame*,
+  virtual DocumentLoader* CreateDocumentLoader(LocalFrame*,
                                                const ResourceRequest&,
                                                const SubstituteData&,
                                                ClientRedirectPolicy) = 0;
 
-  virtual String userAgent() = 0;
+  virtual String UserAgent() = 0;
 
-  virtual String doNotTrackValue() = 0;
+  virtual String DoNotTrackValue() = 0;
 
-  virtual void transitionToCommittedForNewPage() = 0;
+  virtual void TransitionToCommittedForNewPage() = 0;
 
-  virtual LocalFrame* createFrame(const FrameLoadRequest&,
+  virtual LocalFrame* CreateFrame(const FrameLoadRequest&,
                                   const AtomicString& name,
                                   HTMLFrameOwnerElement*) = 0;
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.
   enum DetachedPluginPolicy {
-    FailOnDetachedPlugin,
-    AllowDetachedPlugin,
+    kFailOnDetachedPlugin,
+    kAllowDetachedPlugin,
   };
-  virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
-  virtual PluginView* createPlugin(HTMLPlugInElement*,
+  virtual bool CanCreatePluginWithoutRenderer(
+      const String& mime_type) const = 0;
+  virtual PluginView* CreatePlugin(HTMLPlugInElement*,
                                    const KURL&,
                                    const Vector<String>&,
                                    const Vector<String>&,
                                    const String&,
-                                   bool loadManually,
+                                   bool load_manually,
                                    DetachedPluginPolicy) = 0;
 
-  virtual std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
+  virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) = 0;
-  virtual WebRemotePlaybackClient* createWebRemotePlaybackClient(
+  virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 
-  virtual ObjectContentType getObjectContentType(
+  virtual ObjectContentType GetObjectContentType(
       const KURL&,
-      const String& mimeType,
-      bool shouldPreferPlugInsForImages) = 0;
+      const String& mime_type,
+      bool should_prefer_plug_ins_for_images) = 0;
 
-  virtual void didCreateNewDocument() = 0;
-  virtual void dispatchDidClearWindowObjectInMainWorld() = 0;
-  virtual void documentElementAvailable() = 0;
-  virtual void runScriptsAtDocumentElementAvailable() = 0;
-  virtual void runScriptsAtDocumentReady(bool documentIsEmpty) = 0;
-  virtual void runScriptsAtDocumentIdle() = 0;
+  virtual void DidCreateNewDocument() = 0;
+  virtual void DispatchDidClearWindowObjectInMainWorld() = 0;
+  virtual void DocumentElementAvailable() = 0;
+  virtual void RunScriptsAtDocumentElementAvailable() = 0;
+  virtual void RunScriptsAtDocumentReady(bool document_is_empty) = 0;
+  virtual void RunScriptsAtDocumentIdle() = 0;
 
-  virtual void didCreateScriptContext(v8::Local<v8::Context>, int worldId) = 0;
-  virtual void willReleaseScriptContext(v8::Local<v8::Context>,
-                                        int worldId) = 0;
-  virtual bool allowScriptExtensions() = 0;
+  virtual void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) = 0;
+  virtual void WillReleaseScriptContext(v8::Local<v8::Context>,
+                                        int world_id) = 0;
+  virtual bool AllowScriptExtensions() = 0;
 
-  virtual void didChangeScrollOffset() {}
-  virtual void didUpdateCurrentHistoryItem() {}
+  virtual void DidChangeScrollOffset() {}
+  virtual void DidUpdateCurrentHistoryItem() {}
 
-  virtual WebCookieJar* cookieJar() const = 0;
+  virtual WebCookieJar* CookieJar() const = 0;
 
-  virtual void didChangeName(const String&) {}
+  virtual void DidChangeName(const String&) {}
 
-  virtual void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
+  virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
-  virtual void didUpdateToUniqueOrigin() {}
+  virtual void DidUpdateToUniqueOrigin() {}
 
-  virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) {}
+  virtual void DidChangeSandboxFlags(Frame* child_frame, SandboxFlags) {}
 
-  virtual void didSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsedHeader) {}
+  virtual void DidSetFeaturePolicyHeader(
+      const WebParsedFeaturePolicy& parsed_header) {}
 
   // Called when a set of new Content Security Policies is added to the frame's
   // document. This can be triggered by handling of HTTP headers, handling of
   // <meta> element, or by inheriting CSP from the parent (in case of
   // about:blank).
-  virtual void didAddContentSecurityPolicies(
+  virtual void DidAddContentSecurityPolicies(
       const blink::WebVector<WebContentSecurityPolicy>&) {}
 
-  virtual void didChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
+  virtual void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
 
-  virtual void dispatchWillStartUsingPeerConnectionHandler(
+  virtual void DispatchWillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}
 
-  virtual bool allowWebGL(bool enabledPerSettings) {
-    return enabledPerSettings;
+  virtual bool AllowWebGL(bool enabled_per_settings) {
+    return enabled_per_settings;
   }
 
   // If an HTML document is being loaded, informs the embedder that the document
   // will have its <body> attached soon.
-  virtual void dispatchWillInsertBody() {}
+  virtual void DispatchWillInsertBody() {}
 
   virtual std::unique_ptr<WebServiceWorkerProvider>
-  createServiceWorkerProvider() = 0;
+  CreateServiceWorkerProvider() = 0;
 
-  virtual ContentSettingsClient& contentSettingsClient() = 0;
+  virtual ContentSettingsClient& GetContentSettingsClient() = 0;
 
-  virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() {
+  virtual SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() {
     return 0;
   }
 
-  virtual std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(
+  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) = 0;
 
-  virtual void dispatchDidChangeManifest() {}
+  virtual void DispatchDidChangeManifest() {}
 
-  virtual unsigned backForwardLength() { return 0; }
+  virtual unsigned BackForwardLength() { return 0; }
 
-  virtual bool isLocalFrameClientImpl() const { return false; }
+  virtual bool IsLocalFrameClientImpl() const { return false; }
 
   // Called when elements preventing the sudden termination of the frame become
   // present or stop being present. |type| is the type of element (BeforeUnload
   // handler, Unload handler).
   enum SuddenTerminationDisablerType {
-    BeforeUnloadHandler,
-    UnloadHandler,
+    kBeforeUnloadHandler,
+    kUnloadHandler,
   };
-  virtual void suddenTerminationDisablerChanged(bool present,
+  virtual void SuddenTerminationDisablerChanged(bool present,
                                                 SuddenTerminationDisablerType) {
   }
 
-  virtual LinkResource* createServiceWorkerLinkResource(HTMLLinkElement*) {
+  virtual LinkResource* CreateServiceWorkerLinkResource(HTMLLinkElement*) {
     return nullptr;
   }
 
   // Effective connection type when this frame was loaded.
-  virtual WebEffectiveConnectionType getEffectiveConnectionType() {
-    return WebEffectiveConnectionType::TypeUnknown;
+  virtual WebEffectiveConnectionType GetEffectiveConnectionType() {
+    return WebEffectiveConnectionType::kTypeUnknown;
   }
 
   // Overwrites the given URL to use an HTML5 embed if possible. An empty URL is
   // returned if the URL is not overriden.
-  virtual KURL overrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
+  virtual KURL OverrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
 
-  virtual BlameContext* frameBlameContext() { return nullptr; }
+  virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
-  virtual void setHasReceivedUserGesture() {}
+  virtual void SetHasReceivedUserGesture() {}
 
-  virtual void abortClientNavigation() {}
+  virtual void AbortClientNavigation() {}
 
-  virtual TextCheckerClient& textCheckerClient() const = 0;
+  virtual TextCheckerClient& GetTextCheckerClient() const = 0;
 };
 
 }  // namespace blink

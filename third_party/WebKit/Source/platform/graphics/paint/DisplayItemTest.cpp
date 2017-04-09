@@ -12,10 +12,10 @@ namespace {
 #ifndef NDEBUG
 TEST(DisplayItemTest, DebugStringsExist) {
   for (int type = 0; type <= DisplayItem::kTypeLast; type++) {
-    String debugString =
-        DisplayItem::typeAsDebugString(static_cast<DisplayItem::Type>(type));
-    EXPECT_FALSE(debugString.isEmpty());
-    EXPECT_NE("Unknown", debugString);
+    String debug_string =
+        DisplayItem::TypeAsDebugString(static_cast<DisplayItem::Type>(type));
+    EXPECT_FALSE(debug_string.IsEmpty());
+    EXPECT_NE("Unknown", debug_string);
   }
 }
 #endif  // NDEBUG

@@ -66,26 +66,26 @@ class WebCompositorSupport;
 class WebThread;
 
 class TestingCompositorSupport : public WebCompositorSupport {
-  std::unique_ptr<WebLayer> createLayer() override;
-  std::unique_ptr<WebLayer> createLayerFromCCLayer(cc::Layer*) override;
-  std::unique_ptr<WebContentLayer> createContentLayer(
+  std::unique_ptr<WebLayer> CreateLayer() override;
+  std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
+  std::unique_ptr<WebContentLayer> CreateContentLayer(
       WebContentLayerClient*) override;
-  std::unique_ptr<WebExternalTextureLayer> createExternalTextureLayer(
+  std::unique_ptr<WebExternalTextureLayer> CreateExternalTextureLayer(
       cc::TextureLayerClient*) override;
-  std::unique_ptr<WebImageLayer> createImageLayer() override;
-  std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
+  std::unique_ptr<WebImageLayer> CreateImageLayer() override;
+  std::unique_ptr<WebScrollbarLayer> CreateScrollbarLayer(
       std::unique_ptr<WebScrollbar>,
       WebScrollbarThemePainter,
       std::unique_ptr<WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<WebScrollbarLayer> createOverlayScrollbarLayer(
+  std::unique_ptr<WebScrollbarLayer> CreateOverlayScrollbarLayer(
       std::unique_ptr<WebScrollbar>,
       WebScrollbarThemePainter,
       std::unique_ptr<WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
+  std::unique_ptr<WebScrollbarLayer> CreateSolidColorScrollbarLayer(
       WebScrollbar::Orientation,
-      int thumbThickness,
-      int trackStart,
-      bool isLeftSideVerticalScrollbar) override;
+      int thumb_thickness,
+      int track_start,
+      bool is_left_side_vertical_scrollbar) override;
 };
 
 // A base class to override Platform methods for testing.  You can override the
@@ -96,7 +96,7 @@ class TestingPlatformSupport : public Platform {
 
  public:
   struct Config {
-    WebCompositorSupport* compositorSupport = nullptr;
+    WebCompositorSupport* compositor_support = nullptr;
   };
 
   TestingPlatformSupport();
@@ -105,27 +105,27 @@ class TestingPlatformSupport : public Platform {
   ~TestingPlatformSupport() override;
 
   // Platform:
-  WebString defaultLocale() override;
-  WebCompositorSupport* compositorSupport() override;
-  WebThread* currentThread() override;
-  WebBlobRegistry* getBlobRegistry() override;
-  WebClipboard* clipboard() override;
-  WebFileUtilities* fileUtilities() override;
-  WebIDBFactory* idbFactory() override;
-  WebURLLoaderMockFactory* getURLLoaderMockFactory() override;
-  blink::WebURLLoader* createURLLoader() override;
-  WebData loadResource(const char* name) override;
-  WebURLError cancelledError(const WebURL&) const override;
-  InterfaceProvider* interfaceProvider() override;
+  WebString DefaultLocale() override;
+  WebCompositorSupport* CompositorSupport() override;
+  WebThread* CurrentThread() override;
+  WebBlobRegistry* GetBlobRegistry() override;
+  WebClipboard* Clipboard() override;
+  WebFileUtilities* GetFileUtilities() override;
+  WebIDBFactory* IdbFactory() override;
+  WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
+  blink::WebURLLoader* CreateURLLoader() override;
+  WebData LoadResource(const char* name) override;
+  WebURLError CancelledError(const WebURL&) const override;
+  InterfaceProvider* GetInterfaceProvider() override;
 
-  virtual void runUntilIdle();
+  virtual void RunUntilIdle();
 
  protected:
   class TestingInterfaceProvider;
 
-  const Config m_config;
-  Platform* const m_oldPlatform;
-  std::unique_ptr<TestingInterfaceProvider> m_interfaceProvider;
+  const Config config_;
+  Platform* const old_platform_;
+  std::unique_ptr<TestingInterfaceProvider> interface_provider_;
 };
 
 // This class adds mocked scheduler support to TestingPlatformSupport.  See also
@@ -139,10 +139,10 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   ~TestingPlatformSupportWithMockScheduler() override;
 
   // Platform:
-  WebThread* currentThread() override;
+  WebThread* CurrentThread() override;
 
   // Runs a single task.
-  void runSingleTask();
+  void RunSingleTask();
 
   // Runs all currently queued immediate tasks and delayed tasks whose delay has
   // expired plus any immediate tasks that are posted as a result of running
@@ -151,29 +151,29 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // This function ignores future delayed tasks when deciding if the system is
   // idle.  If you need to ensure delayed tasks run, try runForPeriodSeconds()
   // instead.
-  void runUntilIdle() override;
+  void RunUntilIdle() override;
 
   // Runs for |seconds| the testing clock is advanced by |seconds|.  Note real
   // time elapsed will typically much less than |seconds| because delays between
   // timers are fast forwarded.
-  void runForPeriodSeconds(double seconds);
+  void RunForPeriodSeconds(double seconds);
 
   // Advances |m_clock| by |seconds|.
-  void advanceClockSeconds(double seconds);
+  void AdvanceClockSeconds(double seconds);
 
-  scheduler::RendererScheduler* rendererScheduler() const;
+  scheduler::RendererScheduler* GetRendererScheduler() const;
 
   // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
   // be advanced to the next timer when there's no more immediate work to do.
-  void setAutoAdvanceNowToPendingTasks(bool);
+  void SetAutoAdvanceNowToPendingTasks(bool);
 
  protected:
-  static double getTestTime();
+  static double GetTestTime();
 
-  std::unique_ptr<base::SimpleTestTickClock> m_clock;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> m_mockTaskRunner;
-  std::unique_ptr<scheduler::RendererSchedulerImpl> m_scheduler;
-  std::unique_ptr<WebThread> m_thread;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<WebThread> thread_;
 };
 
 // ScopedTestingPlatformSupport<MyTestingPlatformSupport> can be used to
@@ -204,23 +204,23 @@ class ScopedTestingPlatformSupport final {
 
  public:
   explicit ScopedTestingPlatformSupport(Args&&... args) {
-    m_testingPlatformSupport = WTF::makeUnique<T>(std::forward<Args>(args)...);
-    m_originalPlatform = Platform::current();
-    DCHECK(m_originalPlatform);
-    Platform::setCurrentPlatformForTesting(m_testingPlatformSupport.get());
+    testing_platform_support_ = WTF::MakeUnique<T>(std::forward<Args>(args)...);
+    original_platform_ = Platform::Current();
+    DCHECK(original_platform_);
+    Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
   }
   ~ScopedTestingPlatformSupport() {
-    DCHECK_EQ(m_testingPlatformSupport.get(), Platform::current());
-    m_testingPlatformSupport.reset();
-    Platform::setCurrentPlatformForTesting(m_originalPlatform);
+    DCHECK_EQ(testing_platform_support_.get(), Platform::Current());
+    testing_platform_support_.reset();
+    Platform::SetCurrentPlatformForTesting(original_platform_);
   }
 
-  const T* operator->() const { return m_testingPlatformSupport.get(); }
-  T* operator->() { return m_testingPlatformSupport.get(); }
+  const T* operator->() const { return testing_platform_support_.get(); }
+  T* operator->() { return testing_platform_support_.get(); }
 
  private:
-  std::unique_ptr<T> m_testingPlatformSupport;
-  Platform* m_originalPlatform;
+  std::unique_ptr<T> testing_platform_support_;
+  Platform* original_platform_;
 };
 
 class ScopedUnittestsEnvironmentSetup final {
@@ -233,11 +233,11 @@ class ScopedUnittestsEnvironmentSetup final {
  private:
   class DummyPlatform;
   std::unique_ptr<base::TestDiscardableMemoryAllocator>
-      m_discardableMemoryAllocator;
-  std::unique_ptr<DummyPlatform> m_dummyPlatform;
-  std::unique_ptr<cc_blink::WebCompositorSupportImpl> m_compositorSupport;
-  TestingPlatformSupport::Config m_testingPlatformConfig;
-  std::unique_ptr<TestingPlatformSupport> m_testingPlatformSupport;
+      discardable_memory_allocator_;
+  std::unique_ptr<DummyPlatform> dummy_platform_;
+  std::unique_ptr<cc_blink::WebCompositorSupportImpl> compositor_support_;
+  TestingPlatformSupport::Config testing_platform_config_;
+  std::unique_ptr<TestingPlatformSupport> testing_platform_support_;
 };
 
 }  // namespace blink

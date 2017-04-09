@@ -23,20 +23,20 @@ struct CORE_EXPORT InspectorHighlightConfig {
   InspectorHighlightConfig();
 
   Color content;
-  Color contentOutline;
+  Color content_outline;
   Color padding;
   Color border;
   Color margin;
-  Color eventTarget;
+  Color event_target;
   Color shape;
-  Color shapeMargin;
+  Color shape_margin;
 
-  bool showInfo;
-  bool showRulers;
-  bool showExtensionLines;
-  bool displayAsMaterial;
+  bool show_info;
+  bool show_rulers;
+  bool show_extension_lines;
+  bool display_as_material;
 
-  String selectorList;
+  String selector_list;
 };
 
 class CORE_EXPORT InspectorHighlight {
@@ -45,40 +45,40 @@ class CORE_EXPORT InspectorHighlight {
  public:
   InspectorHighlight(Node*,
                      const InspectorHighlightConfig&,
-                     bool appendElementInfo);
+                     bool append_element_info);
   explicit InspectorHighlight(float scale);
   ~InspectorHighlight();
 
-  static bool getBoxModel(Node*, std::unique_ptr<protocol::DOM::BoxModel>*);
-  static InspectorHighlightConfig defaultConfig();
-  static bool buildNodeQuads(Node*,
+  static bool GetBoxModel(Node*, std::unique_ptr<protocol::DOM::BoxModel>*);
+  static InspectorHighlightConfig DefaultConfig();
+  static bool BuildNodeQuads(Node*,
                              FloatQuad* content,
                              FloatQuad* padding,
                              FloatQuad* border,
                              FloatQuad* margin);
 
-  void appendPath(std::unique_ptr<protocol::ListValue> path,
-                  const Color& fillColor,
-                  const Color& outlineColor,
+  void AppendPath(std::unique_ptr<protocol::ListValue> path,
+                  const Color& fill_color,
+                  const Color& outline_color,
                   const String& name = String());
-  void appendQuad(const FloatQuad&,
-                  const Color& fillColor,
-                  const Color& outlineColor = Color::transparent,
+  void AppendQuad(const FloatQuad&,
+                  const Color& fill_color,
+                  const Color& outline_color = Color::kTransparent,
                   const String& name = String());
-  void appendEventTargetQuads(Node* eventTargetNode,
+  void AppendEventTargetQuads(Node* event_target_node,
                               const InspectorHighlightConfig&);
-  std::unique_ptr<protocol::DictionaryValue> asProtocolValue() const;
+  std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const;
 
  private:
-  void appendNodeHighlight(Node*, const InspectorHighlightConfig&);
-  void appendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
+  void AppendNodeHighlight(Node*, const InspectorHighlightConfig&);
+  void AppendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
-  std::unique_ptr<protocol::DictionaryValue> m_elementInfo;
-  std::unique_ptr<protocol::ListValue> m_highlightPaths;
-  bool m_showRulers;
-  bool m_showExtensionLines;
-  bool m_displayAsMaterial;
-  float m_scale;
+  std::unique_ptr<protocol::DictionaryValue> element_info_;
+  std::unique_ptr<protocol::ListValue> highlight_paths_;
+  bool show_rulers_;
+  bool show_extension_lines_;
+  bool display_as_material_;
+  float scale_;
 };
 
 }  // namespace blink

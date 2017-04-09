@@ -42,36 +42,36 @@ class ClassCollection final : public HTMLCollection {
   // share the same class names.  It is also used to construct a
   // SpaceSplitString (m_classNames) and its constructor requires an
   // AtomicString.
-  static ClassCollection* create(ContainerNode& rootNode,
+  static ClassCollection* Create(ContainerNode& root_node,
                                  CollectionType type,
-                                 const AtomicString& classNames) {
-    DCHECK_EQ(type, ClassCollectionType);
-    return new ClassCollection(rootNode, classNames);
+                                 const AtomicString& class_names) {
+    DCHECK_EQ(type, kClassCollectionType);
+    return new ClassCollection(root_node, class_names);
   }
 
   ~ClassCollection() override;
 
-  bool elementMatches(const Element&) const;
+  bool ElementMatches(const Element&) const;
 
  private:
-  ClassCollection(ContainerNode& rootNode, const AtomicString& classNames);
+  ClassCollection(ContainerNode& root_node, const AtomicString& class_names);
 
-  SpaceSplitString m_classNames;
-  AtomicString m_originalClassNames;
+  SpaceSplitString class_names_;
+  AtomicString original_class_names_;
 };
 
 DEFINE_TYPE_CASTS(ClassCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == ClassCollectionType,
-                  collection.type() == ClassCollectionType);
+                  collection->GetType() == kClassCollectionType,
+                  collection.GetType() == kClassCollectionType);
 
-inline bool ClassCollection::elementMatches(const Element& testElement) const {
-  if (!testElement.hasClass())
+inline bool ClassCollection::ElementMatches(const Element& test_element) const {
+  if (!test_element.HasClass())
     return false;
-  if (!m_classNames.size())
+  if (!class_names_.size())
     return false;
-  return testElement.classNames().containsAll(m_classNames);
+  return test_element.ClassNames().ContainsAll(class_names_);
 }
 
 }  // namespace blink

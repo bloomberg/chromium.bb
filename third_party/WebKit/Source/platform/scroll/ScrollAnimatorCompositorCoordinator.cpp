@@ -21,322 +21,326 @@
 namespace blink {
 
 ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
-    : m_compositorAnimationAttachedToElementId(),
-      m_runState(RunState::Idle),
-      m_compositorAnimationId(0),
-      m_compositorAnimationGroupId(0),
-      m_implOnlyAnimationTakeover(false) {
-  m_compositorPlayer = CompositorAnimationPlayer::create();
-  ASSERT(m_compositorPlayer);
-  m_compositorPlayer->setAnimationDelegate(this);
+    : compositor_animation_attached_to_element_id_(),
+      run_state_(RunState::kIdle),
+      compositor_animation_id_(0),
+      compositor_animation_group_id_(0),
+      impl_only_animation_takeover_(false) {
+  compositor_player_ = CompositorAnimationPlayer::Create();
+  ASSERT(compositor_player_);
+  compositor_player_->SetAnimationDelegate(this);
 }
 
 ScrollAnimatorCompositorCoordinator::~ScrollAnimatorCompositorCoordinator() {}
 
-void ScrollAnimatorCompositorCoordinator::dispose() {
-  m_compositorPlayer->setAnimationDelegate(nullptr);
-  m_compositorPlayer.reset();
+void ScrollAnimatorCompositorCoordinator::Dispose() {
+  compositor_player_->SetAnimationDelegate(nullptr);
+  compositor_player_.reset();
 }
 
-void ScrollAnimatorCompositorCoordinator::resetAnimationIds() {
-  m_compositorAnimationId = 0;
-  m_compositorAnimationGroupId = 0;
+void ScrollAnimatorCompositorCoordinator::ResetAnimationIds() {
+  compositor_animation_id_ = 0;
+  compositor_animation_group_id_ = 0;
 }
 
-void ScrollAnimatorCompositorCoordinator::resetAnimationState() {
-  m_runState = RunState::Idle;
-  resetAnimationIds();
+void ScrollAnimatorCompositorCoordinator::ResetAnimationState() {
+  run_state_ = RunState::kIdle;
+  ResetAnimationIds();
 }
 
-bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService()
+bool ScrollAnimatorCompositorCoordinator::HasAnimationThatRequiresService()
     const {
-  if (hasImplOnlyAnimationUpdate())
+  if (HasImplOnlyAnimationUpdate())
     return true;
 
-  switch (m_runState) {
-    case RunState::Idle:
-    case RunState::RunningOnCompositor:
+  switch (run_state_) {
+    case RunState::kIdle:
+    case RunState::kRunningOnCompositor:
       return false;
-    case RunState::WaitingToCancelOnCompositorButNewScroll:
-    case RunState::PostAnimationCleanup:
-    case RunState::WaitingToSendToCompositor:
-    case RunState::RunningOnMainThread:
-    case RunState::RunningOnCompositorButNeedsUpdate:
-    case RunState::RunningOnCompositorButNeedsTakeover:
-    case RunState::RunningOnCompositorButNeedsAdjustment:
-    case RunState::WaitingToCancelOnCompositor:
+    case RunState::kWaitingToCancelOnCompositorButNewScroll:
+    case RunState::kPostAnimationCleanup:
+    case RunState::kWaitingToSendToCompositor:
+    case RunState::kRunningOnMainThread:
+    case RunState::kRunningOnCompositorButNeedsUpdate:
+    case RunState::kRunningOnCompositorButNeedsTakeover:
+    case RunState::kRunningOnCompositorButNeedsAdjustment:
+    case RunState::kWaitingToCancelOnCompositor:
       return true;
   }
   ASSERT_NOT_REACHED();
   return false;
 }
 
-bool ScrollAnimatorCompositorCoordinator::addAnimation(
+bool ScrollAnimatorCompositorCoordinator::AddAnimation(
     std::unique_ptr<CompositorAnimation> animation) {
-  if (m_compositorPlayer->isElementAttached()) {
-    m_compositorPlayer->addAnimation(std::move(animation));
+  if (compositor_player_->IsElementAttached()) {
+    compositor_player_->AddAnimation(std::move(animation));
     return true;
   }
   return false;
 }
 
-void ScrollAnimatorCompositorCoordinator::removeAnimation() {
-  if (m_compositorPlayer->isElementAttached())
-    m_compositorPlayer->removeAnimation(m_compositorAnimationId);
+void ScrollAnimatorCompositorCoordinator::RemoveAnimation() {
+  if (compositor_player_->IsElementAttached())
+    compositor_player_->RemoveAnimation(compositor_animation_id_);
 }
 
-void ScrollAnimatorCompositorCoordinator::abortAnimation() {
-  if (m_compositorPlayer->isElementAttached())
-    m_compositorPlayer->abortAnimation(m_compositorAnimationId);
+void ScrollAnimatorCompositorCoordinator::AbortAnimation() {
+  if (compositor_player_->IsElementAttached())
+    compositor_player_->AbortAnimation(compositor_animation_id_);
 }
 
-void ScrollAnimatorCompositorCoordinator::cancelAnimation() {
-  switch (m_runState) {
-    case RunState::Idle:
-    case RunState::WaitingToCancelOnCompositor:
-    case RunState::PostAnimationCleanup:
+void ScrollAnimatorCompositorCoordinator::CancelAnimation() {
+  switch (run_state_) {
+    case RunState::kIdle:
+    case RunState::kWaitingToCancelOnCompositor:
+    case RunState::kPostAnimationCleanup:
       break;
-    case RunState::WaitingToSendToCompositor:
-      if (m_compositorAnimationId) {
+    case RunState::kWaitingToSendToCompositor:
+      if (compositor_animation_id_) {
         // We still have a previous animation running on the compositor.
-        m_runState = RunState::WaitingToCancelOnCompositor;
+        run_state_ = RunState::kWaitingToCancelOnCompositor;
       } else {
-        resetAnimationState();
+        ResetAnimationState();
       }
       break;
-    case RunState::RunningOnMainThread:
-      m_runState = RunState::PostAnimationCleanup;
+    case RunState::kRunningOnMainThread:
+      run_state_ = RunState::kPostAnimationCleanup;
       break;
-    case RunState::WaitingToCancelOnCompositorButNewScroll:
-    case RunState::RunningOnCompositorButNeedsAdjustment:
-    case RunState::RunningOnCompositorButNeedsTakeover:
-    case RunState::RunningOnCompositorButNeedsUpdate:
-    case RunState::RunningOnCompositor:
-      m_runState = RunState::WaitingToCancelOnCompositor;
+    case RunState::kWaitingToCancelOnCompositorButNewScroll:
+    case RunState::kRunningOnCompositorButNeedsAdjustment:
+    case RunState::kRunningOnCompositorButNeedsTakeover:
+    case RunState::kRunningOnCompositorButNeedsUpdate:
+    case RunState::kRunningOnCompositor:
+      run_state_ = RunState::kWaitingToCancelOnCompositor;
 
       // Get serviced the next time compositor updates are allowed.
-      getScrollableArea()->registerForAnimation();
+      GetScrollableArea()->RegisterForAnimation();
   }
 }
 
-void ScrollAnimatorCompositorCoordinator::takeOverCompositorAnimation() {
-  switch (m_runState) {
-    case RunState::Idle:
-      takeOverImplOnlyScrollOffsetAnimation();
+void ScrollAnimatorCompositorCoordinator::TakeOverCompositorAnimation() {
+  switch (run_state_) {
+    case RunState::kIdle:
+      TakeOverImplOnlyScrollOffsetAnimation();
       break;
-    case RunState::WaitingToCancelOnCompositor:
-    case RunState::WaitingToCancelOnCompositorButNewScroll:
-    case RunState::PostAnimationCleanup:
-    case RunState::RunningOnCompositorButNeedsTakeover:
-    case RunState::WaitingToSendToCompositor:
-    case RunState::RunningOnMainThread:
+    case RunState::kWaitingToCancelOnCompositor:
+    case RunState::kWaitingToCancelOnCompositorButNewScroll:
+    case RunState::kPostAnimationCleanup:
+    case RunState::kRunningOnCompositorButNeedsTakeover:
+    case RunState::kWaitingToSendToCompositor:
+    case RunState::kRunningOnMainThread:
       break;
-    case RunState::RunningOnCompositorButNeedsAdjustment:
-    case RunState::RunningOnCompositorButNeedsUpdate:
-    case RunState::RunningOnCompositor:
+    case RunState::kRunningOnCompositorButNeedsAdjustment:
+    case RunState::kRunningOnCompositorButNeedsUpdate:
+    case RunState::kRunningOnCompositor:
       // We call abortAnimation that makes changes to the animation running on
       // the compositor. Thus, this function should only be called when in
       // CompositingClean state.
-      abortAnimation();
+      AbortAnimation();
 
-      m_runState = RunState::RunningOnCompositorButNeedsTakeover;
+      run_state_ = RunState::kRunningOnCompositorButNeedsTakeover;
 
       // Get serviced the next time compositor updates are allowed.
-      getScrollableArea()->registerForAnimation();
+      GetScrollableArea()->RegisterForAnimation();
   }
 }
 
-void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
-    int groupId) {
-  if (m_compositorAnimationGroupId != groupId)
+void ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(
+    int group_id) {
+  if (compositor_animation_group_id_ != group_id)
     return;
 
-  m_compositorAnimationId = 0;
-  m_compositorAnimationGroupId = 0;
+  compositor_animation_id_ = 0;
+  compositor_animation_group_id_ = 0;
 
-  switch (m_runState) {
-    case RunState::Idle:
-    case RunState::PostAnimationCleanup:
-    case RunState::RunningOnMainThread:
+  switch (run_state_) {
+    case RunState::kIdle:
+    case RunState::kPostAnimationCleanup:
+    case RunState::kRunningOnMainThread:
       ASSERT_NOT_REACHED();
       break;
-    case RunState::WaitingToSendToCompositor:
-    case RunState::WaitingToCancelOnCompositorButNewScroll:
+    case RunState::kWaitingToSendToCompositor:
+    case RunState::kWaitingToCancelOnCompositorButNewScroll:
       break;
-    case RunState::RunningOnCompositor:
-    case RunState::RunningOnCompositorButNeedsAdjustment:
-    case RunState::RunningOnCompositorButNeedsUpdate:
-    case RunState::RunningOnCompositorButNeedsTakeover:
-    case RunState::WaitingToCancelOnCompositor:
-      m_runState = RunState::PostAnimationCleanup;
+    case RunState::kRunningOnCompositor:
+    case RunState::kRunningOnCompositorButNeedsAdjustment:
+    case RunState::kRunningOnCompositorButNeedsUpdate:
+    case RunState::kRunningOnCompositorButNeedsTakeover:
+    case RunState::kWaitingToCancelOnCompositor:
+      run_state_ = RunState::kPostAnimationCleanup;
       // Get serviced the next time compositor updates are allowed.
-      if (getScrollableArea())
-        getScrollableArea()->registerForAnimation();
+      if (GetScrollableArea())
+        GetScrollableArea()->RegisterForAnimation();
       else
-        resetAnimationState();
+        ResetAnimationState();
   }
 }
 
-bool ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
+bool ScrollAnimatorCompositorCoordinator::ReattachCompositorPlayerIfNeeded(
     CompositorAnimationTimeline* timeline) {
   bool reattached = false;
-  CompositorElementId compositorAnimationAttachedToElementId;
-  if (getScrollableArea()->layerForScrolling()) {
-    compositorAnimationAttachedToElementId =
-        getScrollableArea()->layerForScrolling()->platformLayer()->elementId();
-    DCHECK(compositorAnimationAttachedToElementId);
+  CompositorElementId compositor_animation_attached_to_element_id;
+  if (GetScrollableArea()->LayerForScrolling()) {
+    compositor_animation_attached_to_element_id = GetScrollableArea()
+                                                      ->LayerForScrolling()
+                                                      ->PlatformLayer()
+                                                      ->GetElementId();
+    DCHECK(compositor_animation_attached_to_element_id);
   }
 
-  if (compositorAnimationAttachedToElementId !=
-      m_compositorAnimationAttachedToElementId) {
-    if (m_compositorPlayer && timeline) {
+  if (compositor_animation_attached_to_element_id !=
+      compositor_animation_attached_to_element_id_) {
+    if (compositor_player_ && timeline) {
       // Detach from old layer (if any).
-      if (m_compositorAnimationAttachedToElementId) {
-        if (m_compositorPlayer->isElementAttached())
-          m_compositorPlayer->detachElement();
-        timeline->playerDestroyed(*this);
+      if (compositor_animation_attached_to_element_id_) {
+        if (compositor_player_->IsElementAttached())
+          compositor_player_->DetachElement();
+        timeline->PlayerDestroyed(*this);
       }
       // Attach to new layer (if any).
-      if (compositorAnimationAttachedToElementId) {
-        DCHECK(!m_compositorPlayer->isElementAttached());
-        timeline->playerAttached(*this);
-        m_compositorPlayer->attachElement(
-            compositorAnimationAttachedToElementId);
+      if (compositor_animation_attached_to_element_id) {
+        DCHECK(!compositor_player_->IsElementAttached());
+        timeline->PlayerAttached(*this);
+        compositor_player_->AttachElement(
+            compositor_animation_attached_to_element_id);
         reattached = true;
       }
-      m_compositorAnimationAttachedToElementId =
-          compositorAnimationAttachedToElementId;
+      compositor_animation_attached_to_element_id_ =
+          compositor_animation_attached_to_element_id;
     }
   }
 
   return reattached;
 }
 
-void ScrollAnimatorCompositorCoordinator::notifyAnimationStarted(
-    double monotonicTime,
+void ScrollAnimatorCompositorCoordinator::NotifyAnimationStarted(
+    double monotonic_time,
     int group) {}
 
-void ScrollAnimatorCompositorCoordinator::notifyAnimationFinished(
-    double monotonicTime,
+void ScrollAnimatorCompositorCoordinator::NotifyAnimationFinished(
+    double monotonic_time,
     int group) {
-  notifyCompositorAnimationFinished(group);
+  NotifyCompositorAnimationFinished(group);
 }
 
-void ScrollAnimatorCompositorCoordinator::notifyAnimationAborted(
-    double monotonicTime,
+void ScrollAnimatorCompositorCoordinator::NotifyAnimationAborted(
+    double monotonic_time,
     int group) {
   // An animation aborted by the compositor is treated as a finished
   // animation.
-  notifyCompositorAnimationFinished(group);
+  NotifyCompositorAnimationFinished(group);
 }
 
 CompositorAnimationPlayer*
-ScrollAnimatorCompositorCoordinator::compositorPlayer() const {
-  return m_compositorPlayer.get();
+ScrollAnimatorCompositorCoordinator::CompositorPlayer() const {
+  return compositor_player_.get();
 }
 
-FloatPoint ScrollAnimatorCompositorCoordinator::compositorOffsetFromBlinkOffset(
+FloatPoint ScrollAnimatorCompositorCoordinator::CompositorOffsetFromBlinkOffset(
     ScrollOffset offset) {
-  return getScrollableArea()->scrollOrigin() + offset;
+  return GetScrollableArea()->ScrollOrigin() + offset;
 }
 
 ScrollOffset
-ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(
+ScrollAnimatorCompositorCoordinator::BlinkOffsetFromCompositorOffset(
     FloatPoint offset) {
-  return offset - getScrollableArea()->scrollOrigin();
+  return offset - GetScrollableArea()->ScrollOrigin();
 }
 
-bool ScrollAnimatorCompositorCoordinator::hasImplOnlyAnimationUpdate() const {
-  return !m_implOnlyAnimationAdjustment.isZero() || m_implOnlyAnimationTakeover;
+bool ScrollAnimatorCompositorCoordinator::HasImplOnlyAnimationUpdate() const {
+  return !impl_only_animation_adjustment_.IsZero() ||
+         impl_only_animation_takeover_;
 }
 
-void ScrollAnimatorCompositorCoordinator::updateImplOnlyCompositorAnimations() {
-  if (!hasImplOnlyAnimationUpdate())
+void ScrollAnimatorCompositorCoordinator::UpdateImplOnlyCompositorAnimations() {
+  if (!HasImplOnlyAnimationUpdate())
     return;
 
-  GraphicsLayer* layer = getScrollableArea()->layerForScrolling();
+  GraphicsLayer* layer = GetScrollableArea()->LayerForScrolling();
   CompositorAnimationHost* host =
-      getScrollableArea()->compositorAnimationHost();
+      GetScrollableArea()->GetCompositorAnimationHost();
   if (layer && host) {
-    CompositorElementId elementId = layer->platformLayer()->elementId();
-    if (!m_implOnlyAnimationAdjustment.isZero()) {
-      host->adjustImplOnlyScrollOffsetAnimation(
-          elementId, gfx::Vector2dF(m_implOnlyAnimationAdjustment.width(),
-                                    m_implOnlyAnimationAdjustment.height()));
+    CompositorElementId element_id = layer->PlatformLayer()->GetElementId();
+    if (!impl_only_animation_adjustment_.IsZero()) {
+      host->AdjustImplOnlyScrollOffsetAnimation(
+          element_id, gfx::Vector2dF(impl_only_animation_adjustment_.Width(),
+                                     impl_only_animation_adjustment_.Height()));
     }
-    if (m_implOnlyAnimationTakeover)
-      host->takeOverImplOnlyScrollOffsetAnimation(elementId);
+    if (impl_only_animation_takeover_)
+      host->TakeOverImplOnlyScrollOffsetAnimation(element_id);
   }
-  m_implOnlyAnimationAdjustment = IntSize();
-  m_implOnlyAnimationTakeover = false;
+  impl_only_animation_adjustment_ = IntSize();
+  impl_only_animation_takeover_ = false;
 }
 
-void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations() {
-  if (!getScrollableArea()->scrollAnimatorEnabled())
+void ScrollAnimatorCompositorCoordinator::UpdateCompositorAnimations() {
+  if (!GetScrollableArea()->ScrollAnimatorEnabled())
     return;
 
-  updateImplOnlyCompositorAnimations();
+  UpdateImplOnlyCompositorAnimations();
 }
 
-void ScrollAnimatorCompositorCoordinator::scrollOffsetChanged(
+void ScrollAnimatorCompositorCoordinator::ScrollOffsetChanged(
     const ScrollOffset& offset,
-    ScrollType scrollType) {
-  getScrollableArea()->scrollOffsetChanged(offset, scrollType);
+    ScrollType scroll_type) {
+  GetScrollableArea()->ScrollOffsetChanged(offset, scroll_type);
 }
 
-void ScrollAnimatorCompositorCoordinator::adjustAnimationAndSetScrollOffset(
+void ScrollAnimatorCompositorCoordinator::AdjustAnimationAndSetScrollOffset(
     const ScrollOffset& offset,
-    ScrollType scrollType) {
+    ScrollType scroll_type) {
   // Subclasses should override this and adjust the animation as necessary.
-  scrollOffsetChanged(offset, scrollType);
+  ScrollOffsetChanged(offset, scroll_type);
 }
 
-void ScrollAnimatorCompositorCoordinator::adjustImplOnlyScrollOffsetAnimation(
+void ScrollAnimatorCompositorCoordinator::AdjustImplOnlyScrollOffsetAnimation(
     const IntSize& adjustment) {
-  if (!getScrollableArea()->scrollAnimatorEnabled())
+  if (!GetScrollableArea()->ScrollAnimatorEnabled())
     return;
 
-  m_implOnlyAnimationAdjustment.expand(adjustment.width(), adjustment.height());
+  impl_only_animation_adjustment_.Expand(adjustment.Width(),
+                                         adjustment.Height());
 
-  getScrollableArea()->registerForAnimation();
+  GetScrollableArea()->RegisterForAnimation();
 }
 
 void ScrollAnimatorCompositorCoordinator::
-    takeOverImplOnlyScrollOffsetAnimation() {
-  if (!getScrollableArea()->scrollAnimatorEnabled())
+    TakeOverImplOnlyScrollOffsetAnimation() {
+  if (!GetScrollableArea()->ScrollAnimatorEnabled())
     return;
 
-  m_implOnlyAnimationTakeover = true;
+  impl_only_animation_takeover_ = true;
 
   // Update compositor animations right away to avoid skipping a frame.
   // This imposes the constraint that this function should only be called
   // from or after DocumentLifecycle::LifecycleState::CompositingClean state.
-  updateImplOnlyCompositorAnimations();
+  UpdateImplOnlyCompositorAnimations();
 
-  getScrollableArea()->registerForAnimation();
+  GetScrollableArea()->RegisterForAnimation();
 }
 
-String ScrollAnimatorCompositorCoordinator::runStateAsText() const {
-  switch (m_runState) {
-    case RunState::Idle:
+String ScrollAnimatorCompositorCoordinator::RunStateAsText() const {
+  switch (run_state_) {
+    case RunState::kIdle:
       return String("Idle");
-    case RunState::WaitingToSendToCompositor:
+    case RunState::kWaitingToSendToCompositor:
       return String("WaitingToSendToCompositor");
-    case RunState::RunningOnCompositor:
+    case RunState::kRunningOnCompositor:
       return String("RunningOnCompositor");
-    case RunState::RunningOnMainThread:
+    case RunState::kRunningOnMainThread:
       return String("RunningOnMainThread");
-    case RunState::RunningOnCompositorButNeedsUpdate:
+    case RunState::kRunningOnCompositorButNeedsUpdate:
       return String("RunningOnCompositorButNeedsUpdate");
-    case RunState::WaitingToCancelOnCompositor:
+    case RunState::kWaitingToCancelOnCompositor:
       return String("WaitingToCancelOnCompositor");
-    case RunState::PostAnimationCleanup:
+    case RunState::kPostAnimationCleanup:
       return String("PostAnimationCleanup");
-    case RunState::RunningOnCompositorButNeedsTakeover:
+    case RunState::kRunningOnCompositorButNeedsTakeover:
       return String("RunningOnCompositorButNeedsTakeover");
-    case RunState::WaitingToCancelOnCompositorButNewScroll:
+    case RunState::kWaitingToCancelOnCompositorButNewScroll:
       return String("WaitingToCancelOnCompositorButNewScroll");
-    case RunState::RunningOnCompositorButNeedsAdjustment:
+    case RunState::kRunningOnCompositorButNeedsAdjustment:
       return String("RunningOnCompositorButNeedsAdjustment");
   }
   ASSERT_NOT_REACHED();

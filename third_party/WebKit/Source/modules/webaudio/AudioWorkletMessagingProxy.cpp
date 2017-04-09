@@ -10,14 +10,14 @@
 namespace blink {
 
 AudioWorkletMessagingProxy::AudioWorkletMessagingProxy(
-    ExecutionContext* executionContext)
-    : ThreadedWorkletMessagingProxy(executionContext) {}
+    ExecutionContext* execution_context)
+    : ThreadedWorkletMessagingProxy(execution_context) {}
 
 AudioWorkletMessagingProxy::~AudioWorkletMessagingProxy() {}
 
-std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::createWorkerThread(
-    double originTime) {
-  return AudioWorkletThread::create(loaderProxy(), workletObjectProxy());
+std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread(
+    double origin_time) {
+  return AudioWorkletThread::Create(LoaderProxy(), WorkletObjectProxy());
 }
 
 }  // namespace blink

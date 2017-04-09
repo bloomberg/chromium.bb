@@ -40,11 +40,11 @@ namespace blink {
 // TODO(xiaochengh): Rename TextCheckerClient to SpellCheckerClient.
 class PLATFORM_EXPORT TextCheckerClient {
  public:
-  virtual void checkSpellingOfString(const String&,
-                                     int* misspellingLocation,
-                                     int* misspellingLength) = 0;
-  virtual void requestCheckingOfString(TextCheckingRequest*) = 0;
-  virtual void cancelAllPendingRequests() = 0;
+  virtual void CheckSpellingOfString(const String&,
+                                     int* misspelling_location,
+                                     int* misspelling_length) = 0;
+  virtual void RequestCheckingOfString(TextCheckingRequest*) = 0;
+  virtual void CancelAllPendingRequests() = 0;
 };
 
 }  // namespace blink

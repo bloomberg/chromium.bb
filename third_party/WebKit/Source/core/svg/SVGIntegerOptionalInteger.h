@@ -43,44 +43,44 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
   typedef void TearOffType;
   typedef void PrimitiveType;
 
-  static SVGIntegerOptionalInteger* create(SVGInteger* firstInteger,
-                                           SVGInteger* secondInteger) {
-    return new SVGIntegerOptionalInteger(firstInteger, secondInteger);
+  static SVGIntegerOptionalInteger* Create(SVGInteger* first_integer,
+                                           SVGInteger* second_integer) {
+    return new SVGIntegerOptionalInteger(first_integer, second_integer);
   }
 
-  SVGIntegerOptionalInteger* clone() const;
-  SVGPropertyBase* cloneForAnimation(const String&) const override;
+  SVGIntegerOptionalInteger* Clone() const;
+  SVGPropertyBase* CloneForAnimation(const String&) const override;
 
-  String valueAsString() const override;
-  SVGParsingError setValueAsString(const String&);
+  String ValueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
-                              SVGElement* contextElement) override;
-  float calculateDistance(SVGPropertyBase* to,
-                          SVGElement* contextElement) override;
+                              SVGPropertyBase* to_at_end_of_duration_value,
+                              SVGElement* context_element) override;
+  float CalculateDistance(SVGPropertyBase* to,
+                          SVGElement* context_element) override;
 
-  static AnimatedPropertyType classType() {
-    return AnimatedIntegerOptionalInteger;
+  static AnimatedPropertyType ClassType() {
+    return kAnimatedIntegerOptionalInteger;
   }
-  AnimatedPropertyType type() const override { return classType(); }
+  AnimatedPropertyType GetType() const override { return ClassType(); }
 
-  SVGInteger* firstInteger() const { return m_firstInteger; }
-  SVGInteger* secondInteger() const { return m_secondInteger; }
+  SVGInteger* FirstInteger() const { return first_integer_; }
+  SVGInteger* SecondInteger() const { return second_integer_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  SVGIntegerOptionalInteger(SVGInteger* firstInteger,
-                            SVGInteger* secondInteger);
+  SVGIntegerOptionalInteger(SVGInteger* first_integer,
+                            SVGInteger* second_integer);
 
-  Member<SVGInteger> m_firstInteger;
-  Member<SVGInteger> m_secondInteger;
+  Member<SVGInteger> first_integer_;
+  Member<SVGInteger> second_integer_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGIntegerOptionalInteger);

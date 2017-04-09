@@ -26,7 +26,7 @@ void DeviceOrientationEventPumpBase::FireEvent() {
   device::OrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
     memcpy(&data_, &data, sizeof(data));
-    listener()->didChangeDeviceOrientation(data);
+    listener()->DidChangeDeviceOrientation(data);
   }
 }
 
@@ -69,7 +69,7 @@ void DeviceOrientationEventPumpBase::SendFakeDataForTesting(void* fake_data) {
   device::OrientationData data =
       *static_cast<device::OrientationData*>(fake_data);
 
-  listener()->didChangeDeviceOrientation(data);
+  listener()->DidChangeDeviceOrientation(data);
 }
 
 }  // namespace content

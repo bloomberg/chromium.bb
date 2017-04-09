@@ -51,7 +51,7 @@ class CORE_EXPORT PerformanceNavigation final
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 
  public:
-  static PerformanceNavigation* create(LocalFrame* frame) {
+  static PerformanceNavigation* Create(LocalFrame* frame) {
     return new PerformanceNavigation(frame);
   }
 

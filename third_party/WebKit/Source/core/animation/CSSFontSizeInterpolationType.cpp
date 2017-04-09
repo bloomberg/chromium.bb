@@ -18,134 +18,135 @@ namespace {
 
 class IsMonospaceChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<IsMonospaceChecker> create(bool isMonospace) {
-    return WTF::wrapUnique(new IsMonospaceChecker(isMonospace));
+  static std::unique_ptr<IsMonospaceChecker> Create(bool is_monospace) {
+    return WTF::WrapUnique(new IsMonospaceChecker(is_monospace));
   }
 
  private:
-  IsMonospaceChecker(bool isMonospace) : m_isMonospace(isMonospace) {}
+  IsMonospaceChecker(bool is_monospace) : is_monospace_(is_monospace) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    return m_isMonospace ==
-           environment.state().style()->getFontDescription().isMonospace();
+    return is_monospace_ ==
+           environment.GetState().Style()->GetFontDescription().IsMonospace();
   }
 
-  const bool m_isMonospace;
+  const bool is_monospace_;
 };
 
 class InheritedFontSizeChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedFontSizeChecker> create(
-      const FontDescription::Size& inheritedFontSize) {
-    return WTF::wrapUnique(new InheritedFontSizeChecker(inheritedFontSize));
+  static std::unique_ptr<InheritedFontSizeChecker> Create(
+      const FontDescription::Size& inherited_font_size) {
+    return WTF::WrapUnique(new InheritedFontSizeChecker(inherited_font_size));
   }
 
  private:
-  InheritedFontSizeChecker(const FontDescription::Size& inheritedFontSize)
-      : m_inheritedFontSize(inheritedFontSize.value) {}
+  InheritedFontSizeChecker(const FontDescription::Size& inherited_font_size)
+      : inherited_font_size_(inherited_font_size.value) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    return m_inheritedFontSize ==
-           environment.state().parentFontDescription().getSize().value;
+    return inherited_font_size_ ==
+           environment.GetState().ParentFontDescription().GetSize().value;
   }
 
-  const float m_inheritedFontSize;
+  const float inherited_font_size_;
 };
 
-InterpolationValue convertFontSize(float size) {
+InterpolationValue ConvertFontSize(float size) {
   return InterpolationValue(
-      LengthInterpolationFunctions::createInterpolablePixels(size));
+      LengthInterpolationFunctions::CreateInterpolablePixels(size));
 }
 
-InterpolationValue maybeConvertKeyword(
-    CSSValueID valueID,
+InterpolationValue MaybeConvertKeyword(
+    CSSValueID value_id,
     const StyleResolverState& state,
-    InterpolationType::ConversionCheckers& conversionCheckers) {
-  if (FontSize::isValidValueID(valueID)) {
-    bool isMonospace = state.style()->getFontDescription().isMonospace();
-    conversionCheckers.push_back(IsMonospaceChecker::create(isMonospace));
-    return convertFontSize(state.fontBuilder().fontSizeForKeyword(
-        FontSize::keywordSize(valueID), isMonospace));
+    InterpolationType::ConversionCheckers& conversion_checkers) {
+  if (FontSize::IsValidValueID(value_id)) {
+    bool is_monospace = state.Style()->GetFontDescription().IsMonospace();
+    conversion_checkers.push_back(IsMonospaceChecker::Create(is_monospace));
+    return ConvertFontSize(state.GetFontBuilder().FontSizeForKeyword(
+        FontSize::KeywordSize(value_id), is_monospace));
   }
 
-  if (valueID != CSSValueSmaller && valueID != CSSValueLarger)
+  if (value_id != CSSValueSmaller && value_id != CSSValueLarger)
     return nullptr;
 
-  const FontDescription::Size& inheritedFontSize =
-      state.parentFontDescription().getSize();
-  conversionCheckers.push_back(
-      InheritedFontSizeChecker::create(inheritedFontSize));
-  if (valueID == CSSValueSmaller)
-    return convertFontSize(
-        FontDescription::smallerSize(inheritedFontSize).value);
-  return convertFontSize(FontDescription::largerSize(inheritedFontSize).value);
+  const FontDescription::Size& inherited_font_size =
+      state.ParentFontDescription().GetSize();
+  conversion_checkers.push_back(
+      InheritedFontSizeChecker::Create(inherited_font_size));
+  if (value_id == CSSValueSmaller)
+    return ConvertFontSize(
+        FontDescription::SmallerSize(inherited_font_size).value);
+  return ConvertFontSize(
+      FontDescription::LargerSize(inherited_font_size).value);
 }
 
 }  // namespace
 
-InterpolationValue CSSFontSizeInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSFontSizeInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
   return InterpolationValue(
-      LengthInterpolationFunctions::createNeutralInterpolableValue());
+      LengthInterpolationFunctions::CreateNeutralInterpolableValue());
 }
 
-InterpolationValue CSSFontSizeInterpolationType::maybeConvertInitial(
+InterpolationValue CSSFontSizeInterpolationType::MaybeConvertInitial(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  return maybeConvertKeyword(FontSize::initialValueID(), state,
-                             conversionCheckers);
+    ConversionCheckers& conversion_checkers) const {
+  return MaybeConvertKeyword(FontSize::InitialValueID(), state,
+                             conversion_checkers);
 }
 
-InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(
+InterpolationValue CSSFontSizeInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  const FontDescription::Size& inheritedFontSize =
-      state.parentFontDescription().getSize();
-  conversionCheckers.push_back(
-      InheritedFontSizeChecker::create(inheritedFontSize));
-  return convertFontSize(inheritedFontSize.value);
+    ConversionCheckers& conversion_checkers) const {
+  const FontDescription::Size& inherited_font_size =
+      state.ParentFontDescription().GetSize();
+  conversion_checkers.push_back(
+      InheritedFontSizeChecker::Create(inherited_font_size));
+  return ConvertFontSize(inherited_font_size.value);
 }
 
-InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(
+InterpolationValue CSSFontSizeInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
-    ConversionCheckers& conversionCheckers) const {
+    ConversionCheckers& conversion_checkers) const {
   std::unique_ptr<InterpolableValue> result =
-      LengthInterpolationFunctions::maybeConvertCSSValue(value)
-          .interpolableValue;
+      LengthInterpolationFunctions::MaybeConvertCSSValue(value)
+          .interpolable_value;
   if (result)
     return InterpolationValue(std::move(result));
 
-  if (!value.isIdentifierValue())
+  if (!value.IsIdentifierValue())
     return nullptr;
 
   DCHECK(state);
-  return maybeConvertKeyword(toCSSIdentifierValue(value).getValueID(), *state,
-                             conversionCheckers);
+  return MaybeConvertKeyword(ToCSSIdentifierValue(value).GetValueID(), *state,
+                             conversion_checkers);
 }
 
 InterpolationValue
-CSSFontSizeInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSFontSizeInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return convertFontSize(style.specifiedFontSize());
+  return ConvertFontSize(style.SpecifiedFontSize());
 }
 
-void CSSFontSizeInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
+void CSSFontSizeInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*,
     StyleResolverState& state) const {
-  const FontDescription& parentFont = state.parentFontDescription();
-  Length fontSizeLength = LengthInterpolationFunctions::createLength(
-      interpolableValue, nullptr, state.fontSizeConversionData(),
-      ValueRangeNonNegative);
-  float fontSize =
-      floatValueForLength(fontSizeLength, parentFont.getSize().value);
-  state.fontBuilder().setSize(FontDescription::Size(
-      0, fontSize,
-      !fontSizeLength.isPercentOrCalc() || parentFont.isAbsoluteSize()));
+  const FontDescription& parent_font = state.ParentFontDescription();
+  Length font_size_length = LengthInterpolationFunctions::CreateLength(
+      interpolable_value, nullptr, state.FontSizeConversionData(),
+      kValueRangeNonNegative);
+  float font_size =
+      FloatValueForLength(font_size_length, parent_font.GetSize().value);
+  state.GetFontBuilder().SetSize(FontDescription::Size(
+      0, font_size,
+      !font_size_length.IsPercentOrCalc() || parent_font.IsAbsoluteSize()));
 }
 
 }  // namespace blink

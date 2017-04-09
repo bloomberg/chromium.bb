@@ -41,12 +41,12 @@ namespace blink {
 // with other macros and ease of code generation
 #define TOSTRING_VOID(type, var, value) \
   type var(value);                      \
-  if (UNLIKELY(!var.prepare()))         \
+  if (UNLIKELY(!var.Prepare()))         \
     return;
 
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
   type var(value);                                 \
-  if (UNLIKELY(!var.prepare()))                    \
+  if (UNLIKELY(!var.Prepare()))                    \
     return retVal;
 
 // Checks for a given v8::Value (value) whether it is an ArrayBufferView and
@@ -63,40 +63,42 @@ namespace blink {
 // Use To/ToLocal/ToChecked/ToLocalChecked instead.
 // TODO(haraken): Remove these macros.
 template <typename T>
-inline bool v8Call(v8::Maybe<T> maybe, T& outVariable) {
+inline bool V8Call(v8::Maybe<T> maybe, T& out_variable) {
   if (maybe.IsNothing())
     return false;
-  outVariable = maybe.FromJust();
+  out_variable = maybe.FromJust();
   return true;
 }
 
 // DEPRECATED
-inline bool v8CallBoolean(v8::Maybe<bool> maybe) {
+inline bool V8CallBoolean(v8::Maybe<bool> maybe) {
   bool result;
-  return v8Call(maybe, result) && result;
+  return V8Call(maybe, result) && result;
 }
 
 // DEPRECATED
 template <typename T>
-inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch) {
-  bool success = v8Call(maybe, outVariable);
-  ASSERT(success || tryCatch.HasCaught());
+inline bool V8Call(v8::Maybe<T> maybe,
+                   T& out_variable,
+                   v8::TryCatch& try_catch) {
+  bool success = V8Call(maybe, out_variable);
+  ASSERT(success || try_catch.HasCaught());
   return success;
 }
 
 // DEPRECATED
 template <typename T>
-inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable) {
-  return maybeLocal.ToLocal(&outVariable);
+inline bool V8Call(v8::MaybeLocal<T> maybe_local, v8::Local<T>& out_variable) {
+  return maybe_local.ToLocal(&out_variable);
 }
 
 // DEPRECATED
 template <typename T>
-inline bool v8Call(v8::MaybeLocal<T> maybeLocal,
-                   v8::Local<T>& outVariable,
-                   v8::TryCatch& tryCatch) {
-  bool success = maybeLocal.ToLocal(&outVariable);
-  ASSERT(success || tryCatch.HasCaught());
+inline bool V8Call(v8::MaybeLocal<T> maybe_local,
+                   v8::Local<T>& out_variable,
+                   v8::TryCatch& try_catch) {
+  bool success = maybe_local.ToLocal(&out_variable);
+  ASSERT(success || try_catch.HasCaught());
   return success;
 }
 

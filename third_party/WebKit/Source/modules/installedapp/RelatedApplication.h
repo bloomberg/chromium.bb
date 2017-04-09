@@ -17,7 +17,7 @@ class RelatedApplication final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RelatedApplication* create(const String& platform,
+  static RelatedApplication* Create(const String& platform,
                                     const String& url,
                                     const String& id) {
     return new RelatedApplication(platform, url, id);
@@ -25,9 +25,9 @@ class RelatedApplication final
 
   virtual ~RelatedApplication() {}
 
-  String platform() const { return m_platform; }
-  String url() const { return m_url; }
-  String id() const { return m_id; }
+  String platform() const { return platform_; }
+  String url() const { return url_; }
+  String id() const { return id_; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -35,11 +35,11 @@ class RelatedApplication final
   RelatedApplication(const String& platform,
                      const String& url,
                      const String& id)
-      : m_platform(platform), m_url(url), m_id(id) {}
+      : platform_(platform), url_(url), id_(id) {}
 
-  const String m_platform;
-  const String m_url;
-  const String m_id;
+  const String platform_;
+  const String url_;
+  const String id_;
 };
 
 }  // namespace blink

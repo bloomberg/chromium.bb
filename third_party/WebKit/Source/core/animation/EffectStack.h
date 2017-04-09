@@ -56,29 +56,29 @@ class CORE_EXPORT EffectStack {
  public:
   EffectStack();
 
-  void add(SampledEffect* sampledEffect) {
-    m_sampledEffects.push_back(sampledEffect);
+  void Add(SampledEffect* sampled_effect) {
+    sampled_effects_.push_back(sampled_effect);
   }
-  bool isEmpty() const { return m_sampledEffects.isEmpty(); }
-  bool hasActiveAnimationsOnCompositor(const PropertyHandle&) const;
+  bool IsEmpty() const { return sampled_effects_.IsEmpty(); }
+  bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
-  bool affectsProperties(PropertyHandleFilter) const;
-  static ActiveInterpolationsMap activeInterpolations(
+  bool AffectsProperties(PropertyHandleFilter) const;
+  static ActiveInterpolationsMap ActiveInterpolations(
       EffectStack*,
-      const HeapVector<Member<const InertEffect>>* newAnimations,
-      const HeapHashSet<Member<const Animation>>* suppressedAnimations,
+      const HeapVector<Member<const InertEffect>>* new_animations,
+      const HeapHashSet<Member<const Animation>>* suppressed_animations,
       KeyframeEffectReadOnly::Priority,
       PropertyHandleFilter = nullptr);
 
-  bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
+  bool GetAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
   DECLARE_TRACE();
 
  private:
-  void removeRedundantSampledEffects();
+  void RemoveRedundantSampledEffects();
 
   // Effects sorted by priority. Lower priority at the start of the list.
-  HeapVector<Member<SampledEffect>> m_sampledEffects;
+  HeapVector<Member<SampledEffect>> sampled_effects_;
 
   friend class AnimationEffectStackTest;
 };

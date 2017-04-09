@@ -46,10 +46,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
 IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
                           content::CONSOLE_MESSAGE_LEVEL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameSerializerCacheControlPolicy,
-                          blink::WebFrameSerializerCacheControlPolicy::Last)
+                          blink::WebFrameSerializerCacheControlPolicy::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
-                          blink::WebReferrerPolicyLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSecurityStyle, blink::WebSecurityStyleLast)
+                          blink::kWebReferrerPolicyLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSecurityStyle, blink::kWebSecurityStyleLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionStatus,
                           blink::mojom::PermissionStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,

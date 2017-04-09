@@ -42,7 +42,7 @@ bool ChromePrintWebViewHelperDelegate::CancelPrerender(
 blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
         blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  GURL url = frame->document().url();
+  GURL url = frame->GetDocument().Url();
   bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
   bool inside_pdf_extension =
       url.SchemeIs(extensions::kExtensionScheme) &&
@@ -50,8 +50,8 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
   if (inside_print_preview || inside_pdf_extension) {
     // <object> with id="plugin" is created in
     // chrome/browser/resources/pdf/pdf.js.
-    auto plugin_element = frame->document().getElementById("plugin");
-    if (!plugin_element.isNull()) {
+    auto plugin_element = frame->GetDocument().GetElementById("plugin");
+    if (!plugin_element.IsNull()) {
       return plugin_element;
     }
     NOTREACHED();
@@ -68,7 +68,7 @@ bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
 bool ChromePrintWebViewHelperDelegate::OverridePrint(
     blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!frame->document().isPluginDocument())
+  if (!frame->GetDocument().IsPluginDocument())
     return false;
 
   std::vector<extensions::MimeHandlerViewContainer*> mime_handlers =

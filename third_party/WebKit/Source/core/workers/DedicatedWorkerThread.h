@@ -40,33 +40,33 @@ class WorkerThreadStartupData;
 
 class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
  public:
-  static std::unique_ptr<DedicatedWorkerThread> create(
+  static std::unique_ptr<DedicatedWorkerThread> Create(
       PassRefPtr<WorkerLoaderProxy>,
       InProcessWorkerObjectProxy&,
-      double timeOrigin);
+      double time_origin);
   ~DedicatedWorkerThread() override;
 
-  WorkerBackingThread& workerBackingThread() override {
-    return *m_workerBackingThread;
+  WorkerBackingThread& GetWorkerBackingThread() override {
+    return *worker_backing_thread_;
   }
-  void clearWorkerBackingThread() override;
-  InProcessWorkerObjectProxy& workerObjectProxy() const {
-    return m_workerObjectProxy;
+  void ClearWorkerBackingThread() override;
+  InProcessWorkerObjectProxy& WorkerObjectProxy() const {
+    return worker_object_proxy_;
   }
 
  protected:
   DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>,
                         InProcessWorkerObjectProxy&,
-                        double timeOrigin);
-  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+                        double time_origin);
+  WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<WorkerThreadStartupData>) override;
 
  private:
   friend class DedicatedWorkerThreadForTest;
 
-  std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
-  InProcessWorkerObjectProxy& m_workerObjectProxy;
-  double m_timeOrigin;
+  std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
+  InProcessWorkerObjectProxy& worker_object_proxy_;
+  double time_origin_;
 };
 
 }  // namespace blink

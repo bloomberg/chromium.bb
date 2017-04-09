@@ -38,11 +38,11 @@ namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
  public:
-  virtual void encrypted(WebEncryptedMediaInitDataType,
-                         const unsigned char* initData,
-                         unsigned initDataLength) = 0;
-  virtual void didBlockPlaybackWaitingForKey() = 0;
-  virtual void didResumePlaybackBlockedForKey() = 0;
+  virtual void Encrypted(WebEncryptedMediaInitDataType,
+                         const unsigned char* init_data,
+                         unsigned init_data_length) = 0;
+  virtual void DidBlockPlaybackWaitingForKey() = 0;
+  virtual void DidResumePlaybackBlockedForKey() = 0;
 
  protected:
   ~WebMediaPlayerEncryptedMediaClient() {}

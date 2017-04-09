@@ -15,10 +15,10 @@ class NetworkHintsInterface;
 
 class CORE_EXPORT ResourcePreloader {
  public:
-  virtual void takeAndPreload(PreloadRequestStream&);
+  virtual void TakeAndPreload(PreloadRequestStream&);
 
  private:
-  virtual void preload(std::unique_ptr<PreloadRequest>,
+  virtual void Preload(std::unique_ptr<PreloadRequest>,
                        const NetworkHintsInterface&) = 0;
 };
 

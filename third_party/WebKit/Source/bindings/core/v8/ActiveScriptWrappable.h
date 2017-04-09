@@ -29,13 +29,13 @@ class CORE_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
  public:
   ActiveScriptWrappableBase();
 
-  static void traceActiveScriptWrappables(v8::Isolate*,
+  static void TraceActiveScriptWrappables(v8::Isolate*,
                                           ScriptWrappableVisitor*);
 
  protected:
-  virtual bool isContextDestroyed(ActiveScriptWrappableBase*) const = 0;
-  virtual bool dispatchHasPendingActivity(ActiveScriptWrappableBase*) const = 0;
-  virtual ScriptWrappable* toScriptWrappable(
+  virtual bool IsContextDestroyed(ActiveScriptWrappableBase*) const = 0;
+  virtual bool DispatchHasPendingActivity(ActiveScriptWrappableBase*) const = 0;
+  virtual ScriptWrappable* ToScriptWrappable(
       ActiveScriptWrappableBase*) const = 0;
 };
 
@@ -47,18 +47,18 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   ActiveScriptWrappable() {}
 
  protected:
-  bool isContextDestroyed(ActiveScriptWrappableBase* object) const final {
-    return !(static_cast<T*>(object)->T::getExecutionContext)() ||
-           (static_cast<T*>(object)->T::getExecutionContext)()
-               ->isContextDestroyed();
+  bool IsContextDestroyed(ActiveScriptWrappableBase* object) const final {
+    return !(static_cast<T*>(object)->T::GetExecutionContext)() ||
+           (static_cast<T*>(object)->T::GetExecutionContext)()
+               ->IsContextDestroyed();
   }
 
-  bool dispatchHasPendingActivity(
+  bool DispatchHasPendingActivity(
       ActiveScriptWrappableBase* object) const final {
-    return static_cast<T*>(object)->T::hasPendingActivity();
+    return static_cast<T*>(object)->T::HasPendingActivity();
   }
 
-  ScriptWrappable* toScriptWrappable(
+  ScriptWrappable* ToScriptWrappable(
       ActiveScriptWrappableBase* object) const final {
     return static_cast<T*>(object);
   }

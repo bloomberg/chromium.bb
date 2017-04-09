@@ -46,36 +46,36 @@ class ExecutionContext;
 class ThreadableLoaderClient;
 
 enum CrossOriginRequestPolicy {
-  DenyCrossOriginRequests,
-  UseAccessControl,
-  AllowCrossOriginRequests
+  kDenyCrossOriginRequests,
+  kUseAccessControl,
+  kAllowCrossOriginRequests
 };
 
-enum PreflightPolicy { ConsiderPreflight, ForcePreflight, PreventPreflight };
+enum PreflightPolicy { kConsiderPreflight, kForcePreflight, kPreventPreflight };
 
 enum ContentSecurityPolicyEnforcement {
-  EnforceContentSecurityPolicy,
-  DoNotEnforceContentSecurityPolicy,
+  kEnforceContentSecurityPolicy,
+  kDoNotEnforceContentSecurityPolicy,
 };
 
 struct ThreadableLoaderOptions {
   DISALLOW_NEW();
   ThreadableLoaderOptions()
-      : preflightPolicy(ConsiderPreflight),
-        crossOriginRequestPolicy(DenyCrossOriginRequests),
-        contentSecurityPolicyEnforcement(EnforceContentSecurityPolicy),
-        timeoutMilliseconds(0) {}
+      : preflight_policy(kConsiderPreflight),
+        cross_origin_request_policy(kDenyCrossOriginRequests),
+        content_security_policy_enforcement(kEnforceContentSecurityPolicy),
+        timeout_milliseconds(0) {}
 
   // When adding members, CrossThreadThreadableLoaderOptionsData should
   // be updated.
 
   // If AccessControl is used, how to determine if a preflight is needed.
-  PreflightPolicy preflightPolicy;
+  PreflightPolicy preflight_policy;
 
-  CrossOriginRequestPolicy crossOriginRequestPolicy;
+  CrossOriginRequestPolicy cross_origin_request_policy;
   AtomicString initiator;
-  ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
-  unsigned long timeoutMilliseconds;
+  ContentSecurityPolicyEnforcement content_security_policy_enforcement;
+  unsigned long timeout_milliseconds;
 };
 
 // Encode AtomicString as String to cross threads.
@@ -83,34 +83,35 @@ struct CrossThreadThreadableLoaderOptionsData {
   STACK_ALLOCATED();
   explicit CrossThreadThreadableLoaderOptionsData(
       const ThreadableLoaderOptions& options)
-      : preflightPolicy(options.preflightPolicy),
-        crossOriginRequestPolicy(options.crossOriginRequestPolicy),
-        initiator(options.initiator.getString().isolatedCopy()),
-        contentSecurityPolicyEnforcement(
-            options.contentSecurityPolicyEnforcement),
-        timeoutMilliseconds(options.timeoutMilliseconds) {}
+      : preflight_policy(options.preflight_policy),
+        cross_origin_request_policy(options.cross_origin_request_policy),
+        initiator(options.initiator.GetString().IsolatedCopy()),
+        content_security_policy_enforcement(
+            options.content_security_policy_enforcement),
+        timeout_milliseconds(options.timeout_milliseconds) {}
 
   operator ThreadableLoaderOptions() const {
     ThreadableLoaderOptions options;
-    options.preflightPolicy = preflightPolicy;
-    options.crossOriginRequestPolicy = crossOriginRequestPolicy;
+    options.preflight_policy = preflight_policy;
+    options.cross_origin_request_policy = cross_origin_request_policy;
     options.initiator = AtomicString(initiator);
-    options.contentSecurityPolicyEnforcement = contentSecurityPolicyEnforcement;
-    options.timeoutMilliseconds = timeoutMilliseconds;
+    options.content_security_policy_enforcement =
+        content_security_policy_enforcement;
+    options.timeout_milliseconds = timeout_milliseconds;
     return options;
   }
 
-  PreflightPolicy preflightPolicy;
-  CrossOriginRequestPolicy crossOriginRequestPolicy;
+  PreflightPolicy preflight_policy;
+  CrossOriginRequestPolicy cross_origin_request_policy;
   String initiator;
-  ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
-  unsigned long timeoutMilliseconds;
+  ContentSecurityPolicyEnforcement content_security_policy_enforcement;
+  unsigned long timeout_milliseconds;
 };
 
 template <>
 struct CrossThreadCopier<ThreadableLoaderOptions> {
   typedef CrossThreadThreadableLoaderOptionsData Type;
-  static Type copy(const ThreadableLoaderOptions& options) {
+  static Type Copy(const ThreadableLoaderOptions& options) {
     return CrossThreadThreadableLoaderOptionsData(options);
   }
 };
@@ -131,7 +132,7 @@ class CORE_EXPORT ThreadableLoader
   WTF_MAKE_NONCOPYABLE(ThreadableLoader);
 
  public:
-  static void loadResourceSynchronously(ExecutionContext&,
+  static void LoadResourceSynchronously(ExecutionContext&,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,
@@ -168,14 +169,14 @@ class CORE_EXPORT ThreadableLoader
   // also for cancellation happened inside the loader.)
   //
   // ThreadableLoaderClient methods may call cancel().
-  static ThreadableLoader* create(ExecutionContext&,
+  static ThreadableLoader* Create(ExecutionContext&,
                                   ThreadableLoaderClient*,
                                   const ThreadableLoaderOptions&,
                                   const ResourceLoaderOptions&);
 
   // The methods on the ThreadableLoaderClient passed on create() call
   // may be called synchronous to start() call.
-  virtual void start(const ResourceRequest&) = 0;
+  virtual void Start(const ResourceRequest&) = 0;
 
   // A ThreadableLoader may have a timeout specified. It is possible, in some
   // cases, for the timeout to be overridden after the request is sent (for
@@ -183,9 +184,9 @@ class CORE_EXPORT ThreadableLoader
   //
   // Set a new timeout relative to the time the request started, in
   // milliseconds.
-  virtual void overrideTimeout(unsigned long timeoutMilliseconds) = 0;
+  virtual void OverrideTimeout(unsigned long timeout_milliseconds) = 0;
 
-  virtual void cancel() = 0;
+  virtual void Cancel() = 0;
 
   virtual ~ThreadableLoader() {}
 

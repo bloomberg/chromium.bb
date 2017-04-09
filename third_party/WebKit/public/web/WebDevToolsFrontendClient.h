@@ -39,9 +39,9 @@ class WebDevToolsFrontendClient {
  public:
   WebDevToolsFrontendClient() {}
 
-  virtual void sendMessageToEmbedder(const WebString&) {}
+  virtual void SendMessageToEmbedder(const WebString&) {}
 
-  virtual bool isUnderTest() { return false; }
+  virtual bool IsUnderTest() { return false; }
 
  protected:
   virtual ~WebDevToolsFrontendClient() {}

@@ -27,22 +27,22 @@ PaintingControlToWeb(
     cc::ContentLayerClient::PaintingControlSetting painting_control) {
   switch (painting_control) {
     case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL:
-      return blink::WebContentLayerClient::PaintDefaultBehavior;
+      return blink::WebContentLayerClient::kPaintDefaultBehavior;
     case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST:
-      return blink::WebContentLayerClient::PaintDefaultBehaviorForTest;
+      return blink::WebContentLayerClient::kPaintDefaultBehaviorForTest;
     case cc::ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED:
-      return blink::WebContentLayerClient::DisplayListConstructionDisabled;
+      return blink::WebContentLayerClient::kDisplayListConstructionDisabled;
     case cc::ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED:
-      return blink::WebContentLayerClient::DisplayListCachingDisabled;
+      return blink::WebContentLayerClient::kDisplayListCachingDisabled;
     case cc::ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED:
-      return blink::WebContentLayerClient::DisplayListPaintingDisabled;
+      return blink::WebContentLayerClient::kDisplayListPaintingDisabled;
     case cc::ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED:
-      return blink::WebContentLayerClient::SubsequenceCachingDisabled;
+      return blink::WebContentLayerClient::kSubsequenceCachingDisabled;
     case cc::ContentLayerClient::PARTIAL_INVALIDATION:
-      return blink::WebContentLayerClient::PartialInvalidation;
+      return blink::WebContentLayerClient::kPartialInvalidation;
   }
   NOTREACHED();
-  return blink::WebContentLayerClient::PaintDefaultBehavior;
+  return blink::WebContentLayerClient::kPaintDefaultBehavior;
 }
 
 WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
@@ -55,17 +55,17 @@ WebContentLayerImpl::~WebContentLayerImpl() {
   static_cast<PictureLayer*>(layer_->layer())->ClearClient();
 }
 
-blink::WebLayer* WebContentLayerImpl::layer() {
+blink::WebLayer* WebContentLayerImpl::Layer() {
   return layer_.get();
 }
 
-void WebContentLayerImpl::setAllowTransformedRasterization(bool allowed) {
+void WebContentLayerImpl::SetAllowTransformedRasterization(bool allowed) {
   static_cast<PictureLayer*>(layer_->layer())
       ->SetAllowTransformedRasterization(allowed);
 }
 
 gfx::Rect WebContentLayerImpl::PaintableRegion() {
-  return client_->paintableRegion();
+  return client_->PaintableRegion();
 }
 
 scoped_refptr<cc::DisplayItemList>
@@ -74,7 +74,7 @@ WebContentLayerImpl::PaintContentsToDisplayList(
   auto display_list = make_scoped_refptr(new cc::DisplayItemList);
   if (client_) {
     WebDisplayItemListImpl list(display_list.get());
-    client_->paintContents(&list, PaintingControlToWeb(painting_control));
+    client_->PaintContents(&list, PaintingControlToWeb(painting_control));
   }
   display_list->Finalize();
   return display_list;
@@ -85,7 +85,7 @@ bool WebContentLayerImpl::FillsBoundsCompletely() const {
 }
 
 size_t WebContentLayerImpl::GetApproximateUnsharedMemoryUsage() const {
-  return client_->approximateUnsharedMemoryUsage();
+  return client_->ApproximateUnsharedMemoryUsage();
 }
 
 }  // namespace cc_blink

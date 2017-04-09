@@ -26,9 +26,9 @@
 namespace blink {
 
 inline CDATASection::CDATASection(Document& document, const String& data)
-    : Text(document, data, CreateText) {}
+    : Text(document, data, kCreateText) {}
 
-CDATASection* CDATASection::create(Document& document, const String& data) {
+CDATASection* CDATASection::Create(Document& document, const String& data) {
   return new CDATASection(document, data);
 }
 
@@ -40,8 +40,8 @@ Node::NodeType CDATASection::getNodeType() const {
   return kCdataSectionNode;
 }
 
-Text* CDATASection::cloneWithData(const String& data) {
-  return create(document(), data);
+Text* CDATASection::CloneWithData(const String& data) {
+  return Create(GetDocument(), data);
 }
 
 }  // namespace blink

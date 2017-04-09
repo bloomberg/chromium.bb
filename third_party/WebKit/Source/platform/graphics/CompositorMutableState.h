@@ -25,22 +25,22 @@ class PLATFORM_EXPORT CompositorMutableState {
                          cc::LayerImpl* scroll);
   ~CompositorMutableState();
 
-  double opacity() const;
-  void setOpacity(double);
+  double Opacity() const;
+  void SetOpacity(double);
 
-  const SkMatrix44& transform() const;
-  void setTransform(const SkMatrix44&);
+  const SkMatrix44& Transform() const;
+  void SetTransform(const SkMatrix44&);
 
-  float scrollLeft() const;
-  void setScrollLeft(float);
+  float ScrollLeft() const;
+  void SetScrollLeft(float);
 
-  float scrollTop() const;
-  void setScrollTop(float);
+  float ScrollTop() const;
+  void SetScrollTop(float);
 
  private:
-  CompositorMutation* m_mutation;
-  cc::LayerImpl* m_mainLayer;
-  cc::LayerImpl* m_scrollLayer;
+  CompositorMutation* mutation_;
+  cc::LayerImpl* main_layer_;
+  cc::LayerImpl* scroll_layer_;
 };
 
 }  // namespace blink

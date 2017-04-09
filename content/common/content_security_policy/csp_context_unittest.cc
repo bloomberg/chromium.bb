@@ -38,8 +38,8 @@ ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
                                   std::vector<CSPSource> sources) {
   return ContentSecurityPolicy(
       ContentSecurityPolicyHeader(std::string(),  // header
-                                  blink::WebContentSecurityPolicyTypeEnforce,
-                                  blink::WebContentSecurityPolicySourceHTTP),
+                                  blink::kWebContentSecurityPolicyTypeEnforce,
+                                  blink::kWebContentSecurityPolicySourceHTTP),
       {CSPDirective(directive_name, CSPSourceList(false, false, sources))},
       std::vector<std::string>());  // report_end_points
 }

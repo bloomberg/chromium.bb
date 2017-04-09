@@ -22,68 +22,69 @@ class TextControlElementTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  DummyPageHolder& page() const { return *m_dummyPageHolder; }
-  Document& document() const { return *m_document; }
-  TextControlElement& textControl() const { return *m_textControl; }
-  HTMLInputElement& input() const { return *m_input; }
+  DummyPageHolder& Page() const { return *dummy_page_holder_; }
+  Document& GetDocument() const { return *document_; }
+  TextControlElement& TextControl() const { return *text_control_; }
+  HTMLInputElement& Input() const { return *input_; }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 
-  Persistent<Document> m_document;
-  Persistent<TextControlElement> m_textControl;
-  Persistent<HTMLInputElement> m_input;
+  Persistent<Document> document_;
+  Persistent<TextControlElement> text_control_;
+  Persistent<HTMLInputElement> input_;
 };
 
 void TextControlElementTest::SetUp() {
-  Page::PageClients pageClients;
-  fillWithEmptyClients(pageClients);
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  dummy_page_holder_ =
+      DummyPageHolder::Create(IntSize(800, 600), &page_clients);
 
-  m_document = &m_dummyPageHolder->document();
-  m_document->documentElement()->setInnerHTML(
+  document_ = &dummy_page_holder_->GetDocument();
+  document_->documentElement()->setInnerHTML(
       "<body><textarea id=textarea></textarea><input id=input /></body>");
-  m_document->view()->updateAllLifecyclePhases();
-  m_textControl = toTextControlElement(m_document->getElementById("textarea"));
-  m_textControl->focus();
-  m_input = toHTMLInputElement(m_document->getElementById("input"));
+  document_->View()->UpdateAllLifecyclePhases();
+  text_control_ = ToTextControlElement(document_->GetElementById("textarea"));
+  text_control_->focus();
+  input_ = toHTMLInputElement(document_->GetElementById("input"));
 }
 
 TEST_F(TextControlElementTest, SetSelectionRange) {
-  EXPECT_EQ(0u, textControl().selectionStart());
-  EXPECT_EQ(0u, textControl().selectionEnd());
+  EXPECT_EQ(0u, TextControl().selectionStart());
+  EXPECT_EQ(0u, TextControl().selectionEnd());
 
-  textControl().setInnerEditorValue("Hello, text form.");
-  EXPECT_EQ(0u, textControl().selectionStart());
-  EXPECT_EQ(0u, textControl().selectionEnd());
+  TextControl().SetInnerEditorValue("Hello, text form.");
+  EXPECT_EQ(0u, TextControl().selectionStart());
+  EXPECT_EQ(0u, TextControl().selectionEnd());
 
-  textControl().setSelectionRange(1, 3);
-  EXPECT_EQ(1u, textControl().selectionStart());
-  EXPECT_EQ(3u, textControl().selectionEnd());
+  TextControl().SetSelectionRange(1, 3);
+  EXPECT_EQ(1u, TextControl().selectionStart());
+  EXPECT_EQ(3u, TextControl().selectionEnd());
 }
 
 TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
-  input().focus();
-  input().setValue("Hello, input form.");
-  input().setSelectionRange(1, 1);
+  Input().focus();
+  Input().setValue("Hello, input form.");
+  Input().SetSelectionRange(1, 1);
 
   // Force layout if document().updateStyleAndLayoutIgnorePendingStylesheets()
   // is called.
-  document().body()->appendChild(document().createTextNode("foo"));
-  const int startLayoutCount = page().frameView().layoutCount();
-  EXPECT_TRUE(document().needsLayoutTreeUpdate());
-  input().setSelectionRange(2, 2);
-  EXPECT_EQ(startLayoutCount, page().frameView().layoutCount());
+  GetDocument().body()->AppendChild(GetDocument().createTextNode("foo"));
+  const int start_layout_count = Page().GetFrameView().LayoutCount();
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  Input().SetSelectionRange(2, 2);
+  EXPECT_EQ(start_layout_count, Page().GetFrameView().LayoutCount());
 }
 
 TEST_F(TextControlElementTest, IndexForPosition) {
   HTMLInputElement* input =
-      toHTMLInputElement(document().getElementById("input"));
+      toHTMLInputElement(GetDocument().GetElementById("input"));
   input->setValue("Hello");
-  HTMLElement* innerEditor = input->innerEditorElement();
-  EXPECT_EQ(5u, TextControlElement::indexForPosition(
-                    innerEditor,
-                    Position(innerEditor, PositionAnchorType::AfterAnchor)));
+  HTMLElement* inner_editor = input->InnerEditorElement();
+  EXPECT_EQ(5u, TextControlElement::IndexForPosition(
+                    inner_editor,
+                    Position(inner_editor, PositionAnchorType::kAfterAnchor)));
 }
 
 }  // namespace blink

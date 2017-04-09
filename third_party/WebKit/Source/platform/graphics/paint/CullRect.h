@@ -25,22 +25,22 @@ class PLATFORM_EXPORT CullRect {
 
  public:
   CullRect() {}
-  explicit CullRect(const IntRect& rect) : m_rect(rect) {}
+  explicit CullRect(const IntRect& rect) : rect_(rect) {}
   CullRect(const CullRect&, const IntPoint& offset);
   CullRect(const CullRect&, const IntSize& offset);
 
-  bool intersectsCullRect(const AffineTransform&,
-                          const FloatRect& boundingBox) const;
-  void updateCullRect(const AffineTransform& localToParentTransform);
-  bool intersectsCullRect(const IntRect&) const;
-  bool intersectsCullRect(const LayoutRect&) const;
-  bool intersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
-  bool intersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
+  bool IntersectsCullRect(const AffineTransform&,
+                          const FloatRect& bounding_box) const;
+  void UpdateCullRect(const AffineTransform& local_to_parent_transform);
+  bool IntersectsCullRect(const IntRect&) const;
+  bool IntersectsCullRect(const LayoutRect&) const;
+  bool IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
+  bool IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
 
-  String toString() const { return m_rect.toString(); }
+  String ToString() const { return rect_.ToString(); }
 
  private:
-  IntRect m_rect;
+  IntRect rect_;
 
   friend bool operator==(const CullRect&, const CullRect&);
 
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT CullRect {
 };
 
 inline bool operator==(const CullRect& a, const CullRect& b) {
-  return a.m_rect == b.m_rect;
+  return a.rect_ == b.rect_;
 }
 inline bool operator!=(const CullRect& a, const CullRect& b) {
   return !(a == b);

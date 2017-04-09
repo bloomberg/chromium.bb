@@ -48,38 +48,38 @@ class PLATFORM_EXPORT Panner {
 
  public:
   // This values are used in histograms and should not be renumbered or deleted.
-  enum { PanningModelEqualPower = 0, PanningModelHRTF = 1 };
+  enum { kPanningModelEqualPower = 0, kPanningModelHRTF = 1 };
 
   typedef unsigned PanningModel;
 
-  static std::unique_ptr<Panner> create(PanningModel,
-                                        float sampleRate,
+  static std::unique_ptr<Panner> Create(PanningModel,
+                                        float sample_rate,
                                         HRTFDatabaseLoader*);
 
   virtual ~Panner(){};
 
-  virtual void pan(double azimuth,
+  virtual void Pan(double azimuth,
                    double elevation,
-                   const AudioBus* inputBus,
-                   AudioBus* outputBus,
-                   size_t framesToProcess,
+                   const AudioBus* input_bus,
+                   AudioBus* output_bus,
+                   size_t frames_to_process,
                    AudioBus::ChannelInterpretation) = 0;
-  virtual void panWithSampleAccurateValues(double* azimuth,
+  virtual void PanWithSampleAccurateValues(double* azimuth,
                                            double* elevation,
-                                           const AudioBus* inputBus,
-                                           AudioBus* outputBus,
-                                           size_t framesToProcess,
+                                           const AudioBus* input_bus,
+                                           AudioBus* output_bus,
+                                           size_t frames_to_process,
                                            AudioBus::ChannelInterpretation) = 0;
 
-  virtual void reset() = 0;
+  virtual void Reset() = 0;
 
-  virtual double tailTime() const = 0;
-  virtual double latencyTime() const = 0;
+  virtual double TailTime() const = 0;
+  virtual double LatencyTime() const = 0;
 
  protected:
-  Panner(PanningModel model) : m_panningModel(model) {}
+  Panner(PanningModel model) : panning_model_(model) {}
 
-  PanningModel m_panningModel;
+  PanningModel panning_model_;
 };
 
 }  // namespace blink

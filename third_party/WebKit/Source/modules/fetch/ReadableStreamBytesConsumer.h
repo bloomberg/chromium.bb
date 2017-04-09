@@ -28,21 +28,21 @@ class ScriptState;
 // alive appropriately.
 class MODULES_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   WTF_MAKE_NONCOPYABLE(ReadableStreamBytesConsumer);
-  USING_PRE_FINALIZER(ReadableStreamBytesConsumer, dispose);
+  USING_PRE_FINALIZER(ReadableStreamBytesConsumer, Dispose);
 
  public:
-  ReadableStreamBytesConsumer(ScriptState*, ScriptValue streamReader);
+  ReadableStreamBytesConsumer(ScriptState*, ScriptValue stream_reader);
   ~ReadableStreamBytesConsumer() override;
 
-  Result beginRead(const char** buffer, size_t* available) override;
-  Result endRead(size_t readSize) override;
-  void setClient(BytesConsumer::Client*) override;
-  void clearClient() override;
+  Result BeginRead(const char** buffer, size_t* available) override;
+  Result EndRead(size_t read_size) override;
+  void SetClient(BytesConsumer::Client*) override;
+  void ClearClient() override;
 
-  void cancel() override;
-  PublicState getPublicState() const override;
-  Error getError() const override;
-  String debugName() const override { return "ReadableStreamBytesConsumer"; }
+  void Cancel() override;
+  PublicState GetPublicState() const override;
+  Error GetError() const override;
+  String DebugName() const override { return "ReadableStreamBytesConsumer"; }
 
   DECLARE_TRACE();
 
@@ -50,23 +50,23 @@ class MODULES_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   class OnFulfilled;
   class OnRejected;
 
-  void dispose();
-  void onRead(DOMUint8Array*);
-  void onReadDone();
-  void onRejected();
-  void notify();
+  void Dispose();
+  void OnRead(DOMUint8Array*);
+  void OnReadDone();
+  void OnRejected();
+  void Notify();
 
   // |m_reader| is a weak persistent. It should be kept alive by someone
   // outside of ReadableStreamBytesConsumer.
   // Holding a ScopedPersistent here is safe in terms of cross-world wrapper
   // leakage because we read only Uint8Array chunks from the reader.
-  ScopedPersistent<v8::Value> m_reader;
-  RefPtr<ScriptState> m_scriptState;
-  Member<BytesConsumer::Client> m_client;
-  Member<DOMUint8Array> m_pendingBuffer;
-  size_t m_pendingOffset = 0;
-  PublicState m_state = PublicState::ReadableOrWaiting;
-  bool m_isReading = false;
+  ScopedPersistent<v8::Value> reader_;
+  RefPtr<ScriptState> script_state_;
+  Member<BytesConsumer::Client> client_;
+  Member<DOMUint8Array> pending_buffer_;
+  size_t pending_offset_ = 0;
+  PublicState state_ = PublicState::kReadableOrWaiting;
+  bool is_reading_ = false;
 };
 
 }  // namespace blink

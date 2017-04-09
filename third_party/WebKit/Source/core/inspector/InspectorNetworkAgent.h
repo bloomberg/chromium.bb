@@ -64,199 +64,199 @@ class WebSocketHandshakeResponse;
 class CORE_EXPORT InspectorNetworkAgent final
     : public InspectorBaseAgent<protocol::Network::Metainfo> {
  public:
-  static InspectorNetworkAgent* create(InspectedFrames* inspectedFrames) {
-    return new InspectorNetworkAgent(inspectedFrames);
+  static InspectorNetworkAgent* Create(InspectedFrames* inspected_frames) {
+    return new InspectorNetworkAgent(inspected_frames);
   }
 
-  void restore() override;
+  void Restore() override;
 
   ~InspectorNetworkAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
   // Probes.
-  void didBlockRequest(LocalFrame*,
+  void DidBlockRequest(LocalFrame*,
                        const ResourceRequest&,
                        DocumentLoader*,
                        const FetchInitiatorInfo&,
                        ResourceRequestBlockedReason);
-  void didChangeResourcePriority(unsigned long identifier,
+  void DidChangeResourcePriority(unsigned long identifier,
                                  ResourceLoadPriority);
-  void willSendRequest(LocalFrame*,
+  void WillSendRequest(LocalFrame*,
                        unsigned long identifier,
                        DocumentLoader*,
                        ResourceRequest&,
-                       const ResourceResponse& redirectResponse,
+                       const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&);
-  void markResourceAsCached(unsigned long identifier);
-  void didReceiveResourceResponse(LocalFrame*,
+  void MarkResourceAsCached(unsigned long identifier);
+  void DidReceiveResourceResponse(LocalFrame*,
                                   unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
                                   Resource*);
-  void didReceiveData(LocalFrame*,
+  void DidReceiveData(LocalFrame*,
                       unsigned long identifier,
                       const char* data,
-                      int dataLength);
-  void didReceiveEncodedDataLength(LocalFrame*,
+                      int data_length);
+  void DidReceiveEncodedDataLength(LocalFrame*,
                                    unsigned long identifier,
-                                   int encodedDataLength);
-  void didFinishLoading(LocalFrame*,
+                                   int encoded_data_length);
+  void DidFinishLoading(LocalFrame*,
                         unsigned long identifier,
-                        double monotonicFinishTime,
-                        int64_t encodedDataLength,
-                        int64_t decodedBodyLength);
-  void didReceiveCORSRedirectResponse(LocalFrame*,
+                        double monotonic_finish_time,
+                        int64_t encoded_data_length,
+                        int64_t decoded_body_length);
+  void DidReceiveCORSRedirectResponse(LocalFrame*,
                                       unsigned long identifier,
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
-  void didFailLoading(unsigned long identifier, const ResourceError&);
-  void didCommitLoad(LocalFrame*, DocumentLoader*);
-  void scriptImported(unsigned long identifier, const String& sourceString);
-  void didReceiveScriptResponse(unsigned long identifier);
-  void shouldForceCORSPreflight(bool* result);
-  void shouldBlockRequest(const ResourceRequest&, bool* result);
+  void DidFailLoading(unsigned long identifier, const ResourceError&);
+  void DidCommitLoad(LocalFrame*, DocumentLoader*);
+  void ScriptImported(unsigned long identifier, const String& source_string);
+  void DidReceiveScriptResponse(unsigned long identifier);
+  void ShouldForceCORSPreflight(bool* result);
+  void ShouldBlockRequest(const ResourceRequest&, bool* result);
 
-  void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier,
+  void DocumentThreadableLoaderStartedLoadingForClient(unsigned long identifier,
                                                        ThreadableLoaderClient*);
-  void documentThreadableLoaderFailedToStartLoadingForClient(
+  void DocumentThreadableLoaderFailedToStartLoadingForClient(
       ThreadableLoaderClient*);
-  void willLoadXHR(XMLHttpRequest*,
+  void WillLoadXHR(XMLHttpRequest*,
                    ThreadableLoaderClient*,
                    const AtomicString& method,
                    const KURL&,
                    bool async,
                    PassRefPtr<EncodedFormData> body,
                    const HTTPHeaderMap& headers,
-                   bool includeCrendentials);
-  void didFailXHRLoading(ExecutionContext*,
+                   bool include_crendentials);
+  void DidFailXHRLoading(ExecutionContext*,
                          XMLHttpRequest*,
                          ThreadableLoaderClient*,
                          const AtomicString&,
                          const String&);
-  void didFinishXHRLoading(ExecutionContext*,
+  void DidFinishXHRLoading(ExecutionContext*,
                            XMLHttpRequest*,
                            ThreadableLoaderClient*,
                            const AtomicString&,
                            const String&);
 
-  void willStartFetch(ThreadableLoaderClient*);
-  void didFailFetch(ThreadableLoaderClient*);
-  void didFinishFetch(ExecutionContext*,
+  void WillStartFetch(ThreadableLoaderClient*);
+  void DidFailFetch(ThreadableLoaderClient*);
+  void DidFinishFetch(ExecutionContext*,
                       ThreadableLoaderClient*,
                       const AtomicString& method,
                       const String& url);
 
-  void willSendEventSourceRequest(ThreadableLoaderClient*);
-  void willDispatchEventSourceEvent(ThreadableLoaderClient*,
-                                    const AtomicString& eventName,
-                                    const AtomicString& eventId,
+  void WillSendEventSourceRequest(ThreadableLoaderClient*);
+  void WillDispatchEventSourceEvent(ThreadableLoaderClient*,
+                                    const AtomicString& event_name,
+                                    const AtomicString& event_id,
                                     const String& data);
-  void didFinishEventSourceRequest(ThreadableLoaderClient*);
+  void DidFinishEventSourceRequest(ThreadableLoaderClient*);
 
   // Detach and remove all references to the given client.
-  void detachClientRequest(ThreadableLoaderClient*);
+  void DetachClientRequest(ThreadableLoaderClient*);
 
-  void willDestroyResource(Resource*);
+  void WillDestroyResource(Resource*);
 
-  void applyUserAgentOverride(String* userAgent);
-  void frameScheduledNavigation(LocalFrame*, double);
-  void frameClearedScheduledNavigation(LocalFrame*);
-  void frameScheduledClientNavigation(LocalFrame*);
-  void frameClearedScheduledClientNavigation(LocalFrame*);
+  void ApplyUserAgentOverride(String* user_agent);
+  void FrameScheduledNavigation(LocalFrame*, double);
+  void FrameClearedScheduledNavigation(LocalFrame*);
+  void FrameScheduledClientNavigation(LocalFrame*);
+  void FrameClearedScheduledClientNavigation(LocalFrame*);
 
-  std::unique_ptr<protocol::Network::Initiator> buildInitiatorObject(
+  std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
       Document*,
       const FetchInitiatorInfo&);
 
-  void didCreateWebSocket(Document*,
+  void DidCreateWebSocket(Document*,
                           unsigned long identifier,
-                          const KURL& requestURL,
+                          const KURL& request_url,
                           const String&);
-  void willSendWebSocketHandshakeRequest(Document*,
+  void WillSendWebSocketHandshakeRequest(Document*,
                                          unsigned long identifier,
                                          const WebSocketHandshakeRequest*);
-  void didReceiveWebSocketHandshakeResponse(Document*,
+  void DidReceiveWebSocketHandshakeResponse(Document*,
                                             unsigned long identifier,
                                             const WebSocketHandshakeRequest*,
                                             const WebSocketHandshakeResponse*);
-  void didCloseWebSocket(Document*, unsigned long identifier);
-  void didReceiveWebSocketFrame(unsigned long identifier,
-                                int opCode,
+  void DidCloseWebSocket(Document*, unsigned long identifier);
+  void DidReceiveWebSocketFrame(unsigned long identifier,
+                                int op_code,
                                 bool masked,
                                 const char* payload,
-                                size_t payloadLength);
-  void didSendWebSocketFrame(unsigned long identifier,
-                             int opCode,
+                                size_t payload_length);
+  void DidSendWebSocketFrame(unsigned long identifier,
+                             int op_code,
                              bool masked,
                              const char* payload,
-                             size_t payloadLength);
-  void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
+                             size_t payload_length);
+  void DidReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
   // Called from frontend
-  protocol::Response enable(Maybe<int> totalBufferSize,
-                            Maybe<int> resourceBufferSize) override;
+  protocol::Response enable(Maybe<int> total_buffer_size,
+                            Maybe<int> resource_buffer_size) override;
   protocol::Response disable() override;
   protocol::Response setUserAgentOverride(const String&) override;
   protocol::Response setExtraHTTPHeaders(
       std::unique_ptr<protocol::Network::Headers>) override;
-  void getResponseBody(const String& requestId,
+  void getResponseBody(const String& request_id,
                        std::unique_ptr<GetResponseBodyCallback>) override;
   protocol::Response setBlockedURLs(
       std::unique_ptr<protocol::Array<String>> urls) override;
-  protocol::Response replayXHR(const String& requestId) override;
+  protocol::Response replayXHR(const String& request_id) override;
   protocol::Response setMonitoringXHREnabled(bool) override;
   protocol::Response canClearBrowserCache(bool* result) override;
   protocol::Response canClearBrowserCookies(bool* result) override;
   protocol::Response emulateNetworkConditions(
       bool offline,
       double latency,
-      double downloadThroughput,
-      double uploadThroughput,
-      Maybe<String> connectionType) override;
+      double download_throughput,
+      double upload_throughput,
+      Maybe<String> connection_type) override;
   protocol::Response setCacheDisabled(bool) override;
   protocol::Response setBypassServiceWorker(bool) override;
-  protocol::Response setDataSizeLimitsForTest(int maxTotalSize,
-                                              int maxResourceSize) override;
+  protocol::Response setDataSizeLimitsForTest(int max_total_size,
+                                              int max_resource_size) override;
   protocol::Response getCertificate(
       const String& origin,
       std::unique_ptr<protocol::Array<String>>* certificate) override;
 
   // Called from other agents.
-  void setHostId(const String&);
-  bool fetchResourceContent(Document*,
+  void SetHostId(const String&);
+  bool FetchResourceContent(Document*,
                             const KURL&,
                             String* content,
-                            bool* base64Encoded);
-  bool cacheDisabled();
+                            bool* base64_encoded);
+  bool CacheDisabled();
 
  private:
   explicit InspectorNetworkAgent(InspectedFrames*);
 
-  void enable(int totalBufferSize, int resourceBufferSize);
-  void willSendRequestInternal(LocalFrame*,
+  void Enable(int total_buffer_size, int resource_buffer_size);
+  void WillSendRequestInternal(LocalFrame*,
                                unsigned long identifier,
                                DocumentLoader*,
                                const ResourceRequest&,
-                               const ResourceResponse& redirectResponse,
+                               const ResourceResponse& redirect_response,
                                const FetchInitiatorInfo&);
-  void delayedRemoveReplayXHR(XMLHttpRequest*);
-  void removeFinishedReplayXHRFired(TimerBase*);
-  void didFinishXHRInternal(ExecutionContext*,
+  void DelayedRemoveReplayXHR(XMLHttpRequest*);
+  void RemoveFinishedReplayXHRFired(TimerBase*);
+  void DidFinishXHRInternal(ExecutionContext*,
                             XMLHttpRequest*,
                             ThreadableLoaderClient*,
                             const AtomicString&,
                             const String&,
                             bool);
 
-  bool canGetResponseBodyBlob(const String& requestId);
-  void getResponseBodyBlob(const String& requestId,
+  bool CanGetResponseBodyBlob(const String& request_id);
+  void GetResponseBodyBlob(const String& request_id,
                            std::unique_ptr<GetResponseBodyCallback>);
-  void clearPendingRequestData();
+  void ClearPendingRequestData();
 
-  Member<InspectedFrames> m_inspectedFrames;
-  String m_hostId;
-  Member<NetworkResourcesData> m_resourcesData;
+  Member<InspectedFrames> inspected_frames_;
+  String host_id_;
+  Member<NetworkResourcesData> resources_data_;
 
   typedef HashMap<ThreadableLoaderClient*, unsigned long>
       ThreadableLoaderClientRequestIdMap;
@@ -264,21 +264,21 @@ class CORE_EXPORT InspectorNetworkAgent final
   // Stores the pending ThreadableLoaderClient till an identifier for
   // the load is generated by the loader and passed to the inspector
   // via the documentThreadableLoaderStartedLoadingForClient() method.
-  ThreadableLoaderClient* m_pendingRequest;
-  InspectorPageAgent::ResourceType m_pendingRequestType;
-  ThreadableLoaderClientRequestIdMap m_knownRequestIdMap;
+  ThreadableLoaderClient* pending_request_;
+  InspectorPageAgent::ResourceType pending_request_type_;
+  ThreadableLoaderClientRequestIdMap known_request_id_map_;
 
-  Member<XHRReplayData> m_pendingXHRReplayData;
+  Member<XHRReplayData> pending_xhr_replay_data_;
 
   typedef HashMap<String, std::unique_ptr<protocol::Network::Initiator>>
       FrameNavigationInitiatorMap;
-  FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
-  HashSet<String> m_framesWithScheduledNavigation;
-  HashSet<String> m_framesWithScheduledClientNavigation;
+  FrameNavigationInitiatorMap frame_navigation_initiator_map_;
+  HashSet<String> frames_with_scheduled_navigation_;
+  HashSet<String> frames_with_scheduled_client_navigation_;
 
-  HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
-  HeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
-  TaskRunnerTimer<InspectorNetworkAgent> m_removeFinishedReplayXHRTimer;
+  HeapHashSet<Member<XMLHttpRequest>> replay_xh_rs_;
+  HeapHashSet<Member<XMLHttpRequest>> replay_xh_rs_to_be_deleted_;
+  TaskRunnerTimer<InspectorNetworkAgent> remove_finished_replay_xhr_timer_;
 };
 
 }  // namespace blink

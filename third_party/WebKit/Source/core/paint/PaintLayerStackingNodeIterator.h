@@ -37,15 +37,15 @@
 namespace blink {
 
 enum ChildrenIteration {
-  NegativeZOrderChildren = 1,
+  kNegativeZOrderChildren = 1,
   // Normal flow children are not mandated by CSS 2.1 but are an artifact of
   // our implementation: we allocate PaintLayers for elements that
   // are not treated as stacking contexts and thus we need to walk them
   // during painting and hit-testing.
-  NormalFlowChildren = 1 << 1,
-  PositiveZOrderChildren = 1 << 2,
-  AllChildren =
-      NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
+  kNormalFlowChildren = 1 << 1,
+  kPositiveZOrderChildren = 1 << 2,
+  kAllChildren =
+      kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren
 };
 
 class PaintLayerStackingNode;
@@ -59,15 +59,15 @@ class PaintLayerStackingNodeIterator {
 
  public:
   PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root,
-                                 unsigned whichChildren);
+                                 unsigned which_children);
 
-  PaintLayerStackingNode* next();
+  PaintLayerStackingNode* Next();
 
  private:
-  const PaintLayerStackingNode& m_root;
-  unsigned m_remainingChildren;
-  unsigned m_index;
-  PaintLayer* m_currentNormalFlowChild;
+  const PaintLayerStackingNode& root_;
+  unsigned remaining_children_;
+  unsigned index_;
+  PaintLayer* current_normal_flow_child_;
 };
 
 // This iterator is similar to PaintLayerStackingNodeIterator but it walks the
@@ -78,20 +78,20 @@ class PaintLayerStackingNodeReverseIterator {
 
  public:
   PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root,
-                                        unsigned whichChildren)
-      : m_root(root), m_remainingChildren(whichChildren) {
-    setIndexToLastItem();
+                                        unsigned which_children)
+      : root_(root), remaining_children_(which_children) {
+    SetIndexToLastItem();
   }
 
-  PaintLayerStackingNode* next();
+  PaintLayerStackingNode* Next();
 
  private:
-  void setIndexToLastItem();
+  void SetIndexToLastItem();
 
-  const PaintLayerStackingNode& m_root;
-  unsigned m_remainingChildren;
-  int m_index;
-  PaintLayer* m_currentNormalFlowChild;
+  const PaintLayerStackingNode& root_;
+  unsigned remaining_children_;
+  int index_;
+  PaintLayer* current_normal_flow_child_;
 };
 
 }  // namespace blink

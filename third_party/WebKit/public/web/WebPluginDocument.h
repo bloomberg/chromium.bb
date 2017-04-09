@@ -45,12 +45,12 @@ class WebPluginDocument final : public WebDocument {
   WebPluginDocument(const WebPluginDocument& e) : WebDocument(e) {}
 
   WebPluginDocument& operator=(const WebPluginDocument& e) {
-    WebNode::assign(e);
+    WebNode::Assign(e);
     return *this;
   }
-  void assign(const WebPluginDocument& d) { WebNode::assign(d); }
+  void Assign(const WebPluginDocument& d) { WebNode::Assign(d); }
 
-  BLINK_EXPORT WebPlugin* plugin();
+  BLINK_EXPORT WebPlugin* Plugin();
 
 #if BLINK_IMPLEMENTATION
   WebPluginDocument(PluginDocument*);

@@ -30,16 +30,16 @@
 
 namespace blink {
 
-TextDirection determinePlaintextDirectionality(LineLayoutItem root,
+TextDirection DeterminePlaintextDirectionality(LineLayoutItem root,
                                                LineLayoutItem current = nullptr,
                                                unsigned pos = 0);
 
-void constructBidiRunsForLine(InlineBidiResolver&,
+void ConstructBidiRunsForLine(InlineBidiResolver&,
                               BidiRunList<BidiRun>&,
-                              const InlineIterator& endOfLine,
+                              const InlineIterator& end_of_line,
                               VisualDirectionOverride,
-                              bool previousLineBrokeCleanly,
-                              bool isNewUBAParagraph);
+                              bool previous_line_broke_cleanly,
+                              bool is_new_uba_paragraph);
 
 }  // namespace blink
 

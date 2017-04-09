@@ -18,10 +18,10 @@ TEST(CustomElementReactionStackTest, one) {
   std::vector<char> log;
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('a', log)}));
-  stack->popInvokingReactions();
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a'}))
       << "popping the reaction stack should run reactions";
@@ -31,12 +31,12 @@ TEST(CustomElementReactionStackTest, multipleElements) {
   std::vector<char> log;
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('a', log)}));
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('b', log)}));
-  stack->popInvokingReactions();
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a', 'b'}))
       << "reactions should run in the order the elements queued";
@@ -46,11 +46,11 @@ TEST(CustomElementReactionStackTest, popTopEmpty) {
   std::vector<char> log;
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('a', log)}));
-  stack->push();
-  stack->popInvokingReactions();
+  stack->Push();
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>())
       << "popping the empty top-of-stack should not run any reactions";
@@ -60,13 +60,13 @@ TEST(CustomElementReactionStackTest, popTop) {
   std::vector<char> log;
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('a', log)}));
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('b', log)}));
-  stack->popInvokingReactions();
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'b'}))
       << "popping the top-of-stack should only run top-of-stack reactions";
@@ -78,12 +78,12 @@ TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
   Element* element = CreateElement("a");
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('z', log)}));
-  stack->enqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
-  stack->popInvokingReactions();
+  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'z'}))
       << "reactions should run together in the order elements were queued";
@@ -95,21 +95,21 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
   Element* element = CreateElement("a");
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('a', log)}));
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('z', log)}));
-  stack->push();
-  stack->enqueueToCurrentQueue(CreateElement("a"),
+  stack->Push();
+  stack->EnqueueToCurrentQueue(CreateElement("a"),
                                new TestReaction({new Log('y', log)}));
-  stack->enqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
-  stack->popInvokingReactions();
+  stack->EnqueueToCurrentQueue(element, new TestReaction({new Log('b', log)}));
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'y', 'a', 'b'}))
       << "reactions should run together in the order elements were queued";
 
   log.clear();
-  stack->popInvokingReactions();
+  stack->PopInvokingReactions();
   EXPECT_EQ(log, std::vector<char>({'z'})) << "reactions should be run once";
 }
 
@@ -120,22 +120,22 @@ class EnqueueToStack : public Command {
   EnqueueToStack(CustomElementReactionStack* stack,
                  Element* element,
                  CustomElementReaction* reaction)
-      : m_stack(stack), m_element(element), m_reaction(reaction) {}
+      : stack_(stack), element_(element), reaction_(reaction) {}
   ~EnqueueToStack() override = default;
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    Command::trace(visitor);
-    visitor->trace(m_stack);
-    visitor->trace(m_element);
-    visitor->trace(m_reaction);
+    Command::Trace(visitor);
+    visitor->Trace(stack_);
+    visitor->Trace(element_);
+    visitor->Trace(reaction_);
   }
-  void run(Element*) override {
-    m_stack->enqueueToCurrentQueue(m_element, m_reaction);
+  void Run(Element*) override {
+    stack_->EnqueueToCurrentQueue(element_, reaction_);
   }
 
  private:
-  Member<CustomElementReactionStack> m_stack;
-  Member<Element> m_element;
-  Member<CustomElementReaction> m_reaction;
+  Member<CustomElementReactionStack> stack_;
+  Member<Element> element_;
+  Member<CustomElementReaction> reaction_;
 };
 
 TEST(CustomElementReactionStackTest, enqueueFromReaction) {
@@ -144,11 +144,11 @@ TEST(CustomElementReactionStackTest, enqueueFromReaction) {
   Element* element = CreateElement("a");
 
   CustomElementReactionStack* stack = new CustomElementReactionStack();
-  stack->push();
-  stack->enqueueToCurrentQueue(
+  stack->Push();
+  stack->EnqueueToCurrentQueue(
       element, new TestReaction({new EnqueueToStack(
                    stack, element, new TestReaction({new Log('a', log)}))}));
-  stack->popInvokingReactions();
+  stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a'})) << "enqueued reaction from another "
                                               "reaction should run in the same "

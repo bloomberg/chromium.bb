@@ -20,17 +20,17 @@ class WorkerNavigatorPermissions final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorPermissions);
 
  public:
-  static WorkerNavigatorPermissions& from(WorkerNavigator&);
+  static WorkerNavigatorPermissions& From(WorkerNavigator&);
   static Permissions* permissions(WorkerNavigator&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static const char* supplementName();
+  static const char* SupplementName();
 
   WorkerNavigatorPermissions();
 
-  Member<Permissions> m_permissions;
+  Member<Permissions> permissions_;
 };
 
 }  // namespace blink

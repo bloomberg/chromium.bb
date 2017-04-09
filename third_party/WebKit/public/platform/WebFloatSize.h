@@ -49,18 +49,18 @@ struct WebFloatSize {
   float width;
   float height;
 
-  bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool IsEmpty() const { return width <= 0 || height <= 0; }
 
   WebFloatSize() : width(0), height(0) {}
 
   WebFloatSize(float width, float height) : width(width), height(height) {}
 
 #if INSIDE_BLINK
-  WebFloatSize(const FloatSize& s) : width(s.width()), height(s.height()) {}
+  WebFloatSize(const FloatSize& s) : width(s.Width()), height(s.Height()) {}
 
   WebFloatSize& operator=(const FloatSize& s) {
-    width = s.width();
-    height = s.height();
+    width = s.Width();
+    height = s.Height();
     return *this;
   }
 

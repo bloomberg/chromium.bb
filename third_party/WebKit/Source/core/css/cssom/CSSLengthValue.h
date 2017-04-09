@@ -20,44 +20,44 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
  public:
   static const int kNumSupportedUnits = 15;
 
-  static CSSLengthValue* from(const String& cssText, ExceptionState&);
+  static CSSLengthValue* from(const String& css_text, ExceptionState&);
   static CSSLengthValue* from(double value,
-                              const String& typeStr,
+                              const String& type_str,
                               ExceptionState&);
   static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
 
-  static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit) {
-    return (CSSPrimitiveValue::isLength(unit) ||
-            unit == CSSPrimitiveValue::UnitType::Percentage) &&
-           unit != CSSPrimitiveValue::UnitType::QuirkyEms &&
-           unit != CSSPrimitiveValue::UnitType::UserUnits;
+  static bool IsSupportedLengthUnit(CSSPrimitiveValue::UnitType unit) {
+    return (CSSPrimitiveValue::IsLength(unit) ||
+            unit == CSSPrimitiveValue::UnitType::kPercentage) &&
+           unit != CSSPrimitiveValue::UnitType::kQuirkyEms &&
+           unit != CSSPrimitiveValue::UnitType::kUserUnits;
   }
-  static CSSPrimitiveValue::UnitType unitFromName(const String& name);
-  static CSSLengthValue* fromCSSValue(const CSSPrimitiveValue&);
+  static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
+  static CSSLengthValue* FromCSSValue(const CSSPrimitiveValue&);
 
   CSSLengthValue* add(const CSSLengthValue* other);
   CSSLengthValue* subtract(const CSSLengthValue* other);
   CSSLengthValue* multiply(double);
   CSSLengthValue* divide(double, ExceptionState&);
 
-  virtual bool containsPercent() const = 0;
+  virtual bool ContainsPercent() const = 0;
 
  protected:
   CSSLengthValue() {}
 
-  virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
-  virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
-  virtual CSSLengthValue* multiplyInternal(double);
-  virtual CSSLengthValue* divideInternal(double);
+  virtual CSSLengthValue* AddInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* SubtractInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* MultiplyInternal(double);
+  virtual CSSLengthValue* DivideInternal(double);
 };
 
 DEFINE_TYPE_CASTS(CSSLengthValue,
                   CSSStyleValue,
                   value,
-                  (value->type() == CSSStyleValue::SimpleLengthType ||
-                   value->type() == CSSStyleValue::CalcLengthType),
-                  (value.type() == CSSStyleValue::SimpleLengthType ||
-                   value.type() == CSSStyleValue::CalcLengthType));
+                  (value->GetType() == CSSStyleValue::kSimpleLengthType ||
+                   value->GetType() == CSSStyleValue::kCalcLengthType),
+                  (value.GetType() == CSSStyleValue::kSimpleLengthType ||
+                   value.GetType() == CSSStyleValue::kCalcLengthType));
 
 }  // namespace blink
 

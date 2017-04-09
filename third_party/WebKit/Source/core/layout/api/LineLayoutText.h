@@ -16,110 +16,110 @@ class LayoutText;
 
 class LineLayoutText : public LineLayoutItem {
  public:
-  explicit LineLayoutText(LayoutText* layoutObject)
-      : LineLayoutItem(layoutObject) {}
+  explicit LineLayoutText(LayoutText* layout_object)
+      : LineLayoutItem(layout_object) {}
 
   explicit LineLayoutText(const LineLayoutItem& item) : LineLayoutItem(item) {
-    SECURITY_DCHECK(!item || item.isText());
+    SECURITY_DCHECK(!item || item.IsText());
   }
 
   explicit LineLayoutText(std::nullptr_t) : LineLayoutItem(nullptr) {}
 
   LineLayoutText() {}
 
-  InlineTextBox* firstTextBox() const { return toText()->firstTextBox(); }
+  InlineTextBox* FirstTextBox() const { return ToText()->FirstTextBox(); }
 
-  InlineTextBox* lastTextBox() const { return toText()->lastTextBox(); }
+  InlineTextBox* LastTextBox() const { return ToText()->LastTextBox(); }
 
-  InlineTextBox* createInlineTextBox(int start, unsigned short length) {
-    return toText()->createInlineTextBox(start, length);
+  InlineTextBox* CreateInlineTextBox(int start, unsigned short length) {
+    return ToText()->CreateInlineTextBox(start, length);
   }
 
-  void extractTextBox(InlineTextBox* inlineTextBox) {
-    toText()->extractTextBox(inlineTextBox);
+  void ExtractTextBox(InlineTextBox* inline_text_box) {
+    ToText()->ExtractTextBox(inline_text_box);
   }
 
-  void attachTextBox(InlineTextBox* inlineTextBox) {
-    toText()->attachTextBox(inlineTextBox);
+  void AttachTextBox(InlineTextBox* inline_text_box) {
+    ToText()->AttachTextBox(inline_text_box);
   }
 
-  void removeTextBox(InlineTextBox* inlineTextBox) {
-    toText()->removeTextBox(inlineTextBox);
+  void RemoveTextBox(InlineTextBox* inline_text_box) {
+    ToText()->RemoveTextBox(inline_text_box);
   }
 
-  bool isWordBreak() const { return toText()->isWordBreak(); }
+  bool IsWordBreak() const { return ToText()->IsWordBreak(); }
 
-  bool isAllCollapsibleWhitespace() const {
-    return toText()->isAllCollapsibleWhitespace();
+  bool IsAllCollapsibleWhitespace() const {
+    return ToText()->IsAllCollapsibleWhitespace();
   }
 
-  UChar characterAt(unsigned offset) const {
-    return toText()->characterAt(offset);
+  UChar CharacterAt(unsigned offset) const {
+    return ToText()->CharacterAt(offset);
   }
 
-  UChar uncheckedCharacterAt(unsigned offset) const {
-    return toText()->uncheckedCharacterAt(offset);
+  UChar UncheckedCharacterAt(unsigned offset) const {
+    return ToText()->UncheckedCharacterAt(offset);
   }
 
-  UChar32 codepointAt(unsigned offset) const {
-    return toText()->codepointAt(offset);
+  UChar32 CodepointAt(unsigned offset) const {
+    return ToText()->CodepointAt(offset);
   }
 
-  bool is8Bit() const { return toText()->is8Bit(); }
+  bool Is8Bit() const { return ToText()->Is8Bit(); }
 
-  const LChar* characters8() const { return toText()->characters8(); }
+  const LChar* Characters8() const { return ToText()->Characters8(); }
 
-  const UChar* characters16() const { return toText()->characters16(); }
+  const UChar* Characters16() const { return ToText()->Characters16(); }
 
-  bool hasEmptyText() const { return toText()->hasEmptyText(); }
+  bool HasEmptyText() const { return ToText()->HasEmptyText(); }
 
-  unsigned textLength() const { return toText()->textLength(); }
+  unsigned TextLength() const { return ToText()->TextLength(); }
 
-  unsigned resolvedTextLength() const { return toText()->resolvedTextLength(); }
+  unsigned ResolvedTextLength() const { return ToText()->ResolvedTextLength(); }
 
-  const String& text() const { return toText()->text(); }
+  const String& GetText() const { return ToText()->GetText(); }
 
-  bool containsOnlyWhitespace(unsigned from, unsigned len) const {
-    return toText()->containsOnlyWhitespace(from, len);
+  bool ContainsOnlyWhitespace(unsigned from, unsigned len) const {
+    return ToText()->ContainsOnlyWhitespace(from, len);
   }
 
-  float width(unsigned from,
+  float Width(unsigned from,
               unsigned len,
               const Font& font,
-              LayoutUnit xPos,
-              TextDirection textDirection,
-              HashSet<const SimpleFontData*>* fallbackFonts,
-              FloatRect* glyphBounds) const {
-    return toText()->width(from, len, font, xPos, textDirection, fallbackFonts,
-                           glyphBounds);
+              LayoutUnit x_pos,
+              TextDirection text_direction,
+              HashSet<const SimpleFontData*>* fallback_fonts,
+              FloatRect* glyph_bounds) const {
+    return ToText()->Width(from, len, font, x_pos, text_direction,
+                           fallback_fonts, glyph_bounds);
   }
 
-  float width(unsigned from,
+  float Width(unsigned from,
               unsigned len,
-              LayoutUnit xPos,
-              TextDirection textDirection,
-              bool firstLine,
-              HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
-              FloatRect* glyphBounds = nullptr) const {
-    return toText()->width(from, len, xPos, textDirection, firstLine,
-                           fallbackFonts, glyphBounds);
+              LayoutUnit x_pos,
+              TextDirection text_direction,
+              bool first_line,
+              HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
+              FloatRect* glyph_bounds = nullptr) const {
+    return ToText()->Width(from, len, x_pos, text_direction, first_line,
+                           fallback_fonts, glyph_bounds);
   }
 
-  float hyphenWidth(const Font& font, TextDirection textDirection) {
-    return toText()->hyphenWidth(font, textDirection);
+  float HyphenWidth(const Font& font, TextDirection text_direction) {
+    return ToText()->HyphenWidth(font, text_direction);
   }
 
-  void selectionStartEnd(int& spos, int& epos) const {
-    return toText()->selectionStartEnd(spos, epos);
+  void SelectionStartEnd(int& spos, int& epos) const {
+    return ToText()->SelectionStartEnd(spos, epos);
   }
 
-  unsigned textStartOffset() const { return toText()->textStartOffset(); }
+  unsigned TextStartOffset() const { return ToText()->TextStartOffset(); }
 
-  float minLogicalWidth() const { return toText()->minLogicalWidth(); }
+  float MinLogicalWidth() const { return ToText()->MinLogicalWidth(); }
 
  private:
-  LayoutText* toText() { return toLayoutText(layoutObject()); }
-  const LayoutText* toText() const { return toLayoutText(layoutObject()); }
+  LayoutText* ToText() { return ToLayoutText(GetLayoutObject()); }
+  const LayoutText* ToText() const { return ToLayoutText(GetLayoutObject()); }
 };
 
 }  // namespace blink

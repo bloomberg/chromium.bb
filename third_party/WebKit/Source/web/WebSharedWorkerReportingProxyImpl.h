@@ -27,28 +27,28 @@ class WebSharedWorkerReportingProxyImpl final
   ~WebSharedWorkerReportingProxyImpl() override;
 
   // WorkerReportingProxy methods:
-  void countFeature(UseCounter::Feature) override;
-  void countDeprecation(UseCounter::Feature) override;
-  void reportException(const WTF::String&,
+  void CountFeature(UseCounter::Feature) override;
+  void CountDeprecation(UseCounter::Feature) override;
+  void ReportException(const WTF::String&,
                        std::unique_ptr<SourceLocation>,
-                       int exceptionId) override;
-  void reportConsoleMessage(MessageSource,
+                       int exception_id) override;
+  void ReportConsoleMessage(MessageSource,
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void postMessageToPageInspector(const WTF::String&) override;
-  void didEvaluateWorkerScript(bool success) override {}
-  void didCloseWorkerGlobalScope() override;
-  void willDestroyWorkerGlobalScope() override {}
-  void didTerminateWorkerThread() override;
+  void PostMessageToPageInspector(const WTF::String&) override;
+  void DidEvaluateWorkerScript(bool success) override {}
+  void DidCloseWorkerGlobalScope() override;
+  void WillDestroyWorkerGlobalScope() override {}
+  void DidTerminateWorkerThread() override;
 
   DECLARE_TRACE();
 
  private:
   // Not owned because this outlives the reporting proxy.
-  WebSharedWorkerImpl* m_worker;
+  WebSharedWorkerImpl* worker_;
 
-  Member<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  Member<ParentFrameTaskRunners> parent_frame_task_runners_;
 };
 
 }  // namespace blink

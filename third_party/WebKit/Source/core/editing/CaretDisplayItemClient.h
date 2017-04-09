@@ -53,57 +53,58 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   // Creating VisiblePosition causes synchronous layout so we should use the
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.
-  static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
-  static LayoutBlock* caretLayoutBlock(const Node*);
+  static LayoutRect ComputeCaretRect(
+      const PositionWithAffinity& caret_position);
+  static LayoutBlock* CaretLayoutBlock(const Node*);
 
   // Called indirectly from LayoutBlock::clearPreviousVisualRects().
-  void clearPreviousVisualRect(const LayoutBlock&);
+  void ClearPreviousVisualRect(const LayoutBlock&);
 
   // Called indirectly from LayoutBlock::willBeDestroyed().
-  void layoutBlockWillBeDestroyed(const LayoutBlock&);
+  void LayoutBlockWillBeDestroyed(const LayoutBlock&);
 
   // Called when a FrameView finishes layout. Updates style and geometry of the
   // caret for paint invalidation and painting.
-  void updateStyleAndLayoutIfNeeded(const PositionWithAffinity& caretPosition);
+  void UpdateStyleAndLayoutIfNeeded(const PositionWithAffinity& caret_position);
 
   // Called during LayoutBlock paint invalidation.
-  void invalidatePaintIfNeeded(const LayoutBlock&,
+  void InvalidatePaintIfNeeded(const LayoutBlock&,
                                const PaintInvalidatorContext&);
 
-  bool shouldPaintCaret(const LayoutBlock& block) const {
-    return &block == m_layoutBlock;
+  bool ShouldPaintCaret(const LayoutBlock& block) const {
+    return &block == layout_block_;
   }
-  void paintCaret(GraphicsContext&,
-                  const LayoutPoint& paintOffset,
+  void PaintCaret(GraphicsContext&,
+                  const LayoutPoint& paint_offset,
                   DisplayItem::Type) const;
 
   // DisplayItemClient methods.
-  LayoutRect visualRect() const final;
-  String debugName() const final;
+  LayoutRect VisualRect() const final;
+  String DebugName() const final;
 
  private:
   friend class CaretDisplayItemClientTest;
 
-  void invalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
-  void invalidatePaintInPreviousLayoutBlock(const PaintInvalidatorContext&);
+  void InvalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
+  void InvalidatePaintInPreviousLayoutBlock(const PaintInvalidatorContext&);
 
   // These are updated by updateStyleAndLayoutIfNeeded().
-  Color m_color;
-  LayoutRect m_localRect;
-  LayoutBlock* m_layoutBlock = nullptr;
+  Color color_;
+  LayoutRect local_rect_;
+  LayoutBlock* layout_block_ = nullptr;
 
   // Visual rect of the caret in m_layoutBlock. This is updated by
   // invalidatePaintIfNeeded().
-  LayoutRect m_visualRect;
+  LayoutRect visual_rect_;
 
   // These are set to the previous value of m_layoutBlock and m_visualRect
   // during updateStyleAndLayoutIfNeeded() if they haven't been set since the
   // last paint invalidation. They can only be used in invalidatePaintIfNeeded()
   // to invalidate the caret in the previous layout block.
-  const LayoutBlock* m_previousLayoutBlock = nullptr;
-  LayoutRect m_visualRectInPreviousLayoutBlock;
+  const LayoutBlock* previous_layout_block_ = nullptr;
+  LayoutRect visual_rect_in_previous_layout_block_;
 
-  bool m_needsPaintInvalidation = false;
+  bool needs_paint_invalidation_ = false;
 };
 
 }  // namespace blink

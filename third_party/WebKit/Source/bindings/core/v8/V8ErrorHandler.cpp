@@ -39,101 +39,101 @@
 
 namespace blink {
 
-V8ErrorHandler::V8ErrorHandler(bool isInline, ScriptState* scriptState)
-    : V8EventListener(isInline, scriptState) {}
+V8ErrorHandler::V8ErrorHandler(bool is_inline, ScriptState* script_state)
+    : V8EventListener(is_inline, script_state) {}
 
-v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(
-    ScriptState* scriptState,
-    v8::Local<v8::Value> jsEvent,
+v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
+    ScriptState* script_state,
+    v8::Local<v8::Value> js_event,
     Event* event) {
-  ASSERT(!jsEvent.IsEmpty());
-  if (!event->hasInterface(EventNames::ErrorEvent))
-    return V8EventListener::callListenerFunction(scriptState, jsEvent, event);
+  ASSERT(!js_event.IsEmpty());
+  if (!event->HasInterface(EventNames::ErrorEvent))
+    return V8EventListener::CallListenerFunction(script_state, js_event, event);
 
-  ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
-  if (errorEvent->world() && errorEvent->world() != &world())
-    return v8::Null(isolate());
+  ErrorEvent* error_event = static_cast<ErrorEvent*>(event);
+  if (error_event->World() && error_event->World() != &World())
+    return v8::Null(GetIsolate());
 
   v8::Local<v8::Object> listener =
-      getListenerObject(scriptState->getExecutionContext());
+      GetListenerObject(script_state->GetExecutionContext());
   if (listener.IsEmpty() || !listener->IsFunction())
-    return v8::Null(isolate());
+    return v8::Null(GetIsolate());
 
-  v8::Local<v8::Function> callFunction =
+  v8::Local<v8::Function> call_function =
       v8::Local<v8::Function>::Cast(listener);
-  v8::Local<v8::Object> thisValue = scriptState->context()->Global();
+  v8::Local<v8::Object> this_value = script_state->GetContext()->Global();
 
-  v8::Local<v8::Object> eventObject;
-  if (!jsEvent->ToObject(scriptState->context()).ToLocal(&eventObject))
-    return v8::Null(isolate());
-  auto privateError = V8PrivateProperty::getErrorEventError(isolate());
-  v8::Local<v8::Value> error = privateError.getOrUndefined(eventObject);
+  v8::Local<v8::Object> event_object;
+  if (!js_event->ToObject(script_state->GetContext()).ToLocal(&event_object))
+    return v8::Null(GetIsolate());
+  auto private_error = V8PrivateProperty::GetErrorEventError(GetIsolate());
+  v8::Local<v8::Value> error = private_error.GetOrUndefined(event_object);
   if (error->IsUndefined())
-    error = v8::Null(isolate());
+    error = v8::Null(GetIsolate());
 
   v8::Local<v8::Value> parameters[5] = {
-      v8String(isolate(), errorEvent->message()),
-      v8String(isolate(), errorEvent->filename()),
-      v8::Integer::New(isolate(), errorEvent->lineno()),
-      v8::Integer::New(isolate(), errorEvent->colno()), error};
-  v8::TryCatch tryCatch(isolate());
-  tryCatch.SetVerbose(true);
+      V8String(GetIsolate(), error_event->message()),
+      V8String(GetIsolate(), error_event->filename()),
+      v8::Integer::New(GetIsolate(), error_event->lineno()),
+      v8::Integer::New(GetIsolate(), error_event->colno()), error};
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
   v8::MaybeLocal<v8::Value> result;
-  if (scriptState->getExecutionContext()->isWorkerGlobalScope()) {
-    result = V8ScriptRunner::callFunction(
-        callFunction, scriptState->getExecutionContext(), thisValue,
-        WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+  if (script_state->GetExecutionContext()->IsWorkerGlobalScope()) {
+    result = V8ScriptRunner::CallFunction(
+        call_function, script_state->GetExecutionContext(), this_value,
+        WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
   } else {
-    result = V8ScriptRunner::callFunction(
-        callFunction, scriptState->getExecutionContext(), thisValue,
-        WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    result = V8ScriptRunner::CallFunction(
+        call_function, script_state->GetExecutionContext(), this_value,
+        WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
   }
-  v8::Local<v8::Value> returnValue;
-  if (!result.ToLocal(&returnValue))
-    return v8::Null(isolate());
+  v8::Local<v8::Value> return_value;
+  if (!result.ToLocal(&return_value))
+    return v8::Null(GetIsolate());
 
-  return returnValue;
+  return return_value;
 }
 
 // static
-void V8ErrorHandler::storeExceptionOnErrorEventWrapper(
-    ScriptState* scriptState,
+void V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
+    ScriptState* script_state,
     ErrorEvent* event,
     v8::Local<v8::Value> data,
-    v8::Local<v8::Object> creationContext) {
-  v8::Local<v8::Value> wrappedEvent =
-      ToV8(event, creationContext, scriptState->isolate());
-  if (wrappedEvent.IsEmpty())
+    v8::Local<v8::Object> creation_context) {
+  v8::Local<v8::Value> wrapped_event =
+      ToV8(event, creation_context, script_state->GetIsolate());
+  if (wrapped_event.IsEmpty())
     return;
 
-  DCHECK(wrappedEvent->IsObject());
-  auto privateError =
-      V8PrivateProperty::getErrorEventError(scriptState->isolate());
-  privateError.set(wrappedEvent.As<v8::Object>(), data);
+  DCHECK(wrapped_event->IsObject());
+  auto private_error =
+      V8PrivateProperty::GetErrorEventError(script_state->GetIsolate());
+  private_error.Set(wrapped_event.As<v8::Object>(), data);
 }
 
 // static
-v8::Local<v8::Value> V8ErrorHandler::loadExceptionFromErrorEventWrapper(
-    ScriptState* scriptState,
+v8::Local<v8::Value> V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
+    ScriptState* script_state,
     ErrorEvent* event,
-    v8::Local<v8::Object> creationContext) {
-  v8::Local<v8::Value> wrappedEvent =
-      ToV8(event, creationContext, scriptState->isolate());
-  if (wrappedEvent.IsEmpty() || !wrappedEvent->IsObject())
+    v8::Local<v8::Object> creation_context) {
+  v8::Local<v8::Value> wrapped_event =
+      ToV8(event, creation_context, script_state->GetIsolate());
+  if (wrapped_event.IsEmpty() || !wrapped_event->IsObject())
     return v8::Local<v8::Value>();
 
-  DCHECK(wrappedEvent->IsObject());
-  auto privateError =
-      V8PrivateProperty::getErrorEventError(scriptState->isolate());
+  DCHECK(wrapped_event->IsObject());
+  auto private_error =
+      V8PrivateProperty::GetErrorEventError(script_state->GetIsolate());
   v8::Local<v8::Value> error =
-      privateError.getOrUndefined(wrappedEvent.As<v8::Object>());
+      private_error.GetOrUndefined(wrapped_event.As<v8::Object>());
   if (error->IsUndefined())
     return v8::Local<v8::Value>();
   return error;
 }
 
-bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue) {
-  return returnValue->IsBoolean() && returnValue.As<v8::Boolean>()->Value();
+bool V8ErrorHandler::ShouldPreventDefault(v8::Local<v8::Value> return_value) {
+  return return_value->IsBoolean() && return_value.As<v8::Boolean>()->Value();
 }
 
 }  // namespace blink

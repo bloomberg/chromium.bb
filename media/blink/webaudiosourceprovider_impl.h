@@ -52,8 +52,8 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
                              scoped_refptr<MediaLog> media_log);
 
   // blink::WebAudioSourceProvider implementation.
-  void setClient(blink::WebAudioSourceProviderClient* client) override;
-  void provideInput(const blink::WebVector<float*>& audio_data,
+  void SetClient(blink::WebAudioSourceProviderClient* client) override;
+  void ProvideInput(const blink::WebVector<float*>& audio_data,
                     size_t number_of_frames) override;
 
   // RestartableAudioRendererSink implementation.

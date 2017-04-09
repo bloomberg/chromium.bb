@@ -35,52 +35,52 @@
 namespace blink {
 
 HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document,
-                                           const String& mimeType)
+                                           const String& mime_type)
     : DecodedDataDocumentParser(document),
-      m_tokenizer(HTMLTokenizer::create(HTMLParserOptions(&document))) {
-  if (mimeType != "text/html" && !DOMImplementation::isXMLMIMEType(mimeType))
-    m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
+      tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(&document))) {
+  if (mime_type != "text/html" && !DOMImplementation::IsXMLMIMEType(mime_type))
+    tokenizer_->SetState(HTMLTokenizer::kPLAINTEXTState);
 }
 
-void HTMLViewSourceParser::pumpTokenizer() {
-  m_xssAuditor.init(document(), 0);
+void HTMLViewSourceParser::PumpTokenizer() {
+  xss_auditor_.Init(GetDocument(), 0);
 
   while (true) {
-    m_sourceTracker.start(m_input.current(), m_tokenizer.get(), m_token);
-    if (!m_tokenizer->nextToken(m_input.current(), m_token))
+    source_tracker_.Start(input_.Current(), tokenizer_.get(), token_);
+    if (!tokenizer_->NextToken(input_.Current(), token_))
       return;
-    m_sourceTracker.end(m_input.current(), m_tokenizer.get(), m_token);
+    source_tracker_.end(input_.Current(), tokenizer_.get(), token_);
 
-    std::unique_ptr<XSSInfo> xssInfo =
-        m_xssAuditor.filterToken(FilterTokenRequest(
-            m_token, m_sourceTracker, m_tokenizer->shouldAllowCDATA()));
+    std::unique_ptr<XSSInfo> xss_info =
+        xss_auditor_.FilterToken(FilterTokenRequest(
+            token_, source_tracker_, tokenizer_->ShouldAllowCDATA()));
     HTMLViewSourceDocument::SourceAnnotation annotation =
-        xssInfo ? HTMLViewSourceDocument::AnnotateSourceAsXSS
-                : HTMLViewSourceDocument::AnnotateSourceAsSafe;
-    document()->addSource(m_sourceTracker.sourceForToken(m_token), m_token,
-                          annotation);
+        xss_info ? HTMLViewSourceDocument::kAnnotateSourceAsXSS
+                 : HTMLViewSourceDocument::kAnnotateSourceAsSafe;
+    GetDocument()->AddSource(source_tracker_.SourceForToken(token_), token_,
+                             annotation);
 
     // FIXME: The tokenizer should do this work for us.
-    if (m_token.type() == HTMLToken::StartTag)
-      m_tokenizer->updateStateFor(
-          attemptStaticStringCreation(m_token.name(), Likely8Bit));
-    m_token.clear();
+    if (token_.GetType() == HTMLToken::kStartTag)
+      tokenizer_->UpdateStateFor(
+          AttemptStaticStringCreation(token_.GetName(), kLikely8Bit));
+    token_.Clear();
   }
 }
 
-void HTMLViewSourceParser::append(const String& input) {
-  m_input.appendToEnd(input);
-  pumpTokenizer();
+void HTMLViewSourceParser::Append(const String& input) {
+  input_.AppendToEnd(input);
+  PumpTokenizer();
 }
 
-void HTMLViewSourceParser::finish() {
-  flush();
-  if (!m_input.haveSeenEndOfFile())
-    m_input.markEndOfFile();
+void HTMLViewSourceParser::Finish() {
+  Flush();
+  if (!input_.HaveSeenEndOfFile())
+    input_.MarkEndOfFile();
 
-  if (!isDetached()) {
-    pumpTokenizer();
-    document()->finishedParsing();
+  if (!IsDetached()) {
+    PumpTokenizer();
+    GetDocument()->FinishedParsing();
   }
 }
 

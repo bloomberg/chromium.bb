@@ -27,9 +27,9 @@
 
 namespace blink {
 
-bool DOMStringMap::namedPropertyQuery(const AtomicString& name,
+bool DOMStringMap::NamedPropertyQuery(const AtomicString& name,
                                       ExceptionState&) {
-  return contains(name);
+  return Contains(name);
 }
 
 }  // namespace blink

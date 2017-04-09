@@ -44,44 +44,44 @@ class CORE_EXPORT DOMException final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMException* create(ExceptionCode,
-                              const String& sanitizedMessage = String(),
-                              const String& unsanitizedMessage = String());
+  static DOMException* Create(ExceptionCode,
+                              const String& sanitized_message = String(),
+                              const String& unsanitized_message = String());
 
   // Constructor exposed to script.
-  static DOMException* create(const String& message, const String& name);
+  static DOMException* Create(const String& message, const String& name);
 
-  unsigned short code() const { return m_code; }
-  String name() const { return m_name; }
+  unsigned short code() const { return code_; }
+  String name() const { return name_; }
 
   // This is the message that's exposed to JavaScript: never return unsanitized
   // data.
-  String message() const { return m_sanitizedMessage; }
+  String message() const { return sanitized_message_; }
   String toString() const;
 
   // This is the message that's exposed to the console: if an unsanitized
   // message is present, we prefer it.
-  String messageForConsole() const {
-    return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
-                                           : m_sanitizedMessage;
+  String MessageForConsole() const {
+    return !unsanitized_message_.IsEmpty() ? unsanitized_message_
+                                           : sanitized_message_;
   }
-  String toStringForConsole() const;
+  String ToStringForConsole() const;
 
-  static String getErrorName(ExceptionCode);
-  static String getErrorMessage(ExceptionCode);
+  static String GetErrorName(ExceptionCode);
+  static String GetErrorMessage(ExceptionCode);
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  DOMException(unsigned short m_code,
+  DOMException(unsigned short code,
                const String& name,
-               const String& sanitizedMessage,
-               const String& unsanitizedMessage);
+               const String& sanitized_message,
+               const String& unsanitized_message);
 
-  unsigned short m_code;
-  String m_name;
-  String m_sanitizedMessage;
-  String m_unsanitizedMessage;
+  unsigned short code_;
+  String name_;
+  String sanitized_message_;
+  String unsanitized_message_;
 };
 
 }  // namespace blink

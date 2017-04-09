@@ -19,38 +19,39 @@ namespace blink {
 class HTMLCanvasElementModuleTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    Page::PageClients pageClients;
-    fillWithEmptyClients(pageClients);
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder =
-        DummyPageHolder::create(IntSize(800, 600), &pageClients);
-    Persistent<Document> m_document = &m_dummyPageHolder->document();
-    m_document->documentElement()->setInnerHTML(
+    Page::PageClients page_clients;
+    FillWithEmptyClients(page_clients);
+    std::unique_ptr<DummyPageHolder> dummy_page_holder =
+        DummyPageHolder::Create(IntSize(800, 600), &page_clients);
+    Persistent<Document> document = &dummy_page_holder->GetDocument();
+    document->documentElement()->setInnerHTML(
         "<body><canvas id='c'></canvas></body>");
-    m_document->view()->updateAllLifecyclePhases();
-    m_canvasElement = toHTMLCanvasElement(m_document->getElementById("c"));
+    document->View()->UpdateAllLifecyclePhases();
+    canvas_element_ = toHTMLCanvasElement(document->GetElementById("c"));
   }
 
-  HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
-  OffscreenCanvas* transferControlToOffscreen(ExceptionState&);
+  HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
+  OffscreenCanvas* TransferControlToOffscreen(ExceptionState&);
 
  private:
-  Persistent<HTMLCanvasElement> m_canvasElement;
+  Persistent<HTMLCanvasElement> canvas_element_;
 };
 
-OffscreenCanvas* HTMLCanvasElementModuleTest::transferControlToOffscreen(
-    ExceptionState& exceptionState) {
+OffscreenCanvas* HTMLCanvasElementModuleTest::TransferControlToOffscreen(
+    ExceptionState& exception_state) {
   // This unit test only tests if the Canvas Id is associated correctly, so we
   // exclude the part that creates surface layer bridge because a mojo message
   // pipe cannot be tested using webkit unit tests.
-  return HTMLCanvasElementModule::transferControlToOffscreenInternal(
-      canvasElement(), exceptionState);
+  return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
+      CanvasElement(), exception_state);
 }
 
 TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen) {
-  NonThrowableExceptionState exceptionState;
-  OffscreenCanvas* offscreenCanvas = transferControlToOffscreen(exceptionState);
-  int canvasId = offscreenCanvas->placeholderCanvasId();
-  EXPECT_EQ(canvasId, DOMNodeIds::idForNode(&(canvasElement())));
+  NonThrowableExceptionState exception_state;
+  OffscreenCanvas* offscreen_canvas =
+      TransferControlToOffscreen(exception_state);
+  int canvas_id = offscreen_canvas->PlaceholderCanvasId();
+  EXPECT_EQ(canvas_id, DOMNodeIds::IdForNode(&(CanvasElement())));
 }
 
 }  // namespace blink

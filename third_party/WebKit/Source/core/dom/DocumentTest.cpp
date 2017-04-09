@@ -56,24 +56,24 @@ class DocumentTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  void TearDown() override { ThreadState::current()->collectAllGarbage(); }
+  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  Document& document() const { return m_dummyPageHolder->document(); }
-  Page& page() const { return m_dummyPageHolder->page(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
 
-  void setHtmlInnerHTML(const char*);
+  void SetHtmlInnerHTML(const char*);
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void DocumentTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
-void DocumentTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 namespace {
@@ -85,165 +85,165 @@ class TestSynchronousMutationObserver
 
  public:
   struct MergeTextNodesRecord : GarbageCollected<MergeTextNodesRecord> {
-    Member<const Text> m_node;
-    Member<Node> m_nodeToBeRemoved;
-    unsigned m_offset = 0;
+    Member<const Text> node_;
+    Member<Node> node_to_be_removed_;
+    unsigned offset_ = 0;
 
     MergeTextNodesRecord(const Text* node,
-                         const NodeWithIndex& nodeWithIndex,
+                         const NodeWithIndex& node_with_index,
                          unsigned offset)
-        : m_node(node),
-          m_nodeToBeRemoved(nodeWithIndex.node()),
-          m_offset(offset) {}
+        : node_(node),
+          node_to_be_removed_(node_with_index.GetNode()),
+          offset_(offset) {}
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_node);
-      visitor->trace(m_nodeToBeRemoved);
+      visitor->Trace(node_);
+      visitor->Trace(node_to_be_removed_);
     }
   };
 
   struct UpdateCharacterDataRecord
       : GarbageCollected<UpdateCharacterDataRecord> {
-    Member<CharacterData> m_node;
-    unsigned m_offset = 0;
-    unsigned m_oldLength = 0;
-    unsigned m_newLength = 0;
+    Member<CharacterData> node_;
+    unsigned offset_ = 0;
+    unsigned old_length_ = 0;
+    unsigned new_length_ = 0;
 
     UpdateCharacterDataRecord(CharacterData* node,
                               unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength)
-        : m_node(node),
-          m_offset(offset),
-          m_oldLength(oldLength),
-          m_newLength(newLength) {}
+                              unsigned old_length,
+                              unsigned new_length)
+        : node_(node),
+          offset_(offset),
+          old_length_(old_length),
+          new_length_(new_length) {}
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(node_); }
   };
 
   TestSynchronousMutationObserver(Document&);
   virtual ~TestSynchronousMutationObserver() = default;
 
-  int countContextDestroyedCalled() const {
-    return m_contextDestroyedCalledCounter;
+  int CountContextDestroyedCalled() const {
+    return context_destroyed_called_counter_;
   }
 
-  const HeapVector<Member<const ContainerNode>>& childrenChangedNodes() const {
-    return m_childrenChangedNodes;
+  const HeapVector<Member<const ContainerNode>>& ChildrenChangedNodes() const {
+    return children_changed_nodes_;
   }
 
-  const HeapVector<Member<MergeTextNodesRecord>>& mergeTextNodesRecords()
+  const HeapVector<Member<MergeTextNodesRecord>>& MergeTextNodesRecords()
       const {
-    return m_mergeTextNodesRecords;
+    return merge_text_nodes_records_;
   }
 
-  const HeapVector<Member<const Node>>& moveTreeToNewDocumentNodes() const {
-    return m_moveTreeToNewDocumentNodes;
+  const HeapVector<Member<const Node>>& MoveTreeToNewDocumentNodes() const {
+    return move_tree_to_new_document_nodes_;
   }
 
-  const HeapVector<Member<ContainerNode>>& removedChildrenNodes() const {
-    return m_removedChildrenNodes;
+  const HeapVector<Member<ContainerNode>>& RemovedChildrenNodes() const {
+    return removed_children_nodes_;
   }
 
-  const HeapVector<Member<Node>>& removedNodes() const {
-    return m_removedNodes;
+  const HeapVector<Member<Node>>& RemovedNodes() const {
+    return removed_nodes_;
   }
 
-  const HeapVector<Member<const Text>>& splitTextNodes() const {
-    return m_splitTextNodes;
+  const HeapVector<Member<const Text>>& SplitTextNodes() const {
+    return split_text_nodes_;
   }
 
   const HeapVector<Member<UpdateCharacterDataRecord>>&
-  updatedCharacterDataRecords() const {
-    return m_updatedCharacterDataRecords;
+  UpdatedCharacterDataRecords() const {
+    return updated_character_data_records_;
   }
 
   DECLARE_TRACE();
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
-  void contextDestroyed(Document*) final;
-  void didChangeChildren(const ContainerNode&) final;
-  void didMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
-  void didMoveTreeToNewDocument(const Node& root) final;
-  void didSplitTextNode(const Text&) final;
-  void didUpdateCharacterData(CharacterData*,
+  void ContextDestroyed(Document*) final;
+  void DidChangeChildren(const ContainerNode&) final;
+  void DidMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
+  void DidMoveTreeToNewDocument(const Node& root) final;
+  void DidSplitTextNode(const Text&) final;
+  void DidUpdateCharacterData(CharacterData*,
                               unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength) final;
-  void nodeChildrenWillBeRemoved(ContainerNode&) final;
-  void nodeWillBeRemoved(Node&) final;
+                              unsigned old_length,
+                              unsigned new_length) final;
+  void NodeChildrenWillBeRemoved(ContainerNode&) final;
+  void NodeWillBeRemoved(Node&) final;
 
-  int m_contextDestroyedCalledCounter = 0;
-  HeapVector<Member<const ContainerNode>> m_childrenChangedNodes;
-  HeapVector<Member<MergeTextNodesRecord>> m_mergeTextNodesRecords;
-  HeapVector<Member<const Node>> m_moveTreeToNewDocumentNodes;
-  HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
-  HeapVector<Member<Node>> m_removedNodes;
-  HeapVector<Member<const Text>> m_splitTextNodes;
-  HeapVector<Member<UpdateCharacterDataRecord>> m_updatedCharacterDataRecords;
+  int context_destroyed_called_counter_ = 0;
+  HeapVector<Member<const ContainerNode>> children_changed_nodes_;
+  HeapVector<Member<MergeTextNodesRecord>> merge_text_nodes_records_;
+  HeapVector<Member<const Node>> move_tree_to_new_document_nodes_;
+  HeapVector<Member<ContainerNode>> removed_children_nodes_;
+  HeapVector<Member<Node>> removed_nodes_;
+  HeapVector<Member<const Text>> split_text_nodes_;
+  HeapVector<Member<UpdateCharacterDataRecord>> updated_character_data_records_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
 };
 
 TestSynchronousMutationObserver::TestSynchronousMutationObserver(
     Document& document) {
-  setContext(&document);
+  SetContext(&document);
 }
 
-void TestSynchronousMutationObserver::contextDestroyed(Document*) {
-  ++m_contextDestroyedCalledCounter;
+void TestSynchronousMutationObserver::ContextDestroyed(Document*) {
+  ++context_destroyed_called_counter_;
 }
 
-void TestSynchronousMutationObserver::didChangeChildren(
+void TestSynchronousMutationObserver::DidChangeChildren(
     const ContainerNode& container) {
-  m_childrenChangedNodes.push_back(&container);
+  children_changed_nodes_.push_back(&container);
 }
 
-void TestSynchronousMutationObserver::didMergeTextNodes(
+void TestSynchronousMutationObserver::DidMergeTextNodes(
     const Text& node,
-    const NodeWithIndex& nodeWithIndex,
+    const NodeWithIndex& node_with_index,
     unsigned offset) {
-  m_mergeTextNodesRecords.push_back(
-      new MergeTextNodesRecord(&node, nodeWithIndex, offset));
+  merge_text_nodes_records_.push_back(
+      new MergeTextNodesRecord(&node, node_with_index, offset));
 }
 
-void TestSynchronousMutationObserver::didMoveTreeToNewDocument(
+void TestSynchronousMutationObserver::DidMoveTreeToNewDocument(
     const Node& root) {
-  m_moveTreeToNewDocumentNodes.push_back(&root);
+  move_tree_to_new_document_nodes_.push_back(&root);
 }
 
-void TestSynchronousMutationObserver::didSplitTextNode(const Text& node) {
-  m_splitTextNodes.push_back(&node);
+void TestSynchronousMutationObserver::DidSplitTextNode(const Text& node) {
+  split_text_nodes_.push_back(&node);
 }
 
-void TestSynchronousMutationObserver::didUpdateCharacterData(
-    CharacterData* characterData,
+void TestSynchronousMutationObserver::DidUpdateCharacterData(
+    CharacterData* character_data,
     unsigned offset,
-    unsigned oldLength,
-    unsigned newLength) {
-  m_updatedCharacterDataRecords.push_back(new UpdateCharacterDataRecord(
-      characterData, offset, oldLength, newLength));
+    unsigned old_length,
+    unsigned new_length) {
+  updated_character_data_records_.push_back(new UpdateCharacterDataRecord(
+      character_data, offset, old_length, new_length));
 }
 
-void TestSynchronousMutationObserver::nodeChildrenWillBeRemoved(
+void TestSynchronousMutationObserver::NodeChildrenWillBeRemoved(
     ContainerNode& container) {
-  m_removedChildrenNodes.push_back(&container);
+  removed_children_nodes_.push_back(&container);
 }
 
-void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
-  m_removedNodes.push_back(&node);
+void TestSynchronousMutationObserver::NodeWillBeRemoved(Node& node) {
+  removed_nodes_.push_back(&node);
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
-  visitor->trace(m_childrenChangedNodes);
-  visitor->trace(m_mergeTextNodesRecords);
-  visitor->trace(m_moveTreeToNewDocumentNodes);
-  visitor->trace(m_removedChildrenNodes);
-  visitor->trace(m_removedNodes);
-  visitor->trace(m_splitTextNodes);
-  visitor->trace(m_updatedCharacterDataRecords);
-  SynchronousMutationObserver::trace(visitor);
+  visitor->Trace(children_changed_nodes_);
+  visitor->Trace(merge_text_nodes_records_);
+  visitor->Trace(move_tree_to_new_document_nodes_);
+  visitor->Trace(removed_children_nodes_);
+  visitor->Trace(removed_nodes_);
+  visitor->Trace(split_text_nodes_);
+  visitor->Trace(updated_character_data_records_);
+  SynchronousMutationObserver::Trace(visitor);
 }
 
 class MockValidationMessageClient
@@ -252,35 +252,35 @@ class MockValidationMessageClient
   USING_GARBAGE_COLLECTED_MIXIN(MockValidationMessageClient);
 
  public:
-  MockValidationMessageClient() { reset(); }
-  void reset() {
-    showValidationMessageWasCalled = false;
-    willUnloadDocumentWasCalled = false;
-    documentDetachedWasCalled = false;
+  MockValidationMessageClient() { Reset(); }
+  void Reset() {
+    show_validation_message_was_called = false;
+    will_unload_document_was_called = false;
+    document_detached_was_called = false;
   }
-  bool showValidationMessageWasCalled;
-  bool willUnloadDocumentWasCalled;
-  bool documentDetachedWasCalled;
+  bool show_validation_message_was_called;
+  bool will_unload_document_was_called;
+  bool document_detached_was_called;
 
   // ValidationMessageClient functions.
-  void showValidationMessage(const Element& anchor,
-                             const String& mainMessage,
+  void ShowValidationMessage(const Element& anchor,
+                             const String& main_message,
                              TextDirection,
-                             const String& subMessage,
+                             const String& sub_message,
                              TextDirection) override {
-    showValidationMessageWasCalled = true;
+    show_validation_message_was_called = true;
   }
-  void hideValidationMessage(const Element& anchor) override {}
-  bool isValidationMessageVisible(const Element& anchor) override {
+  void HideValidationMessage(const Element& anchor) override {}
+  bool IsValidationMessageVisible(const Element& anchor) override {
     return true;
   }
-  void willUnloadDocument(const Document&) override {
-    willUnloadDocumentWasCalled = true;
+  void WillUnloadDocument(const Document&) override {
+    will_unload_document_was_called = true;
   }
-  void documentDetached(const Document&) override {
-    documentDetachedWasCalled = true;
+  void DocumentDetached(const Document&) override {
+    document_detached_was_called = true;
   }
-  void willBeDestroyed() override {}
+  void WillBeDestroyed() override {}
 
   // DEFINE_INLINE_VIRTUAL_TRACE() { ValidationMessageClient::trace(visitor); }
 };
@@ -290,7 +290,7 @@ class MockValidationMessageClient
 // This tests that we properly resize and re-layout pages for printing in the
 // presence of media queries effecting elements in a subtree layout boundary
 TEST_F(DocumentTest, PrintRelayout) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>"
       "    div {"
       "        width: 100px;"
@@ -308,425 +308,432 @@ TEST_F(DocumentTest, PrintRelayout) {
       "    }"
       "</style>"
       "<p><div><span></span></div></p>");
-  FloatSize pageSize(400, 400);
-  float maximumShrinkRatio = 1.6;
+  FloatSize page_size(400, 400);
+  float maximum_shrink_ratio = 1.6;
 
-  document().frame()->setPrinting(true, pageSize, pageSize, maximumShrinkRatio);
-  EXPECT_EQ(document().documentElement()->offsetWidth(), 400);
-  document().frame()->setPrinting(false, FloatSize(), FloatSize(), 0);
-  EXPECT_EQ(document().documentElement()->offsetWidth(), 800);
+  GetDocument().GetFrame()->SetPrinting(true, page_size, page_size,
+                                        maximum_shrink_ratio);
+  EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 400);
+  GetDocument().GetFrame()->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 800);
 }
 
 // This test checks that Documunt::linkManifest() returns a value conform to the
 // specification.
 TEST_F(DocumentTest, LinkManifest) {
   // Test the default result.
-  EXPECT_EQ(0, document().linkManifest());
+  EXPECT_EQ(0, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
-  HTMLLinkElement* link = HTMLLinkElement::create(document(), false);
+  HTMLLinkElement* link = HTMLLinkElement::Create(GetDocument(), false);
   link->setAttribute(blink::HTMLNames::relAttr, "manifest");
   link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
-  document().head()->appendChild(link);
-  EXPECT_EQ(link, document().linkManifest());
+  GetDocument().head()->AppendChild(link);
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
-  HTMLLinkElement* link2 = HTMLLinkElement::create(document(), false);
+  HTMLLinkElement* link2 = HTMLLinkElement::Create(GetDocument(), false);
   link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
   link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
-  document().head()->insertBefore(link2, link);
-  EXPECT_EQ(link2, document().linkManifest());
-  document().head()->appendChild(link2);
-  EXPECT_EQ(link, document().linkManifest());
+  GetDocument().head()->InsertBefore(link2, link);
+  EXPECT_EQ(link2, GetDocument().LinkManifest());
+  GetDocument().head()->AppendChild(link2);
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that crazy URLs are accepted.
   link->setAttribute(blink::HTMLNames::hrefAttr, "http:foo.json");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that empty URLs are accepted.
   link->setAttribute(blink::HTMLNames::hrefAttr, "");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that URLs from different origins are accepted.
   link->setAttribute(blink::HTMLNames::hrefAttr,
                      "http://example.org/manifest.json");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::hrefAttr,
                      "http://foo.example.org/manifest.json");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::hrefAttr,
                      "http://foo.bar/manifest.json");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // More than one token in @rel is accepted.
   link->setAttribute(blink::HTMLNames::relAttr, "foo bar manifest");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Such as spaces around the token.
   link->setAttribute(blink::HTMLNames::relAttr, " manifest ");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that rel=manifest actually matters.
   link->setAttribute(blink::HTMLNames::relAttr, "");
-  EXPECT_EQ(link2, document().linkManifest());
+  EXPECT_EQ(link2, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::relAttr, "manifest");
 
   // Check that link outside of the <head> are ignored.
-  document().head()->removeChild(link);
-  document().head()->removeChild(link2);
-  EXPECT_EQ(0, document().linkManifest());
-  document().body()->appendChild(link);
-  EXPECT_EQ(0, document().linkManifest());
-  document().head()->appendChild(link);
-  document().head()->appendChild(link2);
+  GetDocument().head()->RemoveChild(link);
+  GetDocument().head()->RemoveChild(link2);
+  EXPECT_EQ(0, GetDocument().LinkManifest());
+  GetDocument().body()->AppendChild(link);
+  EXPECT_EQ(0, GetDocument().LinkManifest());
+  GetDocument().head()->AppendChild(link);
+  GetDocument().head()->AppendChild(link2);
 
   // Check that some attribute values do not have an effect.
   link->setAttribute(blink::HTMLNames::crossoriginAttr, "use-credentials");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::hreflangAttr, "klingon");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::typeAttr, "image/gif");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::sizesAttr, "16x16");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
   link->setAttribute(blink::HTMLNames::mediaAttr, "print");
-  EXPECT_EQ(link, document().linkManifest());
+  EXPECT_EQ(link, GetDocument().LinkManifest());
 }
 
 TEST_F(DocumentTest, referrerPolicyParsing) {
-  EXPECT_EQ(ReferrerPolicyDefault, document().getReferrerPolicy());
+  EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
 
   struct TestCase {
     const char* policy;
     ReferrerPolicy expected;
-    bool isLegacy;
+    bool is_legacy;
   } tests[] = {
-      {"", ReferrerPolicyDefault, false},
+      {"", kReferrerPolicyDefault, false},
       // Test that invalid policy values are ignored.
-      {"not-a-real-policy", ReferrerPolicyDefault, false},
-      {"not-a-real-policy,also-not-a-real-policy", ReferrerPolicyDefault,
+      {"not-a-real-policy", kReferrerPolicyDefault, false},
+      {"not-a-real-policy,also-not-a-real-policy", kReferrerPolicyDefault,
        false},
-      {"not-a-real-policy,unsafe-url", ReferrerPolicyAlways, false},
-      {"unsafe-url,not-a-real-policy", ReferrerPolicyAlways, false},
+      {"not-a-real-policy,unsafe-url", kReferrerPolicyAlways, false},
+      {"unsafe-url,not-a-real-policy", kReferrerPolicyAlways, false},
       // Test parsing each of the policy values.
-      {"always", ReferrerPolicyAlways, true},
-      {"default", ReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"never", ReferrerPolicyNever, true},
-      {"no-referrer", ReferrerPolicyNever, false},
-      {"default", ReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"no-referrer-when-downgrade", ReferrerPolicyNoReferrerWhenDowngrade,
+      {"always", kReferrerPolicyAlways, true},
+      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
+      {"never", kReferrerPolicyNever, true},
+      {"no-referrer", kReferrerPolicyNever, false},
+      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
+      {"no-referrer-when-downgrade", kReferrerPolicyNoReferrerWhenDowngrade,
        false},
-      {"origin", ReferrerPolicyOrigin, false},
-      {"origin-when-crossorigin", ReferrerPolicyOriginWhenCrossOrigin, true},
-      {"origin-when-cross-origin", ReferrerPolicyOriginWhenCrossOrigin, false},
-      {"unsafe-url", ReferrerPolicyAlways},
+      {"origin", kReferrerPolicyOrigin, false},
+      {"origin-when-crossorigin", kReferrerPolicyOriginWhenCrossOrigin, true},
+      {"origin-when-cross-origin", kReferrerPolicyOriginWhenCrossOrigin, false},
+      {"unsafe-url", kReferrerPolicyAlways},
   };
 
   for (auto test : tests) {
-    document().setReferrerPolicy(ReferrerPolicyDefault);
-    if (test.isLegacy) {
+    GetDocument().SetReferrerPolicy(kReferrerPolicyDefault);
+    if (test.is_legacy) {
       // Legacy keyword support must be explicitly enabled for the policy to
       // parse successfully.
-      document().parseAndSetReferrerPolicy(test.policy);
-      EXPECT_EQ(ReferrerPolicyDefault, document().getReferrerPolicy());
-      document().parseAndSetReferrerPolicy(test.policy, true);
+      GetDocument().ParseAndSetReferrerPolicy(test.policy);
+      EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
+      GetDocument().ParseAndSetReferrerPolicy(test.policy, true);
     } else {
-      document().parseAndSetReferrerPolicy(test.policy);
+      GetDocument().ParseAndSetReferrerPolicy(test.policy);
     }
-    EXPECT_EQ(test.expected, document().getReferrerPolicy()) << test.policy;
+    EXPECT_EQ(test.expected, GetDocument().GetReferrerPolicy()) << test.policy;
   }
 }
 
 TEST_F(DocumentTest, OutgoingReferrer) {
-  document().setURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
-  document().setSecurityOrigin(
-      SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
-  EXPECT_EQ("https://www.example.com/hoge", document().outgoingReferrer());
+  GetDocument().SetURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+  GetDocument().SetSecurityOrigin(
+      SecurityOrigin::Create(KURL(KURL(), "https://www.example.com/")));
+  EXPECT_EQ("https://www.example.com/hoge", GetDocument().OutgoingReferrer());
 }
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  document().setURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
-  document().setSecurityOrigin(SecurityOrigin::createUnique());
-  EXPECT_EQ(String(), document().outgoingReferrer());
+  GetDocument().SetURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+  GetDocument().SetSecurityOrigin(SecurityOrigin::CreateUnique());
+  EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
 
 TEST_F(DocumentTest, StyleVersion) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>"
       "    .a * { color: green }"
       "    .b .c { color: green }"
       "</style>"
       "<div id='x'><span class='c'></span></div>");
 
-  Element* element = document().getElementById("x");
+  Element* element = GetDocument().GetElementById("x");
   EXPECT_TRUE(element);
 
-  uint64_t previousStyleVersion = document().styleVersion();
+  uint64_t previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::HTMLNames::classAttr, "notfound");
-  EXPECT_EQ(previousStyleVersion, document().styleVersion());
+  EXPECT_EQ(previous_style_version, GetDocument().StyleVersion());
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  previousStyleVersion = document().styleVersion();
+  previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::HTMLNames::classAttr, "a");
-  EXPECT_NE(previousStyleVersion, document().styleVersion());
+  EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  previousStyleVersion = document().styleVersion();
+  previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::HTMLNames::classAttr, "a b");
-  EXPECT_NE(previousStyleVersion, document().styleVersion());
+  EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 }
 
 TEST_F(DocumentTest, EnforceSandboxFlags) {
   RefPtr<SecurityOrigin> origin =
-      SecurityOrigin::createFromString("http://example.test");
-  document().setSecurityOrigin(origin);
-  SandboxFlags mask = SandboxNavigation;
-  document().enforceSandboxFlags(mask);
-  EXPECT_EQ(origin, document().getSecurityOrigin());
-  EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+      SecurityOrigin::CreateFromString("http://example.test");
+  GetDocument().SetSecurityOrigin(origin);
+  SandboxFlags mask = kSandboxNavigation;
+  GetDocument().EnforceSandboxFlags(mask);
+  EXPECT_EQ(origin, GetDocument().GetSecurityOrigin());
+  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  mask |= SandboxOrigin;
-  document().enforceSandboxFlags(mask);
-  EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
-  EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+  mask |= kSandboxOrigin;
+  GetDocument().EnforceSandboxFlags(mask);
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   // A unique origin does not bypass secure context checks unless it
   // is also potentially trustworthy.
-  SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(
+  SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
   origin =
-      SecurityOrigin::createFromString("very-special-scheme://example.test");
-  document().setSecurityOrigin(origin);
-  document().enforceSandboxFlags(mask);
-  EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
-  EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+      SecurityOrigin::CreateFromString("very-special-scheme://example.test");
+  GetDocument().SetSecurityOrigin(origin);
+  GetDocument().EnforceSandboxFlags(mask);
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  SchemeRegistry::registerURLSchemeAsSecure("very-special-scheme");
-  document().setSecurityOrigin(origin);
-  document().enforceSandboxFlags(mask);
-  EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
-  EXPECT_TRUE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+  SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
+  GetDocument().SetSecurityOrigin(origin);
+  GetDocument().EnforceSandboxFlags(mask);
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  origin = SecurityOrigin::createFromString("https://example.test");
-  document().setSecurityOrigin(origin);
-  document().enforceSandboxFlags(mask);
-  EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
-  EXPECT_TRUE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+  origin = SecurityOrigin::CreateFromString("https://example.test");
+  GetDocument().SetSecurityOrigin(origin);
+  GetDocument().EnforceSandboxFlags(mask);
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifier) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  EXPECT_EQ(document(), observer.lifecycleContext());
-  EXPECT_EQ(0, observer.countContextDestroyedCalled());
+  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
+  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
-  Element* divNode = document().createElement("div");
-  document().body()->appendChild(divNode);
+  Element* div_node = GetDocument().createElement("div");
+  GetDocument().body()->AppendChild(div_node);
 
-  Element* boldNode = document().createElement("b");
-  divNode->appendChild(boldNode);
+  Element* bold_node = GetDocument().createElement("b");
+  div_node->AppendChild(bold_node);
 
-  Element* italicNode = document().createElement("i");
-  divNode->appendChild(italicNode);
+  Element* italic_node = GetDocument().createElement("i");
+  div_node->AppendChild(italic_node);
 
-  Node* textNode = document().createTextNode("0123456789");
-  boldNode->appendChild(textNode);
-  EXPECT_TRUE(observer.removedNodes().isEmpty());
+  Node* text_node = GetDocument().createTextNode("0123456789");
+  bold_node->AppendChild(text_node);
+  EXPECT_TRUE(observer.RemovedNodes().IsEmpty());
 
-  textNode->remove();
-  ASSERT_EQ(1u, observer.removedNodes().size());
-  EXPECT_EQ(textNode, observer.removedNodes()[0]);
+  text_node->remove();
+  ASSERT_EQ(1u, observer.RemovedNodes().size());
+  EXPECT_EQ(text_node, observer.RemovedNodes()[0]);
 
-  divNode->removeChildren();
-  EXPECT_EQ(1u, observer.removedNodes().size())
+  div_node->RemoveChildren();
+  EXPECT_EQ(1u, observer.RemovedNodes().size())
       << "ContainerNode::removeChildren() doesn't call nodeWillBeRemoved()";
-  ASSERT_EQ(1u, observer.removedChildrenNodes().size());
-  EXPECT_EQ(divNode, observer.removedChildrenNodes()[0]);
+  ASSERT_EQ(1u, observer.RemovedChildrenNodes().size());
+  EXPECT_EQ(div_node, observer.RemovedChildrenNodes()[0]);
 
-  document().shutdown();
-  EXPECT_EQ(nullptr, observer.lifecycleContext());
-  EXPECT_EQ(1, observer.countContextDestroyedCalled());
+  GetDocument().Shutdown();
+  EXPECT_EQ(nullptr, observer.LifecycleContext());
+  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
-  document().body()->appendChild(document().createTextNode("a123456789"));
-  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
-  EXPECT_EQ(document().body(), observer.childrenChangedNodes()[0]);
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  GetDocument().body()->AppendChild(GetDocument().createTextNode("a123456789"));
+  ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
+  EXPECT_EQ(GetDocument().body(), observer.ChildrenChangedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
-  document().documentElement()->insertBefore(
-      document().createTextNode("a123456789"), document().body());
-  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
-  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  GetDocument().documentElement()->InsertBefore(
+      GetDocument().createTextNode("a123456789"), GetDocument().body());
+  ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
+  EXPECT_EQ(GetDocument().documentElement(),
+            observer.ChildrenChangedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Text* mergeSampleA = document().createTextNode("a123456789");
-  document().body()->appendChild(mergeSampleA);
+  Text* merge_sample_a = GetDocument().createTextNode("a123456789");
+  GetDocument().body()->AppendChild(merge_sample_a);
 
-  Text* mergeSampleB = document().createTextNode("b123456789");
-  document().body()->appendChild(mergeSampleB);
+  Text* merge_sample_b = GetDocument().createTextNode("b123456789");
+  GetDocument().body()->AppendChild(merge_sample_b);
 
-  EXPECT_EQ(0u, observer.mergeTextNodesRecords().size());
-  document().body()->normalize();
+  EXPECT_EQ(0u, observer.MergeTextNodesRecords().size());
+  GetDocument().body()->normalize();
 
-  ASSERT_EQ(1u, observer.mergeTextNodesRecords().size());
-  EXPECT_EQ(mergeSampleA, observer.mergeTextNodesRecords()[0]->m_node);
-  EXPECT_EQ(mergeSampleB,
-            observer.mergeTextNodesRecords()[0]->m_nodeToBeRemoved);
-  EXPECT_EQ(10u, observer.mergeTextNodesRecords()[0]->m_offset);
+  ASSERT_EQ(1u, observer.MergeTextNodesRecords().size());
+  EXPECT_EQ(merge_sample_a, observer.MergeTextNodesRecords()[0]->node_);
+  EXPECT_EQ(merge_sample_b,
+            observer.MergeTextNodesRecords()[0]->node_to_be_removed_);
+  EXPECT_EQ(10u, observer.MergeTextNodesRecords()[0]->offset_);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Node* moveSample = document().createElement("div");
-  moveSample->appendChild(document().createTextNode("a123"));
-  moveSample->appendChild(document().createTextNode("b456"));
-  document().body()->appendChild(moveSample);
+  Node* move_sample = GetDocument().createElement("div");
+  move_sample->appendChild(GetDocument().createTextNode("a123"));
+  move_sample->appendChild(GetDocument().createTextNode("b456"));
+  GetDocument().body()->AppendChild(move_sample);
 
-  Document& anotherDocument = *Document::create();
-  anotherDocument.appendChild(moveSample);
+  Document& another_document = *Document::Create();
+  another_document.AppendChild(move_sample);
 
-  EXPECT_EQ(1u, observer.moveTreeToNewDocumentNodes().size());
-  EXPECT_EQ(moveSample, observer.moveTreeToNewDocumentNodes()[0]);
+  EXPECT_EQ(1u, observer.MoveTreeToNewDocumentNodes().size());
+  EXPECT_EQ(move_sample, observer.MoveTreeToNewDocumentNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
-  document().documentElement()->removeChild(document().body());
-  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
-  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  GetDocument().documentElement()->RemoveChild(GetDocument().body());
+  ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
+  EXPECT_EQ(GetDocument().documentElement(),
+            observer.ChildrenChangedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
-  Element* const replacedNode = document().body();
-  document().documentElement()->replaceChild(document().createElement("div"),
-                                             document().body());
-  ASSERT_EQ(2u, observer.childrenChangedNodes().size());
-  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
-  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[1]);
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  Element* const replaced_node = GetDocument().body();
+  GetDocument().documentElement()->ReplaceChild(
+      GetDocument().createElement("div"), GetDocument().body());
+  ASSERT_EQ(2u, observer.ChildrenChangedNodes().size());
+  EXPECT_EQ(GetDocument().documentElement(),
+            observer.ChildrenChangedNodes()[0]);
+  EXPECT_EQ(GetDocument().documentElement(),
+            observer.ChildrenChangedNodes()[1]);
 
-  ASSERT_EQ(1u, observer.removedNodes().size());
-  EXPECT_EQ(replacedNode, observer.removedNodes()[0]);
+  ASSERT_EQ(1u, observer.RemovedNodes().size());
+  EXPECT_EQ(replaced_node, observer.RemovedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
   V8TestingScope scope;
-  auto& observer = *new TestSynchronousMutationObserver(document());
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Text* splitSample = document().createTextNode("0123456789");
-  document().body()->appendChild(splitSample);
+  Text* split_sample = GetDocument().createTextNode("0123456789");
+  GetDocument().body()->AppendChild(split_sample);
 
-  splitSample->splitText(4, ASSERT_NO_EXCEPTION);
-  ASSERT_EQ(1u, observer.splitTextNodes().size());
-  EXPECT_EQ(splitSample, observer.splitTextNodes()[0]);
+  split_sample->splitText(4, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(1u, observer.SplitTextNodes().size());
+  EXPECT_EQ(split_sample, observer.SplitTextNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
-  auto& observer = *new TestSynchronousMutationObserver(document());
+  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Text* appendSample = document().createTextNode("a123456789");
-  document().body()->appendChild(appendSample);
+  Text* append_sample = GetDocument().createTextNode("a123456789");
+  GetDocument().body()->AppendChild(append_sample);
 
-  Text* deleteSample = document().createTextNode("b123456789");
-  document().body()->appendChild(deleteSample);
+  Text* delete_sample = GetDocument().createTextNode("b123456789");
+  GetDocument().body()->AppendChild(delete_sample);
 
-  Text* insertSample = document().createTextNode("c123456789");
-  document().body()->appendChild(insertSample);
+  Text* insert_sample = GetDocument().createTextNode("c123456789");
+  GetDocument().body()->AppendChild(insert_sample);
 
-  Text* replaceSample = document().createTextNode("c123456789");
-  document().body()->appendChild(replaceSample);
+  Text* replace_sample = GetDocument().createTextNode("c123456789");
+  GetDocument().body()->AppendChild(replace_sample);
 
-  EXPECT_EQ(0u, observer.updatedCharacterDataRecords().size());
+  EXPECT_EQ(0u, observer.UpdatedCharacterDataRecords().size());
 
-  appendSample->appendData("abc");
-  ASSERT_EQ(1u, observer.updatedCharacterDataRecords().size());
-  EXPECT_EQ(appendSample, observer.updatedCharacterDataRecords()[0]->m_node);
-  EXPECT_EQ(10u, observer.updatedCharacterDataRecords()[0]->m_offset);
-  EXPECT_EQ(0u, observer.updatedCharacterDataRecords()[0]->m_oldLength);
-  EXPECT_EQ(3u, observer.updatedCharacterDataRecords()[0]->m_newLength);
+  append_sample->appendData("abc");
+  ASSERT_EQ(1u, observer.UpdatedCharacterDataRecords().size());
+  EXPECT_EQ(append_sample, observer.UpdatedCharacterDataRecords()[0]->node_);
+  EXPECT_EQ(10u, observer.UpdatedCharacterDataRecords()[0]->offset_);
+  EXPECT_EQ(0u, observer.UpdatedCharacterDataRecords()[0]->old_length_);
+  EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[0]->new_length_);
 
-  deleteSample->deleteData(3, 4, ASSERT_NO_EXCEPTION);
-  ASSERT_EQ(2u, observer.updatedCharacterDataRecords().size());
-  EXPECT_EQ(deleteSample, observer.updatedCharacterDataRecords()[1]->m_node);
-  EXPECT_EQ(3u, observer.updatedCharacterDataRecords()[1]->m_offset);
-  EXPECT_EQ(4u, observer.updatedCharacterDataRecords()[1]->m_oldLength);
-  EXPECT_EQ(0u, observer.updatedCharacterDataRecords()[1]->m_newLength);
+  delete_sample->deleteData(3, 4, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(2u, observer.UpdatedCharacterDataRecords().size());
+  EXPECT_EQ(delete_sample, observer.UpdatedCharacterDataRecords()[1]->node_);
+  EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[1]->offset_);
+  EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[1]->old_length_);
+  EXPECT_EQ(0u, observer.UpdatedCharacterDataRecords()[1]->new_length_);
 
-  insertSample->insertData(3, "def", ASSERT_NO_EXCEPTION);
-  ASSERT_EQ(3u, observer.updatedCharacterDataRecords().size());
-  EXPECT_EQ(insertSample, observer.updatedCharacterDataRecords()[2]->m_node);
-  EXPECT_EQ(3u, observer.updatedCharacterDataRecords()[2]->m_offset);
-  EXPECT_EQ(0u, observer.updatedCharacterDataRecords()[2]->m_oldLength);
-  EXPECT_EQ(3u, observer.updatedCharacterDataRecords()[2]->m_newLength);
+  insert_sample->insertData(3, "def", ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(3u, observer.UpdatedCharacterDataRecords().size());
+  EXPECT_EQ(insert_sample, observer.UpdatedCharacterDataRecords()[2]->node_);
+  EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[2]->offset_);
+  EXPECT_EQ(0u, observer.UpdatedCharacterDataRecords()[2]->old_length_);
+  EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[2]->new_length_);
 
-  replaceSample->replaceData(6, 4, "ghi", ASSERT_NO_EXCEPTION);
-  ASSERT_EQ(4u, observer.updatedCharacterDataRecords().size());
-  EXPECT_EQ(replaceSample, observer.updatedCharacterDataRecords()[3]->m_node);
-  EXPECT_EQ(6u, observer.updatedCharacterDataRecords()[3]->m_offset);
-  EXPECT_EQ(4u, observer.updatedCharacterDataRecords()[3]->m_oldLength);
-  EXPECT_EQ(3u, observer.updatedCharacterDataRecords()[3]->m_newLength);
+  replace_sample->replaceData(6, 4, "ghi", ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(4u, observer.UpdatedCharacterDataRecords().size());
+  EXPECT_EQ(replace_sample, observer.UpdatedCharacterDataRecords()[3]->node_);
+  EXPECT_EQ(6u, observer.UpdatedCharacterDataRecords()[3]->offset_);
+  EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[3]->old_length_);
+  EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
 }
 
 // This tests that meta-theme-color can be found correctly
 TEST_F(DocumentTest, ThemeColor) {
   {
-    setHtmlInnerHTML(
+    SetHtmlInnerHTML(
         "<meta name=\"theme-color\" content=\"#00ff00\">"
         "<body>");
-    EXPECT_EQ(Color(0, 255, 0), document().themeColor())
+    EXPECT_EQ(Color(0, 255, 0), GetDocument().ThemeColor())
         << "Theme color should be bright green.";
   }
 
   {
-    setHtmlInnerHTML(
+    SetHtmlInnerHTML(
         "<body>"
         "<meta name=\"theme-color\" content=\"#00ff00\">");
-    EXPECT_EQ(Color(0, 255, 0), document().themeColor())
+    EXPECT_EQ(Color(0, 255, 0), GetDocument().ThemeColor())
         << "Theme color should be bright green.";
   }
 }
 
 TEST_F(DocumentTest, ValidationMessageCleanup) {
-  ValidationMessageClient* originalClient = &page().validationMessageClient();
-  MockValidationMessageClient* mockClient = new MockValidationMessageClient();
-  document().settings()->setScriptEnabled(true);
-  page().setValidationMessageClient(mockClient);
+  ValidationMessageClient* original_client =
+      &GetPage().GetValidationMessageClient();
+  MockValidationMessageClient* mock_client = new MockValidationMessageClient();
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  GetPage().SetValidationMessageClient(mock_client);
   // implicitOpen()-implicitClose() makes Document.loadEventFinished()
   // true. It's necessary to kick unload process.
-  document().implicitOpen(ForceSynchronousParsing);
-  document().implicitClose();
-  document().appendChild(document().createElement("html"));
-  setHtmlInnerHTML("<body><input required></body>");
-  Element* script = document().createElement("script");
+  GetDocument().ImplicitOpen(kForceSynchronousParsing);
+  GetDocument().ImplicitClose();
+  GetDocument().AppendChild(GetDocument().createElement("html"));
+  SetHtmlInnerHTML("<body><input required></body>");
+  Element* script = GetDocument().createElement("script");
   script->setTextContent(
       "window.onunload = function() {"
       "document.querySelector('input').reportValidity(); };");
-  document().body()->appendChild(script);
-  HTMLInputElement* input = toHTMLInputElement(document().body()->firstChild());
-  DVLOG(0) << document().body()->outerHTML();
+  GetDocument().body()->AppendChild(script);
+  HTMLInputElement* input =
+      toHTMLInputElement(GetDocument().body()->FirstChild());
+  DVLOG(0) << GetDocument().body()->outerHTML();
 
   // Sanity check.
   input->reportValidity();
-  EXPECT_TRUE(mockClient->showValidationMessageWasCalled);
-  mockClient->reset();
+  EXPECT_TRUE(mock_client->show_validation_message_was_called);
+  mock_client->Reset();
 
   // prepareForCommit() unloads the document, and shutdown.
-  document().frame()->prepareForCommit();
-  EXPECT_TRUE(mockClient->willUnloadDocumentWasCalled);
-  EXPECT_TRUE(mockClient->documentDetachedWasCalled);
+  GetDocument().GetFrame()->PrepareForCommit();
+  EXPECT_TRUE(mock_client->will_unload_document_was_called);
+  EXPECT_TRUE(mock_client->document_detached_was_called);
   // Unload handler tried to show a validation message, but it should fail.
-  EXPECT_FALSE(mockClient->showValidationMessageWasCalled);
+  EXPECT_FALSE(mock_client->show_validation_message_was_called);
 
-  page().setValidationMessageClient(originalClient);
+  GetPage().SetValidationMessageClient(original_client);
 }
 
 }  // namespace blink

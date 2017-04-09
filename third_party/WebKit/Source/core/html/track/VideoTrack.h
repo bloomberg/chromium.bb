@@ -19,34 +19,34 @@ class CORE_EXPORT VideoTrack final
   USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
 
  public:
-  static VideoTrack* create(const String& id,
+  static VideoTrack* Create(const String& id,
                             const AtomicString& kind,
                             const AtomicString& label,
                             const AtomicString& language,
                             bool selected) {
-    return new VideoTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom,
+    return new VideoTrack(id, IsValidKindKeyword(kind) ? kind : g_empty_atom,
                           label, language, selected);
   }
 
   ~VideoTrack() override;
   DECLARE_VIRTUAL_TRACE();
 
-  bool selected() const { return m_selected; }
+  bool selected() const { return selected_; }
   void setSelected(bool);
 
   // Set selected to false without notifying the owner media element. Used when
   // another video track is selected, implicitly deselecting this one.
-  void clearSelected() { m_selected = false; }
+  void ClearSelected() { selected_ = false; }
 
   // Valid kind keywords.
-  static const AtomicString& alternativeKeyword();
-  static const AtomicString& captionsKeyword();
-  static const AtomicString& mainKeyword();
-  static const AtomicString& signKeyword();
-  static const AtomicString& subtitlesKeyword();
-  static const AtomicString& commentaryKeyword();
+  static const AtomicString& AlternativeKeyword();
+  static const AtomicString& CaptionsKeyword();
+  static const AtomicString& MainKeyword();
+  static const AtomicString& SignKeyword();
+  static const AtomicString& SubtitlesKeyword();
+  static const AtomicString& CommentaryKeyword();
 
-  static bool isValidKindKeyword(const String&);
+  static bool IsValidKindKeyword(const String&);
 
  private:
   VideoTrack(const String& id,
@@ -55,10 +55,10 @@ class CORE_EXPORT VideoTrack final
              const AtomicString& language,
              bool selected);
 
-  bool m_selected;
+  bool selected_;
 };
 
-DEFINE_TRACK_TYPE_CASTS(VideoTrack, WebMediaPlayer::VideoTrack);
+DEFINE_TRACK_TYPE_CASTS(VideoTrack, WebMediaPlayer::kVideoTrack);
 
 }  // namespace blink
 

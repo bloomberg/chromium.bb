@@ -41,7 +41,7 @@ enum EdgeModeType {
 
 class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
  public:
-  static FEConvolveMatrix* create(Filter*,
+  static FEConvolveMatrix* Create(Filter*,
                                   const IntSize&,
                                   float,
                                   float,
@@ -50,13 +50,13 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
                                   bool,
                                   const Vector<float>&);
 
-  bool setDivisor(float);
-  bool setBias(float);
-  bool setTargetOffset(const IntPoint&);
-  bool setEdgeMode(EdgeModeType);
-  bool setPreserveAlpha(bool);
+  bool SetDivisor(float);
+  bool SetBias(float);
+  bool SetTargetOffset(const IntPoint&);
+  bool SetEdgeMode(EdgeModeType);
+  bool SetPreserveAlpha(bool);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FEConvolveMatrix(Filter*,
@@ -68,19 +68,19 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
                    bool,
                    const Vector<float>&);
 
-  FloatRect mapEffect(const FloatRect&) const final;
+  FloatRect MapEffect(const FloatRect&) const final;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
-  bool parametersValid() const;
+  bool ParametersValid() const;
 
-  IntSize m_kernelSize;
-  float m_divisor;
-  float m_bias;
-  IntPoint m_targetOffset;
-  EdgeModeType m_edgeMode;
-  bool m_preserveAlpha;
-  Vector<float> m_kernelMatrix;
+  IntSize kernel_size_;
+  float divisor_;
+  float bias_;
+  IntPoint target_offset_;
+  EdgeModeType edge_mode_;
+  bool preserve_alpha_;
+  Vector<float> kernel_matrix_;
 };
 
 }  // namespace blink

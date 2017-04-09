@@ -51,12 +51,12 @@ namespace blink {
 
 namespace {
 
-const CString utf8BlobUUID(Blob* blob) {
-  return blob->uuid().utf8();
+const CString Utf8BlobUUID(Blob* blob) {
+  return blob->Uuid().Utf8();
 }
 
-const CString utf8FilePath(Blob* blob) {
-  return blob->hasBackingFile() ? toFile(blob)->path().utf8() : "";
+const CString Utf8FilePath(Blob* blob) {
+  return blob->HasBackingFile() ? ToFile(blob)->GetPath().Utf8() : "";
 }
 
 }  // namespace
@@ -65,7 +65,7 @@ const CString utf8FilePath(Blob* blob) {
 // excessive IPC congestion. We limit this to 100 per thread to throttle the
 // requests (the value is arbitrarily chosen).
 static const size_t kMaxOutstandingRequestsPerThread = 100;
-static const double progressNotificationIntervalMS = 50;
+static const double kProgressNotificationIntervalMS = 50;
 
 class FileReader::ThrottlingController final
     : public GarbageCollected<FileReader::ThrottlingController>,
@@ -73,225 +73,226 @@ class FileReader::ThrottlingController final
   USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 
  public:
-  static ThrottlingController* from(ExecutionContext* context) {
+  static ThrottlingController* From(ExecutionContext* context) {
     if (!context)
       return 0;
 
     ThrottlingController* controller = static_cast<ThrottlingController*>(
-        Supplement<ExecutionContext>::from(*context, supplementName()));
+        Supplement<ExecutionContext>::From(*context, SupplementName()));
     if (!controller) {
       controller = new ThrottlingController(*context);
-      provideTo(*context, supplementName(), controller);
+      ProvideTo(*context, SupplementName(), controller);
     }
     return controller;
   }
 
-  enum FinishReaderType { DoNotRunPendingReaders, RunPendingReaders };
+  enum FinishReaderType { kDoNotRunPendingReaders, kRunPendingReaders };
 
-  static void pushReader(ExecutionContext* context, FileReader* reader) {
-    ThrottlingController* controller = from(context);
+  static void PushReader(ExecutionContext* context, FileReader* reader) {
+    ThrottlingController* controller = From(context);
     if (!controller)
       return;
 
-    probe::asyncTaskScheduled(context, "FileReader", reader);
-    controller->pushReader(reader);
+    probe::AsyncTaskScheduled(context, "FileReader", reader);
+    controller->PushReader(reader);
   }
 
-  static FinishReaderType removeReader(ExecutionContext* context,
+  static FinishReaderType RemoveReader(ExecutionContext* context,
                                        FileReader* reader) {
-    ThrottlingController* controller = from(context);
+    ThrottlingController* controller = From(context);
     if (!controller)
-      return DoNotRunPendingReaders;
+      return kDoNotRunPendingReaders;
 
-    return controller->removeReader(reader);
+    return controller->RemoveReader(reader);
   }
 
-  static void finishReader(ExecutionContext* context,
+  static void FinishReader(ExecutionContext* context,
                            FileReader* reader,
-                           FinishReaderType nextStep) {
-    ThrottlingController* controller = from(context);
+                           FinishReaderType next_step) {
+    ThrottlingController* controller = From(context);
     if (!controller)
       return;
 
-    controller->finishReader(reader, nextStep);
-    probe::asyncTaskCanceled(context, reader);
+    controller->FinishReader(reader, next_step);
+    probe::AsyncTaskCanceled(context, reader);
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_pendingReaders);
-    visitor->trace(m_runningReaders);
-    Supplement<ExecutionContext>::trace(visitor);
+    visitor->Trace(pending_readers_);
+    visitor->Trace(running_readers_);
+    Supplement<ExecutionContext>::Trace(visitor);
   }
 
  private:
   explicit ThrottlingController(ExecutionContext& context)
       : Supplement<ExecutionContext>(context),
-        m_maxRunningReaders(kMaxOutstandingRequestsPerThread) {}
+        max_running_readers_(kMaxOutstandingRequestsPerThread) {}
 
-  void pushReader(FileReader* reader) {
-    if (m_pendingReaders.isEmpty() &&
-        m_runningReaders.size() < m_maxRunningReaders) {
-      reader->executePendingRead();
-      ASSERT(!m_runningReaders.contains(reader));
-      m_runningReaders.insert(reader);
+  void PushReader(FileReader* reader) {
+    if (pending_readers_.IsEmpty() &&
+        running_readers_.size() < max_running_readers_) {
+      reader->ExecutePendingRead();
+      ASSERT(!running_readers_.Contains(reader));
+      running_readers_.insert(reader);
       return;
     }
-    m_pendingReaders.push_back(reader);
-    executeReaders();
+    pending_readers_.push_back(reader);
+    ExecuteReaders();
   }
 
-  FinishReaderType removeReader(FileReader* reader) {
-    FileReaderHashSet::const_iterator hashIter = m_runningReaders.find(reader);
-    if (hashIter != m_runningReaders.end()) {
-      m_runningReaders.erase(hashIter);
-      return RunPendingReaders;
+  FinishReaderType RemoveReader(FileReader* reader) {
+    FileReaderHashSet::const_iterator hash_iter = running_readers_.Find(reader);
+    if (hash_iter != running_readers_.end()) {
+      running_readers_.erase(hash_iter);
+      return kRunPendingReaders;
     }
-    FileReaderDeque::const_iterator dequeEnd = m_pendingReaders.end();
-    for (FileReaderDeque::const_iterator it = m_pendingReaders.begin();
-         it != dequeEnd; ++it) {
+    FileReaderDeque::const_iterator deque_end = pending_readers_.end();
+    for (FileReaderDeque::const_iterator it = pending_readers_.begin();
+         it != deque_end; ++it) {
       if (*it == reader) {
-        m_pendingReaders.erase(it);
+        pending_readers_.erase(it);
         break;
       }
     }
-    return DoNotRunPendingReaders;
+    return kDoNotRunPendingReaders;
   }
 
-  void finishReader(FileReader* reader, FinishReaderType nextStep) {
-    if (nextStep == RunPendingReaders)
-      executeReaders();
+  void FinishReader(FileReader* reader, FinishReaderType next_step) {
+    if (next_step == kRunPendingReaders)
+      ExecuteReaders();
   }
 
-  void executeReaders() {
-    while (m_runningReaders.size() < m_maxRunningReaders) {
-      if (m_pendingReaders.isEmpty())
+  void ExecuteReaders() {
+    while (running_readers_.size() < max_running_readers_) {
+      if (pending_readers_.IsEmpty())
         return;
-      FileReader* reader = m_pendingReaders.takeFirst();
-      reader->executePendingRead();
-      m_runningReaders.insert(reader);
+      FileReader* reader = pending_readers_.TakeFirst();
+      reader->ExecutePendingRead();
+      running_readers_.insert(reader);
     }
   }
 
-  static const char* supplementName() {
+  static const char* SupplementName() {
     return "FileReaderThrottlingController";
   }
 
-  const size_t m_maxRunningReaders;
+  const size_t max_running_readers_;
 
   using FileReaderDeque = HeapDeque<Member<FileReader>>;
   using FileReaderHashSet = HeapHashSet<Member<FileReader>>;
 
-  FileReaderDeque m_pendingReaders;
-  FileReaderHashSet m_runningReaders;
+  FileReaderDeque pending_readers_;
+  FileReaderHashSet running_readers_;
 };
 
-FileReader* FileReader::create(ExecutionContext* context) {
+FileReader* FileReader::Create(ExecutionContext* context) {
   return new FileReader(context);
 }
 
 FileReader::FileReader(ExecutionContext* context)
     : ContextLifecycleObserver(context),
-      m_state(kEmpty),
-      m_loadingState(LoadingStateNone),
-      m_stillFiringEvents(false),
-      m_readType(FileReaderLoader::ReadAsBinaryString),
-      m_lastProgressNotificationTimeMS(0) {}
+      state_(kEmpty),
+      loading_state_(kLoadingStateNone),
+      still_firing_events_(false),
+      read_type_(FileReaderLoader::kReadAsBinaryString),
+      last_progress_notification_time_ms_(0) {}
 
 FileReader::~FileReader() {
-  terminate();
+  Terminate();
 }
 
-const AtomicString& FileReader::interfaceName() const {
+const AtomicString& FileReader::InterfaceName() const {
   return EventTargetNames::FileReader;
 }
 
-void FileReader::contextDestroyed(ExecutionContext* destroyedContext) {
+void FileReader::ContextDestroyed(ExecutionContext* destroyed_context) {
   // The delayed abort task tidies up and advances to the DONE state.
-  if (m_loadingState == LoadingStateAborted)
+  if (loading_state_ == kLoadingStateAborted)
     return;
 
-  if (hasPendingActivity()) {
-    ThrottlingController::finishReader(
-        destroyedContext, this,
-        ThrottlingController::removeReader(destroyedContext, this));
+  if (HasPendingActivity()) {
+    ThrottlingController::FinishReader(
+        destroyed_context, this,
+        ThrottlingController::RemoveReader(destroyed_context, this));
   }
-  terminate();
+  Terminate();
 }
 
-bool FileReader::hasPendingActivity() const {
-  return m_state == kLoading || m_stillFiringEvents;
+bool FileReader::HasPendingActivity() const {
+  return state_ == kLoading || still_firing_events_;
 }
 
-void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState) {
+void FileReader::readAsArrayBuffer(Blob* blob,
+                                   ExceptionState& exception_state) {
   ASSERT(blob);
-  DVLOG(1) << "reading as array buffer: " << utf8BlobUUID(blob).data() << " "
-           << utf8FilePath(blob).data();
+  DVLOG(1) << "reading as array buffer: " << Utf8BlobUUID(blob).Data() << " "
+           << Utf8FilePath(blob).Data();
 
-  readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, exceptionState);
+  ReadInternal(blob, FileReaderLoader::kReadAsArrayBuffer, exception_state);
 }
 
 void FileReader::readAsBinaryString(Blob* blob,
-                                    ExceptionState& exceptionState) {
+                                    ExceptionState& exception_state) {
   ASSERT(blob);
-  DVLOG(1) << "reading as binary: " << utf8BlobUUID(blob).data() << " "
-           << utf8FilePath(blob).data();
+  DVLOG(1) << "reading as binary: " << Utf8BlobUUID(blob).Data() << " "
+           << Utf8FilePath(blob).Data();
 
-  readInternal(blob, FileReaderLoader::ReadAsBinaryString, exceptionState);
+  ReadInternal(blob, FileReaderLoader::kReadAsBinaryString, exception_state);
 }
 
 void FileReader::readAsText(Blob* blob,
                             const String& encoding,
-                            ExceptionState& exceptionState) {
+                            ExceptionState& exception_state) {
   ASSERT(blob);
-  DVLOG(1) << "reading as text: " << utf8BlobUUID(blob).data() << " "
-           << utf8FilePath(blob).data();
+  DVLOG(1) << "reading as text: " << Utf8BlobUUID(blob).Data() << " "
+           << Utf8FilePath(blob).Data();
 
-  m_encoding = encoding;
-  readInternal(blob, FileReaderLoader::ReadAsText, exceptionState);
+  encoding_ = encoding;
+  ReadInternal(blob, FileReaderLoader::kReadAsText, exception_state);
 }
 
-void FileReader::readAsText(Blob* blob, ExceptionState& exceptionState) {
-  readAsText(blob, String(), exceptionState);
+void FileReader::readAsText(Blob* blob, ExceptionState& exception_state) {
+  readAsText(blob, String(), exception_state);
 }
 
-void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState) {
+void FileReader::readAsDataURL(Blob* blob, ExceptionState& exception_state) {
   ASSERT(blob);
-  DVLOG(1) << "reading as data URL: " << utf8BlobUUID(blob).data() << " "
-           << utf8FilePath(blob).data();
+  DVLOG(1) << "reading as data URL: " << Utf8BlobUUID(blob).Data() << " "
+           << Utf8FilePath(blob).Data();
 
-  readInternal(blob, FileReaderLoader::ReadAsDataURL, exceptionState);
+  ReadInternal(blob, FileReaderLoader::kReadAsDataURL, exception_state);
 }
 
-void FileReader::readInternal(Blob* blob,
+void FileReader::ReadInternal(Blob* blob,
                               FileReaderLoader::ReadType type,
-                              ExceptionState& exceptionState) {
+                              ExceptionState& exception_state) {
   // If multiple concurrent read methods are called on the same FileReader,
   // InvalidStateError should be thrown when the state is kLoading.
-  if (m_state == kLoading) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "The object is already busy reading Blobs.");
+  if (state_ == kLoading) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "The object is already busy reading Blobs.");
     return;
   }
 
   if (blob->isClosed()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        String(blob->isFile() ? "File" : "Blob") + " has been closed.");
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        String(blob->IsFile() ? "File" : "Blob") + " has been closed.");
     return;
   }
 
-  ExecutionContext* context = getExecutionContext();
+  ExecutionContext* context = GetExecutionContext();
   if (!context) {
-    exceptionState.throwDOMException(
-        AbortError, "Reading from a detached FileReader is not supported.");
+    exception_state.ThrowDOMException(
+        kAbortError, "Reading from a detached FileReader is not supported.");
     return;
   }
 
   // A document loader will not load new resources once the Document has
   // detached from its frame.
-  if (context->isDocument() && !toDocument(context)->frame()) {
-    exceptionState.throwDOMException(
-        AbortError,
+  if (context->IsDocument() && !ToDocument(context)->GetFrame()) {
+    exception_state.ThrowDOMException(
+        kAbortError,
         "Reading from a Document-detached FileReader is not supported.");
     return;
   }
@@ -299,177 +300,177 @@ void FileReader::readInternal(Blob* blob,
   // "Snapshot" the Blob data rather than the Blob itself as ongoing
   // read operations should not be affected if close() is called on
   // the Blob being read.
-  m_blobDataHandle = blob->blobDataHandle();
-  m_blobType = blob->type();
-  m_readType = type;
-  m_state = kLoading;
-  m_loadingState = LoadingStatePending;
-  m_error = nullptr;
-  ASSERT(ThrottlingController::from(context));
-  ThrottlingController::pushReader(context, this);
+  blob_data_handle_ = blob->GetBlobDataHandle();
+  blob_type_ = blob->type();
+  read_type_ = type;
+  state_ = kLoading;
+  loading_state_ = kLoadingStatePending;
+  error_ = nullptr;
+  ASSERT(ThrottlingController::From(context));
+  ThrottlingController::PushReader(context, this);
 }
 
-void FileReader::executePendingRead() {
-  ASSERT(m_loadingState == LoadingStatePending);
-  m_loadingState = LoadingStateLoading;
+void FileReader::ExecutePendingRead() {
+  ASSERT(loading_state_ == kLoadingStatePending);
+  loading_state_ = kLoadingStateLoading;
 
-  m_loader = FileReaderLoader::create(m_readType, this);
-  m_loader->setEncoding(m_encoding);
-  m_loader->setDataType(m_blobType);
-  m_loader->start(getExecutionContext(), m_blobDataHandle);
-  m_blobDataHandle = nullptr;
+  loader_ = FileReaderLoader::Create(read_type_, this);
+  loader_->SetEncoding(encoding_);
+  loader_->SetDataType(blob_type_);
+  loader_->Start(GetExecutionContext(), blob_data_handle_);
+  blob_data_handle_ = nullptr;
 }
 
 void FileReader::abort() {
   DVLOG(1) << "aborting";
 
-  if (m_loadingState != LoadingStateLoading &&
-      m_loadingState != LoadingStatePending) {
+  if (loading_state_ != kLoadingStateLoading &&
+      loading_state_ != kLoadingStatePending) {
     return;
   }
-  m_loadingState = LoadingStateAborted;
+  loading_state_ = kLoadingStateAborted;
 
-  DCHECK_NE(kDone, m_state);
-  m_state = kDone;
+  DCHECK_NE(kDone, state_);
+  state_ = kDone;
 
-  AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
+  AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // Setting error implicitly makes |result| return null.
-  m_error = FileError::createDOMException(FileError::kAbortErr);
+  error_ = FileError::CreateDOMException(FileError::kAbortErr);
 
   // Unregister the reader.
-  ThrottlingController::FinishReaderType finalStep =
-      ThrottlingController::removeReader(getExecutionContext(), this);
+  ThrottlingController::FinishReaderType final_step =
+      ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  fireEvent(EventTypeNames::abort);
-  fireEvent(EventTypeNames::loadend);
+  FireEvent(EventTypeNames::abort);
+  FireEvent(EventTypeNames::loadend);
 
   // All possible events have fired and we're done, no more pending activity.
-  ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
+  ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 
   // ..but perform the loader cancellation asynchronously as abort() could be
   // called from the event handler and we do not want the resource loading code
   // to be on the stack when doing so. The persistent reference keeps the
   // reader alive until the task has completed.
-  TaskRunnerHelper::get(TaskType::FileReading, getExecutionContext())
-      ->postTask(BLINK_FROM_HERE,
-                 WTF::bind(&FileReader::terminate, wrapPersistent(this)));
+  TaskRunnerHelper::Get(TaskType::kFileReading, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&FileReader::Terminate, WrapPersistent(this)));
 }
 
-void FileReader::result(StringOrArrayBuffer& resultAttribute) const {
-  if (m_error || !m_loader)
+void FileReader::result(StringOrArrayBuffer& result_attribute) const {
+  if (error_ || !loader_)
     return;
 
-  if (m_readType == FileReaderLoader::ReadAsArrayBuffer)
-    resultAttribute.setArrayBuffer(m_loader->arrayBufferResult());
+  if (read_type_ == FileReaderLoader::kReadAsArrayBuffer)
+    result_attribute.setArrayBuffer(loader_->ArrayBufferResult());
   else
-    resultAttribute.setString(m_loader->stringResult());
+    result_attribute.setString(loader_->StringResult());
 }
 
-void FileReader::terminate() {
-  if (m_loader) {
-    m_loader->cancel();
-    m_loader = nullptr;
+void FileReader::Terminate() {
+  if (loader_) {
+    loader_->Cancel();
+    loader_ = nullptr;
   }
-  m_state = kDone;
-  m_loadingState = LoadingStateNone;
+  state_ = kDone;
+  loading_state_ = kLoadingStateNone;
 }
 
-void FileReader::didStartLoading() {
-  AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
-  fireEvent(EventTypeNames::loadstart);
+void FileReader::DidStartLoading() {
+  AutoReset<bool> firing_events(&still_firing_events_, true);
+  FireEvent(EventTypeNames::loadstart);
 }
 
-void FileReader::didReceiveData() {
+void FileReader::DidReceiveData() {
   // Fire the progress event at least every 50ms.
-  double now = currentTimeMS();
-  if (!m_lastProgressNotificationTimeMS) {
-    m_lastProgressNotificationTimeMS = now;
-  } else if (now - m_lastProgressNotificationTimeMS >
-             progressNotificationIntervalMS) {
-    AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
-    fireEvent(EventTypeNames::progress);
-    m_lastProgressNotificationTimeMS = now;
+  double now = CurrentTimeMS();
+  if (!last_progress_notification_time_ms_) {
+    last_progress_notification_time_ms_ = now;
+  } else if (now - last_progress_notification_time_ms_ >
+             kProgressNotificationIntervalMS) {
+    AutoReset<bool> firing_events(&still_firing_events_, true);
+    FireEvent(EventTypeNames::progress);
+    last_progress_notification_time_ms_ = now;
   }
 }
 
-void FileReader::didFinishLoading() {
-  if (m_loadingState == LoadingStateAborted)
+void FileReader::DidFinishLoading() {
+  if (loading_state_ == kLoadingStateAborted)
     return;
-  ASSERT(m_loadingState == LoadingStateLoading);
+  ASSERT(loading_state_ == kLoadingStateLoading);
 
   // TODO(jochen): When we set m_state to DONE below, we still need to fire
   // the load and loadend events. To avoid GC to collect this FileReader, we
   // use this separate variable to keep the wrapper of this FileReader alive.
   // An alternative would be to keep any ActiveScriptWrappables alive that is on
   // the stack.
-  AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
+  AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // It's important that we change m_loadingState before firing any events
   // since any of the events could call abort(), which internally checks
   // if we're still loading (therefore we need abort process) or not.
-  m_loadingState = LoadingStateNone;
+  loading_state_ = kLoadingStateNone;
 
-  fireEvent(EventTypeNames::progress);
+  FireEvent(EventTypeNames::progress);
 
-  DCHECK_NE(kDone, m_state);
-  m_state = kDone;
+  DCHECK_NE(kDone, state_);
+  state_ = kDone;
 
   // Unregister the reader.
-  ThrottlingController::FinishReaderType finalStep =
-      ThrottlingController::removeReader(getExecutionContext(), this);
+  ThrottlingController::FinishReaderType final_step =
+      ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  fireEvent(EventTypeNames::load);
-  fireEvent(EventTypeNames::loadend);
+  FireEvent(EventTypeNames::load);
+  FireEvent(EventTypeNames::loadend);
 
   // All possible events have fired and we're done, no more pending activity.
-  ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
+  ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 }
 
-void FileReader::didFail(FileError::ErrorCode errorCode) {
-  if (m_loadingState == LoadingStateAborted)
+void FileReader::DidFail(FileError::ErrorCode error_code) {
+  if (loading_state_ == kLoadingStateAborted)
     return;
 
-  AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
+  AutoReset<bool> firing_events(&still_firing_events_, true);
 
-  DCHECK_EQ(LoadingStateLoading, m_loadingState);
-  m_loadingState = LoadingStateNone;
+  DCHECK_EQ(kLoadingStateLoading, loading_state_);
+  loading_state_ = kLoadingStateNone;
 
-  DCHECK_NE(kDone, m_state);
-  m_state = kDone;
+  DCHECK_NE(kDone, state_);
+  state_ = kDone;
 
-  m_error = FileError::createDOMException(errorCode);
+  error_ = FileError::CreateDOMException(error_code);
 
   // Unregister the reader.
-  ThrottlingController::FinishReaderType finalStep =
-      ThrottlingController::removeReader(getExecutionContext(), this);
+  ThrottlingController::FinishReaderType final_step =
+      ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  fireEvent(EventTypeNames::error);
-  fireEvent(EventTypeNames::loadend);
+  FireEvent(EventTypeNames::error);
+  FireEvent(EventTypeNames::loadend);
 
   // All possible events have fired and we're done, no more pending activity.
-  ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
+  ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 }
 
-void FileReader::fireEvent(const AtomicString& type) {
-  probe::AsyncTask asyncTask(getExecutionContext(), this, "event");
-  if (!m_loader) {
-    dispatchEvent(ProgressEvent::create(type, false, 0, 0));
+void FileReader::FireEvent(const AtomicString& type) {
+  probe::AsyncTask async_task(GetExecutionContext(), this, "event");
+  if (!loader_) {
+    DispatchEvent(ProgressEvent::Create(type, false, 0, 0));
     return;
   }
 
-  if (m_loader->totalBytes() >= 0)
-    dispatchEvent(ProgressEvent::create(type, true, m_loader->bytesLoaded(),
-                                        m_loader->totalBytes()));
+  if (loader_->TotalBytes() >= 0)
+    DispatchEvent(ProgressEvent::Create(type, true, loader_->BytesLoaded(),
+                                        loader_->TotalBytes()));
   else
-    dispatchEvent(
-        ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
+    DispatchEvent(
+        ProgressEvent::Create(type, false, loader_->BytesLoaded(), 0));
 }
 
 DEFINE_TRACE(FileReader) {
-  visitor->trace(m_error);
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(error_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

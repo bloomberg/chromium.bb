@@ -7,21 +7,21 @@
 namespace blink {
 
 RelocatablePosition::RelocatablePosition(const Position& position)
-    : m_range(position.isNotNull()
-                  ? Range::create(*position.document(), position, position)
-                  : nullptr) {}
+    : range_(position.IsNotNull()
+                 ? Range::Create(*position.GetDocument(), position, position)
+                 : nullptr) {}
 
 RelocatablePosition::~RelocatablePosition() {
-  if (!m_range)
+  if (!range_)
     return;
-  m_range->dispose();
+  range_->Dispose();
 }
 
-Position RelocatablePosition::position() const {
-  if (!m_range)
+Position RelocatablePosition::GetPosition() const {
+  if (!range_)
     return Position();
-  DCHECK(m_range->collapsed());
-  return m_range->startPosition();
+  DCHECK(range_->collapsed());
+  return range_->StartPosition();
 }
 
 }  // namespace blink

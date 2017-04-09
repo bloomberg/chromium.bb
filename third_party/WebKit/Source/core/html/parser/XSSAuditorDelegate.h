@@ -44,28 +44,28 @@ class XSSInfo {
   WTF_MAKE_NONCOPYABLE(XSSInfo);
 
  public:
-  static std::unique_ptr<XSSInfo> create(const String& originalURL,
-                                         bool didBlockEntirePage,
-                                         bool didSendXSSProtectionHeader) {
-    return WTF::wrapUnique(new XSSInfo(originalURL, didBlockEntirePage,
-                                       didSendXSSProtectionHeader));
+  static std::unique_ptr<XSSInfo> Create(const String& original_url,
+                                         bool did_block_entire_page,
+                                         bool did_send_xss_protection_header) {
+    return WTF::WrapUnique(new XSSInfo(original_url, did_block_entire_page,
+                                       did_send_xss_protection_header));
   }
 
-  String buildConsoleError() const;
-  bool isSafeToSendToAnotherThread() const;
+  String BuildConsoleError() const;
+  bool IsSafeToSendToAnotherThread() const;
 
-  String m_originalURL;
-  bool m_didBlockEntirePage;
-  bool m_didSendXSSProtectionHeader;
-  TextPosition m_textPosition;
+  String original_url_;
+  bool did_block_entire_page_;
+  bool did_send_xss_protection_header_;
+  TextPosition text_position_;
 
  private:
-  XSSInfo(const String& originalURL,
-          bool didBlockEntirePage,
-          bool didSendXSSProtectionHeader)
-      : m_originalURL(originalURL.isolatedCopy()),
-        m_didBlockEntirePage(didBlockEntirePage),
-        m_didSendXSSProtectionHeader(didSendXSSProtectionHeader) {}
+  XSSInfo(const String& original_url,
+          bool did_block_entire_page,
+          bool did_send_xss_protection_header)
+      : original_url_(original_url.IsolatedCopy()),
+        did_block_entire_page_(did_block_entire_page),
+        did_send_xss_protection_header_(did_send_xss_protection_header) {}
 };
 
 class XSSAuditorDelegate final {
@@ -76,15 +76,15 @@ class XSSAuditorDelegate final {
   explicit XSSAuditorDelegate(Document*);
   DECLARE_TRACE();
 
-  void didBlockScript(const XSSInfo&);
-  void setReportURL(const KURL& url) { m_reportURL = url; }
+  void DidBlockScript(const XSSInfo&);
+  void SetReportURL(const KURL& url) { report_url_ = url; }
 
  private:
-  PassRefPtr<EncodedFormData> generateViolationReport(const XSSInfo&);
+  PassRefPtr<EncodedFormData> GenerateViolationReport(const XSSInfo&);
 
-  Member<Document> m_document;
-  bool m_didSendNotifications;
-  KURL m_reportURL;
+  Member<Document> document_;
+  bool did_send_notifications_;
+  KURL report_url_;
 };
 
 typedef Vector<std::unique_ptr<XSSInfo>> XSSInfoStream;

@@ -12,9 +12,9 @@ namespace blink {
 
 // static
 MediaStream* HTMLMediaElementSrcObject::srcObject(HTMLMediaElement& element) {
-  MediaStreamDescriptor* descriptor = element.getSrcObject();
+  MediaStreamDescriptor* descriptor = element.GetSrcObject();
   if (descriptor) {
-    MediaStream* stream = toMediaStream(descriptor);
+    MediaStream* stream = ToMediaStream(descriptor);
     return stream;
   }
 
@@ -23,12 +23,12 @@ MediaStream* HTMLMediaElementSrcObject::srcObject(HTMLMediaElement& element) {
 
 // static
 void HTMLMediaElementSrcObject::setSrcObject(HTMLMediaElement& element,
-                                             MediaStream* mediaStream) {
-  if (!mediaStream) {
-    element.setSrcObject(nullptr);
+                                             MediaStream* media_stream) {
+  if (!media_stream) {
+    element.SetSrcObject(nullptr);
     return;
   }
-  element.setSrcObject(mediaStream->descriptor());
+  element.SetSrcObject(media_stream->Descriptor());
 }
 
 }  // namespace blink

@@ -19,18 +19,18 @@ class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ResizeObserverEntry(Element* target, const LayoutRect& contentRect);
+  ResizeObserverEntry(Element* target, const LayoutRect& content_rect);
 
-  Element* target() const { return m_target; }
+  Element* target() const { return target_; }
   // FIXME(atotic): should return DOMRectReadOnly once https://crbug.com/388780
   // lands
-  ClientRect* contentRect() const { return m_contentRect; }
+  ClientRect* contentRect() const { return content_rect_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<Element> m_target;
-  Member<ClientRect> m_contentRect;
+  Member<Element> target_;
+  Member<ClientRect> content_rect_;
 };
 
 }  // namespace blink

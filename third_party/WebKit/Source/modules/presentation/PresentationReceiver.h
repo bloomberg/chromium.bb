@@ -44,22 +44,22 @@ class MODULES_EXPORT PresentationReceiver final
   ScriptPromise connectionList(ScriptState*);
 
   // Implementation of WebPresentationController.
-  WebPresentationConnection* onReceiverConnectionAvailable(
+  WebPresentationConnection* OnReceiverConnectionAvailable(
       const WebPresentationInfo&) override;
-  void didChangeConnectionState(WebPresentationConnectionState) override;
-  void terminateConnection() override;
+  void DidChangeConnectionState(WebPresentationConnectionState) override;
+  void TerminateConnection() override;
 
-  void registerConnection(PresentationConnection*);
+  void RegisterConnection(PresentationConnection*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   friend class PresentationReceiverTest;
 
-  void recordOriginTypeAccess(Document*) const;
+  void RecordOriginTypeAccess(Document*) const;
 
-  Member<ConnectionListProperty> m_connectionListProperty;
-  Member<PresentationConnectionList> m_connectionList;
+  Member<ConnectionListProperty> connection_list_property_;
+  Member<PresentationConnectionList> connection_list_;
 };
 
 }  // namespace blink

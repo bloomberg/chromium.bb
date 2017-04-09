@@ -38,8 +38,8 @@ namespace {
 
 TEST(TextCodec, QuestionMarkEncoding) {
   UnencodableReplacementArray replacement;
-  int size = TextCodec::getUnencodableReplacement(
-      0xE003, QuestionMarksForUnencodables, replacement);
+  int size = TextCodec::GetUnencodableReplacement(
+      0xE003, kQuestionMarksForUnencodables, replacement);
   EXPECT_EQ(size, 1);
   EXPECT_EQ(replacement[0], '?');
   EXPECT_EQ(replacement[1], 0);
@@ -47,8 +47,8 @@ TEST(TextCodec, QuestionMarkEncoding) {
 
 TEST(TextCodec, HTMLEntityEncoding) {
   UnencodableReplacementArray replacement;
-  int size = TextCodec::getUnencodableReplacement(
-      0xE003, EntitiesForUnencodables, replacement);
+  int size = TextCodec::GetUnencodableReplacement(
+      0xE003, kEntitiesForUnencodables, replacement);
   EXPECT_EQ(size, 8);
   EXPECT_EQ(std::string(replacement), "&#57347;");
   EXPECT_EQ(replacement[8], 0);
@@ -56,8 +56,8 @@ TEST(TextCodec, HTMLEntityEncoding) {
 
 TEST(TextCodec, URLEntityEncoding) {
   UnencodableReplacementArray replacement;
-  int size = TextCodec::getUnencodableReplacement(
-      0xE003, URLEncodedEntitiesForUnencodables, replacement);
+  int size = TextCodec::GetUnencodableReplacement(
+      0xE003, kURLEncodedEntitiesForUnencodables, replacement);
   EXPECT_EQ(size, 14);
   EXPECT_EQ(std::string(replacement), "%26%2357347%3B");
   EXPECT_EQ(replacement[14], 0);
@@ -65,8 +65,8 @@ TEST(TextCodec, URLEntityEncoding) {
 
 TEST(TextCodec, CSSEntityEncoding) {
   UnencodableReplacementArray replacement;
-  int size = TextCodec::getUnencodableReplacement(
-      0xE003, CSSEncodedEntitiesForUnencodables, replacement);
+  int size = TextCodec::GetUnencodableReplacement(
+      0xE003, kCSSEncodedEntitiesForUnencodables, replacement);
   EXPECT_EQ(size, 6);
   EXPECT_EQ(std::string(replacement), "\\e003 ");
   EXPECT_EQ(replacement[6], 0);

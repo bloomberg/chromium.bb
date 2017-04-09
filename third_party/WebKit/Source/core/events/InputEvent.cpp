@@ -13,72 +13,72 @@ namespace blink {
 namespace {
 
 const struct {
-  InputEvent::InputType inputType;
-  const char* stringName;
+  InputEvent::InputType input_type;
+  const char* string_name;
 } kInputTypeStringNameMap[] = {
-    {InputEvent::InputType::None, ""},
-    {InputEvent::InputType::InsertText, "insertText"},
-    {InputEvent::InputType::InsertLineBreak, "insertLineBreak"},
-    {InputEvent::InputType::InsertParagraph, "insertParagraph"},
-    {InputEvent::InputType::InsertOrderedList, "insertOrderedList"},
-    {InputEvent::InputType::InsertUnorderedList, "insertUnorderedList"},
-    {InputEvent::InputType::InsertHorizontalRule, "insertHorizontalRule"},
-    {InputEvent::InputType::InsertFromPaste, "insertFromPaste"},
-    {InputEvent::InputType::InsertFromDrop, "insertFromDrop"},
-    {InputEvent::InputType::InsertFromYank, "insertFromYank"},
-    {InputEvent::InputType::InsertTranspose, "insertTranspose"},
-    {InputEvent::InputType::InsertReplacementText, "insertReplacementText"},
-    {InputEvent::InputType::InsertCompositionText, "insertCompositionText"},
-    {InputEvent::InputType::DeleteWordBackward, "deleteWordBackward"},
-    {InputEvent::InputType::DeleteWordForward, "deleteWordForward"},
-    {InputEvent::InputType::DeleteSoftLineBackward, "deleteSoftLineBackward"},
-    {InputEvent::InputType::DeleteSoftLineForward, "deleteSoftLineForward"},
-    {InputEvent::InputType::DeleteHardLineBackward, "deleteHardLineBackward"},
-    {InputEvent::InputType::DeleteHardLineForward, "deleteHardLineForward"},
-    {InputEvent::InputType::DeleteContentBackward, "deleteContentBackward"},
-    {InputEvent::InputType::DeleteContentForward, "deleteContentForward"},
-    {InputEvent::InputType::DeleteByCut, "deleteByCut"},
-    {InputEvent::InputType::DeleteByDrag, "deleteByDrag"},
-    {InputEvent::InputType::HistoryUndo, "historyUndo"},
-    {InputEvent::InputType::HistoryRedo, "historyRedo"},
-    {InputEvent::InputType::FormatBold, "formatBold"},
-    {InputEvent::InputType::FormatItalic, "formatItalic"},
-    {InputEvent::InputType::FormatUnderline, "formatUnderline"},
-    {InputEvent::InputType::FormatStrikeThrough, "formatStrikeThrough"},
-    {InputEvent::InputType::FormatSuperscript, "formatSuperscript"},
-    {InputEvent::InputType::FormatSubscript, "formatSubscript"},
-    {InputEvent::InputType::FormatJustifyCenter, "formatJustifyCenter"},
-    {InputEvent::InputType::FormatJustifyFull, "formatJustifyFull"},
-    {InputEvent::InputType::FormatJustifyRight, "formatJustifyRight"},
-    {InputEvent::InputType::FormatJustifyLeft, "formatJustifyLeft"},
-    {InputEvent::InputType::FormatIndent, "formatIndent"},
-    {InputEvent::InputType::FormatOutdent, "formatOutdent"},
-    {InputEvent::InputType::FormatRemove, "formatRemove"},
-    {InputEvent::InputType::FormatSetBlockTextDirection,
+    {InputEvent::InputType::kNone, ""},
+    {InputEvent::InputType::kInsertText, "insertText"},
+    {InputEvent::InputType::kInsertLineBreak, "insertLineBreak"},
+    {InputEvent::InputType::kInsertParagraph, "insertParagraph"},
+    {InputEvent::InputType::kInsertOrderedList, "insertOrderedList"},
+    {InputEvent::InputType::kInsertUnorderedList, "insertUnorderedList"},
+    {InputEvent::InputType::kInsertHorizontalRule, "insertHorizontalRule"},
+    {InputEvent::InputType::kInsertFromPaste, "insertFromPaste"},
+    {InputEvent::InputType::kInsertFromDrop, "insertFromDrop"},
+    {InputEvent::InputType::kInsertFromYank, "insertFromYank"},
+    {InputEvent::InputType::kInsertTranspose, "insertTranspose"},
+    {InputEvent::InputType::kInsertReplacementText, "insertReplacementText"},
+    {InputEvent::InputType::kInsertCompositionText, "insertCompositionText"},
+    {InputEvent::InputType::kDeleteWordBackward, "deleteWordBackward"},
+    {InputEvent::InputType::kDeleteWordForward, "deleteWordForward"},
+    {InputEvent::InputType::kDeleteSoftLineBackward, "deleteSoftLineBackward"},
+    {InputEvent::InputType::kDeleteSoftLineForward, "deleteSoftLineForward"},
+    {InputEvent::InputType::kDeleteHardLineBackward, "deleteHardLineBackward"},
+    {InputEvent::InputType::kDeleteHardLineForward, "deleteHardLineForward"},
+    {InputEvent::InputType::kDeleteContentBackward, "deleteContentBackward"},
+    {InputEvent::InputType::kDeleteContentForward, "deleteContentForward"},
+    {InputEvent::InputType::kDeleteByCut, "deleteByCut"},
+    {InputEvent::InputType::kDeleteByDrag, "deleteByDrag"},
+    {InputEvent::InputType::kHistoryUndo, "historyUndo"},
+    {InputEvent::InputType::kHistoryRedo, "historyRedo"},
+    {InputEvent::InputType::kFormatBold, "formatBold"},
+    {InputEvent::InputType::kFormatItalic, "formatItalic"},
+    {InputEvent::InputType::kFormatUnderline, "formatUnderline"},
+    {InputEvent::InputType::kFormatStrikeThrough, "formatStrikeThrough"},
+    {InputEvent::InputType::kFormatSuperscript, "formatSuperscript"},
+    {InputEvent::InputType::kFormatSubscript, "formatSubscript"},
+    {InputEvent::InputType::kFormatJustifyCenter, "formatJustifyCenter"},
+    {InputEvent::InputType::kFormatJustifyFull, "formatJustifyFull"},
+    {InputEvent::InputType::kFormatJustifyRight, "formatJustifyRight"},
+    {InputEvent::InputType::kFormatJustifyLeft, "formatJustifyLeft"},
+    {InputEvent::InputType::kFormatIndent, "formatIndent"},
+    {InputEvent::InputType::kFormatOutdent, "formatOutdent"},
+    {InputEvent::InputType::kFormatRemove, "formatRemove"},
+    {InputEvent::InputType::kFormatSetBlockTextDirection,
      "formatSetBlockTextDirection"},
 };
 
 static_assert(
     arraysize(kInputTypeStringNameMap) ==
-        static_cast<size_t>(InputEvent::InputType::NumberOfInputTypes),
+        static_cast<size_t>(InputEvent::InputType::kNumberOfInputTypes),
     "must handle all InputEvent::InputType");
 
-String convertInputTypeToString(InputEvent::InputType inputType) {
+String ConvertInputTypeToString(InputEvent::InputType input_type) {
   const auto& it =
-      std::begin(kInputTypeStringNameMap) + static_cast<size_t>(inputType);
+      std::begin(kInputTypeStringNameMap) + static_cast<size_t>(input_type);
   if (it >= std::begin(kInputTypeStringNameMap) &&
       it < std::end(kInputTypeStringNameMap))
-    return AtomicString(it->stringName);
-  return emptyString;
+    return AtomicString(it->string_name);
+  return g_empty_string;
 }
 
-InputEvent::InputType convertStringToInputType(const String& stringName) {
+InputEvent::InputType ConvertStringToInputType(const String& string_name) {
   // TODO(chongz): Use binary search if the map goes larger.
   for (const auto& entry : kInputTypeStringNameMap) {
-    if (stringName == entry.stringName)
-      return entry.inputType;
+    if (string_name == entry.string_name)
+      return entry.input_type;
   }
-  return InputEvent::InputType::None;
+  return InputEvent::InputType::kNone;
 }
 
 }  // anonymous namespace
@@ -90,124 +90,124 @@ InputEvent::InputEvent(const AtomicString& type,
   // String->enum->String just in order to use initializer.
   // See InputEvent::createBeforeInput() for the first conversion.
   if (initializer.hasInputType())
-    m_inputType = convertStringToInputType(initializer.inputType());
+    input_type_ = ConvertStringToInputType(initializer.inputType());
   if (initializer.hasData())
-    m_data = initializer.data();
+    data_ = initializer.data();
   if (initializer.hasDataTransfer())
-    m_dataTransfer = initializer.dataTransfer();
+    data_transfer_ = initializer.dataTransfer();
   if (initializer.hasIsComposing())
-    m_isComposing = initializer.isComposing();
+    is_composing_ = initializer.isComposing();
   if (!initializer.hasTargetRanges())
     return;
   for (const auto& range : initializer.targetRanges())
-    m_ranges.push_back(range->toRange());
+    ranges_.push_back(range->toRange());
 }
 
 /* static */
-InputEvent* InputEvent::createBeforeInput(InputType inputType,
+InputEvent* InputEvent::CreateBeforeInput(InputType input_type,
                                           const String& data,
                                           EventCancelable cancelable,
-                                          EventIsComposing isComposing,
+                                          EventIsComposing is_composing,
                                           const StaticRangeVector* ranges) {
-  InputEventInit inputEventInit;
+  InputEventInit input_event_init;
 
-  inputEventInit.setBubbles(true);
-  inputEventInit.setCancelable(cancelable == IsCancelable);
+  input_event_init.setBubbles(true);
+  input_event_init.setCancelable(cancelable == kIsCancelable);
   // TODO(ojan): We should find a way to prevent conversion like
   // String->enum->String just in order to use initializer.
   // See InputEvent::InputEvent() for the second conversion.
-  inputEventInit.setInputType(convertInputTypeToString(inputType));
-  inputEventInit.setData(data);
-  inputEventInit.setIsComposing(isComposing == IsComposing);
+  input_event_init.setInputType(ConvertInputTypeToString(input_type));
+  input_event_init.setData(data);
+  input_event_init.setIsComposing(is_composing == kIsComposing);
   if (ranges)
-    inputEventInit.setTargetRanges(*ranges);
-  inputEventInit.setComposed(true);
-  return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
+    input_event_init.setTargetRanges(*ranges);
+  input_event_init.setComposed(true);
+  return InputEvent::Create(EventTypeNames::beforeinput, input_event_init);
 }
 
 /* static */
-InputEvent* InputEvent::createBeforeInput(InputType inputType,
-                                          DataTransfer* dataTransfer,
+InputEvent* InputEvent::CreateBeforeInput(InputType input_type,
+                                          DataTransfer* data_transfer,
                                           EventCancelable cancelable,
-                                          EventIsComposing isComposing,
+                                          EventIsComposing is_composing,
                                           const StaticRangeVector* ranges) {
-  InputEventInit inputEventInit;
+  InputEventInit input_event_init;
 
-  inputEventInit.setBubbles(true);
-  inputEventInit.setCancelable(cancelable == IsCancelable);
-  inputEventInit.setInputType(convertInputTypeToString(inputType));
-  inputEventInit.setDataTransfer(dataTransfer);
-  inputEventInit.setIsComposing(isComposing == IsComposing);
+  input_event_init.setBubbles(true);
+  input_event_init.setCancelable(cancelable == kIsCancelable);
+  input_event_init.setInputType(ConvertInputTypeToString(input_type));
+  input_event_init.setDataTransfer(data_transfer);
+  input_event_init.setIsComposing(is_composing == kIsComposing);
   if (ranges)
-    inputEventInit.setTargetRanges(*ranges);
-  inputEventInit.setComposed(true);
-  return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
+    input_event_init.setTargetRanges(*ranges);
+  input_event_init.setComposed(true);
+  return InputEvent::Create(EventTypeNames::beforeinput, input_event_init);
 }
 
 /* static */
-InputEvent* InputEvent::createInput(InputType inputType,
+InputEvent* InputEvent::CreateInput(InputType input_type,
                                     const String& data,
-                                    EventIsComposing isComposing,
+                                    EventIsComposing is_composing,
                                     const StaticRangeVector* ranges) {
-  InputEventInit inputEventInit;
+  InputEventInit input_event_init;
 
-  inputEventInit.setBubbles(true);
-  inputEventInit.setCancelable(false);
+  input_event_init.setBubbles(true);
+  input_event_init.setCancelable(false);
   // TODO(ojan): We should find a way to prevent conversion like
   // String->enum->String just in order to use initializer.
   // See InputEvent::InputEvent() for the second conversion.
-  inputEventInit.setInputType(convertInputTypeToString(inputType));
-  inputEventInit.setData(data);
-  inputEventInit.setIsComposing(isComposing == IsComposing);
+  input_event_init.setInputType(ConvertInputTypeToString(input_type));
+  input_event_init.setData(data);
+  input_event_init.setIsComposing(is_composing == kIsComposing);
   if (ranges)
-    inputEventInit.setTargetRanges(*ranges);
-  inputEventInit.setComposed(true);
-  return InputEvent::create(EventTypeNames::input, inputEventInit);
+    input_event_init.setTargetRanges(*ranges);
+  input_event_init.setComposed(true);
+  return InputEvent::Create(EventTypeNames::input, input_event_init);
 }
 
 String InputEvent::inputType() const {
-  return convertInputTypeToString(m_inputType);
+  return ConvertInputTypeToString(input_type_);
 }
 
 StaticRangeVector InputEvent::getTargetRanges() const {
-  StaticRangeVector staticRanges;
-  for (const auto& range : m_ranges)
-    staticRanges.push_back(StaticRange::create(range));
-  return staticRanges;
+  StaticRangeVector static_ranges;
+  for (const auto& range : ranges_)
+    static_ranges.push_back(StaticRange::Create(range));
+  return static_ranges;
 }
 
-bool InputEvent::isInputEvent() const {
+bool InputEvent::IsInputEvent() const {
   return true;
 }
 
 // TODO(chongz): We should get rid of this |EventDispatchMediator| pattern and
 // introduce simpler interface such as |beforeDispatchEvent()| and
 // |afterDispatchEvent()| virtual methods.
-EventDispatchMediator* InputEvent::createMediator() {
-  return InputEventDispatchMediator::create(this);
+EventDispatchMediator* InputEvent::CreateMediator() {
+  return InputEventDispatchMediator::Create(this);
 }
 
 DEFINE_TRACE(InputEvent) {
-  UIEvent::trace(visitor);
-  visitor->trace(m_dataTransfer);
-  visitor->trace(m_ranges);
+  UIEvent::Trace(visitor);
+  visitor->Trace(data_transfer_);
+  visitor->Trace(ranges_);
 }
 
-InputEventDispatchMediator* InputEventDispatchMediator::create(
-    InputEvent* inputEvent) {
-  return new InputEventDispatchMediator(inputEvent);
+InputEventDispatchMediator* InputEventDispatchMediator::Create(
+    InputEvent* input_event) {
+  return new InputEventDispatchMediator(input_event);
 }
 
-InputEventDispatchMediator::InputEventDispatchMediator(InputEvent* inputEvent)
-    : EventDispatchMediator(inputEvent) {}
+InputEventDispatchMediator::InputEventDispatchMediator(InputEvent* input_event)
+    : EventDispatchMediator(input_event) {}
 
-InputEvent& InputEventDispatchMediator::event() const {
-  return toInputEvent(EventDispatchMediator::event());
+InputEvent& InputEventDispatchMediator::Event() const {
+  return ToInputEvent(EventDispatchMediator::GetEvent());
 }
 
-DispatchEventResult InputEventDispatchMediator::dispatchEvent(
+DispatchEventResult InputEventDispatchMediator::DispatchEvent(
     EventDispatcher& dispatcher) const {
-  DispatchEventResult result = dispatcher.dispatch();
+  DispatchEventResult result = dispatcher.Dispatch();
   // It's weird to hold and clear live |Range| objects internally, and only
   // expose |StaticRange| through |getTargetRanges()|. However there is no
   // better solutions due to the following issues:
@@ -220,7 +220,7 @@ DispatchEventResult InputEventDispatchMediator::dispatchEvent(
   // Authors should explicitly call |getTargetRanges()|->|toRange()| if they
   // want to keep a copy of |Range|.  See Editing TF meeting notes:
   // https://docs.google.com/document/d/1hCj6QX77NYIVY0RWrMHT1Yra6t8_Qu8PopaWLG0AM58/edit?usp=sharing
-  event().m_ranges.clear();
+  Event().ranges_.Clear();
   return result;
 }
 

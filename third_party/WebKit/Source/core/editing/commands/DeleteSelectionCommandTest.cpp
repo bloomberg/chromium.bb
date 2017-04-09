@@ -23,7 +23,7 @@ class DeleteSelectionCommandTest : public EditingTestBase {};
 
 // This is a regression test for https://crbug.com/668765
 TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
-  setBodyContent(
+  SetBodyContent(
       "<div contenteditable=true>"
       "<table><tr><td><ol>"
       "<li><br></li>"
@@ -31,36 +31,36 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
       "</ol></td></tr></table>"
       "</div>");
 
-  Element* div = document().querySelector("div");
-  Element* table = document().querySelector("table");
-  Element* br = document().querySelector("br");
+  Element* div = GetDocument().QuerySelector("div");
+  Element* table = GetDocument().QuerySelector("table");
+  Element* br = GetDocument().QuerySelector("br");
 
-  LocalFrame* frame = document().frame();
-  frame->selection().setSelection(
+  LocalFrame* frame = GetDocument().GetFrame();
+  frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(br, PositionAnchorType::BeforeAnchor))
-          .extend(Position(table, PositionAnchorType::AfterAnchor))
-          .build());
+          .Collapse(Position(br, PositionAnchorType::kBeforeAnchor))
+          .Extend(Position(table, PositionAnchorType::kAfterAnchor))
+          .Build());
 
   const bool kNoSmartDelete = false;
   const bool kMergeBlocksAfterDelete = true;
   const bool kNoExpandForSpecialElements = false;
   const bool kSanitizeMarkup = true;
-  DeleteSelectionCommand* command = DeleteSelectionCommand::create(
-      document(), kNoSmartDelete, kMergeBlocksAfterDelete,
+  DeleteSelectionCommand* command = DeleteSelectionCommand::Create(
+      GetDocument(), kNoSmartDelete, kMergeBlocksAfterDelete,
       kNoExpandForSpecialElements, kSanitizeMarkup,
-      InputEvent::InputType::DeleteByCut);
+      InputEvent::InputType::kDeleteByCut);
 
-  EXPECT_TRUE(command->apply()) << "the delete command should have succeeded";
+  EXPECT_TRUE(command->Apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<div contenteditable=\"true\"><br></div>",
-            document().body()->innerHTML());
-  EXPECT_TRUE(frame->selection()
-                  .computeVisibleSelectionInDOMTreeDeprecated()
-                  .isCaret());
-  EXPECT_EQ(Position(div, 0), frame->selection()
-                                  .computeVisibleSelectionInDOMTree()
-                                  .base()
-                                  .toOffsetInAnchor());
+            GetDocument().body()->innerHTML());
+  EXPECT_TRUE(frame->Selection()
+                  .ComputeVisibleSelectionInDOMTreeDeprecated()
+                  .IsCaret());
+  EXPECT_EQ(Position(div, 0), frame->Selection()
+                                  .ComputeVisibleSelectionInDOMTree()
+                                  .Base()
+                                  .ToOffsetInAnchor());
 }
 
 }  // namespace blink

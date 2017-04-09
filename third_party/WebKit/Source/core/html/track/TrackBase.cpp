@@ -39,18 +39,18 @@ TrackBase::TrackBase(WebMediaPlayer::TrackType type,
                      const AtomicString& label,
                      const AtomicString& language,
                      const String& id)
-    : m_type(type),
-      m_kind(kind),
-      m_label(label),
-      m_language(language),
-      m_id(id),
-      m_mediaElement(nullptr) {}
+    : type_(type),
+      kind_(kind),
+      label_(label),
+      language_(language),
+      id_(id),
+      media_element_(nullptr) {}
 
 TrackBase::~TrackBase() {}
 
 DEFINE_TRACE(TrackBase) {
-  Supplementable<TrackBase>::trace(visitor);
-  visitor->trace(m_mediaElement);
+  Supplementable<TrackBase>::Trace(visitor);
+  visitor->Trace(media_element_);
 }
 
 }  // namespace blink

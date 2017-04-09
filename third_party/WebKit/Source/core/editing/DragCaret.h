@@ -43,28 +43,28 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
 
  public:
-  static DragCaret* create();
+  static DragCaret* Create();
 
   virtual ~DragCaret();
 
   // Paint invalidation methods delegating to CaretDisplayItemClient.
-  void clearPreviousVisualRect(const LayoutBlock&);
-  void layoutBlockWillBeDestroyed(const LayoutBlock&);
-  void updateStyleAndLayoutIfNeeded();
-  void invalidatePaintIfNeeded(const LayoutBlock&,
+  void ClearPreviousVisualRect(const LayoutBlock&);
+  void LayoutBlockWillBeDestroyed(const LayoutBlock&);
+  void UpdateStyleAndLayoutIfNeeded();
+  void InvalidatePaintIfNeeded(const LayoutBlock&,
                                const PaintInvalidatorContext&);
 
-  bool shouldPaintCaret(const LayoutBlock&) const;
-  void paintDragCaret(const LocalFrame*,
+  bool ShouldPaintCaret(const LayoutBlock&) const;
+  void PaintDragCaret(const LocalFrame*,
                       GraphicsContext&,
                       const LayoutPoint&) const;
 
-  bool isContentRichlyEditable() const;
+  bool IsContentRichlyEditable() const;
 
-  bool hasCaret() const { return m_position.isNotNull(); }
-  const PositionWithAffinity& caretPosition() { return m_position; }
-  void setCaretPosition(const PositionWithAffinity&);
-  void clear() { setCaretPosition(PositionWithAffinity()); }
+  bool HasCaret() const { return position_.IsNotNull(); }
+  const PositionWithAffinity& CaretPosition() { return position_; }
+  void SetCaretPosition(const PositionWithAffinity&);
+  void Clear() { SetCaretPosition(PositionWithAffinity()); }
 
   DECLARE_TRACE();
 
@@ -72,11 +72,11 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   DragCaret();
 
   // Implementations of |SynchronousMutationObserver|
-  void nodeChildrenWillBeRemoved(ContainerNode&) final;
-  void nodeWillBeRemoved(Node&) final;
+  void NodeChildrenWillBeRemoved(ContainerNode&) final;
+  void NodeWillBeRemoved(Node&) final;
 
-  PositionWithAffinity m_position;
-  const std::unique_ptr<CaretDisplayItemClient> m_displayItemClient;
+  PositionWithAffinity position_;
+  const std::unique_ptr<CaretDisplayItemClient> display_item_client_;
 };
 
 }  // namespace blink

@@ -38,161 +38,161 @@ namespace blink {
 TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("summary::-webkit-details-marker { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("summary::-webkit-details-marker { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("-webkit-details-marker");
   const TerminatedArray<RuleData>* rules =
-      ruleSet.shadowPseudoElementRules(str);
+      rule_set.ShadowPseudoElementRules(str);
   ASSERT_EQ(1u, rules->size());
-  ASSERT_EQ(str, rules->at(0).selector().value());
+  ASSERT_EQ(str, rules->at(0).Selector().Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Id) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("#id { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("#id { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("id");
-  const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
-  ASSERT_EQ(str, rules->at(0).selector().value());
+  ASSERT_EQ(str, rules->at(0).Selector().Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("div:nth-child(2) { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("div:nth-child(2) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("div");
-  const TerminatedArray<RuleData>* rules = ruleSet.tagRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.TagRules(str);
   ASSERT_EQ(1u, rules->size());
-  ASSERT_EQ(str, rules->at(0).selector().tagQName().localName());
+  ASSERT_EQ(str, rules->at(0).Selector().TagQName().LocalName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(".class#id { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules(".class#id { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("id");
   // id is prefered over class even if class preceeds it in the selector.
-  const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
-  AtomicString classStr("class");
-  ASSERT_EQ(classStr, rules->at(0).selector().value());
+  AtomicString class_str("class");
+  ASSERT_EQ(class_str, rules->at(0).Selector().Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("#id.class { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("#id.class { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("id");
-  const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
-  ASSERT_EQ(str, rules->at(0).selector().value());
+  ASSERT_EQ(str, rules->at(0).Selector().Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("[attr]#id { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("[attr]#id { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("id");
-  const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
-  AtomicString attrStr("attr");
-  ASSERT_EQ(attrStr, rules->at(0).selector().attribute().localName());
+  AtomicString attr_str("attr");
+  ASSERT_EQ(attr_str, rules->at(0).Selector().Attribute().LocalName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("div[attr]#id { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("div[attr]#id { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("id");
-  const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
-  AtomicString tagStr("div");
-  ASSERT_EQ(tagStr, rules->at(0).selector().tagQName().localName());
+  AtomicString tag_str("div");
+  ASSERT_EQ(tag_str, rules->at(0).Selector().TagQName().LocalName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent) {
   CSSTestHelper helper;
 
-  helper.addCSSRules("div::content { }");
-  RuleSet& ruleSet = helper.ruleSet();
+  helper.AddCSSRules("div::content { }");
+  RuleSet& rule_set = helper.GetRuleSet();
   AtomicString str("div");
-  const TerminatedArray<RuleData>* rules = ruleSet.tagRules(str);
+  const TerminatedArray<RuleData>* rules = rule_set.TagRules(str);
   ASSERT_EQ(1u, rules->size());
-  AtomicString valueStr("content");
-  ASSERT_EQ(valueStr, rules->at(0).selector().tagHistory()->value());
+  AtomicString value_str("content");
+  ASSERT_EQ(value_str, rules->at(0).Selector().TagHistory()->Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Host) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(":host { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(":host { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostWithId) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(":host(#x) { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(":host(#x) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContext) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(":host-context(*) { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(":host-context(*) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextWithId) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(":host-context(#x) { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(":host-context(#x) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndHostContextNotInRightmost) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* shadowRules = ruleSet.shadowHostRules();
-  const TerminatedArray<RuleData>* idRules = ruleSet.idRules("b");
-  const TerminatedArray<RuleData>* classRules = ruleSet.classRules("y");
-  ASSERT_EQ(0u, shadowRules->size());
-  ASSERT_EQ(1u, idRules->size());
-  ASSERT_EQ(1u, classRules->size());
+  helper.AddCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* shadow_rules = rule_set.ShadowHostRules();
+  const TerminatedArray<RuleData>* id_rules = rule_set.IdRules("b");
+  const TerminatedArray<RuleData>* class_rules = rule_set.ClassRules("y");
+  ASSERT_EQ(0u, shadow_rules->size());
+  ASSERT_EQ(1u, id_rules->size());
+  ASSERT_EQ(1u, class_rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndClass) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(".foo:host { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(".foo:host { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(0u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass) {
   CSSTestHelper helper;
 
-  helper.addCSSRules(".foo:host-context(*) { }");
-  RuleSet& ruleSet = helper.ruleSet();
-  const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
+  helper.AddCSSRules(".foo:host-context(*) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(0u, rules->size());
 }
 
@@ -203,17 +203,17 @@ TEST(RuleSetTest, SelectorIndexLimit) {
   // test to check that we don't regress. We WONTFIX issues asking for more
   // since 2^13 simple selectors in a style rule is already excessive.
   for (unsigned i = 0; i < 8191; i++)
-    builder.append("div,");
+    builder.Append("div,");
 
-  builder.append("b,span {}");
+  builder.Append("b,span {}");
 
   CSSTestHelper helper;
-  helper.addCSSRules(builder.toString().ascii().data());
-  const RuleSet& ruleSet = helper.ruleSet();
-  const HeapTerminatedArray<RuleData>* rules = ruleSet.tagRules("b");
+  helper.AddCSSRules(builder.ToString().Ascii().Data());
+  const RuleSet& rule_set = helper.GetRuleSet();
+  const HeapTerminatedArray<RuleData>* rules = rule_set.TagRules("b");
   ASSERT_EQ(1u, rules->size());
-  EXPECT_EQ("b", rules->at(0).selector().tagQName().localName());
-  EXPECT_FALSE(ruleSet.tagRules("span"));
+  EXPECT_EQ("b", rules->at(0).Selector().TagQName().LocalName());
+  EXPECT_FALSE(rule_set.TagRules("span"));
 }
 
 }  // namespace blink

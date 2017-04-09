@@ -15,84 +15,84 @@ namespace blink {
 
 // static
 bool ScreenWakeLock::keepAwake(Screen& screen) {
-  ScreenWakeLock* screenWakeLock = fromScreen(screen);
-  if (!screenWakeLock)
+  ScreenWakeLock* screen_wake_lock = FromScreen(screen);
+  if (!screen_wake_lock)
     return false;
 
-  return screenWakeLock->keepAwake();
+  return screen_wake_lock->keepAwake();
 }
 
 // static
-void ScreenWakeLock::setKeepAwake(Screen& screen, bool keepAwake) {
-  ScreenWakeLock* screenWakeLock = fromScreen(screen);
-  if (screenWakeLock)
-    screenWakeLock->setKeepAwake(keepAwake);
+void ScreenWakeLock::setKeepAwake(Screen& screen, bool keep_awake) {
+  ScreenWakeLock* screen_wake_lock = FromScreen(screen);
+  if (screen_wake_lock)
+    screen_wake_lock->setKeepAwake(keep_awake);
 }
 
 // static
-const char* ScreenWakeLock::supplementName() {
+const char* ScreenWakeLock::SupplementName() {
   return "ScreenWakeLock";
 }
 
 // static
-ScreenWakeLock* ScreenWakeLock::from(LocalFrame* frame) {
+ScreenWakeLock* ScreenWakeLock::From(LocalFrame* frame) {
   if (!RuntimeEnabledFeatures::wakeLockEnabled())
     return nullptr;
   ScreenWakeLock* supplement = static_cast<ScreenWakeLock*>(
-      Supplement<LocalFrame>::from(frame, supplementName()));
+      Supplement<LocalFrame>::From(frame, SupplementName()));
   if (!supplement) {
     supplement = new ScreenWakeLock(*frame);
-    Supplement<LocalFrame>::provideTo(*frame, supplementName(), supplement);
+    Supplement<LocalFrame>::ProvideTo(*frame, SupplementName(), supplement);
   }
   return supplement;
 }
 
-void ScreenWakeLock::pageVisibilityChanged() {
-  notifyService();
+void ScreenWakeLock::PageVisibilityChanged() {
+  NotifyService();
 }
 
-void ScreenWakeLock::contextDestroyed(ExecutionContext*) {
+void ScreenWakeLock::ContextDestroyed(ExecutionContext*) {
   setKeepAwake(false);
 }
 
 DEFINE_TRACE(ScreenWakeLock) {
-  Supplement<LocalFrame>::trace(visitor);
-  PageVisibilityObserver::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  Supplement<LocalFrame>::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 ScreenWakeLock::ScreenWakeLock(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.document()),
-      PageVisibilityObserver(frame.page()),
-      m_keepAwake(false) {
-  DCHECK(!m_service.is_bound());
-  DCHECK(frame.interfaceProvider());
-  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&m_service));
+      ContextLifecycleObserver(frame.GetDocument()),
+      PageVisibilityObserver(frame.GetPage()),
+      keep_awake_(false) {
+  DCHECK(!service_.is_bound());
+  DCHECK(frame.GetInterfaceProvider());
+  frame.GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&service_));
 }
 
 bool ScreenWakeLock::keepAwake() const {
-  return m_keepAwake;
+  return keep_awake_;
 }
 
-void ScreenWakeLock::setKeepAwake(bool keepAwake) {
-  m_keepAwake = keepAwake;
-  notifyService();
+void ScreenWakeLock::setKeepAwake(bool keep_awake) {
+  keep_awake_ = keep_awake;
+  NotifyService();
 }
 
 // static
-ScreenWakeLock* ScreenWakeLock::fromScreen(Screen& screen) {
-  return screen.frame() ? ScreenWakeLock::from(screen.frame()) : nullptr;
+ScreenWakeLock* ScreenWakeLock::FromScreen(Screen& screen) {
+  return screen.GetFrame() ? ScreenWakeLock::From(screen.GetFrame()) : nullptr;
 }
 
-void ScreenWakeLock::notifyService() {
-  if (!m_service)
+void ScreenWakeLock::NotifyService() {
+  if (!service_)
     return;
 
-  if (m_keepAwake && page() && page()->isPageVisible())
-    m_service->RequestWakeLock();
+  if (keep_awake_ && GetPage() && GetPage()->IsPageVisible())
+    service_->RequestWakeLock();
   else
-    m_service->CancelWakeLock();
+    service_->CancelWakeLock();
 }
 
 }  // namespace blink

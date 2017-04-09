@@ -53,7 +53,7 @@ class FindTrackingDelegate : public WebContentsDelegate {
     web_contents->SetDelegate(this);
 
     blink::WebFindOptions options;
-    options.matchCase = false;
+    options.match_case = false;
 
     web_contents->Find(global_request_id++, base::UTF8ToUTF16(search_),
                        options);
@@ -455,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreMainFrame) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
   MHTMLGenerationParams params(path);
   params.cache_control_policy =
-      blink::WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame;
+      blink::WebFrameSerializerCacheControlPolicy::kFailForNoStoreMainFrame;
 
   GenerateMHTML(params, url);
   // We expect that there was an error (file size -1 indicates an error.)
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
   MHTMLGenerationParams params(path);
   params.cache_control_policy =
-      blink::WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame;
+      blink::WebFrameSerializerCacheControlPolicy::kFailForNoStoreMainFrame;
 
   GenerateMHTML(params, url);
   // We expect that there was no error (file size -1 indicates an error.)
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreSubFrame) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
   MHTMLGenerationParams params(path);
   params.cache_control_policy = blink::WebFrameSerializerCacheControlPolicy::
-      SkipAnyFrameOrResourceMarkedNoStore;
+      kSkipAnyFrameOrResourceMarkedNoStore;
 
   GenerateMHTML(params, url);
   // We expect that there was no error (file size -1 indicates an error.)
@@ -576,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
   MHTMLGenerationParams params(path);
   params.cache_control_policy = blink::WebFrameSerializerCacheControlPolicy::
-      SkipAnyFrameOrResourceMarkedNoStore;
+      kSkipAnyFrameOrResourceMarkedNoStore;
 
   // No special cache control options so we should see both frames.
   std::vector<std::string> expectations = {

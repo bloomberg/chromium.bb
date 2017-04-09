@@ -4,13 +4,13 @@
 
 /*
  * typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
- * extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+ * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
  */
 
-.type pushAllRegisters, %function
-.global pushAllRegisters
-.hidden pushAllRegisters
-pushAllRegisters:
+.type PushAllRegisters, %function
+.global PushAllRegisters
+.hidden PushAllRegisters
+PushAllRegisters:
         // Push all callee-saves registers to get them
         // on the stack for conservative stack scanning.
         // Reserve space for callee-saved registers and return address.

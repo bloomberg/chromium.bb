@@ -17,124 +17,124 @@
 namespace blink {
 namespace {
 
-WebNotificationData::Direction toDirectionEnumValue(const String& direction) {
+WebNotificationData::Direction ToDirectionEnumValue(const String& direction) {
   if (direction == "ltr")
-    return WebNotificationData::DirectionLeftToRight;
+    return WebNotificationData::kDirectionLeftToRight;
   if (direction == "rtl")
-    return WebNotificationData::DirectionRightToLeft;
+    return WebNotificationData::kDirectionRightToLeft;
 
-  return WebNotificationData::DirectionAuto;
+  return WebNotificationData::kDirectionAuto;
 }
 
-WebURL completeURL(ExecutionContext* executionContext,
-                   const String& stringUrl) {
-  WebURL url = executionContext->completeURL(stringUrl);
-  if (url.isValid())
+WebURL CompleteURL(ExecutionContext* execution_context,
+                   const String& string_url) {
+  WebURL url = execution_context->CompleteURL(string_url);
+  if (url.IsValid())
     return url;
   return WebURL();
 }
 
 }  // namespace
 
-WebNotificationData createWebNotificationData(
-    ExecutionContext* executionContext,
+WebNotificationData CreateWebNotificationData(
+    ExecutionContext* execution_context,
     const String& title,
     const NotificationOptions& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   // If silent is true, the notification must not have a vibration pattern.
   if (options.hasVibrate() && options.silent()) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "Silent notifications must not specify vibration patterns.");
     return WebNotificationData();
   }
 
   // If renotify is true, the notification must have a tag.
-  if (options.renotify() && options.tag().isEmpty()) {
-    exceptionState.throwTypeError(
+  if (options.renotify() && options.tag().IsEmpty()) {
+    exception_state.ThrowTypeError(
         "Notifications which set the renotify flag must specify a non-empty "
         "tag.");
     return WebNotificationData();
   }
 
-  WebNotificationData webData;
+  WebNotificationData web_data;
 
-  webData.title = title;
-  webData.direction = toDirectionEnumValue(options.dir());
-  webData.lang = options.lang();
-  webData.body = options.body();
-  webData.tag = options.tag();
+  web_data.title = title;
+  web_data.direction = ToDirectionEnumValue(options.dir());
+  web_data.lang = options.lang();
+  web_data.body = options.body();
+  web_data.tag = options.tag();
 
-  if (options.hasImage() && !options.image().isEmpty())
-    webData.image = completeURL(executionContext, options.image());
+  if (options.hasImage() && !options.image().IsEmpty())
+    web_data.image = CompleteURL(execution_context, options.image());
 
-  if (options.hasIcon() && !options.icon().isEmpty())
-    webData.icon = completeURL(executionContext, options.icon());
+  if (options.hasIcon() && !options.icon().IsEmpty())
+    web_data.icon = CompleteURL(execution_context, options.icon());
 
-  if (options.hasBadge() && !options.badge().isEmpty())
-    webData.badge = completeURL(executionContext, options.badge());
+  if (options.hasBadge() && !options.badge().IsEmpty())
+    web_data.badge = CompleteURL(execution_context, options.badge());
 
-  webData.vibrate =
-      VibrationController::sanitizeVibrationPattern(options.vibrate());
-  webData.timestamp = options.hasTimestamp()
-                          ? static_cast<double>(options.timestamp())
-                          : WTF::currentTimeMS();
-  webData.renotify = options.renotify();
-  webData.silent = options.silent();
-  webData.requireInteraction = options.requireInteraction();
+  web_data.vibrate =
+      VibrationController::SanitizeVibrationPattern(options.vibrate());
+  web_data.timestamp = options.hasTimestamp()
+                           ? static_cast<double>(options.timestamp())
+                           : WTF::CurrentTimeMS();
+  web_data.renotify = options.renotify();
+  web_data.silent = options.silent();
+  web_data.require_interaction = options.requireInteraction();
 
   if (options.hasData()) {
     const ScriptValue& data = options.data();
-    v8::Isolate* isolate = data.isolate();
+    v8::Isolate* isolate = data.GetIsolate();
     DCHECK(isolate->InContext());
-    RefPtr<SerializedScriptValue> serializedScriptValue =
-        SerializedScriptValue::serialize(
-            isolate, data.v8Value(), SerializedScriptValue::SerializeOptions(),
-            exceptionState);
-    if (exceptionState.hadException())
+    RefPtr<SerializedScriptValue> serialized_script_value =
+        SerializedScriptValue::Serialize(
+            isolate, data.V8Value(), SerializedScriptValue::SerializeOptions(),
+            exception_state);
+    if (exception_state.HadException())
       return WebNotificationData();
 
-    Vector<char> serializedData;
-    serializedScriptValue->toWireBytes(serializedData);
+    Vector<char> serialized_data;
+    serialized_script_value->ToWireBytes(serialized_data);
 
-    webData.data = serializedData;
+    web_data.data = serialized_data;
   }
 
   Vector<WebNotificationAction> actions;
 
-  const size_t maxActions = Notification::maxActions();
+  const size_t max_actions = Notification::maxActions();
   for (const NotificationAction& action : options.actions()) {
-    if (actions.size() >= maxActions)
+    if (actions.size() >= max_actions)
       break;
 
-    WebNotificationAction webAction;
-    webAction.action = action.action();
-    webAction.title = action.title();
+    WebNotificationAction web_action;
+    web_action.action = action.action();
+    web_action.title = action.title();
 
     if (action.type() == "button")
-      webAction.type = WebNotificationAction::Button;
+      web_action.type = WebNotificationAction::kButton;
     else if (action.type() == "text")
-      webAction.type = WebNotificationAction::Text;
+      web_action.type = WebNotificationAction::kText;
     else
       NOTREACHED() << "Unknown action type: " << action.type();
 
     if (action.hasPlaceholder() &&
-        webAction.type == WebNotificationAction::Button) {
-      exceptionState.throwTypeError(
+        web_action.type == WebNotificationAction::kButton) {
+      exception_state.ThrowTypeError(
           "Notifications of type \"button\" cannot specify a placeholder.");
       return WebNotificationData();
     }
 
-    webAction.placeholder = action.placeholder();
+    web_action.placeholder = action.placeholder();
 
-    if (action.hasIcon() && !action.icon().isEmpty())
-      webAction.icon = completeURL(executionContext, action.icon());
+    if (action.hasIcon() && !action.icon().IsEmpty())
+      web_action.icon = CompleteURL(execution_context, action.icon());
 
-    actions.push_back(webAction);
+    actions.push_back(web_action);
   }
 
-  webData.actions = actions;
+  web_data.actions = actions;
 
-  return webData;
+  return web_data;
 }
 
 }  // namespace blink

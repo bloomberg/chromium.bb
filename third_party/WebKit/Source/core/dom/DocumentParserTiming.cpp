@@ -12,68 +12,69 @@ namespace blink {
 
 static const char kSupplementNameTiming[] = "DocumentParserTiming";
 
-DocumentParserTiming& DocumentParserTiming::from(Document& document) {
+DocumentParserTiming& DocumentParserTiming::From(Document& document) {
   DocumentParserTiming* timing = static_cast<DocumentParserTiming*>(
-      Supplement<Document>::from(document, kSupplementNameTiming));
+      Supplement<Document>::From(document, kSupplementNameTiming));
   if (!timing) {
     timing = new DocumentParserTiming(document);
-    Supplement<Document>::provideTo(document, kSupplementNameTiming, timing);
+    Supplement<Document>::ProvideTo(document, kSupplementNameTiming, timing);
   }
   return *timing;
 }
 
-void DocumentParserTiming::markParserStart() {
-  if (m_parserDetached || m_parserStart > 0.0)
+void DocumentParserTiming::MarkParserStart() {
+  if (parser_detached_ || parser_start_ > 0.0)
     return;
-  DCHECK_EQ(m_parserStop, 0.0);
-  m_parserStart = monotonicallyIncreasingTime();
-  notifyDocumentParserTimingChanged();
+  DCHECK_EQ(parser_stop_, 0.0);
+  parser_start_ = MonotonicallyIncreasingTime();
+  NotifyDocumentParserTimingChanged();
 }
 
-void DocumentParserTiming::markParserStop() {
-  if (m_parserDetached || m_parserStart == 0.0 || m_parserStop > 0.0)
+void DocumentParserTiming::MarkParserStop() {
+  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
     return;
-  m_parserStop = monotonicallyIncreasingTime();
-  notifyDocumentParserTimingChanged();
+  parser_stop_ = MonotonicallyIncreasingTime();
+  NotifyDocumentParserTimingChanged();
 }
 
-void DocumentParserTiming::markParserDetached() {
-  DCHECK_GT(m_parserStart, 0.0);
-  m_parserDetached = true;
+void DocumentParserTiming::MarkParserDetached() {
+  DCHECK_GT(parser_start_, 0.0);
+  parser_detached_ = true;
 }
 
-void DocumentParserTiming::recordParserBlockedOnScriptLoadDuration(
+void DocumentParserTiming::RecordParserBlockedOnScriptLoadDuration(
     double duration,
-    bool scriptInsertedViaDocumentWrite) {
-  if (m_parserDetached || m_parserStart == 0.0 || m_parserStop > 0.0)
+    bool script_inserted_via_document_write) {
+  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
     return;
-  m_parserBlockedOnScriptLoadDuration += duration;
-  if (scriptInsertedViaDocumentWrite)
-    m_parserBlockedOnScriptLoadFromDocumentWriteDuration += duration;
-  notifyDocumentParserTimingChanged();
+  parser_blocked_on_script_load_duration_ += duration;
+  if (script_inserted_via_document_write)
+    parser_blocked_on_script_load_from_document_write_duration_ += duration;
+  NotifyDocumentParserTimingChanged();
 }
 
-void DocumentParserTiming::recordParserBlockedOnScriptExecutionDuration(
+void DocumentParserTiming::RecordParserBlockedOnScriptExecutionDuration(
     double duration,
-    bool scriptInsertedViaDocumentWrite) {
-  if (m_parserDetached || m_parserStart == 0.0 || m_parserStop > 0.0)
+    bool script_inserted_via_document_write) {
+  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
     return;
-  m_parserBlockedOnScriptExecutionDuration += duration;
-  if (scriptInsertedViaDocumentWrite)
-    m_parserBlockedOnScriptExecutionFromDocumentWriteDuration += duration;
-  notifyDocumentParserTimingChanged();
+  parser_blocked_on_script_execution_duration_ += duration;
+  if (script_inserted_via_document_write)
+    parser_blocked_on_script_execution_from_document_write_duration_ +=
+        duration;
+  NotifyDocumentParserTimingChanged();
 }
 
 DEFINE_TRACE(DocumentParserTiming) {
-  Supplement<Document>::trace(visitor);
+  Supplement<Document>::Trace(visitor);
 }
 
 DocumentParserTiming::DocumentParserTiming(Document& document)
     : Supplement<Document>(document) {}
 
-void DocumentParserTiming::notifyDocumentParserTimingChanged() {
-  if (supplementable()->loader())
-    supplementable()->loader()->didChangePerformanceTiming();
+void DocumentParserTiming::NotifyDocumentParserTimingChanged() {
+  if (GetSupplementable()->Loader())
+    GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
 }  // namespace blink

@@ -37,28 +37,28 @@ namespace blink {
 
 MediaStreamWebAudioSource::MediaStreamWebAudioSource(
     std::unique_ptr<WebAudioSourceProvider> provider)
-    : m_webAudioSourceProvider(std::move(provider)) {}
+    : web_audio_source_provider_(std::move(provider)) {}
 
 MediaStreamWebAudioSource::~MediaStreamWebAudioSource() {}
 
-void MediaStreamWebAudioSource::provideInput(AudioBus* bus,
-                                             size_t framesToProcess) {
+void MediaStreamWebAudioSource::ProvideInput(AudioBus* bus,
+                                             size_t frames_to_process) {
   ASSERT(bus);
   if (!bus)
     return;
 
-  if (!m_webAudioSourceProvider) {
-    bus->zero();
+  if (!web_audio_source_provider_) {
+    bus->Zero();
     return;
   }
 
   // Wrap the AudioBus channel data using WebVector.
-  size_t n = bus->numberOfChannels();
-  WebVector<float*> webAudioData(n);
+  size_t n = bus->NumberOfChannels();
+  WebVector<float*> web_audio_data(n);
   for (size_t i = 0; i < n; ++i)
-    webAudioData[i] = bus->channel(i)->mutableData();
+    web_audio_data[i] = bus->Channel(i)->MutableData();
 
-  m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
+  web_audio_source_provider_->ProvideInput(web_audio_data, frames_to_process);
 }
 
 }  // namespace blink

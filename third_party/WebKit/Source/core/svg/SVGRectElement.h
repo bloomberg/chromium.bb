@@ -34,35 +34,35 @@ class SVGRectElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGRectElement);
 
-  Path asPath() const override;
+  Path AsPath() const override;
 
-  SVGAnimatedLength* x() const { return m_x.get(); }
-  SVGAnimatedLength* y() const { return m_y.get(); }
-  SVGAnimatedLength* width() const { return m_width.get(); }
-  SVGAnimatedLength* height() const { return m_height.get(); }
-  SVGAnimatedLength* rx() const { return m_rx.get(); }
-  SVGAnimatedLength* ry() const { return m_ry.get(); }
+  SVGAnimatedLength* x() const { return x_.Get(); }
+  SVGAnimatedLength* y() const { return y_.Get(); }
+  SVGAnimatedLength* width() const { return width_.Get(); }
+  SVGAnimatedLength* height() const { return height_.Get(); }
+  SVGAnimatedLength* rx() const { return rx_.Get(); }
+  SVGAnimatedLength* ry() const { return ry_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGRectElement(Document&);
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  Member<SVGAnimatedLength> m_x;
-  Member<SVGAnimatedLength> m_y;
-  Member<SVGAnimatedLength> m_width;
-  Member<SVGAnimatedLength> m_height;
-  Member<SVGAnimatedLength> m_rx;
-  Member<SVGAnimatedLength> m_ry;
+  Member<SVGAnimatedLength> x_;
+  Member<SVGAnimatedLength> y_;
+  Member<SVGAnimatedLength> width_;
+  Member<SVGAnimatedLength> height_;
+  Member<SVGAnimatedLength> rx_;
+  Member<SVGAnimatedLength> ry_;
 };
 
 }  // namespace blink

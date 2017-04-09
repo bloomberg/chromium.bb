@@ -20,23 +20,23 @@ class CORE_EXPORT AnimationEffectTimingReadOnly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEffectTimingReadOnly* create(AnimationEffectReadOnly* parent);
+  static AnimationEffectTimingReadOnly* Create(AnimationEffectReadOnly* parent);
   double delay();
   double endDelay();
   String fill();
   double iterationStart();
   double iterations();
   void duration(UnrestrictedDoubleOrString&);
-  double playbackRate();
+  double PlaybackRate();
   String direction();
   String easing();
 
-  virtual bool isAnimationEffectTiming() const { return false; }
+  virtual bool IsAnimationEffectTiming() const { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Member<AnimationEffectReadOnly> m_parent;
+  Member<AnimationEffectReadOnly> parent_;
   explicit AnimationEffectTimingReadOnly(AnimationEffectReadOnly*);
 };
 

@@ -33,155 +33,155 @@
 
 namespace blink {
 
-static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range) {
-  const VisiblePosition& start = createVisiblePosition(range.startPosition());
-  DCHECK(start.isNotNull()) << range.startPosition();
-  const Position& paragraphStart = startOfParagraph(start).deepEquivalent();
-  DCHECK(paragraphStart.isNotNull()) << range.startPosition();
+static EphemeralRange ExpandToParagraphBoundary(const EphemeralRange& range) {
+  const VisiblePosition& start = CreateVisiblePosition(range.StartPosition());
+  DCHECK(start.IsNotNull()) << range.StartPosition();
+  const Position& paragraph_start = StartOfParagraph(start).DeepEquivalent();
+  DCHECK(paragraph_start.IsNotNull()) << range.StartPosition();
 
-  const VisiblePosition& end = createVisiblePosition(range.endPosition());
-  DCHECK(end.isNotNull()) << range.endPosition();
-  const Position& paragraphEnd = endOfParagraph(end).deepEquivalent();
-  DCHECK(paragraphEnd.isNotNull()) << range.endPosition();
+  const VisiblePosition& end = CreateVisiblePosition(range.EndPosition());
+  DCHECK(end.IsNotNull()) << range.EndPosition();
+  const Position& paragraph_end = EndOfParagraph(end).DeepEquivalent();
+  DCHECK(paragraph_end.IsNotNull()) << range.EndPosition();
 
   // TODO(xiaochengh): There are some cases (crbug.com/640112) where we get
   // |paragraphStart > paragraphEnd|, which is the reason we cannot directly
   // return |EphemeralRange(paragraphStart, paragraphEnd)|. This is not
   // desired, though. We should do more investigation to ensure that why
   // |paragraphStart <= paragraphEnd| is violated.
-  const Position& resultStart =
-      paragraphStart.isNotNull() && paragraphStart <= range.startPosition()
-          ? paragraphStart
-          : range.startPosition();
-  const Position& resultEnd =
-      paragraphEnd.isNotNull() && paragraphEnd >= range.endPosition()
-          ? paragraphEnd
-          : range.endPosition();
-  return EphemeralRange(resultStart, resultEnd);
+  const Position& result_start =
+      paragraph_start.IsNotNull() && paragraph_start <= range.StartPosition()
+          ? paragraph_start
+          : range.StartPosition();
+  const Position& result_end =
+      paragraph_end.IsNotNull() && paragraph_end >= range.EndPosition()
+          ? paragraph_end
+          : range.EndPosition();
+  return EphemeralRange(result_start, result_end);
 }
 
 TextCheckingParagraph::TextCheckingParagraph(
-    const EphemeralRange& checkingRange)
-    : m_checkingRange(checkingRange),
-      m_checkingStart(-1),
-      m_checkingEnd(-1),
-      m_checkingLength(-1) {}
+    const EphemeralRange& checking_range)
+    : checking_range_(checking_range),
+      checking_start_(-1),
+      checking_end_(-1),
+      checking_length_(-1) {}
 
 TextCheckingParagraph::TextCheckingParagraph(
-    const EphemeralRange& checkingRange,
-    const EphemeralRange& paragraphRange)
-    : m_checkingRange(checkingRange),
-      m_paragraphRange(paragraphRange),
-      m_checkingStart(-1),
-      m_checkingEnd(-1),
-      m_checkingLength(-1) {}
+    const EphemeralRange& checking_range,
+    const EphemeralRange& paragraph_range)
+    : checking_range_(checking_range),
+      paragraph_range_(paragraph_range),
+      checking_start_(-1),
+      checking_end_(-1),
+      checking_length_(-1) {}
 
-TextCheckingParagraph::TextCheckingParagraph(Range* checkingRange,
-                                             Range* paragraphRange)
-    : m_checkingRange(checkingRange),
-      m_paragraphRange(paragraphRange),
-      m_checkingStart(-1),
-      m_checkingEnd(-1),
-      m_checkingLength(-1) {}
+TextCheckingParagraph::TextCheckingParagraph(Range* checking_range,
+                                             Range* paragraph_range)
+    : checking_range_(checking_range),
+      paragraph_range_(paragraph_range),
+      checking_start_(-1),
+      checking_end_(-1),
+      checking_length_(-1) {}
 
 TextCheckingParagraph::~TextCheckingParagraph() {}
 
-void TextCheckingParagraph::expandRangeToNextEnd() {
-  DCHECK(m_checkingRange.isNotNull());
-  setParagraphRange(
-      EphemeralRange(paragraphRange().startPosition(),
-                     endOfParagraph(startOfNextParagraph(createVisiblePosition(
-                                        paragraphRange().startPosition())))
-                         .deepEquivalent()));
-  invalidateParagraphRangeValues();
+void TextCheckingParagraph::ExpandRangeToNextEnd() {
+  DCHECK(checking_range_.IsNotNull());
+  SetParagraphRange(
+      EphemeralRange(ParagraphRange().StartPosition(),
+                     EndOfParagraph(StartOfNextParagraph(CreateVisiblePosition(
+                                        ParagraphRange().StartPosition())))
+                         .DeepEquivalent()));
+  InvalidateParagraphRangeValues();
 }
 
-void TextCheckingParagraph::invalidateParagraphRangeValues() {
-  m_checkingStart = m_checkingEnd = -1;
-  m_offsetAsRange = EphemeralRange();
-  m_text = String();
+void TextCheckingParagraph::InvalidateParagraphRangeValues() {
+  checking_start_ = checking_end_ = -1;
+  offset_as_range_ = EphemeralRange();
+  text_ = String();
 }
 
-int TextCheckingParagraph::rangeLength() const {
-  DCHECK(m_checkingRange.isNotNull());
-  return TextIterator::rangeLength(paragraphRange().startPosition(),
-                                   paragraphRange().endPosition());
+int TextCheckingParagraph::RangeLength() const {
+  DCHECK(checking_range_.IsNotNull());
+  return TextIterator::RangeLength(ParagraphRange().StartPosition(),
+                                   ParagraphRange().EndPosition());
 }
 
-EphemeralRange TextCheckingParagraph::paragraphRange() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (m_paragraphRange.isNull())
-    m_paragraphRange = expandToParagraphBoundary(checkingRange());
-  return m_paragraphRange;
+EphemeralRange TextCheckingParagraph::ParagraphRange() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (paragraph_range_.IsNull())
+    paragraph_range_ = ExpandToParagraphBoundary(CheckingRange());
+  return paragraph_range_;
 }
 
-void TextCheckingParagraph::setParagraphRange(const EphemeralRange& range) {
-  m_paragraphRange = range;
+void TextCheckingParagraph::SetParagraphRange(const EphemeralRange& range) {
+  paragraph_range_ = range;
 }
 
-EphemeralRange TextCheckingParagraph::subrange(int characterOffset,
-                                               int characterCount) const {
-  DCHECK(m_checkingRange.isNotNull());
-  return calculateCharacterSubrange(paragraphRange(), characterOffset,
-                                    characterCount);
+EphemeralRange TextCheckingParagraph::Subrange(int character_offset,
+                                               int character_count) const {
+  DCHECK(checking_range_.IsNotNull());
+  return CalculateCharacterSubrange(ParagraphRange(), character_offset,
+                                    character_count);
 }
 
-int TextCheckingParagraph::offsetTo(const Position& position) const {
-  DCHECK(m_checkingRange.isNotNull());
-  return TextIterator::rangeLength(offsetAsRange().startPosition(), position);
+int TextCheckingParagraph::OffsetTo(const Position& position) const {
+  DCHECK(checking_range_.IsNotNull());
+  return TextIterator::RangeLength(OffsetAsRange().StartPosition(), position);
 }
 
-bool TextCheckingParagraph::isEmpty() const {
+bool TextCheckingParagraph::IsEmpty() const {
   // Both predicates should have same result, but we check both just to be sure.
   // We need to investigate to remove this redundancy.
-  return isRangeEmpty() || isTextEmpty();
+  return IsRangeEmpty() || IsTextEmpty();
 }
 
-EphemeralRange TextCheckingParagraph::offsetAsRange() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (m_offsetAsRange.isNotNull())
-    return m_offsetAsRange;
-  const Position& paragraphStart = paragraphRange().startPosition();
-  const Position& checkingStart = checkingRange().startPosition();
-  if (paragraphStart <= checkingStart) {
-    m_offsetAsRange = EphemeralRange(paragraphStart, checkingStart);
-    return m_offsetAsRange;
+EphemeralRange TextCheckingParagraph::OffsetAsRange() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (offset_as_range_.IsNotNull())
+    return offset_as_range_;
+  const Position& paragraph_start = ParagraphRange().StartPosition();
+  const Position& checking_start = CheckingRange().StartPosition();
+  if (paragraph_start <= checking_start) {
+    offset_as_range_ = EphemeralRange(paragraph_start, checking_start);
+    return offset_as_range_;
   }
   // editing/pasteboard/paste-table-001.html and more reach here.
-  m_offsetAsRange = EphemeralRange(checkingStart, paragraphStart);
-  return m_offsetAsRange;
+  offset_as_range_ = EphemeralRange(checking_start, paragraph_start);
+  return offset_as_range_;
 }
 
-const String& TextCheckingParagraph::text() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (m_text.isEmpty())
-    m_text = plainText(paragraphRange());
-  return m_text;
+const String& TextCheckingParagraph::GetText() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (text_.IsEmpty())
+    text_ = PlainText(ParagraphRange());
+  return text_;
 }
 
-int TextCheckingParagraph::checkingStart() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (m_checkingStart == -1)
-    m_checkingStart = TextIterator::rangeLength(offsetAsRange().startPosition(),
-                                                offsetAsRange().endPosition());
-  return m_checkingStart;
+int TextCheckingParagraph::CheckingStart() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (checking_start_ == -1)
+    checking_start_ = TextIterator::RangeLength(OffsetAsRange().StartPosition(),
+                                                OffsetAsRange().EndPosition());
+  return checking_start_;
 }
 
-int TextCheckingParagraph::checkingEnd() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (m_checkingEnd == -1)
-    m_checkingEnd = checkingStart() +
-                    TextIterator::rangeLength(checkingRange().startPosition(),
-                                              checkingRange().endPosition());
-  return m_checkingEnd;
+int TextCheckingParagraph::CheckingEnd() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (checking_end_ == -1)
+    checking_end_ = CheckingStart() +
+                    TextIterator::RangeLength(CheckingRange().StartPosition(),
+                                              CheckingRange().EndPosition());
+  return checking_end_;
 }
 
-int TextCheckingParagraph::checkingLength() const {
-  DCHECK(m_checkingRange.isNotNull());
-  if (-1 == m_checkingLength)
-    m_checkingLength = TextIterator::rangeLength(
-        checkingRange().startPosition(), checkingRange().endPosition());
-  return m_checkingLength;
+int TextCheckingParagraph::CheckingLength() const {
+  DCHECK(checking_range_.IsNotNull());
+  if (-1 == checking_length_)
+    checking_length_ = TextIterator::RangeLength(
+        CheckingRange().StartPosition(), CheckingRange().EndPosition());
+  return checking_length_;
 }
 
 }  // namespace blink

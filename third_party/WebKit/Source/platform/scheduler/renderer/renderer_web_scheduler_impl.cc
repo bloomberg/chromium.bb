@@ -25,16 +25,16 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() {}
 
-void RendererWebSchedulerImpl::suspendTimerQueue() {
+void RendererWebSchedulerImpl::SuspendTimerQueue() {
   renderer_scheduler_->SuspendTimerQueue();
 }
 
-void RendererWebSchedulerImpl::resumeTimerQueue() {
+void RendererWebSchedulerImpl::ResumeTimerQueue() {
   renderer_scheduler_->ResumeTimerQueue();
 }
 
 std::unique_ptr<blink::WebViewScheduler>
-RendererWebSchedulerImpl::createWebViewScheduler(
+RendererWebSchedulerImpl::CreateWebViewScheduler(
     InterventionReporter* intervention_reporter,
     WebViewScheduler::WebViewSchedulerSettings* settings) {
   return base::WrapUnique(new WebViewSchedulerImpl(

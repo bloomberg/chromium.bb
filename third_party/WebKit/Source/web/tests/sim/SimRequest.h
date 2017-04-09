@@ -21,43 +21,42 @@ class WebURLLoaderClient;
 // requests must be finished.
 class SimRequest final {
  public:
-  SimRequest(String url, String mimeType);
+  SimRequest(String url, String mime_type);
   ~SimRequest();
 
   // Starts the response from the server, this is as if the headers and 200 OK
   // reply had been received but no response body yet.
-  void start();
+  void Start();
 
   // Write a chunk of the response body.
-  void write(const String& data);
+  void Write(const String& data);
 
   // Finish the response, this is as if the server closed the connection.
-  void finish();
+  void Finish();
 
   // Shorthand to complete a request (start/write/finish) sequence in order.
-  void complete(const String& data = String());
+  void Complete(const String& data = String());
 
-  const String& url() const { return m_url; }
-  const WebURLError& error() const { return m_error; }
-  const WebURLResponse& response() const { return m_response; }
+  const String& Url() const { return url_; }
+  const WebURLError& GetError() const { return error_; }
+  const WebURLResponse& GetResponse() const { return response_; }
 
  private:
   friend class SimNetwork;
 
-  void reset();
+  void Reset();
 
   // Used by SimNetwork.
-  void didReceiveResponse(WebURLLoaderClient*,
-                          const WebURLResponse&);
-  void didFail(const WebURLError&);
+  void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&);
+  void DidFail(const WebURLError&);
 
-  String m_url;
-  WebURLLoader* m_loader;
-  WebURLResponse m_response;
-  WebURLError m_error;
-  WebURLLoaderClient* m_client;
-  unsigned m_totalEncodedDataLength;
-  bool m_isReady;
+  String url_;
+  WebURLLoader* loader_;
+  WebURLResponse response_;
+  WebURLError error_;
+  WebURLLoaderClient* client_;
+  unsigned total_encoded_data_length_;
+  bool is_ready_;
 };
 
 }  // namespace blink

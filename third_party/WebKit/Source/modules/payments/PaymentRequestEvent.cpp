@@ -9,47 +9,47 @@
 
 namespace blink {
 
-PaymentRequestEvent* PaymentRequestEvent::create(
+PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentAppRequest& appRequest,
-    RespondWithObserver* respondWithObserver,
-    WaitUntilObserver* waitUntilObserver) {
-  return new PaymentRequestEvent(type, appRequest, respondWithObserver,
-                                 waitUntilObserver);
+    const PaymentAppRequest& app_request,
+    RespondWithObserver* respond_with_observer,
+    WaitUntilObserver* wait_until_observer) {
+  return new PaymentRequestEvent(type, app_request, respond_with_observer,
+                                 wait_until_observer);
 }
 
 PaymentRequestEvent::~PaymentRequestEvent() {}
 
-const AtomicString& PaymentRequestEvent::interfaceName() const {
+const AtomicString& PaymentRequestEvent::InterfaceName() const {
   return EventNames::PaymentRequestEvent;
 }
 
-void PaymentRequestEvent::appRequest(PaymentAppRequest& appRequest) const {
-  appRequest = m_appRequest;
+void PaymentRequestEvent::appRequest(PaymentAppRequest& app_request) const {
+  app_request = app_request_;
 }
 
-void PaymentRequestEvent::respondWith(ScriptState* scriptState,
-                                      ScriptPromise scriptPromise,
-                                      ExceptionState& exceptionState) {
+void PaymentRequestEvent::respondWith(ScriptState* script_state,
+                                      ScriptPromise script_promise,
+                                      ExceptionState& exception_state) {
   stopImmediatePropagation();
-  if (m_observer) {
-    m_observer->respondWith(scriptState, scriptPromise, exceptionState);
+  if (observer_) {
+    observer_->RespondWith(script_state, script_promise, exception_state);
   }
 }
 
 DEFINE_TRACE(PaymentRequestEvent) {
-  visitor->trace(m_appRequest);
-  visitor->trace(m_observer);
-  ExtendableEvent::trace(visitor);
+  visitor->Trace(app_request_);
+  visitor->Trace(observer_);
+  ExtendableEvent::Trace(visitor);
 }
 
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
-    const PaymentAppRequest& appRequest,
-    RespondWithObserver* respondWithObserver,
-    WaitUntilObserver* waitUntilObserver)
-    : ExtendableEvent(type, ExtendableEventInit(), waitUntilObserver),
-      m_appRequest(appRequest),
-      m_observer(respondWithObserver) {}
+    const PaymentAppRequest& app_request,
+    RespondWithObserver* respond_with_observer,
+    WaitUntilObserver* wait_until_observer)
+    : ExtendableEvent(type, ExtendableEventInit(), wait_until_observer),
+      app_request_(app_request),
+      observer_(respond_with_observer) {}
 
 }  // namespace blink

@@ -415,7 +415,7 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
       blink::WebCache::ResourceTypeStats stats;
       if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
-        return stringifier_->GetWebCacheStatText(stats.cssStyleSheets);
+        return stringifier_->GetWebCacheStatText(stats.css_style_sheets);
       return stringifier_->n_a_string();
     }
 
@@ -579,8 +579,8 @@ int TaskManagerTableModel::CompareValues(int row1,
         case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
           return ValueCompare(stats1.scripts.size, stats2.scripts.size);
         case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-          return ValueCompare(stats1.cssStyleSheets.size,
-                              stats2.cssStyleSheets.size);
+          return ValueCompare(stats1.css_style_sheets.size,
+                              stats2.css_style_sheets.size);
         default:
           NOTREACHED();
           return 0;

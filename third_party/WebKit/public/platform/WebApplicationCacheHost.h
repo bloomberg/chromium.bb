@@ -47,86 +47,93 @@ class WebURLResponse;
 class WebApplicationCacheHost {
  public:
   // These values must match blink::ApplicationCacheHost::Status values
-  enum Status { Uncached, Idle, Checking, Downloading, UpdateReady, Obsolete };
+  enum Status {
+    kUncached,
+    kIdle,
+    kChecking,
+    kDownloading,
+    kUpdateReady,
+    kObsolete
+  };
 
   // These values must match blink::ApplicationCacheHost::EventID values
   enum EventID {
-    CheckingEvent,
-    ErrorEvent,
-    NoUpdateEvent,
-    DownloadingEvent,
-    ProgressEvent,
-    UpdateReadyEvent,
-    CachedEvent,
-    ObsoleteEvent
+    kCheckingEvent,
+    kErrorEvent,
+    kNoUpdateEvent,
+    kDownloadingEvent,
+    kProgressEvent,
+    kUpdateReadyEvent,
+    kCachedEvent,
+    kObsoleteEvent
   };
 
   enum ErrorReason {
-    ManifestError,
-    SignatureError,
-    ResourceError,
-    ChangedError,
-    AbortError,
-    QuotaError,
-    PolicyError,
-    UnknownError
+    kManifestError,
+    kSignatureError,
+    kResourceError,
+    kChangedError,
+    kAbortError,
+    kQuotaError,
+    kPolicyError,
+    kUnknownError
   };
 
   virtual ~WebApplicationCacheHost() {}
 
   // Called for every request made within the context.
-  virtual void willStartMainResourceRequest(
+  virtual void WillStartMainResourceRequest(
       WebURLRequest& r,
-      const WebApplicationCacheHost* spawningHost) {}
-  virtual void willStartSubResourceRequest(WebURLRequest&) {}
+      const WebApplicationCacheHost* spawning_host) {}
+  virtual void WillStartSubResourceRequest(WebURLRequest&) {}
 
   // One or the other selectCache methods is called after having parsed the
   // <html> tag.  The latter returns false if the current document has been
   // identified as a "foreign" entry, in which case the frame navigation will be
   // restarted by webkit.
-  virtual void selectCacheWithoutManifest() {}
-  virtual bool selectCacheWithManifest(const WebURL& manifestURL) {
+  virtual void SelectCacheWithoutManifest() {}
+  virtual bool SelectCacheWithManifest(const WebURL& manifest_url) {
     return true;
   }
 
   // Called as the main resource is retrieved.
-  virtual void didReceiveResponseForMainResource(const WebURLResponse&) {}
-  virtual void didReceiveDataForMainResource(const char* data, unsigned len) {}
-  virtual void didFinishLoadingMainResource(bool success) {}
+  virtual void DidReceiveResponseForMainResource(const WebURLResponse&) {}
+  virtual void DidReceiveDataForMainResource(const char* data, unsigned len) {}
+  virtual void DidFinishLoadingMainResource(bool success) {}
 
   // Called on behalf of the scriptable interface.
-  virtual Status getStatus() { return Uncached; }
-  virtual bool startUpdate() { return false; }
-  virtual bool swapCache() { return false; }
-  virtual void abort() {}
+  virtual Status GetStatus() { return kUncached; }
+  virtual bool StartUpdate() { return false; }
+  virtual bool SwapCache() { return false; }
+  virtual void Abort() {}
 
   // Structures and methods to support inspecting Application Caches.
   struct CacheInfo {
-    WebURL manifestURL;  // Empty if there is no associated cache.
-    double creationTime;
-    double updateTime;
-    long long totalSize;
-    CacheInfo() : creationTime(0), updateTime(0), totalSize(0) {}
+    WebURL manifest_url;  // Empty if there is no associated cache.
+    double creation_time;
+    double update_time;
+    long long total_size;
+    CacheInfo() : creation_time(0), update_time(0), total_size(0) {}
   };
   struct ResourceInfo {
     WebURL url;
     long long size;
-    bool isMaster;
-    bool isManifest;
-    bool isExplicit;
-    bool isForeign;
-    bool isFallback;
+    bool is_master;
+    bool is_manifest;
+    bool is_explicit;
+    bool is_foreign;
+    bool is_fallback;
     ResourceInfo()
         : size(0),
-          isMaster(false),
-          isManifest(false),
-          isExplicit(false),
-          isForeign(false),
-          isFallback(false) {}
+          is_master(false),
+          is_manifest(false),
+          is_explicit(false),
+          is_foreign(false),
+          is_fallback(false) {}
   };
-  virtual void getAssociatedCacheInfo(CacheInfo*) {}
-  virtual void getResourceList(WebVector<ResourceInfo>*) {}
-  virtual void deleteAssociatedCacheGroup() {}
+  virtual void GetAssociatedCacheInfo(CacheInfo*) {}
+  virtual void GetResourceList(WebVector<ResourceInfo>*) {}
+  virtual void DeleteAssociatedCacheGroup() {}
 };
 
 }  // namespace blink

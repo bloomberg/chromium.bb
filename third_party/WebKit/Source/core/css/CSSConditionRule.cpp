@@ -8,14 +8,14 @@
 
 namespace blink {
 
-CSSConditionRule::CSSConditionRule(StyleRuleCondition* conditionRule,
+CSSConditionRule::CSSConditionRule(StyleRuleCondition* condition_rule,
                                    CSSStyleSheet* parent)
-    : CSSGroupingRule(conditionRule, parent) {}
+    : CSSGroupingRule(condition_rule, parent) {}
 
 CSSConditionRule::~CSSConditionRule() {}
 
 String CSSConditionRule::conditionText() const {
-  return static_cast<StyleRuleCondition*>(m_groupRule.get())->conditionText();
+  return static_cast<StyleRuleCondition*>(group_rule_.Get())->ConditionText();
 }
 
 }  // namespace blink

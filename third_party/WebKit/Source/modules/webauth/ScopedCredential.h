@@ -20,33 +20,33 @@ class ScopedCredential final
  public:
   enum class ScopedCredentialType { SCOPEDCRED };
 
-  static ScopedCredential* create(const ScopedCredentialType type,
+  static ScopedCredential* Create(const ScopedCredentialType type,
                                   DOMArrayBuffer* id) {
     return new ScopedCredential(type, id);
   }
 
   ScopedCredential(const ScopedCredentialType type, DOMArrayBuffer* id)
-      : m_type(type), m_id(id) {}
+      : type_(type), id_(id) {}
 
   virtual ~ScopedCredential() {}
 
   String type() const {
-    DCHECK_EQ(m_type, ScopedCredentialType::SCOPEDCRED);
+    DCHECK_EQ(type_, ScopedCredentialType::SCOPEDCRED);
     return "ScopedCred";
   }
 
-  DOMArrayBuffer* id() const { return m_id.get(); }
+  DOMArrayBuffer* id() const { return id_.Get(); }
 
-  ScopedCredentialType stringToCredentialType(const String& type) {
+  ScopedCredentialType StringToCredentialType(const String& type) {
     // There is currently only one type
     return ScopedCredentialType::SCOPEDCRED;
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_id); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(id_); }
 
  private:
-  const ScopedCredentialType m_type;
-  const Member<DOMArrayBuffer> m_id;
+  const ScopedCredentialType type_;
+  const Member<DOMArrayBuffer> id_;
 };
 
 }  // namespace blink

@@ -34,20 +34,20 @@ namespace blink {
 class WebRTCDataChannelHandlerClient {
  public:
   enum ReadyState {
-    ReadyStateConnecting = 0,
-    ReadyStateOpen = 1,
-    ReadyStateClosing = 2,
-    ReadyStateClosed = 3,
+    kReadyStateConnecting = 0,
+    kReadyStateOpen = 1,
+    kReadyStateClosing = 2,
+    kReadyStateClosed = 3,
   };
 
   virtual ~WebRTCDataChannelHandlerClient() {}
 
-  virtual void didChangeReadyState(ReadyState) = 0;
+  virtual void DidChangeReadyState(ReadyState) = 0;
   // TODO(bemasc): Make this pure virtual once Chromium unit tests are updated
-  virtual void didDecreaseBufferedAmount(unsigned){};
-  virtual void didReceiveStringData(const WebString&) = 0;
-  virtual void didReceiveRawData(const char*, size_t) = 0;
-  virtual void didDetectError() = 0;
+  virtual void DidDecreaseBufferedAmount(unsigned){};
+  virtual void DidReceiveStringData(const WebString&) = 0;
+  virtual void DidReceiveRawData(const char*, size_t) = 0;
+  virtual void DidDetectError() = 0;
 };
 
 }  // namespace blink

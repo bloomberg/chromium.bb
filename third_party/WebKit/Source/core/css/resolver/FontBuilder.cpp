@@ -36,240 +36,241 @@
 namespace blink {
 
 FontBuilder::FontBuilder(const Document& document)
-    : m_document(&document), m_flags(0) {
-  DCHECK(document.frame());
+    : document_(&document), flags_(0) {
+  DCHECK(document.GetFrame());
 }
 
-void FontBuilder::setInitial(float effectiveZoom) {
-  DCHECK(m_document->settings());
-  if (!m_document->settings())
+void FontBuilder::SetInitial(float effective_zoom) {
+  DCHECK(document_->GetSettings());
+  if (!document_->GetSettings())
     return;
 
-  setFamilyDescription(m_fontDescription,
-                       FontBuilder::initialFamilyDescription());
-  setSize(m_fontDescription, FontBuilder::initialSize());
+  SetFamilyDescription(font_description_,
+                       FontBuilder::InitialFamilyDescription());
+  SetSize(font_description_, FontBuilder::InitialSize());
 }
 
-void FontBuilder::didChangeEffectiveZoom() {
-  set(PropertySetFlag::EffectiveZoom);
+void FontBuilder::DidChangeEffectiveZoom() {
+  Set(PropertySetFlag::kEffectiveZoom);
 }
 
-void FontBuilder::didChangeTextOrientation() {
-  set(PropertySetFlag::TextOrientation);
+void FontBuilder::DidChangeTextOrientation() {
+  Set(PropertySetFlag::kTextOrientation);
 }
 
-void FontBuilder::didChangeWritingMode() {
-  set(PropertySetFlag::WritingMode);
+void FontBuilder::DidChangeWritingMode() {
+  Set(PropertySetFlag::kWritingMode);
 }
 
-FontFamily FontBuilder::standardFontFamily() const {
+FontFamily FontBuilder::StandardFontFamily() const {
   FontFamily family;
-  family.setFamily(standardFontFamilyName());
+  family.SetFamily(StandardFontFamilyName());
   return family;
 }
 
-AtomicString FontBuilder::standardFontFamilyName() const {
-  Settings* settings = m_document->settings();
+AtomicString FontBuilder::StandardFontFamilyName() const {
+  Settings* settings = document_->GetSettings();
   if (settings)
-    return settings->genericFontFamilySettings().standard();
+    return settings->GetGenericFontFamilySettings().Standard();
   return AtomicString();
 }
 
-AtomicString FontBuilder::genericFontFamilyName(
-    FontDescription::GenericFamilyType genericFamily) const {
-  switch (genericFamily) {
+AtomicString FontBuilder::GenericFontFamilyName(
+    FontDescription::GenericFamilyType generic_family) const {
+  switch (generic_family) {
     default:
       ASSERT_NOT_REACHED();
-    case FontDescription::NoFamily:
+    case FontDescription::kNoFamily:
       return AtomicString();
-    case FontDescription::StandardFamily:
-      return standardFontFamilyName();
-    case FontDescription::SerifFamily:
+    case FontDescription::kStandardFamily:
+      return StandardFontFamilyName();
+    case FontDescription::kSerifFamily:
       return FontFamilyNames::webkit_serif;
-    case FontDescription::SansSerifFamily:
+    case FontDescription::kSansSerifFamily:
       return FontFamilyNames::webkit_sans_serif;
-    case FontDescription::MonospaceFamily:
+    case FontDescription::kMonospaceFamily:
       return FontFamilyNames::webkit_monospace;
-    case FontDescription::CursiveFamily:
+    case FontDescription::kCursiveFamily:
       return FontFamilyNames::webkit_cursive;
-    case FontDescription::FantasyFamily:
+    case FontDescription::kFantasyFamily:
       return FontFamilyNames::webkit_fantasy;
-    case FontDescription::PictographFamily:
+    case FontDescription::kPictographFamily:
       return FontFamilyNames::webkit_pictograph;
   }
 }
 
-float FontBuilder::fontSizeForKeyword(unsigned keyword,
-                                      bool isMonospace) const {
-  return FontSize::fontSizeForKeyword(m_document, keyword, isMonospace);
+float FontBuilder::FontSizeForKeyword(unsigned keyword,
+                                      bool is_monospace) const {
+  return FontSize::FontSizeForKeyword(document_, keyword, is_monospace);
 }
 
-void FontBuilder::setFamilyDescription(
-    const FontDescription::FamilyDescription& familyDescription) {
-  setFamilyDescription(m_fontDescription, familyDescription);
+void FontBuilder::SetFamilyDescription(
+    const FontDescription::FamilyDescription& family_description) {
+  SetFamilyDescription(font_description_, family_description);
 }
 
-void FontBuilder::setWeight(FontWeight fontWeight) {
-  set(PropertySetFlag::Weight);
+void FontBuilder::SetWeight(FontWeight font_weight) {
+  Set(PropertySetFlag::kWeight);
 
-  m_fontDescription.setWeight(fontWeight);
+  font_description_.SetWeight(font_weight);
 }
 
-void FontBuilder::setSize(const FontDescription::Size& size) {
-  setSize(m_fontDescription, size);
+void FontBuilder::SetSize(const FontDescription::Size& size) {
+  SetSize(font_description_, size);
 }
 
-void FontBuilder::setSizeAdjust(float aspectValue) {
-  set(PropertySetFlag::SizeAdjust);
+void FontBuilder::SetSizeAdjust(float aspect_value) {
+  Set(PropertySetFlag::kSizeAdjust);
 
-  m_fontDescription.setSizeAdjust(aspectValue);
+  font_description_.SetSizeAdjust(aspect_value);
 }
 
-void FontBuilder::setStretch(FontStretch fontStretch) {
-  set(PropertySetFlag::Stretch);
+void FontBuilder::SetStretch(FontStretch font_stretch) {
+  Set(PropertySetFlag::kStretch);
 
-  m_fontDescription.setStretch(fontStretch);
+  font_description_.SetStretch(font_stretch);
 }
 
-void FontBuilder::setLocale(PassRefPtr<const LayoutLocale> locale) {
-  set(PropertySetFlag::Locale);
+void FontBuilder::SetLocale(PassRefPtr<const LayoutLocale> locale) {
+  Set(PropertySetFlag::kLocale);
 
-  m_fontDescription.setLocale(std::move(locale));
+  font_description_.SetLocale(std::move(locale));
 }
 
-void FontBuilder::setStyle(FontStyle italic) {
-  set(PropertySetFlag::Style);
+void FontBuilder::SetStyle(FontStyle italic) {
+  Set(PropertySetFlag::kStyle);
 
-  m_fontDescription.setStyle(italic);
+  font_description_.SetStyle(italic);
 }
 
-void FontBuilder::setVariantCaps(FontDescription::FontVariantCaps caps) {
-  set(PropertySetFlag::VariantCaps);
+void FontBuilder::SetVariantCaps(FontDescription::FontVariantCaps caps) {
+  Set(PropertySetFlag::kVariantCaps);
 
-  m_fontDescription.setVariantCaps(caps);
+  font_description_.SetVariantCaps(caps);
 }
 
-void FontBuilder::setVariantLigatures(
+void FontBuilder::SetVariantLigatures(
     const FontDescription::VariantLigatures& ligatures) {
-  set(PropertySetFlag::VariantLigatures);
+  Set(PropertySetFlag::kVariantLigatures);
 
-  m_fontDescription.setVariantLigatures(ligatures);
+  font_description_.SetVariantLigatures(ligatures);
 }
 
-void FontBuilder::setVariantNumeric(const FontVariantNumeric& variantNumeric) {
-  set(PropertySetFlag::VariantNumeric);
+void FontBuilder::SetVariantNumeric(const FontVariantNumeric& variant_numeric) {
+  Set(PropertySetFlag::kVariantNumeric);
 
-  m_fontDescription.setVariantNumeric(variantNumeric);
+  font_description_.SetVariantNumeric(variant_numeric);
 }
 
-void FontBuilder::setTextRendering(TextRenderingMode textRenderingMode) {
-  set(PropertySetFlag::TextRendering);
+void FontBuilder::SetTextRendering(TextRenderingMode text_rendering_mode) {
+  Set(PropertySetFlag::kTextRendering);
 
-  m_fontDescription.setTextRendering(textRenderingMode);
+  font_description_.SetTextRendering(text_rendering_mode);
 }
 
-void FontBuilder::setKerning(FontDescription::Kerning kerning) {
-  set(PropertySetFlag::Kerning);
+void FontBuilder::SetKerning(FontDescription::Kerning kerning) {
+  Set(PropertySetFlag::kKerning);
 
-  m_fontDescription.setKerning(kerning);
+  font_description_.SetKerning(kerning);
 }
 
-void FontBuilder::setFontSmoothing(FontSmoothingMode foontSmoothingMode) {
-  set(PropertySetFlag::FontSmoothing);
+void FontBuilder::SetFontSmoothing(FontSmoothingMode foont_smoothing_mode) {
+  Set(PropertySetFlag::kFontSmoothing);
 
-  m_fontDescription.setFontSmoothing(foontSmoothingMode);
+  font_description_.SetFontSmoothing(foont_smoothing_mode);
 }
 
-void FontBuilder::setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
-  set(PropertySetFlag::FeatureSettings);
-  m_fontDescription.setFeatureSettings(std::move(settings));
+void FontBuilder::SetFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
+  Set(PropertySetFlag::kFeatureSettings);
+  font_description_.SetFeatureSettings(std::move(settings));
 }
 
-void FontBuilder::setVariationSettings(
+void FontBuilder::SetVariationSettings(
     PassRefPtr<FontVariationSettings> settings) {
-  set(PropertySetFlag::VariationSettings);
-  m_fontDescription.setVariationSettings(std::move(settings));
+  Set(PropertySetFlag::kVariationSettings);
+  font_description_.SetVariationSettings(std::move(settings));
 }
 
-void FontBuilder::setFamilyDescription(
-    FontDescription& fontDescription,
-    const FontDescription::FamilyDescription& familyDescription) {
-  set(PropertySetFlag::Family);
+void FontBuilder::SetFamilyDescription(
+    FontDescription& font_description,
+    const FontDescription::FamilyDescription& family_description) {
+  Set(PropertySetFlag::kFamily);
 
-  bool isInitial =
-      familyDescription.genericFamily == FontDescription::StandardFamily &&
-      familyDescription.family.familyIsEmpty();
+  bool is_initial =
+      family_description.generic_family == FontDescription::kStandardFamily &&
+      family_description.family.FamilyIsEmpty();
 
-  fontDescription.setGenericFamily(familyDescription.genericFamily);
-  fontDescription.setFamily(isInitial ? standardFontFamily()
-                                      : familyDescription.family);
+  font_description.SetGenericFamily(family_description.generic_family);
+  font_description.SetFamily(is_initial ? StandardFontFamily()
+                                        : family_description.family);
 }
 
-void FontBuilder::setSize(FontDescription& fontDescription,
+void FontBuilder::SetSize(FontDescription& font_description,
                           const FontDescription::Size& size) {
-  float specifiedSize = size.value;
+  float specified_size = size.value;
 
-  if (specifiedSize < 0)
+  if (specified_size < 0)
     return;
 
-  set(PropertySetFlag::Size);
+  Set(PropertySetFlag::kSize);
 
   // Overly large font sizes will cause crashes on some platforms (such as
   // Windows).  Cap font size here to make sure that doesn't happen.
-  specifiedSize = std::min(maximumAllowedFontSize, specifiedSize);
+  specified_size = std::min(kMaximumAllowedFontSize, specified_size);
 
-  fontDescription.setKeywordSize(size.keyword);
-  fontDescription.setSpecifiedSize(specifiedSize);
-  fontDescription.setIsAbsoluteSize(size.isAbsolute);
+  font_description.SetKeywordSize(size.keyword);
+  font_description.SetSpecifiedSize(specified_size);
+  font_description.SetIsAbsoluteSize(size.is_absolute);
 }
 
-float FontBuilder::getComputedSizeFromSpecifiedSize(
-    FontDescription& fontDescription,
-    float effectiveZoom,
-    float specifiedSize) {
-  float zoomFactor = effectiveZoom;
+float FontBuilder::GetComputedSizeFromSpecifiedSize(
+    FontDescription& font_description,
+    float effective_zoom,
+    float specified_size) {
+  float zoom_factor = effective_zoom;
   // FIXME: Why is this here!!!!?!
-  if (LocalFrame* frame = m_document->frame())
-    zoomFactor *= frame->textZoomFactor();
+  if (LocalFrame* frame = document_->GetFrame())
+    zoom_factor *= frame->TextZoomFactor();
 
-  return FontSize::getComputedSizeFromSpecifiedSize(
-      m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
+  return FontSize::GetComputedSizeFromSpecifiedSize(
+      document_, zoom_factor, font_description.IsAbsoluteSize(),
+      specified_size);
 }
 
-static FontOrientation computeFontOrientation(const ComputedStyle& style) {
-  if (style.isHorizontalWritingMode())
-    return FontOrientation::Horizontal;
+static FontOrientation ComputeFontOrientation(const ComputedStyle& style) {
+  if (style.IsHorizontalWritingMode())
+    return FontOrientation::kHorizontal;
 
-  switch (style.getTextOrientation()) {
-    case TextOrientationMixed:
-      return FontOrientation::VerticalMixed;
-    case TextOrientationUpright:
-      return FontOrientation::VerticalUpright;
-    case TextOrientationSideways:
-      return FontOrientation::VerticalRotated;
+  switch (style.GetTextOrientation()) {
+    case kTextOrientationMixed:
+      return FontOrientation::kVerticalMixed;
+    case kTextOrientationUpright:
+      return FontOrientation::kVerticalUpright;
+    case kTextOrientationSideways:
+      return FontOrientation::kVerticalRotated;
     default:
       ASSERT_NOT_REACHED();
-      return FontOrientation::VerticalMixed;
+      return FontOrientation::kVerticalMixed;
   }
 }
 
-void FontBuilder::updateOrientation(FontDescription& description,
+void FontBuilder::UpdateOrientation(FontDescription& description,
                                     const ComputedStyle& style) {
-  description.setOrientation(computeFontOrientation(style));
+  description.SetOrientation(ComputeFontOrientation(style));
 }
 
-void FontBuilder::checkForGenericFamilyChange(
-    const FontDescription& oldDescription,
-    FontDescription& newDescription) {
-  if (newDescription.isAbsoluteSize())
+void FontBuilder::CheckForGenericFamilyChange(
+    const FontDescription& old_description,
+    FontDescription& new_description) {
+  if (new_description.IsAbsoluteSize())
     return;
 
-  if (newDescription.isMonospace() == oldDescription.isMonospace())
+  if (new_description.IsMonospace() == old_description.IsMonospace())
     return;
 
   // For now, lump all families but monospace together.
-  if (newDescription.genericFamily() != FontDescription::MonospaceFamily &&
-      oldDescription.genericFamily() != FontDescription::MonospaceFamily)
+  if (new_description.GenericFamily() != FontDescription::kMonospaceFamily &&
+      old_description.GenericFamily() != FontDescription::kMonospaceFamily)
     return;
 
   // We know the parent is monospace or the child is monospace, and that font
@@ -277,150 +278,152 @@ void FontBuilder::checkForGenericFamilyChange(
   // If the font uses a keyword size, then we refetch from the table rather than
   // multiplying by our scale factor.
   float size;
-  if (newDescription.keywordSize()) {
-    size = fontSizeForKeyword(newDescription.keywordSize(),
-                              newDescription.isMonospace());
+  if (new_description.KeywordSize()) {
+    size = FontSizeForKeyword(new_description.KeywordSize(),
+                              new_description.IsMonospace());
   } else {
-    Settings* settings = m_document->settings();
-    float fixedScaleFactor =
-        (settings && settings->getDefaultFixedFontSize() &&
-         settings->getDefaultFontSize())
-            ? static_cast<float>(settings->getDefaultFixedFontSize()) /
-                  settings->getDefaultFontSize()
+    Settings* settings = document_->GetSettings();
+    float fixed_scale_factor =
+        (settings && settings->GetDefaultFixedFontSize() &&
+         settings->GetDefaultFontSize())
+            ? static_cast<float>(settings->GetDefaultFixedFontSize()) /
+                  settings->GetDefaultFontSize()
             : 1;
-    size = oldDescription.isMonospace()
-               ? newDescription.specifiedSize() / fixedScaleFactor
-               : newDescription.specifiedSize() * fixedScaleFactor;
+    size = old_description.IsMonospace()
+               ? new_description.SpecifiedSize() / fixed_scale_factor
+               : new_description.SpecifiedSize() * fixed_scale_factor;
   }
 
-  newDescription.setSpecifiedSize(size);
+  new_description.SetSpecifiedSize(size);
 }
 
-void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription,
+void FontBuilder::UpdateSpecifiedSize(FontDescription& font_description,
                                       const ComputedStyle& style) {
-  float specifiedSize = fontDescription.specifiedSize();
+  float specified_size = font_description.SpecifiedSize();
 
-  if (!specifiedSize && fontDescription.keywordSize())
-    specifiedSize = fontSizeForKeyword(fontDescription.keywordSize(),
-                                       fontDescription.isMonospace());
+  if (!specified_size && font_description.KeywordSize())
+    specified_size = FontSizeForKeyword(font_description.KeywordSize(),
+                                        font_description.IsMonospace());
 
-  fontDescription.setSpecifiedSize(specifiedSize);
+  font_description.SetSpecifiedSize(specified_size);
 
-  checkForGenericFamilyChange(style.getFontDescription(), fontDescription);
+  CheckForGenericFamilyChange(style.GetFontDescription(), font_description);
 }
 
-void FontBuilder::updateAdjustedSize(FontDescription& fontDescription,
+void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
                                      const ComputedStyle& style,
-                                     FontSelector* fontSelector) {
-  const float specifiedSize = fontDescription.specifiedSize();
-  if (!fontDescription.hasSizeAdjust() || !specifiedSize)
+                                     FontSelector* font_selector) {
+  const float specified_size = font_description.SpecifiedSize();
+  if (!font_description.HasSizeAdjust() || !specified_size)
     return;
 
   // We need to create a temporal Font to get xHeight of a primary font.
   // The aspect value is based on the xHeight of the font for the computed font
   // size, so we need to reset the adjustedSize to computedSize. See
   // FontDescription::effectiveFontSize.
-  fontDescription.setAdjustedSize(fontDescription.computedSize());
+  font_description.SetAdjustedSize(font_description.ComputedSize());
 
-  Font font(fontDescription);
-  font.update(fontSelector);
+  Font font(font_description);
+  font.Update(font_selector);
 
-  const SimpleFontData* fontData = font.primaryFont();
+  const SimpleFontData* font_data = font.PrimaryFont();
 
-  if (!fontData || !fontData->getFontMetrics().hasXHeight())
+  if (!font_data || !font_data->GetFontMetrics().HasXHeight())
     return;
 
-  const float sizeAdjust = fontDescription.sizeAdjust();
-  float aspectValue = fontData->getFontMetrics().xHeight() / specifiedSize;
-  float adjustedSize = (sizeAdjust / aspectValue) * specifiedSize;
-  adjustedSize = getComputedSizeFromSpecifiedSize(
-      fontDescription, style.effectiveZoom(), adjustedSize);
+  const float size_adjust = font_description.SizeAdjust();
+  float aspect_value = font_data->GetFontMetrics().XHeight() / specified_size;
+  float adjusted_size = (size_adjust / aspect_value) * specified_size;
+  adjusted_size = GetComputedSizeFromSpecifiedSize(
+      font_description, style.EffectiveZoom(), adjusted_size);
 
-  float multiplier = style.textAutosizingMultiplier();
-  adjustedSize =
-      TextAutosizer::computeAutosizedFontSize(adjustedSize, multiplier);
-  fontDescription.setAdjustedSize(adjustedSize);
+  float multiplier = style.TextAutosizingMultiplier();
+  adjusted_size =
+      TextAutosizer::ComputeAutosizedFontSize(adjusted_size, multiplier);
+  font_description.SetAdjustedSize(adjusted_size);
 }
 
-void FontBuilder::updateComputedSize(FontDescription& fontDescription,
+void FontBuilder::UpdateComputedSize(FontDescription& font_description,
                                      const ComputedStyle& style) {
-  float computedSize = getComputedSizeFromSpecifiedSize(
-      fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
-  float multiplier = style.textAutosizingMultiplier();
-  computedSize =
-      TextAutosizer::computeAutosizedFontSize(computedSize, multiplier);
-  fontDescription.setComputedSize(computedSize);
+  float computed_size =
+      GetComputedSizeFromSpecifiedSize(font_description, style.EffectiveZoom(),
+                                       font_description.SpecifiedSize());
+  float multiplier = style.TextAutosizingMultiplier();
+  computed_size =
+      TextAutosizer::ComputeAutosizedFontSize(computed_size, multiplier);
+  font_description.SetComputedSize(computed_size);
 }
 
-void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style) {
-  if (!m_flags)
+void FontBuilder::CreateFont(FontSelector* font_selector,
+                             ComputedStyle& style) {
+  if (!flags_)
     return;
 
-  FontDescription description = style.getFontDescription();
+  FontDescription description = style.GetFontDescription();
 
-  if (isSet(PropertySetFlag::Family)) {
-    description.setGenericFamily(m_fontDescription.genericFamily());
-    description.setFamily(m_fontDescription.family());
+  if (IsSet(PropertySetFlag::kFamily)) {
+    description.SetGenericFamily(font_description_.GenericFamily());
+    description.SetFamily(font_description_.Family());
   }
-  if (isSet(PropertySetFlag::Size)) {
-    description.setKeywordSize(m_fontDescription.keywordSize());
-    description.setSpecifiedSize(m_fontDescription.specifiedSize());
-    description.setIsAbsoluteSize(m_fontDescription.isAbsoluteSize());
+  if (IsSet(PropertySetFlag::kSize)) {
+    description.SetKeywordSize(font_description_.KeywordSize());
+    description.SetSpecifiedSize(font_description_.SpecifiedSize());
+    description.SetIsAbsoluteSize(font_description_.IsAbsoluteSize());
   }
-  if (isSet(PropertySetFlag::SizeAdjust))
-    description.setSizeAdjust(m_fontDescription.sizeAdjust());
-  if (isSet(PropertySetFlag::Weight))
-    description.setWeight(m_fontDescription.weight());
-  if (isSet(PropertySetFlag::Stretch))
-    description.setStretch(m_fontDescription.stretch());
-  if (isSet(PropertySetFlag::FeatureSettings))
-    description.setFeatureSettings(m_fontDescription.featureSettings());
-  if (isSet(PropertySetFlag::Locale))
-    description.setLocale(m_fontDescription.locale());
-  if (isSet(PropertySetFlag::Style))
-    description.setStyle(m_fontDescription.style());
-  if (isSet(PropertySetFlag::VariantCaps))
-    description.setVariantCaps(m_fontDescription.variantCaps());
-  if (isSet(PropertySetFlag::VariantLigatures))
-    description.setVariantLigatures(m_fontDescription.getVariantLigatures());
-  if (isSet(PropertySetFlag::VariantNumeric))
-    description.setVariantNumeric(m_fontDescription.variantNumeric());
-  if (isSet(PropertySetFlag::VariationSettings))
-    description.setVariationSettings(m_fontDescription.variationSettings());
-  if (isSet(PropertySetFlag::TextRendering))
-    description.setTextRendering(m_fontDescription.textRendering());
-  if (isSet(PropertySetFlag::Kerning))
-    description.setKerning(m_fontDescription.getKerning());
-  if (isSet(PropertySetFlag::FontSmoothing))
-    description.setFontSmoothing(m_fontDescription.fontSmoothing());
-  if (isSet(PropertySetFlag::TextOrientation) ||
-      isSet(PropertySetFlag::WritingMode))
-    updateOrientation(description, style);
+  if (IsSet(PropertySetFlag::kSizeAdjust))
+    description.SetSizeAdjust(font_description_.SizeAdjust());
+  if (IsSet(PropertySetFlag::kWeight))
+    description.SetWeight(font_description_.Weight());
+  if (IsSet(PropertySetFlag::kStretch))
+    description.SetStretch(font_description_.Stretch());
+  if (IsSet(PropertySetFlag::kFeatureSettings))
+    description.SetFeatureSettings(font_description_.FeatureSettings());
+  if (IsSet(PropertySetFlag::kLocale))
+    description.SetLocale(font_description_.Locale());
+  if (IsSet(PropertySetFlag::kStyle))
+    description.SetStyle(font_description_.Style());
+  if (IsSet(PropertySetFlag::kVariantCaps))
+    description.SetVariantCaps(font_description_.VariantCaps());
+  if (IsSet(PropertySetFlag::kVariantLigatures))
+    description.SetVariantLigatures(font_description_.GetVariantLigatures());
+  if (IsSet(PropertySetFlag::kVariantNumeric))
+    description.SetVariantNumeric(font_description_.VariantNumeric());
+  if (IsSet(PropertySetFlag::kVariationSettings))
+    description.SetVariationSettings(font_description_.VariationSettings());
+  if (IsSet(PropertySetFlag::kTextRendering))
+    description.SetTextRendering(font_description_.TextRendering());
+  if (IsSet(PropertySetFlag::kKerning))
+    description.SetKerning(font_description_.GetKerning());
+  if (IsSet(PropertySetFlag::kFontSmoothing))
+    description.SetFontSmoothing(font_description_.FontSmoothing());
+  if (IsSet(PropertySetFlag::kTextOrientation) ||
+      IsSet(PropertySetFlag::kWritingMode))
+    UpdateOrientation(description, style);
 
-  updateSpecifiedSize(description, style);
-  updateComputedSize(description, style);
-  updateAdjustedSize(description, style, fontSelector);
+  UpdateSpecifiedSize(description, style);
+  UpdateComputedSize(description, style);
+  UpdateAdjustedSize(description, style, font_selector);
 
-  style.setFontDescription(description);
-  style.font().update(fontSelector);
-  m_flags = 0;
+  style.SetFontDescription(description);
+  style.GetFont().Update(font_selector);
+  flags_ = 0;
 }
 
-void FontBuilder::createFontForDocument(FontSelector* fontSelector,
-                                        ComputedStyle& documentStyle) {
-  FontDescription fontDescription = FontDescription();
-  fontDescription.setLocale(documentStyle.getFontDescription().locale());
+void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
+                                        ComputedStyle& document_style) {
+  FontDescription font_description = FontDescription();
+  font_description.SetLocale(document_style.GetFontDescription().Locale());
 
-  setFamilyDescription(fontDescription,
-                       FontBuilder::initialFamilyDescription());
-  setSize(fontDescription,
-          FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false));
-  updateSpecifiedSize(fontDescription, documentStyle);
-  updateComputedSize(fontDescription, documentStyle);
+  SetFamilyDescription(font_description,
+                       FontBuilder::InitialFamilyDescription());
+  SetSize(font_description,
+          FontDescription::Size(FontSize::InitialKeywordSize(), 0.0f, false));
+  UpdateSpecifiedSize(font_description, document_style);
+  UpdateComputedSize(font_description, document_style);
 
-  updateOrientation(fontDescription, documentStyle);
-  documentStyle.setFontDescription(fontDescription);
-  documentStyle.font().update(fontSelector);
+  UpdateOrientation(font_description, document_style);
+  document_style.SetFontDescription(font_description);
+  document_style.GetFont().Update(font_selector);
 }
 
 }  // namespace blink

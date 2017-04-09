@@ -116,7 +116,7 @@ class SpellCheckTest : public testing::Test {
     EXPECT_EQ(results.size(), expected.size());
     size_t size = std::min(results.size(), expected.size());
     for (size_t j = 0; j < size; ++j) {
-      EXPECT_EQ(results[j].decoration, blink::WebTextDecorationTypeSpelling);
+      EXPECT_EQ(results[j].decoration, blink::kWebTextDecorationTypeSpelling);
       EXPECT_EQ(results[j].location, expected[j].location);
       EXPECT_EQ(results[j].length, expected[j].length);
     }
@@ -135,15 +135,13 @@ class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
       : completion_count_(0) {
   }
 
-  void didFinishCheckingText(
+  void DidFinishCheckingText(
       const blink::WebVector<blink::WebTextCheckingResult>& results) override {
     completion_count_++;
     last_results_ = results;
   }
 
-  void didCancelCheckingText() override {
-    completion_count_++;
-  }
+  void DidCancelCheckingText() override { completion_count_++; }
 
   size_t completion_count_;
   blink::WebVector<blink::WebTextCheckingResult> last_results_;
@@ -1148,7 +1146,7 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsMarkers) {
                                            text, spellcheck_results,
                                            &textcheck_results);
   ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
-  EXPECT_EQ(blink::WebTextDecorationTypeSpelling,
+  EXPECT_EQ(blink::kWebTextDecorationTypeSpelling,
             textcheck_results[0].decoration);
   EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
   EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
@@ -1166,7 +1164,7 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsAddsGrammarMarkers) {
                                            text, spellcheck_results,
                                            &textcheck_results);
   ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
-  EXPECT_EQ(blink::WebTextDecorationTypeGrammar,
+  EXPECT_EQ(blink::kWebTextDecorationTypeGrammar,
             textcheck_results[0].decoration);
   EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
   EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
@@ -1232,9 +1230,9 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
   ASSERT_EQ(arraysize(kExpectedReplacements), textcheck_results.size());
   for (size_t i = 0; i < arraysize(kExpectedReplacements); ++i) {
     EXPECT_EQ(base::WideToUTF16(kExpectedReplacements[i]),
-              textcheck_results[i].replacement.utf16())
+              textcheck_results[i].replacement.Utf16())
         << "i=" << i << "\nactual: \""
-        << textcheck_results[i].replacement.utf16() << "\"";
+        << textcheck_results[i].replacement.Utf16() << "\"";
   }
 }
 

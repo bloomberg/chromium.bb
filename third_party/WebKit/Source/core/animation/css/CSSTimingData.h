@@ -20,27 +20,27 @@ class CSSTimingData {
  public:
   ~CSSTimingData() {}
 
-  const Vector<double>& delayList() const { return m_delayList; }
-  const Vector<double>& durationList() const { return m_durationList; }
-  const Vector<RefPtr<TimingFunction>>& timingFunctionList() const {
-    return m_timingFunctionList;
+  const Vector<double>& DelayList() const { return delay_list_; }
+  const Vector<double>& DurationList() const { return duration_list_; }
+  const Vector<RefPtr<TimingFunction>>& TimingFunctionList() const {
+    return timing_function_list_;
   }
 
-  Vector<double>& delayList() { return m_delayList; }
-  Vector<double>& durationList() { return m_durationList; }
-  Vector<RefPtr<TimingFunction>>& timingFunctionList() {
-    return m_timingFunctionList;
+  Vector<double>& DelayList() { return delay_list_; }
+  Vector<double>& DurationList() { return duration_list_; }
+  Vector<RefPtr<TimingFunction>>& TimingFunctionList() {
+    return timing_function_list_;
   }
 
-  static double initialDelay() { return 0; }
-  static double initialDuration() { return 0; }
-  static PassRefPtr<TimingFunction> initialTimingFunction() {
-    return CubicBezierTimingFunction::preset(
+  static double InitialDelay() { return 0; }
+  static double InitialDuration() { return 0; }
+  static PassRefPtr<TimingFunction> InitialTimingFunction() {
+    return CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);
   }
 
   template <class T>
-  static const T& getRepeated(const Vector<T>& v, size_t index) {
+  static const T& GetRepeated(const Vector<T>& v, size_t index) {
     return v[index % v.size()];
   }
 
@@ -48,12 +48,12 @@ class CSSTimingData {
   CSSTimingData();
   explicit CSSTimingData(const CSSTimingData&);
 
-  Timing convertToTiming(size_t index) const;
+  Timing ConvertToTiming(size_t index) const;
 
  private:
-  Vector<double> m_delayList;
-  Vector<double> m_durationList;
-  Vector<RefPtr<TimingFunction>> m_timingFunctionList;
+  Vector<double> delay_list_;
+  Vector<double> duration_list_;
+  Vector<RefPtr<TimingFunction>> timing_function_list_;
 };
 
 }  // namespace blink

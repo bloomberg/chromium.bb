@@ -41,38 +41,38 @@
 
 namespace blink {
 
-IndexedDBClient* IndexedDBClientImpl::create(LocalFrame& frame) {
+IndexedDBClient* IndexedDBClientImpl::Create(LocalFrame& frame) {
   return new IndexedDBClientImpl(frame);
 }
 
-IndexedDBClient* IndexedDBClientImpl::create(WorkerClients& workerClients) {
-  return new IndexedDBClientImpl(workerClients);
+IndexedDBClient* IndexedDBClientImpl::Create(WorkerClients& worker_clients) {
+  return new IndexedDBClientImpl(worker_clients);
 }
 
 IndexedDBClientImpl::IndexedDBClientImpl(LocalFrame& frame)
     : IndexedDBClient(frame) {}
 
-IndexedDBClientImpl::IndexedDBClientImpl(WorkerClients& workerClients)
-    : IndexedDBClient(workerClients) {}
+IndexedDBClientImpl::IndexedDBClientImpl(WorkerClients& worker_clients)
+    : IndexedDBClient(worker_clients) {}
 
-bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context,
+bool IndexedDBClientImpl::AllowIndexedDB(ExecutionContext* context,
                                          const String& name) {
-  DCHECK(context->isContextThread());
-  SECURITY_DCHECK(context->isDocument() || context->isWorkerGlobalScope());
+  DCHECK(context->IsContextThread());
+  SECURITY_DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
 
-  if (context->isDocument()) {
-    Document* document = toDocument(context);
-    LocalFrame* frame = document->frame();
+  if (context->IsDocument()) {
+    Document* document = ToDocument(context);
+    LocalFrame* frame = document->GetFrame();
     if (!frame)
       return false;
-    DCHECK(frame->contentSettingsClient());
-    return frame->contentSettingsClient()->allowIndexedDB(
-        name, context->getSecurityOrigin());
+    DCHECK(frame->GetContentSettingsClient());
+    return frame->GetContentSettingsClient()->AllowIndexedDB(
+        name, context->GetSecurityOrigin());
   }
 
-  WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
-  return WorkerContentSettingsClient::from(workerGlobalScope)
-      ->allowIndexedDB(name);
+  WorkerGlobalScope& worker_global_scope = *ToWorkerGlobalScope(context);
+  return WorkerContentSettingsClient::From(worker_global_scope)
+      ->AllowIndexedDB(name);
 }
 
 }  // namespace blink

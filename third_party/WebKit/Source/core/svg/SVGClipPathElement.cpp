@@ -27,46 +27,47 @@ namespace blink {
 
 inline SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(SVGNames::clipPathTag, document),
-      m_clipPathUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
-          this,
-          SVGNames::clipPathUnitsAttr,
-          SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
-  addToPropertyMap(m_clipPathUnits);
+      clip_path_units_(
+          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
+              this,
+              SVGNames::clipPathUnitsAttr,
+              SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+  AddToPropertyMap(clip_path_units_);
 }
 
 DEFINE_TRACE(SVGClipPathElement) {
-  visitor->trace(m_clipPathUnits);
-  SVGGraphicsElement::trace(visitor);
+  visitor->Trace(clip_path_units_);
+  SVGGraphicsElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGClipPathElement)
 
-void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::clipPathUnitsAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::clipPathUnitsAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutSVGResourceContainer* layoutObject =
-        toLayoutSVGResourceContainer(this->layoutObject());
-    if (layoutObject)
-      layoutObject->invalidateCacheAndMarkForLayout();
+    LayoutSVGResourceContainer* layout_object =
+        ToLayoutSVGResourceContainer(this->GetLayoutObject());
+    if (layout_object)
+      layout_object->InvalidateCacheAndMarkForLayout();
     return;
   }
 
-  SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGClipPathElement::childrenChanged(const ChildrenChange& change) {
-  SVGGraphicsElement::childrenChanged(change);
+void SVGClipPathElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGGraphicsElement::ChildrenChanged(change);
 
-  if (change.byParser)
+  if (change.by_parser)
     return;
 
-  if (LayoutObject* object = layoutObject())
-    object->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::ChildChanged);
+  if (LayoutObject* object = GetLayoutObject())
+    object->SetNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::kChildChanged);
 }
 
-LayoutObject* SVGClipPathElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGClipPathElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGResourceClipper(this);
 }
 

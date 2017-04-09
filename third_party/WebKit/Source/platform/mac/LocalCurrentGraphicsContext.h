@@ -35,18 +35,18 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
   WTF_MAKE_NONCOPYABLE(LocalCurrentGraphicsContext);
 
  public:
-  LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirtyRect);
+  LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirty_rect);
   LocalCurrentGraphicsContext(PaintCanvas*,
-                              float deviceScaleFactor,
-                              const IntRect& dirtyRect);
+                              float device_scale_factor,
+                              const IntRect& dirty_rect);
   ~LocalCurrentGraphicsContext();
-  CGContextRef cgContext();
+  CGContextRef CgContext();
 
  private:
-  PaintCanvas* m_savedCanvas;
-  NSGraphicsContext* m_savedNSGraphicsContext;
-  bool m_didSetGraphicsContext;
-  IntRect m_inflatedDirtyRect;
-  GraphicsContextCanvas m_graphicsContextCanvas;
+  PaintCanvas* saved_canvas_;
+  NSGraphicsContext* saved_ns_graphics_context_;
+  bool did_set_graphics_context_;
+  IntRect inflated_dirty_rect_;
+  GraphicsContextCanvas graphics_context_canvas_;
 };
 }

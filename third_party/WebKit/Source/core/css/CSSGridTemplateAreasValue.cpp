@@ -35,50 +35,50 @@
 namespace blink {
 
 CSSGridTemplateAreasValue::CSSGridTemplateAreasValue(
-    const NamedGridAreaMap& gridAreaMap,
-    size_t rowCount,
-    size_t columnCount)
-    : CSSValue(GridTemplateAreasClass),
-      m_gridAreaMap(gridAreaMap),
-      m_rowCount(rowCount),
-      m_columnCount(columnCount) {
-  DCHECK(m_rowCount);
-  DCHECK(m_columnCount);
+    const NamedGridAreaMap& grid_area_map,
+    size_t row_count,
+    size_t column_count)
+    : CSSValue(kGridTemplateAreasClass),
+      grid_area_map_(grid_area_map),
+      row_count_(row_count),
+      column_count_(column_count) {
+  DCHECK(row_count_);
+  DCHECK(column_count_);
 }
 
-static String stringForPosition(const NamedGridAreaMap& gridAreaMap,
+static String StringForPosition(const NamedGridAreaMap& grid_area_map,
                                 size_t row,
                                 size_t column) {
-  for (const auto& item : gridAreaMap) {
+  for (const auto& item : grid_area_map) {
     const GridArea& area = item.value;
-    if (row >= area.rows.startLine() && row < area.rows.endLine() &&
-        column >= area.columns.startLine() && column < area.columns.endLine())
+    if (row >= area.rows.StartLine() && row < area.rows.EndLine() &&
+        column >= area.columns.StartLine() && column < area.columns.EndLine())
       return item.key;
   }
 
   return ".";
 }
 
-String CSSGridTemplateAreasValue::customCSSText() const {
+String CSSGridTemplateAreasValue::CustomCSSText() const {
   StringBuilder builder;
-  for (size_t row = 0; row < m_rowCount; ++row) {
-    builder.append('"');
-    for (size_t column = 0; column < m_columnCount; ++column) {
-      builder.append(stringForPosition(m_gridAreaMap, row, column));
-      if (column != m_columnCount - 1)
-        builder.append(' ');
+  for (size_t row = 0; row < row_count_; ++row) {
+    builder.Append('"');
+    for (size_t column = 0; column < column_count_; ++column) {
+      builder.Append(StringForPosition(grid_area_map_, row, column));
+      if (column != column_count_ - 1)
+        builder.Append(' ');
     }
-    builder.append('"');
-    if (row != m_rowCount - 1)
-      builder.append(' ');
+    builder.Append('"');
+    if (row != row_count_ - 1)
+      builder.Append(' ');
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
-bool CSSGridTemplateAreasValue::equals(
+bool CSSGridTemplateAreasValue::Equals(
     const CSSGridTemplateAreasValue& other) const {
-  return m_gridAreaMap == other.m_gridAreaMap &&
-         m_rowCount == other.m_rowCount && m_columnCount == other.m_columnCount;
+  return grid_area_map_ == other.grid_area_map_ &&
+         row_count_ == other.row_count_ && column_count_ == other.column_count_;
 }
 
 }  // namespace blink

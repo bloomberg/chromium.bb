@@ -12,15 +12,15 @@
 namespace blink {
 
 DoubleSize::DoubleSize(const LayoutSize& size)
-    : m_width(size.width().toDouble()), m_height(size.height().toDouble()) {}
+    : width_(size.Width().ToDouble()), height_(size.Height().ToDouble()) {}
 
-bool DoubleSize::isZero() const {
-  return fabs(m_width) < std::numeric_limits<double>::epsilon() &&
-         fabs(m_height) < std::numeric_limits<double>::epsilon();
+bool DoubleSize::IsZero() const {
+  return fabs(width_) < std::numeric_limits<double>::epsilon() &&
+         fabs(height_) < std::numeric_limits<double>::epsilon();
 }
 
-String DoubleSize::toString() const {
-  return String::format("%lgx%lg", width(), height());
+String DoubleSize::ToString() const {
+  return String::Format("%lgx%lg", Width(), Height());
 }
 
 }  // namespace blink

@@ -41,44 +41,44 @@ class HTMLCanvasElement;
 
 class CanvasStyle final : public GarbageCollected<CanvasStyle> {
  public:
-  static CanvasStyle* createFromRGBA(RGBA32 rgba) {
+  static CanvasStyle* CreateFromRGBA(RGBA32 rgba) {
     return new CanvasStyle(rgba);
   }
-  static CanvasStyle* createFromGradient(CanvasGradient*);
-  static CanvasStyle* createFromPattern(CanvasPattern*);
+  static CanvasStyle* CreateFromGradient(CanvasGradient*);
+  static CanvasStyle* CreateFromPattern(CanvasPattern*);
 
-  String color() const {
-    ASSERT(m_type == ColorRGBA);
-    return Color(m_rgba).serialized();
+  String GetColor() const {
+    ASSERT(type_ == kColorRGBA);
+    return Color(rgba_).Serialized();
   }
-  CanvasGradient* getCanvasGradient() const { return m_gradient.get(); }
-  CanvasPattern* getCanvasPattern() const { return m_pattern; }
+  CanvasGradient* GetCanvasGradient() const { return gradient_.Get(); }
+  CanvasPattern* GetCanvasPattern() const { return pattern_; }
 
-  void applyToFlags(PaintFlags&) const;
-  RGBA32 paintColor() const;
+  void ApplyToFlags(PaintFlags&) const;
+  RGBA32 PaintColor() const;
 
-  bool isEquivalentRGBA(RGBA32 rgba) const {
-    return m_type == ColorRGBA && m_rgba == rgba;
+  bool IsEquivalentRGBA(RGBA32 rgba) const {
+    return type_ == kColorRGBA && rgba_ == rgba;
   }
 
   DECLARE_TRACE();
 
  private:
-  enum Type { ColorRGBA, Gradient, ImagePattern };
+  enum Type { kColorRGBA, kGradient, kImagePattern };
 
   CanvasStyle(RGBA32);
   CanvasStyle(CanvasGradient*);
   CanvasStyle(CanvasPattern*);
 
-  Type m_type;
-  RGBA32 m_rgba;
+  Type type_;
+  RGBA32 rgba_;
 
-  Member<CanvasGradient> m_gradient;
-  Member<CanvasPattern> m_pattern;
+  Member<CanvasGradient> gradient_;
+  Member<CanvasPattern> pattern_;
 };
 
-bool parseColorOrCurrentColor(Color& parsedColor,
-                              const String& colorString,
+bool ParseColorOrCurrentColor(Color& parsed_color,
+                              const String& color_string,
                               HTMLCanvasElement*);
 
 }  // namespace blink

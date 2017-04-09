@@ -37,36 +37,36 @@ enum ChannelSelectorType {
 
 class PLATFORM_EXPORT FEDisplacementMap final : public FilterEffect {
  public:
-  static FEDisplacementMap* create(Filter*,
-                                   ChannelSelectorType xChannelSelector,
-                                   ChannelSelectorType yChannelSelector,
+  static FEDisplacementMap* Create(Filter*,
+                                   ChannelSelectorType x_channel_selector,
+                                   ChannelSelectorType y_channel_selector,
                                    float);
 
-  ChannelSelectorType xChannelSelector() const;
-  bool setXChannelSelector(const ChannelSelectorType);
+  ChannelSelectorType XChannelSelector() const;
+  bool SetXChannelSelector(const ChannelSelectorType);
 
-  ChannelSelectorType yChannelSelector() const;
-  bool setYChannelSelector(const ChannelSelectorType);
+  ChannelSelectorType YChannelSelector() const;
+  bool SetYChannelSelector(const ChannelSelectorType);
 
-  float scale() const;
-  bool setScale(float);
+  float Scale() const;
+  bool SetScale(float);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FEDisplacementMap(Filter*,
-                    ChannelSelectorType xChannelSelector,
-                    ChannelSelectorType yChannelSelector,
+                    ChannelSelectorType x_channel_selector,
+                    ChannelSelectorType y_channel_selector,
                     float);
 
-  FloatRect mapInputs(const FloatRect&) const override;
-  FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect MapInputs(const FloatRect&) const override;
+  FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
-  ChannelSelectorType m_xChannelSelector;
-  ChannelSelectorType m_yChannelSelector;
-  float m_scale;
+  ChannelSelectorType x_channel_selector_;
+  ChannelSelectorType y_channel_selector_;
+  float scale_;
 };
 
 }  // namespace blink

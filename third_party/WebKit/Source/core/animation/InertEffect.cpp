@@ -34,42 +34,42 @@
 
 namespace blink {
 
-InertEffect* InertEffect::create(EffectModel* effect,
+InertEffect* InertEffect::Create(EffectModel* effect,
                                  const Timing& timing,
                                  bool paused,
-                                 double inheritedTime) {
-  return new InertEffect(effect, timing, paused, inheritedTime);
+                                 double inherited_time) {
+  return new InertEffect(effect, timing, paused, inherited_time);
 }
 
 InertEffect::InertEffect(EffectModel* model,
                          const Timing& timing,
                          bool paused,
-                         double inheritedTime)
+                         double inherited_time)
     : AnimationEffectReadOnly(timing),
-      m_model(model),
-      m_paused(paused),
-      m_inheritedTime(inheritedTime) {}
+      model_(model),
+      paused_(paused),
+      inherited_time_(inherited_time) {}
 
-void InertEffect::sample(Vector<RefPtr<Interpolation>>& result) const {
-  updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
-  if (!isInEffect()) {
-    result.clear();
+void InertEffect::Sample(Vector<RefPtr<Interpolation>>& result) const {
+  UpdateInheritedTime(inherited_time_, kTimingUpdateOnDemand);
+  if (!IsInEffect()) {
+    result.Clear();
     return;
   }
 
-  double iteration = currentIteration();
+  double iteration = CurrentIteration();
   DCHECK_GE(iteration, 0);
-  m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(),
-                  result);
+  model_->Sample(clampTo<int>(iteration, 0), Progress(), IterationDuration(),
+                 result);
 }
 
-double InertEffect::calculateTimeToEffectChange(bool, double, double) const {
+double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {
   return std::numeric_limits<double>::infinity();
 }
 
 DEFINE_TRACE(InertEffect) {
-  visitor->trace(m_model);
-  AnimationEffectReadOnly::trace(visitor);
+  visitor->Trace(model_);
+  AnimationEffectReadOnly::Trace(visitor);
 }
 
 }  // namespace blink

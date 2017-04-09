@@ -13,24 +13,24 @@ namespace blink {
 
 class RemoteDOMWindow final : public DOMWindow {
  public:
-  static RemoteDOMWindow* create(RemoteFrame& frame) {
+  static RemoteDOMWindow* Create(RemoteFrame& frame) {
     return new RemoteDOMWindow(frame);
   }
 
-  RemoteFrame* frame() const { return toRemoteFrame(DOMWindow::frame()); }
+  RemoteFrame* GetFrame() const { return ToRemoteFrame(DOMWindow::GetFrame()); }
 
   // EventTarget overrides:
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // DOMWindow overrides:
   DECLARE_VIRTUAL_TRACE();
   void blur() override;
 
-  void frameDetached();
+  void FrameDetached();
 
  protected:
   // Protected DOMWindow overrides:
-  void schedulePostMessage(MessageEvent*,
+  void SchedulePostMessage(MessageEvent*,
                            PassRefPtr<SecurityOrigin> target,
                            Document* source) override;
 
@@ -39,15 +39,15 @@ class RemoteDOMWindow final : public DOMWindow {
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteDOMWindow.
-  bool isLocalDOMWindow() const override { return false; }
-  bool isRemoteDOMWindow() const override { return true; }
+  bool IsLocalDOMWindow() const override { return false; }
+  bool IsRemoteDOMWindow() const override { return true; }
 };
 
 DEFINE_TYPE_CASTS(RemoteDOMWindow,
                   DOMWindow,
                   x,
-                  x->isRemoteDOMWindow(),
-                  x.isRemoteDOMWindow());
+                  x->IsRemoteDOMWindow(),
+                  x.IsRemoteDOMWindow());
 
 }  // namespace blink
 

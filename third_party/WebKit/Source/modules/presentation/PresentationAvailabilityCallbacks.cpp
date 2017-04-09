@@ -16,26 +16,26 @@ namespace blink {
 PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
     PresentationAvailabilityProperty* resolver,
     const Vector<KURL>& urls)
-    : m_resolver(resolver), m_urls(urls) {
-  ASSERT(m_resolver);
+    : resolver_(resolver), urls_(urls) {
+  ASSERT(resolver_);
 }
 
 PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() {}
 
-void PresentationAvailabilityCallbacks::onSuccess(bool value) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void PresentationAvailabilityCallbacks::OnSuccess(bool value) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->resolve(
-      PresentationAvailability::take(m_resolver.get(), m_urls, value));
+  resolver_->Resolve(
+      PresentationAvailability::Take(resolver_.Get(), urls_, value));
 }
 
-void PresentationAvailabilityCallbacks::onError(
+void PresentationAvailabilityCallbacks::OnError(
     const WebPresentationError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(PresentationError::take(error));
+  resolver_->Reject(PresentationError::Take(error));
 }
 
 }  // namespace blink

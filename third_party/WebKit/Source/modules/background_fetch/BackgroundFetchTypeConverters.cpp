@@ -19,7 +19,7 @@ TypeConverter<blink::BackgroundFetchRegistration*,
     return nullptr;
 
   blink::HeapVector<blink::IconDefinition> icons;
-  icons.reserveInitialCapacity(mojoRegistration->icons.size());
+  icons.ReserveInitialCapacity(mojoRegistration->icons.size());
 
   for (const auto& iconPtr : mojoRegistration->icons)
     icons.push_back(iconPtr.To<blink::IconDefinition>());
@@ -37,7 +37,7 @@ blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<
       blink::mojom::blink::BackgroundFetchOptions::New();
 
   WTF::Vector<blink::mojom::blink::IconDefinitionPtr> mojoIcons;
-  mojoIcons.reserveInitialCapacity(options.icons().size());
+  mojoIcons.ReserveInitialCapacity(options.icons().size());
 
   for (const auto& icon : options.icons())
     mojoIcons.push_back(blink::mojom::blink::IconDefinition::From(icon));

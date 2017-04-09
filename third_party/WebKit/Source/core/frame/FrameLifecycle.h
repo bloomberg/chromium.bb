@@ -14,18 +14,18 @@ class FrameLifecycle {
 
  public:
   enum State {
-    Attached,
-    Detaching,
-    Detached,
+    kAttached,
+    kDetaching,
+    kDetached,
   };
 
   FrameLifecycle();
 
-  State state() const { return m_state; }
-  void advanceTo(State);
+  State GetState() const { return state_; }
+  void AdvanceTo(State);
 
  private:
-  State m_state;
+  State state_;
 };
 
 }  // namespace blink

@@ -25,13 +25,13 @@ class PLATFORM_EXPORT CompositingRecorder {
                       const SkBlendMode,
                       const float opacity,
                       const FloatRect* bounds = 0,
-                      ColorFilter = ColorFilterNone);
+                      ColorFilter = kColorFilterNone);
 
   ~CompositingRecorder();
 
  private:
-  const DisplayItemClient& m_client;
-  GraphicsContext& m_graphicsContext;
+  const DisplayItemClient& client_;
+  GraphicsContext& graphics_context_;
 };
 
 }  // namespace blink

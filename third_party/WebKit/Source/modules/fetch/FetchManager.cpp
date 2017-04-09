@@ -52,87 +52,87 @@ namespace {
 class SRIBytesConsumer final : public BytesConsumer {
  public:
   // BytesConsumer implementation
-  Result beginRead(const char** buffer, size_t* available) override {
-    if (!m_underlying) {
+  Result BeginRead(const char** buffer, size_t* available) override {
+    if (!underlying_) {
       *buffer = nullptr;
       *available = 0;
-      return m_isCancelled ? Result::Done : Result::ShouldWait;
+      return is_cancelled_ ? Result::kDone : Result::kShouldWait;
     }
-    return m_underlying->beginRead(buffer, available);
+    return underlying_->BeginRead(buffer, available);
   }
-  Result endRead(size_t readSize) override {
-    DCHECK(m_underlying);
-    return m_underlying->endRead(readSize);
+  Result EndRead(size_t read_size) override {
+    DCHECK(underlying_);
+    return underlying_->EndRead(read_size);
   }
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(
+  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
       BlobSizePolicy policy) override {
-    return m_underlying ? m_underlying->drainAsBlobDataHandle(policy) : nullptr;
+    return underlying_ ? underlying_->DrainAsBlobDataHandle(policy) : nullptr;
   }
-  PassRefPtr<EncodedFormData> drainAsFormData() override {
-    return m_underlying ? m_underlying->drainAsFormData() : nullptr;
+  PassRefPtr<EncodedFormData> DrainAsFormData() override {
+    return underlying_ ? underlying_->DrainAsFormData() : nullptr;
   }
-  void setClient(BytesConsumer::Client* client) override {
-    DCHECK(!m_client);
+  void SetClient(BytesConsumer::Client* client) override {
+    DCHECK(!client_);
     DCHECK(client);
-    if (m_underlying)
-      m_underlying->setClient(client);
+    if (underlying_)
+      underlying_->SetClient(client);
     else
-      m_client = client;
+      client_ = client;
   }
-  void clearClient() override {
-    if (m_underlying)
-      m_underlying->clearClient();
+  void ClearClient() override {
+    if (underlying_)
+      underlying_->ClearClient();
     else
-      m_client = nullptr;
+      client_ = nullptr;
   }
-  void cancel() override {
-    if (m_underlying) {
-      m_underlying->cancel();
+  void Cancel() override {
+    if (underlying_) {
+      underlying_->Cancel();
     } else {
-      m_isCancelled = true;
-      m_client = nullptr;
+      is_cancelled_ = true;
+      client_ = nullptr;
     }
   }
-  PublicState getPublicState() const override {
-    return m_underlying ? m_underlying->getPublicState()
-                        : m_isCancelled ? PublicState::Closed
-                                        : PublicState::ReadableOrWaiting;
+  PublicState GetPublicState() const override {
+    return underlying_ ? underlying_->GetPublicState()
+                       : is_cancelled_ ? PublicState::kClosed
+                                       : PublicState::kReadableOrWaiting;
   }
-  Error getError() const override {
-    DCHECK(m_underlying);
+  Error GetError() const override {
+    DCHECK(underlying_);
     // We must not be in the errored state until we get updated.
-    return m_underlying->getError();
+    return underlying_->GetError();
   }
-  String debugName() const override { return "SRIBytesConsumer"; }
+  String DebugName() const override { return "SRIBytesConsumer"; }
 
   // This function can be called at most once.
-  void update(BytesConsumer* consumer) {
-    DCHECK(!m_underlying);
-    if (m_isCancelled) {
+  void Update(BytesConsumer* consumer) {
+    DCHECK(!underlying_);
+    if (is_cancelled_) {
       // This consumer has already been closed.
       return;
     }
 
-    m_underlying = consumer;
-    if (m_client) {
-      Client* client = m_client;
-      m_client = nullptr;
-      m_underlying->setClient(client);
-      if (getPublicState() != PublicState::ReadableOrWaiting)
-        client->onStateChange();
+    underlying_ = consumer;
+    if (client_) {
+      Client* client = client_;
+      client_ = nullptr;
+      underlying_->SetClient(client);
+      if (GetPublicState() != PublicState::kReadableOrWaiting)
+        client->OnStateChange();
     }
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_underlying);
-    visitor->trace(m_client);
-    BytesConsumer::trace(visitor);
+    visitor->Trace(underlying_);
+    visitor->Trace(client_);
+    BytesConsumer::Trace(visitor);
   }
 
  private:
-  Member<BytesConsumer> m_underlying;
-  Member<Client> m_client;
-  bool m_isCancelled = false;
+  Member<BytesConsumer> underlying_;
+  Member<Client> client_;
+  bool is_cancelled_ = false;
 };
 
 }  // namespace
@@ -140,32 +140,32 @@ class SRIBytesConsumer final : public BytesConsumer {
 class FetchManager::Loader final
     : public GarbageCollectedFinalized<FetchManager::Loader>,
       public ThreadableLoaderClient {
-  USING_PRE_FINALIZER(FetchManager::Loader, dispose);
+  USING_PRE_FINALIZER(FetchManager::Loader, Dispose);
 
  public:
-  static Loader* create(ExecutionContext* executionContext,
-                        FetchManager* fetchManager,
+  static Loader* Create(ExecutionContext* execution_context,
+                        FetchManager* fetch_manager,
                         ScriptPromiseResolver* resolver,
                         FetchRequestData* request,
-                        bool isIsolatedWorld) {
-    return new Loader(executionContext, fetchManager, resolver, request,
-                      isIsolatedWorld);
+                        bool is_isolated_world) {
+    return new Loader(execution_context, fetch_manager, resolver, request,
+                      is_isolated_world);
   }
 
   ~Loader() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void didReceiveRedirectTo(const KURL&) override;
-  void didReceiveResponse(unsigned long,
+  void DidReceiveRedirectTo(const KURL&) override;
+  void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didFinishLoading(unsigned long, double) override;
-  void didFail(const ResourceError&) override;
-  void didFailAccessControlCheck(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidFinishLoading(unsigned long, double) override;
+  void DidFail(const ResourceError&) override;
+  void DidFailAccessControlCheck(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
-  void start();
-  void dispose();
+  void Start();
+  void Dispose();
 
   class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>,
                             public WebDataConsumerHandle::Client {
@@ -179,83 +179,83 @@ class FetchManager::Loader final
                 SRIBytesConsumer* updater,
                 Response* response,
                 FetchManager::Loader* loader,
-                String integrityMetadata,
+                String integrity_metadata,
                 const KURL& url)
-        : m_handle(std::move(handle)),
-          m_updater(updater),
-          m_response(response),
-          m_loader(loader),
-          m_integrityMetadata(integrityMetadata),
-          m_url(url),
-          m_finished(false) {
-      m_reader = m_handle->obtainReader(this);
+        : handle_(std::move(handle)),
+          updater_(updater),
+          response_(response),
+          loader_(loader),
+          integrity_metadata_(integrity_metadata),
+          url_(url),
+          finished_(false) {
+      reader_ = handle_->ObtainReader(this);
     }
 
-    void didGetReadable() override {
-      ASSERT(m_reader);
-      ASSERT(m_loader);
-      ASSERT(m_response);
+    void DidGetReadable() override {
+      ASSERT(reader_);
+      ASSERT(loader_);
+      ASSERT(response_);
 
-      WebDataConsumerHandle::Result r = WebDataConsumerHandle::Ok;
-      while (r == WebDataConsumerHandle::Ok) {
+      WebDataConsumerHandle::Result r = WebDataConsumerHandle::kOk;
+      while (r == WebDataConsumerHandle::kOk) {
         const void* buffer;
         size_t size;
-        r = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone,
-                                &size);
-        if (r == WebDataConsumerHandle::Ok) {
-          m_buffer.append(static_cast<const char*>(buffer), size);
-          m_reader->endRead(size);
+        r = reader_->BeginRead(&buffer, WebDataConsumerHandle::kFlagNone,
+                               &size);
+        if (r == WebDataConsumerHandle::kOk) {
+          buffer_.Append(static_cast<const char*>(buffer), size);
+          reader_->EndRead(size);
         }
       }
-      if (r == WebDataConsumerHandle::ShouldWait)
+      if (r == WebDataConsumerHandle::kShouldWait)
         return;
-      String errorMessage =
+      String error_message =
           "Unknown error occurred while trying to verify integrity.";
-      m_finished = true;
-      if (r == WebDataConsumerHandle::Done) {
+      finished_ = true;
+      if (r == WebDataConsumerHandle::kDone) {
         if (SubresourceIntegrity::CheckSubresourceIntegrity(
-                m_integrityMetadata, m_buffer.data(), m_buffer.size(), m_url,
-                *m_loader->executionContext(), errorMessage)) {
-          m_updater->update(
-              new FormDataBytesConsumer(m_buffer.data(), m_buffer.size()));
-          m_loader->m_resolver->resolve(m_response);
-          m_loader->m_resolver.clear();
+                integrity_metadata_, buffer_.Data(), buffer_.size(), url_,
+                *loader_->GetExecutionContext(), error_message)) {
+          updater_->Update(
+              new FormDataBytesConsumer(buffer_.Data(), buffer_.size()));
+          loader_->resolver_->Resolve(response_);
+          loader_->resolver_.Clear();
           // FetchManager::Loader::didFinishLoading() can
           // be called before didGetReadable() is called
           // when the data is ready. In that case,
           // didFinishLoading() doesn't clean up and call
           // notifyFinished(), so it is necessary to
           // explicitly finish the loader here.
-          if (m_loader->m_didFinishLoading)
-            m_loader->loadSucceeded();
+          if (loader_->did_finish_loading_)
+            loader_->LoadSucceeded();
           return;
         }
       }
-      m_updater->update(
-          BytesConsumer::createErrored(BytesConsumer::Error(errorMessage)));
-      m_loader->performNetworkError(errorMessage);
+      updater_->Update(
+          BytesConsumer::CreateErrored(BytesConsumer::Error(error_message)));
+      loader_->PerformNetworkError(error_message);
     }
 
-    bool isFinished() const { return m_finished; }
+    bool IsFinished() const { return finished_; }
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_updater);
-      visitor->trace(m_response);
-      visitor->trace(m_loader);
+      visitor->Trace(updater_);
+      visitor->Trace(response_);
+      visitor->Trace(loader_);
     }
 
    private:
-    std::unique_ptr<WebDataConsumerHandle> m_handle;
-    Member<SRIBytesConsumer> m_updater;
+    std::unique_ptr<WebDataConsumerHandle> handle_;
+    Member<SRIBytesConsumer> updater_;
     // We cannot store a Response because its JS wrapper can be collected.
     // TODO(yhirano): Fix this.
-    Member<Response> m_response;
-    Member<FetchManager::Loader> m_loader;
-    String m_integrityMetadata;
-    KURL m_url;
-    std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
-    Vector<char> m_buffer;
-    bool m_finished;
+    Member<Response> response_;
+    Member<FetchManager::Loader> loader_;
+    String integrity_metadata_;
+    KURL url_;
+    std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
+    Vector<char> buffer_;
+    bool finished_;
   };
 
  private:
@@ -263,154 +263,155 @@ class FetchManager::Loader final
          FetchManager*,
          ScriptPromiseResolver*,
          FetchRequestData*,
-         bool isIsolatedWorld);
+         bool is_isolated_world);
 
-  void performBasicFetch();
-  void performNetworkError(const String& message);
-  void performHTTPFetch(bool corsFlag, bool corsPreflightFlag);
-  void performDataFetch();
-  void failed(const String& message);
-  void notifyFinished();
-  Document* document() const;
-  ExecutionContext* executionContext() { return m_executionContext; }
-  void loadSucceeded();
+  void PerformBasicFetch();
+  void PerformNetworkError(const String& message);
+  void PerformHTTPFetch(bool cors_flag, bool cors_preflight_flag);
+  void PerformDataFetch();
+  void Failed(const String& message);
+  void NotifyFinished();
+  Document* GetDocument() const;
+  ExecutionContext* GetExecutionContext() { return execution_context_; }
+  void LoadSucceeded();
 
-  Member<FetchManager> m_fetchManager;
-  Member<ScriptPromiseResolver> m_resolver;
-  Member<FetchRequestData> m_request;
-  Member<ThreadableLoader> m_loader;
-  bool m_failed;
-  bool m_finished;
-  int m_responseHttpStatusCode;
-  Member<SRIVerifier> m_integrityVerifier;
-  bool m_didFinishLoading;
-  bool m_isIsolatedWorld;
-  Vector<KURL> m_urlList;
-  Member<ExecutionContext> m_executionContext;
+  Member<FetchManager> fetch_manager_;
+  Member<ScriptPromiseResolver> resolver_;
+  Member<FetchRequestData> request_;
+  Member<ThreadableLoader> loader_;
+  bool failed_;
+  bool finished_;
+  int response_http_status_code_;
+  Member<SRIVerifier> integrity_verifier_;
+  bool did_finish_loading_;
+  bool is_isolated_world_;
+  Vector<KURL> url_list_;
+  Member<ExecutionContext> execution_context_;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext,
-                             FetchManager* fetchManager,
+FetchManager::Loader::Loader(ExecutionContext* execution_context,
+                             FetchManager* fetch_manager,
                              ScriptPromiseResolver* resolver,
                              FetchRequestData* request,
-                             bool isIsolatedWorld)
-    : m_fetchManager(fetchManager),
-      m_resolver(resolver),
-      m_request(request),
-      m_failed(false),
-      m_finished(false),
-      m_responseHttpStatusCode(0),
-      m_integrityVerifier(nullptr),
-      m_didFinishLoading(false),
-      m_isIsolatedWorld(isIsolatedWorld),
-      m_executionContext(executionContext) {
-  m_urlList.push_back(request->url());
+                             bool is_isolated_world)
+    : fetch_manager_(fetch_manager),
+      resolver_(resolver),
+      request_(request),
+      failed_(false),
+      finished_(false),
+      response_http_status_code_(0),
+      integrity_verifier_(nullptr),
+      did_finish_loading_(false),
+      is_isolated_world_(is_isolated_world),
+      execution_context_(execution_context) {
+  url_list_.push_back(request->Url());
 }
 
 FetchManager::Loader::~Loader() {
-  ASSERT(!m_loader);
+  ASSERT(!loader_);
 }
 
 DEFINE_TRACE(FetchManager::Loader) {
-  visitor->trace(m_fetchManager);
-  visitor->trace(m_resolver);
-  visitor->trace(m_request);
-  visitor->trace(m_loader);
-  visitor->trace(m_integrityVerifier);
-  visitor->trace(m_executionContext);
+  visitor->Trace(fetch_manager_);
+  visitor->Trace(resolver_);
+  visitor->Trace(request_);
+  visitor->Trace(loader_);
+  visitor->Trace(integrity_verifier_);
+  visitor->Trace(execution_context_);
 }
 
-void FetchManager::Loader::didReceiveRedirectTo(const KURL& url) {
-  m_urlList.push_back(url);
+void FetchManager::Loader::DidReceiveRedirectTo(const KURL& url) {
+  url_list_.push_back(url);
 }
 
-void FetchManager::Loader::didReceiveResponse(
+void FetchManager::Loader::DidReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   ASSERT(handle);
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
-  DCHECK(response.url() == m_urlList.back());
-  ScriptState* scriptState = m_resolver->getScriptState();
-  ScriptState::Scope scope(scriptState);
+  DCHECK(response.Url() == url_list_.back());
+  ScriptState* script_state = resolver_->GetScriptState();
+  ScriptState::Scope scope(script_state);
 
-  if (response.url().protocolIs("blob") && response.httpStatusCode() == 404) {
+  if (response.Url().ProtocolIs("blob") && response.HttpStatusCode() == 404) {
     // "If |blob| is null, return a network error."
     // https://fetch.spec.whatwg.org/#concept-basic-fetch
-    performNetworkError("Blob not found.");
+    PerformNetworkError("Blob not found.");
     return;
   }
 
-  if (response.url().protocolIs("blob") && response.httpStatusCode() == 405) {
-    performNetworkError("Only 'GET' method is allowed for blob URLs.");
+  if (response.Url().ProtocolIs("blob") && response.HttpStatusCode() == 405) {
+    PerformNetworkError("Only 'GET' method is allowed for blob URLs.");
     return;
   }
 
-  m_responseHttpStatusCode = response.httpStatusCode();
-  FetchRequestData::Tainting tainting = m_request->responseTainting();
+  response_http_status_code_ = response.HttpStatusCode();
+  FetchRequestData::Tainting tainting = request_->ResponseTainting();
 
-  if (response.url().protocolIsData()) {
-    if (m_request->url() == response.url()) {
+  if (response.Url().ProtocolIsData()) {
+    if (request_->Url() == response.Url()) {
       // A direct request to data.
-      tainting = FetchRequestData::BasicTainting;
+      tainting = FetchRequestData::kBasicTainting;
     } else {
       // A redirect to data: scheme occured.
       // Redirects to data URLs are rejected by the spec because
       // same-origin data-URL flag is unset, except for no-cors mode.
       // TODO(hiroshige): currently redirects to data URLs in no-cors
       // mode is also rejected by Chromium side.
-      switch (m_request->mode()) {
-        case WebURLRequest::FetchRequestModeNoCORS:
-          tainting = FetchRequestData::OpaqueTainting;
+      switch (request_->Mode()) {
+        case WebURLRequest::kFetchRequestModeNoCORS:
+          tainting = FetchRequestData::kOpaqueTainting;
           break;
-        case WebURLRequest::FetchRequestModeSameOrigin:
-        case WebURLRequest::FetchRequestModeCORS:
-        case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
-        case WebURLRequest::FetchRequestModeNavigate:
-          performNetworkError("Fetch API cannot load " +
-                              m_request->url().getString() +
+        case WebURLRequest::kFetchRequestModeSameOrigin:
+        case WebURLRequest::kFetchRequestModeCORS:
+        case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+        case WebURLRequest::kFetchRequestModeNavigate:
+          PerformNetworkError("Fetch API cannot load " +
+                              request_->Url().GetString() +
                               ". Redirects to data: URL are allowed only when "
                               "mode is \"no-cors\".");
           return;
       }
     }
-  } else if (!SecurityOrigin::create(response.url())
-                  ->isSameSchemeHostPort(m_request->origin().get())) {
+  } else if (!SecurityOrigin::Create(response.Url())
+                  ->IsSameSchemeHostPort(request_->Origin().Get())) {
     // Recompute the tainting if the request was redirected to a different
     // origin.
-    switch (m_request->mode()) {
-      case WebURLRequest::FetchRequestModeSameOrigin:
+    switch (request_->Mode()) {
+      case WebURLRequest::kFetchRequestModeSameOrigin:
         ASSERT_NOT_REACHED();
         break;
-      case WebURLRequest::FetchRequestModeNoCORS:
-        tainting = FetchRequestData::OpaqueTainting;
+      case WebURLRequest::kFetchRequestModeNoCORS:
+        tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case WebURLRequest::FetchRequestModeCORS:
-      case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
-        tainting = FetchRequestData::CORSTainting;
+      case WebURLRequest::kFetchRequestModeCORS:
+      case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+        tainting = FetchRequestData::kCORSTainting;
         break;
-      case WebURLRequest::FetchRequestModeNavigate:
+      case WebURLRequest::kFetchRequestModeNavigate:
         LOG(FATAL);
         break;
     }
   }
-  if (response.wasFetchedViaServiceWorker()) {
-    switch (response.serviceWorkerResponseType()) {
-      case WebServiceWorkerResponseTypeBasic:
-      case WebServiceWorkerResponseTypeDefault:
-        tainting = FetchRequestData::BasicTainting;
+  if (response.WasFetchedViaServiceWorker()) {
+    switch (response.ServiceWorkerResponseType()) {
+      case kWebServiceWorkerResponseTypeBasic:
+      case kWebServiceWorkerResponseTypeDefault:
+        tainting = FetchRequestData::kBasicTainting;
         break;
-      case WebServiceWorkerResponseTypeCORS:
-        tainting = FetchRequestData::CORSTainting;
+      case kWebServiceWorkerResponseTypeCORS:
+        tainting = FetchRequestData::kCORSTainting;
         break;
-      case WebServiceWorkerResponseTypeOpaque:
-        tainting = FetchRequestData::OpaqueTainting;
+      case kWebServiceWorkerResponseTypeOpaque:
+        tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case WebServiceWorkerResponseTypeOpaqueRedirect:
-        DCHECK(NetworkUtils::isRedirectResponseCode(m_responseHttpStatusCode));
+      case kWebServiceWorkerResponseTypeOpaqueRedirect:
+        DCHECK(
+            NetworkUtils::IsRedirectResponseCode(response_http_status_code_));
         break;  // The code below creates an opaque-redirect filtered response.
-      case WebServiceWorkerResponseTypeError:
+      case kWebServiceWorkerResponseTypeError:
         LOG(FATAL) << "When ServiceWorker respond to the request from fetch() "
                       "with an error response, FetchManager::Loader::didFail() "
                       "must be called instead.";
@@ -418,75 +419,76 @@ void FetchManager::Loader::didReceiveResponse(
     }
   }
 
-  FetchResponseData* responseData = nullptr;
-  SRIBytesConsumer* sriConsumer = nullptr;
-  if (m_request->integrity().isEmpty()) {
-    responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(
-        scriptState,
+  FetchResponseData* response_data = nullptr;
+  SRIBytesConsumer* sri_consumer = nullptr;
+  if (request_->Integrity().IsEmpty()) {
+    response_data = FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
+        script_state,
         new BytesConsumerForDataConsumerHandle(
-            scriptState->getExecutionContext(), std::move(handle))));
+            script_state->GetExecutionContext(), std::move(handle))));
   } else {
-    sriConsumer = new SRIBytesConsumer();
-    responseData = FetchResponseData::createWithBuffer(
-        new BodyStreamBuffer(scriptState, sriConsumer));
+    sri_consumer = new SRIBytesConsumer();
+    response_data = FetchResponseData::CreateWithBuffer(
+        new BodyStreamBuffer(script_state, sri_consumer));
   }
-  responseData->setStatus(response.httpStatusCode());
-  responseData->setStatusMessage(response.httpStatusText());
-  for (auto& it : response.httpHeaderFields())
-    responseData->headerList()->append(it.key, it.value);
-  if (response.urlListViaServiceWorker().isEmpty()) {
+  response_data->SetStatus(response.HttpStatusCode());
+  response_data->SetStatusMessage(response.HttpStatusText());
+  for (auto& it : response.HttpHeaderFields())
+    response_data->HeaderList()->Append(it.key, it.value);
+  if (response.UrlListViaServiceWorker().IsEmpty()) {
     // Note: |urlListViaServiceWorker| is empty, unless the response came from a
     // service worker, in which case it will only be empty if it was created
     // through new Response().
-    responseData->setURLList(m_urlList);
+    response_data->SetURLList(url_list_);
   } else {
-    DCHECK(response.wasFetchedViaServiceWorker());
-    responseData->setURLList(response.urlListViaServiceWorker());
+    DCHECK(response.WasFetchedViaServiceWorker());
+    response_data->SetURLList(response.UrlListViaServiceWorker());
   }
-  responseData->setMIMEType(response.mimeType());
-  responseData->setResponseTime(response.responseTime());
+  response_data->SetMIMEType(response.MimeType());
+  response_data->SetResponseTime(response.ResponseTime());
 
-  FetchResponseData* taintedResponse = nullptr;
+  FetchResponseData* tainted_response = nullptr;
 
-  if (NetworkUtils::isRedirectResponseCode(m_responseHttpStatusCode)) {
+  if (NetworkUtils::IsRedirectResponseCode(response_http_status_code_)) {
     Vector<String> locations;
-    responseData->headerList()->getAll(HTTPNames::Location, locations);
+    response_data->HeaderList()->GetAll(HTTPNames::Location, locations);
     if (locations.size() > 1) {
-      performNetworkError("Multiple Location header.");
+      PerformNetworkError("Multiple Location header.");
       return;
     }
     if (locations.size() == 1) {
-      KURL locationURL(m_request->url(), locations[0]);
-      if (!locationURL.isValid()) {
-        performNetworkError("Invalid Location header.");
+      KURL location_url(request_->Url(), locations[0]);
+      if (!location_url.IsValid()) {
+        PerformNetworkError("Invalid Location header.");
         return;
       }
-      ASSERT(m_request->redirect() == WebURLRequest::FetchRedirectModeManual);
-      taintedResponse = responseData->createOpaqueRedirectFilteredResponse();
+      ASSERT(request_->Redirect() == WebURLRequest::kFetchRedirectModeManual);
+      tainted_response = response_data->CreateOpaqueRedirectFilteredResponse();
     }
     // When the location header doesn't exist, we don't treat the response
     // as a redirect response, and execute tainting.
   }
-  if (!taintedResponse) {
+  if (!tainted_response) {
     switch (tainting) {
-      case FetchRequestData::BasicTainting:
-        taintedResponse = responseData->createBasicFilteredResponse();
+      case FetchRequestData::kBasicTainting:
+        tainted_response = response_data->CreateBasicFilteredResponse();
         break;
-      case FetchRequestData::CORSTainting: {
-        HTTPHeaderSet headerNames;
-        extractCorsExposedHeaderNamesList(response, headerNames);
-        taintedResponse = responseData->createCORSFilteredResponse(headerNames);
+      case FetchRequestData::kCORSTainting: {
+        HTTPHeaderSet header_names;
+        ExtractCorsExposedHeaderNamesList(response, header_names);
+        tainted_response =
+            response_data->CreateCORSFilteredResponse(header_names);
         break;
       }
-      case FetchRequestData::OpaqueTainting:
-        taintedResponse = responseData->createOpaqueFilteredResponse();
+      case FetchRequestData::kOpaqueTainting:
+        tainted_response = response_data->CreateOpaqueFilteredResponse();
         break;
     }
   }
 
   Response* r =
-      Response::create(m_resolver->getExecutionContext(), taintedResponse);
-  if (response.url().protocolIsData()) {
+      Response::Create(resolver_->GetExecutionContext(), tainted_response);
+  if (response.Url().ProtocolIsData()) {
     // An "Access-Control-Allow-Origin" header is added for data: URLs
     // but no headers except for "Content-Type" should exist,
     // according to the spec:
@@ -494,79 +496,80 @@ void FetchManager::Loader::didReceiveResponse(
     // "... return a response whose header list consist of a single header
     //  whose name is `Content-Type` and value is the MIME type and
     //  parameters returned from obtaining a resource"
-    r->headers()->headerList()->remove(HTTPNames::Access_Control_Allow_Origin);
+    r->headers()->HeaderList()->Remove(HTTPNames::Access_Control_Allow_Origin);
   }
-  r->headers()->setGuard(Headers::ImmutableGuard);
+  r->headers()->SetGuard(Headers::kImmutableGuard);
 
-  if (m_request->integrity().isEmpty()) {
-    m_resolver->resolve(r);
-    m_resolver.clear();
+  if (request_->Integrity().IsEmpty()) {
+    resolver_->Resolve(r);
+    resolver_.Clear();
   } else {
-    ASSERT(!m_integrityVerifier);
-    m_integrityVerifier =
-        new SRIVerifier(std::move(handle), sriConsumer, r, this,
-                        m_request->integrity(), response.url());
+    ASSERT(!integrity_verifier_);
+    integrity_verifier_ =
+        new SRIVerifier(std::move(handle), sri_consumer, r, this,
+                        request_->Integrity(), response.Url());
   }
 }
 
-void FetchManager::Loader::didFinishLoading(unsigned long, double) {
-  m_didFinishLoading = true;
+void FetchManager::Loader::DidFinishLoading(unsigned long, double) {
+  did_finish_loading_ = true;
   // If there is an integrity verifier, and it has not already finished, it
   // will take care of finishing the load or performing a network error when
   // verification is complete.
-  if (m_integrityVerifier && !m_integrityVerifier->isFinished())
+  if (integrity_verifier_ && !integrity_verifier_->IsFinished())
     return;
 
-  loadSucceeded();
+  LoadSucceeded();
 }
 
-void FetchManager::Loader::didFail(const ResourceError& error) {
-  if (error.isCancellation() || error.isTimeout() ||
-      error.domain() != errorDomainBlinkInternal)
-    failed(String());
+void FetchManager::Loader::DidFail(const ResourceError& error) {
+  if (error.IsCancellation() || error.IsTimeout() ||
+      error.Domain() != kErrorDomainBlinkInternal)
+    Failed(String());
   else
-    failed("Fetch API cannot load " + error.failingURL() + ". " +
-           error.localizedDescription());
+    Failed("Fetch API cannot load " + error.FailingURL() + ". " +
+           error.LocalizedDescription());
 }
 
-void FetchManager::Loader::didFailAccessControlCheck(
+void FetchManager::Loader::DidFailAccessControlCheck(
     const ResourceError& error) {
-  if (error.isCancellation() || error.isTimeout() ||
-      error.domain() != errorDomainBlinkInternal)
-    failed(String());
+  if (error.IsCancellation() || error.IsTimeout() ||
+      error.Domain() != kErrorDomainBlinkInternal)
+    Failed(String());
   else
-    failed("Fetch API cannot load " + error.failingURL() + ". " +
-           error.localizedDescription());
+    Failed("Fetch API cannot load " + error.FailingURL() + ". " +
+           error.LocalizedDescription());
 }
 
-void FetchManager::Loader::didFailRedirectCheck() {
-  failed("Fetch API cannot load " + m_request->url().getString() +
+void FetchManager::Loader::DidFailRedirectCheck() {
+  Failed("Fetch API cannot load " + request_->Url().GetString() +
          ". Redirect failed.");
 }
 
-Document* FetchManager::Loader::document() const {
-  if (m_executionContext->isDocument()) {
-    return toDocument(m_executionContext);
+Document* FetchManager::Loader::GetDocument() const {
+  if (execution_context_->IsDocument()) {
+    return ToDocument(execution_context_);
   }
   return nullptr;
 }
 
-void FetchManager::Loader::loadSucceeded() {
-  ASSERT(!m_failed);
+void FetchManager::Loader::LoadSucceeded() {
+  ASSERT(!failed_);
 
-  m_finished = true;
+  finished_ = true;
 
-  if (document() && document()->frame() && document()->frame()->page() &&
-      FetchUtils::isOkStatus(m_responseHttpStatusCode)) {
-    document()->frame()->page()->chromeClient().ajaxSucceeded(
-        document()->frame());
+  if (GetDocument() && GetDocument()->GetFrame() &&
+      GetDocument()->GetFrame()->GetPage() &&
+      FetchUtils::IsOkStatus(response_http_status_code_)) {
+    GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
+        GetDocument()->GetFrame());
   }
-  probe::didFinishFetch(m_executionContext, this, m_request->method(),
-                        m_request->url().getString());
-  notifyFinished();
+  probe::didFinishFetch(execution_context_, this, request_->Method(),
+                        request_->Url().GetString());
+  NotifyFinished();
 }
 
-void FetchManager::Loader::start() {
+void FetchManager::Loader::Start() {
   // "1. If |request|'s url contains a Known HSTS Host, modify it per the
   // requirements of the 'URI [sic] Loading and Port Mapping' chapter of HTTP
   // Strict Transport Security."
@@ -589,12 +592,12 @@ void FetchManager::Loader::start() {
 
   // "- should fetching |request| be blocked as content security returns
   //    blocked"
-  if (!ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) &&
-      !m_executionContext->contentSecurityPolicy()->allowConnectToSource(
-          m_request->url())) {
+  if (!ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_) &&
+      !execution_context_->GetContentSecurityPolicy()->AllowConnectToSource(
+          request_->Url())) {
     // "A network error."
-    performNetworkError(
-        "Refused to connect to '" + m_request->url().elidedString() +
+    PerformNetworkError(
+        "Refused to connect to '" + request_->Url().ElidedString() +
         "' because it violates the document's Content Security Policy.");
     return;
   }
@@ -606,45 +609,43 @@ void FetchManager::Loader::start() {
   // "- |request|'s url's scheme is 'about'"
   // Note we don't support to call this method with |CORS flag|
   // "- |request|'s mode is |navigate|".
-  if ((SecurityOrigin::create(m_request->url())
-           ->isSameSchemeHostPortAndSuborigin(m_request->origin().get())) ||
-      (m_request->url().protocolIsData() &&
-       m_request->sameOriginDataURLFlag()) ||
-      (m_request->url().protocolIsAbout()) ||
-      (m_request->mode() == WebURLRequest::FetchRequestModeNavigate)) {
+  if ((SecurityOrigin::Create(request_->Url())
+           ->IsSameSchemeHostPortAndSuborigin(request_->Origin().Get())) ||
+      (request_->Url().ProtocolIsData() && request_->SameOriginDataURLFlag()) ||
+      (request_->Url().ProtocolIsAbout()) ||
+      (request_->Mode() == WebURLRequest::kFetchRequestModeNavigate)) {
     // "The result of performing a basic fetch using request."
-    performBasicFetch();
+    PerformBasicFetch();
     return;
   }
 
   // "- |request|'s mode is |same-origin|"
-  if (m_request->mode() == WebURLRequest::FetchRequestModeSameOrigin) {
+  if (request_->Mode() == WebURLRequest::kFetchRequestModeSameOrigin) {
     // "A network error."
-    performNetworkError("Fetch API cannot load " +
-                        m_request->url().getString() +
+    PerformNetworkError("Fetch API cannot load " + request_->Url().GetString() +
                         ". Request mode is \"same-origin\" but the URL\'s "
                         "origin is not same as the request origin " +
-                        m_request->origin()->toString() + ".");
+                        request_->Origin()->ToString() + ".");
     return;
   }
 
   // "- |request|'s mode is |no CORS|"
-  if (m_request->mode() == WebURLRequest::FetchRequestModeNoCORS) {
+  if (request_->Mode() == WebURLRequest::kFetchRequestModeNoCORS) {
     // "Set |request|'s response tainting to |opaque|."
-    m_request->setResponseTainting(FetchRequestData::OpaqueTainting);
+    request_->SetResponseTainting(FetchRequestData::kOpaqueTainting);
     // "The result of performing a basic fetch using |request|."
-    performBasicFetch();
+    PerformBasicFetch();
     return;
   }
 
   // "- |request|'s url's scheme is not one of 'http' and 'https'"
   // This may include other HTTP-like schemes if the embedder has added them
   // to SchemeRegistry::registerURLSchemeAsSupportingFetchAPI.
-  if (!SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
-          m_request->url().protocol())) {
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+          request_->Url().Protocol())) {
     // "A network error."
-    performNetworkError(
-        "Fetch API cannot load " + m_request->url().getString() +
+    PerformNetworkError(
+        "Fetch API cannot load " + request_->Url().GetString() +
         ". URL scheme must be \"http\" or \"https\" for CORS request.");
     return;
   }
@@ -653,67 +654,67 @@ void FetchManager::Loader::start() {
   // "- |request|'s unsafe request flag is set and either |request|'s method
   // is not a simple method or a header in |request|'s header list is not a
   // simple header"
-  if (m_request->mode() ==
-          WebURLRequest::FetchRequestModeCORSWithForcedPreflight ||
-      (m_request->unsafeRequestFlag() &&
-       (!FetchUtils::isSimpleMethod(m_request->method()) ||
-        m_request->headerList()->containsNonSimpleHeader()))) {
+  if (request_->Mode() ==
+          WebURLRequest::kFetchRequestModeCORSWithForcedPreflight ||
+      (request_->UnsafeRequestFlag() &&
+       (!FetchUtils::IsSimpleMethod(request_->Method()) ||
+        request_->HeaderList()->ContainsNonSimpleHeader()))) {
     // "Set |request|'s response tainting to |CORS|."
-    m_request->setResponseTainting(FetchRequestData::CORSTainting);
+    request_->SetResponseTainting(FetchRequestData::kCORSTainting);
     // "The result of performing an HTTP fetch using |request| with the
     // |CORS flag| and |CORS preflight flag| set."
-    performHTTPFetch(true, true);
+    PerformHTTPFetch(true, true);
     return;
   }
 
   // "- Otherwise
   //     Set |request|'s response tainting to |CORS|."
-  m_request->setResponseTainting(FetchRequestData::CORSTainting);
+  request_->SetResponseTainting(FetchRequestData::kCORSTainting);
   // "The result of performing an HTTP fetch using |request| with the
   // |CORS flag| set."
-  performHTTPFetch(true, false);
+  PerformHTTPFetch(true, false);
 }
 
-void FetchManager::Loader::dispose() {
-  probe::detachClientRequest(m_executionContext, this);
+void FetchManager::Loader::Dispose() {
+  probe::detachClientRequest(execution_context_, this);
   // Prevent notification
-  m_fetchManager = nullptr;
-  if (m_loader) {
-    m_loader->cancel();
-    m_loader = nullptr;
+  fetch_manager_ = nullptr;
+  if (loader_) {
+    loader_->Cancel();
+    loader_ = nullptr;
   }
-  m_executionContext = nullptr;
+  execution_context_ = nullptr;
 }
 
-void FetchManager::Loader::performBasicFetch() {
+void FetchManager::Loader::PerformBasicFetch() {
   // "To perform a basic fetch using |request|, switch on |request|'s url's
   // scheme, and run the associated steps:"
-  if (SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
-          m_request->url().protocol())) {
+  if (SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+          request_->Url().Protocol())) {
     // "Return the result of performing an HTTP fetch using |request|."
-    performHTTPFetch(false, false);
-  } else if (m_request->url().protocolIsData()) {
-    performDataFetch();
-  } else if (m_request->url().protocolIs("blob")) {
-    performHTTPFetch(false, false);
+    PerformHTTPFetch(false, false);
+  } else if (request_->Url().ProtocolIsData()) {
+    PerformDataFetch();
+  } else if (request_->Url().ProtocolIs("blob")) {
+    PerformHTTPFetch(false, false);
   } else {
     // FIXME: implement other protocols.
-    performNetworkError("Fetch API cannot load " +
-                        m_request->url().getString() + ". URL scheme \"" +
-                        m_request->url().protocol() + "\" is not supported.");
+    PerformNetworkError("Fetch API cannot load " + request_->Url().GetString() +
+                        ". URL scheme \"" + request_->Url().Protocol() +
+                        "\" is not supported.");
   }
 }
 
-void FetchManager::Loader::performNetworkError(const String& message) {
-  failed(message);
+void FetchManager::Loader::PerformNetworkError(const String& message) {
+  Failed(message);
 }
 
-void FetchManager::Loader::performHTTPFetch(bool corsFlag,
-                                            bool corsPreflightFlag) {
-  ASSERT(
-      SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
-          m_request->url().protocol()) ||
-      (m_request->url().protocolIs("blob") && !corsFlag && !corsPreflightFlag));
+void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
+                                            bool cors_preflight_flag) {
+  ASSERT(SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+             request_->Url().Protocol()) ||
+         (request_->Url().ProtocolIs("blob") && !cors_flag &&
+          !cors_preflight_flag));
   // CORS preflight fetch procedure is implemented inside
   // DocumentThreadableLoader.
 
@@ -721,29 +722,29 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
   //  body is a tee of |request|'s body."
   // We use ResourceRequest class for HTTPRequest.
   // FIXME: Support body.
-  ResourceRequest request(m_request->url());
-  request.setRequestContext(m_request->context());
-  request.setHTTPMethod(m_request->method());
-  request.setFetchRequestMode(m_request->mode());
-  request.setFetchCredentialsMode(m_request->credentials());
+  ResourceRequest request(request_->Url());
+  request.SetRequestContext(request_->Context());
+  request.SetHTTPMethod(request_->Method());
+  request.SetFetchRequestMode(request_->Mode());
+  request.SetFetchCredentialsMode(request_->Credentials());
   const Vector<std::unique_ptr<FetchHeaderList::Header>>& list =
-      m_request->headerList()->list();
+      request_->HeaderList()->List();
   for (size_t i = 0; i < list.size(); ++i) {
-    request.addHTTPHeaderField(AtomicString(list[i]->first),
+    request.AddHTTPHeaderField(AtomicString(list[i]->first),
                                AtomicString(list[i]->second));
   }
 
-  if (m_request->method() != HTTPNames::GET &&
-      m_request->method() != HTTPNames::HEAD) {
-    if (m_request->buffer())
-      request.setHTTPBody(m_request->buffer()->drainAsFormData());
-    if (m_request->attachedCredential())
-      request.setAttachedCredential(m_request->attachedCredential());
+  if (request_->Method() != HTTPNames::GET &&
+      request_->Method() != HTTPNames::HEAD) {
+    if (request_->Buffer())
+      request.SetHTTPBody(request_->Buffer()->DrainAsFormData());
+    if (request_->AttachedCredential())
+      request.SetAttachedCredential(request_->AttachedCredential());
   }
-  request.setFetchRedirectMode(m_request->redirect());
-  request.setUseStreamOnResponse(true);
-  request.setExternalRequestStateFromRequestorAddressSpace(
-      m_executionContext->securityContext().addressSpace());
+  request.SetFetchRedirectMode(request_->Redirect());
+  request.SetUseStreamOnResponse(true);
+  request.SetExternalRequestStateFromRequestorAddressSpace(
+      execution_context_->GetSecurityContext().AddressSpace());
 
   // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
   // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
@@ -751,21 +752,21 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
   //
   // The following code also invokes "determine request's referrer" which is
   // written in "Main fetch" operation.
-  const ReferrerPolicy referrerPolicy =
-      m_request->getReferrerPolicy() == ReferrerPolicyDefault
-          ? m_executionContext->getReferrerPolicy()
-          : m_request->getReferrerPolicy();
-  const String referrerString =
-      m_request->referrerString() == FetchRequestData::clientReferrerString()
-          ? m_executionContext->outgoingReferrer()
-          : m_request->referrerString();
+  const ReferrerPolicy referrer_policy =
+      request_->GetReferrerPolicy() == kReferrerPolicyDefault
+          ? execution_context_->GetReferrerPolicy()
+          : request_->GetReferrerPolicy();
+  const String referrer_string =
+      request_->ReferrerString() == FetchRequestData::ClientReferrerString()
+          ? execution_context_->OutgoingReferrer()
+          : request_->ReferrerString();
   // Note that generateReferrer generates |no-referrer| from |no-referrer|
   // referrer string (i.e. String()).
-  request.setHTTPReferrer(SecurityPolicy::generateReferrer(
-      referrerPolicy, m_request->url(), referrerString));
-  request.setServiceWorkerMode(m_isIsolatedWorld
-                                   ? WebURLRequest::ServiceWorkerMode::None
-                                   : WebURLRequest::ServiceWorkerMode::All);
+  request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+      referrer_policy, request_->Url(), referrer_string));
+  request.SetServiceWorkerMode(is_isolated_world_
+                                   ? WebURLRequest::ServiceWorkerMode::kNone
+                                   : WebURLRequest::ServiceWorkerMode::kAll);
 
   // "3. Append `Host`, ..."
   // FIXME: Implement this when the spec is fixed.
@@ -785,157 +786,158 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
   // "request's credentials mode is "same-origin" and request's environment
   // settings object has the suborigin unsafe credentials flag set and the
   // request’s current url is same-physical-origin with request origin."
-  ResourceLoaderOptions resourceLoaderOptions;
-  resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
-  bool suboriginForcesCredentials =
-      (m_request->credentials() ==
-           WebURLRequest::FetchCredentialsModeSameOrigin &&
-       m_request->origin()->hasSuborigin() &&
-       m_request->origin()->suborigin()->policyContains(
-           Suborigin::SuboriginPolicyOptions::UnsafeCredentials) &&
-       SecurityOrigin::create(m_request->url())
-           ->isSameSchemeHostPort(m_request->origin().get()));
-  if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude ||
-      m_request->credentials() == WebURLRequest::FetchCredentialsModePassword ||
-      (m_request->credentials() ==
-           WebURLRequest::FetchCredentialsModeSameOrigin &&
-       !corsFlag) ||
-      suboriginForcesCredentials) {
-    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
+  ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.data_buffering_policy = kDoNotBufferData;
+  bool suborigin_forces_credentials =
+      (request_->Credentials() ==
+           WebURLRequest::kFetchCredentialsModeSameOrigin &&
+       request_->Origin()->HasSuborigin() &&
+       request_->Origin()->GetSuborigin()->PolicyContains(
+           Suborigin::SuboriginPolicyOptions::kUnsafeCredentials) &&
+       SecurityOrigin::Create(request_->Url())
+           ->IsSameSchemeHostPort(request_->Origin().Get()));
+  if (request_->Credentials() == WebURLRequest::kFetchCredentialsModeInclude ||
+      request_->Credentials() == WebURLRequest::kFetchCredentialsModePassword ||
+      (request_->Credentials() ==
+           WebURLRequest::kFetchCredentialsModeSameOrigin &&
+       !cors_flag) ||
+      suborigin_forces_credentials) {
+    resource_loader_options.allow_credentials = kAllowStoredCredentials;
   }
-  if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude ||
-      m_request->credentials() == WebURLRequest::FetchCredentialsModePassword ||
-      suboriginForcesCredentials) {
-    resourceLoaderOptions.credentialsRequested = ClientRequestedCredentials;
+  if (request_->Credentials() == WebURLRequest::kFetchCredentialsModeInclude ||
+      request_->Credentials() == WebURLRequest::kFetchCredentialsModePassword ||
+      suborigin_forces_credentials) {
+    resource_loader_options.credentials_requested = kClientRequestedCredentials;
   }
-  resourceLoaderOptions.securityOrigin = m_request->origin().get();
+  resource_loader_options.security_origin = request_->Origin().Get();
 
-  ThreadableLoaderOptions threadableLoaderOptions;
-  threadableLoaderOptions.contentSecurityPolicyEnforcement =
-      ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext)
-          ? DoNotEnforceContentSecurityPolicy
-          : EnforceContentSecurityPolicy;
-  if (corsPreflightFlag)
-    threadableLoaderOptions.preflightPolicy = ForcePreflight;
-  switch (m_request->mode()) {
-    case WebURLRequest::FetchRequestModeSameOrigin:
-      threadableLoaderOptions.crossOriginRequestPolicy =
-          DenyCrossOriginRequests;
+  ThreadableLoaderOptions threadable_loader_options;
+  threadable_loader_options.content_security_policy_enforcement =
+      ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
+          ? kDoNotEnforceContentSecurityPolicy
+          : kEnforceContentSecurityPolicy;
+  if (cors_preflight_flag)
+    threadable_loader_options.preflight_policy = kForcePreflight;
+  switch (request_->Mode()) {
+    case WebURLRequest::kFetchRequestModeSameOrigin:
+      threadable_loader_options.cross_origin_request_policy =
+          kDenyCrossOriginRequests;
       break;
-    case WebURLRequest::FetchRequestModeNoCORS:
-      threadableLoaderOptions.crossOriginRequestPolicy =
-          AllowCrossOriginRequests;
+    case WebURLRequest::kFetchRequestModeNoCORS:
+      threadable_loader_options.cross_origin_request_policy =
+          kAllowCrossOriginRequests;
       break;
-    case WebURLRequest::FetchRequestModeCORS:
-    case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
-      threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
+    case WebURLRequest::kFetchRequestModeCORS:
+    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+      threadable_loader_options.cross_origin_request_policy = kUseAccessControl;
       break;
-    case WebURLRequest::FetchRequestModeNavigate:
+    case WebURLRequest::kFetchRequestModeNavigate:
       // Using DenyCrossOriginRequests here to reduce the security risk.
       // "navigate" request is only available in ServiceWorker.
-      threadableLoaderOptions.crossOriginRequestPolicy =
-          DenyCrossOriginRequests;
+      threadable_loader_options.cross_origin_request_policy =
+          kDenyCrossOriginRequests;
       break;
   }
-  probe::willStartFetch(m_executionContext, this);
-  m_loader =
-      ThreadableLoader::create(*m_executionContext, this,
-                               threadableLoaderOptions, resourceLoaderOptions);
-  m_loader->start(request);
+  probe::willStartFetch(execution_context_, this);
+  loader_ = ThreadableLoader::Create(*execution_context_, this,
+                                     threadable_loader_options,
+                                     resource_loader_options);
+  loader_->Start(request);
 }
 
 // performDataFetch() is almost the same as performHTTPFetch(), except for:
 // - We set AllowCrossOriginRequests to allow requests to data: URLs in
 //   'same-origin' mode.
 // - We reject non-GET method.
-void FetchManager::Loader::performDataFetch() {
-  ASSERT(m_request->url().protocolIsData());
+void FetchManager::Loader::PerformDataFetch() {
+  ASSERT(request_->Url().ProtocolIsData());
 
-  ResourceRequest request(m_request->url());
-  request.setRequestContext(m_request->context());
-  request.setUseStreamOnResponse(true);
-  request.setHTTPMethod(m_request->method());
-  request.setFetchRedirectMode(WebURLRequest::FetchRedirectModeError);
+  ResourceRequest request(request_->Url());
+  request.SetRequestContext(request_->Context());
+  request.SetUseStreamOnResponse(true);
+  request.SetHTTPMethod(request_->Method());
+  request.SetFetchRedirectMode(WebURLRequest::kFetchRedirectModeError);
   // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',
   // as 'data:' can never be external.
 
-  ResourceLoaderOptions resourceLoaderOptions;
-  resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
-  resourceLoaderOptions.securityOrigin = m_request->origin().get();
+  ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.data_buffering_policy = kDoNotBufferData;
+  resource_loader_options.security_origin = request_->Origin().Get();
 
-  ThreadableLoaderOptions threadableLoaderOptions;
-  threadableLoaderOptions.contentSecurityPolicyEnforcement =
-      ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext)
-          ? DoNotEnforceContentSecurityPolicy
-          : EnforceContentSecurityPolicy;
-  threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
+  ThreadableLoaderOptions threadable_loader_options;
+  threadable_loader_options.content_security_policy_enforcement =
+      ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
+          ? kDoNotEnforceContentSecurityPolicy
+          : kEnforceContentSecurityPolicy;
+  threadable_loader_options.cross_origin_request_policy =
+      kAllowCrossOriginRequests;
 
-  probe::willStartFetch(m_executionContext, this);
-  m_loader =
-      ThreadableLoader::create(*m_executionContext, this,
-                               threadableLoaderOptions, resourceLoaderOptions);
-  m_loader->start(request);
+  probe::willStartFetch(execution_context_, this);
+  loader_ = ThreadableLoader::Create(*execution_context_, this,
+                                     threadable_loader_options,
+                                     resource_loader_options);
+  loader_->Start(request);
 }
 
-void FetchManager::Loader::failed(const String& message) {
-  if (m_failed || m_finished)
+void FetchManager::Loader::Failed(const String& message) {
+  if (failed_ || finished_)
     return;
-  m_failed = true;
-  if (m_executionContext->isContextDestroyed())
+  failed_ = true;
+  if (execution_context_->IsContextDestroyed())
     return;
-  if (!message.isEmpty())
-    m_executionContext->addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
-  if (m_resolver) {
-    ScriptState* state = m_resolver->getScriptState();
+  if (!message.IsEmpty())
+    execution_context_->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  if (resolver_) {
+    ScriptState* state = resolver_->GetScriptState();
     ScriptState::Scope scope(state);
-    m_resolver->reject(
-        V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
+    resolver_->Reject(V8ThrowException::CreateTypeError(state->GetIsolate(),
+                                                        "Failed to fetch"));
   }
-  probe::didFailFetch(m_executionContext, this);
-  notifyFinished();
+  probe::didFailFetch(execution_context_, this);
+  NotifyFinished();
 }
 
-void FetchManager::Loader::notifyFinished() {
-  if (m_fetchManager)
-    m_fetchManager->onLoaderFinished(this);
+void FetchManager::Loader::NotifyFinished() {
+  if (fetch_manager_)
+    fetch_manager_->OnLoaderFinished(this);
 }
 
-FetchManager* FetchManager::create(ExecutionContext* executionContext) {
-  return new FetchManager(executionContext);
+FetchManager* FetchManager::Create(ExecutionContext* execution_context) {
+  return new FetchManager(execution_context);
 }
 
-FetchManager::FetchManager(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext) {}
+FetchManager::FetchManager(ExecutionContext* execution_context)
+    : ContextLifecycleObserver(execution_context) {}
 
-ScriptPromise FetchManager::fetch(ScriptState* scriptState,
+ScriptPromise FetchManager::Fetch(ScriptState* script_state,
                                   FetchRequestData* request) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  request->setContext(WebURLRequest::RequestContextFetch);
+  request->SetContext(WebURLRequest::kRequestContextFetch);
 
   Loader* loader =
-      Loader::create(getExecutionContext(), this, resolver, request,
-                     scriptState->world().isIsolatedWorld());
-  m_loaders.insert(loader);
-  loader->start();
+      Loader::Create(GetExecutionContext(), this, resolver, request,
+                     script_state->World().IsIsolatedWorld());
+  loaders_.insert(loader);
+  loader->Start();
   return promise;
 }
 
-void FetchManager::contextDestroyed(ExecutionContext*) {
-  for (auto& loader : m_loaders)
-    loader->dispose();
+void FetchManager::ContextDestroyed(ExecutionContext*) {
+  for (auto& loader : loaders_)
+    loader->Dispose();
 }
 
-void FetchManager::onLoaderFinished(Loader* loader) {
-  m_loaders.erase(loader);
-  loader->dispose();
+void FetchManager::OnLoaderFinished(Loader* loader) {
+  loaders_.erase(loader);
+  loader->Dispose();
 }
 
 DEFINE_TRACE(FetchManager) {
-  visitor->trace(m_loaders);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(loaders_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

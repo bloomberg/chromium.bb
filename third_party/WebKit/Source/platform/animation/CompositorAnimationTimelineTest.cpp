@@ -19,26 +19,26 @@ class CompositorAnimationTimelineTest : public CompositorTest {};
 TEST_F(CompositorAnimationTimelineTest,
        CompositorTimelineDeletionDetachesFromAnimationHost) {
   std::unique_ptr<CompositorAnimationTimeline> timeline =
-      CompositorAnimationTimeline::create();
+      CompositorAnimationTimeline::Create();
 
-  scoped_refptr<cc::AnimationTimeline> ccTimeline =
-      timeline->animationTimeline();
-  EXPECT_FALSE(ccTimeline->animation_host());
+  scoped_refptr<cc::AnimationTimeline> cc_timeline =
+      timeline->GetAnimationTimeline();
+  EXPECT_FALSE(cc_timeline->animation_host());
 
-  WebLayerTreeViewImplForTesting layerTreeView;
-  CompositorAnimationHost compositorAnimationHost(
-      layerTreeView.compositorAnimationHost());
+  WebLayerTreeViewImplForTesting layer_tree_view;
+  CompositorAnimationHost compositor_animation_host(
+      layer_tree_view.CompositorAnimationHost());
 
-  compositorAnimationHost.addTimeline(*timeline);
-  cc::AnimationHost* animationHost = ccTimeline->animation_host();
-  EXPECT_TRUE(animationHost);
-  EXPECT_TRUE(animationHost->GetTimelineById(ccTimeline->id()));
+  compositor_animation_host.AddTimeline(*timeline);
+  cc::AnimationHost* animation_host = cc_timeline->animation_host();
+  EXPECT_TRUE(animation_host);
+  EXPECT_TRUE(animation_host->GetTimelineById(cc_timeline->id()));
 
   // Delete CompositorAnimationTimeline while attached to host.
   timeline = nullptr;
 
-  EXPECT_FALSE(ccTimeline->animation_host());
-  EXPECT_FALSE(animationHost->GetTimelineById(ccTimeline->id()));
+  EXPECT_FALSE(cc_timeline->animation_host());
+  EXPECT_FALSE(animation_host->GetTimelineById(cc_timeline->id()));
 }
 
 }  // namespace blink

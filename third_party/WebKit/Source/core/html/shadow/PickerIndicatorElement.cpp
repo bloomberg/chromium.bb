@@ -45,125 +45,126 @@ using namespace HTMLNames;
 
 inline PickerIndicatorElement::PickerIndicatorElement(
     Document& document,
-    PickerIndicatorOwner& pickerIndicatorOwner)
-    : HTMLDivElement(document), m_pickerIndicatorOwner(&pickerIndicatorOwner) {}
+    PickerIndicatorOwner& picker_indicator_owner)
+    : HTMLDivElement(document),
+      picker_indicator_owner_(&picker_indicator_owner) {}
 
-PickerIndicatorElement* PickerIndicatorElement::create(
+PickerIndicatorElement* PickerIndicatorElement::Create(
     Document& document,
-    PickerIndicatorOwner& pickerIndicatorOwner) {
+    PickerIndicatorOwner& picker_indicator_owner) {
   PickerIndicatorElement* element =
-      new PickerIndicatorElement(document, pickerIndicatorOwner);
-  element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-  element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
+      new PickerIndicatorElement(document, picker_indicator_owner);
+  element->SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
+  element->setAttribute(idAttr, ShadowElementNames::PickerIndicator());
   return element;
 }
 
 PickerIndicatorElement::~PickerIndicatorElement() {
-  DCHECK(!m_chooser);
+  DCHECK(!chooser_);
 }
 
-LayoutObject* PickerIndicatorElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* PickerIndicatorElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutDetailsMarker(this);
 }
 
-void PickerIndicatorElement::defaultEventHandler(Event* event) {
-  if (!layoutObject())
+void PickerIndicatorElement::DefaultEventHandler(Event* event) {
+  if (!GetLayoutObject())
     return;
-  if (!m_pickerIndicatorOwner ||
-      m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
+  if (!picker_indicator_owner_ ||
+      picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return;
 
   if (event->type() == EventTypeNames::click) {
-    openPopup();
-    event->setDefaultHandled();
+    OpenPopup();
+    event->SetDefaultHandled();
   } else if (event->type() == EventTypeNames::keypress &&
-             event->isKeyboardEvent()) {
-    int charCode = toKeyboardEvent(event)->charCode();
-    if (charCode == ' ' || charCode == '\r') {
-      openPopup();
-      event->setDefaultHandled();
+             event->IsKeyboardEvent()) {
+    int char_code = ToKeyboardEvent(event)->charCode();
+    if (char_code == ' ' || char_code == '\r') {
+      OpenPopup();
+      event->SetDefaultHandled();
     }
   }
 
-  if (!event->defaultHandled())
-    HTMLDivElement::defaultEventHandler(event);
+  if (!event->DefaultHandled())
+    HTMLDivElement::DefaultEventHandler(event);
 }
 
-bool PickerIndicatorElement::willRespondToMouseClickEvents() {
-  if (layoutObject() && m_pickerIndicatorOwner &&
-      !m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
+bool PickerIndicatorElement::WillRespondToMouseClickEvents() {
+  if (GetLayoutObject() && picker_indicator_owner_ &&
+      !picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return true;
 
-  return HTMLDivElement::willRespondToMouseClickEvents();
+  return HTMLDivElement::WillRespondToMouseClickEvents();
 }
 
-void PickerIndicatorElement::didChooseValue(const String& value) {
-  if (!m_pickerIndicatorOwner)
+void PickerIndicatorElement::DidChooseValue(const String& value) {
+  if (!picker_indicator_owner_)
     return;
-  m_pickerIndicatorOwner->pickerIndicatorChooseValue(value);
+  picker_indicator_owner_->PickerIndicatorChooseValue(value);
 }
 
-void PickerIndicatorElement::didChooseValue(double value) {
-  if (m_pickerIndicatorOwner)
-    m_pickerIndicatorOwner->pickerIndicatorChooseValue(value);
+void PickerIndicatorElement::DidChooseValue(double value) {
+  if (picker_indicator_owner_)
+    picker_indicator_owner_->PickerIndicatorChooseValue(value);
 }
 
-void PickerIndicatorElement::didEndChooser() {
-  m_chooser.clear();
+void PickerIndicatorElement::DidEndChooser() {
+  chooser_.Clear();
 }
 
-void PickerIndicatorElement::openPopup() {
-  if (m_chooser)
+void PickerIndicatorElement::OpenPopup() {
+  if (chooser_)
     return;
-  if (!document().page())
+  if (!GetDocument().GetPage())
     return;
-  if (!m_pickerIndicatorOwner)
+  if (!picker_indicator_owner_)
     return;
   DateTimeChooserParameters parameters;
-  if (!m_pickerIndicatorOwner->setupDateTimeChooserParameters(parameters))
+  if (!picker_indicator_owner_->SetupDateTimeChooserParameters(parameters))
     return;
-  m_chooser =
-      document().page()->chromeClient().openDateTimeChooser(this, parameters);
+  chooser_ = GetDocument().GetPage()->GetChromeClient().OpenDateTimeChooser(
+      this, parameters);
 }
 
-Element& PickerIndicatorElement::ownerElement() const {
-  DCHECK(m_pickerIndicatorOwner);
-  return m_pickerIndicatorOwner->pickerOwnerElement();
+Element& PickerIndicatorElement::OwnerElement() const {
+  DCHECK(picker_indicator_owner_);
+  return picker_indicator_owner_->PickerOwnerElement();
 }
 
-void PickerIndicatorElement::closePopup() {
-  if (!m_chooser)
+void PickerIndicatorElement::ClosePopup() {
+  if (!chooser_)
     return;
-  m_chooser->endChooser();
+  chooser_->EndChooser();
 }
 
-void PickerIndicatorElement::detachLayoutTree(const AttachContext& context) {
-  closePopup();
-  HTMLDivElement::detachLayoutTree(context);
+void PickerIndicatorElement::DetachLayoutTree(const AttachContext& context) {
+  ClosePopup();
+  HTMLDivElement::DetachLayoutTree(context);
 }
 
-AXObject* PickerIndicatorElement::popupRootAXObject() const {
-  return m_chooser ? m_chooser->rootAXObject() : 0;
+AXObject* PickerIndicatorElement::PopupRootAXObject() const {
+  return chooser_ ? chooser_->RootAXObject() : 0;
 }
 
-bool PickerIndicatorElement::isPickerIndicatorElement() const {
+bool PickerIndicatorElement::IsPickerIndicatorElement() const {
   return true;
 }
 
-Node::InsertionNotificationRequest PickerIndicatorElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLDivElement::insertedInto(insertionPoint);
-  return InsertionShouldCallDidNotifySubtreeInsertions;
+Node::InsertionNotificationRequest PickerIndicatorElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLDivElement::InsertedInto(insertion_point);
+  return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument() {
-  if (!document().settings() ||
-      !document().settings()->getAccessibilityEnabled())
+void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
+  if (!GetDocument().GetSettings() ||
+      !GetDocument().GetSettings()->GetAccessibilityEnabled())
     return;
   // Don't make this focusable if we are in layout tests in order to avoid to
   // break existing tests.
   // FIXME: We should have a way to disable accessibility in layout tests.
-  if (LayoutTestSupport::isRunningLayoutTest())
+  if (LayoutTestSupport::IsRunningLayoutTest())
     return;
   setAttribute(tabindexAttr, "0");
   setAttribute(aria_haspopupAttr, "true");
@@ -171,10 +172,10 @@ void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument() {
 }
 
 DEFINE_TRACE(PickerIndicatorElement) {
-  visitor->trace(m_pickerIndicatorOwner);
-  visitor->trace(m_chooser);
-  HTMLDivElement::trace(visitor);
-  DateTimeChooserClient::trace(visitor);
+  visitor->Trace(picker_indicator_owner_);
+  visitor->Trace(chooser_);
+  HTMLDivElement::Trace(visitor);
+  DateTimeChooserClient::Trace(visitor);
 }
 
 }  // namespace blink

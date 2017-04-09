@@ -77,7 +77,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // pretends to be empty as far as the WorkQueueSets is concrned.
   TaskQueueImpl::Task TakeTaskFromWorkQueue();
 
-  const char* name() const { return name_; }
+  const char* GetName() const { return name_; }
 
   TaskQueueImpl* task_queue() const { return task_queue_; }
 

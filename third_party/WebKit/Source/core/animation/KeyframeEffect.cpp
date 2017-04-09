@@ -42,69 +42,72 @@
 
 namespace blink {
 
-KeyframeEffect* KeyframeEffect::create(
+KeyframeEffect* KeyframeEffect::Create(
     Element* target,
     EffectModel* model,
     const Timing& timing,
     KeyframeEffectReadOnly::Priority priority,
-    EventDelegate* eventDelegate) {
-  return new KeyframeEffect(target, model, timing, priority, eventDelegate);
+    EventDelegate* event_delegate) {
+  return new KeyframeEffect(target, model, timing, priority, event_delegate);
 }
 
-KeyframeEffect* KeyframeEffect::create(
-    ExecutionContext* executionContext,
+KeyframeEffect* KeyframeEffect::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
+    const DictionarySequenceOrDictionary& effect_input,
     double duration,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
   Timing timing;
-  if (!TimingInput::convert(duration, timing, exceptionState))
+  if (!TimingInput::Convert(duration, timing, exception_state))
     return nullptr;
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 timing);
 }
 
-KeyframeEffect* KeyframeEffect::create(
-    ExecutionContext* executionContext,
+KeyframeEffect* KeyframeEffect::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
-    const KeyframeEffectOptions& timingInput,
-    ExceptionState& exceptionState) {
+    const DictionarySequenceOrDictionary& effect_input,
+    const KeyframeEffectOptions& timing_input,
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
   Timing timing;
-  Document* document = element ? &element->document() : nullptr;
-  if (!TimingInput::convert(timingInput, timing, document, exceptionState))
+  Document* document = element ? &element->GetDocument() : nullptr;
+  if (!TimingInput::Convert(timing_input, timing, document, exception_state))
     return nullptr;
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 timing);
 }
 
-KeyframeEffect* KeyframeEffect::create(
-    ExecutionContext* executionContext,
+KeyframeEffect* KeyframeEffect::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
-    ExceptionState& exceptionState) {
+    const DictionarySequenceOrDictionary& effect_input,
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectNoTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectNoTiming);
   }
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 Timing());
 }
 
@@ -112,13 +115,13 @@ KeyframeEffect::KeyframeEffect(Element* target,
                                EffectModel* model,
                                const Timing& timing,
                                KeyframeEffectReadOnly::Priority priority,
-                               EventDelegate* eventDelegate)
-    : KeyframeEffectReadOnly(target, model, timing, priority, eventDelegate) {}
+                               EventDelegate* event_delegate)
+    : KeyframeEffectReadOnly(target, model, timing, priority, event_delegate) {}
 
 KeyframeEffect::~KeyframeEffect() {}
 
 AnimationEffectTiming* KeyframeEffect::timing() {
-  return AnimationEffectTiming::create(this);
+  return AnimationEffectTiming::Create(this);
 }
 
 }  // namespace blink

@@ -43,13 +43,13 @@ class Filter final : public Expression {
   ~Filter() override;
   DECLARE_VIRTUAL_TRACE();
 
-  Value evaluate(EvaluationContext&) const override;
+  Value Evaluate(EvaluationContext&) const override;
 
  private:
-  Value::Type resultType() const override { return Value::NodeSetValue; }
+  Value::Type ResultType() const override { return Value::kNodeSetValue; }
 
-  Member<Expression> m_expr;
-  HeapVector<Member<Predicate>> m_predicates;
+  Member<Expression> expr_;
+  HeapVector<Member<Predicate>> predicates_;
 };
 
 class LocationPath final : public Expression {
@@ -58,21 +58,21 @@ class LocationPath final : public Expression {
   ~LocationPath() override;
   DECLARE_VIRTUAL_TRACE();
 
-  Value evaluate(EvaluationContext&) const override;
-  void setAbsolute(bool value) {
-    m_absolute = value;
-    setIsContextNodeSensitive(!m_absolute);
+  Value Evaluate(EvaluationContext&) const override;
+  void SetAbsolute(bool value) {
+    absolute_ = value;
+    SetIsContextNodeSensitive(!absolute_);
   }
-  void evaluate(EvaluationContext&,
+  void Evaluate(EvaluationContext&,
                 NodeSet&) const;  // nodes is an input/output parameter
-  void appendStep(Step*);
-  void insertFirstStep(Step*);
+  void AppendStep(Step*);
+  void InsertFirstStep(Step*);
 
  private:
-  Value::Type resultType() const override { return Value::NodeSetValue; }
+  Value::Type ResultType() const override { return Value::kNodeSetValue; }
 
-  HeapVector<Member<Step>> m_steps;
-  bool m_absolute;
+  HeapVector<Member<Step>> steps_;
+  bool absolute_;
 };
 
 class Path final : public Expression {
@@ -81,13 +81,13 @@ class Path final : public Expression {
   ~Path() override;
   DECLARE_VIRTUAL_TRACE();
 
-  Value evaluate(EvaluationContext&) const override;
+  Value Evaluate(EvaluationContext&) const override;
 
  private:
-  Value::Type resultType() const override { return Value::NodeSetValue; }
+  Value::Type ResultType() const override { return Value::kNodeSetValue; }
 
-  Member<Expression> m_filter;
-  Member<LocationPath> m_path;
+  Member<Expression> filter_;
+  Member<LocationPath> path_;
 };
 
 }  // namespace XPath

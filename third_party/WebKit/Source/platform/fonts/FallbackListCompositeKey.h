@@ -24,72 +24,72 @@ struct FallbackListCompositeKey {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  FallbackListCompositeKey(const FontDescription& fontDescription)
-      : m_hash(fontDescription.styleHashWithoutFamilyList() << 1),
-        m_computedSize(fontDescription.computedSize()),
-        m_letterSpacing(fontDescription.letterSpacing()),
-        m_wordSpacing(fontDescription.wordSpacing()),
-        m_bitmapFields(fontDescription.bitmapFields()),
-        m_auxiliaryBitmapFields(fontDescription.auxiliaryBitmapFields()) {}
+  FallbackListCompositeKey(const FontDescription& font_description)
+      : hash_(font_description.StyleHashWithoutFamilyList() << 1),
+        computed_size_(font_description.ComputedSize()),
+        letter_spacing_(font_description.LetterSpacing()),
+        word_spacing_(font_description.WordSpacing()),
+        bitmap_fields_(font_description.BitmapFields()),
+        auxiliary_bitmap_fields_(font_description.AuxiliaryBitmapFields()) {}
   FallbackListCompositeKey()
-      : m_hash(0),
-        m_computedSize(0),
-        m_letterSpacing(0),
-        m_wordSpacing(0),
-        m_bitmapFields(0),
-        m_auxiliaryBitmapFields(0) {}
+      : hash_(0),
+        computed_size_(0),
+        letter_spacing_(0),
+        word_spacing_(0),
+        bitmap_fields_(0),
+        auxiliary_bitmap_fields_(0) {}
   FallbackListCompositeKey(WTF::HashTableDeletedValueType)
-      : m_hash(s_deletedValueHash),
-        m_computedSize(0),
-        m_letterSpacing(0),
-        m_wordSpacing(0),
-        m_bitmapFields(0),
-        m_auxiliaryBitmapFields(0) {}
+      : hash_(kDeletedValueHash),
+        computed_size_(0),
+        letter_spacing_(0),
+        word_spacing_(0),
+        bitmap_fields_(0),
+        auxiliary_bitmap_fields_(0) {}
 
-  void add(FontCacheKey key) {
-    m_fontCacheKeys.push_back(key);
+  void Add(FontCacheKey key) {
+    font_cache_keys_.push_back(key);
     // Djb2 with the first bit reserved for deleted.
-    m_hash = (((m_hash << 5) + m_hash) + key.hash()) << 1;
+    hash_ = (((hash_ << 5) + hash_) + key.GetHash()) << 1;
   }
 
-  unsigned hash() const { return m_hash; }
+  unsigned GetHash() const { return hash_; }
 
   bool operator==(const FallbackListCompositeKey& other) const {
-    return m_hash == other.m_hash && m_computedSize == other.m_computedSize &&
-           m_letterSpacing == other.m_letterSpacing &&
-           m_wordSpacing == other.m_wordSpacing &&
-           m_bitmapFields == other.m_bitmapFields &&
-           m_auxiliaryBitmapFields == other.m_auxiliaryBitmapFields &&
-           m_fontCacheKeys == other.m_fontCacheKeys;
+    return hash_ == other.hash_ && computed_size_ == other.computed_size_ &&
+           letter_spacing_ == other.letter_spacing_ &&
+           word_spacing_ == other.word_spacing_ &&
+           bitmap_fields_ == other.bitmap_fields_ &&
+           auxiliary_bitmap_fields_ == other.auxiliary_bitmap_fields_ &&
+           font_cache_keys_ == other.font_cache_keys_;
   }
 
-  bool isHashTableDeletedValue() const { return m_hash == s_deletedValueHash; }
+  bool IsHashTableDeletedValue() const { return hash_ == kDeletedValueHash; }
 
  private:
-  static const unsigned s_deletedValueHash = 1;
-  FontDescription m_fontDescription;
-  Vector<FontCacheKey> m_fontCacheKeys;
-  unsigned m_hash;
+  static const unsigned kDeletedValueHash = 1;
+  FontDescription font_description_;
+  Vector<FontCacheKey> font_cache_keys_;
+  unsigned hash_;
 
-  float m_computedSize;
-  float m_letterSpacing;
-  float m_wordSpacing;
-  unsigned m_bitmapFields;
-  unsigned m_auxiliaryBitmapFields;
+  float computed_size_;
+  float letter_spacing_;
+  float word_spacing_;
+  unsigned bitmap_fields_;
+  unsigned auxiliary_bitmap_fields_;
 };
 
 struct FallbackListCompositeKeyHash {
   STATIC_ONLY(FallbackListCompositeKeyHash);
-  static unsigned hash(const FallbackListCompositeKey& key) {
-    return key.hash();
+  static unsigned GetHash(const FallbackListCompositeKey& key) {
+    return key.GetHash();
   }
 
-  static bool equal(const FallbackListCompositeKey& a,
+  static bool Equal(const FallbackListCompositeKey& a,
                     const FallbackListCompositeKey& b) {
     return a == b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
 struct FallbackListCompositeKeyTraits

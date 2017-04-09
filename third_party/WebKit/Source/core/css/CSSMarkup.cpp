@@ -36,7 +36,7 @@
 namespace blink {
 
 template <typename CharacterType>
-static inline bool isCSSTokenizerIdentifier(const CharacterType* characters,
+static inline bool IsCSSTokenizerIdentifier(const CharacterType* characters,
                                             unsigned length) {
   const CharacterType* end = characters + length;
 
@@ -45,13 +45,13 @@ static inline bool isCSSTokenizerIdentifier(const CharacterType* characters,
     ++characters;
 
   // {nmstart}
-  if (characters == end || !isNameStartCodePoint(characters[0]))
+  if (characters == end || !IsNameStartCodePoint(characters[0]))
     return false;
   ++characters;
 
   // {nmchar}*
   for (; characters != end; ++characters) {
-    if (!isNameCodePoint(characters[0]))
+    if (!IsNameCodePoint(characters[0]))
       return false;
   }
 
@@ -59,37 +59,37 @@ static inline bool isCSSTokenizerIdentifier(const CharacterType* characters,
 }
 
 // "ident" from the CSS tokenizer, minus backslash-escape sequences
-static bool isCSSTokenizerIdentifier(const String& string) {
+static bool IsCSSTokenizerIdentifier(const String& string) {
   unsigned length = string.length();
 
   if (!length)
     return false;
 
-  if (string.is8Bit())
-    return isCSSTokenizerIdentifier(string.characters8(), length);
-  return isCSSTokenizerIdentifier(string.characters16(), length);
+  if (string.Is8Bit())
+    return IsCSSTokenizerIdentifier(string.Characters8(), length);
+  return IsCSSTokenizerIdentifier(string.Characters16(), length);
 }
 
-static void serializeCharacter(UChar32 c, StringBuilder& appendTo) {
-  appendTo.append('\\');
-  appendTo.append(c);
+static void SerializeCharacter(UChar32 c, StringBuilder& append_to) {
+  append_to.Append('\\');
+  append_to.Append(c);
 }
 
-static void serializeCharacterAsCodePoint(UChar32 c, StringBuilder& appendTo) {
-  appendTo.append('\\');
-  HexNumber::appendUnsignedAsHex(c, appendTo, HexNumber::Lowercase);
-  appendTo.append(' ');
+static void SerializeCharacterAsCodePoint(UChar32 c, StringBuilder& append_to) {
+  append_to.Append('\\');
+  HexNumber::AppendUnsignedAsHex(c, append_to, HexNumber::kLowercase);
+  append_to.Append(' ');
 }
 
-void serializeIdentifier(const String& identifier,
-                         StringBuilder& appendTo,
-                         bool skipStartChecks) {
-  bool isFirst = !skipStartChecks;
-  bool isSecond = false;
-  bool isFirstCharHyphen = false;
+void SerializeIdentifier(const String& identifier,
+                         StringBuilder& append_to,
+                         bool skip_start_checks) {
+  bool is_first = !skip_start_checks;
+  bool is_second = false;
+  bool is_first_char_hyphen = false;
   unsigned index = 0;
   while (index < identifier.length()) {
-    UChar32 c = identifier.characterStartingAt(index);
+    UChar32 c = identifier.CharacterStartingAt(index);
     if (c == 0) {
       // Check for lone surrogate which characterStartingAt does not return.
       c = identifier[index];
@@ -98,60 +98,60 @@ void serializeIdentifier(const String& identifier,
     index += U16_LENGTH(c);
 
     if (c == 0)
-      appendTo.append(0xfffd);
+      append_to.Append(0xfffd);
     else if (c <= 0x1f || c == 0x7f ||
              (0x30 <= c && c <= 0x39 &&
-              (isFirst || (isSecond && isFirstCharHyphen))))
-      serializeCharacterAsCodePoint(c, appendTo);
-    else if (c == 0x2d && isFirst && index == identifier.length())
-      serializeCharacter(c, appendTo);
+              (is_first || (is_second && is_first_char_hyphen))))
+      SerializeCharacterAsCodePoint(c, append_to);
+    else if (c == 0x2d && is_first && index == identifier.length())
+      SerializeCharacter(c, append_to);
     else if (0x80 <= c || c == 0x2d || c == 0x5f || (0x30 <= c && c <= 0x39) ||
              (0x41 <= c && c <= 0x5a) || (0x61 <= c && c <= 0x7a))
-      appendTo.append(c);
+      append_to.Append(c);
     else
-      serializeCharacter(c, appendTo);
+      SerializeCharacter(c, append_to);
 
-    if (isFirst) {
-      isFirst = false;
-      isSecond = true;
-      isFirstCharHyphen = (c == 0x2d);
-    } else if (isSecond) {
-      isSecond = false;
+    if (is_first) {
+      is_first = false;
+      is_second = true;
+      is_first_char_hyphen = (c == 0x2d);
+    } else if (is_second) {
+      is_second = false;
     }
   }
 }
 
-void serializeString(const String& string, StringBuilder& appendTo) {
-  appendTo.append('\"');
+void SerializeString(const String& string, StringBuilder& append_to) {
+  append_to.Append('\"');
 
   unsigned index = 0;
   while (index < string.length()) {
-    UChar32 c = string.characterStartingAt(index);
+    UChar32 c = string.CharacterStartingAt(index);
     index += U16_LENGTH(c);
 
     if (c <= 0x1f || c == 0x7f)
-      serializeCharacterAsCodePoint(c, appendTo);
+      SerializeCharacterAsCodePoint(c, append_to);
     else if (c == 0x22 || c == 0x5c)
-      serializeCharacter(c, appendTo);
+      SerializeCharacter(c, append_to);
     else
-      appendTo.append(c);
+      append_to.Append(c);
   }
 
-  appendTo.append('\"');
+  append_to.Append('\"');
 }
 
-String serializeString(const String& string) {
+String SerializeString(const String& string) {
   StringBuilder builder;
-  serializeString(string, builder);
-  return builder.toString();
+  SerializeString(string, builder);
+  return builder.ToString();
 }
 
-String serializeURI(const String& string) {
-  return "url(" + serializeString(string) + ")";
+String SerializeURI(const String& string) {
+  return "url(" + SerializeString(string) + ")";
 }
 
-String serializeFontFamily(const String& string) {
-  return isCSSTokenizerIdentifier(string) ? string : serializeString(string);
+String SerializeFontFamily(const String& string) {
+  return IsCSSTokenizerIdentifier(string) ? string : SerializeString(string);
 }
 
 }  // namespace blink

@@ -12,43 +12,43 @@
 namespace blink {
 
 TEST(FilePathConversionTest, convert) {
-  String test8bitString("path");
-  String test8bitLatin1("a\xC4");
+  String test8bit_string("path");
+  String test8bit_latin1("a\xC4");
 
-  static const UChar test[5] = {0x0070, 0x0061, 0x0074, 0x0068, 0};  // path
-  static const UChar testLatin1[3] = {0x0061, 0x00C4, 0};            // a\xC4
-  static const UChar testUTF16[3] = {0x6587, 0x5B57, 0};  // \u6587 \u5B57
-  String test16bitString(test);
-  String test16bitLatin1(testLatin1);
-  String test16bitUTF16(testUTF16);
+  static const UChar kTest[5] = {0x0070, 0x0061, 0x0074, 0x0068, 0};  // path
+  static const UChar kTestLatin1[3] = {0x0061, 0x00C4, 0};            // a\xC4
+  static const UChar kTestUTF16[3] = {0x6587, 0x5B57, 0};  // \u6587 \u5B57
+  String test16bit_string(kTest);
+  String test16bit_latin1(kTestLatin1);
+  String test16bit_utf16(kTestUTF16);
 
   // Latin1 a\xC4 == UTF8 a\xC3\x84
-  base::FilePath pathLatin1 = base::FilePath::FromUTF8Unsafe("a\xC3\x84");
+  base::FilePath path_latin1 = base::FilePath::FromUTF8Unsafe("a\xC3\x84");
   // UTF16 \u6587\u5B57 == \xE6\x96\x87\xE5\xAD\x97
-  base::FilePath pathUTF16 =
+  base::FilePath path_utf16 =
       base::FilePath::FromUTF8Unsafe("\xE6\x96\x87\xE5\xAD\x97");
 
-  EXPECT_TRUE(test8bitString.is8Bit());
-  EXPECT_TRUE(test8bitLatin1.is8Bit());
-  EXPECT_FALSE(test16bitString.is8Bit());
-  EXPECT_FALSE(test16bitLatin1.is8Bit());
+  EXPECT_TRUE(test8bit_string.Is8Bit());
+  EXPECT_TRUE(test8bit_latin1.Is8Bit());
+  EXPECT_FALSE(test16bit_string.Is8Bit());
+  EXPECT_FALSE(test16bit_latin1.Is8Bit());
 
   EXPECT_EQ(FILE_PATH_LITERAL("path"),
-            WebStringToFilePath(test8bitString).value());
-  EXPECT_EQ(pathLatin1.value(), WebStringToFilePath(test8bitLatin1).value());
+            WebStringToFilePath(test8bit_string).value());
+  EXPECT_EQ(path_latin1.value(), WebStringToFilePath(test8bit_latin1).value());
   EXPECT_EQ(FILE_PATH_LITERAL("path"),
-            WebStringToFilePath(test16bitString).value());
-  EXPECT_EQ(pathLatin1.value(), WebStringToFilePath(test16bitLatin1).value());
-  EXPECT_EQ(pathUTF16.value(), WebStringToFilePath(test16bitUTF16).value());
+            WebStringToFilePath(test16bit_string).value());
+  EXPECT_EQ(path_latin1.value(), WebStringToFilePath(test16bit_latin1).value());
+  EXPECT_EQ(path_utf16.value(), WebStringToFilePath(test16bit_utf16).value());
 
   EXPECT_STREQ("path",
                FilePathToWebString(base::FilePath(FILE_PATH_LITERAL("path")))
-                   .utf8()
+                   .Utf8()
                    .data());
-  EXPECT_STREQ(test8bitLatin1.utf8().data(),
-               FilePathToWebString(pathLatin1).utf8().data());
-  EXPECT_STREQ(test16bitUTF16.utf8().data(),
-               FilePathToWebString(pathUTF16).utf8().data());
+  EXPECT_STREQ(test8bit_latin1.Utf8().Data(),
+               FilePathToWebString(path_latin1).Utf8().data());
+  EXPECT_STREQ(test16bit_utf16.Utf8().Data(),
+               FilePathToWebString(path_utf16).Utf8().data());
 }
 
 }  // namespace blink

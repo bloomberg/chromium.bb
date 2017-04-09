@@ -33,156 +33,156 @@
 namespace blink {
 
 // User gestures timeout in 1 second.
-const double userGestureTimeout = 1.0;
+const double kUserGestureTimeout = 1.0;
 
 // For out of process tokens we allow a 10 second delay.
-const double userGestureOutOfProcessTimeout = 10.0;
+const double kUserGestureOutOfProcessTimeout = 10.0;
 
 UserGestureToken::UserGestureToken(Status status)
-    : m_consumableGestures(0),
-      m_timestamp(WTF::currentTime()),
-      m_timeoutPolicy(Default),
-      m_usageCallback(nullptr) {
-  if (status == NewGesture || !UserGestureIndicator::currentTokenThreadSafe())
-    m_consumableGestures++;
+    : consumable_gestures_(0),
+      timestamp_(WTF::CurrentTime()),
+      timeout_policy_(kDefault),
+      usage_callback_(nullptr) {
+  if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
+    consumable_gestures_++;
 }
 
-bool UserGestureToken::hasGestures() const {
-  return m_consumableGestures && !hasTimedOut();
+bool UserGestureToken::HasGestures() const {
+  return consumable_gestures_ && !HasTimedOut();
 }
 
-void UserGestureToken::transferGestureTo(UserGestureToken* other) {
-  if (!hasGestures())
+void UserGestureToken::TransferGestureTo(UserGestureToken* other) {
+  if (!HasGestures())
     return;
-  m_consumableGestures--;
-  other->m_consumableGestures++;
+  consumable_gestures_--;
+  other->consumable_gestures_++;
 }
 
-bool UserGestureToken::consumeGesture() {
-  if (!m_consumableGestures)
+bool UserGestureToken::ConsumeGesture() {
+  if (!consumable_gestures_)
     return false;
-  m_consumableGestures--;
+  consumable_gestures_--;
   return true;
 }
 
-void UserGestureToken::setTimeoutPolicy(TimeoutPolicy policy) {
-  if (!hasTimedOut() && hasGestures() && policy > m_timeoutPolicy)
-    m_timeoutPolicy = policy;
+void UserGestureToken::SetTimeoutPolicy(TimeoutPolicy policy) {
+  if (!HasTimedOut() && HasGestures() && policy > timeout_policy_)
+    timeout_policy_ = policy;
 }
 
-void UserGestureToken::resetTimestamp() {
-  m_timestamp = WTF::currentTime();
+void UserGestureToken::ResetTimestamp() {
+  timestamp_ = WTF::CurrentTime();
 }
 
-bool UserGestureToken::hasTimedOut() const {
-  if (m_timeoutPolicy == HasPaused)
+bool UserGestureToken::HasTimedOut() const {
+  if (timeout_policy_ == kHasPaused)
     return false;
-  double timeout = m_timeoutPolicy == OutOfProcess
-                       ? userGestureOutOfProcessTimeout
-                       : userGestureTimeout;
-  return WTF::currentTime() - m_timestamp > timeout;
+  double timeout = timeout_policy_ == kOutOfProcess
+                       ? kUserGestureOutOfProcessTimeout
+                       : kUserGestureTimeout;
+  return WTF::CurrentTime() - timestamp_ > timeout;
 }
 
-void UserGestureToken::setUserGestureUtilizedCallback(
+void UserGestureToken::SetUserGestureUtilizedCallback(
     UserGestureUtilizedCallback* callback) {
-  CHECK(this == UserGestureIndicator::currentToken());
-  m_usageCallback = callback;
+  CHECK(this == UserGestureIndicator::CurrentToken());
+  usage_callback_ = callback;
 }
 
-void UserGestureToken::userGestureUtilized() {
-  if (m_usageCallback) {
-    m_usageCallback->userGestureUtilized();
-    m_usageCallback = nullptr;
+void UserGestureToken::UserGestureUtilized() {
+  if (usage_callback_) {
+    usage_callback_->UserGestureUtilized();
+    usage_callback_ = nullptr;
   }
 }
 
 // This enum is used in a histogram, so its values shouldn't change.
 enum GestureMergeState {
-  OldTokenHasGesture = 1 << 0,
-  NewTokenHasGesture = 1 << 1,
-  GestureMergeStateEnd = 1 << 2,
+  kOldTokenHasGesture = 1 << 0,
+  kNewTokenHasGesture = 1 << 1,
+  kGestureMergeStateEnd = 1 << 2,
 };
 
 // Remove this when user gesture propagation is standardized. See
 // https://crbug.com/404161.
-static void RecordUserGestureMerge(const UserGestureToken& oldToken,
-                                   const UserGestureToken& newToken) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, gestureMergeHistogram,
-                      ("Blink.Gesture.Merged", GestureMergeStateEnd));
+static void RecordUserGestureMerge(const UserGestureToken& old_token,
+                                   const UserGestureToken& new_token) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, gesture_merge_histogram,
+                      ("Blink.Gesture.Merged", kGestureMergeStateEnd));
   int sample = 0;
-  if (oldToken.hasGestures())
-    sample |= OldTokenHasGesture;
-  if (newToken.hasGestures())
-    sample |= NewTokenHasGesture;
-  gestureMergeHistogram.count(sample);
+  if (old_token.HasGestures())
+    sample |= kOldTokenHasGesture;
+  if (new_token.HasGestures())
+    sample |= kNewTokenHasGesture;
+  gesture_merge_histogram.Count(sample);
 }
 
-UserGestureToken* UserGestureIndicator::s_rootToken = nullptr;
+UserGestureToken* UserGestureIndicator::root_token_ = nullptr;
 
 UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token) {
   // Silently ignore UserGestureIndicators on non-main threads and tokens that
   // are already active.
-  if (!isMainThread() || !token || token == s_rootToken)
+  if (!IsMainThread() || !token || token == root_token_)
     return;
 
-  m_token = std::move(token);
-  if (!s_rootToken) {
-    s_rootToken = m_token.get();
+  token_ = std::move(token);
+  if (!root_token_) {
+    root_token_ = token_.Get();
   } else {
-    RecordUserGestureMerge(*s_rootToken, *m_token);
-    m_token->transferGestureTo(s_rootToken);
+    RecordUserGestureMerge(*root_token_, *token_);
+    token_->TransferGestureTo(root_token_);
   }
-  m_token->resetTimestamp();
+  token_->ResetTimestamp();
 }
 
 UserGestureIndicator::~UserGestureIndicator() {
-  if (isMainThread() && m_token && m_token == s_rootToken) {
-    s_rootToken->setUserGestureUtilizedCallback(nullptr);
-    s_rootToken = nullptr;
+  if (IsMainThread() && token_ && token_ == root_token_) {
+    root_token_->SetUserGestureUtilizedCallback(nullptr);
+    root_token_ = nullptr;
   }
 }
 
 // static
-bool UserGestureIndicator::utilizeUserGesture() {
-  if (UserGestureIndicator::processingUserGesture()) {
-    s_rootToken->userGestureUtilized();
+bool UserGestureIndicator::UtilizeUserGesture() {
+  if (UserGestureIndicator::ProcessingUserGesture()) {
+    root_token_->UserGestureUtilized();
     return true;
   }
   return false;
 }
 
-bool UserGestureIndicator::processingUserGesture() {
-  if (auto* token = currentToken())
-    return token->hasGestures();
+bool UserGestureIndicator::ProcessingUserGesture() {
+  if (auto* token = CurrentToken())
+    return token->HasGestures();
   return false;
 }
 
-bool UserGestureIndicator::processingUserGestureThreadSafe() {
-  return isMainThread() && processingUserGesture();
+bool UserGestureIndicator::ProcessingUserGestureThreadSafe() {
+  return IsMainThread() && ProcessingUserGesture();
 }
 
 // static
-bool UserGestureIndicator::consumeUserGesture() {
-  if (auto* token = currentToken()) {
-    if (token->consumeGesture()) {
-      token->userGestureUtilized();
+bool UserGestureIndicator::ConsumeUserGesture() {
+  if (auto* token = CurrentToken()) {
+    if (token->ConsumeGesture()) {
+      token->UserGestureUtilized();
       return true;
     }
   }
   return false;
 }
 
-bool UserGestureIndicator::consumeUserGestureThreadSafe() {
-  return isMainThread() && consumeUserGesture();
+bool UserGestureIndicator::ConsumeUserGestureThreadSafe() {
+  return IsMainThread() && ConsumeUserGesture();
 }
 
-UserGestureToken* UserGestureIndicator::currentToken() {
-  DCHECK(isMainThread());
-  return s_rootToken;
+UserGestureToken* UserGestureIndicator::CurrentToken() {
+  DCHECK(IsMainThread());
+  return root_token_;
 }
 
-UserGestureToken* UserGestureIndicator::currentTokenThreadSafe() {
-  return isMainThread() ? currentToken() : nullptr;
+UserGestureToken* UserGestureIndicator::CurrentTokenThreadSafe() {
+  return IsMainThread() ? CurrentToken() : nullptr;
 }
 
 }  // namespace blink

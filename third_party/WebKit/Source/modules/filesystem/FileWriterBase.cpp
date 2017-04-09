@@ -40,34 +40,34 @@ namespace blink {
 
 FileWriterBase::~FileWriterBase() {}
 
-void FileWriterBase::initialize(std::unique_ptr<WebFileWriter> writer,
+void FileWriterBase::Initialize(std::unique_ptr<WebFileWriter> writer,
                                 long long length) {
-  ASSERT(!m_writer);
+  ASSERT(!writer_);
   ASSERT(length >= 0);
-  m_writer = std::move(writer);
-  m_length = length;
+  writer_ = std::move(writer);
+  length_ = length;
 }
 
-FileWriterBase::FileWriterBase() : m_position(0) {}
+FileWriterBase::FileWriterBase() : position_(0) {}
 
-void FileWriterBase::seekInternal(long long position) {
-  if (position > m_length)
-    position = m_length;
+void FileWriterBase::SeekInternal(long long position) {
+  if (position > length_)
+    position = length_;
   else if (position < 0)
-    position = m_length + position;
+    position = length_ + position;
   if (position < 0)
     position = 0;
-  m_position = position;
+  position_ = position;
 }
 
-void FileWriterBase::resetWriter() {
-  m_writer = nullptr;
+void FileWriterBase::ResetWriter() {
+  writer_ = nullptr;
 }
 
-void FileWriterBase::dispose() {
+void FileWriterBase::Dispose() {
   // Need to explicitly destroy m_writer in pre-finalizer, because otherwise it
   // may attempt to call methods on the FileWriter before we are finalized.
-  resetWriter();
+  ResetWriter();
 }
 
 }  // namespace blink

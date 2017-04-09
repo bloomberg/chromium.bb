@@ -11,27 +11,27 @@
 
 namespace blink {
 
-bool LocalFontFaceSource::isLocalFontAvailable(
-    const FontDescription& fontDescription) {
-  return FontCache::fontCache()->isPlatformFontUniqueNameMatchAvailable(
-      fontDescription, m_fontName);
+bool LocalFontFaceSource::IsLocalFontAvailable(
+    const FontDescription& font_description) {
+  return FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
+      font_description, font_name_);
 }
 
-PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(
-    const FontDescription& fontDescription) {
-  RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(
-      fontDescription, m_fontName, AlternateFontName::LocalUniqueFace);
-  m_histograms.record(fontData.get());
-  return fontData.release();
+PassRefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
+    const FontDescription& font_description) {
+  RefPtr<SimpleFontData> font_data = FontCache::GetFontCache()->GetFontData(
+      font_description, font_name_, AlternateFontName::kLocalUniqueFace);
+  histograms_.Record(font_data.Get());
+  return font_data.Release();
 }
 
-void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess) {
-  if (m_reported)
+void LocalFontFaceSource::LocalFontHistograms::Record(bool load_success) {
+  if (reported_)
     return;
-  m_reported = true;
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, localFontUsedHistogram,
+  reported_ = true;
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, local_font_used_histogram,
                       ("WebFont.LocalFontUsed", 2));
-  localFontUsedHistogram.count(loadSuccess ? 1 : 0);
+  local_font_used_histogram.Count(load_success ? 1 : 0);
 }
 
 }  // namespace blink

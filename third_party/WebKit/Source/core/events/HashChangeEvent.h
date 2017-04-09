@@ -30,45 +30,45 @@ class HashChangeEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HashChangeEvent* create() { return new HashChangeEvent; }
+  static HashChangeEvent* Create() { return new HashChangeEvent; }
 
-  static HashChangeEvent* create(const String& oldURL, const String& newURL) {
-    return new HashChangeEvent(oldURL, newURL);
+  static HashChangeEvent* Create(const String& old_url, const String& new_url) {
+    return new HashChangeEvent(old_url, new_url);
   }
 
-  static HashChangeEvent* create(const AtomicString& type,
+  static HashChangeEvent* Create(const AtomicString& type,
                                  const HashChangeEventInit& initializer) {
     return new HashChangeEvent(type, initializer);
   }
 
-  const String& oldURL() const { return m_oldURL; }
-  const String& newURL() const { return m_newURL; }
+  const String& oldURL() const { return old_url_; }
+  const String& newURL() const { return new_url_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::HashChangeEvent;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
   HashChangeEvent() {}
 
-  HashChangeEvent(const String& oldURL, const String& newURL)
+  HashChangeEvent(const String& old_url, const String& new_url)
       : Event(EventTypeNames::hashchange, false, false),
-        m_oldURL(oldURL),
-        m_newURL(newURL) {}
+        old_url_(old_url),
+        new_url_(new_url) {}
 
   HashChangeEvent(const AtomicString& type,
                   const HashChangeEventInit& initializer)
       : Event(type, initializer) {
     if (initializer.hasOldURL())
-      m_oldURL = initializer.oldURL();
+      old_url_ = initializer.oldURL();
     if (initializer.hasNewURL())
-      m_newURL = initializer.newURL();
+      new_url_ = initializer.newURL();
   }
 
-  String m_oldURL;
-  String m_newURL;
+  String old_url_;
+  String new_url_;
 };
 
 }  // namespace blink

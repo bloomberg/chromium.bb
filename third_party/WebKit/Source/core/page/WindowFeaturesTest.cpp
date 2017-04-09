@@ -13,9 +13,9 @@ using WindowFeaturesTest = ::testing::Test;
 
 TEST_F(WindowFeaturesTest, NoOpener) {
   static const struct {
-    const char* featureString;
+    const char* feature_string;
     bool noopener;
-  } cases[] = {
+  } kCases[] = {
       {"", false},
       {"something", false},
       {"something, something", false},
@@ -26,10 +26,10 @@ TEST_F(WindowFeaturesTest, NoOpener) {
       {"NoOpEnEr", true},
   };
 
-  for (const auto& test : cases) {
-    WindowFeatures features(test.featureString);
-    EXPECT_EQ(test.noopener, features.noopener) << "Testing '"
-                                                << test.featureString << "'";
+  for (const auto& test : kCases) {
+    WindowFeatures features(test.feature_string);
+    EXPECT_EQ(test.noopener, features.noopener)
+        << "Testing '" << test.feature_string << "'";
   }
 }
 

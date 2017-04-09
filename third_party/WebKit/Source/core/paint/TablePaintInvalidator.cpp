@@ -14,41 +14,41 @@
 
 namespace blink {
 
-PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
+PaintInvalidationReason TablePaintInvalidator::InvalidatePaintIfNeeded() {
   PaintInvalidationReason reason =
-      BoxPaintInvalidator(m_table, m_context).invalidatePaintIfNeeded();
+      BoxPaintInvalidator(table_, context_).InvalidatePaintIfNeeded();
 
   // If any col changed background, we need to invalidate all sections because
   // col background paints into section's background display item.
-  bool hasColChangedBackground = false;
-  if (m_table.hasColElements()) {
-    bool visualRectChanged = m_context.oldVisualRect != m_table.visualRect();
-    for (LayoutTableCol* col = m_table.firstColumn(); col;
-         col = col->nextColumn()) {
+  bool has_col_changed_background = false;
+  if (table_.HasColElements()) {
+    bool visual_rect_changed = context_.old_visual_rect != table_.VisualRect();
+    for (LayoutTableCol* col = table_.FirstColumn(); col;
+         col = col->NextColumn()) {
       // LayoutTableCol uses the table's localVisualRect(). Should check column
       // for paint invalidation when table's visual rect changed.
-      if (visualRectChanged)
-        col->setMayNeedPaintInvalidation();
+      if (visual_rect_changed)
+        col->SetMayNeedPaintInvalidation();
       // This ensures that the backgroundChangedSinceLastPaintInvalidation flag
       // is up-to-date.
-      col->ensureIsReadyForPaintInvalidation();
-      if (col->backgroundChangedSinceLastPaintInvalidation()) {
-        hasColChangedBackground = true;
+      col->EnsureIsReadyForPaintInvalidation();
+      if (col->BackgroundChangedSinceLastPaintInvalidation()) {
+        has_col_changed_background = true;
         break;
       }
     }
   }
 
-  if (hasColChangedBackground) {
-    for (LayoutObject* child = m_table.firstChild(); child;
-         child = child->nextSibling()) {
-      if (!child->isTableSection())
+  if (has_col_changed_background) {
+    for (LayoutObject* child = table_.FirstChild(); child;
+         child = child->NextSibling()) {
+      if (!child->IsTableSection())
         continue;
-      LayoutTableSection* section = toLayoutTableSection(child);
-      section->ensureIsReadyForPaintInvalidation();
+      LayoutTableSection* section = ToLayoutTableSection(child);
+      section->EnsureIsReadyForPaintInvalidation();
       ObjectPaintInvalidator(*section)
-          .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-              *section, PaintInvalidationStyleChange);
+          .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+              *section, kPaintInvalidationStyleChange);
     }
   }
 

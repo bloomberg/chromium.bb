@@ -41,32 +41,30 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
  public:
   ~SVGGraphicsElement() override;
 
-  enum StyleUpdateStrategy { AllowStyleUpdate, DisallowStyleUpdate };
+  enum StyleUpdateStrategy { kAllowStyleUpdate, kDisallowStyleUpdate };
 
-  AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
-  AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
+  AffineTransform GetCTM(StyleUpdateStrategy = kAllowStyleUpdate);
+  AffineTransform GetScreenCTM(StyleUpdateStrategy = kAllowStyleUpdate);
   SVGMatrixTearOff* getCTMFromJavascript();
   SVGMatrixTearOff* getScreenCTMFromJavascript();
 
   SVGElement* nearestViewportElement() const;
   SVGElement* farthestViewportElement() const;
 
-  AffineTransform localCoordinateSpaceTransform() const override {
-    return calculateTransform(IncludeMotionTransform);
+  AffineTransform LocalCoordinateSpaceTransform() const override {
+    return CalculateTransform(kIncludeMotionTransform);
   }
-  AffineTransform* animateMotionTransform() override;
+  AffineTransform* AnimateMotionTransform() override;
 
-  virtual FloatRect getBBox();
+  virtual FloatRect GetBBox();
   SVGRectTearOff* getBBoxFromJavascript();
 
-  bool isValid() const final { return SVGTests::isValid(); }
+  bool IsValid() const final { return SVGTests::IsValid(); }
 
-  SVGAnimatedTransformList* transform() { return m_transform.get(); }
-  const SVGAnimatedTransformList* transform() const {
-    return m_transform.get();
-  }
+  SVGAnimatedTransformList* transform() { return transform_.Get(); }
+  const SVGAnimatedTransformList* transform() const { return transform_.Get(); }
 
-  AffineTransform computeCTM(SVGElement::CTMScope mode,
+  AffineTransform ComputeCTM(SVGElement::CTMScope mode,
                              SVGGraphicsElement::StyleUpdateStrategy,
                              const SVGGraphicsElement* ancestor = 0) const;
 
@@ -75,25 +73,25 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
  protected:
   SVGGraphicsElement(const QualifiedName&,
                      Document&,
-                     ConstructionType = CreateSVGElement);
+                     ConstructionType = kCreateSVGElement);
 
-  bool supportsFocus() const override {
-    return Element::supportsFocus() || hasFocusEventListeners();
+  bool SupportsFocus() const override {
+    return Element::SupportsFocus() || HasFocusEventListeners();
   }
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  Member<SVGAnimatedTransformList> m_transform;
+  Member<SVGAnimatedTransformList> transform_;
 
  private:
-  bool isSVGGraphicsElement() const final { return true; }
+  bool IsSVGGraphicsElement() const final { return true; }
 };
 
-inline bool isSVGGraphicsElement(const SVGElement& element) {
-  return element.isSVGGraphicsElement();
+inline bool IsSVGGraphicsElement(const SVGElement& element) {
+  return element.IsSVGGraphicsElement();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGraphicsElement);

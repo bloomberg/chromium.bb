@@ -39,23 +39,23 @@ class CONTENT_EXPORT IndexedDBKey {
 
   blink::WebIDBKeyType type() const { return type_; }
   const std::vector<IndexedDBKey>& array() const {
-    DCHECK_EQ(type_, blink::WebIDBKeyTypeArray);
+    DCHECK_EQ(type_, blink::kWebIDBKeyTypeArray);
     return array_;
   }
   const std::string& binary() const {
-    DCHECK_EQ(type_, blink::WebIDBKeyTypeBinary);
+    DCHECK_EQ(type_, blink::kWebIDBKeyTypeBinary);
     return binary_;
   }
   const base::string16& string() const {
-    DCHECK_EQ(type_, blink::WebIDBKeyTypeString);
+    DCHECK_EQ(type_, blink::kWebIDBKeyTypeString);
     return string_;
   }
   double date() const {
-    DCHECK_EQ(type_, blink::WebIDBKeyTypeDate);
+    DCHECK_EQ(type_, blink::kWebIDBKeyTypeDate);
     return number_;
   }
   double number() const {
-    DCHECK_EQ(type_, blink::WebIDBKeyTypeNumber);
+    DCHECK_EQ(type_, blink::kWebIDBKeyTypeNumber);
     return number_;
   }
 

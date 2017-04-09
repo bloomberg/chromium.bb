@@ -32,33 +32,33 @@
 namespace blink {
 
 LayoutFrame::LayoutFrame(HTMLFrameElement* frame) : LayoutPart(frame) {
-  setInline(false);
+  SetInline(false);
 }
 
-FrameEdgeInfo LayoutFrame::edgeInfo() const {
-  HTMLFrameElement* element = toHTMLFrameElement(node());
-  return FrameEdgeInfo(element->noResize(), element->hasFrameBorder());
+FrameEdgeInfo LayoutFrame::EdgeInfo() const {
+  HTMLFrameElement* element = toHTMLFrameElement(GetNode());
+  return FrameEdgeInfo(element->NoResize(), element->HasFrameBorder());
 }
 
-void LayoutFrame::imageChanged(WrappedImagePtr image, const IntRect*) {
-  if (const CursorList* cursors = style()->cursors()) {
+void LayoutFrame::ImageChanged(WrappedImagePtr image, const IntRect*) {
+  if (const CursorList* cursors = Style()->Cursors()) {
     for (const CursorData& cursor : *cursors) {
-      if (cursor.image() && cursor.image()->cachedImage() == image) {
-        if (LocalFrame* frame = this->frame()) {
+      if (cursor.GetImage() && cursor.GetImage()->CachedImage() == image) {
+        if (LocalFrame* frame = this->GetFrame()) {
           // Cursor update scheduling is done by the local root, which is the
           // main frame if there are no RemoteFrame ancestors in the frame tree.
           // Use of localFrameRoot() is discouraged but will change when cursor
           // update scheduling is moved from EventHandler to PageEventHandler.
-          frame->localFrameRoot()->eventHandler().scheduleCursorUpdate();
+          frame->LocalFrameRoot()->GetEventHandler().ScheduleCursorUpdate();
         }
       }
     }
   }
 }
 
-void LayoutFrame::updateFromElement() {
-  if (parent() && parent()->isFrameSet())
-    toLayoutFrameSet(parent())->notifyFrameEdgeInfoChanged();
+void LayoutFrame::UpdateFromElement() {
+  if (Parent() && Parent()->IsFrameSet())
+    ToLayoutFrameSet(Parent())->NotifyFrameEdgeInfoChanged();
 }
 
 }  // namespace blink

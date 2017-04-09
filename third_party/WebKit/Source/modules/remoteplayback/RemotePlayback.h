@@ -34,15 +34,15 @@ class MODULES_EXPORT RemotePlayback final
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
-  static RemotePlayback* create(HTMLMediaElement&);
+  static RemotePlayback* Create(HTMLMediaElement&);
 
   // Notifies this object that disableRemotePlayback attribute was set on the
   // corresponding media element.
-  void remotePlaybackDisabled();
+  void RemotePlaybackDisabled();
 
   // EventTarget implementation.
-  const WTF::AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const WTF::AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // Starts notifying the page about the changes to the remote playback devices
   // availability via the provided callback. May start the monitoring of remote
@@ -64,7 +64,7 @@ class MODULES_EXPORT RemotePlayback final
   String state() const;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
@@ -81,20 +81,20 @@ class MODULES_EXPORT RemotePlayback final
 
   // Calls the specified availability callback with the current availability.
   // Need a void() method to post it as a task.
-  void notifyInitialAvailability(int callbackId);
+  void NotifyInitialAvailability(int callback_id);
 
   // WebRemotePlaybackClient implementation.
-  void stateChanged(WebRemotePlaybackState) override;
-  void availabilityChanged(WebRemotePlaybackAvailability) override;
-  void promptCancelled() override;
-  bool remotePlaybackAvailable() const override;
+  void StateChanged(WebRemotePlaybackState) override;
+  void AvailabilityChanged(WebRemotePlaybackAvailability) override;
+  void PromptCancelled() override;
+  bool RemotePlaybackAvailable() const override;
 
-  WebRemotePlaybackState m_state;
-  WebRemotePlaybackAvailability m_availability;
+  WebRemotePlaybackState state_;
+  WebRemotePlaybackAvailability availability_;
   HeapHashMap<int, TraceWrapperMember<RemotePlaybackAvailabilityCallback>>
-      m_availabilityCallbacks;
-  Member<HTMLMediaElement> m_mediaElement;
-  Member<ScriptPromiseResolver> m_promptPromiseResolver;
+      availability_callbacks_;
+  Member<HTMLMediaElement> media_element_;
+  Member<ScriptPromiseResolver> prompt_promise_resolver_;
 };
 
 }  // namespace blink

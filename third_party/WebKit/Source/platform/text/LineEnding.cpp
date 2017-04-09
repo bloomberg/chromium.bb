@@ -56,7 +56,7 @@ class CStringBuffer final : public OutputBuffer {
 
   char* allocate(size_t size) override {
     char* ptr;
-    m_buffer = CString::createUninitialized(size, ptr);
+    m_buffer = CString::CreateUninitialized(size, ptr);
     return ptr;
   }
 
@@ -75,12 +75,12 @@ class VectorCharAppendBuffer final : public OutputBuffer {
 
   char* allocate(size_t size) override {
     size_t oldSize = m_buffer.size();
-    m_buffer.grow(oldSize + size);
-    return m_buffer.data() + oldSize;
+    m_buffer.Grow(oldSize + size);
+    return m_buffer.Data() + oldSize;
   }
 
   void copy(const CString& source) override {
-    m_buffer.append(source.data(), source.length());
+    m_buffer.Append(source.Data(), source.length());
   }
 
  private:
@@ -91,8 +91,8 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
                                         OutputBuffer& buffer) {
   // Compute the new length.
   size_t newLen = 0;
-  const char* p = from.data();
-  while (p < from.data() + from.length()) {
+  const char* p = from.Data();
+  while (p < from.Data() + from.length()) {
     char c = *p++;
     if (c == '\r') {
       // Safe to look ahead because of trailing '\0'.
@@ -116,11 +116,11 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
     return;
   }
 
-  p = from.data();
+  p = from.Data();
   char* q = buffer.allocate(newLen);
 
   // Make a copy of the string.
-  while (p < from.data() + from.length()) {
+  while (p < from.Data() + from.length()) {
     char c = *p++;
     if (c == '\r') {
       // Safe to look ahead because of trailing '\0'.
@@ -144,48 +144,48 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
 
 namespace blink {
 
-void normalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
+void NormalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   // Compute the new length.
-  size_t newLen = 0;
-  bool needFix = false;
-  const char* p = from.data();
-  char fromEndingChar = '\r';
-  char toEndingChar = '\n';
-  while (p < from.data() + from.length()) {
+  size_t new_len = 0;
+  bool need_fix = false;
+  const char* p = from.Data();
+  char from_ending_char = '\r';
+  char to_ending_char = '\n';
+  while (p < from.Data() + from.length()) {
     char c = *p++;
     if (c == '\r' && *p == '\n') {
       // Turn CRLF into CR or LF.
       p++;
-      needFix = true;
-    } else if (c == fromEndingChar) {
+      need_fix = true;
+    } else if (c == from_ending_char) {
       // Turn CR/LF into LF/CR.
-      needFix = true;
+      need_fix = true;
     }
-    newLen += 1;
+    new_len += 1;
   }
 
   // Grow the result buffer.
-  p = from.data();
-  size_t oldResultSize = result.size();
-  result.grow(oldResultSize + newLen);
-  char* q = result.data() + oldResultSize;
+  p = from.Data();
+  size_t old_result_size = result.size();
+  result.Grow(old_result_size + new_len);
+  char* q = result.Data() + old_result_size;
 
   // If no need to fix the string, just copy the string over.
-  if (!needFix) {
+  if (!need_fix) {
     memcpy(q, p, from.length());
     return;
   }
 
   // Make a copy of the string.
-  while (p < from.data() + from.length()) {
+  while (p < from.Data() + from.length()) {
     char c = *p++;
     if (c == '\r' && *p == '\n') {
       // Turn CRLF or CR into CR or LF.
       p++;
-      *q++ = toEndingChar;
-    } else if (c == fromEndingChar) {
+      *q++ = to_ending_char;
+    } else if (c == from_ending_char) {
       // Turn CR/LF into LF/CR.
-      *q++ = toEndingChar;
+      *q++ = to_ending_char;
     } else {
       // Leave other characters alone.
       *q++ = c;
@@ -193,7 +193,7 @@ void normalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   }
 }
 
-CString normalizeLineEndingsToCRLF(const CString& from) {
+CString NormalizeLineEndingsToCRLF(const CString& from) {
   if (!from.length())
     return from;
   CString result;
@@ -202,12 +202,12 @@ CString normalizeLineEndingsToCRLF(const CString& from) {
   return buffer.buffer();
 }
 
-void normalizeLineEndingsToNative(const CString& from, Vector<char>& result) {
+void NormalizeLineEndingsToNative(const CString& from, Vector<char>& result) {
 #if OS(WIN)
   VectorCharAppendBuffer buffer(result);
   internalNormalizeLineEndingsToCRLF(from, buffer);
 #else
-  normalizeLineEndingsToLF(from, result);
+  NormalizeLineEndingsToLF(from, result);
 #endif
 }
 

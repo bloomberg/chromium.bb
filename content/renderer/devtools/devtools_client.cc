@@ -22,13 +22,12 @@ using blink::WebString;
 
 namespace content {
 
-DevToolsClient::DevToolsClient(
-    RenderFrame* main_render_frame,
-    const std::string& compatibility_script)
+DevToolsClient::DevToolsClient(RenderFrame* main_render_frame,
+                               const std::string& compatibility_script)
     : RenderFrameObserver(main_render_frame),
       compatibility_script_(compatibility_script),
       web_tools_frontend_(
-          WebDevToolsFrontend::create(main_render_frame->GetWebFrame(), this)) {
+          WebDevToolsFrontend::Create(main_render_frame->GetWebFrame(), this)) {
 }
 
 DevToolsClient::~DevToolsClient() {
@@ -43,12 +42,11 @@ void DevToolsClient::OnDestruct() {
   delete this;
 }
 
-void DevToolsClient::sendMessageToEmbedder(const WebString& message) {
-  Send(new DevToolsHostMsg_DispatchOnEmbedder(routing_id(),
-                                              message.utf8()));
+void DevToolsClient::SendMessageToEmbedder(const WebString& message) {
+  Send(new DevToolsHostMsg_DispatchOnEmbedder(routing_id(), message.Utf8()));
 }
 
-bool DevToolsClient::isUnderTest() {
+bool DevToolsClient::IsUnderTest() {
   return RenderThreadImpl::current()->layout_test_mode();
 }
 

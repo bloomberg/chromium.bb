@@ -20,8 +20,8 @@ class MODULES_EXPORT DetectedBarcode final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DetectedBarcode* create();
-  static DetectedBarcode* create(String, DOMRect*, HeapVector<Point2D>);
+  static DetectedBarcode* Create();
+  static DetectedBarcode* Create(String, DOMRect*, HeapVector<Point2D>);
 
   const String& rawValue() const;
   DOMRect* boundingBox() const;
@@ -31,9 +31,9 @@ class MODULES_EXPORT DetectedBarcode final
  private:
   DetectedBarcode(String, DOMRect*, HeapVector<Point2D>);
 
-  const String m_rawValue;
-  const Member<DOMRect> m_boundingBox;
-  const HeapVector<Point2D> m_cornerPoints;
+  const String raw_value_;
+  const Member<DOMRect> bounding_box_;
+  const HeapVector<Point2D> corner_points_;
 };
 
 }  // namespace blink

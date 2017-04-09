@@ -32,27 +32,27 @@
 
 namespace blink {
 
-static void createChannel(MessagePort* port1, MessagePort* port2) {
+static void CreateChannel(MessagePort* port1, MessagePort* port2) {
   std::unique_ptr<WebMessagePortChannel> channel1;
   std::unique_ptr<WebMessagePortChannel> channel2;
-  Platform::current()->createMessageChannel(&channel1, &channel2);
+  Platform::Current()->CreateMessageChannel(&channel1, &channel2);
   DCHECK(channel1);
   DCHECK(channel2);
 
   // Now entangle the proxies with the appropriate local ports.
-  port1->entangle(std::move(channel2));
-  port2->entangle(std::move(channel1));
+  port1->Entangle(std::move(channel2));
+  port2->Entangle(std::move(channel1));
 }
 
 MessageChannel::MessageChannel(ExecutionContext* context)
-    : m_port1(MessagePort::create(*context)),
-      m_port2(MessagePort::create(*context)) {
-  createChannel(m_port1.get(), m_port2.get());
+    : port1_(MessagePort::Create(*context)),
+      port2_(MessagePort::Create(*context)) {
+  CreateChannel(port1_.Get(), port2_.Get());
 }
 
 DEFINE_TRACE(MessageChannel) {
-  visitor->trace(m_port1);
-  visitor->trace(m_port2);
+  visitor->Trace(port1_);
+  visitor->Trace(port2_);
 }
 
 }  // namespace blink

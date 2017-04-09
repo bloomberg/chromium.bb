@@ -10,7 +10,7 @@
 namespace WTF {
 namespace debug {
 
-inline void alias(const void* var) {
+inline void Alias(const void* var) {
   base::debug::Alias(var);
 }
 

@@ -34,22 +34,22 @@ namespace blink {
 
 class StyleFlexibleBoxData : public RefCounted<StyleFlexibleBoxData> {
  public:
-  static PassRefPtr<StyleFlexibleBoxData> create() {
-    return adoptRef(new StyleFlexibleBoxData);
+  static PassRefPtr<StyleFlexibleBoxData> Create() {
+    return AdoptRef(new StyleFlexibleBoxData);
   }
-  PassRefPtr<StyleFlexibleBoxData> copy() const {
-    return adoptRef(new StyleFlexibleBoxData(*this));
+  PassRefPtr<StyleFlexibleBoxData> Copy() const {
+    return AdoptRef(new StyleFlexibleBoxData(*this));
   }
 
   bool operator==(const StyleFlexibleBoxData&) const;
   bool operator!=(const StyleFlexibleBoxData& o) const { return !(*this == o); }
 
-  float m_flexGrow;
-  float m_flexShrink;
-  Length m_flexBasis;
+  float flex_grow_;
+  float flex_shrink_;
+  Length flex_basis_;
 
-  unsigned m_flexDirection : 2;  // EFlexDirection
-  unsigned m_flexWrap : 2;       // EFlexWrap
+  unsigned flex_direction_ : 2;  // EFlexDirection
+  unsigned flex_wrap_ : 2;       // EFlexWrap
 
  private:
   StyleFlexibleBoxData();

@@ -38,15 +38,15 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey);
 
   // WebMediaPlayerEncryptedMediaClient methods
-  void encrypted(WebEncryptedMediaInitDataType,
-                 const unsigned char* initData,
-                 unsigned initDataLength) final;
-  void didBlockPlaybackWaitingForKey() final;
-  void didResumePlaybackBlockedForKey() final;
-  WebContentDecryptionModule* contentDecryptionModule();
+  void Encrypted(WebEncryptedMediaInitDataType,
+                 const unsigned char* init_data,
+                 unsigned init_data_length) final;
+  void DidBlockPlaybackWaitingForKey() final;
+  void DidResumePlaybackBlockedForKey() final;
+  WebContentDecryptionModule* ContentDecryptionModule();
 
-  static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
-  static const char* supplementName();
+  static HTMLMediaElementEncryptedMedia& From(HTMLMediaElement&);
+  static const char* SupplementName();
 
   ~HTMLMediaElementEncryptedMedia();
 
@@ -58,20 +58,21 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
 
   // EventTarget
-  bool setAttributeEventListener(const AtomicString& eventType, EventListener*);
-  EventListener* getAttributeEventListener(const AtomicString& eventType);
+  bool SetAttributeEventListener(const AtomicString& event_type,
+                                 EventListener*);
+  EventListener* GetAttributeEventListener(const AtomicString& event_type);
 
-  Member<HTMLMediaElement> m_mediaElement;
+  Member<HTMLMediaElement> media_element_;
 
   // Internal values specified by the EME spec:
   // http://w3c.github.io/encrypted-media/#idl-def-HTMLMediaElement
   // The following internal values are added to the HTMLMediaElement:
   // - waiting for key, which shall have a boolean value
   // - attaching media keys, which shall have a boolean value
-  bool m_isWaitingForKey;
-  bool m_isAttachingMediaKeys;
+  bool is_waiting_for_key_;
+  bool is_attaching_media_keys_;
 
-  Member<MediaKeys> m_mediaKeys;
+  Member<MediaKeys> media_keys_;
 };
 
 }  // namespace blink

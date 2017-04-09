@@ -25,104 +25,104 @@ namespace blink {
 
 CompositorAnimation::CompositorAnimation(
     const CompositorAnimationCurve& curve,
-    CompositorTargetProperty::Type targetProperty,
-    int animationId,
-    int groupId) {
-  if (!animationId)
-    animationId = AnimationIdProvider::NextAnimationId();
-  if (!groupId)
-    groupId = AnimationIdProvider::NextGroupId();
+    CompositorTargetProperty::Type target_property,
+    int animation_id,
+    int group_id) {
+  if (!animation_id)
+    animation_id = AnimationIdProvider::NextAnimationId();
+  if (!group_id)
+    group_id = AnimationIdProvider::NextGroupId();
 
-  m_animation = Animation::Create(curve.cloneToAnimationCurve(), animationId,
-                                  groupId, targetProperty);
+  animation_ = Animation::Create(curve.CloneToAnimationCurve(), animation_id,
+                                 group_id, target_property);
 }
 
 CompositorAnimation::~CompositorAnimation() {}
 
-int CompositorAnimation::id() const {
-  return m_animation->id();
+int CompositorAnimation::Id() const {
+  return animation_->id();
 }
 
-int CompositorAnimation::group() const {
-  return m_animation->group();
+int CompositorAnimation::Group() const {
+  return animation_->group();
 }
 
-CompositorTargetProperty::Type CompositorAnimation::targetProperty() const {
-  return m_animation->target_property();
+CompositorTargetProperty::Type CompositorAnimation::TargetProperty() const {
+  return animation_->target_property();
 }
 
-double CompositorAnimation::iterations() const {
-  return m_animation->iterations();
+double CompositorAnimation::Iterations() const {
+  return animation_->iterations();
 }
 
-void CompositorAnimation::setIterations(double n) {
-  m_animation->set_iterations(n);
+void CompositorAnimation::SetIterations(double n) {
+  animation_->set_iterations(n);
 }
 
-double CompositorAnimation::iterationStart() const {
-  return m_animation->iteration_start();
+double CompositorAnimation::IterationStart() const {
+  return animation_->iteration_start();
 }
 
-void CompositorAnimation::setIterationStart(double iterationStart) {
-  m_animation->set_iteration_start(iterationStart);
+void CompositorAnimation::SetIterationStart(double iteration_start) {
+  animation_->set_iteration_start(iteration_start);
 }
 
-double CompositorAnimation::startTime() const {
-  return (m_animation->start_time() - base::TimeTicks()).InSecondsF();
+double CompositorAnimation::StartTime() const {
+  return (animation_->start_time() - base::TimeTicks()).InSecondsF();
 }
 
-void CompositorAnimation::setStartTime(double monotonicTime) {
-  m_animation->set_start_time(base::TimeTicks::FromInternalValue(
-      monotonicTime * base::Time::kMicrosecondsPerSecond));
+void CompositorAnimation::SetStartTime(double monotonic_time) {
+  animation_->set_start_time(base::TimeTicks::FromInternalValue(
+      monotonic_time * base::Time::kMicrosecondsPerSecond));
 }
 
-double CompositorAnimation::timeOffset() const {
-  return m_animation->time_offset().InSecondsF();
+double CompositorAnimation::TimeOffset() const {
+  return animation_->time_offset().InSecondsF();
 }
 
-void CompositorAnimation::setTimeOffset(double monotonicTime) {
-  m_animation->set_time_offset(base::TimeDelta::FromSecondsD(monotonicTime));
+void CompositorAnimation::SetTimeOffset(double monotonic_time) {
+  animation_->set_time_offset(base::TimeDelta::FromSecondsD(monotonic_time));
 }
 
-blink::CompositorAnimation::Direction CompositorAnimation::getDirection()
+blink::CompositorAnimation::Direction CompositorAnimation::GetDirection()
     const {
-  return m_animation->direction();
+  return animation_->direction();
 }
 
-void CompositorAnimation::setDirection(Direction direction) {
-  m_animation->set_direction(direction);
+void CompositorAnimation::SetDirection(Direction direction) {
+  animation_->set_direction(direction);
 }
 
-double CompositorAnimation::playbackRate() const {
-  return m_animation->playback_rate();
+double CompositorAnimation::PlaybackRate() const {
+  return animation_->playback_rate();
 }
 
-void CompositorAnimation::setPlaybackRate(double playbackRate) {
-  m_animation->set_playback_rate(playbackRate);
+void CompositorAnimation::SetPlaybackRate(double playback_rate) {
+  animation_->set_playback_rate(playback_rate);
 }
 
-blink::CompositorAnimation::FillMode CompositorAnimation::getFillMode() const {
-  return m_animation->fill_mode();
+blink::CompositorAnimation::FillMode CompositorAnimation::GetFillMode() const {
+  return animation_->fill_mode();
 }
 
-void CompositorAnimation::setFillMode(FillMode fillMode) {
-  m_animation->set_fill_mode(fillMode);
+void CompositorAnimation::SetFillMode(FillMode fill_mode) {
+  animation_->set_fill_mode(fill_mode);
 }
 
-std::unique_ptr<cc::Animation> CompositorAnimation::releaseCcAnimation() {
-  m_animation->set_needs_synchronized_start_time(true);
-  return std::move(m_animation);
+std::unique_ptr<cc::Animation> CompositorAnimation::ReleaseCcAnimation() {
+  animation_->set_needs_synchronized_start_time(true);
+  return std::move(animation_);
 }
 
 std::unique_ptr<CompositorFloatAnimationCurve>
-CompositorAnimation::floatCurveForTesting() const {
-  const cc::AnimationCurve* curve = m_animation->curve();
+CompositorAnimation::FloatCurveForTesting() const {
+  const cc::AnimationCurve* curve = animation_->curve();
   DCHECK_EQ(cc::AnimationCurve::FLOAT, curve->Type());
 
-  auto keyframedCurve = base::WrapUnique(
+  auto keyframed_curve = base::WrapUnique(
       static_cast<cc::KeyframedFloatAnimationCurve*>(curve->Clone().release()));
-  return CompositorFloatAnimationCurve::createForTesting(
-      std::move(keyframedCurve));
+  return CompositorFloatAnimationCurve::CreateForTesting(
+      std::move(keyframed_curve));
 }
 
 }  // namespace blink

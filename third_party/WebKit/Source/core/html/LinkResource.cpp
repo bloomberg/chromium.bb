@@ -40,45 +40,46 @@ namespace blink {
 
 using namespace HTMLNames;
 
-LinkResource::LinkResource(HTMLLinkElement* owner) : m_owner(owner) {}
+LinkResource::LinkResource(HTMLLinkElement* owner) : owner_(owner) {}
 
 LinkResource::~LinkResource() {}
 
-bool LinkResource::shouldLoadResource() const {
-  return m_owner->document().frame() || m_owner->document().importsController();
+bool LinkResource::ShouldLoadResource() const {
+  return owner_->GetDocument().GetFrame() ||
+         owner_->GetDocument().ImportsController();
 }
 
-LocalFrame* LinkResource::loadingFrame() const {
-  HTMLImportsController* importsController =
-      m_owner->document().importsController();
-  if (!importsController)
-    return m_owner->document().frame();
-  return importsController->master()->frame();
+LocalFrame* LinkResource::LoadingFrame() const {
+  HTMLImportsController* imports_controller =
+      owner_->GetDocument().ImportsController();
+  if (!imports_controller)
+    return owner_->GetDocument().GetFrame();
+  return imports_controller->Master()->GetFrame();
 }
 
 DEFINE_TRACE(LinkResource) {
-  visitor->trace(m_owner);
+  visitor->Trace(owner_);
 }
 
 LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
-    : m_owner(owner), m_url(owner->getNonEmptyURLAttribute(hrefAttr)) {
-  m_charset = m_owner->getAttribute(charsetAttr);
-  if (m_charset.isEmpty() && m_owner->document().frame())
-    m_charset = m_owner->document().characterSet();
+    : owner_(owner), url_(owner->GetNonEmptyURLAttribute(hrefAttr)) {
+  charset_ = owner_->getAttribute(charsetAttr);
+  if (charset_.IsEmpty() && owner_->GetDocument().GetFrame())
+    charset_ = owner_->GetDocument().characterSet();
 }
 
-FetchRequest LinkRequestBuilder::build(bool lowPriority) const {
-  ResourceRequest resourceRequest(m_owner->document().completeURL(m_url));
-  ReferrerPolicy referrerPolicy = m_owner->referrerPolicy();
-  if (referrerPolicy != ReferrerPolicyDefault) {
-    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-        referrerPolicy, m_url, m_owner->document().outgoingReferrer()));
+FetchRequest LinkRequestBuilder::Build(bool low_priority) const {
+  ResourceRequest resource_request(owner_->GetDocument().CompleteURL(url_));
+  ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
+  if (referrer_policy != kReferrerPolicyDefault) {
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy, url_, owner_->GetDocument().OutgoingReferrer()));
   }
-  FetchRequest request(resourceRequest, m_owner->localName(), m_charset);
-  if (lowPriority)
-    request.setDefer(FetchRequest::LazyLoad);
-  request.setContentSecurityPolicyNonce(
-      m_owner->fastGetAttribute(HTMLNames::nonceAttr));
+  FetchRequest request(resource_request, owner_->localName(), charset_);
+  if (low_priority)
+    request.SetDefer(FetchRequest::kLazyLoad);
+  request.SetContentSecurityPolicyNonce(
+      owner_->FastGetAttribute(HTMLNames::nonceAttr));
   return request;
 }
 

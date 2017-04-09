@@ -15,7 +15,7 @@
 
 namespace blink {
 
-uint32_t atomicStringToFourByteTag(AtomicString tag);
+uint32_t AtomicStringToFourByteTag(AtomicString tag);
 
 template <typename T>
 class FontTagValuePair {
@@ -23,17 +23,17 @@ class FontTagValuePair {
 
  public:
   FontTagValuePair(const AtomicString& tag, T value)
-      : m_tag(tag), m_value(value){};
+      : tag_(tag), value_(value){};
   bool operator==(const FontTagValuePair& other) const {
-    return m_tag == other.m_tag && m_value == other.m_value;
+    return tag_ == other.tag_ && value_ == other.value_;
   };
 
-  const AtomicString& tag() const { return m_tag; }
-  T value() const { return m_value; }
+  const AtomicString& Tag() const { return tag_; }
+  T Value() const { return value_; }
 
  private:
-  AtomicString m_tag;
-  const T m_value;
+  AtomicString tag_;
+  const T value_;
 };
 
 template <typename T>
@@ -41,19 +41,19 @@ class FontSettings {
   WTF_MAKE_NONCOPYABLE(FontSettings);
 
  public:
-  void append(const T& feature) { m_list.push_back(feature); }
-  size_t size() const { return m_list.size(); }
-  const T& operator[](int index) const { return m_list[index]; }
-  const T& at(size_t index) const { return m_list.at(index); }
+  void Append(const T& feature) { list_.push_back(feature); }
+  size_t size() const { return list_.size(); }
+  const T& operator[](int index) const { return list_[index]; }
+  const T& at(size_t index) const { return list_.at(index); }
   bool operator==(const FontSettings& other) const {
-    return m_list == other.m_list;
+    return list_ == other.list_;
   };
 
  protected:
   FontSettings(){};
 
  private:
-  Vector<T, 0> m_list;
+  Vector<T, 0> list_;
 };
 
 using FontFeature = FontTagValuePair<int>;
@@ -65,8 +65,8 @@ class PLATFORM_EXPORT FontFeatureSettings
   WTF_MAKE_NONCOPYABLE(FontFeatureSettings);
 
  public:
-  static PassRefPtr<FontFeatureSettings> create() {
-    return adoptRef(new FontFeatureSettings());
+  static PassRefPtr<FontFeatureSettings> Create() {
+    return AdoptRef(new FontFeatureSettings());
   }
 
  private:
@@ -79,11 +79,11 @@ class PLATFORM_EXPORT FontVariationSettings
   WTF_MAKE_NONCOPYABLE(FontVariationSettings);
 
  public:
-  static PassRefPtr<FontVariationSettings> create() {
-    return adoptRef(new FontVariationSettings());
+  static PassRefPtr<FontVariationSettings> Create() {
+    return AdoptRef(new FontVariationSettings());
   }
 
-  unsigned hash() const;
+  unsigned GetHash() const;
 
  private:
   FontVariationSettings() = default;

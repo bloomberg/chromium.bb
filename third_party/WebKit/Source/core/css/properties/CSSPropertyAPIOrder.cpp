@@ -11,7 +11,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIOrder::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumeInteger(range);
+  return CSSPropertyParserHelpers::ConsumeInteger(range);
 }
 
 }  // namespace blink

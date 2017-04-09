@@ -11,57 +11,57 @@
 namespace WTF {
 
 ArrayPiece::ArrayPiece() {
-  initNull();
+  InitNull();
 }
 
-ArrayPiece::ArrayPiece(void* data, unsigned byteLength) {
-  initWithData(data, byteLength);
+ArrayPiece::ArrayPiece(void* data, unsigned byte_length) {
+  InitWithData(data, byte_length);
 }
 
 ArrayPiece::ArrayPiece(ArrayBuffer* buffer) {
   if (buffer) {
-    initWithData(buffer->data(), buffer->byteLength());
+    InitWithData(buffer->Data(), buffer->ByteLength());
   } else {
-    initNull();
+    InitNull();
   }
 }
 
 ArrayPiece::ArrayPiece(ArrayBufferView* buffer) {
   if (buffer) {
-    initWithData(buffer->baseAddress(), buffer->byteLength());
+    InitWithData(buffer->BaseAddress(), buffer->ByteLength());
   } else {
-    initNull();
+    InitNull();
   }
 }
 
-bool ArrayPiece::isNull() const {
-  return m_isNull;
+bool ArrayPiece::IsNull() const {
+  return is_null_;
 }
 
-void* ArrayPiece::data() const {
-  DCHECK(!isNull());
-  return m_data;
+void* ArrayPiece::Data() const {
+  DCHECK(!IsNull());
+  return data_;
 }
 
-unsigned char* ArrayPiece::bytes() const {
-  return static_cast<unsigned char*>(data());
+unsigned char* ArrayPiece::Bytes() const {
+  return static_cast<unsigned char*>(Data());
 }
 
-unsigned ArrayPiece::byteLength() const {
-  DCHECK(!isNull());
-  return m_byteLength;
+unsigned ArrayPiece::ByteLength() const {
+  DCHECK(!IsNull());
+  return byte_length_;
 }
 
-void ArrayPiece::initWithData(void* data, unsigned byteLength) {
-  m_byteLength = byteLength;
-  m_data = data;
-  m_isNull = false;
+void ArrayPiece::InitWithData(void* data, unsigned byte_length) {
+  byte_length_ = byte_length;
+  data_ = data;
+  is_null_ = false;
 }
 
-void ArrayPiece::initNull() {
-  m_byteLength = 0;
-  m_data = 0;
-  m_isNull = true;
+void ArrayPiece::InitNull() {
+  byte_length_ = 0;
+  data_ = 0;
+  is_null_ = true;
 }
 
 }  // namespace WTF

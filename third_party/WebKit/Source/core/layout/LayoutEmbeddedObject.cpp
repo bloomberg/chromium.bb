@@ -44,119 +44,122 @@ using namespace HTMLNames;
 
 LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
     : LayoutPart(element) {
-  view()->frameView()->setIsVisuallyNonEmpty();
+  View()->GetFrameView()->SetIsVisuallyNonEmpty();
 }
 
 LayoutEmbeddedObject::~LayoutEmbeddedObject() {}
 
-PaintLayerType LayoutEmbeddedObject::layerTypeRequired() const {
+PaintLayerType LayoutEmbeddedObject::LayerTypeRequired() const {
   // This can't just use LayoutPart::layerTypeRequired, because
   // PaintLayerCompositor doesn't loop through LayoutEmbeddedObjects the way it
   // does frames in order to update the self painting bit on their Layer.
   // Also, unlike iframes, embeds don't used the usesCompositing bit on
   // LayoutView in requiresAcceleratedCompositing.
-  if (requiresAcceleratedCompositing())
-    return NormalPaintLayer;
-  return LayoutPart::layerTypeRequired();
+  if (RequiresAcceleratedCompositing())
+    return kNormalPaintLayer;
+  return LayoutPart::LayerTypeRequired();
 }
 
-static String localizedUnavailablePluginReplacementText(
+static String LocalizedUnavailablePluginReplacementText(
     Node* node,
     LayoutEmbeddedObject::PluginAvailability availability) {
-  Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();
+  Locale& locale =
+      node ? ToElement(node)->GetLocale() : Locale::DefaultLocale();
   switch (availability) {
-    case LayoutEmbeddedObject::PluginAvailable:
+    case LayoutEmbeddedObject::kPluginAvailable:
       break;
-    case LayoutEmbeddedObject::PluginMissing:
-      return locale.queryString(WebLocalizedString::MissingPluginText);
-    case LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy:
-      return locale.queryString(WebLocalizedString::BlockedPluginText);
+    case LayoutEmbeddedObject::kPluginMissing:
+      return locale.QueryString(WebLocalizedString::kMissingPluginText);
+    case LayoutEmbeddedObject::kPluginBlockedByContentSecurityPolicy:
+      return locale.QueryString(WebLocalizedString::kBlockedPluginText);
   }
   NOTREACHED();
   return String();
 }
 
-void LayoutEmbeddedObject::setPluginAvailability(
+void LayoutEmbeddedObject::SetPluginAvailability(
     PluginAvailability availability) {
-  DCHECK_EQ(PluginAvailable, m_pluginAvailability);
-  m_pluginAvailability = availability;
+  DCHECK_EQ(kPluginAvailable, plugin_availability_);
+  plugin_availability_ = availability;
 
-  m_unavailablePluginReplacementText =
-      localizedUnavailablePluginReplacementText(node(), availability);
+  unavailable_plugin_replacement_text_ =
+      LocalizedUnavailablePluginReplacementText(GetNode(), availability);
 
   // node() is nullptr when LayoutPart is being destroyed.
-  if (node())
-    setShouldDoFullPaintInvalidation();
+  if (GetNode())
+    SetShouldDoFullPaintInvalidation();
 }
 
-bool LayoutEmbeddedObject::showsUnavailablePluginIndicator() const {
-  return m_pluginAvailability != PluginAvailable;
+bool LayoutEmbeddedObject::ShowsUnavailablePluginIndicator() const {
+  return plugin_availability_ != kPluginAvailable;
 }
 
-void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo,
-                                         const LayoutPoint& paintOffset) const {
-  Element* element = toElement(node());
-  if (!isHTMLPlugInElement(element))
+void LayoutEmbeddedObject::PaintContents(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) const {
+  Element* element = ToElement(GetNode());
+  if (!IsHTMLPlugInElement(element))
     return;
 
-  LayoutPart::paintContents(paintInfo, paintOffset);
+  LayoutPart::PaintContents(paint_info, paint_offset);
 }
 
-void LayoutEmbeddedObject::paint(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset) const {
-  if (showsUnavailablePluginIndicator()) {
-    LayoutReplaced::paint(paintInfo, paintOffset);
+void LayoutEmbeddedObject::Paint(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset) const {
+  if (ShowsUnavailablePluginIndicator()) {
+    LayoutReplaced::Paint(paint_info, paint_offset);
     return;
   }
 
-  LayoutPart::paint(paintInfo, paintOffset);
+  LayoutPart::Paint(paint_info, paint_offset);
 }
 
-void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo,
-                                         const LayoutPoint& paintOffset) const {
-  EmbeddedObjectPainter(*this).paintReplaced(paintInfo, paintOffset);
+void LayoutEmbeddedObject::PaintReplaced(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) const {
+  EmbeddedObjectPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
-PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
+PaintInvalidationReason LayoutEmbeddedObject::InvalidatePaintIfNeeded(
     const PaintInvalidatorContext& context) const {
   return EmbeddedObjectPaintInvalidator(*this, context)
-      .invalidatePaintIfNeeded();
+      .InvalidatePaintIfNeeded();
 }
 
-void LayoutEmbeddedObject::layout() {
-  DCHECK(needsLayout());
+void LayoutEmbeddedObject::GetLayout() {
+  DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  updateLogicalWidth();
-  updateLogicalHeight();
+  UpdateLogicalWidth();
+  UpdateLogicalHeight();
 
-  m_overflow.reset();
-  addVisualEffectOverflow();
+  overflow_.reset();
+  AddVisualEffectOverflow();
 
-  updateLayerTransformAfterLayout();
+  UpdateLayerTransformAfterLayout();
 
-  FrameViewBase* frameViewBase = this->pluginOrFrame();
-  if (!frameViewBase && frameView())
-    frameView()->addPartToUpdate(*this);
+  FrameViewBase* frame_view_base = this->PluginOrFrame();
+  if (!frame_view_base && GetFrameView())
+    GetFrameView()->AddPartToUpdate(*this);
 
-  clearNeedsLayout();
+  ClearNeedsLayout();
 }
 
-ScrollResult LayoutEmbeddedObject::scroll(ScrollGranularity granularity,
+ScrollResult LayoutEmbeddedObject::Scroll(ScrollGranularity granularity,
                                           const FloatSize&) {
   return ScrollResult();
 }
 
-CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const {
-  if (requiresAcceleratedCompositing())
-    return CompositingReasonPlugin;
-  return CompositingReasonNone;
+CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
+  if (RequiresAcceleratedCompositing())
+    return kCompositingReasonPlugin;
+  return kCompositingReasonNone;
 }
 
-LayoutReplaced* LayoutEmbeddedObject::embeddedReplacedContent() const {
-  if (!node() || !frameViewBase() || !frameViewBase()->isFrameView())
+LayoutReplaced* LayoutEmbeddedObject::EmbeddedReplacedContent() const {
+  if (!GetNode() || !GetFrameViewBase() || !GetFrameViewBase()->IsFrameView())
     return nullptr;
-  return toFrameView(frameViewBase())->embeddedReplacedContent();
+  return ToFrameView(GetFrameViewBase())->EmbeddedReplacedContent();
 }
 
 }  // namespace blink

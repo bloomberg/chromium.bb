@@ -77,141 +77,141 @@ class CORE_EXPORT DocumentLoader
   USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
 
  public:
-  static DocumentLoader* create(LocalFrame* frame,
+  static DocumentLoader* Create(LocalFrame* frame,
                                 const ResourceRequest& request,
                                 const SubstituteData& data,
-                                ClientRedirectPolicy clientRedirectPolicy) {
+                                ClientRedirectPolicy client_redirect_policy) {
     DCHECK(frame);
 
-    return new DocumentLoader(frame, request, data, clientRedirectPolicy);
+    return new DocumentLoader(frame, request, data, client_redirect_policy);
   }
   ~DocumentLoader() override;
 
-  LocalFrame* frame() const { return m_frame; }
+  LocalFrame* GetFrame() const { return frame_; }
 
-  ResourceTimingInfo* getNavigationTimingInfo() const;
+  ResourceTimingInfo* GetNavigationTimingInfo() const;
 
-  virtual void detachFromFrame();
+  virtual void DetachFromFrame();
 
-  unsigned long mainResourceIdentifier() const;
+  unsigned long MainResourceIdentifier() const;
 
-  void replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&,
+  void ReplaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&,
                                                   const String& source);
 
-  const AtomicString& mimeType() const;
+  const AtomicString& MimeType() const;
 
-  const ResourceRequest& originalRequest() const;
+  const ResourceRequest& OriginalRequest() const;
 
-  const ResourceRequest& getRequest() const;
+  const ResourceRequest& GetRequest() const;
 
-  ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
-  void setSubresourceFilter(SubresourceFilter*);
-  SubresourceFilter* subresourceFilter() const {
-    return m_subresourceFilter.get();
+  void SetSubresourceFilter(SubresourceFilter*);
+  SubresourceFilter* GetSubresourceFilter() const {
+    return subresource_filter_.Get();
   }
 
-  const SubstituteData& substituteData() const { return m_substituteData; }
+  const SubstituteData& GetSubstituteData() const { return substitute_data_; }
 
-  const KURL& url() const;
-  const KURL& unreachableURL() const;
-  const KURL& urlForHistory() const;
+  const KURL& Url() const;
+  const KURL& UnreachableURL() const;
+  const KURL& UrlForHistory() const;
 
-  const AtomicString& responseMIMEType() const;
+  const AtomicString& ResponseMIMEType() const;
 
-  void didChangePerformanceTiming();
-  void didObserveLoadingBehavior(WebLoadingBehaviorFlag);
-  void updateForSameDocumentNavigation(const KURL&,
+  void DidChangePerformanceTiming();
+  void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
+  void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
                                        PassRefPtr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
                                        FrameLoadType,
                                        Document*);
-  const ResourceResponse& response() const { return m_response; }
-  bool isClientRedirect() const { return m_isClientRedirect; }
-  void setIsClientRedirect(bool isClientRedirect) {
-    m_isClientRedirect = isClientRedirect;
+  const ResourceResponse& GetResponse() const { return response_; }
+  bool IsClientRedirect() const { return is_client_redirect_; }
+  void SetIsClientRedirect(bool is_client_redirect) {
+    is_client_redirect_ = is_client_redirect;
   }
-  bool replacesCurrentHistoryItem() const {
-    return m_replacesCurrentHistoryItem;
+  bool ReplacesCurrentHistoryItem() const {
+    return replaces_current_history_item_;
   }
-  void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) {
-    m_replacesCurrentHistoryItem = replacesCurrentHistoryItem;
+  void SetReplacesCurrentHistoryItem(bool replaces_current_history_item) {
+    replaces_current_history_item_ = replaces_current_history_item;
   }
 
-  bool isCommittedButEmpty() const {
-    return m_state >= Committed && !m_dataReceived;
+  bool IsCommittedButEmpty() const {
+    return state_ >= kCommitted && !data_received_;
   }
 
   // Without PlzNavigate, this is only false for a narrow window during
   // navigation start. For PlzNavigate, a navigation sent to the browser will
   // leave a dummy DocumentLoader in the NotStarted state until the navigation
   // is actually handled in the renderer.
-  bool didStart() const { return m_state != NotStarted; }
+  bool DidStart() const { return state_ != kNotStarted; }
 
-  void markAsCommitted();
-  void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
-  bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
+  void MarkAsCommitted();
+  void SetSentDidFinishLoad() { state_ = kSentDidFinishLoad; }
+  bool SentDidFinishLoad() const { return state_ == kSentDidFinishLoad; }
 
-  FrameLoadType loadType() const { return m_loadType; }
-  void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
+  FrameLoadType LoadType() const { return load_type_; }
+  void SetLoadType(FrameLoadType load_type) { load_type_ = load_type; }
 
-  NavigationType getNavigationType() const { return m_navigationType; }
-  void setNavigationType(NavigationType navigationType) {
-    m_navigationType = navigationType;
+  NavigationType GetNavigationType() const { return navigation_type_; }
+  void SetNavigationType(NavigationType navigation_type) {
+    navigation_type_ = navigation_type;
   }
 
-  void setItemForHistoryNavigation(HistoryItem* item) { m_historyItem = item; }
-  HistoryItem* historyItem() const { return m_historyItem; }
+  void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
+  HistoryItem* GetHistoryItem() const { return history_item_; }
 
-  void startLoadingMainResource();
+  void StartLoadingMainResource();
 
-  DocumentLoadTiming& timing() { return m_documentLoadTiming; }
-  const DocumentLoadTiming& timing() const { return m_documentLoadTiming; }
+  DocumentLoadTiming& GetTiming() { return document_load_timing_; }
+  const DocumentLoadTiming& GetTiming() const { return document_load_timing_; }
 
-  ApplicationCacheHost* applicationCacheHost() const {
-    return m_applicationCacheHost.get();
+  ApplicationCacheHost* GetApplicationCacheHost() const {
+    return application_cache_host_.Get();
   }
 
-  void clearRedirectChain();
-  void appendRedirect(const KURL&);
+  void ClearRedirectChain();
+  void AppendRedirect(const KURL&);
 
-  ClientHintsPreferences& clientHintsPreferences() {
-    return m_clientHintsPreferences;
+  ClientHintsPreferences& GetClientHintsPreferences() {
+    return client_hints_preferences_;
   }
 
   struct InitialScrollState {
     DISALLOW_NEW();
     InitialScrollState()
-        : wasScrolledByUser(false), didRestoreFromHistory(false) {}
+        : was_scrolled_by_user(false), did_restore_from_history(false) {}
 
-    bool wasScrolledByUser;
-    bool didRestoreFromHistory;
+    bool was_scrolled_by_user;
+    bool did_restore_from_history;
   };
-  InitialScrollState& initialScrollState() { return m_initialScrollState; }
+  InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
 
-  void setWasBlockedAfterCSP() { m_wasBlockedAfterCSP = true; }
-  bool wasBlockedAfterCSP() { return m_wasBlockedAfterCSP; }
+  void SetWasBlockedAfterCSP() { was_blocked_after_csp_ = true; }
+  bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
 
-  void dispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
+  void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
                                   LinkLoader::MediaPreloadPolicy);
 
-  Resource* startPreload(Resource::Type, FetchRequest&);
+  Resource* StartPreload(Resource::Type, FetchRequest&);
 
-  void setServiceWorkerNetworkProvider(
+  void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>);
 
   // May return null before the first HTML tag is inserted by the
   // parser (before didCreateDataSource is called), after the document
   // is detached from frame, or in tests.
-  WebServiceWorkerNetworkProvider* getServiceWorkerNetworkProvider() {
-    return m_serviceWorkerNetworkProvider.get();
+  WebServiceWorkerNetworkProvider* GetServiceWorkerNetworkProvider() {
+    return service_worker_network_provider_.get();
   }
 
-  std::unique_ptr<SourceLocation> copySourceLocation() const;
-  void setSourceLocation(std::unique_ptr<SourceLocation>);
+  std::unique_ptr<SourceLocation> CopySourceLocation() const;
+  void SetSourceLocation(std::unique_ptr<SourceLocation>);
 
-  void loadFailed(const ResourceError&);
+  void LoadFailed(const ResourceError&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -221,11 +221,11 @@ class CORE_EXPORT DocumentLoader
                  const SubstituteData&,
                  ClientRedirectPolicy);
 
-  static bool shouldClearWindowName(const LocalFrame&,
-                                    SecurityOrigin* previousSecurityOrigin,
-                                    const Document& newDocument);
+  static bool ShouldClearWindowName(const LocalFrame&,
+                                    SecurityOrigin* previous_security_origin,
+                                    const Document& new_document);
 
-  Vector<KURL> m_redirectChain;
+  Vector<KURL> redirect_chain_;
 
  private:
   // installNewDocument() does the work of creating a Document and
@@ -233,123 +233,120 @@ class CORE_EXPORT DocumentLoader
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
   enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
-  void installNewDocument(const DocumentInit&, const AtomicString& mimeType,
+  void InstallNewDocument(const DocumentInit&,
+                          const AtomicString& mime_type,
                           const AtomicString& encoding,
-                          InstallNewDocumentReason, ParserSynchronizationPolicy,
-                          const KURL& overridingURL);
-  void didInstallNewDocument(Document*);
-  void didCommitNavigation();
+                          InstallNewDocumentReason,
+                          ParserSynchronizationPolicy,
+                          const KURL& overriding_url);
+  void DidInstallNewDocument(Document*);
+  void DidCommitNavigation();
 
-  void ensureWriter(const AtomicString& mimeType,
-                    const KURL& overridingURL = KURL());
-  void endWriting();
+  void EnsureWriter(const AtomicString& mime_type,
+                    const KURL& overriding_url = KURL());
+  void EndWriting();
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.
-  FrameLoader& frameLoader() const;
-  LocalFrameClient& localFrameClient() const;
+  FrameLoader& GetFrameLoader() const;
+  LocalFrameClient& GetLocalFrameClient() const;
 
-  void commitData(const char* bytes, size_t length);
-  void clearMainResourceHandle();
+  void CommitData(const char* bytes, size_t length);
+  void ClearMainResourceHandle();
 
-  bool maybeCreateArchive();
+  bool MaybeCreateArchive();
 
-  void finishedLoading(double finishTime);
-  void cancelLoadAfterCSPDenied(const ResourceResponse&);
+  void FinishedLoading(double finish_time);
+  void CancelLoadAfterCSPDenied(const ResourceResponse&);
 
   enum class HistoryNavigationType {
     kDifferentDocument,
     kFragment,
     kHistoryApi
   };
-  void setHistoryItemStateForCommit(HistoryItem* oldItem,
+  void SetHistoryItemStateForCommit(HistoryItem* old_item,
                                     FrameLoadType,
                                     HistoryNavigationType);
 
   // RawResourceClient implementation
-  bool redirectReceived(Resource*,
+  bool RedirectReceived(Resource*,
                         const ResourceRequest&,
                         const ResourceResponse&) final;
-  void responseReceived(Resource*,
+  void ResponseReceived(Resource*,
                         const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) final;
-  void dataReceived(Resource*, const char* data, size_t length) final;
+  void DataReceived(Resource*, const char* data, size_t length) final;
 
   // ResourceClient implementation
-  void notifyFinished(Resource*) final;
-  String debugName() const override { return "DocumentLoader"; }
+  void NotifyFinished(Resource*) final;
+  String DebugName() const override { return "DocumentLoader"; }
 
-  void processData(const char* data, size_t length);
+  void ProcessData(const char* data, size_t length);
 
-  bool maybeLoadEmpty();
+  bool MaybeLoadEmpty();
 
-  bool isRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
+  bool IsRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
-  bool shouldContinueForResponse() const;
+  bool ShouldContinueForResponse() const;
 
-  Member<LocalFrame> m_frame;
-  Member<ResourceFetcher> m_fetcher;
+  Member<LocalFrame> frame_;
+  Member<ResourceFetcher> fetcher_;
 
-  Member<RawResource> m_mainResource;
-  Member<HistoryItem> m_historyItem;
+  Member<RawResource> main_resource_;
+  Member<HistoryItem> history_item_;
 
-  Member<DocumentWriter> m_writer;
+  Member<DocumentWriter> writer_;
 
-  Member<SubresourceFilter> m_subresourceFilter;
+  Member<SubresourceFilter> subresource_filter_;
 
   // A reference to actual request used to create the data source.
   // The only part of this request that should change is the url, and
   // that only in the case of a same-document navigation.
-  ResourceRequest m_originalRequest;
+  ResourceRequest original_request_;
 
-  SubstituteData m_substituteData;
+  SubstituteData substitute_data_;
 
   // The 'working' request. It may be mutated
   // several times from the original request to include additional
   // headers, cookie information, canonicalization and redirects.
-  ResourceRequest m_request;
+  ResourceRequest request_;
 
-  ResourceResponse m_response;
+  ResourceResponse response_;
 
-  FrameLoadType m_loadType;
+  FrameLoadType load_type_;
 
-  bool m_isClientRedirect;
-  bool m_replacesCurrentHistoryItem;
-  bool m_dataReceived;
+  bool is_client_redirect_;
+  bool replaces_current_history_item_;
+  bool data_received_;
 
-  NavigationType m_navigationType;
+  NavigationType navigation_type_;
 
-  DocumentLoadTiming m_documentLoadTiming;
+  DocumentLoadTiming document_load_timing_;
 
-  double m_timeOfLastDataReceived;
+  double time_of_last_data_received_;
 
-  Member<ApplicationCacheHost> m_applicationCacheHost;
+  Member<ApplicationCacheHost> application_cache_host_;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
-      m_serviceWorkerNetworkProvider;
+      service_worker_network_provider_;
 
-  Member<ContentSecurityPolicy> m_contentSecurityPolicy;
-  ClientHintsPreferences m_clientHintsPreferences;
-  InitialScrollState m_initialScrollState;
+  Member<ContentSecurityPolicy> content_security_policy_;
+  ClientHintsPreferences client_hints_preferences_;
+  InitialScrollState initial_scroll_state_;
 
-  bool m_wasBlockedAfterCSP;
+  bool was_blocked_after_csp_;
 
   // PlzNavigate: set when committing a navigation. The data has originally been
   // captured when the navigation was sent to the browser process, and it is
   // sent back at commit time.
-  std::unique_ptr<SourceLocation> m_sourceLocation;
+  std::unique_ptr<SourceLocation> source_location_;
 
-  enum State {
-    NotStarted,
-    Provisional,
-    Committed,
-    SentDidFinishLoad
-  };
-  State m_state;
+  enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
+  State state_;
 
   // Used to protect against reentrancy into dataReceived().
-  bool m_inDataReceived;
-  RefPtr<SharedBuffer> m_dataBuffer;
+  bool in_data_received_;
+  RefPtr<SharedBuffer> data_buffer_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

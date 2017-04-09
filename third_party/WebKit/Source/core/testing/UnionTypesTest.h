@@ -19,7 +19,7 @@ class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static UnionTypesTest* create() { return new UnionTypesTest(); }
+  static UnionTypesTest* Create() { return new UnionTypesTest(); }
   virtual ~UnionTypesTest() {}
 
   void doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray&);
@@ -41,18 +41,18 @@ class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
   DEFINE_INLINE_TRACE() {}
 
  private:
-  UnionTypesTest() : m_attributeType(SpecificTypeNone) {}
+  UnionTypesTest() : attribute_type_(kSpecificTypeNone) {}
 
   enum AttributeSpecificType {
-    SpecificTypeNone,
-    SpecificTypeDouble,
-    SpecificTypeString,
-    SpecificTypeStringArray,
+    kSpecificTypeNone,
+    kSpecificTypeDouble,
+    kSpecificTypeString,
+    kSpecificTypeStringArray,
   };
-  AttributeSpecificType m_attributeType;
-  double m_attributeDouble;
-  String m_attributeString;
-  Vector<String> m_attributeStringArray;
+  AttributeSpecificType attribute_type_;
+  double attribute_double_;
+  String attribute_string_;
+  Vector<String> attribute_string_array_;
 };
 
 }  // namespace blink

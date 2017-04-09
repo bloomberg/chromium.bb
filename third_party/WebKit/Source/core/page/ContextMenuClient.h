@@ -35,8 +35,8 @@ class ContextMenuClient {
   virtual ~ContextMenuClient() {}
 
   // Returns whether a Context Menu was actually shown.
-  virtual bool showContextMenu(const ContextMenu*, bool fromTouch) = 0;
-  virtual void clearContextMenu() = 0;
+  virtual bool ShowContextMenu(const ContextMenu*, bool from_touch) = 0;
+  virtual void ClearContextMenu() = 0;
 };
 
 }  // namespace blink

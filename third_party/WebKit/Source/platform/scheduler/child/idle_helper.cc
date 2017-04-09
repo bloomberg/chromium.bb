@@ -142,7 +142,7 @@ void IdleHelper::EnableLongIdlePeriod() {
 
   if (ShouldWaitForQuiescence()) {
     helper_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, enable_next_long_idle_period_closure_.callback(),
+        FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
         required_quiescence_duration_before_long_idle_period_);
     delegate_->IsNotQuiescent();
     return;
@@ -158,7 +158,7 @@ void IdleHelper::EnableLongIdlePeriod() {
   } else {
     // Otherwise wait for the next long idle period delay before trying again.
     helper_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, enable_next_long_idle_period_closure_.callback(),
+        FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
         next_long_idle_period_delay);
   }
 }
@@ -273,7 +273,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
       EnableLongIdlePeriod();
     } else {
       helper_->ControlTaskRunner()->PostDelayedTask(
-          FROM_HERE, enable_next_long_idle_period_closure_.callback(),
+          FROM_HERE, enable_next_long_idle_period_closure_.GetCallback(),
           next_long_idle_period_delay);
     }
   }
@@ -292,7 +292,7 @@ void IdleHelper::OnIdleTaskPosted() {
     OnIdleTaskPostedOnMainThread();
   } else {
     helper_->ControlTaskRunner()->PostTask(
-        FROM_HERE, on_idle_task_posted_closure_.callback());
+        FROM_HERE, on_idle_task_posted_closure_.GetCallback());
   }
 }
 
@@ -305,7 +305,7 @@ void IdleHelper::OnIdleTaskPostedOnMainThread() {
       IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
     // Restart long idle period ticks.
     helper_->ControlTaskRunner()->PostTask(
-        FROM_HERE, enable_next_long_idle_period_closure_.callback());
+        FROM_HERE, enable_next_long_idle_period_closure_.GetCallback());
   }
 }
 

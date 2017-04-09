@@ -29,56 +29,56 @@
 
 namespace blink {
 
-void HitTestingTransformState::translate(int x,
+void HitTestingTransformState::Translate(int x,
                                          int y,
                                          TransformAccumulation accumulate) {
-  m_accumulatedTransform.translate(x, y);
-  if (accumulate == FlattenTransform)
-    flattenWithTransform(m_accumulatedTransform);
+  accumulated_transform_.Translate(x, y);
+  if (accumulate == kFlattenTransform)
+    FlattenWithTransform(accumulated_transform_);
 
-  m_accumulatingTransform = accumulate == AccumulateTransform;
+  accumulating_transform_ = accumulate == kAccumulateTransform;
 }
 
-void HitTestingTransformState::applyTransform(
-    const TransformationMatrix& transformFromContainer,
+void HitTestingTransformState::ApplyTransform(
+    const TransformationMatrix& transform_from_container,
     TransformAccumulation accumulate) {
-  m_accumulatedTransform.multiply(transformFromContainer);
-  if (accumulate == FlattenTransform)
-    flattenWithTransform(m_accumulatedTransform);
+  accumulated_transform_.Multiply(transform_from_container);
+  if (accumulate == kFlattenTransform)
+    FlattenWithTransform(accumulated_transform_);
 
-  m_accumulatingTransform = accumulate == AccumulateTransform;
+  accumulating_transform_ = accumulate == kAccumulateTransform;
 }
 
-void HitTestingTransformState::flatten() {
-  flattenWithTransform(m_accumulatedTransform);
+void HitTestingTransformState::Flatten() {
+  FlattenWithTransform(accumulated_transform_);
 }
 
-void HitTestingTransformState::flattenWithTransform(
+void HitTestingTransformState::FlattenWithTransform(
     const TransformationMatrix& t) {
-  TransformationMatrix inverseTransform = t.inverse();
-  m_lastPlanarPoint = inverseTransform.projectPoint(m_lastPlanarPoint);
-  m_lastPlanarQuad = inverseTransform.projectQuad(m_lastPlanarQuad);
-  m_lastPlanarArea = inverseTransform.projectQuad(m_lastPlanarArea);
+  TransformationMatrix inverse_transform = t.Inverse();
+  last_planar_point_ = inverse_transform.ProjectPoint(last_planar_point_);
+  last_planar_quad_ = inverse_transform.ProjectQuad(last_planar_quad_);
+  last_planar_area_ = inverse_transform.ProjectQuad(last_planar_area_);
 
-  m_accumulatedTransform.makeIdentity();
-  m_accumulatingTransform = false;
+  accumulated_transform_.MakeIdentity();
+  accumulating_transform_ = false;
 }
 
-FloatPoint HitTestingTransformState::mappedPoint() const {
-  return m_accumulatedTransform.inverse().projectPoint(m_lastPlanarPoint);
+FloatPoint HitTestingTransformState::MappedPoint() const {
+  return accumulated_transform_.Inverse().ProjectPoint(last_planar_point_);
 }
 
-FloatQuad HitTestingTransformState::mappedQuad() const {
-  return m_accumulatedTransform.inverse().projectQuad(m_lastPlanarQuad);
+FloatQuad HitTestingTransformState::MappedQuad() const {
+  return accumulated_transform_.Inverse().ProjectQuad(last_planar_quad_);
 }
 
-FloatQuad HitTestingTransformState::mappedArea() const {
-  return m_accumulatedTransform.inverse().projectQuad(m_lastPlanarArea);
+FloatQuad HitTestingTransformState::MappedArea() const {
+  return accumulated_transform_.Inverse().ProjectQuad(last_planar_area_);
 }
 
-LayoutRect HitTestingTransformState::boundsOfMappedArea() const {
-  return m_accumulatedTransform.inverse().clampedBoundsOfProjectedQuad(
-      m_lastPlanarArea);
+LayoutRect HitTestingTransformState::BoundsOfMappedArea() const {
+  return accumulated_transform_.Inverse().ClampedBoundsOfProjectedQuad(
+      last_planar_area_);
 }
 
 }  // namespace blink

@@ -20,72 +20,72 @@
 
 namespace blink {
 
-FetchRequestData* FetchRequestData::create() {
+FetchRequestData* FetchRequestData::Create() {
   return new FetchRequestData();
 }
 
-FetchRequestData* FetchRequestData::create(
-    ScriptState* scriptState,
-    const WebServiceWorkerRequest& webRequest) {
-  FetchRequestData* request = FetchRequestData::create();
-  request->m_url = webRequest.url();
-  request->m_method = webRequest.method();
-  for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin();
-       it != webRequest.headers().end(); ++it)
-    request->m_headerList->append(it->key, it->value);
-  if (webRequest.blobDataHandle())
-    request->setBuffer(new BodyStreamBuffer(
-        scriptState, new BlobBytesConsumer(scriptState->getExecutionContext(),
-                                           webRequest.blobDataHandle())));
-  request->setContext(webRequest.requestContext());
-  request->setReferrer(
-      Referrer(webRequest.referrerUrl().string(),
-               static_cast<ReferrerPolicy>(webRequest.getReferrerPolicy())));
-  request->setMode(webRequest.mode());
-  request->setCredentials(webRequest.credentialsMode());
-  request->setRedirect(webRequest.redirectMode());
-  request->setMIMEType(request->m_headerList->extractMIMEType());
+FetchRequestData* FetchRequestData::Create(
+    ScriptState* script_state,
+    const WebServiceWorkerRequest& web_request) {
+  FetchRequestData* request = FetchRequestData::Create();
+  request->url_ = web_request.Url();
+  request->method_ = web_request.Method();
+  for (HTTPHeaderMap::const_iterator it = web_request.Headers().begin();
+       it != web_request.Headers().end(); ++it)
+    request->header_list_->Append(it->key, it->value);
+  if (web_request.GetBlobDataHandle())
+    request->SetBuffer(new BodyStreamBuffer(
+        script_state, new BlobBytesConsumer(script_state->GetExecutionContext(),
+                                            web_request.GetBlobDataHandle())));
+  request->SetContext(web_request.GetRequestContext());
+  request->SetReferrer(
+      Referrer(web_request.ReferrerUrl().GetString(),
+               static_cast<ReferrerPolicy>(web_request.GetReferrerPolicy())));
+  request->SetMode(web_request.Mode());
+  request->SetCredentials(web_request.CredentialsMode());
+  request->SetRedirect(web_request.RedirectMode());
+  request->SetMIMEType(request->header_list_->ExtractMIMEType());
   return request;
 }
 
-FetchRequestData* FetchRequestData::cloneExceptBody() {
-  FetchRequestData* request = FetchRequestData::create();
-  request->m_url = m_url;
-  request->m_method = m_method;
-  request->m_headerList = m_headerList->clone();
-  request->m_unsafeRequestFlag = m_unsafeRequestFlag;
-  request->m_origin = m_origin;
-  request->m_sameOriginDataURLFlag = m_sameOriginDataURLFlag;
-  request->m_context = m_context;
-  request->m_referrer = m_referrer;
-  request->m_mode = m_mode;
-  request->m_credentials = m_credentials;
-  request->m_redirect = m_redirect;
-  request->m_responseTainting = m_responseTainting;
-  request->m_mimeType = m_mimeType;
-  request->m_integrity = m_integrity;
-  request->m_attachedCredential = m_attachedCredential;
+FetchRequestData* FetchRequestData::CloneExceptBody() {
+  FetchRequestData* request = FetchRequestData::Create();
+  request->url_ = url_;
+  request->method_ = method_;
+  request->header_list_ = header_list_->Clone();
+  request->unsafe_request_flag_ = unsafe_request_flag_;
+  request->origin_ = origin_;
+  request->same_origin_data_url_flag_ = same_origin_data_url_flag_;
+  request->context_ = context_;
+  request->referrer_ = referrer_;
+  request->mode_ = mode_;
+  request->credentials_ = credentials_;
+  request->redirect_ = redirect_;
+  request->response_tainting_ = response_tainting_;
+  request->mime_type_ = mime_type_;
+  request->integrity_ = integrity_;
+  request->attached_credential_ = attached_credential_;
   return request;
 }
 
-FetchRequestData* FetchRequestData::clone(ScriptState* scriptState) {
-  FetchRequestData* request = FetchRequestData::cloneExceptBody();
-  if (m_buffer) {
+FetchRequestData* FetchRequestData::Clone(ScriptState* script_state) {
+  FetchRequestData* request = FetchRequestData::CloneExceptBody();
+  if (buffer_) {
     BodyStreamBuffer* new1 = nullptr;
     BodyStreamBuffer* new2 = nullptr;
-    m_buffer->tee(&new1, &new2);
-    m_buffer = new1;
-    request->m_buffer = new2;
+    buffer_->Tee(&new1, &new2);
+    buffer_ = new1;
+    request->buffer_ = new2;
   }
   return request;
 }
 
-FetchRequestData* FetchRequestData::pass(ScriptState* scriptState) {
-  FetchRequestData* request = FetchRequestData::cloneExceptBody();
-  if (m_buffer) {
-    request->m_buffer = m_buffer;
-    m_buffer = new BodyStreamBuffer(scriptState, BytesConsumer::createClosed());
-    m_buffer->closeAndLockAndDisturb();
+FetchRequestData* FetchRequestData::Pass(ScriptState* script_state) {
+  FetchRequestData* request = FetchRequestData::CloneExceptBody();
+  if (buffer_) {
+    request->buffer_ = buffer_;
+    buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed());
+    buffer_->CloseAndLockAndDisturb();
   }
   return request;
 }
@@ -93,27 +93,27 @@ FetchRequestData* FetchRequestData::pass(ScriptState* scriptState) {
 FetchRequestData::~FetchRequestData() {}
 
 FetchRequestData::FetchRequestData()
-    : m_method(HTTPNames::GET),
-      m_headerList(FetchHeaderList::create()),
-      m_unsafeRequestFlag(false),
-      m_context(WebURLRequest::RequestContextUnspecified),
-      m_sameOriginDataURLFlag(false),
-      m_referrer(Referrer(clientReferrerString(), ReferrerPolicyDefault)),
-      m_mode(WebURLRequest::FetchRequestModeNoCORS),
-      m_credentials(WebURLRequest::FetchCredentialsModeOmit),
-      m_redirect(WebURLRequest::FetchRedirectModeFollow),
-      m_responseTainting(BasicTainting) {}
+    : method_(HTTPNames::GET),
+      header_list_(FetchHeaderList::Create()),
+      unsafe_request_flag_(false),
+      context_(WebURLRequest::kRequestContextUnspecified),
+      same_origin_data_url_flag_(false),
+      referrer_(Referrer(ClientReferrerString(), kReferrerPolicyDefault)),
+      mode_(WebURLRequest::kFetchRequestModeNoCORS),
+      credentials_(WebURLRequest::kFetchCredentialsModeOmit),
+      redirect_(WebURLRequest::kFetchRedirectModeFollow),
+      response_tainting_(kBasicTainting) {}
 
-void FetchRequestData::setCredentials(
+void FetchRequestData::SetCredentials(
     WebURLRequest::FetchCredentialsMode credentials) {
-  m_credentials = credentials;
-  if (m_credentials != WebURLRequest::FetchCredentialsModePassword)
-    m_attachedCredential.clear();
+  credentials_ = credentials;
+  if (credentials_ != WebURLRequest::kFetchCredentialsModePassword)
+    attached_credential_.Clear();
 }
 
 DEFINE_TRACE(FetchRequestData) {
-  visitor->trace(m_buffer);
-  visitor->trace(m_headerList);
+  visitor->Trace(buffer_);
+  visitor->Trace(header_list_);
 }
 
 }  // namespace blink

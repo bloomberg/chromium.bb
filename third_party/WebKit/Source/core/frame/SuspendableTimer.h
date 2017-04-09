@@ -40,19 +40,19 @@ class CORE_EXPORT SuspendableTimer : public TimerBase,
   ~SuspendableTimer() override;
 
   // SuspendableObject
-  void contextDestroyed(ExecutionContext*) override;
-  void suspend() final;
-  void resume() final;
+  void ContextDestroyed(ExecutionContext*) override;
+  void Suspend() final;
+  void Resume() final;
 
-  void stop() override;
+  void Stop() override;
 
  private:
-  void fired() override = 0;
+  void Fired() override = 0;
 
-  double m_nextFireInterval;
-  double m_repeatInterval;
+  double next_fire_interval_;
+  double repeat_interval_;
 #if DCHECK_IS_ON()
-  bool m_suspended = false;
+  bool suspended_ = false;
 #endif
 };
 

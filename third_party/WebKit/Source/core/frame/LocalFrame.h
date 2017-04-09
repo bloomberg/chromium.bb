@@ -90,71 +90,71 @@ class CORE_EXPORT LocalFrame final : public Frame,
   friend class LocalFrameTest;
 
  public:
-  static LocalFrame* create(LocalFrameClient*,
+  static LocalFrame* Create(LocalFrameClient*,
                             Page&,
                             FrameOwner*,
                             InterfaceProvider* = nullptr,
                             InterfaceRegistry* = nullptr);
 
-  void init();
-  void setView(FrameView*);
-  void createView(const IntSize&,
+  void Init();
+  void SetView(FrameView*);
+  void CreateView(const IntSize&,
                   const Color&,
-                  ScrollbarMode = ScrollbarAuto,
-                  bool horizontalLock = false,
-                  ScrollbarMode = ScrollbarAuto,
-                  bool verticalLock = false);
+                  ScrollbarMode = kScrollbarAuto,
+                  bool horizontal_lock = false,
+                  ScrollbarMode = kScrollbarAuto,
+                  bool vertical_lock = false);
 
   // Frame overrides:
   ~LocalFrame() override;
   DECLARE_VIRTUAL_TRACE();
-  void navigate(Document& originDocument,
+  void Navigate(Document& origin_document,
                 const KURL&,
-                bool replaceCurrentItem,
+                bool replace_current_item,
                 UserGestureStatus) override;
-  void navigate(const FrameLoadRequest&) override;
-  void reload(FrameLoadType, ClientRedirectPolicy) override;
-  void detach(FrameDetachType) override;
-  bool shouldClose() override;
-  SecurityContext* securityContext() const override;
-  void printNavigationErrorMessage(const Frame&, const char* reason) override;
-  void printNavigationWarning(const String&) override;
-  bool prepareForCommit() override;
-  void didChangeVisibilityState() override;
+  void Navigate(const FrameLoadRequest&) override;
+  void Reload(FrameLoadType, ClientRedirectPolicy) override;
+  void Detach(FrameDetachType) override;
+  bool ShouldClose() override;
+  SecurityContext* GetSecurityContext() const override;
+  void PrintNavigationErrorMessage(const Frame&, const char* reason) override;
+  void PrintNavigationWarning(const String&) override;
+  bool PrepareForCommit() override;
+  void DidChangeVisibilityState() override;
 
-  void detachChildren();
-  void documentAttached();
+  void DetachChildren();
+  void DocumentAttached();
 
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
   // LocalFrame-specific subclass.
-  LocalWindowProxy* windowProxy(DOMWrapperWorld&);
-  LocalDOMWindow* domWindow() const;
-  void setDOMWindow(LocalDOMWindow*);
-  FrameView* view() const;
-  Document* document() const;
-  void setPagePopupOwner(Element&);
-  Element* pagePopupOwner() const { return m_pagePopupOwner.get(); }
+  LocalWindowProxy* WindowProxy(DOMWrapperWorld&);
+  LocalDOMWindow* DomWindow() const;
+  void SetDOMWindow(LocalDOMWindow*);
+  FrameView* View() const;
+  Document* GetDocument() const;
+  void SetPagePopupOwner(Element&);
+  Element* PagePopupOwner() const { return page_popup_owner_.Get(); }
 
   // Root of the layout tree for the document contained in this frame.
-  LayoutView* contentLayoutObject() const;
-  LayoutViewItem contentLayoutItem() const;
+  LayoutView* ContentLayoutObject() const;
+  LayoutViewItem ContentLayoutItem() const;
 
-  Editor& editor() const;
-  EventHandler& eventHandler() const;
-  FrameLoader& loader() const;
-  NavigationScheduler& navigationScheduler() const;
-  FrameSelection& selection() const;
-  InputMethodController& inputMethodController() const;
-  ScriptController& script() const;
-  SpellChecker& spellChecker() const;
-  FrameConsole& console() const;
+  Editor& GetEditor() const;
+  EventHandler& GetEventHandler() const;
+  FrameLoader& Loader() const;
+  NavigationScheduler& GetNavigationScheduler() const;
+  FrameSelection& Selection() const;
+  InputMethodController& GetInputMethodController() const;
+  ScriptController& Script() const;
+  SpellChecker& GetSpellChecker() const;
+  FrameConsole& Console() const;
 
   // This method is used to get the highest level LocalFrame in this
   // frame's in-process subtree.
   // FIXME: This is a temporary hack to support RemoteFrames, and callers
   // should be updated to avoid storing things on the main frame.
-  LocalFrame* localFrameRoot();
+  LocalFrame* LocalFrameRoot();
 
   // Note that the result of this function should not be cached: a frame is
   // not necessarily detached when it is navigated, so the return value can
@@ -162,77 +162,78 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // In addition, this function will always return true for a detached frame.
   // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
   // behavior for detached windows.
-  bool isCrossOriginSubframe() const;
+  bool IsCrossOriginSubframe() const;
 
-  CoreProbeSink* instrumentingAgents() { return m_instrumentingAgents.get(); }
+  CoreProbeSink* InstrumentingAgents() { return instrumenting_agents_.Get(); }
 
   // =========================================================================
   // All public functions below this point are candidates to move out of
   // LocalFrame into another class.
 
   // See GraphicsLayerClient.h for accepted flags.
-  String layerTreeAsText(unsigned flags = 0) const;
+  String LayerTreeAsText(unsigned flags = 0) const;
 
-  void setPrinting(bool printing,
-                   const FloatSize& pageSize,
-                   const FloatSize& originalPageSize,
-                   float maximumShrinkRatio);
-  bool shouldUsePrintingLayout() const;
-  FloatSize resizePageRectsKeepingRatio(const FloatSize& originalSize,
-                                        const FloatSize& expectedSize);
+  void SetPrinting(bool printing,
+                   const FloatSize& page_size,
+                   const FloatSize& original_page_size,
+                   float maximum_shrink_ratio);
+  bool ShouldUsePrintingLayout() const;
+  FloatSize ResizePageRectsKeepingRatio(const FloatSize& original_size,
+                                        const FloatSize& expected_size);
 
-  bool inViewSourceMode() const;
-  void setInViewSourceMode(bool = true);
+  bool InViewSourceMode() const;
+  void SetInViewSourceMode(bool = true);
 
-  void setPageZoomFactor(float);
-  float pageZoomFactor() const { return m_pageZoomFactor; }
-  void setTextZoomFactor(float);
-  float textZoomFactor() const { return m_textZoomFactor; }
-  void setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor);
+  void SetPageZoomFactor(float);
+  float PageZoomFactor() const { return page_zoom_factor_; }
+  void SetTextZoomFactor(float);
+  float TextZoomFactor() const { return text_zoom_factor_; }
+  void SetPageAndTextZoomFactors(float page_zoom_factor,
+                                 float text_zoom_factor);
 
-  void deviceScaleFactorChanged();
-  double devicePixelRatio() const;
+  void DeviceScaleFactorChanged();
+  double DevicePixelRatio() const;
 
-  std::unique_ptr<DragImage> nodeImage(Node&);
-  std::unique_ptr<DragImage> dragImageForSelection(float opacity);
+  std::unique_ptr<DragImage> NodeImage(Node&);
+  std::unique_ptr<DragImage> DragImageForSelection(float opacity);
 
-  String selectedText() const;
-  String selectedTextForClipboard() const;
+  String SelectedText() const;
+  String SelectedTextForClipboard() const;
 
   PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>>
-  positionForPoint(const IntPoint& framePoint);
-  Document* documentAtPoint(const IntPoint&);
-  EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> rangeForPoint(
-      const IntPoint& framePoint);
+  PositionForPoint(const IntPoint& frame_point);
+  Document* DocumentAtPoint(const IntPoint&);
+  EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> RangeForPoint(
+      const IntPoint& frame_point);
 
-  bool shouldReuseDefaultView(const KURL&) const;
-  void removeSpellingMarkersUnderWords(const Vector<String>& words);
+  bool ShouldReuseDefaultView(const KURL&) const;
+  void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 
-  bool shouldThrottleRendering() const;
+  bool ShouldThrottleRendering() const;
 
   // Returns the frame scheduler, creating one if needed.
-  WebFrameScheduler* frameScheduler();
-  void scheduleVisualUpdateUnlessThrottled();
+  WebFrameScheduler* FrameScheduler();
+  void ScheduleVisualUpdateUnlessThrottled();
 
-  bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
+  bool IsNavigationAllowed() const { return navigation_disable_count_ == 0; }
 
-  InterfaceProvider* interfaceProvider() { return m_interfaceProvider; }
-  InterfaceRegistry* interfaceRegistry() { return m_interfaceRegistry; }
+  InterfaceProvider* GetInterfaceProvider() { return interface_provider_; }
+  InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
-  LocalFrameClient* client() const;
+  LocalFrameClient* Client() const;
 
-  ContentSettingsClient* contentSettingsClient();
+  ContentSettingsClient* GetContentSettingsClient();
 
-  PluginData* pluginData() const;
+  PluginData* GetPluginData() const;
 
-  PerformanceMonitor* performanceMonitor() { return m_performanceMonitor; }
+  PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
 
   using FrameInitCallback = void (*)(LocalFrame*);
   // Allows for the registration of a callback that is invoked whenever a new
   // LocalFrame is initialized. Callbacks are executed in the order that they
   // were added using registerInitializationCallback, and there are no checks
   // for adding a callback multiple times.
-  static void registerInitializationCallback(FrameInitCallback);
+  static void RegisterInitializationCallback(FrameInitCallback);
 
  private:
   friend class FrameNavigationDisabler;
@@ -245,100 +246,100 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.
-  bool isLocalFrame() const override { return true; }
-  bool isRemoteFrame() const override { return false; }
+  bool IsLocalFrame() const override { return true; }
+  bool IsRemoteFrame() const override { return false; }
 
-  void enableNavigation() { --m_navigationDisableCount; }
-  void disableNavigation() { ++m_navigationDisableCount; }
+  void EnableNavigation() { --navigation_disable_count_; }
+  void DisableNavigation() { ++navigation_disable_count_; }
 
-  std::unique_ptr<WebFrameScheduler> m_frameScheduler;
+  std::unique_ptr<WebFrameScheduler> frame_scheduler_;
 
-  mutable FrameLoader m_loader;
-  Member<NavigationScheduler> m_navigationScheduler;
+  mutable FrameLoader loader_;
+  Member<NavigationScheduler> navigation_scheduler_;
 
   // Cleared by LocalFrame::detach(), so as to keep the observable lifespan
   // of LocalFrame::view().
-  Member<FrameView> m_view;
+  Member<FrameView> view_;
   // Usually 0. Non-null if this is the top frame of PagePopup.
-  Member<Element> m_pagePopupOwner;
+  Member<Element> page_popup_owner_;
 
-  const Member<ScriptController> m_script;
-  const Member<Editor> m_editor;
-  const Member<SpellChecker> m_spellChecker;
-  const Member<FrameSelection> m_selection;
-  const Member<EventHandler> m_eventHandler;
-  const Member<FrameConsole> m_console;
-  const Member<InputMethodController> m_inputMethodController;
+  const Member<ScriptController> script_;
+  const Member<Editor> editor_;
+  const Member<SpellChecker> spell_checker_;
+  const Member<FrameSelection> selection_;
+  const Member<EventHandler> event_handler_;
+  const Member<FrameConsole> console_;
+  const Member<InputMethodController> input_method_controller_;
 
-  int m_navigationDisableCount;
+  int navigation_disable_count_;
 
-  float m_pageZoomFactor;
-  float m_textZoomFactor;
+  float page_zoom_factor_;
+  float text_zoom_factor_;
 
-  bool m_inViewSourceMode;
+  bool in_view_source_mode_;
 
-  Member<CoreProbeSink> m_instrumentingAgents;
-  Member<PerformanceMonitor> m_performanceMonitor;
+  Member<CoreProbeSink> instrumenting_agents_;
+  Member<PerformanceMonitor> performance_monitor_;
 
-  InterfaceProvider* const m_interfaceProvider;
-  InterfaceRegistry* const m_interfaceRegistry;
+  InterfaceProvider* const interface_provider_;
+  InterfaceRegistry* const interface_registry_;
 };
 
-inline FrameLoader& LocalFrame::loader() const {
-  return m_loader;
+inline FrameLoader& LocalFrame::Loader() const {
+  return loader_;
 }
 
-inline NavigationScheduler& LocalFrame::navigationScheduler() const {
-  ASSERT(m_navigationScheduler);
-  return *m_navigationScheduler.get();
+inline NavigationScheduler& LocalFrame::GetNavigationScheduler() const {
+  ASSERT(navigation_scheduler_);
+  return *navigation_scheduler_.Get();
 }
 
-inline FrameView* LocalFrame::view() const {
-  return m_view.get();
+inline FrameView* LocalFrame::View() const {
+  return view_.Get();
 }
 
-inline ScriptController& LocalFrame::script() const {
-  return *m_script;
+inline ScriptController& LocalFrame::Script() const {
+  return *script_;
 }
 
-inline FrameSelection& LocalFrame::selection() const {
-  return *m_selection;
+inline FrameSelection& LocalFrame::Selection() const {
+  return *selection_;
 }
 
-inline Editor& LocalFrame::editor() const {
-  return *m_editor;
+inline Editor& LocalFrame::GetEditor() const {
+  return *editor_;
 }
 
-inline SpellChecker& LocalFrame::spellChecker() const {
-  return *m_spellChecker;
+inline SpellChecker& LocalFrame::GetSpellChecker() const {
+  return *spell_checker_;
 }
 
-inline FrameConsole& LocalFrame::console() const {
-  return *m_console;
+inline FrameConsole& LocalFrame::Console() const {
+  return *console_;
 }
 
-inline InputMethodController& LocalFrame::inputMethodController() const {
-  return *m_inputMethodController;
+inline InputMethodController& LocalFrame::GetInputMethodController() const {
+  return *input_method_controller_;
 }
 
-inline bool LocalFrame::inViewSourceMode() const {
-  return m_inViewSourceMode;
+inline bool LocalFrame::InViewSourceMode() const {
+  return in_view_source_mode_;
 }
 
-inline void LocalFrame::setInViewSourceMode(bool mode) {
-  m_inViewSourceMode = mode;
+inline void LocalFrame::SetInViewSourceMode(bool mode) {
+  in_view_source_mode_ = mode;
 }
 
-inline EventHandler& LocalFrame::eventHandler() const {
-  ASSERT(m_eventHandler);
-  return *m_eventHandler;
+inline EventHandler& LocalFrame::GetEventHandler() const {
+  ASSERT(event_handler_);
+  return *event_handler_;
 }
 
 DEFINE_TYPE_CASTS(LocalFrame,
                   Frame,
                   localFrame,
-                  localFrame->isLocalFrame(),
-                  localFrame.isLocalFrame());
+                  localFrame->IsLocalFrame(),
+                  localFrame.IsLocalFrame());
 
 DECLARE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
@@ -351,7 +352,7 @@ class FrameNavigationDisabler {
   ~FrameNavigationDisabler();
 
  private:
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
 };
 
 // A helper class for attributing cost inside a scope to a LocalFrame, with
@@ -377,7 +378,7 @@ class ScopedFrameBlamer {
   ~ScopedFrameBlamer();
 
  private:
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
 };
 
 }  // namespace blink

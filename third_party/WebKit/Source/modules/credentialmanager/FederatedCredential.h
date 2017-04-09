@@ -21,16 +21,16 @@ class MODULES_EXPORT FederatedCredential final : public SiteBoundCredential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FederatedCredential* create(const FederatedCredentialData&,
+  static FederatedCredential* Create(const FederatedCredentialData&,
                                      ExceptionState&);
-  static FederatedCredential* create(WebFederatedCredential*);
+  static FederatedCredential* Create(WebFederatedCredential*);
 
   // FederatedCredential.idl
   const String provider() const;
 
   // TODO(mkwst): This is a stub, as we don't yet have any support on the
   // Chromium-side.
-  const String& protocol() const { return emptyString; }
+  const String& protocol() const { return g_empty_string; }
 
  private:
   FederatedCredential(WebFederatedCredential*);

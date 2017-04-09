@@ -10,26 +10,26 @@ template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate(
     const PositionTemplate<Strategy>& position,
     TextAffinity affinity)
-    : m_position(position), m_affinity(affinity) {}
+    : position_(position), affinity_(affinity) {}
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate()
-    : m_affinity(TextAffinity::Downstream) {}
+    : affinity_(TextAffinity::kDownstream) {}
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::~PositionWithAffinityTemplate() {}
 
 template <typename Strategy>
 DEFINE_TRACE(PositionWithAffinityTemplate<Strategy>) {
-  visitor->trace(m_position);
+  visitor->Trace(position_);
 }
 
 template <typename Strategy>
 bool PositionWithAffinityTemplate<Strategy>::operator==(
     const PositionWithAffinityTemplate& other) const {
-  if (isNull())
-    return other.isNull();
-  return m_affinity == other.m_affinity && m_position == other.m_position;
+  if (IsNull())
+    return other.IsNull();
+  return affinity_ == other.affinity_ && position_ == other.position_;
 }
 
 template class CORE_TEMPLATE_EXPORT
@@ -38,16 +38,16 @@ template class CORE_TEMPLATE_EXPORT
     PositionWithAffinityTemplate<EditingInFlatTreeStrategy>;
 
 std::ostream& operator<<(std::ostream& ostream,
-                         const PositionWithAffinity& positionWithAffinity) {
-  return ostream << positionWithAffinity.position() << '/'
-                 << positionWithAffinity.affinity();
+                         const PositionWithAffinity& position_with_affinity) {
+  return ostream << position_with_affinity.GetPosition() << '/'
+                 << position_with_affinity.Affinity();
 }
 
 std::ostream& operator<<(
     std::ostream& ostream,
-    const PositionInFlatTreeWithAffinity& positionWithAffinity) {
-  return ostream << positionWithAffinity.position() << '/'
-                 << positionWithAffinity.affinity();
+    const PositionInFlatTreeWithAffinity& position_with_affinity) {
+  return ostream << position_with_affinity.GetPosition() << '/'
+                 << position_with_affinity.Affinity();
 }
 
 }  // namespace blink

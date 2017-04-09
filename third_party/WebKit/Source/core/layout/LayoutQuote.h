@@ -42,62 +42,62 @@ class LayoutQuote final : public LayoutInline {
  public:
   LayoutQuote(PseudoElement&, const QuoteType);
   ~LayoutQuote() override;
-  void attachQuote();
+  void AttachQuote();
 
-  const char* name() const override { return "LayoutQuote"; }
+  const char* GetName() const override { return "LayoutQuote"; }
 
  private:
-  void detachQuote();
+  void DetachQuote();
 
-  void willBeDestroyed() override;
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectQuote || LayoutInline::isOfType(type);
+  void WillBeDestroyed() override;
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectQuote || LayoutInline::IsOfType(type);
   }
-  void styleDidChange(StyleDifference, const ComputedStyle*) override;
-  void willBeRemovedFromTree() override;
+  void StyleDidChange(StyleDifference, const ComputedStyle*) override;
+  void WillBeRemovedFromTree() override;
 
-  String computeText() const;
-  void updateText();
-  const QuotesData* quotesData() const;
-  void updateDepth();
-  bool isAttached() { return m_attached; }
+  String ComputeText() const;
+  void UpdateText();
+  const QuotesData* GetQuotesData() const;
+  void UpdateDepth();
+  bool IsAttached() { return attached_; }
 
-  LayoutTextFragment* findFragmentChild() const;
+  LayoutTextFragment* FindFragmentChild() const;
 
   // Type of this LayoutQuote: open-quote, close-quote, no-open-quote,
   // no-close-quote.
-  QuoteType m_type;
+  QuoteType type_;
 
   // Number of open quotes in the tree. Also called the nesting level
   // in CSS 2.1.
   // Used to determine if a LayoutQuote is invalid (closing quote without a
   // matching opening quote) and which quote character to use (see the 'quote'
   // property that is used to define quote character pairs).
-  int m_depth;
+  int depth_;
 
   // The next and previous LayoutQuote in layout tree order.
   // LayoutQuotes are linked together by this doubly-linked list.
   // Those are used to compute |m_depth| in an efficient manner.
-  LayoutQuote* m_next;
-  LayoutQuote* m_previous;
+  LayoutQuote* next_;
+  LayoutQuote* previous_;
 
   // The pseudo-element that owns us.
   //
   // Lifetime is the same as LayoutObject::m_node, so this is safe.
-  UntracedMember<PseudoElement> m_owningPseudo;
+  UntracedMember<PseudoElement> owning_pseudo_;
 
   // This tracks whether this LayoutQuote was inserted into the layout tree
   // and its position in the linked list is correct (m_next and m_previous).
   // It's used for both performance (avoid unneeded tree walks to find the
   // previous and next quotes) and conformance (|m_depth| relies on an
   // up-to-date linked list positions).
-  bool m_attached;
+  bool attached_;
 
   // Cached text for this quote.
-  String m_text;
+  String text_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutQuote, isQuote());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutQuote, IsQuote());
 
 }  // namespace blink
 

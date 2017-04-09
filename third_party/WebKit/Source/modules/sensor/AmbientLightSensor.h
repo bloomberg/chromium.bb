@@ -13,12 +13,12 @@ class AmbientLightSensor final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AmbientLightSensor* create(ExecutionContext*,
+  static AmbientLightSensor* Create(ExecutionContext*,
                                     const SensorOptions&,
                                     ExceptionState&);
-  static AmbientLightSensor* create(ExecutionContext*, ExceptionState&);
+  static AmbientLightSensor* Create(ExecutionContext*, ExceptionState&);
 
-  double illuminance(bool& isNull) const;
+  double illuminance(bool& is_null) const;
 
   DECLARE_VIRTUAL_TRACE();
 

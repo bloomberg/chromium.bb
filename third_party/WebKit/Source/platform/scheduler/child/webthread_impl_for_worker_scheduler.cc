@@ -71,7 +71,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
   base::MessageLoop::current()->AddDestructionObserver(this);
-  web_task_runner_ = WebTaskRunnerImpl::create(task_runner_);
+  web_task_runner_ = WebTaskRunnerImpl::Create(task_runner_);
   completion->Signal();
 }
 
@@ -86,7 +86,7 @@ void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
   idle_task_runner_ = nullptr;
   web_scheduler_.reset();
   worker_scheduler_.reset();
-  web_task_runner_.reset();
+  web_task_runner_.Reset();
 }
 
 std::unique_ptr<scheduler::WorkerScheduler>
@@ -96,11 +96,11 @@ WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
   return WorkerScheduler::Create(task_runner_delegate_);
 }
 
-blink::PlatformThreadId WebThreadImplForWorkerScheduler::threadId() const {
+blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
   return thread_->GetThreadId();
 }
 
-blink::WebScheduler* WebThreadImplForWorkerScheduler::scheduler() const {
+blink::WebScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
   return web_scheduler_.get();
 }
 
@@ -114,8 +114,8 @@ SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForWorkerScheduler::getWebTaskRunner() {
-  return web_task_runner_.get();
+blink::WebTaskRunner* WebThreadImplForWorkerScheduler::GetWebTaskRunner() {
+  return web_task_runner_.Get();
 }
 
 void WebThreadImplForWorkerScheduler::AddTaskObserverInternal(

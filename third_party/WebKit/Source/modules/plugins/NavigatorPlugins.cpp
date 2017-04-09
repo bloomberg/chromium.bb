@@ -16,34 +16,34 @@ NavigatorPlugins::NavigatorPlugins(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 // static
-NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator) {
-  NavigatorPlugins* supplement = toNavigatorPlugins(navigator);
+NavigatorPlugins& NavigatorPlugins::From(Navigator& navigator) {
+  NavigatorPlugins* supplement = ToNavigatorPlugins(navigator);
   if (!supplement) {
     supplement = new NavigatorPlugins(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 // static
-NavigatorPlugins* NavigatorPlugins::toNavigatorPlugins(Navigator& navigator) {
+NavigatorPlugins* NavigatorPlugins::ToNavigatorPlugins(Navigator& navigator) {
   return static_cast<NavigatorPlugins*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
 }
 
 // static
-const char* NavigatorPlugins::supplementName() {
+const char* NavigatorPlugins::SupplementName() {
   return "NavigatorPlugins";
 }
 
 // static
 DOMPluginArray* NavigatorPlugins::plugins(Navigator& navigator) {
-  return NavigatorPlugins::from(navigator).plugins(navigator.frame());
+  return NavigatorPlugins::From(navigator).plugins(navigator.GetFrame());
 }
 
 // static
 DOMMimeTypeArray* NavigatorPlugins::mimeTypes(Navigator& navigator) {
-  return NavigatorPlugins::from(navigator).mimeTypes(navigator.frame());
+  return NavigatorPlugins::From(navigator).mimeTypes(navigator.GetFrame());
 }
 
 // static
@@ -52,21 +52,21 @@ bool NavigatorPlugins::javaEnabled(Navigator& navigator) {
 }
 
 DOMPluginArray* NavigatorPlugins::plugins(LocalFrame* frame) const {
-  if (!m_plugins)
-    m_plugins = DOMPluginArray::create(frame);
-  return m_plugins.get();
+  if (!plugins_)
+    plugins_ = DOMPluginArray::Create(frame);
+  return plugins_.Get();
 }
 
 DOMMimeTypeArray* NavigatorPlugins::mimeTypes(LocalFrame* frame) const {
-  if (!m_mimeTypes)
-    m_mimeTypes = DOMMimeTypeArray::create(frame);
-  return m_mimeTypes.get();
+  if (!mime_types_)
+    mime_types_ = DOMMimeTypeArray::Create(frame);
+  return mime_types_.Get();
 }
 
 DEFINE_TRACE(NavigatorPlugins) {
-  visitor->trace(m_plugins);
-  visitor->trace(m_mimeTypes);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(plugins_);
+  visitor->Trace(mime_types_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

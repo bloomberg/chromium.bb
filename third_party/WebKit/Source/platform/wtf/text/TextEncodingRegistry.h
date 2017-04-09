@@ -38,28 +38,28 @@ class TextEncoding;
 
 // Use TextResourceDecoder::decode to decode resources, since it handles BOMs.
 // Use TextEncoding::encode to encode, since it takes care of normalization.
-WTF_EXPORT std::unique_ptr<TextCodec> newTextCodec(const TextEncoding&);
+WTF_EXPORT std::unique_ptr<TextCodec> NewTextCodec(const TextEncoding&);
 
 // Only TextEncoding should use the following functions directly.
-const char* atomicCanonicalTextEncodingName(const char* alias);
+const char* AtomicCanonicalTextEncodingName(const char* alias);
 template <typename CharacterType>
-const char* atomicCanonicalTextEncodingName(const CharacterType*, size_t);
-const char* atomicCanonicalTextEncodingName(const String&);
-bool noExtendedTextEncodingNameUsed();
-bool isReplacementEncoding(const char* alias);
-bool isReplacementEncoding(const String& alias);
+const char* AtomicCanonicalTextEncodingName(const CharacterType*, size_t);
+const char* AtomicCanonicalTextEncodingName(const String&);
+bool NoExtendedTextEncodingNameUsed();
+bool IsReplacementEncoding(const char* alias);
+bool IsReplacementEncoding(const String& alias);
 
 #ifndef NDEBUG
-void dumpTextEncodingNameMap();
+void DumpTextEncodingNameMap();
 #endif
 
 }  // namespace WTF
 
-using WTF::newTextCodec;
-using WTF::atomicCanonicalTextEncodingName;
-using WTF::noExtendedTextEncodingNameUsed;
+using WTF::NewTextCodec;
+using WTF::AtomicCanonicalTextEncodingName;
+using WTF::NoExtendedTextEncodingNameUsed;
 #ifndef NDEBUG
-using WTF::dumpTextEncodingNameMap;
+using WTF::DumpTextEncodingNameMap;
 #endif
 
 #endif  // TextEncodingRegistry_h

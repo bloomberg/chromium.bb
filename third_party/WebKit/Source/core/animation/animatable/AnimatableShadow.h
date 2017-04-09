@@ -39,21 +39,21 @@ namespace blink {
 class AnimatableShadow final : public AnimatableValue {
  public:
   ~AnimatableShadow() override {}
-  static PassRefPtr<AnimatableShadow> create(
-      PassRefPtr<ShadowList> shadowList) {
-    return adoptRef(new AnimatableShadow(std::move(shadowList)));
+  static PassRefPtr<AnimatableShadow> Create(
+      PassRefPtr<ShadowList> shadow_list) {
+    return AdoptRef(new AnimatableShadow(std::move(shadow_list)));
   }
 
  private:
-  explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList)
-      : m_shadowList(shadowList) {}
-  AnimatableType type() const override { return TypeShadow; }
-  bool equalTo(const AnimatableValue*) const override;
+  explicit AnimatableShadow(PassRefPtr<ShadowList> shadow_list)
+      : shadow_list_(shadow_list) {}
+  AnimatableType GetType() const override { return kTypeShadow; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  const RefPtr<ShadowList> m_shadowList;
+  const RefPtr<ShadowList> shadow_list_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, IsShadow());
 
 }  // namespace blink
 

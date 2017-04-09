@@ -17,97 +17,97 @@ class InputEvent final : public UIEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static InputEvent* create(const AtomicString& type,
+  static InputEvent* Create(const AtomicString& type,
                             const InputEventInit& initializer) {
     return new InputEvent(type, initializer);
   }
 
   // https://w3c.github.io/input-events/#h-interface-inputevent-attributes
   enum class InputType {
-    None,
+    kNone,
     // Insertion.
-    InsertText,
-    InsertLineBreak,
-    InsertParagraph,
-    InsertOrderedList,
-    InsertUnorderedList,
-    InsertHorizontalRule,
-    InsertFromPaste,
-    InsertFromDrop,
-    InsertFromYank,
-    InsertTranspose,
-    InsertReplacementText,
-    InsertCompositionText,
+    kInsertText,
+    kInsertLineBreak,
+    kInsertParagraph,
+    kInsertOrderedList,
+    kInsertUnorderedList,
+    kInsertHorizontalRule,
+    kInsertFromPaste,
+    kInsertFromDrop,
+    kInsertFromYank,
+    kInsertTranspose,
+    kInsertReplacementText,
+    kInsertCompositionText,
     // Deletion.
-    DeleteWordBackward,
-    DeleteWordForward,
-    DeleteSoftLineBackward,
-    DeleteSoftLineForward,
-    DeleteHardLineBackward,
-    DeleteHardLineForward,
-    DeleteContentBackward,
-    DeleteContentForward,
-    DeleteByCut,
-    DeleteByDrag,
+    kDeleteWordBackward,
+    kDeleteWordForward,
+    kDeleteSoftLineBackward,
+    kDeleteSoftLineForward,
+    kDeleteHardLineBackward,
+    kDeleteHardLineForward,
+    kDeleteContentBackward,
+    kDeleteContentForward,
+    kDeleteByCut,
+    kDeleteByDrag,
     // History.
-    HistoryUndo,
-    HistoryRedo,
+    kHistoryUndo,
+    kHistoryRedo,
     // Formatting.
-    FormatBold,
-    FormatItalic,
-    FormatUnderline,
-    FormatStrikeThrough,
-    FormatSuperscript,
-    FormatSubscript,
-    FormatJustifyCenter,
-    FormatJustifyFull,
-    FormatJustifyRight,
-    FormatJustifyLeft,
-    FormatIndent,
-    FormatOutdent,
-    FormatRemove,
-    FormatSetBlockTextDirection,
+    kFormatBold,
+    kFormatItalic,
+    kFormatUnderline,
+    kFormatStrikeThrough,
+    kFormatSuperscript,
+    kFormatSubscript,
+    kFormatJustifyCenter,
+    kFormatJustifyFull,
+    kFormatJustifyRight,
+    kFormatJustifyLeft,
+    kFormatIndent,
+    kFormatOutdent,
+    kFormatRemove,
+    kFormatSetBlockTextDirection,
 
     // Add new input types immediately above this line.
-    NumberOfInputTypes,
+    kNumberOfInputTypes,
   };
 
   enum EventCancelable : bool {
-    NotCancelable = false,
-    IsCancelable = true,
+    kNotCancelable = false,
+    kIsCancelable = true,
   };
 
   enum EventIsComposing : bool {
-    NotComposing = false,
-    IsComposing = true,
+    kNotComposing = false,
+    kIsComposing = true,
   };
 
-  static InputEvent* createBeforeInput(InputType,
+  static InputEvent* CreateBeforeInput(InputType,
                                        const String& data,
                                        EventCancelable,
                                        EventIsComposing,
                                        const StaticRangeVector*);
-  static InputEvent* createBeforeInput(InputType,
+  static InputEvent* CreateBeforeInput(InputType,
                                        DataTransfer*,
                                        EventCancelable,
                                        EventIsComposing,
                                        const StaticRangeVector*);
-  static InputEvent* createInput(InputType,
+  static InputEvent* CreateInput(InputType,
                                  const String& data,
                                  EventIsComposing,
                                  const StaticRangeVector*);
 
   String inputType() const;
-  const String& data() const { return m_data; }
-  DataTransfer* dataTransfer() const { return m_dataTransfer.get(); }
-  bool isComposing() const { return m_isComposing; }
+  const String& data() const { return data_; }
+  DataTransfer* dataTransfer() const { return data_transfer_.Get(); }
+  bool isComposing() const { return is_composing_; }
   // Returns a copy of target ranges during event dispatch, and returns an empty
   // vector after dispatch.
   StaticRangeVector getTargetRanges() const;
 
-  bool isInputEvent() const override;
+  bool IsInputEvent() const override;
 
-  EventDispatchMediator* createMediator() override;
+  EventDispatchMediator* CreateMediator() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -115,23 +115,23 @@ class InputEvent final : public UIEvent {
   friend class InputEventDispatchMediator;
   InputEvent(const AtomicString&, const InputEventInit&);
 
-  InputType m_inputType;
-  String m_data;
-  Member<DataTransfer> m_dataTransfer;
-  bool m_isComposing;
+  InputType input_type_;
+  String data_;
+  Member<DataTransfer> data_transfer_;
+  bool is_composing_;
   // We have to stored |Range| internally and only expose |StaticRange|, please
   // see comments in |InputEventDispatchMediator::dispatchEvent()|.
-  RangeVector m_ranges;
+  RangeVector ranges_;
 };
 
 class InputEventDispatchMediator final : public EventDispatchMediator {
  public:
-  static InputEventDispatchMediator* create(InputEvent*);
+  static InputEventDispatchMediator* Create(InputEvent*);
 
  private:
   explicit InputEventDispatchMediator(InputEvent*);
-  InputEvent& event() const;
-  DispatchEventResult dispatchEvent(EventDispatcher&) const override;
+  InputEvent& Event() const;
+  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(InputEvent);

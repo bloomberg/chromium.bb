@@ -20,27 +20,27 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
  public:
   virtual ~CSSStyleVariableReferenceValue() {}
 
-  static CSSStyleVariableReferenceValue* create(
+  static CSSStyleVariableReferenceValue* Create(
       const String& variable,
       const CSSUnparsedValue* fallback) {
     return new CSSStyleVariableReferenceValue(variable, fallback);
   }
 
-  const String& variable() const { return m_variable; }
+  const String& variable() const { return variable_; }
 
   CSSUnparsedValue* fallback() {
-    return const_cast<CSSUnparsedValue*>(m_fallback.get());
+    return const_cast<CSSUnparsedValue*>(fallback_.Get());
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_fallback); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(fallback_); }
 
  protected:
   CSSStyleVariableReferenceValue(const String& variable,
                                  const CSSUnparsedValue* fallback)
-      : m_variable(variable), m_fallback(fallback) {}
+      : variable_(variable), fallback_(fallback) {}
 
-  String m_variable;
-  Member<const CSSUnparsedValue> m_fallback;
+  String variable_;
+  Member<const CSSUnparsedValue> fallback_;
 };
 
 }  // namespace blink

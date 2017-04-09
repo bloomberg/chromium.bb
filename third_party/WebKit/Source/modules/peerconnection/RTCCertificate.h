@@ -50,8 +50,8 @@ class MODULES_EXPORT RTCCertificate final
   RTCCertificate(std::unique_ptr<WebRTCCertificate>);
 
   // Returns a new WebRTCCertificate shallow copy.
-  std::unique_ptr<WebRTCCertificate> certificateShallowCopy() const;
-  const WebRTCCertificate& certificate() const { return *m_certificate; }
+  std::unique_ptr<WebRTCCertificate> CertificateShallowCopy() const;
+  const WebRTCCertificate& Certificate() const { return *certificate_; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -59,7 +59,7 @@ class MODULES_EXPORT RTCCertificate final
   DOMTimeStamp expires() const;
 
  private:
-  std::unique_ptr<WebRTCCertificate> m_certificate;
+  std::unique_ptr<WebRTCCertificate> certificate_;
 };
 
 }  // namespace blink

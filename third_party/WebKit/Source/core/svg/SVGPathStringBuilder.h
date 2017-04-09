@@ -28,12 +28,12 @@ namespace blink {
 
 class CORE_EXPORT SVGPathStringBuilder final : public SVGPathConsumer {
  public:
-  String result();
+  String Result();
 
-  void emitSegment(const PathSegmentData&) override;
+  void EmitSegment(const PathSegmentData&) override;
 
  private:
-  StringBuilder m_stringBuilder;
+  StringBuilder string_builder_;
 };
 
 }  // namespace blink

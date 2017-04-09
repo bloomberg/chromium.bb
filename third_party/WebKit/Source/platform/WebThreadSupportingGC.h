@@ -29,62 +29,62 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 
  public:
-  static std::unique_ptr<WebThreadSupportingGC> create(const char* name);
-  static std::unique_ptr<WebThreadSupportingGC> createForThread(WebThread*);
+  static std::unique_ptr<WebThreadSupportingGC> Create(const char* name);
+  static std::unique_ptr<WebThreadSupportingGC> CreateForThread(WebThread*);
   ~WebThreadSupportingGC();
 
-  void postTask(const WebTraceLocation& location,
+  void PostTask(const WebTraceLocation& location,
                 std::unique_ptr<WTF::Closure> task) {
-    m_thread->getWebTaskRunner()->postTask(location, std::move(task));
+    thread_->GetWebTaskRunner()->PostTask(location, std::move(task));
   }
 
-  void postDelayedTask(const WebTraceLocation& location,
+  void PostDelayedTask(const WebTraceLocation& location,
                        std::unique_ptr<WTF::Closure> task,
-                       long long delayMs) {
-    m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task),
-                                                  delayMs);
+                       long long delay_ms) {
+    thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
+                                                 delay_ms);
   }
 
-  void postTask(const WebTraceLocation& location,
+  void PostTask(const WebTraceLocation& location,
                 std::unique_ptr<CrossThreadClosure> task) {
-    m_thread->getWebTaskRunner()->postTask(location, std::move(task));
+    thread_->GetWebTaskRunner()->PostTask(location, std::move(task));
   }
 
-  void postDelayedTask(const WebTraceLocation& location,
+  void PostDelayedTask(const WebTraceLocation& location,
                        std::unique_ptr<CrossThreadClosure> task,
-                       long long delayMs) {
-    m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task),
-                                                  delayMs);
+                       long long delay_ms) {
+    thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
+                                                 delay_ms);
   }
 
-  bool isCurrentThread() const { return m_thread->isCurrentThread(); }
+  bool IsCurrentThread() const { return thread_->IsCurrentThread(); }
 
-  void addTaskObserver(WebThread::TaskObserver* observer) {
-    m_thread->addTaskObserver(observer);
+  void AddTaskObserver(WebThread::TaskObserver* observer) {
+    thread_->AddTaskObserver(observer);
   }
 
-  void removeTaskObserver(WebThread::TaskObserver* observer) {
-    m_thread->removeTaskObserver(observer);
+  void RemoveTaskObserver(WebThread::TaskObserver* observer) {
+    thread_->RemoveTaskObserver(observer);
   }
 
-  void initialize();
-  void shutdown();
+  void Initialize();
+  void Shutdown();
 
-  WebThread& platformThread() const {
-    ASSERT(m_thread);
-    return *m_thread;
+  WebThread& PlatformThread() const {
+    ASSERT(thread_);
+    return *thread_;
   }
 
  private:
   WebThreadSupportingGC(const char* name, WebThread*);
 
-  std::unique_ptr<GCTaskRunner> m_gcTaskRunner;
+  std::unique_ptr<GCTaskRunner> gc_task_runner_;
 
   // m_thread is guaranteed to be non-null after this instance is constructed.
   // m_owningThread is non-null unless this instance is constructed for an
   // existing thread via createForThread().
-  WebThread* m_thread = nullptr;
-  std::unique_ptr<WebThread> m_owningThread;
+  WebThread* thread_ = nullptr;
+  std::unique_ptr<WebThread> owning_thread_;
 };
 
 }  // namespace blink

@@ -200,8 +200,8 @@ CALL_WITH_ARGUMENTS = {
     'ScriptState': 'scriptState',
     'ExecutionContext': 'executionContext',
     'ScriptArguments': 'scriptArguments',
-    'CurrentWindow': 'currentDOMWindow(info.GetIsolate())',
-    'EnteredWindow': 'enteredDOMWindow(info.GetIsolate())',
+    'CurrentWindow': 'CurrentDOMWindow(info.GetIsolate())',
+    'EnteredWindow': 'EnteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
     'ThisValue': 'ScriptValue(scriptState, info.Holder())',
 }
@@ -243,16 +243,16 @@ def deprecate_as(member):
 
 # [Exposed]
 EXPOSED_EXECUTION_CONTEXT_METHOD = {
-    'AnimationWorklet': 'isAnimationWorkletGlobalScope',
-    'AudioWorklet': 'isAudioWorkletGlobalScope',
-    'CompositorWorker': 'isCompositorWorkerGlobalScope',
-    'DedicatedWorker': 'isDedicatedWorkerGlobalScope',
-    'PaintWorklet': 'isPaintWorkletGlobalScope',
-    'ServiceWorker': 'isServiceWorkerGlobalScope',
-    'SharedWorker': 'isSharedWorkerGlobalScope',
-    'Window': 'isDocument',
-    'Worker': 'isWorkerGlobalScope',
-    'Worklet': 'isWorkletGlobalScope',
+    'AnimationWorklet': 'IsAnimationWorkletGlobalScope',
+    'AudioWorklet': 'IsAudioWorkletGlobalScope',
+    'CompositorWorker': 'IsCompositorWorkerGlobalScope',
+    'DedicatedWorker': 'IsDedicatedWorkerGlobalScope',
+    'PaintWorklet': 'IsPaintWorkletGlobalScope',
+    'ServiceWorker': 'IsServiceWorkerGlobalScope',
+    'SharedWorker': 'IsSharedWorkerGlobalScope',
+    'Window': 'IsDocument',
+    'Worker': 'IsWorkerGlobalScope',
+    'Worklet': 'IsWorkletGlobalScope',
 }
 
 
@@ -344,7 +344,7 @@ def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
     to the current context."""
     if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        return "executionContext->isSecureContext()"
+        return "executionContext->IsSecureContext()"
     return None
 
 
@@ -478,9 +478,9 @@ def on_instance(interface, member):
     if member.is_static:
         return False
 
-    # TODO(yukishiino): Remove a hack for toString once we support
-    # Symbol.toStringTag.
-    if (interface.name == 'Window' and member.name == 'toString'):
+    # TODO(yukishiino): Remove a hack for ToString once we support
+    # Symbol.ToStringTag.
+    if interface.name == 'Window' and member.name == 'ToString':
         return False
 
     # TODO(yukishiino): Implement "interface object" and its [[Call]] method
@@ -624,7 +624,7 @@ def named_property_getter(interface):
             if ('getter' in method.specials and
                 len(method.arguments) == 1 and
                 str(method.arguments[0].idl_type) == 'DOMString'))
-        getter.name = getter.name or 'anonymousNamedGetter'
+        getter.name = getter.name or 'AnonymousNamedGetter'
         return getter
     except StopIteration:
         return None

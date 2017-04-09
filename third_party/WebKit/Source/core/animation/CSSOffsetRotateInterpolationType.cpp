@@ -15,20 +15,20 @@ class CSSOffsetRotationNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSOffsetRotationNonInterpolableValue() {}
 
-  static PassRefPtr<CSSOffsetRotationNonInterpolableValue> create(
-      OffsetRotationType rotationType) {
-    return adoptRef(new CSSOffsetRotationNonInterpolableValue(rotationType));
+  static PassRefPtr<CSSOffsetRotationNonInterpolableValue> Create(
+      OffsetRotationType rotation_type) {
+    return AdoptRef(new CSSOffsetRotationNonInterpolableValue(rotation_type));
   }
 
-  OffsetRotationType rotationType() const { return m_rotationType; }
+  OffsetRotationType RotationType() const { return rotation_type_; }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
-  CSSOffsetRotationNonInterpolableValue(OffsetRotationType rotationType)
-      : m_rotationType(rotationType) {}
+  CSSOffsetRotationNonInterpolableValue(OffsetRotationType rotation_type)
+      : rotation_type_(rotation_type) {}
 
-  OffsetRotationType m_rotationType;
+  OffsetRotationType rotation_type_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSOffsetRotationNonInterpolableValue);
@@ -39,141 +39,141 @@ namespace {
 class UnderlyingRotationTypeChecker
     : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingRotationTypeChecker> create(
-      OffsetRotationType underlyingRotationType) {
-    return WTF::wrapUnique(
-        new UnderlyingRotationTypeChecker(underlyingRotationType));
+  static std::unique_ptr<UnderlyingRotationTypeChecker> Create(
+      OffsetRotationType underlying_rotation_type) {
+    return WTF::WrapUnique(
+        new UnderlyingRotationTypeChecker(underlying_rotation_type));
   }
 
-  bool isValid(const InterpolationEnvironment&,
+  bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
-    return m_underlyingRotationType ==
-           toCSSOffsetRotationNonInterpolableValue(
-               *underlying.nonInterpolableValue)
-               .rotationType();
+    return underlying_rotation_type_ == ToCSSOffsetRotationNonInterpolableValue(
+                                            *underlying.non_interpolable_value)
+                                            .RotationType();
   }
 
  private:
-  UnderlyingRotationTypeChecker(OffsetRotationType underlyingRotationType)
-      : m_underlyingRotationType(underlyingRotationType) {}
+  UnderlyingRotationTypeChecker(OffsetRotationType underlying_rotation_type)
+      : underlying_rotation_type_(underlying_rotation_type) {}
 
-  OffsetRotationType m_underlyingRotationType;
+  OffsetRotationType underlying_rotation_type_;
 };
 
 class InheritedRotationTypeChecker
     : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedRotationTypeChecker> create(
-      OffsetRotationType inheritedRotationType) {
-    return WTF::wrapUnique(
-        new InheritedRotationTypeChecker(inheritedRotationType));
+  static std::unique_ptr<InheritedRotationTypeChecker> Create(
+      OffsetRotationType inherited_rotation_type) {
+    return WTF::WrapUnique(
+        new InheritedRotationTypeChecker(inherited_rotation_type));
   }
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    return m_inheritedRotationType ==
-           environment.state().parentStyle()->offsetRotation().type;
+    return inherited_rotation_type_ ==
+           environment.GetState().ParentStyle()->OffsetRotation().type;
   }
 
  private:
-  InheritedRotationTypeChecker(OffsetRotationType inheritedRotationType)
-      : m_inheritedRotationType(inheritedRotationType) {}
+  InheritedRotationTypeChecker(OffsetRotationType inherited_rotation_type)
+      : inherited_rotation_type_(inherited_rotation_type) {}
 
-  OffsetRotationType m_inheritedRotationType;
+  OffsetRotationType inherited_rotation_type_;
 };
 
-InterpolationValue convertOffsetRotate(const StyleOffsetRotation& rotation) {
+InterpolationValue ConvertOffsetRotate(const StyleOffsetRotation& rotation) {
   return InterpolationValue(
-      InterpolableNumber::create(rotation.angle),
-      CSSOffsetRotationNonInterpolableValue::create(rotation.type));
+      InterpolableNumber::Create(rotation.angle),
+      CSSOffsetRotationNonInterpolableValue::Create(rotation.type));
 }
 
 }  // namespace
 
-InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
-    ConversionCheckers& conversionCheckers) const {
-  OffsetRotationType underlyingRotationType =
-      toCSSOffsetRotationNonInterpolableValue(*underlying.nonInterpolableValue)
-          .rotationType();
-  conversionCheckers.push_back(
-      UnderlyingRotationTypeChecker::create(underlyingRotationType));
-  return convertOffsetRotate(StyleOffsetRotation(0, underlyingRotationType));
+    ConversionCheckers& conversion_checkers) const {
+  OffsetRotationType underlying_rotation_type =
+      ToCSSOffsetRotationNonInterpolableValue(
+          *underlying.non_interpolable_value)
+          .RotationType();
+  conversion_checkers.push_back(
+      UnderlyingRotationTypeChecker::Create(underlying_rotation_type));
+  return ConvertOffsetRotate(StyleOffsetRotation(0, underlying_rotation_type));
 }
 
-InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertInitial(
+InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
-    ConversionCheckers& conversionCheckers) const {
-  return convertOffsetRotate(StyleOffsetRotation(0, OffsetRotationAuto));
+    ConversionCheckers& conversion_checkers) const {
+  return ConvertOffsetRotate(StyleOffsetRotation(0, kOffsetRotationAuto));
 }
 
-InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertInherit(
+InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  OffsetRotationType inheritedRotationType =
-      state.parentStyle()->offsetRotation().type;
-  conversionCheckers.push_back(
-      InheritedRotationTypeChecker::create(inheritedRotationType));
-  return convertOffsetRotate(state.parentStyle()->offsetRotation());
+    ConversionCheckers& conversion_checkers) const {
+  OffsetRotationType inherited_rotation_type =
+      state.ParentStyle()->OffsetRotation().type;
+  conversion_checkers.push_back(
+      InheritedRotationTypeChecker::Create(inherited_rotation_type));
+  return ConvertOffsetRotate(state.ParentStyle()->OffsetRotation());
 }
 
-InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertValue(
+InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  return convertOffsetRotate(StyleBuilderConverter::convertOffsetRotate(value));
+  return ConvertOffsetRotate(StyleBuilderConverter::ConvertOffsetRotate(value));
 }
 
-PairwiseInterpolationValue CSSOffsetRotateInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSOffsetRotateInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  const OffsetRotationType& startType =
-      toCSSOffsetRotationNonInterpolableValue(*start.nonInterpolableValue)
-          .rotationType();
-  const OffsetRotationType& endType =
-      toCSSOffsetRotationNonInterpolableValue(*end.nonInterpolableValue)
-          .rotationType();
-  if (startType != endType)
+  const OffsetRotationType& start_type =
+      ToCSSOffsetRotationNonInterpolableValue(*start.non_interpolable_value)
+          .RotationType();
+  const OffsetRotationType& end_type =
+      ToCSSOffsetRotationNonInterpolableValue(*end.non_interpolable_value)
+          .RotationType();
+  if (start_type != end_type)
     return nullptr;
-  return PairwiseInterpolationValue(std::move(start.interpolableValue),
-                                    std::move(end.interpolableValue),
-                                    std::move(start.nonInterpolableValue));
+  return PairwiseInterpolationValue(std::move(start.interpolable_value),
+                                    std::move(end.interpolable_value),
+                                    std::move(start.non_interpolable_value));
 }
 
 InterpolationValue
-CSSOffsetRotateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSOffsetRotateInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return convertOffsetRotate(style.offsetRotation());
+  return ConvertOffsetRotate(style.OffsetRotation());
 }
 
-void CSSOffsetRotateInterpolationType::composite(
-    UnderlyingValueOwner& underlyingValueOwner,
-    double underlyingFraction,
+void CSSOffsetRotateInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
     const InterpolationValue& value,
-    double interpolationFraction) const {
-  const OffsetRotationType& underlyingType =
-      toCSSOffsetRotationNonInterpolableValue(
-          *underlyingValueOwner.value().nonInterpolableValue)
-          .rotationType();
-  const OffsetRotationType& rotationType =
-      toCSSOffsetRotationNonInterpolableValue(*value.nonInterpolableValue)
-          .rotationType();
-  if (underlyingType == rotationType) {
-    underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(
-        underlyingFraction, *value.interpolableValue);
+    double interpolation_fraction) const {
+  const OffsetRotationType& underlying_type =
+      ToCSSOffsetRotationNonInterpolableValue(
+          *underlying_value_owner.Value().non_interpolable_value)
+          .RotationType();
+  const OffsetRotationType& rotation_type =
+      ToCSSOffsetRotationNonInterpolableValue(*value.non_interpolable_value)
+          .RotationType();
+  if (underlying_type == rotation_type) {
+    underlying_value_owner.MutableValue().interpolable_value->ScaleAndAdd(
+        underlying_fraction, *value.interpolable_value);
   } else {
-    underlyingValueOwner.set(*this, value);
+    underlying_value_owner.Set(*this, value);
   }
 }
 
-void CSSOffsetRotateInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+void CSSOffsetRotateInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  state.style()->setOffsetRotation(StyleOffsetRotation(
-      toInterpolableNumber(interpolableValue).value(),
-      toCSSOffsetRotationNonInterpolableValue(*nonInterpolableValue)
-          .rotationType()));
+  state.Style()->SetOffsetRotation(StyleOffsetRotation(
+      ToInterpolableNumber(interpolable_value).Value(),
+      ToCSSOffsetRotationNonInterpolableValue(*non_interpolable_value)
+          .RotationType()));
 }
 
 }  // namespace blink

@@ -25,8 +25,7 @@ class ScriptInjectionCallback : public blink::WebScriptExecutionCallback {
   ScriptInjectionCallback(const CompleteCallback& injection_completed_callback);
   ~ScriptInjectionCallback() override;
 
-  void completed(
-      const blink::WebVector<v8::Local<v8::Value> >& result) override;
+  void Completed(const blink::WebVector<v8::Local<v8::Value>>& result) override;
 
  private:
   CompleteCallback injection_completed_callback_;

@@ -12,17 +12,17 @@ namespace blink {
 SynchronousMutationObserver::SynchronousMutationObserver()
     : LifecycleObserver(nullptr) {}
 
-void SynchronousMutationObserver::didChangeChildren(const ContainerNode&) {}
-void SynchronousMutationObserver::didMergeTextNodes(const Text&,
+void SynchronousMutationObserver::DidChangeChildren(const ContainerNode&) {}
+void SynchronousMutationObserver::DidMergeTextNodes(const Text&,
                                                     const NodeWithIndex&,
                                                     unsigned) {}
-void SynchronousMutationObserver::didMoveTreeToNewDocument(const Node&) {}
-void SynchronousMutationObserver::didSplitTextNode(const Text&) {}
-void SynchronousMutationObserver::didUpdateCharacterData(CharacterData*,
+void SynchronousMutationObserver::DidMoveTreeToNewDocument(const Node&) {}
+void SynchronousMutationObserver::DidSplitTextNode(const Text&) {}
+void SynchronousMutationObserver::DidUpdateCharacterData(CharacterData*,
                                                          unsigned,
                                                          unsigned,
                                                          unsigned) {}
-void SynchronousMutationObserver::nodeChildrenWillBeRemoved(ContainerNode&) {}
-void SynchronousMutationObserver::nodeWillBeRemoved(Node&) {}
+void SynchronousMutationObserver::NodeChildrenWillBeRemoved(ContainerNode&) {}
+void SynchronousMutationObserver::NodeWillBeRemoved(Node&) {}
 
 }  // namespace blink

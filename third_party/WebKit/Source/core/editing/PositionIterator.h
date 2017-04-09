@@ -49,46 +49,46 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionIteratorAlgorithm {
 
   // Since |deprecatedComputePosition()| is slow, new code should use
   // |computePosition()| instead.
-  PositionTemplate<Strategy> deprecatedComputePosition() const;
-  PositionTemplate<Strategy> computePosition() const;
+  PositionTemplate<Strategy> DeprecatedComputePosition() const;
+  PositionTemplate<Strategy> ComputePosition() const;
 
   // increment() takes O(1) other than incrementing to a element that has
   // new parent.
   // In the later case, it takes time of O(<number of childlen>) but the case
   // happens at most depth-of-the-tree times over whole tree traversal.
-  void increment();
+  void Increment();
   // decrement() takes O(1) other than decrement into new node that has
   // childlen.
   // In the later case, it takes time of O(<number of childlen>).
-  void decrement();
+  void Decrement();
 
-  Node* node() const { return m_anchorNode; }
-  int offsetInLeafNode() const { return m_offsetInAnchor; }
+  Node* GetNode() const { return anchor_node_; }
+  int OffsetInLeafNode() const { return offset_in_anchor_; }
 
-  bool atStart() const;
-  bool atEnd() const;
-  bool atStartOfNode() const;
-  bool atEndOfNode() const;
+  bool AtStart() const;
+  bool AtEnd() const;
+  bool AtStartOfNode() const;
+  bool AtEndOfNode() const;
 
  private:
-  PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
+  PositionIteratorAlgorithm(Node* anchor_node, int offset_in_anchoror_node);
 
-  bool isValid() const {
-    return !m_anchorNode ||
-           m_domTreeVersion == m_anchorNode->document().domTreeVersion();
+  bool IsValid() const {
+    return !anchor_node_ ||
+           dom_tree_version_ == anchor_node_->GetDocument().DomTreeVersion();
   }
 
-  Member<Node> m_anchorNode;
+  Member<Node> anchor_node_;
   // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) ==
   // m_anchorNode;
-  Member<Node> m_nodeAfterPositionInAnchor;
-  int m_offsetInAnchor;
-  size_t m_depthToAnchorNode;
+  Member<Node> node_after_position_in_anchor_;
+  int offset_in_anchor_;
+  size_t depth_to_anchor_node_;
   // If |m_nodeAfterPositionInAnchor| is not null,
   // m_offsetsInAnchorNode[m_depthToAnchorNode] ==
   //    Strategy::index(m_nodeAfterPositionInAnchor).
-  Vector<int> m_offsetsInAnchorNode;
-  uint64_t m_domTreeVersion;
+  Vector<int> offsets_in_anchor_node_;
+  uint64_t dom_tree_version_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

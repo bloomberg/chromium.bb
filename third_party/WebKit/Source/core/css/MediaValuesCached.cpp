@@ -14,66 +14,68 @@
 namespace blink {
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
-    : viewportWidth(0),
-      viewportHeight(0),
-      deviceWidth(0),
-      deviceHeight(0),
-      devicePixelRatio(1.0),
-      colorBitsPerComponent(24),
-      monochromeBitsPerComponent(0),
-      primaryPointerType(PointerTypeNone),
-      availablePointerTypes(PointerTypeNone),
-      primaryHoverType(HoverTypeNone),
-      availableHoverTypes(HoverTypeNone),
-      defaultFontSize(16),
-      threeDEnabled(false),
-      strictMode(true),
-      displayMode(WebDisplayModeBrowser),
-      displayShape(DisplayShapeRect),
-      colorGamut(ColorSpaceGamut::Unknown) {}
+    : viewport_width(0),
+      viewport_height(0),
+      device_width(0),
+      device_height(0),
+      device_pixel_ratio(1.0),
+      color_bits_per_component(24),
+      monochrome_bits_per_component(0),
+      primary_pointer_type(kPointerTypeNone),
+      available_pointer_types(kPointerTypeNone),
+      primary_hover_type(kHoverTypeNone),
+      available_hover_types(kHoverTypeNone),
+      default_font_size(16),
+      three_d_enabled(false),
+      strict_mode(true),
+      display_mode(kWebDisplayModeBrowser),
+      display_shape(kDisplayShapeRect),
+      color_gamut(ColorSpaceGamut::kUnknown) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
     : MediaValuesCached::MediaValuesCachedData() {
-  DCHECK(isMainThread());
-  LocalFrame* frame = MediaValues::frameFrom(document);
+  DCHECK(IsMainThread());
+  LocalFrame* frame = MediaValues::FrameFrom(document);
   // TODO(hiroshige): Clean up |frame->view()| conditions.
-  DCHECK(!frame || frame->view());
-  if (frame && frame->view()) {
-    DCHECK(frame->document());
-    DCHECK(!frame->document()->layoutViewItem().isNull());
+  DCHECK(!frame || frame->View());
+  if (frame && frame->View()) {
+    DCHECK(frame->GetDocument());
+    DCHECK(!frame->GetDocument()->GetLayoutViewItem().IsNull());
 
     // In case that frame is missing (e.g. for images that their document does
     // not have a frame)
     // We simply leave the MediaValues object with the default
     // MediaValuesCachedData values.
-    viewportWidth = MediaValues::calculateViewportWidth(frame);
-    viewportHeight = MediaValues::calculateViewportHeight(frame);
-    deviceWidth = MediaValues::calculateDeviceWidth(frame);
-    deviceHeight = MediaValues::calculateDeviceHeight(frame);
-    devicePixelRatio = MediaValues::calculateDevicePixelRatio(frame);
-    colorBitsPerComponent = MediaValues::calculateColorBitsPerComponent(frame);
-    monochromeBitsPerComponent =
-        MediaValues::calculateMonochromeBitsPerComponent(frame);
-    primaryPointerType = MediaValues::calculatePrimaryPointerType(frame);
-    availablePointerTypes = MediaValues::calculateAvailablePointerTypes(frame);
-    primaryHoverType = MediaValues::calculatePrimaryHoverType(frame);
-    availableHoverTypes = MediaValues::calculateAvailableHoverTypes(frame);
-    defaultFontSize = MediaValues::calculateDefaultFontSize(frame);
-    threeDEnabled = MediaValues::calculateThreeDEnabled(frame);
-    strictMode = MediaValues::calculateStrictMode(frame);
-    displayMode = MediaValues::calculateDisplayMode(frame);
-    mediaType = MediaValues::calculateMediaType(frame);
-    displayShape = MediaValues::calculateDisplayShape(frame);
-    colorGamut = MediaValues::calculateColorGamut(frame);
+    viewport_width = MediaValues::CalculateViewportWidth(frame);
+    viewport_height = MediaValues::CalculateViewportHeight(frame);
+    device_width = MediaValues::CalculateDeviceWidth(frame);
+    device_height = MediaValues::CalculateDeviceHeight(frame);
+    device_pixel_ratio = MediaValues::CalculateDevicePixelRatio(frame);
+    color_bits_per_component =
+        MediaValues::CalculateColorBitsPerComponent(frame);
+    monochrome_bits_per_component =
+        MediaValues::CalculateMonochromeBitsPerComponent(frame);
+    primary_pointer_type = MediaValues::CalculatePrimaryPointerType(frame);
+    available_pointer_types =
+        MediaValues::CalculateAvailablePointerTypes(frame);
+    primary_hover_type = MediaValues::CalculatePrimaryHoverType(frame);
+    available_hover_types = MediaValues::CalculateAvailableHoverTypes(frame);
+    default_font_size = MediaValues::CalculateDefaultFontSize(frame);
+    three_d_enabled = MediaValues::CalculateThreeDEnabled(frame);
+    strict_mode = MediaValues::CalculateStrictMode(frame);
+    display_mode = MediaValues::CalculateDisplayMode(frame);
+    media_type = MediaValues::CalculateMediaType(frame);
+    display_shape = MediaValues::CalculateDisplayShape(frame);
+    color_gamut = MediaValues::CalculateColorGamut(frame);
   }
 }
 
-MediaValuesCached* MediaValuesCached::create() {
+MediaValuesCached* MediaValuesCached::Create() {
   return new MediaValuesCached();
 }
 
-MediaValuesCached* MediaValuesCached::create(
+MediaValuesCached* MediaValuesCached::Create(
     const MediaValuesCachedData& data) {
   return new MediaValuesCached(data);
 }
@@ -81,108 +83,108 @@ MediaValuesCached* MediaValuesCached::create(
 MediaValuesCached::MediaValuesCached() {}
 
 MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
-    : m_data(data) {}
+    : data_(data) {}
 
-MediaValues* MediaValuesCached::copy() const {
-  return new MediaValuesCached(m_data);
+MediaValues* MediaValuesCached::Copy() const {
+  return new MediaValuesCached(data_);
 }
 
-bool MediaValuesCached::computeLength(double value,
+bool MediaValuesCached::ComputeLength(double value,
                                       CSSPrimitiveValue::UnitType type,
                                       int& result) const {
-  return MediaValues::computeLength(value, type, m_data.defaultFontSize,
-                                    m_data.viewportWidth, m_data.viewportHeight,
+  return MediaValues::ComputeLength(value, type, data_.default_font_size,
+                                    data_.viewport_width, data_.viewport_height,
                                     result);
 }
 
-bool MediaValuesCached::computeLength(double value,
+bool MediaValuesCached::ComputeLength(double value,
                                       CSSPrimitiveValue::UnitType type,
                                       double& result) const {
-  return MediaValues::computeLength(value, type, m_data.defaultFontSize,
-                                    m_data.viewportWidth, m_data.viewportHeight,
+  return MediaValues::ComputeLength(value, type, data_.default_font_size,
+                                    data_.viewport_width, data_.viewport_height,
                                     result);
 }
 
-double MediaValuesCached::viewportWidth() const {
-  return m_data.viewportWidth;
+double MediaValuesCached::ViewportWidth() const {
+  return data_.viewport_width;
 }
 
-double MediaValuesCached::viewportHeight() const {
-  return m_data.viewportHeight;
+double MediaValuesCached::ViewportHeight() const {
+  return data_.viewport_height;
 }
 
-int MediaValuesCached::deviceWidth() const {
-  return m_data.deviceWidth;
+int MediaValuesCached::DeviceWidth() const {
+  return data_.device_width;
 }
 
-int MediaValuesCached::deviceHeight() const {
-  return m_data.deviceHeight;
+int MediaValuesCached::DeviceHeight() const {
+  return data_.device_height;
 }
 
-float MediaValuesCached::devicePixelRatio() const {
-  return m_data.devicePixelRatio;
+float MediaValuesCached::DevicePixelRatio() const {
+  return data_.device_pixel_ratio;
 }
 
-int MediaValuesCached::colorBitsPerComponent() const {
-  return m_data.colorBitsPerComponent;
+int MediaValuesCached::ColorBitsPerComponent() const {
+  return data_.color_bits_per_component;
 }
 
-int MediaValuesCached::monochromeBitsPerComponent() const {
-  return m_data.monochromeBitsPerComponent;
+int MediaValuesCached::MonochromeBitsPerComponent() const {
+  return data_.monochrome_bits_per_component;
 }
 
-PointerType MediaValuesCached::primaryPointerType() const {
-  return m_data.primaryPointerType;
+PointerType MediaValuesCached::PrimaryPointerType() const {
+  return data_.primary_pointer_type;
 }
 
-int MediaValuesCached::availablePointerTypes() const {
-  return m_data.availablePointerTypes;
+int MediaValuesCached::AvailablePointerTypes() const {
+  return data_.available_pointer_types;
 }
 
-HoverType MediaValuesCached::primaryHoverType() const {
-  return m_data.primaryHoverType;
+HoverType MediaValuesCached::PrimaryHoverType() const {
+  return data_.primary_hover_type;
 }
 
-int MediaValuesCached::availableHoverTypes() const {
-  return m_data.availableHoverTypes;
+int MediaValuesCached::AvailableHoverTypes() const {
+  return data_.available_hover_types;
 }
 
-bool MediaValuesCached::threeDEnabled() const {
-  return m_data.threeDEnabled;
+bool MediaValuesCached::ThreeDEnabled() const {
+  return data_.three_d_enabled;
 }
 
-bool MediaValuesCached::strictMode() const {
-  return m_data.strictMode;
+bool MediaValuesCached::StrictMode() const {
+  return data_.strict_mode;
 }
 
-const String MediaValuesCached::mediaType() const {
-  return m_data.mediaType;
+const String MediaValuesCached::MediaType() const {
+  return data_.media_type;
 }
 
-WebDisplayMode MediaValuesCached::displayMode() const {
-  return m_data.displayMode;
+WebDisplayMode MediaValuesCached::DisplayMode() const {
+  return data_.display_mode;
 }
 
-Document* MediaValuesCached::document() const {
+Document* MediaValuesCached::GetDocument() const {
   return nullptr;
 }
 
-bool MediaValuesCached::hasValues() const {
+bool MediaValuesCached::HasValues() const {
   return true;
 }
 
-void MediaValuesCached::overrideViewportDimensions(double width,
+void MediaValuesCached::OverrideViewportDimensions(double width,
                                                    double height) {
-  m_data.viewportWidth = width;
-  m_data.viewportHeight = height;
+  data_.viewport_width = width;
+  data_.viewport_height = height;
 }
 
-DisplayShape MediaValuesCached::displayShape() const {
-  return m_data.displayShape;
+DisplayShape MediaValuesCached::GetDisplayShape() const {
+  return data_.display_shape;
 }
 
-ColorSpaceGamut MediaValuesCached::colorGamut() const {
-  return m_data.colorGamut;
+ColorSpaceGamut MediaValuesCached::ColorGamut() const {
+  return data_.color_gamut;
 }
 
 }  // namespace blink

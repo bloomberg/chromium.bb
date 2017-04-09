@@ -13,8 +13,8 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationWorkletGlobalScope* create(const KURL&,
-                                             const String& userAgent,
+  static AnimationWorkletGlobalScope* Create(const KURL&,
+                                             const String& user_agent,
                                              PassRefPtr<SecurityOrigin>,
                                              v8::Isolate*,
                                              WorkerThread*);
@@ -22,7 +22,7 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
 
  private:
   AnimationWorkletGlobalScope(const KURL&,
-                              const String& userAgent,
+                              const String& user_agent,
                               PassRefPtr<SecurityOrigin>,
                               v8::Isolate*,
                               WorkerThread*);

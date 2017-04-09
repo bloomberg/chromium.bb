@@ -25,26 +25,26 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
                                            std::string* error_msg) {
   DCHECK(error_msg);
   error_msg->clear();
-  if (!WebInputEvent::isGestureEventType(event.type())) {
-    error_msg->append(base::StringPrintf("Invalid gesture type: %s",
-                                         WebInputEvent::GetName(event.type())));
+  if (!WebInputEvent::IsGestureEventType(event.GetType())) {
+    error_msg->append(base::StringPrintf(
+        "Invalid gesture type: %s", WebInputEvent::GetName(event.GetType())));
   }
-  switch (event.type()) {
-    case WebInputEvent::GestureScrollBegin:
+  switch (event.GetType()) {
+    case WebInputEvent::kGestureScrollBegin:
       if (scrolling_)
         error_msg->append("Scroll begin during scroll\n");
       if (pinching_)
         error_msg->append("Scroll begin during pinch\n");
       scrolling_ = true;
       break;
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       if (!scrolling_)
         error_msg->append("Scroll update outside of scroll\n");
       break;
-    case WebInputEvent::GestureFlingStart:
-      if (event.sourceDevice == blink::WebGestureDeviceTouchscreen &&
-          !event.data.flingStart.velocityX &&
-          !event.data.flingStart.velocityY) {
+    case WebInputEvent::kGestureFlingStart:
+      if (event.source_device == blink::kWebGestureDeviceTouchscreen &&
+          !event.data.fling_start.velocity_x &&
+          !event.data.fling_start.velocity_y) {
         error_msg->append("Zero velocity touchscreen fling\n");
       }
       if (!scrolling_)
@@ -53,47 +53,47 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
         error_msg->append("Flinging while pinching\n");
       scrolling_ = false;
       break;
-    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::kGestureScrollEnd:
       if (!scrolling_)
         error_msg->append("Scroll end outside of scroll\n");
       if (pinching_)
         error_msg->append("Ending scroll while pinching\n");
       scrolling_ = false;
       break;
-    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::kGesturePinchBegin:
       if (pinching_)
         error_msg->append("Pinch begin during pinch\n");
       pinching_ = true;
       break;
-    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::kGesturePinchUpdate:
       if (!pinching_)
         error_msg->append("Pinch update outside of pinch\n");
       break;
-    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::kGesturePinchEnd:
       if (!pinching_)
         error_msg->append("Pinch end outside of pinch\n");
       pinching_ = false;
       break;
-    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::kGestureTapDown:
       if (waiting_for_tap_end_)
         error_msg->append("Missing tap ending event before TapDown\n");
       waiting_for_tap_end_ = true;
       break;
-    case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapUnconfirmed:
       if (!waiting_for_tap_end_)
         error_msg->append("Missing TapDown event before TapUnconfirmed\n");
       break;
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::kGestureTapCancel:
       if (!waiting_for_tap_end_)
         error_msg->append("Missing TapDown event before TapCancel\n");
       waiting_for_tap_end_ = false;
       break;
-    case WebInputEvent::GestureTap:
+    case WebInputEvent::kGestureTap:
       if (!waiting_for_tap_end_)
         error_msg->append("Missing TapDown event before Tap\n");
       waiting_for_tap_end_ = false;
       break;
-    case WebInputEvent::GestureDoubleTap:
+    case WebInputEvent::kGestureDoubleTap:
       // DoubleTap gestures may be synthetically inserted, and do not require a
       // preceding TapDown.
       waiting_for_tap_end_ = false;
@@ -105,7 +105,7 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
   // 'continuity check', requiring that all events between an initial tap-down
   // and whatever terminates the sequence to have the same source device type,
   // and that touchpad gestures are only found on ScrollEvents.
-  if (event.sourceDevice == blink::WebGestureDeviceUninitialized)
+  if (event.source_device == blink::kWebGestureDeviceUninitialized)
     error_msg->append("Gesture event source is uninitialized.\n");
 
   return error_msg->empty();

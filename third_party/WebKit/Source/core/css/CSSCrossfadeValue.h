@@ -40,79 +40,79 @@ class LayoutObject;
 
 class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   friend class CrossfadeSubimageObserverProxy;
-  USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
+  USING_PRE_FINALIZER(CSSCrossfadeValue, Dispose);
 
  public:
-  static CSSCrossfadeValue* create(CSSValue* fromValue,
-                                   CSSValue* toValue,
-                                   CSSPrimitiveValue* percentageValue) {
-    return new CSSCrossfadeValue(fromValue, toValue, percentageValue);
+  static CSSCrossfadeValue* Create(CSSValue* from_value,
+                                   CSSValue* to_value,
+                                   CSSPrimitiveValue* percentage_value) {
+    return new CSSCrossfadeValue(from_value, to_value, percentage_value);
   }
 
   ~CSSCrossfadeValue();
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
-  bool isFixedSize() const { return true; }
-  IntSize fixedSize(const LayoutObject&, const FloatSize&);
+  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
+  bool IsFixedSize() const { return true; }
+  IntSize FixedSize(const LayoutObject&, const FloatSize&);
 
-  bool isPending() const;
-  bool knownToBeOpaque(const LayoutObject&) const;
+  bool IsPending() const;
+  bool KnownToBeOpaque(const LayoutObject&) const;
 
-  void loadSubimages(const Document&);
+  void LoadSubimages(const Document&);
 
-  bool hasFailedOrCanceledSubresources() const;
+  bool HasFailedOrCanceledSubresources() const;
 
-  bool equals(const CSSCrossfadeValue&) const;
+  bool Equals(const CSSCrossfadeValue&) const;
 
-  CSSCrossfadeValue* valueWithURLsMadeAbsolute();
+  CSSCrossfadeValue* ValueWithURLsMadeAbsolute();
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSCrossfadeValue(CSSValue* fromValue,
-                    CSSValue* toValue,
-                    CSSPrimitiveValue* percentageValue);
+  CSSCrossfadeValue(CSSValue* from_value,
+                    CSSValue* to_value,
+                    CSSPrimitiveValue* percentage_value);
 
-  void dispose();
+  void Dispose();
 
   class CrossfadeSubimageObserverProxy final : public ImageResourceObserver {
     DISALLOW_NEW();
 
    public:
-    explicit CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)
-        : m_ownerValue(ownerValue), m_ready(false) {}
+    explicit CrossfadeSubimageObserverProxy(CSSCrossfadeValue* owner_value)
+        : owner_value_(owner_value), ready_(false) {}
 
     ~CrossfadeSubimageObserverProxy() override {}
-    DEFINE_INLINE_TRACE() { visitor->trace(m_ownerValue); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(owner_value_); }
 
-    void imageChanged(ImageResourceContent*, const IntRect* = nullptr) override;
-    bool willRenderImage() override;
-    String debugName() const override {
+    void ImageChanged(ImageResourceContent*, const IntRect* = nullptr) override;
+    bool WillRenderImage() override;
+    String DebugName() const override {
       return "CrossfadeSubimageObserverProxy";
     }
-    void setReady(bool ready) { m_ready = ready; }
+    void SetReady(bool ready) { ready_ = ready; }
 
    private:
-    Member<CSSCrossfadeValue> m_ownerValue;
-    bool m_ready;
+    Member<CSSCrossfadeValue> owner_value_;
+    bool ready_;
   };
 
-  bool willRenderImage() const;
-  void crossfadeChanged(const IntRect&);
+  bool WillRenderImage() const;
+  void CrossfadeChanged(const IntRect&);
 
-  Member<CSSValue> m_fromValue;
-  Member<CSSValue> m_toValue;
-  Member<CSSPrimitiveValue> m_percentageValue;
+  Member<CSSValue> from_value_;
+  Member<CSSValue> to_value_;
+  Member<CSSPrimitiveValue> percentage_value_;
 
-  Member<ImageResourceContent> m_cachedFromImage;
-  Member<ImageResourceContent> m_cachedToImage;
+  Member<ImageResourceContent> cached_from_image_;
+  Member<ImageResourceContent> cached_to_image_;
 
-  CrossfadeSubimageObserverProxy m_crossfadeSubimageObserver;
+  CrossfadeSubimageObserverProxy crossfade_subimage_observer_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, isCrossfadeValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, IsCrossfadeValue());
 
 }  // namespace blink
 

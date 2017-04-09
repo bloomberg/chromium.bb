@@ -47,114 +47,114 @@ namespace blink {
 const int kMaxFFTPow2Size = 16;
 
 // Normal constructor: allocates for a given fftSize.
-FFTFrame::FFTFrame(unsigned fftSize)
-    : m_FFTSize(fftSize),
-      m_log2FFTSize(static_cast<unsigned>(log2(fftSize))),
-      m_realData(fftSize / 2),
-      m_imagData(fftSize / 2),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr),
-      m_complexData(fftSize) {
+FFTFrame::FFTFrame(unsigned fft_size)
+    : fft_size_(fft_size),
+      log2fft_size_(static_cast<unsigned>(log2(fft_size))),
+      real_data_(fft_size / 2),
+      imag_data_(fft_size / 2),
+      forward_context_(nullptr),
+      inverse_context_(nullptr),
+      complex_data_(fft_size) {
   // We only allow power of two.
-  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
+  DCHECK_EQ(1UL << log2fft_size_, fft_size_);
 
-  m_forwardContext = contextForSize(fftSize, DFT_R2C);
-  m_inverseContext = contextForSize(fftSize, IDFT_C2R);
+  forward_context_ = ContextForSize(fft_size, DFT_R2C);
+  inverse_context_ = ContextForSize(fft_size, IDFT_C2R);
 }
 
 // Creates a blank/empty frame (interpolate() must later be called).
 FFTFrame::FFTFrame()
-    : m_FFTSize(0),
-      m_log2FFTSize(0),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr) {}
+    : fft_size_(0),
+      log2fft_size_(0),
+      forward_context_(nullptr),
+      inverse_context_(nullptr) {}
 
 // Copy constructor.
 FFTFrame::FFTFrame(const FFTFrame& frame)
-    : m_FFTSize(frame.m_FFTSize),
-      m_log2FFTSize(frame.m_log2FFTSize),
-      m_realData(frame.m_FFTSize / 2),
-      m_imagData(frame.m_FFTSize / 2),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr),
-      m_complexData(frame.m_FFTSize) {
-  m_forwardContext = contextForSize(m_FFTSize, DFT_R2C);
-  m_inverseContext = contextForSize(m_FFTSize, IDFT_C2R);
+    : fft_size_(frame.fft_size_),
+      log2fft_size_(frame.log2fft_size_),
+      real_data_(frame.fft_size_ / 2),
+      imag_data_(frame.fft_size_ / 2),
+      forward_context_(nullptr),
+      inverse_context_(nullptr),
+      complex_data_(frame.fft_size_) {
+  forward_context_ = ContextForSize(fft_size_, DFT_R2C);
+  inverse_context_ = ContextForSize(fft_size_, IDFT_C2R);
 
   // Copy/setup frame data.
-  unsigned nbytes = sizeof(float) * (m_FFTSize / 2);
-  memcpy(realData(), frame.realData(), nbytes);
-  memcpy(imagData(), frame.imagData(), nbytes);
+  unsigned nbytes = sizeof(float) * (fft_size_ / 2);
+  memcpy(RealData(), frame.RealData(), nbytes);
+  memcpy(ImagData(), frame.ImagData(), nbytes);
 }
 
-void FFTFrame::initialize() {}
+void FFTFrame::Initialize() {}
 
-void FFTFrame::cleanup() {}
+void FFTFrame::Cleanup() {}
 
 FFTFrame::~FFTFrame() {
-  av_rdft_end(m_forwardContext);
-  av_rdft_end(m_inverseContext);
+  av_rdft_end(forward_context_);
+  av_rdft_end(inverse_context_);
 }
 
-void FFTFrame::doFFT(const float* data) {
+void FFTFrame::DoFFT(const float* data) {
   // Copy since processing is in-place.
-  float* p = m_complexData.data();
-  memcpy(p, data, sizeof(float) * m_FFTSize);
+  float* p = complex_data_.Data();
+  memcpy(p, data, sizeof(float) * fft_size_);
 
   // Compute Forward transform.
-  av_rdft_calc(m_forwardContext, p);
+  av_rdft_calc(forward_context_, p);
 
   // De-interleave to separate real and complex arrays.
-  int len = m_FFTSize / 2;
+  int len = fft_size_ / 2;
 
-  float* real = m_realData.data();
-  float* imag = m_imagData.data();
+  float* real = real_data_.Data();
+  float* imag = imag_data_.Data();
   for (int i = 0; i < len; ++i) {
-    int baseComplexIndex = 2 * i;
+    int base_complex_index = 2 * i;
     // m_realData[0] is the DC component and m_imagData[0] is the nyquist
     // component since the interleaved complex data is packed.
-    real[i] = p[baseComplexIndex];
-    imag[i] = p[baseComplexIndex + 1];
+    real[i] = p[base_complex_index];
+    imag[i] = p[base_complex_index + 1];
   }
 }
 
-void FFTFrame::doInverseFFT(float* data) {
+void FFTFrame::DoInverseFFT(float* data) {
   // Prepare interleaved data.
-  float* interleavedData = getUpToDateComplexData();
+  float* interleaved_data = GetUpToDateComplexData();
 
   // Compute inverse transform.
-  av_rdft_calc(m_inverseContext, interleavedData);
+  av_rdft_calc(inverse_context_, interleaved_data);
 
   // Scale so that a forward then inverse FFT yields exactly the original data.
   // For some reason av_rdft_calc above returns values that are half of what I
   // expect. Hence make the scale factor
   // twice as large to compensate for that.
-  const float scale = 2.0 / m_FFTSize;
-  VectorMath::vsmul(interleavedData, 1, &scale, data, 1, m_FFTSize);
+  const float scale = 2.0 / fft_size_;
+  VectorMath::Vsmul(interleaved_data, 1, &scale, data, 1, fft_size_);
 }
 
-float* FFTFrame::getUpToDateComplexData() {
+float* FFTFrame::GetUpToDateComplexData() {
   // FIXME: if we can't completely get rid of this method, SSE
   // optimization could be considered if it shows up hot on profiles.
-  int len = m_FFTSize / 2;
-  const float* real = m_realData.data();
-  const float* imag = m_imagData.data();
-  float* c = m_complexData.data();
+  int len = fft_size_ / 2;
+  const float* real = real_data_.Data();
+  const float* imag = imag_data_.Data();
+  float* c = complex_data_.Data();
   for (int i = 0; i < len; ++i) {
-    int baseComplexIndex = 2 * i;
-    c[baseComplexIndex] = real[i];
-    c[baseComplexIndex + 1] = imag[i];
+    int base_complex_index = 2 * i;
+    c[base_complex_index] = real[i];
+    c[base_complex_index + 1] = imag[i];
   }
-  return const_cast<float*>(m_complexData.data());
+  return const_cast<float*>(complex_data_.Data());
 }
 
-RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans) {
+RDFTContext* FFTFrame::ContextForSize(unsigned fft_size, int trans) {
   // FIXME: This is non-optimal. Ideally, we'd like to share the contexts for
   // FFTFrames of the same size.  But FFmpeg's RDFT uses a scratch buffer
   // inside the context and so they are not thread-safe.  We could improve this
   // by sharing the FFTFrames on a per-thread basis.
-  DCHECK(fftSize);
-  int pow2size = static_cast<int>(log2(fftSize));
+  DCHECK(fft_size);
+  int pow2size = static_cast<int>(log2(fft_size));
   DCHECK_LT(pow2size, kMaxFFTPow2Size);
 
   RDFTContext* context = av_rdft_init(pow2size, (RDFTransformType)trans);

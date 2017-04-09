@@ -39,36 +39,36 @@ namespace blink {
 class CORE_EXPORT ApplyBlockElementCommand : public CompositeEditCommand {
  protected:
   ApplyBlockElementCommand(Document&,
-                           const QualifiedName& tagName,
-                           const AtomicString& inlineStyle);
-  ApplyBlockElementCommand(Document&, const QualifiedName& tagName);
+                           const QualifiedName& tag_name,
+                           const AtomicString& inline_style);
+  ApplyBlockElementCommand(Document&, const QualifiedName& tag_name);
 
-  virtual void formatSelection(const VisiblePosition& startOfSelection,
-                               const VisiblePosition& endOfSelection,
+  virtual void FormatSelection(const VisiblePosition& start_of_selection,
+                               const VisiblePosition& end_of_selection,
                                EditingState*);
-  HTMLElement* createBlockElement() const;
-  const QualifiedName& tagName() const { return m_tagName; }
+  HTMLElement* CreateBlockElement() const;
+  const QualifiedName& TagName() const { return tag_name_; }
 
  private:
-  void doApply(EditingState*) final;
-  virtual void formatRange(const Position& start,
+  void DoApply(EditingState*) final;
+  virtual void FormatRange(const Position& start,
                            const Position& end,
-                           const Position& endOfSelection,
+                           const Position& end_of_selection,
                            HTMLElement*&,
                            EditingState*) = 0;
-  void rangeForParagraphSplittingTextNodesIfNeeded(
-      const VisiblePosition& endOfCurrentParagraph,
-      Position& endOfLastParagraph,
+  void RangeForParagraphSplittingTextNodesIfNeeded(
+      const VisiblePosition& end_of_current_paragraph,
+      Position& end_of_last_paragraph,
       Position& start,
       Position& end);
-  VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(
-      VisiblePosition& endOfCurrentParagraph,
-      Position& endOfLastParagraph,
+  VisiblePosition EndOfNextParagrahSplittingTextNodesIfNeeded(
+      VisiblePosition& end_of_current_paragraph,
+      Position& end_of_last_paragraph,
       Position& start,
       Position& end);
 
-  QualifiedName m_tagName;
-  AtomicString m_inlineStyle;
+  QualifiedName tag_name_;
+  AtomicString inline_style_;
 };
 
 }  // namespace blink

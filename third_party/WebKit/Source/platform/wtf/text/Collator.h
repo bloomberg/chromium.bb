@@ -44,31 +44,31 @@ class WTF_EXPORT Collator {
   USING_FAST_MALLOC(Collator);
 
  public:
-  enum Result { Equal = 0, Greater = 1, Less = -1 };
+  enum Result { kEqual = 0, kGreater = 1, kLess = -1 };
 
   // From ICU's uloc.h (ULOC_FULLNAME_CAPACITY)
-  static const size_t ulocFullnameCapacity = 157;
+  static const size_t kUlocFullnameCapacity = 157;
 
   // Parsing is lenient; e.g. language identifiers (such as "en-US") are
   // accepted, too.
   explicit Collator(const char* locale);
 
   ~Collator();
-  void setOrderLowerFirst(bool);
+  void SetOrderLowerFirst(bool);
 
-  static std::unique_ptr<Collator> userDefault();
+  static std::unique_ptr<Collator> UserDefault();
 
-  Result collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
+  Result Collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
 
  private:
-  void createCollator() const;
-  void releaseCollator();
-  void setEquivalentLocale(const char*, char*);
-  mutable UCollator* m_collator;
+  void CreateCollator() const;
+  void ReleaseCollator();
+  void SetEquivalentLocale(const char*, char*);
+  mutable UCollator* collator_;
 
-  char* m_locale;
-  char m_equivalentLocale[ulocFullnameCapacity];
-  bool m_lowerFirst;
+  char* locale_;
+  char equivalent_locale_[kUlocFullnameCapacity];
+  bool lower_first_;
 };
 
 }  // namespace WTF

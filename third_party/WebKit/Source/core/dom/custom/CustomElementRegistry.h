@@ -35,7 +35,7 @@ class CORE_EXPORT CustomElementRegistry final
   WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 
  public:
-  static CustomElementRegistry* create(const LocalDOMWindow*);
+  static CustomElementRegistry* Create(const LocalDOMWindow*);
 
   virtual ~CustomElementRegistry() = default;
 
@@ -51,21 +51,21 @@ class CORE_EXPORT CustomElementRegistry final
                                   ExceptionState&);
 
   ScriptValue get(const AtomicString& name);
-  bool nameIsDefined(const AtomicString& name) const;
-  CustomElementDefinition* definitionForName(const AtomicString& name) const;
+  bool NameIsDefined(const AtomicString& name) const;
+  CustomElementDefinition* DefinitionForName(const AtomicString& name) const;
 
   // TODO(dominicc): Switch most callers of definitionForName to
   // definitionFor when implementing type extensions.
-  CustomElementDefinition* definitionFor(const CustomElementDescriptor&) const;
+  CustomElementDefinition* DefinitionFor(const CustomElementDescriptor&) const;
 
   // TODO(dominicc): Consider broadening this API when type extensions are
   // implemented.
-  void addCandidate(Element*);
+  void AddCandidate(Element*);
   ScriptPromise whenDefined(ScriptState*,
                             const AtomicString& name,
                             ExceptionState&);
 
-  void entangle(V0CustomElementRegistrationContext*);
+  void Entangle(V0CustomElementRegistrationContext*);
 
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -75,32 +75,32 @@ class CORE_EXPORT CustomElementRegistry final
 
   CustomElementRegistry(const LocalDOMWindow*);
 
-  bool v0NameIsDefined(const AtomicString& name);
+  bool V0NameIsDefined(const AtomicString& name);
 
-  void collectCandidates(const CustomElementDescriptor&,
+  void CollectCandidates(const CustomElementDescriptor&,
                          HeapVector<Member<Element>>*);
 
   class ElementDefinitionIsRunning;
-  bool m_elementDefinitionIsRunning;
+  bool element_definition_is_running_;
 
   using DefinitionMap =
       HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
-  DefinitionMap m_definitions;
+  DefinitionMap definitions_;
 
-  Member<const LocalDOMWindow> m_owner;
+  Member<const LocalDOMWindow> owner_;
 
   using V0RegistrySet =
       HeapHashSet<WeakMember<V0CustomElementRegistrationContext>>;
-  Member<V0RegistrySet> m_v0;
+  Member<V0RegistrySet> v0_;
 
   using UpgradeCandidateSet = HeapHashSet<WeakMember<Element>>;
   using UpgradeCandidateMap =
       HeapHashMap<AtomicString, Member<UpgradeCandidateSet>>;
-  Member<UpgradeCandidateMap> m_upgradeCandidates;
+  Member<UpgradeCandidateMap> upgrade_candidates_;
 
   using WhenDefinedPromiseMap =
       HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
-  WhenDefinedPromiseMap m_whenDefinedPromiseMap;
+  WhenDefinedPromiseMap when_defined_promise_map_;
 };
 
 }  // namespace blink

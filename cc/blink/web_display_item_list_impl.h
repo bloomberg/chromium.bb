@@ -40,33 +40,32 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   ~WebDisplayItemListImpl() override;
 
   // blink::WebDisplayItemList implementation.
-  void appendDrawingItem(const blink::WebRect& visual_rect,
+  void AppendDrawingItem(const blink::WebRect& visual_rect,
                          sk_sp<const cc::PaintRecord> record) override;
-  void appendClipItem(
+  void AppendClipItem(
       const blink::WebRect& clip_rect,
       const blink::WebVector<SkRRect>& rounded_clip_rects) override;
-  void appendEndClipItem() override;
-  void appendClipPathItem(const SkPath& clip_path,
-                          bool antialias) override;
-  void appendEndClipPathItem() override;
-  void appendFloatClipItem(const blink::WebFloatRect& clip_rect) override;
-  void appendEndFloatClipItem() override;
-  void appendTransformItem(const SkMatrix44& matrix) override;
-  void appendEndTransformItem() override;
-  void appendCompositingItem(float opacity,
+  void AppendEndClipItem() override;
+  void AppendClipPathItem(const SkPath& clip_path, bool antialias) override;
+  void AppendEndClipPathItem() override;
+  void AppendFloatClipItem(const blink::WebFloatRect& clip_rect) override;
+  void AppendEndFloatClipItem() override;
+  void AppendTransformItem(const SkMatrix44& matrix) override;
+  void AppendEndTransformItem() override;
+  void AppendCompositingItem(float opacity,
                              SkBlendMode,
                              SkRect* bounds,
                              SkColorFilter*) override;
-  void appendEndCompositingItem() override;
-  void appendFilterItem(const cc::FilterOperations& filters,
+  void AppendEndCompositingItem() override;
+  void AppendFilterItem(const cc::FilterOperations& filters,
                         const blink::WebFloatRect& filter_bounds,
                         const blink::WebFloatPoint& origin) override;
-  void appendEndFilterItem() override;
-  void appendScrollItem(const blink::WebSize& scrollOffset,
+  void AppendEndFilterItem() override;
+  void AppendScrollItem(const blink::WebSize& scrollOffset,
                         ScrollContainerId) override;
-  void appendEndScrollItem() override;
+  void AppendEndScrollItem() override;
 
-  void setIsSuitableForGpuRasterization(bool isSuitable) override;
+  void SetIsSuitableForGpuRasterization(bool isSuitable) override;
 
  private:
   scoped_refptr<cc::DisplayItemList> display_item_list_;

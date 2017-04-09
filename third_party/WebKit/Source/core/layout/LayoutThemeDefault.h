@@ -39,60 +39,60 @@ class LayoutProgress;
 
 class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
  public:
-  String extraDefaultStyleSheet() override;
-  String extraQuirksStyleSheet() override;
+  String ExtraDefaultStyleSheet() override;
+  String ExtraQuirksStyleSheet() override;
 
-  Color systemColor(CSSValueID) const override;
+  Color SystemColor(CSSValueID) const override;
 
-  bool themeDrawsFocusRing(const ComputedStyle&) const override;
+  bool ThemeDrawsFocusRing(const ComputedStyle&) const override;
 
   // List Box selection color
-  virtual Color activeListBoxSelectionBackgroundColor() const;
-  virtual Color activeListBoxSelectionForegroundColor() const;
-  virtual Color inactiveListBoxSelectionBackgroundColor() const;
-  virtual Color inactiveListBoxSelectionForegroundColor() const;
+  virtual Color ActiveListBoxSelectionBackgroundColor() const;
+  virtual Color ActiveListBoxSelectionForegroundColor() const;
+  virtual Color InactiveListBoxSelectionBackgroundColor() const;
+  virtual Color InactiveListBoxSelectionForegroundColor() const;
 
-  Color platformActiveSelectionBackgroundColor() const override;
-  Color platformInactiveSelectionBackgroundColor() const override;
-  Color platformActiveSelectionForegroundColor() const override;
-  Color platformInactiveSelectionForegroundColor() const override;
+  Color PlatformActiveSelectionBackgroundColor() const override;
+  Color PlatformInactiveSelectionBackgroundColor() const override;
+  Color PlatformActiveSelectionForegroundColor() const override;
+  Color PlatformInactiveSelectionForegroundColor() const override;
 
-  IntSize sliderTickSize() const override;
-  int sliderTickOffsetFromTrackCenter() const override;
-  void adjustSliderThumbSize(ComputedStyle&) const override;
+  IntSize SliderTickSize() const override;
+  int SliderTickOffsetFromTrackCenter() const override;
+  void AdjustSliderThumbSize(ComputedStyle&) const override;
 
-  void setCheckboxSize(ComputedStyle&) const override;
-  void setRadioSize(ComputedStyle&) const override;
-  void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
-  void adjustButtonStyle(ComputedStyle&) const override;
+  void SetCheckboxSize(ComputedStyle&) const override;
+  void SetRadioSize(ComputedStyle&) const override;
+  void AdjustInnerSpinButtonStyle(ComputedStyle&) const override;
+  void AdjustButtonStyle(ComputedStyle&) const override;
 
-  bool popsMenuBySpaceKey() const final { return true; }
-  bool popsMenuByReturnKey() const final { return true; }
-  bool popsMenuByAltDownUpOrF4Key() const override { return true; }
+  bool PopsMenuBySpaceKey() const final { return true; }
+  bool PopsMenuByReturnKey() const final { return true; }
+  bool PopsMenuByAltDownUpOrF4Key() const override { return true; }
 
-  bool shouldOpenPickerWithF4Key() const override;
+  bool ShouldOpenPickerWithF4Key() const override;
 
-  Color platformTapHighlightColor() const override {
-    return Color(defaultTapHighlightColor);
+  Color PlatformTapHighlightColor() const override {
+    return Color(kDefaultTapHighlightColor);
   }
 
   // A method asking if the theme's controls actually care about redrawing
   // when hovered.
-  bool supportsHover(const ComputedStyle&) const final;
+  bool SupportsHover(const ComputedStyle&) const final;
 
-  Color platformFocusRingColor() const override;
+  Color PlatformFocusRingColor() const override;
 
   // System fonts.
-  virtual void systemFont(CSSValueID systemFontID,
+  virtual void SystemFont(CSSValueID system_font_id,
                           FontStyle&,
                           FontWeight&,
-                          float& fontSize,
-                          AtomicString& fontFamily) const;
+                          float& font_size,
+                          AtomicString& font_family) const;
 
-  int minimumMenuListSize(const ComputedStyle&) const override;
+  int MinimumMenuListSize(const ComputedStyle&) const override;
 
-  void adjustSearchFieldStyle(ComputedStyle&) const override;
-  void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
+  void AdjustSearchFieldStyle(ComputedStyle&) const override;
+  void AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
 
   // MenuList refers to an unstyled menulist (meaning a menulist without
   // background-color or border set) and MenuListButton refers to a styled
@@ -103,24 +103,24 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // In short, we either go down the MenuList code path or the MenuListButton
   // codepath. We never go down both. And in both cases, they layout the
   // entire menulist.
-  void adjustMenuListStyle(ComputedStyle&, Element*) const override;
-  void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
+  void AdjustMenuListStyle(ComputedStyle&, Element*) const override;
+  void AdjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
 
-  double animationRepeatIntervalForProgressBar() const override;
-  double animationDurationForProgressBar() const override;
+  double AnimationRepeatIntervalForProgressBar() const override;
+  double AnimationDurationForProgressBar() const override;
 
   // These methods define the padding for the MenuList's inner block.
-  int popupInternalPaddingStart(const ComputedStyle&) const override;
-  int popupInternalPaddingEnd(const HostWindow*,
+  int PopupInternalPaddingStart(const ComputedStyle&) const override;
+  int PopupInternalPaddingEnd(const HostWindow*,
                               const ComputedStyle&) const override;
-  int popupInternalPaddingTop(const ComputedStyle&) const override;
-  int popupInternalPaddingBottom(const ComputedStyle&) const override;
+  int PopupInternalPaddingTop(const ComputedStyle&) const override;
+  int PopupInternalPaddingBottom(const ComputedStyle&) const override;
   // This returns a value based on scrollbar thickness.  It's not 0 even in
   // overlay scrollbar mode.  On Android, this doesn't match to scrollbar
   // thickness, which is 3px or 4px, and we use the value from the default Aura
   // theme.
-  int menuListArrowWidthInDIP() const;
-  float clampedMenuListArrowPaddingSize(const HostWindow*,
+  int MenuListArrowWidthInDIP() const;
+  float ClampedMenuListArrowPaddingSize(const HostWindow*,
                                         const ComputedStyle&) const;
 
   // Provide a way to pass the default font size from the Settings object
@@ -128,41 +128,41 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // to remove the default font size from this object and have callers
   // that need the value to get it directly from the appropriate Settings
   // object.
-  static void setDefaultFontSize(int);
+  static void SetDefaultFontSize(int);
 
-  static void setSelectionColors(unsigned activeBackgroundColor,
-                                 unsigned activeForegroundColor,
-                                 unsigned inactiveBackgroundColor,
-                                 unsigned inactiveForegroundColor);
+  static void SetSelectionColors(unsigned active_background_color,
+                                 unsigned active_foreground_color,
+                                 unsigned inactive_background_color,
+                                 unsigned inactive_foreground_color);
 
  protected:
   LayoutThemeDefault();
   ~LayoutThemeDefault() override;
-  bool shouldUseFallbackTheme(const ComputedStyle&) const override;
+  bool ShouldUseFallbackTheme(const ComputedStyle&) const override;
 
-  IntRect determinateProgressValueRectFor(LayoutProgress*,
+  IntRect DeterminateProgressValueRectFor(LayoutProgress*,
                                           const IntRect&) const;
-  IntRect indeterminateProgressValueRectFor(LayoutProgress*,
+  IntRect IndeterminateProgressValueRectFor(LayoutProgress*,
                                             const IntRect&) const;
 
  private:
-  ThemePainter& painter() override { return m_painter; }
-  void didChangeThemeEngine() override;
+  ThemePainter& Painter() override { return painter_; }
+  void DidChangeThemeEngine() override;
 
-  int menuListInternalPadding(const ComputedStyle&, int padding) const;
+  int MenuListInternalPadding(const ComputedStyle&, int padding) const;
 
-  static const RGBA32 defaultTapHighlightColor = 0x2e000000;  // 18% black.
-  static double m_caretBlinkInterval;
+  static const RGBA32 kDefaultTapHighlightColor = 0x2e000000;  // 18% black.
+  static double caret_blink_interval_;
 
-  static unsigned m_activeSelectionBackgroundColor;
-  static unsigned m_activeSelectionForegroundColor;
-  static unsigned m_inactiveSelectionBackgroundColor;
-  static unsigned m_inactiveSelectionForegroundColor;
+  static unsigned active_selection_background_color_;
+  static unsigned active_selection_foreground_color_;
+  static unsigned inactive_selection_background_color_;
+  static unsigned inactive_selection_foreground_color_;
 
-  ThemePainterDefault m_painter;
+  ThemePainterDefault painter_;
   // Cached values for crbug.com/673754.
-  mutable float m_cachedMenuListArrowZoomLevel = 0;
-  mutable float m_cachedMenuListArrowPaddingSize = 0;
+  mutable float cached_menu_list_arrow_zoom_level_ = 0;
+  mutable float cached_menu_list_arrow_padding_size_ = 0;
 };
 
 }  // namespace blink

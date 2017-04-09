@@ -48,257 +48,263 @@
 
 namespace blink {
 
-ScopedStyleResolver* ScopedStyleResolver::parent() const {
-  for (TreeScope* scope = treeScope().parentTreeScope(); scope;
-       scope = scope->parentTreeScope()) {
-    if (ScopedStyleResolver* resolver = scope->scopedStyleResolver())
+ScopedStyleResolver* ScopedStyleResolver::Parent() const {
+  for (TreeScope* scope = GetTreeScope().ParentTreeScope(); scope;
+       scope = scope->ParentTreeScope()) {
+    if (ScopedStyleResolver* resolver = scope->GetScopedStyleResolver())
       return resolver;
   }
   return nullptr;
 }
 
-void ScopedStyleResolver::addKeyframeRules(const RuleSet& ruleSet) {
-  const HeapVector<Member<StyleRuleKeyframes>> keyframesRules =
-      ruleSet.keyframesRules();
-  for (unsigned i = 0; i < keyframesRules.size(); ++i)
-    addKeyframeStyle(keyframesRules[i]);
+void ScopedStyleResolver::AddKeyframeRules(const RuleSet& rule_set) {
+  const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
+      rule_set.KeyframesRules();
+  for (unsigned i = 0; i < keyframes_rules.size(); ++i)
+    AddKeyframeStyle(keyframes_rules[i]);
 }
 
-void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet) {
+void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
   // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for
   // the moment.
-  if (!treeScope().rootNode().isDocumentNode())
+  if (!GetTreeScope().RootNode().IsDocumentNode())
     return;
 
-  Document& document = treeScope().document();
-  CSSFontSelector* cssFontSelector = document.styleEngine().fontSelector();
-  const HeapVector<Member<StyleRuleFontFace>> fontFaceRules =
-      ruleSet.fontFaceRules();
-  for (auto& fontFaceRule : fontFaceRules) {
-    if (FontFace* fontFace = FontFace::create(&document, fontFaceRule))
-      cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule,
-                                            fontFace);
+  Document& document = GetTreeScope().GetDocument();
+  CSSFontSelector* css_font_selector = document.GetStyleEngine().FontSelector();
+  const HeapVector<Member<StyleRuleFontFace>> font_face_rules =
+      rule_set.FontFaceRules();
+  for (auto& font_face_rule : font_face_rules) {
+    if (FontFace* font_face = FontFace::Create(&document, font_face_rule))
+      css_font_selector->GetFontFaceCache()->Add(css_font_selector,
+                                                 font_face_rule, font_face);
   }
-  if (fontFaceRules.size() && document.styleResolver())
-    document.styleResolver()->invalidateMatchedPropertiesCache();
+  if (font_face_rules.size() && document.GetStyleResolver())
+    document.GetStyleResolver()->InvalidateMatchedPropertiesCache();
 }
 
-void ScopedStyleResolver::appendActiveStyleSheets(
+void ScopedStyleResolver::AppendActiveStyleSheets(
     unsigned index,
-    const ActiveStyleSheetVector& activeSheets) {
-  for (auto activeIterator = activeSheets.begin() + index;
-       activeIterator != activeSheets.end(); activeIterator++) {
-    CSSStyleSheet* sheet = activeIterator->first;
-    m_viewportDependentMediaQueryResults.appendVector(
-        sheet->viewportDependentMediaQueryResults());
-    m_deviceDependentMediaQueryResults.appendVector(
-        sheet->deviceDependentMediaQueryResults());
-    if (!activeIterator->second)
+    const ActiveStyleSheetVector& active_sheets) {
+  for (auto active_iterator = active_sheets.begin() + index;
+       active_iterator != active_sheets.end(); active_iterator++) {
+    CSSStyleSheet* sheet = active_iterator->first;
+    viewport_dependent_media_query_results_.AppendVector(
+        sheet->ViewportDependentMediaQueryResults());
+    device_dependent_media_query_results_.AppendVector(
+        sheet->DeviceDependentMediaQueryResults());
+    if (!active_iterator->second)
       continue;
-    const RuleSet& ruleSet = *activeIterator->second;
-    m_authorStyleSheets.push_back(sheet);
-    addKeyframeRules(ruleSet);
-    addFontFaceRules(ruleSet);
-    addTreeBoundaryCrossingRules(ruleSet, sheet, index++);
+    const RuleSet& rule_set = *active_iterator->second;
+    author_style_sheets_.push_back(sheet);
+    AddKeyframeRules(rule_set);
+    AddFontFaceRules(rule_set);
+    AddTreeBoundaryCrossingRules(rule_set, sheet, index++);
   }
 }
 
-void ScopedStyleResolver::collectFeaturesTo(
+void ScopedStyleResolver::CollectFeaturesTo(
     RuleFeatureSet& features,
     HeapHashSet<Member<const StyleSheetContents>>&
-        visitedSharedStyleSheetContents) const {
-  features.viewportDependentMediaQueryResults().appendVector(
-      m_viewportDependentMediaQueryResults);
-  features.deviceDependentMediaQueryResults().appendVector(
-      m_deviceDependentMediaQueryResults);
+        visited_shared_style_sheet_contents) const {
+  features.ViewportDependentMediaQueryResults().AppendVector(
+      viewport_dependent_media_query_results_);
+  features.DeviceDependentMediaQueryResults().AppendVector(
+      device_dependent_media_query_results_);
 
-  for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    DCHECK(m_authorStyleSheets[i]->ownerNode());
-    StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
-    if (contents->hasOneClient() ||
-        visitedSharedStyleSheetContents.insert(contents).isNewEntry)
-      features.add(contents->ruleSet().features());
+  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
+    DCHECK(author_style_sheets_[i]->ownerNode());
+    StyleSheetContents* contents = author_style_sheets_[i]->Contents();
+    if (contents->HasOneClient() ||
+        visited_shared_style_sheet_contents.insert(contents).is_new_entry)
+      features.Add(contents->GetRuleSet().Features());
   }
 
-  if (!m_treeBoundaryCrossingRuleSet)
+  if (!tree_boundary_crossing_rule_set_)
     return;
 
-  for (const auto& rules : *m_treeBoundaryCrossingRuleSet)
-    features.add(rules->m_ruleSet->features());
+  for (const auto& rules : *tree_boundary_crossing_rule_set_)
+    features.Add(rules->rule_set_->Features());
 }
 
-void ScopedStyleResolver::resetAuthorStyle() {
-  m_authorStyleSheets.clear();
-  m_viewportDependentMediaQueryResults.clear();
-  m_deviceDependentMediaQueryResults.clear();
-  m_keyframesRuleMap.clear();
-  m_treeBoundaryCrossingRuleSet = nullptr;
-  m_hasDeepOrShadowSelector = false;
-  m_needsAppendAllSheets = false;
+void ScopedStyleResolver::ResetAuthorStyle() {
+  author_style_sheets_.Clear();
+  viewport_dependent_media_query_results_.Clear();
+  device_dependent_media_query_results_.Clear();
+  keyframes_rule_map_.Clear();
+  tree_boundary_crossing_rule_set_ = nullptr;
+  has_deep_or_shadow_selector_ = false;
+  needs_append_all_sheets_ = false;
 }
 
-StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(
-    const StringImpl* animationName) {
-  if (m_keyframesRuleMap.isEmpty())
+StyleRuleKeyframes* ScopedStyleResolver::KeyframeStylesForAnimation(
+    const StringImpl* animation_name) {
+  if (keyframes_rule_map_.IsEmpty())
     return nullptr;
 
-  KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(animationName);
-  if (it == m_keyframesRuleMap.end())
+  KeyframesRuleMap::iterator it = keyframes_rule_map_.Find(animation_name);
+  if (it == keyframes_rule_map_.end())
     return nullptr;
 
-  return it->value.get();
+  return it->value.Get();
 }
 
-void ScopedStyleResolver::addKeyframeStyle(StyleRuleKeyframes* rule) {
-  AtomicString s(rule->name());
+void ScopedStyleResolver::AddKeyframeStyle(StyleRuleKeyframes* rule) {
+  AtomicString s(rule->GetName());
 
-  if (rule->isVendorPrefixed()) {
-    KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(s.impl());
-    if (it == m_keyframesRuleMap.end())
-      m_keyframesRuleMap.set(s.impl(), rule);
-    else if (it->value->isVendorPrefixed())
-      m_keyframesRuleMap.set(s.impl(), rule);
+  if (rule->IsVendorPrefixed()) {
+    KeyframesRuleMap::iterator it = keyframes_rule_map_.Find(s.Impl());
+    if (it == keyframes_rule_map_.end())
+      keyframes_rule_map_.Set(s.Impl(), rule);
+    else if (it->value->IsVendorPrefixed())
+      keyframes_rule_map_.Set(s.Impl(), rule);
   } else {
-    m_keyframesRuleMap.set(s.impl(), rule);
+    keyframes_rule_map_.Set(s.Impl(), rule);
   }
 }
 
-ContainerNode& ScopedStyleResolver::invalidationRootForTreeScope(
-    const TreeScope& treeScope) {
-  if (treeScope.rootNode() == treeScope.document())
-    return treeScope.document();
-  return toShadowRoot(treeScope.rootNode()).host();
+ContainerNode& ScopedStyleResolver::InvalidationRootForTreeScope(
+    const TreeScope& tree_scope) {
+  if (tree_scope.RootNode() == tree_scope.GetDocument())
+    return tree_scope.GetDocument();
+  return ToShadowRoot(tree_scope.RootNode()).host();
 }
 
-void ScopedStyleResolver::keyframesRulesAdded(const TreeScope& treeScope) {
+void ScopedStyleResolver::KeyframesRulesAdded(const TreeScope& tree_scope) {
   // Called when @keyframes rules are about to be added/removed from a
   // TreeScope. @keyframes rules may apply to animations on elements in the
   // same TreeScope as the stylesheet, or the host element in the parent
   // TreeScope if the TreeScope is a shadow tree.
 
-  ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
-  ScopedStyleResolver* parentResolver =
-      treeScope.parentTreeScope()
-          ? treeScope.parentTreeScope()->scopedStyleResolver()
+  ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver();
+  ScopedStyleResolver* parent_resolver =
+      tree_scope.ParentTreeScope()
+          ? tree_scope.ParentTreeScope()->GetScopedStyleResolver()
           : nullptr;
 
-  bool hadUnresolvedKeyframes = false;
-  if (resolver && resolver->m_hasUnresolvedKeyframesRule) {
-    resolver->m_hasUnresolvedKeyframesRule = false;
-    hadUnresolvedKeyframes = true;
+  bool had_unresolved_keyframes = false;
+  if (resolver && resolver->has_unresolved_keyframes_rule_) {
+    resolver->has_unresolved_keyframes_rule_ = false;
+    had_unresolved_keyframes = true;
   }
-  if (parentResolver && parentResolver->m_hasUnresolvedKeyframesRule) {
-    parentResolver->m_hasUnresolvedKeyframesRule = false;
-    hadUnresolvedKeyframes = true;
+  if (parent_resolver && parent_resolver->has_unresolved_keyframes_rule_) {
+    parent_resolver->has_unresolved_keyframes_rule_ = false;
+    had_unresolved_keyframes = true;
   }
 
-  if (hadUnresolvedKeyframes) {
+  if (had_unresolved_keyframes) {
     // If an animation ended up not being started because no @keyframes
     // rules were found for the animation-name, we need to recalculate style
     // for the elements in the scope, including its shadow host if
     // applicable.
-    invalidationRootForTreeScope(treeScope).setNeedsStyleRecalc(
-        SubtreeStyleChange, StyleChangeReasonForTracing::create(
-                                StyleChangeReason::StyleSheetChange));
+    InvalidationRootForTreeScope(tree_scope)
+        .SetNeedsStyleRecalc(kSubtreeStyleChange,
+                             StyleChangeReasonForTracing::Create(
+                                 StyleChangeReason::kStyleSheetChange));
     return;
   }
 
   // If we have animations running, added/removed @keyframes may affect these.
-  treeScope.document().timeline().invalidateKeyframeEffects(treeScope);
+  tree_scope.GetDocument().Timeline().InvalidateKeyframeEffects(tree_scope);
 }
 
-void ScopedStyleResolver::collectMatchingAuthorRules(
+void ScopedStyleResolver::CollectMatchingAuthorRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascadeOrder) {
-  for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    DCHECK(m_authorStyleSheets[i]->ownerNode());
-    MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(),
-                              &m_scope->rootNode(), m_authorStyleSheets[i], i);
-    collector.collectMatchingRules(matchRequest, cascadeOrder);
+    CascadeOrder cascade_order) {
+  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
+    DCHECK(author_style_sheets_[i]->ownerNode());
+    MatchRequest match_request(
+        &author_style_sheets_[i]->Contents()->GetRuleSet(), &scope_->RootNode(),
+        author_style_sheets_[i], i);
+    collector.CollectMatchingRules(match_request, cascade_order);
   }
 }
 
-void ScopedStyleResolver::collectMatchingShadowHostRules(
+void ScopedStyleResolver::CollectMatchingShadowHostRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascadeOrder) {
-  for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    DCHECK(m_authorStyleSheets[i]->ownerNode());
-    MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(),
-                              &m_scope->rootNode(), m_authorStyleSheets[i], i);
-    collector.collectMatchingShadowHostRules(matchRequest, cascadeOrder);
+    CascadeOrder cascade_order) {
+  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
+    DCHECK(author_style_sheets_[i]->ownerNode());
+    MatchRequest match_request(
+        &author_style_sheets_[i]->Contents()->GetRuleSet(), &scope_->RootNode(),
+        author_style_sheets_[i], i);
+    collector.CollectMatchingShadowHostRules(match_request, cascade_order);
   }
 }
 
-void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(
+void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
     ElementRuleCollector& collector,
-    CascadeOrder cascadeOrder) {
-  if (!m_treeBoundaryCrossingRuleSet)
+    CascadeOrder cascade_order) {
+  if (!tree_boundary_crossing_rule_set_)
     return;
 
-  for (const auto& rules : *m_treeBoundaryCrossingRuleSet) {
-    MatchRequest request(rules->m_ruleSet.get(), &treeScope().rootNode(),
-                         rules->m_parentStyleSheet, rules->m_parentIndex);
-    collector.collectMatchingRules(request, cascadeOrder, true);
+  for (const auto& rules : *tree_boundary_crossing_rule_set_) {
+    MatchRequest request(rules->rule_set_.Get(), &GetTreeScope().RootNode(),
+                         rules->parent_style_sheet_, rules->parent_index_);
+    collector.CollectMatchingRules(request, cascade_order, true);
   }
 }
 
-void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector) {
+void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
   // Only consider the global author RuleSet for @page rules, as per the HTML5
   // spec.
-  DCHECK(m_scope->rootNode().isDocumentNode());
-  for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-    collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
+  DCHECK(scope_->RootNode().IsDocumentNode());
+  for (size_t i = 0; i < author_style_sheets_.size(); ++i)
+    collector.MatchPageRules(
+        &author_style_sheets_[i]->Contents()->GetRuleSet());
 }
 
 DEFINE_TRACE(ScopedStyleResolver) {
-  visitor->trace(m_scope);
-  visitor->trace(m_authorStyleSheets);
-  visitor->trace(m_viewportDependentMediaQueryResults);
-  visitor->trace(m_deviceDependentMediaQueryResults);
-  visitor->trace(m_keyframesRuleMap);
-  visitor->trace(m_treeBoundaryCrossingRuleSet);
+  visitor->Trace(scope_);
+  visitor->Trace(author_style_sheets_);
+  visitor->Trace(viewport_dependent_media_query_results_);
+  visitor->Trace(device_dependent_media_query_results_);
+  visitor->Trace(keyframes_rule_map_);
+  visitor->Trace(tree_boundary_crossing_rule_set_);
 }
 
-static void addRules(RuleSet* ruleSet,
+static void AddRules(RuleSet* rule_set,
                      const HeapVector<MinimalRuleData>& rules) {
   for (unsigned i = 0; i < rules.size(); ++i) {
     const MinimalRuleData& info = rules[i];
-    ruleSet->addRule(info.m_rule, info.m_selectorIndex, info.m_flags);
+    rule_set->AddRule(info.rule_, info.selector_index_, info.flags_);
   }
 }
 
-void ScopedStyleResolver::addTreeBoundaryCrossingRules(
-    const RuleSet& authorRules,
-    CSSStyleSheet* parentStyleSheet,
-    unsigned sheetIndex) {
-  bool isDocumentScope = treeScope().rootNode().isDocumentNode();
-  if (authorRules.deepCombinatorOrShadowPseudoRules().isEmpty() &&
-      (isDocumentScope || (authorRules.contentPseudoElementRules().isEmpty() &&
-                           authorRules.slottedPseudoElementRules().isEmpty())))
+void ScopedStyleResolver::AddTreeBoundaryCrossingRules(
+    const RuleSet& author_rules,
+    CSSStyleSheet* parent_style_sheet,
+    unsigned sheet_index) {
+  bool is_document_scope = GetTreeScope().RootNode().IsDocumentNode();
+  if (author_rules.DeepCombinatorOrShadowPseudoRules().IsEmpty() &&
+      (is_document_scope ||
+       (author_rules.ContentPseudoElementRules().IsEmpty() &&
+        author_rules.SlottedPseudoElementRules().IsEmpty())))
     return;
 
-  if (!authorRules.deepCombinatorOrShadowPseudoRules().isEmpty())
-    m_hasDeepOrShadowSelector = true;
+  if (!author_rules.DeepCombinatorOrShadowPseudoRules().IsEmpty())
+    has_deep_or_shadow_selector_ = true;
 
-  RuleSet* ruleSetForScope = RuleSet::create();
-  addRules(ruleSetForScope, authorRules.deepCombinatorOrShadowPseudoRules());
+  RuleSet* rule_set_for_scope = RuleSet::Create();
+  AddRules(rule_set_for_scope,
+           author_rules.DeepCombinatorOrShadowPseudoRules());
 
-  if (!isDocumentScope) {
-    addRules(ruleSetForScope, authorRules.contentPseudoElementRules());
-    addRules(ruleSetForScope, authorRules.slottedPseudoElementRules());
+  if (!is_document_scope) {
+    AddRules(rule_set_for_scope, author_rules.ContentPseudoElementRules());
+    AddRules(rule_set_for_scope, author_rules.SlottedPseudoElementRules());
   }
 
-  if (!m_treeBoundaryCrossingRuleSet) {
-    m_treeBoundaryCrossingRuleSet = new CSSStyleSheetRuleSubSet();
-    treeScope().document().styleEngine().addTreeBoundaryCrossingScope(
-        treeScope());
+  if (!tree_boundary_crossing_rule_set_) {
+    tree_boundary_crossing_rule_set_ = new CSSStyleSheetRuleSubSet();
+    GetTreeScope().GetDocument().GetStyleEngine().AddTreeBoundaryCrossingScope(
+        GetTreeScope());
   }
 
-  m_treeBoundaryCrossingRuleSet->push_back(
-      RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope));
+  tree_boundary_crossing_rule_set_->push_back(
+      RuleSubSet::Create(parent_style_sheet, sheet_index, rule_set_for_scope));
 }
 
-bool ScopedStyleResolver::haveSameStyles(const ScopedStyleResolver* first,
+bool ScopedStyleResolver::HaveSameStyles(const ScopedStyleResolver* first,
                                          const ScopedStyleResolver* second) {
   // This method will return true if the two resolvers are either both empty, or
   // if they contain the same active stylesheets by sharing the same
@@ -308,21 +314,21 @@ bool ScopedStyleResolver::haveSameStyles(const ScopedStyleResolver* first,
   // the same order and contain the exact same source string in which case we
   // will get a cache hit for sharing StyleSheetContents.
 
-  size_t firstCount = first ? first->m_authorStyleSheets.size() : 0;
-  size_t secondCount = second ? second->m_authorStyleSheets.size() : 0;
-  if (firstCount != secondCount)
+  size_t first_count = first ? first->author_style_sheets_.size() : 0;
+  size_t second_count = second ? second->author_style_sheets_.size() : 0;
+  if (first_count != second_count)
     return false;
-  while (firstCount--) {
-    if (first->m_authorStyleSheets[firstCount]->contents() !=
-        second->m_authorStyleSheets[firstCount]->contents())
+  while (first_count--) {
+    if (first->author_style_sheets_[first_count]->Contents() !=
+        second->author_style_sheets_[first_count]->Contents())
       return false;
   }
   return true;
 }
 
 DEFINE_TRACE(ScopedStyleResolver::RuleSubSet) {
-  visitor->trace(m_parentStyleSheet);
-  visitor->trace(m_ruleSet);
+  visitor->Trace(parent_style_sheet_);
+  visitor->Trace(rule_set_);
 }
 
 }  // namespace blink

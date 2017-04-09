@@ -30,17 +30,17 @@ MediaStreamAudioSource::~MediaStreamAudioSource() {
 // static
 MediaStreamAudioSource* MediaStreamAudioSource::From(
     const blink::WebMediaStreamSource& source) {
-  if (source.isNull() ||
-      source.getType() != blink::WebMediaStreamSource::TypeAudio) {
+  if (source.IsNull() ||
+      source.GetType() != blink::WebMediaStreamSource::kTypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioSource*>(source.getExtraData());
+  return static_cast<MediaStreamAudioSource*>(source.GetExtraData());
 }
 
 bool MediaStreamAudioSource::ConnectToTrack(
     const blink::WebMediaStreamTrack& blink_track) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!blink_track.isNull());
+  DCHECK(!blink_track.IsNull());
 
   // Sanity-check that there is not already a MediaStreamAudioTrack instance
   // associated with |blink_track|.
@@ -61,13 +61,13 @@ bool MediaStreamAudioSource::ConnectToTrack(
   // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
   // to the WebMediaStreamTrack.
   blink::WebMediaStreamTrack mutable_blink_track = blink_track;
-  mutable_blink_track.setTrackData(
-      CreateMediaStreamAudioTrack(blink_track.id().utf8()).release());
+  mutable_blink_track.SetTrackData(
+      CreateMediaStreamAudioTrack(blink_track.Id().Utf8()).release());
 
   // Propagate initial "enabled" state.
   MediaStreamAudioTrack* const track = MediaStreamAudioTrack::From(blink_track);
   DCHECK(track);
-  track->SetEnabled(blink_track.isEnabled());
+  track->SetEnabled(blink_track.IsEnabled());
 
   // If the source is stopped, do not start the track.
   if (is_stopped_)

@@ -19,22 +19,22 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
       public WorkletGlobalScopeProxy {
  public:
   // WorkletGlobalScopeProxy implementation.
-  void evaluateScript(const ScriptSourceCode&) final;
-  void terminateWorkletGlobalScope() final;
+  void EvaluateScript(const ScriptSourceCode&) final;
+  void TerminateWorkletGlobalScope() final;
 
-  void initialize();
+  void Initialize();
 
  protected:
   explicit ThreadedWorkletMessagingProxy(ExecutionContext*);
 
-  ThreadedWorkletObjectProxy& workletObjectProxy() {
-    return *m_workletObjectProxy;
+  ThreadedWorkletObjectProxy& WorkletObjectProxy() {
+    return *worklet_object_proxy_;
   }
 
  private:
-  std::unique_ptr<ThreadedWorkletObjectProxy> m_workletObjectProxy;
+  std::unique_ptr<ThreadedWorkletObjectProxy> worklet_object_proxy_;
 
-  WeakPtrFactory<ThreadedWorkletMessagingProxy> m_weakPtrFactory;
+  WeakPtrFactory<ThreadedWorkletMessagingProxy> weak_ptr_factory_;
 };
 
 }  // namespace blink

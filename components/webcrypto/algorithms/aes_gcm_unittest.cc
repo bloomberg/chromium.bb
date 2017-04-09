@@ -24,15 +24,15 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     const std::vector<uint8_t>& iv,
     const std::vector<uint8_t>& additional_data,
     unsigned int tag_length_bits) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdAesGcm,
+  return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
+      blink::kWebCryptoAlgorithmIdAesGcm,
       new blink::WebCryptoAesGcmParams(iv, true, additional_data, true,
                                        tag_length_bits));
 }
 
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
     unsigned short key_length_bits) {
-  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesGcm,
+  return CreateAesKeyGenAlgorithm(blink::kWebCryptoAlgorithmIdAesGcm,
                                   key_length_bits);
 }
 
@@ -103,7 +103,7 @@ TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
               GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(kKeyLen[i]), true,
-                                blink::WebCryptoKeyUsageDecrypt, &key));
+                                blink::kWebCryptoKeyUsageDecrypt, &key));
   }
 }
 
@@ -115,16 +115,16 @@ TEST_F(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
 
 TEST_F(WebCryptoAesGcmTest, ImportExportJwk) {
   const blink::WebCryptoAlgorithm algorithm =
-      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm);
+      CreateAlgorithm(blink::kWebCryptoAlgorithmIdAesGcm);
 
   // AES-GCM 128
   ImportExportJwkSymmetricKey(
       128, algorithm,
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      blink::kWebCryptoKeyUsageEncrypt | blink::kWebCryptoKeyUsageDecrypt,
       "A128GCM");
 
   // AES-GCM 256
-  ImportExportJwkSymmetricKey(256, algorithm, blink::WebCryptoKeyUsageDecrypt,
+  ImportExportJwkSymmetricKey(256, algorithm, blink::kWebCryptoKeyUsageDecrypt,
                               "A256GCM");
 }
 
@@ -156,13 +156,13 @@ TEST_F(WebCryptoAesGcmTest, SampleSets) {
         GetBytesFromHexString(test, "cipher_text");
 
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
-        test_key, CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm),
-        blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
+        test_key, CreateAlgorithm(blink::kWebCryptoAlgorithmIdAesGcm),
+        blink::kWebCryptoKeyUsageEncrypt | blink::kWebCryptoKeyUsageDecrypt);
 
     // Verify exported raw key is identical to the imported data
     std::vector<uint8_t> raw_key;
     EXPECT_EQ(Status::Success(),
-              ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+              ExportKey(blink::kWebCryptoKeyFormatRaw, key, &raw_key));
 
     EXPECT_BYTES_EQ(test_key, raw_key);
 

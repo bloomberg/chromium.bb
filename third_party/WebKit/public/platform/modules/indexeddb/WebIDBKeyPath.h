@@ -36,48 +36,48 @@ namespace blink {
 class WebIDBKeyPath {
  public:
   // FIXME: Update callers use constructors directly, and remove these.
-  static WebIDBKeyPath create(const WebString& string) {
+  static WebIDBKeyPath Create(const WebString& string) {
     return WebIDBKeyPath(string);
   }
-  static WebIDBKeyPath create(const WebVector<WebString>& array) {
+  static WebIDBKeyPath Create(const WebVector<WebString>& array) {
     return WebIDBKeyPath(array);
   }
-  static WebIDBKeyPath createNull() { return WebIDBKeyPath(); }
+  static WebIDBKeyPath CreateNull() { return WebIDBKeyPath(); }
 
-  WebIDBKeyPath() : m_type(WebIDBKeyPathTypeNull) {}
+  WebIDBKeyPath() : type_(kWebIDBKeyPathTypeNull) {}
 
   explicit WebIDBKeyPath(const WebString& string)
-      : m_type(WebIDBKeyPathTypeString), m_string(string) {}
+      : type_(kWebIDBKeyPathTypeString), string_(string) {}
 
   explicit WebIDBKeyPath(const WebVector<WebString>& array)
-      : m_type(WebIDBKeyPathTypeArray), m_array(array) {}
+      : type_(kWebIDBKeyPathTypeArray), array_(array) {}
 
-  WebIDBKeyPath(const WebIDBKeyPath& keyPath)
-      : m_type(keyPath.m_type),
-        m_array(keyPath.m_array),
-        m_string(keyPath.m_string) {}
+  WebIDBKeyPath(const WebIDBKeyPath& key_path)
+      : type_(key_path.type_),
+        array_(key_path.array_),
+        string_(key_path.string_) {}
 
   ~WebIDBKeyPath() {}
 
-  WebIDBKeyPath& operator=(const WebIDBKeyPath& keyPath) {
-    m_type = keyPath.m_type;
-    m_array = keyPath.m_array;
-    m_string = keyPath.m_string;
+  WebIDBKeyPath& operator=(const WebIDBKeyPath& key_path) {
+    type_ = key_path.type_;
+    array_ = key_path.array_;
+    string_ = key_path.string_;
     return *this;
   }
 
-  WebIDBKeyPathType keyPathType() const { return m_type; }
-  const WebVector<WebString>& array() const {
-    return m_array;
+  WebIDBKeyPathType KeyPathType() const { return type_; }
+  const WebVector<WebString>& Array() const {
+    return array_;
   }  // Only valid for ArrayType.
-  const WebString& string() const {
-    return m_string;
+  const WebString& GetString() const {
+    return string_;
   }  // Only valid for StringType.
 
  private:
-  WebIDBKeyPathType m_type;
-  WebVector<WebString> m_array;
-  WebString m_string;
+  WebIDBKeyPathType type_;
+  WebVector<WebString> array_;
+  WebString string_;
 };
 
 }  // namespace blink

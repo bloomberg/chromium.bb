@@ -16,37 +16,37 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSSkew* create(const CSSAngleValue* ax, const CSSAngleValue* ay) {
+  static CSSSkew* Create(const CSSAngleValue* ax, const CSSAngleValue* ay) {
     return new CSSSkew(ax, ay);
   }
 
-  static CSSSkew* fromCSSValue(const CSSFunctionValue&);
+  static CSSSkew* FromCSSValue(const CSSFunctionValue&);
 
   // Bindings requires returning non-const pointers. This is safe because
   // CSSAngleValues are immutable.
-  CSSAngleValue* ax() const { return const_cast<CSSAngleValue*>(m_ax.get()); }
-  CSSAngleValue* ay() const { return const_cast<CSSAngleValue*>(m_ay.get()); }
+  CSSAngleValue* ax() const { return const_cast<CSSAngleValue*>(ax_.Get()); }
+  CSSAngleValue* ay() const { return const_cast<CSSAngleValue*>(ay_.Get()); }
 
-  TransformComponentType type() const override { return SkewType; }
+  TransformComponentType GetType() const override { return kSkewType; }
 
   CSSMatrixComponent* asMatrix() const override {
-    return CSSMatrixComponent::skew(m_ax->degrees(), m_ay->degrees());
+    return CSSMatrixComponent::Skew(ax_->degrees(), ay_->degrees());
   }
 
-  CSSFunctionValue* toCSSValue() const override;
+  CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_ax);
-    visitor->trace(m_ay);
-    CSSTransformComponent::trace(visitor);
+    visitor->Trace(ax_);
+    visitor->Trace(ay_);
+    CSSTransformComponent::Trace(visitor);
   }
 
  private:
   CSSSkew(const CSSAngleValue* ax, const CSSAngleValue* ay)
-      : CSSTransformComponent(), m_ax(ax), m_ay(ay) {}
+      : CSSTransformComponent(), ax_(ax), ay_(ay) {}
 
-  Member<const CSSAngleValue> m_ax;
-  Member<const CSSAngleValue> m_ay;
+  Member<const CSSAngleValue> ax_;
+  Member<const CSSAngleValue> ay_;
 };
 
 }  // namespace blink

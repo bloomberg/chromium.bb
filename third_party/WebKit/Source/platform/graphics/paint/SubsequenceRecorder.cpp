@@ -12,34 +12,34 @@ namespace blink {
 
 SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
                                          const DisplayItemClient& client)
-    : m_paintController(context.getPaintController()),
-      m_client(client),
-      m_beginSubsequenceIndex(0) {
-  if (m_paintController.displayItemConstructionIsDisabled())
+    : paint_controller_(context.GetPaintController()),
+      client_(client),
+      begin_subsequence_index_(0) {
+  if (paint_controller_.DisplayItemConstructionIsDisabled())
     return;
 
-  m_beginSubsequenceIndex = m_paintController.newDisplayItemList().size();
+  begin_subsequence_index_ = paint_controller_.NewDisplayItemList().size();
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  m_paintController.beginSubsequence(m_client);
+  paint_controller_.BeginSubsequence(client_);
 #endif
 }
 
 SubsequenceRecorder::~SubsequenceRecorder() {
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  m_paintController.endSubsequence();
+  paint_controller_.EndSubsequence();
 #endif
 
-  if (m_paintController.displayItemConstructionIsDisabled())
+  if (paint_controller_.DisplayItemConstructionIsDisabled())
     return;
 
   // Skip empty subsequences.
-  if (m_paintController.newDisplayItemList().size() == m_beginSubsequenceIndex)
+  if (paint_controller_.NewDisplayItemList().size() == begin_subsequence_index_)
     return;
 
-  m_paintController.addCachedSubsequence(
-      m_client, m_beginSubsequenceIndex,
-      m_paintController.newDisplayItemList().size() - 1);
+  paint_controller_.AddCachedSubsequence(
+      client_, begin_subsequence_index_,
+      paint_controller_.NewDisplayItemList().size() - 1);
 }
 
 }  // namespace blink

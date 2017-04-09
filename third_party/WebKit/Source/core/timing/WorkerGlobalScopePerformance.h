@@ -46,7 +46,7 @@ class WorkerGlobalScopePerformance final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 
  public:
-  static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
+  static WorkerGlobalScopePerformance& From(WorkerGlobalScope&);
 
   static WorkerPerformance* performance(WorkerGlobalScope&);
 
@@ -56,9 +56,9 @@ class WorkerGlobalScopePerformance final
   explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
 
   WorkerPerformance* performance(WorkerGlobalScope*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<WorkerPerformance> m_performance;
+  Member<WorkerPerformance> performance_;
 };
 
 }  // namespace blink

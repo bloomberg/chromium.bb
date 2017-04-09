@@ -74,14 +74,14 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       const GURL& unfiltered_url,
       const GURL& url) {
     return CreateContextMenu(unfiltered_url, url, base::string16(),
-                             blink::WebContextMenuData::MediaTypeNone,
+                             blink::WebContextMenuData::kMediaTypeNone,
                              ui::MENU_SOURCE_NONE);
   }
 
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
       const GURL& url) {
     return CreateContextMenu(GURL(), url, base::string16(),
-                             blink::WebContextMenuData::MediaTypeImage,
+                             blink::WebContextMenuData::kMediaTypeImage,
                              ui::MENU_SOURCE_NONE);
   }
 
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
   content::ContextMenuParams params;
-  params.media_type = blink::WebContextMenuData::MediaTypeCanvas;
+  params.media_type = blink::WebContextMenuData::kMediaTypeCanvas;
 
   TestRenderViewContextMenu menu(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeNone,
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeNone,
       ui::MENU_SOURCE_MOUSE);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16(""), blink::WebContextMenuData::MediaTypeNone,
+      base::ASCIIToUTF16(""), blink::WebContextMenuData::kMediaTypeNone,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeNone,
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeNone,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::MediaTypeImage,
+      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeImage,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -210,18 +210,18 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
       browser(), GURL("data:text/html,<a href='about:blank'>link</a>"));
 
   // Open a context menu.
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebMouseEvent::Button::Right;
-  mouse_event.setPositionInWidget(15, 15);
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(15, 15);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   gfx::Rect offset = tab->GetContainerBounds();
-  mouse_event.setPositionInScreen(15 + offset.x(), 15 + offset.y());
-  mouse_event.clickCount = 1;
+  mouse_event.SetPositionInScreen(15 + offset.x(), 15 + offset.y());
+  mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   // The menu_observer will select "Open in new tab", wait for the new tab to
@@ -350,15 +350,15 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
            kSuggestedFilename + "'>link</a>"));
 
   // Open a context menu.
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebMouseEvent::Button::Right;
-  mouse_event.setPositionInWidget(15, 15);
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(15, 15);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   // Wait for context menu to be visible.
@@ -577,7 +577,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
   void RightClickImage() {
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::Right,
+    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
                                   gfx::Point(15, 15));
   }
 
@@ -765,7 +765,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
         IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE));
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::Right,
+    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
                                   gfx::Point(15, 15));
   }
 

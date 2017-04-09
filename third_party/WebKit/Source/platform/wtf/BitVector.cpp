@@ -33,90 +33,91 @@
 
 namespace WTF {
 
-void BitVector::setSlow(const BitVector& other) {
-  uintptr_t newBitsOrPointer;
-  if (other.isInline()) {
-    newBitsOrPointer = other.m_bitsOrPointer;
+void BitVector::SetSlow(const BitVector& other) {
+  uintptr_t new_bits_or_pointer;
+  if (other.IsInline()) {
+    new_bits_or_pointer = other.bits_or_pointer_;
   } else {
-    OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(other.size());
-    memcpy(newOutOfLineBits->bits(), other.bits(), byteCount(other.size()));
-    newBitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
+    OutOfLineBits* new_out_of_line_bits = OutOfLineBits::Create(other.size());
+    memcpy(new_out_of_line_bits->Bits(), other.Bits(), ByteCount(other.size()));
+    new_bits_or_pointer = BitwiseCast<uintptr_t>(new_out_of_line_bits) >> 1;
   }
-  if (!isInline())
-    OutOfLineBits::destroy(outOfLineBits());
-  m_bitsOrPointer = newBitsOrPointer;
+  if (!IsInline())
+    OutOfLineBits::Destroy(GetOutOfLineBits());
+  bits_or_pointer_ = new_bits_or_pointer;
 }
 
-void BitVector::resize(size_t numBits) {
-  if (numBits <= maxInlineBits()) {
-    if (isInline())
+void BitVector::Resize(size_t num_bits) {
+  if (num_bits <= MaxInlineBits()) {
+    if (IsInline())
       return;
 
-    OutOfLineBits* myOutOfLineBits = outOfLineBits();
-    m_bitsOrPointer = makeInlineBits(*myOutOfLineBits->bits());
-    OutOfLineBits::destroy(myOutOfLineBits);
+    OutOfLineBits* my_out_of_line_bits = GetOutOfLineBits();
+    bits_or_pointer_ = MakeInlineBits(*my_out_of_line_bits->Bits());
+    OutOfLineBits::Destroy(my_out_of_line_bits);
     return;
   }
 
-  resizeOutOfLine(numBits);
+  ResizeOutOfLine(num_bits);
 }
 
-void BitVector::clearAll() {
-  if (isInline())
-    m_bitsOrPointer = makeInlineBits(0);
+void BitVector::ClearAll() {
+  if (IsInline())
+    bits_or_pointer_ = MakeInlineBits(0);
   else
-    memset(outOfLineBits()->bits(), 0, byteCount(size()));
+    memset(GetOutOfLineBits()->Bits(), 0, ByteCount(size()));
 }
 
-BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits) {
+BitVector::OutOfLineBits* BitVector::OutOfLineBits::Create(size_t num_bits) {
   // Because of the way BitVector stores the pointer, memory tools
   // will erroneously report a leak here.
   WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
-  numBits = (numBits + bitsInPointer() - 1) &
-            ~(bitsInPointer() - static_cast<size_t>(1));
+  num_bits = (num_bits + BitsInPointer() - 1) &
+             ~(BitsInPointer() - static_cast<size_t>(1));
   size_t size =
-      sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
-  void* allocation = Partitions::bufferMalloc(
+      sizeof(OutOfLineBits) + sizeof(uintptr_t) * (num_bits / BitsInPointer());
+  void* allocation = Partitions::BufferMalloc(
       size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));
-  OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);
+  OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(num_bits);
   return result;
 }
 
-void BitVector::OutOfLineBits::destroy(OutOfLineBits* outOfLineBits) {
-  Partitions::bufferFree(outOfLineBits);
+void BitVector::OutOfLineBits::Destroy(OutOfLineBits* out_of_line_bits) {
+  Partitions::BufferFree(out_of_line_bits);
 }
 
-void BitVector::resizeOutOfLine(size_t numBits) {
-  DCHECK_GT(numBits, maxInlineBits());
-  OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(numBits);
-  size_t newNumWords = newOutOfLineBits->numWords();
-  if (isInline()) {
+void BitVector::ResizeOutOfLine(size_t num_bits) {
+  DCHECK_GT(num_bits, MaxInlineBits());
+  OutOfLineBits* new_out_of_line_bits = OutOfLineBits::Create(num_bits);
+  size_t new_num_words = new_out_of_line_bits->NumWords();
+  if (IsInline()) {
     // Make sure that all of the bits are zero in case we do a no-op resize.
-    *newOutOfLineBits->bits() =
-        m_bitsOrPointer & ~(static_cast<uintptr_t>(1) << maxInlineBits());
-    memset(newOutOfLineBits->bits() + 1, 0, (newNumWords - 1) * sizeof(void*));
+    *new_out_of_line_bits->Bits() =
+        bits_or_pointer_ & ~(static_cast<uintptr_t>(1) << MaxInlineBits());
+    memset(new_out_of_line_bits->Bits() + 1, 0,
+           (new_num_words - 1) * sizeof(void*));
   } else {
-    if (numBits > size()) {
-      size_t oldNumWords = outOfLineBits()->numWords();
-      memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(),
-             oldNumWords * sizeof(void*));
-      memset(newOutOfLineBits->bits() + oldNumWords, 0,
-             (newNumWords - oldNumWords) * sizeof(void*));
+    if (num_bits > size()) {
+      size_t old_num_words = GetOutOfLineBits()->NumWords();
+      memcpy(new_out_of_line_bits->Bits(), GetOutOfLineBits()->Bits(),
+             old_num_words * sizeof(void*));
+      memset(new_out_of_line_bits->Bits() + old_num_words, 0,
+             (new_num_words - old_num_words) * sizeof(void*));
     } else {
-      memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(),
-             newOutOfLineBits->numWords() * sizeof(void*));
+      memcpy(new_out_of_line_bits->Bits(), GetOutOfLineBits()->Bits(),
+             new_out_of_line_bits->NumWords() * sizeof(void*));
     }
-    OutOfLineBits::destroy(outOfLineBits());
+    OutOfLineBits::Destroy(GetOutOfLineBits());
   }
-  m_bitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
+  bits_or_pointer_ = BitwiseCast<uintptr_t>(new_out_of_line_bits) >> 1;
 }
 
-void BitVector::dump(PrintStream& out) {
+void BitVector::Dump(PrintStream& out) {
   for (size_t i = 0; i < size(); ++i) {
-    if (get(i))
-      out.printf("1");
+    if (Get(i))
+      out.Printf("1");
     else
-      out.printf("-");
+      out.Printf("-");
   }
 }
 

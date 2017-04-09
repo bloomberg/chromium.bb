@@ -39,21 +39,21 @@ class CORE_EXPORT HitTestCache final
   WTF_MAKE_NONCOPYABLE(HitTestCache);
 
  public:
-  static HitTestCache* create() { return new HitTestCache; }
+  static HitTestCache* Create() { return new HitTestCache; }
 
   // Check the cache for a possible hit and update |result| if
   // hit encountered; returning true. Otherwise false.
-  bool lookupCachedResult(HitTestResult&, uint64_t domTreeVersion);
+  bool LookupCachedResult(HitTestResult&, uint64_t dom_tree_version);
 
-  void clear();
+  void Clear();
 
   // Adds a HitTestResult to the cache.
-  void addCachedResult(const HitTestResult&, uint64_t domTreeVersion);
+  void AddCachedResult(const HitTestResult&, uint64_t dom_tree_version);
 
   DECLARE_TRACE();
 
  private:
-  HitTestCache() : m_updateIndex(0), m_domTreeVersion(0) {}
+  HitTestCache() : update_index_(0), dom_tree_version_(0) {}
 
   // The below UMA values reference a validity region. This code has not
   // been written yet; and exact matches are only supported but the
@@ -71,9 +71,9 @@ class CORE_EXPORT HitTestCache final
     MAX_HIT_METRIC = HIT_REGION_MATCH,
   };
 
-  unsigned m_updateIndex;
-  HeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> m_items;
-  uint64_t m_domTreeVersion;
+  unsigned update_index_;
+  HeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> items_;
+  uint64_t dom_tree_version_;
 };
 
 }  // namespace blink

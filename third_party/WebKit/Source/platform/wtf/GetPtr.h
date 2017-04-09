@@ -24,12 +24,12 @@
 namespace WTF {
 
 template <typename T>
-inline T* getPtr(T* p) {
+inline T* GetPtr(T* p) {
   return p;
 }
 
 template <typename T>
-inline T* getPtr(T& p) {
+inline T* GetPtr(T& p) {
   return &p;
 }
 

@@ -32,47 +32,47 @@
 
 namespace blink {
 
-AXSVGRoot::AXSVGRoot(LayoutObject* layoutObject,
-                     AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache) {}
+AXSVGRoot::AXSVGRoot(LayoutObject* layout_object,
+                     AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache) {}
 
 AXSVGRoot::~AXSVGRoot() {}
 
-AXSVGRoot* AXSVGRoot::create(LayoutObject* layoutObject,
-                             AXObjectCacheImpl& axObjectCache) {
-  return new AXSVGRoot(layoutObject, axObjectCache);
+AXSVGRoot* AXSVGRoot::Create(LayoutObject* layout_object,
+                             AXObjectCacheImpl& ax_object_cache) {
+  return new AXSVGRoot(layout_object, ax_object_cache);
 }
 
-void AXSVGRoot::setParent(AXObject* parent) {
+void AXSVGRoot::SetParent(AXObject* parent) {
   // Only update the parent to another objcet if it wasn't already set to
   // something. Multiple elements in an HTML document can reference
   // the same remote SVG document, and in that case the parent should just
   // stay with the first one.
-  if (!m_parent || !parent)
-    m_parent = parent;
+  if (!parent_ || !parent)
+    parent_ = parent;
 }
 
-AXObject* AXSVGRoot::computeParent() const {
-  DCHECK(!isDetached());
+AXObject* AXSVGRoot::ComputeParent() const {
+  DCHECK(!IsDetached());
   // If a parent was set because this is a remote SVG resource, use that
   // but otherwise, we should rely on the standard layout tree for the parent.
-  if (m_parent)
-    return m_parent;
+  if (parent_)
+    return parent_;
 
-  return AXLayoutObject::computeParent();
+  return AXLayoutObject::ComputeParent();
 }
 
 // SVG AAM 1.0 S8.2: the default role for an SVG root is "group".
-AccessibilityRole AXSVGRoot::determineAccessibilityRole() {
-  AccessibilityRole role = AXLayoutObject::determineAccessibilityRole();
-  if (role == UnknownRole)
-    role = GroupRole;
+AccessibilityRole AXSVGRoot::DetermineAccessibilityRole() {
+  AccessibilityRole role = AXLayoutObject::DetermineAccessibilityRole();
+  if (role == kUnknownRole)
+    role = kGroupRole;
   return role;
 }
 
 // SVG elements are only ignored when a generic element would also be ignored.
-bool AXSVGRoot::computeAccessibilityIsIgnored(IgnoredReasons* reasons) const {
-  return accessibilityIsIgnoredByDefault(reasons);
+bool AXSVGRoot::ComputeAccessibilityIsIgnored(IgnoredReasons* reasons) const {
+  return AccessibilityIsIgnoredByDefault(reasons);
 }
 
 }  // namespace blink

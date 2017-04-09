@@ -40,48 +40,48 @@
 
 namespace WTF {
 
-const size_t ConversionBufferSize = 16384;
+const size_t kConversionBufferSize = 16384;
 
 ICUConverterWrapper::~ICUConverterWrapper() {
   if (converter)
     ucnv_close(converter);
 }
 
-static UConverter*& cachedConverterICU() {
-  return wtfThreadData().cachedConverterICU().converter;
+static UConverter*& CachedConverterICU() {
+  return WtfThreadData().CachedConverterICU().converter;
 }
 
-std::unique_ptr<TextCodec> TextCodecICU::create(const TextEncoding& encoding,
+std::unique_ptr<TextCodec> TextCodecICU::Create(const TextEncoding& encoding,
                                                 const void*) {
-  return WTF::wrapUnique(new TextCodecICU(encoding));
+  return WTF::WrapUnique(new TextCodecICU(encoding));
 }
 
-void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
+void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
   // We register Hebrew with logical ordering using a separate name.
   // Otherwise, this would share the same canonical name as the
   // visual ordering case, and then TextEncoding could not tell them
   // apart; ICU treats these names as synonyms.
   registrar("ISO-8859-8-I", "ISO-8859-8-I");
 
-  int32_t numEncodings = ucnv_countAvailable();
-  for (int32_t i = 0; i < numEncodings; ++i) {
+  int32_t num_encodings = ucnv_countAvailable();
+  for (int32_t i = 0; i < num_encodings; ++i) {
     const char* name = ucnv_getAvailableName(i);
     UErrorCode error = U_ZERO_ERROR;
 #if !defined(USING_SYSTEM_ICU)
-    const char* primaryStandard = "HTML";
-    const char* secondaryStandard = "MIME";
+    const char* primary_standard = "HTML";
+    const char* secondary_standard = "MIME";
 #else
     const char* primaryStandard = "MIME";
     const char* secondaryStandard = "IANA";
 #endif
-    const char* standardName =
-        ucnv_getStandardName(name, primaryStandard, &error);
-    if (U_FAILURE(error) || !standardName) {
+    const char* standard_name =
+        ucnv_getStandardName(name, primary_standard, &error);
+    if (U_FAILURE(error) || !standard_name) {
       error = U_ZERO_ERROR;
       // Try IANA to pick up 'windows-12xx' and other names
       // which are not preferred MIME names but are widely used.
-      standardName = ucnv_getStandardName(name, secondaryStandard, &error);
-      if (U_FAILURE(error) || !standardName)
+      standard_name = ucnv_getStandardName(name, secondary_standard, &error);
+      if (U_FAILURE(error) || !standard_name)
         continue;
     }
 
@@ -110,17 +110,17 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
       standardName = "windows-874";
 #endif
 
-    registrar(standardName, standardName);
+    registrar(standard_name, standard_name);
 
-    uint16_t numAliases = ucnv_countAliases(name, &error);
+    uint16_t num_aliases = ucnv_countAliases(name, &error);
     DCHECK(U_SUCCESS(error));
     if (U_SUCCESS(error))
-      for (uint16_t j = 0; j < numAliases; ++j) {
+      for (uint16_t j = 0; j < num_aliases; ++j) {
         error = U_ZERO_ERROR;
         const char* alias = ucnv_getAlias(name, j, &error);
         DCHECK(U_SUCCESS(error));
-        if (U_SUCCESS(error) && alias != standardName)
-          registrar(alias, standardName);
+        if (U_SUCCESS(error) && alias != standard_name)
+          registrar(alias, standard_name);
       }
   }
 
@@ -225,28 +225,28 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
 #endif
 }
 
-void TextCodecICU::registerCodecs(TextCodecRegistrar registrar) {
+void TextCodecICU::RegisterCodecs(TextCodecRegistrar registrar) {
   // See comment above in registerEncodingNames.
-  registrar("ISO-8859-8-I", create, 0);
+  registrar("ISO-8859-8-I", Create, 0);
 
-  int32_t numEncodings = ucnv_countAvailable();
-  for (int32_t i = 0; i < numEncodings; ++i) {
+  int32_t num_encodings = ucnv_countAvailable();
+  for (int32_t i = 0; i < num_encodings; ++i) {
     const char* name = ucnv_getAvailableName(i);
     UErrorCode error = U_ZERO_ERROR;
-    const char* standardName = ucnv_getStandardName(name, "MIME", &error);
-    if (!U_SUCCESS(error) || !standardName) {
+    const char* standard_name = ucnv_getStandardName(name, "MIME", &error);
+    if (!U_SUCCESS(error) || !standard_name) {
       error = U_ZERO_ERROR;
-      standardName = ucnv_getStandardName(name, "IANA", &error);
-      if (!U_SUCCESS(error) || !standardName)
+      standard_name = ucnv_getStandardName(name, "IANA", &error);
+      if (!U_SUCCESS(error) || !standard_name)
         continue;
     }
-    registrar(standardName, create, 0);
+    registrar(standard_name, Create, 0);
   }
 }
 
 TextCodecICU::TextCodecICU(const TextEncoding& encoding)
-    : m_encoding(encoding),
-      m_converterICU(0)
+    : encoding_(encoding),
+      converter_icu_(0)
 #if defined(USING_SYSTEM_ICU)
       ,
       m_needsGBKFallbacks(false)
@@ -255,21 +255,21 @@ TextCodecICU::TextCodecICU(const TextEncoding& encoding)
 }
 
 TextCodecICU::~TextCodecICU() {
-  releaseICUConverter();
+  ReleaseICUConverter();
 }
 
-void TextCodecICU::releaseICUConverter() const {
-  if (m_converterICU) {
-    UConverter*& cachedConverter = cachedConverterICU();
-    if (cachedConverter)
-      ucnv_close(cachedConverter);
-    cachedConverter = m_converterICU;
-    m_converterICU = 0;
+void TextCodecICU::ReleaseICUConverter() const {
+  if (converter_icu_) {
+    UConverter*& cached_converter = CachedConverterICU();
+    if (cached_converter)
+      ucnv_close(cached_converter);
+    cached_converter = converter_icu_;
+    converter_icu_ = 0;
   }
 }
 
-void TextCodecICU::createICUConverter() const {
-  DCHECK(!m_converterICU);
+void TextCodecICU::CreateICUConverter() const {
+  DCHECK(!converter_icu_);
 
 #if defined(USING_SYSTEM_ICU)
   const char* name = m_encoding.name();
@@ -279,118 +279,119 @@ void TextCodecICU::createICUConverter() const {
 
   UErrorCode err;
 
-  UConverter*& cachedConverter = cachedConverterICU();
-  if (cachedConverter) {
+  UConverter*& cached_converter = CachedConverterICU();
+  if (cached_converter) {
     err = U_ZERO_ERROR;
-    const char* cachedName = ucnv_getName(cachedConverter, &err);
-    if (U_SUCCESS(err) && m_encoding == cachedName) {
-      m_converterICU = cachedConverter;
-      cachedConverter = 0;
+    const char* cached_name = ucnv_getName(cached_converter, &err);
+    if (U_SUCCESS(err) && encoding_ == cached_name) {
+      converter_icu_ = cached_converter;
+      cached_converter = 0;
       return;
     }
   }
 
   err = U_ZERO_ERROR;
-  m_converterICU = ucnv_open(m_encoding.name(), &err);
+  converter_icu_ = ucnv_open(encoding_.GetName(), &err);
   DLOG_IF(ERROR, err == U_AMBIGUOUS_ALIAS_WARNING)
-      << "ICU ambiguous alias warning for encoding: " << m_encoding.name();
-  if (m_converterICU)
-    ucnv_setFallback(m_converterICU, TRUE);
+      << "ICU ambiguous alias warning for encoding: " << encoding_.GetName();
+  if (converter_icu_)
+    ucnv_setFallback(converter_icu_, TRUE);
 }
 
-int TextCodecICU::decodeToBuffer(UChar* target,
-                                 UChar* targetLimit,
+int TextCodecICU::DecodeToBuffer(UChar* target,
+                                 UChar* target_limit,
                                  const char*& source,
-                                 const char* sourceLimit,
+                                 const char* source_limit,
                                  int32_t* offsets,
                                  bool flush,
                                  UErrorCode& err) {
-  UChar* targetStart = target;
+  UChar* target_start = target;
   err = U_ZERO_ERROR;
-  ucnv_toUnicode(m_converterICU, &target, targetLimit, &source, sourceLimit,
+  ucnv_toUnicode(converter_icu_, &target, target_limit, &source, source_limit,
                  offsets, flush, &err);
-  return target - targetStart;
+  return target - target_start;
 }
 
 class ErrorCallbackSetter final {
   STACK_ALLOCATED();
 
  public:
-  ErrorCallbackSetter(UConverter* converter, bool stopOnError)
-      : m_converter(converter), m_shouldStopOnEncodingErrors(stopOnError) {
-    if (m_shouldStopOnEncodingErrors) {
+  ErrorCallbackSetter(UConverter* converter, bool stop_on_error)
+      : converter_(converter), should_stop_on_encoding_errors_(stop_on_error) {
+    if (should_stop_on_encoding_errors_) {
       UErrorCode err = U_ZERO_ERROR;
-      ucnv_setToUCallBack(m_converter, UCNV_TO_U_CALLBACK_STOP, 0,
-                          &m_savedAction, &m_savedContext, &err);
+      ucnv_setToUCallBack(converter_, UCNV_TO_U_CALLBACK_STOP, 0,
+                          &saved_action_, &saved_context_, &err);
       DCHECK_EQ(err, U_ZERO_ERROR);
     }
   }
   ~ErrorCallbackSetter() {
-    if (m_shouldStopOnEncodingErrors) {
+    if (should_stop_on_encoding_errors_) {
       UErrorCode err = U_ZERO_ERROR;
-      const void* oldContext;
-      UConverterToUCallback oldAction;
-      ucnv_setToUCallBack(m_converter, m_savedAction, m_savedContext,
-                          &oldAction, &oldContext, &err);
-      DCHECK_EQ(oldAction, UCNV_TO_U_CALLBACK_STOP);
-      DCHECK(!oldContext);
+      const void* old_context;
+      UConverterToUCallback old_action;
+      ucnv_setToUCallBack(converter_, saved_action_, saved_context_,
+                          &old_action, &old_context, &err);
+      DCHECK_EQ(old_action, UCNV_TO_U_CALLBACK_STOP);
+      DCHECK(!old_context);
       DCHECK_EQ(err, U_ZERO_ERROR);
     }
   }
 
  private:
-  UConverter* m_converter;
-  bool m_shouldStopOnEncodingErrors;
-  const void* m_savedContext;
-  UConverterToUCallback m_savedAction;
+  UConverter* converter_;
+  bool should_stop_on_encoding_errors_;
+  const void* saved_context_;
+  UConverterToUCallback saved_action_;
 };
 
-String TextCodecICU::decode(const char* bytes,
+String TextCodecICU::Decode(const char* bytes,
                             size_t length,
                             FlushBehavior flush,
-                            bool stopOnError,
-                            bool& sawError) {
+                            bool stop_on_error,
+                            bool& saw_error) {
   // Get a converter for the passed-in encoding.
-  if (!m_converterICU) {
-    createICUConverter();
-    DCHECK(m_converterICU);
-    if (!m_converterICU) {
+  if (!converter_icu_) {
+    CreateICUConverter();
+    DCHECK(converter_icu_);
+    if (!converter_icu_) {
       DLOG(ERROR)
           << "error creating ICU encoder even though encoding was in table";
       return String();
     }
   }
 
-  ErrorCallbackSetter callbackSetter(m_converterICU, stopOnError);
+  ErrorCallbackSetter callback_setter(converter_icu_, stop_on_error);
 
   StringBuilder result;
 
-  UChar buffer[ConversionBufferSize];
-  UChar* bufferLimit = buffer + ConversionBufferSize;
+  UChar buffer[kConversionBufferSize];
+  UChar* buffer_limit = buffer + kConversionBufferSize;
   const char* source = reinterpret_cast<const char*>(bytes);
-  const char* sourceLimit = source + length;
+  const char* source_limit = source + length;
   int32_t* offsets = nullptr;
   UErrorCode err = U_ZERO_ERROR;
 
   do {
-    int ucharsDecoded = decodeToBuffer(buffer, bufferLimit, source, sourceLimit,
-                                       offsets, flush != DoNotFlush, err);
-    result.append(buffer, ucharsDecoded);
+    int uchars_decoded =
+        DecodeToBuffer(buffer, buffer_limit, source, source_limit, offsets,
+                       flush != kDoNotFlush, err);
+    result.Append(buffer, uchars_decoded);
   } while (err == U_BUFFER_OVERFLOW_ERROR);
 
   if (U_FAILURE(err)) {
     // flush the converter so it can be reused, and not be bothered by this
     // error.
     do {
-      decodeToBuffer(buffer, bufferLimit, source, sourceLimit, offsets, true,
+      DecodeToBuffer(buffer, buffer_limit, source, source_limit, offsets, true,
                      err);
-    } while (source < sourceLimit);
-    sawError = true;
+    } while (source < source_limit);
+    saw_error = true;
   }
 
 #if !defined(USING_SYSTEM_ICU)
   // Chrome's copy of ICU does not have the issue described below.
-  return result.toString();
+  return result.ToString();
 #else
   String resultString = result.toString();
 
@@ -426,11 +427,11 @@ static UChar fallbackForGBK(UChar32 character) {
 
 // Generic helper for writing escaped entities using the specfied
 // UnencodableHandling.
-static void formatEscapedEntityCallback(const void* context,
-                                        UConverterFromUnicodeArgs* fromUArgs,
-                                        const UChar* codeUnits,
+static void FormatEscapedEntityCallback(const void* context,
+                                        UConverterFromUnicodeArgs* from_u_args,
+                                        const UChar* code_units,
                                         int32_t length,
-                                        UChar32 codePoint,
+                                        UChar32 code_point,
                                         UConverterCallbackReason reason,
                                         UErrorCode* err,
                                         UnencodableHandling handling) {
@@ -438,52 +439,55 @@ static void formatEscapedEntityCallback(const void* context,
     *err = U_ZERO_ERROR;
 
     UnencodableReplacementArray entity;
-    int entityLen =
-        TextCodec::getUnencodableReplacement(codePoint, handling, entity);
-    ucnv_cbFromUWriteBytes(fromUArgs, entity, entityLen, 0, err);
+    int entity_len =
+        TextCodec::GetUnencodableReplacement(code_point, handling, entity);
+    ucnv_cbFromUWriteBytes(from_u_args, entity, entity_len, 0, err);
   } else {
-    UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length,
-                                codePoint, reason, err);
+    UCNV_FROM_U_CALLBACK_ESCAPE(context, from_u_args, code_units, length,
+                                code_point, reason, err);
   }
 }
 
-static void numericEntityCallback(const void* context,
-                                  UConverterFromUnicodeArgs* fromUArgs,
-                                  const UChar* codeUnits,
+static void NumericEntityCallback(const void* context,
+                                  UConverterFromUnicodeArgs* from_u_args,
+                                  const UChar* code_units,
                                   int32_t length,
-                                  UChar32 codePoint,
+                                  UChar32 code_point,
                                   UConverterCallbackReason reason,
                                   UErrorCode* err) {
-  formatEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                              reason, err, EntitiesForUnencodables);
+  FormatEscapedEntityCallback(context, from_u_args, code_units, length,
+                              code_point, reason, err,
+                              kEntitiesForUnencodables);
 }
 
 // Invalid character handler when writing escaped entities in CSS encoding for
 // unrepresentable characters. See the declaration of TextCodec::encode for
 // more.
-static void cssEscapedEntityCallback(const void* context,
-                                     UConverterFromUnicodeArgs* fromUArgs,
-                                     const UChar* codeUnits,
+static void CssEscapedEntityCallback(const void* context,
+                                     UConverterFromUnicodeArgs* from_u_args,
+                                     const UChar* code_units,
                                      int32_t length,
-                                     UChar32 codePoint,
+                                     UChar32 code_point,
                                      UConverterCallbackReason reason,
                                      UErrorCode* err) {
-  formatEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                              reason, err, CSSEncodedEntitiesForUnencodables);
+  FormatEscapedEntityCallback(context, from_u_args, code_units, length,
+                              code_point, reason, err,
+                              kCSSEncodedEntitiesForUnencodables);
 }
 
 // Invalid character handler when writing escaped entities in HTML/XML encoding
 // for unrepresentable characters. See the declaration of TextCodec::encode for
 // more.
-static void urlEscapedEntityCallback(const void* context,
-                                     UConverterFromUnicodeArgs* fromUArgs,
-                                     const UChar* codeUnits,
+static void UrlEscapedEntityCallback(const void* context,
+                                     UConverterFromUnicodeArgs* from_u_args,
+                                     const UChar* code_units,
                                      int32_t length,
-                                     UChar32 codePoint,
+                                     UChar32 code_point,
                                      UConverterCallbackReason reason,
                                      UErrorCode* err) {
-  formatEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                              reason, err, URLEncodedEntitiesForUnencodables);
+  FormatEscapedEntityCallback(context, from_u_args, code_units, length,
+                              code_point, reason, err,
+                              kURLEncodedEntitiesForUnencodables);
 }
 
 #if defined(USING_SYSTEM_ICU)
@@ -578,28 +582,28 @@ class TextCodecInput final {
   TextCodecInput(const TextEncoding& encoding,
                  const UChar* characters,
                  size_t length)
-      : m_begin(characters), m_end(characters + length) {}
+      : begin_(characters), end_(characters + length) {}
 
   TextCodecInput(const TextEncoding& encoding,
                  const LChar* characters,
                  size_t length) {
-    m_buffer.reserveInitialCapacity(length);
+    buffer_.ReserveInitialCapacity(length);
     for (size_t i = 0; i < length; ++i)
-      m_buffer.push_back(characters[i]);
-    m_begin = m_buffer.data();
-    m_end = m_begin + m_buffer.size();
+      buffer_.push_back(characters[i]);
+    begin_ = buffer_.Data();
+    end_ = begin_ + buffer_.size();
   }
 
-  const UChar* begin() const { return m_begin; }
-  const UChar* end() const { return m_end; }
+  const UChar* begin() const { return begin_; }
+  const UChar* end() const { return end_; }
 
  private:
-  const UChar* m_begin;
-  const UChar* m_end;
-  Vector<UChar> m_buffer;
+  const UChar* begin_;
+  const UChar* end_;
+  Vector<UChar> buffer_;
 };
 
-CString TextCodecICU::encodeInternal(const TextCodecInput& input,
+CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                                      UnencodableHandling handling) {
   const UChar* source = input.begin();
   const UChar* end = input.end();
@@ -607,14 +611,14 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
   UErrorCode err = U_ZERO_ERROR;
 
   switch (handling) {
-    case QuestionMarksForUnencodables:
+    case kQuestionMarksForUnencodables:
       // Non-byte-based encodings (i.e. UTF-16/32) don't need substitutions
       // since they can encode any code point, and ucnv_setSubstChars would
       // require a multi-byte substitution anyway.
-      if (!m_encoding.isNonByteBasedEncoding())
-        ucnv_setSubstChars(m_converterICU, "?", 1, &err);
+      if (!encoding_.IsNonByteBasedEncoding())
+        ucnv_setSubstChars(converter_icu_, "?", 1, &err);
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0,
+      ucnv_setFromUCallBack(converter_icu_, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0,
                             0, 0, &err);
 #else
       ucnv_setFromUCallBack(
@@ -623,9 +627,9 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
           0, 0, 0, &err);
 #endif
       break;
-    case EntitiesForUnencodables:
+    case kEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(m_converterICU, numericEntityCallback, 0, 0, 0,
+      ucnv_setFromUCallBack(converter_icu_, NumericEntityCallback, 0, 0, 0,
                             &err);
 #else
       ucnv_setFromUCallBack(
@@ -634,9 +638,9 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
           0, &err);
 #endif
       break;
-    case URLEncodedEntitiesForUnencodables:
+    case kURLEncodedEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(m_converterICU, urlEscapedEntityCallback, 0, 0, 0,
+      ucnv_setFromUCallBack(converter_icu_, UrlEscapedEntityCallback, 0, 0, 0,
                             &err);
 #else
       ucnv_setFromUCallBack(m_converterICU,
@@ -645,9 +649,9 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
                             0, 0, 0, &err);
 #endif
       break;
-    case CSSEncodedEntitiesForUnencodables:
+    case kCSSEncodedEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(m_converterICU, cssEscapedEntityCallback, 0, 0, 0,
+      ucnv_setFromUCallBack(converter_icu_, CssEscapedEntityCallback, 0, 0, 0,
                             &err);
 #else
       ucnv_setFromUCallBack(m_converterICU,
@@ -665,47 +669,47 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
   Vector<char> result;
   size_t size = 0;
   do {
-    char buffer[ConversionBufferSize];
+    char buffer[kConversionBufferSize];
     char* target = buffer;
-    char* targetLimit = target + ConversionBufferSize;
+    char* target_limit = target + kConversionBufferSize;
     err = U_ZERO_ERROR;
-    ucnv_fromUnicode(m_converterICU, &target, targetLimit, &source, end, 0,
+    ucnv_fromUnicode(converter_icu_, &target, target_limit, &source, end, 0,
                      true, &err);
     size_t count = target - buffer;
-    result.grow(size + count);
-    memcpy(result.data() + size, buffer, count);
+    result.Grow(size + count);
+    memcpy(result.Data() + size, buffer, count);
     size += count;
   } while (err == U_BUFFER_OVERFLOW_ERROR);
 
-  return CString(result.data(), size);
+  return CString(result.Data(), size);
 }
 
 template <typename CharType>
-CString TextCodecICU::encodeCommon(const CharType* characters,
+CString TextCodecICU::EncodeCommon(const CharType* characters,
                                    size_t length,
                                    UnencodableHandling handling) {
   if (!length)
     return "";
 
-  if (!m_converterICU)
-    createICUConverter();
-  if (!m_converterICU)
+  if (!converter_icu_)
+    CreateICUConverter();
+  if (!converter_icu_)
     return CString();
 
-  TextCodecInput input(m_encoding, characters, length);
-  return encodeInternal(input, handling);
+  TextCodecInput input(encoding_, characters, length);
+  return EncodeInternal(input, handling);
 }
 
-CString TextCodecICU::encode(const UChar* characters,
+CString TextCodecICU::Encode(const UChar* characters,
                              size_t length,
                              UnencodableHandling handling) {
-  return encodeCommon(characters, length, handling);
+  return EncodeCommon(characters, length, handling);
 }
 
-CString TextCodecICU::encode(const LChar* characters,
+CString TextCodecICU::Encode(const LChar* characters,
                              size_t length,
                              UnencodableHandling handling) {
-  return encodeCommon(characters, length, handling);
+  return EncodeCommon(characters, length, handling);
 }
 
 }  // namespace WTF

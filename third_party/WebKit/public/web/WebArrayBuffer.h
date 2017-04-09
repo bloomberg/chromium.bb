@@ -40,24 +40,24 @@ class DOMArrayBuffer;
 
 class WebArrayBuffer {
  public:
-  ~WebArrayBuffer() { reset(); }
+  ~WebArrayBuffer() { Reset(); }
 
   WebArrayBuffer() {}
-  WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
+  WebArrayBuffer(const WebArrayBuffer& b) { Assign(b); }
   WebArrayBuffer& operator=(const WebArrayBuffer& b) {
-    assign(b);
+    Assign(b);
     return *this;
   }
 
-  BLINK_EXPORT static WebArrayBuffer create(unsigned numElements,
-                                            unsigned elementByteSize);
+  BLINK_EXPORT static WebArrayBuffer Create(unsigned num_elements,
+                                            unsigned element_byte_size);
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebArrayBuffer&);
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebArrayBuffer&);
 
-  bool isNull() const { return m_private.isNull(); }
-  BLINK_EXPORT void* data() const;
-  BLINK_EXPORT unsigned byteLength() const;
+  bool IsNull() const { return private_.IsNull(); }
+  BLINK_EXPORT void* Data() const;
+  BLINK_EXPORT unsigned ByteLength() const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebArrayBuffer(DOMArrayBuffer*);
@@ -66,7 +66,7 @@ class WebArrayBuffer {
 #endif
 
  protected:
-  WebPrivatePtr<DOMArrayBuffer> m_private;
+  WebPrivatePtr<DOMArrayBuffer> private_;
 };
 
 }  // namespace blink

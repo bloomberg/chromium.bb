@@ -23,7 +23,7 @@ class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BudgetService* create() { return new BudgetService(); }
+  static BudgetService* Create() { return new BudgetService(); }
 
   ~BudgetService();
 
@@ -36,22 +36,22 @@ class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
 
  private:
   // Callbacks from the BudgetService to the blink layer.
-  void gotCost(ScriptPromiseResolver*, double cost) const;
-  void gotBudget(
+  void GotCost(ScriptPromiseResolver*, double cost) const;
+  void GotBudget(
       ScriptPromiseResolver*,
       mojom::blink::BudgetServiceErrorType,
       const WTF::Vector<mojom::blink::BudgetStatePtr> expectations) const;
-  void gotReservation(ScriptPromiseResolver*,
+  void GotReservation(ScriptPromiseResolver*,
                       mojom::blink::BudgetServiceErrorType,
                       bool success) const;
 
   // Error handler for use if mojo service doesn't connect.
-  void onConnectionError();
+  void OnConnectionError();
 
   BudgetService();
 
   // Pointer to the Mojo service which will proxy calls to the browser.
-  mojom::blink::BudgetServicePtr m_service;
+  mojom::blink::BudgetServicePtr service_;
 };
 
 }  // namespace blink

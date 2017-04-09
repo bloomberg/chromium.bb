@@ -36,13 +36,13 @@ inline HTMLBRElement::HTMLBRElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLBRElement)
 
-bool HTMLBRElement::isPresentationAttribute(const QualifiedName& name) const {
+bool HTMLBRElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == clearAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLBRElement::collectStyleForPresentationAttribute(
+void HTMLBRElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
@@ -50,21 +50,21 @@ void HTMLBRElement::collectStyleForPresentationAttribute(
     // If the string is empty, then don't add the clear property.
     // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE,
     // etc. -dwh
-    if (!value.isEmpty()) {
-      if (equalIgnoringCase(value, "all"))
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyClear,
+    if (!value.IsEmpty()) {
+      if (EqualIgnoringCase(value, "all"))
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyClear,
                                                 CSSValueBoth);
       else
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
     }
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 
-LayoutObject* HTMLBRElement::createLayoutObject(const ComputedStyle& style) {
-  if (style.hasContent())
-    return LayoutObject::createObject(this, style);
+LayoutObject* HTMLBRElement::CreateLayoutObject(const ComputedStyle& style) {
+  if (style.HasContent())
+    return LayoutObject::CreateObject(this, style);
   return new LayoutBR(this);
 }
 

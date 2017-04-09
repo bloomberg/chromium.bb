@@ -6,13 +6,13 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeWin::create() {
-  return adoptRef(new LayoutThemeWin());
+PassRefPtr<LayoutTheme> LayoutThemeWin::Create() {
+  return AdoptRef(new LayoutThemeWin());
 }
 
-LayoutTheme& LayoutTheme::nativeTheme() {
-  DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeWin::create()));
-  return *layoutTheme;
+LayoutTheme& LayoutTheme::NativeTheme() {
+  DEFINE_STATIC_REF(LayoutTheme, layout_theme, (LayoutThemeWin::Create()));
+  return *layout_theme;
 }
 
 }  // namespace blink

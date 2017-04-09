@@ -33,47 +33,47 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
   ~SVGAnimateMotionElement() override;
 
   DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
-  void updateAnimationPath();
+  void UpdateAnimationPath();
 
  private:
   explicit SVGAnimateMotionElement(Document&);
 
-  bool hasValidTarget() override;
+  bool HasValidTarget() override;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void resetAnimatedType() override;
-  void clearAnimatedType() override;
-  bool calculateToAtEndOfDurationValue(
-      const String& toAtEndOfDurationString) override;
-  bool calculateFromAndToValues(const String& fromString,
-                                const String& toString) override;
-  bool calculateFromAndByValues(const String& fromString,
-                                const String& byString) override;
-  void calculateAnimatedValue(float percentage,
-                              unsigned repeatCount,
-                              SVGSMILElement* resultElement) override;
-  void applyResultsToTarget() override;
-  float calculateDistance(const String& fromString,
-                          const String& toString) override;
+  void ResetAnimatedType() override;
+  void ClearAnimatedType() override;
+  bool CalculateToAtEndOfDurationValue(
+      const String& to_at_end_of_duration_string) override;
+  bool CalculateFromAndToValues(const String& from_string,
+                                const String& to_string) override;
+  bool CalculateFromAndByValues(const String& from_string,
+                                const String& by_string) override;
+  void CalculateAnimatedValue(float percentage,
+                              unsigned repeat_count,
+                              SVGSMILElement* result_element) override;
+  void ApplyResultsToTarget() override;
+  float CalculateDistance(const String& from_string,
+                          const String& to_string) override;
 
-  enum RotateMode { RotateAngle, RotateAuto, RotateAutoReverse };
-  RotateMode getRotateMode() const;
+  enum RotateMode { kRotateAngle, kRotateAuto, kRotateAutoReverse };
+  RotateMode GetRotateMode() const;
 
-  bool m_hasToPointAtEndOfDuration;
+  bool has_to_point_at_end_of_duration_;
 
-  void updateAnimationMode() override;
+  void UpdateAnimationMode() override;
 
-  void invalidateForAnimateMotionTransformChange(LayoutObject& target);
+  void InvalidateForAnimateMotionTransformChange(LayoutObject& target);
 
   // Note: we do not support percentage values for to/from coords as the spec
   // implies we should (opera doesn't either)
-  FloatPoint m_fromPoint;
-  FloatPoint m_toPoint;
-  FloatPoint m_toPointAtEndOfDuration;
+  FloatPoint from_point_;
+  FloatPoint to_point_;
+  FloatPoint to_point_at_end_of_duration_;
 
-  Path m_path;
-  Path m_animationPath;
+  Path path_;
+  Path animation_path_;
 };
 
 }  // namespace blink

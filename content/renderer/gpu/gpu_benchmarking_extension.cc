@@ -245,11 +245,11 @@ class GpuBenchmarkingContext {
         compositor_(NULL) {}
 
   bool Init(bool init_compositor) {
-    web_frame_ = WebLocalFrame::frameForCurrentContext();
+    web_frame_ = WebLocalFrame::FrameForCurrentContext();
     if (!web_frame_)
       return false;
 
-    web_view_ = web_frame_->view();
+    web_view_ = web_frame_->View();
     if (!web_view_) {
       web_frame_ = NULL;
       return false;
@@ -308,18 +308,15 @@ void OnMicroBenchmarkCompleted(CallbackAndContext* callback_and_context,
   v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
-  WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
+  WebLocalFrame* frame = WebLocalFrame::FrameForContext(context);
   if (frame) {
     std::unique_ptr<V8ValueConverter> converter =
         base::WrapUnique(V8ValueConverter::create());
     v8::Local<v8::Value> value = converter->ToV8Value(result.get(), context);
     v8::Local<v8::Value> argv[] = { value };
 
-    frame->callFunctionEvenIfScriptDisabled(
-        callback_and_context->GetCallback(),
-        v8::Object::New(isolate),
-        1,
-        argv);
+    frame->CallFunctionEvenIfScriptDisabled(callback_and_context->GetCallback(),
+                                            v8::Object::New(isolate), 1, argv);
   }
 }
 
@@ -329,10 +326,10 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Function> callback = callback_and_context->GetCallback();
-  WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
+  WebLocalFrame* frame = WebLocalFrame::FrameForContext(context);
   if (frame && !callback.IsEmpty()) {
-    frame->callFunctionEvenIfScriptDisabled(
-        callback, v8::Object::New(isolate), 0, NULL);
+    frame->CallFunctionEvenIfScriptDisabled(callback, v8::Object::New(isolate),
+                                            0, NULL);
   }
 }
 
@@ -350,28 +347,28 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
     return false;
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->pageScaleFactor();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
 
   if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
     // Ensure the mouse is centered and visible, in case it will
     // trigger any hover or mousemove effects.
-    context.web_view()->setIsActive(true);
+    context.web_view()->SetIsActive(true);
     blink::WebRect contentRect =
-        context.web_view()->mainFrame()->visibleContentRect();
+        context.web_view()->MainFrame()->VisibleContentRect();
     blink::WebMouseEvent mouseMove(
-        blink::WebInputEvent::MouseMove, blink::WebInputEvent::NoModifiers,
+        blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-    mouseMove.setPositionInWidget(
+    mouseMove.SetPositionInWidget(
         (contentRect.x + contentRect.width / 2) * page_scale_factor,
         (contentRect.y + contentRect.height / 2) * page_scale_factor);
-    context.web_view()->handleInputEvent(
+    context.web_view()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
-    context.web_view()->setCursorVisibilityState(true);
+    context.web_view()->SetCursorVisibilityState(true);
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(
-          isolate, callback, context.web_frame()->mainWorldScriptContext());
+      new CallbackAndContext(isolate, callback,
+                             context.web_frame()->MainWorldScriptContext());
 
   std::unique_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
       new SyntheticSmoothScrollGestureParams);
@@ -441,13 +438,13 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
     return false;
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(isolate, callback,
-                             context.web_frame()->mainWorldScriptContext());
+                             context.web_frame()->MainWorldScriptContext());
 
   std::unique_ptr<SyntheticSmoothDragGestureParams> gesture_params(
       new SyntheticSmoothDragGestureParams);
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->pageScaleFactor();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
 
   gesture_params->start_point.SetPoint(start_x * page_scale_factor,
                                        start_y * page_scale_factor);
@@ -479,8 +476,8 @@ static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
   const int kContentWidth = 555;     // 7.71 inch
   const int kContentHeight = 735;    // 10.21 inch
   blink::WebPrintParams params(blink::WebSize(kContentWidth, kContentHeight));
-  params.printerDPI = 300;
-  int page_count = frame->printBegin(params);
+  params.printer_dpi = 300;
+  int page_count = frame->PrintBegin(params);
   for (int i = 0; i < page_count; ++i) {
     SkCanvas* sk_canvas = doc->beginPage(kPageWidth, kPageHeight);
     cc::SkiaPaintCanvas canvas(sk_canvas);
@@ -488,14 +485,14 @@ static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
     canvas.translate(kMarginLeft, kMarginTop);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    float page_shrink = frame->getPrintPageShrink(i);
+    float page_shrink = frame->GetPrintPageShrink(i);
     DCHECK(page_shrink > 0);
     canvas.scale(page_shrink, page_shrink);
 #endif
 
-    frame->printPage(i, &canvas);
+    frame->PrintPage(i, &canvas);
   }
-  frame->printEnd();
+  frame->PrintEnd();
 }
 
 static void PrintDocumentTofile(v8::Isolate* isolate,
@@ -516,7 +513,7 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
   SkFILEWStream wStream(path.MaybeAsASCII().c_str());
   sk_sp<SkDocument> doc = make_doc(&wStream);
   if (doc) {
-    context.web_frame()->view()->settings()->setShouldPrintBackgrounds(true);
+    context.web_frame()->View()->GetSettings()->SetShouldPrintBackgrounds(true);
     PrintDocument(context.web_frame(), doc.get());
     doc->close();
   }
@@ -552,9 +549,9 @@ gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
 void GpuBenchmarking::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -687,8 +684,8 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   if (!context.Init(true))
     return false;
 
-  float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
@@ -757,8 +754,8 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
   if (!context.Init(true))
     return false;
 
-  float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
@@ -792,8 +789,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   if (!context.Init(false))
     return false;
 
-  float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   std::string direction = "down";
   float distance_length = 0;
@@ -816,9 +813,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(args->isolate(),
-                             callback,
-                             context.web_frame()->mainWorldScriptContext());
+      new CallbackAndContext(args->isolate(), callback,
+                             context.web_frame()->MainWorldScriptContext());
 
   std::unique_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
       new SyntheticSmoothScrollGestureParams);
@@ -889,7 +885,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
 
   // TODO(bokan): Remove page scale here when change land in Catapult.
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->pageScaleFactor();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
 
   gesture_params->scale_factor = scale_factor;
   gesture_params->anchor.SetPoint(anchor_x * page_scale_factor,
@@ -898,10 +894,8 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
       relative_pointer_speed_in_pixels_s;
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(args->isolate(),
-                             callback,
-                             context.web_frame()->mainWorldScriptContext());
-
+      new CallbackAndContext(args->isolate(), callback,
+                             context.web_frame()->MainWorldScriptContext());
 
   // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
@@ -918,16 +912,16 @@ float GpuBenchmarking::PageScaleFactor() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  return context.web_view()->pageScaleFactor();
+  return context.web_view()->PageScaleFactor();
 }
 
 float GpuBenchmarking::VisualViewportY() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  float y = context.web_view()->visualViewportOffset().y;
+  float y = context.web_view()->VisualViewportOffset().y;
   blink::WebRect rect(0, y, 0, 0);
-  context.render_view_impl()->convertViewportToWindow(&rect);
+  context.render_view_impl()->ConvertViewportToWindow(&rect);
   return rect.y;
 }
 
@@ -935,9 +929,9 @@ float GpuBenchmarking::VisualViewportX() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  float x = context.web_view()->visualViewportOffset().x;
+  float x = context.web_view()->VisualViewportOffset().x;
   blink::WebRect rect(x, 0, 0, 0);
-  context.render_view_impl()->convertViewportToWindow(&rect);
+  context.render_view_impl()->ConvertViewportToWindow(&rect);
   return rect.x;
 }
 
@@ -945,9 +939,9 @@ float GpuBenchmarking::VisualViewportHeight() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  float height = context.web_view()->visualViewportSize().height;
+  float height = context.web_view()->VisualViewportSize().height;
   blink::WebRect rect(0, 0, 0, height);
-  context.render_view_impl()->convertViewportToWindow(&rect);
+  context.render_view_impl()->ConvertViewportToWindow(&rect);
   return rect.height;
 }
 
@@ -955,9 +949,9 @@ float GpuBenchmarking::VisualViewportWidth() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  float width = context.web_view()->visualViewportSize().width;
+  float width = context.web_view()->VisualViewportSize().width;
   blink::WebRect rect(0, 0, width, 0);
-  context.render_view_impl()->convertViewportToWindow(&rect);
+  context.render_view_impl()->ConvertViewportToWindow(&rect);
   return rect.width;
 }
 
@@ -984,7 +978,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
       new SyntheticTapGestureParams);
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->pageScaleFactor();
+  float page_scale_factor = context.web_view()->PageScaleFactor();
 
   gesture_params->position.SetPoint(position_x * page_scale_factor,
                                     position_y * page_scale_factor);
@@ -999,9 +993,8 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
           gesture_source_type);
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(args->isolate(),
-                             callback,
-                             context.web_frame()->mainWorldScriptContext());
+      new CallbackAndContext(args->isolate(), callback,
+                             context.web_frame()->MainWorldScriptContext());
 
   // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
@@ -1030,7 +1023,7 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
   std::unique_ptr<V8ValueConverter> converter =
       base::WrapUnique(V8ValueConverter::create());
   v8::Local<v8::Context> v8_context =
-      context.web_frame()->mainWorldScriptContext();
+      context.web_frame()->MainWorldScriptContext();
   std::unique_ptr<base::Value> value = converter->FromV8Value(obj, v8_context);
 
   // Get all the pointer actions from the user input and wrap them into a
@@ -1050,7 +1043,7 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
   // At the end, we will send a 'FINISH' action and need a callback.
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,
-                             context.web_frame()->mainWorldScriptContext());
+                             context.web_frame()->MainWorldScriptContext());
   // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow, see https://crbug.com/678879.
@@ -1062,7 +1055,7 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
 }
 
 void GpuBenchmarking::ClearImageCache() {
-  WebImageCache::clear();
+  WebImageCache::Clear();
 }
 
 int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
@@ -1080,9 +1073,8 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(args->isolate(),
-                             callback,
-                             context.web_frame()->mainWorldScriptContext());
+      new CallbackAndContext(args->isolate(), callback,
+                             context.web_frame()->MainWorldScriptContext());
 
   std::unique_ptr<V8ValueConverter> converter =
       base::WrapUnique(V8ValueConverter::create());
@@ -1106,7 +1098,7 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   std::unique_ptr<V8ValueConverter> converter =
       base::WrapUnique(V8ValueConverter::create());
   v8::Local<v8::Context> v8_context =
-      context.web_frame()->mainWorldScriptContext();
+      context.web_frame()->MainWorldScriptContext();
   std::unique_ptr<base::Value> value =
       converter->FromV8Value(message, v8_context);
 

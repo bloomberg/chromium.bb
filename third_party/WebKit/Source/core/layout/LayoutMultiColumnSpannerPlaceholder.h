@@ -17,63 +17,63 @@ namespace blink {
 // multicol container.
 class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
  public:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder ||
-           LayoutBox::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectLayoutMultiColumnSpannerPlaceholder ||
+           LayoutBox::IsOfType(type);
   }
 
-  static LayoutMultiColumnSpannerPlaceholder* createAnonymous(
-      const ComputedStyle& parentStyle,
+  static LayoutMultiColumnSpannerPlaceholder* CreateAnonymous(
+      const ComputedStyle& parent_style,
       LayoutBox&);
 
-  LayoutMultiColumnFlowThread* flowThread() const {
-    return toLayoutBlockFlow(parent())->multiColumnFlowThread();
+  LayoutMultiColumnFlowThread* FlowThread() const {
+    return ToLayoutBlockFlow(Parent())->MultiColumnFlowThread();
   }
 
-  LayoutBox* layoutObjectInFlowThread() const {
-    return m_layoutObjectInFlowThread;
+  LayoutBox* LayoutObjectInFlowThread() const {
+    return layout_object_in_flow_thread_;
   }
-  void markForLayoutIfObjectInFlowThreadNeedsLayout() {
-    if (!m_layoutObjectInFlowThread->needsLayout())
+  void MarkForLayoutIfObjectInFlowThreadNeedsLayout() {
+    if (!layout_object_in_flow_thread_->NeedsLayout())
       return;
     // The containing block of a spanner is the multicol container (our parent
     // here), but the spanner is laid out via its spanner set (us), so we need
     // to make sure that we enter it.
-    setChildNeedsLayout(MarkOnlyThis);
+    SetChildNeedsLayout(kMarkOnlyThis);
   }
 
-  void layoutObjectInFlowThreadStyleDidChange(const ComputedStyle* oldStyle);
-  void updateMarginProperties();
+  void LayoutObjectInFlowThreadStyleDidChange(const ComputedStyle* old_style);
+  void UpdateMarginProperties();
 
-  const char* name() const override {
+  const char* GetName() const override {
     return "LayoutMultiColumnSpannerPlaceholder";
   }
 
  protected:
-  void insertedIntoTree() override;
-  void willBeRemovedFromTree() override;
-  bool needsPreferredWidthsRecalculation() const override;
-  LayoutUnit minPreferredLogicalWidth() const override;
-  LayoutUnit maxPreferredLogicalWidth() const override;
-  void layout() override;
-  void computeLogicalHeight(LayoutUnit logicalHeight,
-                            LayoutUnit logicalTop,
+  void InsertedIntoTree() override;
+  void WillBeRemovedFromTree() override;
+  bool NeedsPreferredWidthsRecalculation() const override;
+  LayoutUnit MinPreferredLogicalWidth() const override;
+  LayoutUnit MaxPreferredLogicalWidth() const override;
+  void GetLayout() override;
+  void ComputeLogicalHeight(LayoutUnit logical_height,
+                            LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset) const override;
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset) const override;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
  private:
   LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
 
   // The actual column-span:all layoutObject inside the flow thread.
-  LayoutBox* m_layoutObjectInFlowThread;
+  LayoutBox* layout_object_in_flow_thread_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSpannerPlaceholder,
-                                isLayoutMultiColumnSpannerPlaceholder());
+                                IsLayoutMultiColumnSpannerPlaceholder());
 
 }  // namespace blink
 

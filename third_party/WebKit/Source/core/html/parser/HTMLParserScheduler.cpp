@@ -36,84 +36,84 @@
 
 namespace blink {
 
-PumpSession::PumpSession(unsigned& nestingLevel)
-    : NestingLevelIncrementer(nestingLevel) {}
+PumpSession::PumpSession(unsigned& nesting_level)
+    : NestingLevelIncrementer(nesting_level) {}
 
 PumpSession::~PumpSession() {}
 
-SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nestingLevel)
-    : NestingLevelIncrementer(nestingLevel),
-      m_startTime(currentTime()),
-      m_processedElementTokens(0) {}
+SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nesting_level)
+    : NestingLevelIncrementer(nesting_level),
+      start_time_(CurrentTime()),
+      processed_element_tokens_(0) {}
 
 SpeculationsPumpSession::~SpeculationsPumpSession() {}
 
-inline double SpeculationsPumpSession::elapsedTime() const {
-  return currentTime() - m_startTime;
+inline double SpeculationsPumpSession::ElapsedTime() const {
+  return CurrentTime() - start_time_;
 }
 
-void SpeculationsPumpSession::addedElementTokens(size_t count) {
-  m_processedElementTokens += count;
+void SpeculationsPumpSession::AddedElementTokens(size_t count) {
+  processed_element_tokens_ += count;
 }
 
 HTMLParserScheduler::HTMLParserScheduler(
     HTMLDocumentParser* parser,
-    RefPtr<WebTaskRunner> loadingTaskRunner)
-    : m_parser(parser),
-      m_loadingTaskRunner(std::move(loadingTaskRunner)),
-      m_isSuspendedWithActiveTimer(false) {}
+    RefPtr<WebTaskRunner> loading_task_runner)
+    : parser_(parser),
+      loading_task_runner_(std::move(loading_task_runner)),
+      is_suspended_with_active_timer_(false) {}
 
 HTMLParserScheduler::~HTMLParserScheduler() {}
 
 DEFINE_TRACE(HTMLParserScheduler) {
-  visitor->trace(m_parser);
+  visitor->Trace(parser_);
 }
 
-bool HTMLParserScheduler::isScheduledForResume() const {
-  return m_isSuspendedWithActiveTimer ||
-         m_cancellableContinueParseTaskHandle.isActive();
+bool HTMLParserScheduler::IsScheduledForResume() const {
+  return is_suspended_with_active_timer_ ||
+         cancellable_continue_parse_task_handle_.IsActive();
 }
 
-void HTMLParserScheduler::scheduleForResume() {
-  DCHECK(!m_isSuspendedWithActiveTimer);
-  m_cancellableContinueParseTaskHandle =
-      m_loadingTaskRunner->postCancellableTask(
-          BLINK_FROM_HERE, WTF::bind(&HTMLParserScheduler::continueParsing,
-                                     wrapWeakPersistent(this)));
+void HTMLParserScheduler::ScheduleForResume() {
+  DCHECK(!is_suspended_with_active_timer_);
+  cancellable_continue_parse_task_handle_ =
+      loading_task_runner_->PostCancellableTask(
+          BLINK_FROM_HERE, WTF::Bind(&HTMLParserScheduler::ContinueParsing,
+                                     WrapWeakPersistent(this)));
 }
 
-void HTMLParserScheduler::suspend() {
-  DCHECK(!m_isSuspendedWithActiveTimer);
-  if (!m_cancellableContinueParseTaskHandle.isActive())
+void HTMLParserScheduler::Suspend() {
+  DCHECK(!is_suspended_with_active_timer_);
+  if (!cancellable_continue_parse_task_handle_.IsActive())
     return;
-  m_isSuspendedWithActiveTimer = true;
-  m_cancellableContinueParseTaskHandle.cancel();
+  is_suspended_with_active_timer_ = true;
+  cancellable_continue_parse_task_handle_.Cancel();
 }
 
-void HTMLParserScheduler::resume() {
-  DCHECK(!m_cancellableContinueParseTaskHandle.isActive());
-  if (!m_isSuspendedWithActiveTimer)
+void HTMLParserScheduler::Resume() {
+  DCHECK(!cancellable_continue_parse_task_handle_.IsActive());
+  if (!is_suspended_with_active_timer_)
     return;
-  m_isSuspendedWithActiveTimer = false;
-  scheduleForResume();
+  is_suspended_with_active_timer_ = false;
+  ScheduleForResume();
 }
 
-void HTMLParserScheduler::detach() {
-  m_cancellableContinueParseTaskHandle.cancel();
-  m_isSuspendedWithActiveTimer = false;
+void HTMLParserScheduler::Detach() {
+  cancellable_continue_parse_task_handle_.Cancel();
+  is_suspended_with_active_timer_ = false;
 }
 
-inline bool HTMLParserScheduler::shouldYield(
+inline bool HTMLParserScheduler::ShouldYield(
     const SpeculationsPumpSession& session,
-    bool startingScript) const {
-  if (Platform::current()
-          ->currentThread()
-          ->scheduler()
-          ->shouldYieldForHighPriorityWork())
+    bool starting_script) const {
+  if (Platform::Current()
+          ->CurrentThread()
+          ->Scheduler()
+          ->ShouldYieldForHighPriorityWork())
     return true;
 
-  const double parserTimeLimit = 0.5;
-  if (session.elapsedTime() > parserTimeLimit)
+  const double kParserTimeLimit = 0.5;
+  if (session.ElapsedTime() > kParserTimeLimit)
     return true;
 
   // Yield if a lot of DOM work has been done in this session and a script tag
@@ -124,30 +124,30 @@ inline bool HTMLParserScheduler::shouldYield(
   // Emperical testing shows that anything > ~40 and < ~200 gives all of the
   // benefit without impacting parser performance, only adding a few yields per
   // page but at just the right times.
-  const size_t sufficientWork = 50;
-  if (startingScript && session.processedElementTokens() > sufficientWork)
+  const size_t kSufficientWork = 50;
+  if (starting_script && session.ProcessedElementTokens() > kSufficientWork)
     return true;
 
   return false;
 }
 
-bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session,
-                                        bool startingScript) {
-  if (shouldYield(session, startingScript)) {
-    scheduleForResume();
+bool HTMLParserScheduler::YieldIfNeeded(const SpeculationsPumpSession& session,
+                                        bool starting_script) {
+  if (ShouldYield(session, starting_script)) {
+    ScheduleForResume();
     return true;
   }
 
   return false;
 }
 
-void HTMLParserScheduler::forceResumeAfterYield() {
-  DCHECK(!m_cancellableContinueParseTaskHandle.isActive());
-  m_isSuspendedWithActiveTimer = true;
+void HTMLParserScheduler::ForceResumeAfterYield() {
+  DCHECK(!cancellable_continue_parse_task_handle_.IsActive());
+  is_suspended_with_active_timer_ = true;
 }
 
-void HTMLParserScheduler::continueParsing() {
-  m_parser->resumeParsingAfterYield();
+void HTMLParserScheduler::ContinueParsing() {
+  parser_->ResumeParsingAfterYield();
 }
 
 }  // namespace blink

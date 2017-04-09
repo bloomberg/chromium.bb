@@ -22,18 +22,18 @@ class CORE_EXPORT DOMWindowPerformance final
   WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
 
  public:
-  static DOMWindowPerformance& from(LocalDOMWindow&);
+  static DOMWindowPerformance& From(LocalDOMWindow&);
   static Performance* performance(LocalDOMWindow&);
 
   DECLARE_TRACE();
 
  private:
   explicit DOMWindowPerformance(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
   Performance* performance();
 
-  Member<Performance> m_performance;
+  Member<Performance> performance_;
 };
 
 }  // namespace blink

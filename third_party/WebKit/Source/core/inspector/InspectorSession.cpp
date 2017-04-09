@@ -19,175 +19,176 @@ const char kV8StateKey[] = "v8";
 }
 
 InspectorSession::InspectorSession(Client* client,
-                                   CoreProbeSink* instrumentingAgents,
-                                   int sessionId,
+                                   CoreProbeSink* instrumenting_agents,
+                                   int session_id,
                                    v8_inspector::V8Inspector* inspector,
-                                   int contextGroupId,
-                                   const String* savedState)
-    : m_client(client),
-      m_v8Session(nullptr),
-      m_sessionId(sessionId),
-      m_disposed(false),
-      m_instrumentingAgents(instrumentingAgents),
-      m_inspectorBackendDispatcher(new protocol::UberDispatcher(this)) {
-  if (savedState) {
+                                   int context_group_id,
+                                   const String* saved_state)
+    : client_(client),
+      v8_session_(nullptr),
+      session_id_(session_id),
+      disposed_(false),
+      instrumenting_agents_(instrumenting_agents),
+      inspector_backend_dispatcher_(new protocol::UberDispatcher(this)) {
+  if (saved_state) {
     std::unique_ptr<protocol::Value> state =
-        protocol::StringUtil::parseJSON(*savedState);
+        protocol::StringUtil::parseJSON(*saved_state);
     if (state)
-      m_state = protocol::DictionaryValue::cast(std::move(state));
-    if (!m_state)
-      m_state = protocol::DictionaryValue::create();
+      state_ = protocol::DictionaryValue::cast(std::move(state));
+    if (!state_)
+      state_ = protocol::DictionaryValue::create();
   } else {
-    m_state = protocol::DictionaryValue::create();
+    state_ = protocol::DictionaryValue::create();
   }
 
-  String v8State;
-  if (savedState)
-    m_state->getString(kV8StateKey, &v8State);
-  m_v8Session = inspector->connect(contextGroupId, this,
-                                   toV8InspectorStringView(v8State));
+  String v8_state;
+  if (saved_state)
+    state_->getString(kV8StateKey, &v8_state);
+  v8_session_ = inspector->connect(context_group_id, this,
+                                   ToV8InspectorStringView(v8_state));
 }
 
 InspectorSession::~InspectorSession() {
-  DCHECK(m_disposed);
+  DCHECK(disposed_);
 }
 
-void InspectorSession::append(InspectorAgent* agent) {
-  m_agents.push_back(agent);
-  agent->init(m_instrumentingAgents.get(), m_inspectorBackendDispatcher.get(),
-              m_state.get());
+void InspectorSession::Append(InspectorAgent* agent) {
+  agents_.push_back(agent);
+  agent->Init(instrumenting_agents_.Get(), inspector_backend_dispatcher_.get(),
+              state_.get());
 }
 
-void InspectorSession::restore() {
-  DCHECK(!m_disposed);
-  for (size_t i = 0; i < m_agents.size(); i++)
-    m_agents[i]->restore();
+void InspectorSession::Restore() {
+  DCHECK(!disposed_);
+  for (size_t i = 0; i < agents_.size(); i++)
+    agents_[i]->Restore();
 }
 
-void InspectorSession::dispose() {
-  DCHECK(!m_disposed);
-  m_disposed = true;
-  m_inspectorBackendDispatcher.reset();
-  for (size_t i = m_agents.size(); i > 0; i--)
-    m_agents[i - 1]->dispose();
-  m_agents.clear();
-  m_v8Session.reset();
+void InspectorSession::Dispose() {
+  DCHECK(!disposed_);
+  disposed_ = true;
+  inspector_backend_dispatcher_.reset();
+  for (size_t i = agents_.size(); i > 0; i--)
+    agents_[i - 1]->Dispose();
+  agents_.Clear();
+  v8_session_.reset();
 }
 
-void InspectorSession::dispatchProtocolMessage(const String& method,
+void InspectorSession::DispatchProtocolMessage(const String& method,
                                                const String& message) {
-  DCHECK(!m_disposed);
+  DCHECK(!disposed_);
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
-          toV8InspectorStringView(method))) {
-    m_v8Session->dispatchProtocolMessage(toV8InspectorStringView(message));
+          ToV8InspectorStringView(method))) {
+    v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
   } else {
-    m_inspectorBackendDispatcher->dispatch(
+    inspector_backend_dispatcher_->dispatch(
         protocol::StringUtil::parseJSON(message));
   }
 }
 
-void InspectorSession::didCommitLoadForLocalFrame(LocalFrame* frame) {
-  for (size_t i = 0; i < m_agents.size(); i++)
-    m_agents[i]->didCommitLoadForLocalFrame(frame);
+void InspectorSession::DidCommitLoadForLocalFrame(LocalFrame* frame) {
+  for (size_t i = 0; i < agents_.size(); i++)
+    agents_[i]->DidCommitLoadForLocalFrame(frame);
 }
 
 void InspectorSession::sendProtocolResponse(
-    int callId,
+    int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  sendProtocolResponse(callId, message->serialize());
+  SendProtocolResponse(call_id, message->serialize());
 }
 
 void InspectorSession::sendResponse(
-    int callId,
+    int call_id,
     std::unique_ptr<v8_inspector::StringBuffer> message) {
   // We can potentially avoid copies if WebString would convert to utf8 right
   // from StringView, but it uses StringImpl itself, so we don't create any
   // extra copies here.
-  sendProtocolResponse(callId, toCoreString(message->string()));
+  SendProtocolResponse(call_id, ToCoreString(message->string()));
 }
 
-void InspectorSession::sendProtocolResponse(int callId, const String& message) {
-  if (m_disposed)
+void InspectorSession::SendProtocolResponse(int call_id,
+                                            const String& message) {
+  if (disposed_)
     return;
   flushProtocolNotifications();
-  m_state->setString(kV8StateKey, toCoreString(m_v8Session->stateJSON()));
-  String stateToSend = m_state->serialize();
-  if (stateToSend == m_lastSentState)
-    stateToSend = String();
+  state_->setString(kV8StateKey, ToCoreString(v8_session_->stateJSON()));
+  String state_to_send = state_->serialize();
+  if (state_to_send == last_sent_state_)
+    state_to_send = String();
   else
-    m_lastSentState = stateToSend;
-  m_client->sendProtocolMessage(m_sessionId, callId, message, stateToSend);
+    last_sent_state_ = state_to_send;
+  client_->SendProtocolMessage(session_id_, call_id, message, state_to_send);
 }
 
 class InspectorSession::Notification {
  public:
-  static std::unique_ptr<Notification> createForBlink(
+  static std::unique_ptr<Notification> CreateForBlink(
       std::unique_ptr<protocol::Serializable> notification) {
     return std::unique_ptr<Notification>(
         new Notification(std::move(notification)));
   }
 
-  static std::unique_ptr<Notification> createForV8(
+  static std::unique_ptr<Notification> CreateForV8(
       std::unique_ptr<v8_inspector::StringBuffer> notification) {
     return std::unique_ptr<Notification>(
         new Notification(std::move(notification)));
   }
 
-  String serialize() {
-    if (m_blinkNotification) {
-      m_serialized = m_blinkNotification->serialize();
-      m_blinkNotification.reset();
-    } else if (m_v8Notification) {
-      m_serialized = toCoreString(m_v8Notification->string());
-      m_v8Notification.reset();
+  String Serialize() {
+    if (blink_notification_) {
+      serialized_ = blink_notification_->serialize();
+      blink_notification_.reset();
+    } else if (v8_notification_) {
+      serialized_ = ToCoreString(v8_notification_->string());
+      v8_notification_.reset();
     }
-    return m_serialized;
+    return serialized_;
   }
 
  private:
   explicit Notification(std::unique_ptr<protocol::Serializable> notification)
-      : m_blinkNotification(std::move(notification)) {}
+      : blink_notification_(std::move(notification)) {}
 
   explicit Notification(
       std::unique_ptr<v8_inspector::StringBuffer> notification)
-      : m_v8Notification(std::move(notification)) {}
+      : v8_notification_(std::move(notification)) {}
 
-  std::unique_ptr<protocol::Serializable> m_blinkNotification;
-  std::unique_ptr<v8_inspector::StringBuffer> m_v8Notification;
-  String m_serialized;
+  std::unique_ptr<protocol::Serializable> blink_notification_;
+  std::unique_ptr<v8_inspector::StringBuffer> v8_notification_;
+  String serialized_;
 };
 
 void InspectorSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> notification) {
-  if (m_disposed)
+  if (disposed_)
     return;
-  m_notificationQueue.push_back(
-      Notification::createForBlink(std::move(notification)));
+  notification_queue_.push_back(
+      Notification::CreateForBlink(std::move(notification)));
 }
 
 void InspectorSession::sendNotification(
     std::unique_ptr<v8_inspector::StringBuffer> notification) {
-  if (m_disposed)
+  if (disposed_)
     return;
-  m_notificationQueue.push_back(
-      Notification::createForV8(std::move(notification)));
+  notification_queue_.push_back(
+      Notification::CreateForV8(std::move(notification)));
 }
 
 void InspectorSession::flushProtocolNotifications() {
-  if (m_disposed)
+  if (disposed_)
     return;
-  for (size_t i = 0; i < m_agents.size(); i++)
-    m_agents[i]->flushPendingProtocolNotifications();
-  for (size_t i = 0; i < m_notificationQueue.size(); ++i) {
-    m_client->sendProtocolMessage(
-        m_sessionId, 0, m_notificationQueue[i]->serialize(), String());
+  for (size_t i = 0; i < agents_.size(); i++)
+    agents_[i]->FlushPendingProtocolNotifications();
+  for (size_t i = 0; i < notification_queue_.size(); ++i) {
+    client_->SendProtocolMessage(session_id_, 0,
+                                 notification_queue_[i]->Serialize(), String());
   }
-  m_notificationQueue.clear();
+  notification_queue_.Clear();
 }
 
 DEFINE_TRACE(InspectorSession) {
-  visitor->trace(m_instrumentingAgents);
-  visitor->trace(m_agents);
+  visitor->Trace(instrumenting_agents_);
+  visitor->Trace(agents_);
 }
 
 }  // namespace blink

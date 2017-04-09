@@ -41,18 +41,18 @@ struct WebFindOptions {
   bool forward;
 
   // Whether search should be case-sensitive.
-  bool matchCase;
+  bool match_case;
 
   // Whether this operation is the first request or a follow-up.
-  bool findNext;
+  bool find_next;
 
   // Whether this operation should look for matches only at the start of words.
-  bool wordStart;
+  bool word_start;
 
   // When combined with wordStart, accepts a match in the middle of a word if
   // the match begins with an uppercase letter followed by a lowercase or
   // non-letter. Accepts several other intra-word matches.
-  bool medialCapitalAsWordStart;
+  bool medial_capital_as_word_start;
 
   // Force a re-search of the frame: typically used when forcing a re-search
   // after the frame navigates.
@@ -60,10 +60,10 @@ struct WebFindOptions {
 
   WebFindOptions()
       : forward(true),
-        matchCase(false),
-        findNext(false),
-        wordStart(false),
-        medialCapitalAsWordStart(false),
+        match_case(false),
+        find_next(false),
+        word_start(false),
+        medial_capital_as_word_start(false),
         force(false) {}
 };
 

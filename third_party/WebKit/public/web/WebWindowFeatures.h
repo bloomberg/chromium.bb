@@ -43,39 +43,39 @@ namespace blink {
 
 struct WebWindowFeatures {
   float x;
-  bool xSet;
+  bool x_set;
   float y;
-  bool ySet;
+  bool y_set;
   float width;
-  bool widthSet;
+  bool width_set;
   float height;
-  bool heightSet;
+  bool height_set;
 
-  bool menuBarVisible;
-  bool statusBarVisible;
-  bool toolBarVisible;
-  bool locationBarVisible;
-  bool scrollbarsVisible;
+  bool menu_bar_visible;
+  bool status_bar_visible;
+  bool tool_bar_visible;
+  bool location_bar_visible;
+  bool scrollbars_visible;
   bool resizable;
 
   bool fullscreen;
   bool dialog;
-  WebVector<WebString> additionalFeatures;
+  WebVector<WebString> additional_features;
 
   WebWindowFeatures()
       : x(0),
-        xSet(false),
+        x_set(false),
         y(0),
-        ySet(false),
+        y_set(false),
         width(0),
-        widthSet(false),
+        width_set(false),
         height(0),
-        heightSet(false),
-        menuBarVisible(true),
-        statusBarVisible(true),
-        toolBarVisible(true),
-        locationBarVisible(true),
-        scrollbarsVisible(true),
+        height_set(false),
+        menu_bar_visible(true),
+        status_bar_visible(true),
+        tool_bar_visible(true),
+        location_bar_visible(true),
+        scrollbars_visible(true),
         resizable(true),
         fullscreen(false),
         dialog(false) {}
@@ -83,43 +83,43 @@ struct WebWindowFeatures {
 #if BLINK_IMPLEMENTATION
   WebWindowFeatures(const WindowFeatures& f)
       : x(f.x),
-        xSet(f.xSet),
+        x_set(f.x_set),
         y(f.y),
-        ySet(f.ySet),
+        y_set(f.y_set),
         width(f.width),
-        widthSet(f.widthSet),
+        width_set(f.width_set),
         height(f.height),
-        heightSet(f.heightSet),
-        menuBarVisible(f.menuBarVisible),
-        statusBarVisible(f.statusBarVisible),
-        toolBarVisible(f.toolBarVisible),
-        locationBarVisible(f.locationBarVisible),
-        scrollbarsVisible(f.scrollbarsVisible),
+        height_set(f.height_set),
+        menu_bar_visible(f.menu_bar_visible),
+        status_bar_visible(f.status_bar_visible),
+        tool_bar_visible(f.tool_bar_visible),
+        location_bar_visible(f.location_bar_visible),
+        scrollbars_visible(f.scrollbars_visible),
         resizable(f.resizable),
         fullscreen(f.fullscreen),
         dialog(f.dialog),
-        additionalFeatures(f.additionalFeatures) {}
+        additional_features(f.additional_features) {}
 
   operator WindowFeatures() const {
     WindowFeatures result;
     result.x = x;
-    result.xSet = xSet;
+    result.x_set = x_set;
     result.y = y;
-    result.ySet = ySet;
+    result.y_set = y_set;
     result.width = width;
-    result.widthSet = widthSet;
+    result.width_set = width_set;
     result.height = height;
-    result.heightSet = heightSet;
-    result.menuBarVisible = menuBarVisible;
-    result.statusBarVisible = statusBarVisible;
-    result.toolBarVisible = toolBarVisible;
-    result.locationBarVisible = locationBarVisible;
-    result.scrollbarsVisible = scrollbarsVisible;
+    result.height_set = height_set;
+    result.menu_bar_visible = menu_bar_visible;
+    result.status_bar_visible = status_bar_visible;
+    result.tool_bar_visible = tool_bar_visible;
+    result.location_bar_visible = location_bar_visible;
+    result.scrollbars_visible = scrollbars_visible;
     result.resizable = resizable;
     result.fullscreen = fullscreen;
     result.dialog = dialog;
-    for (size_t i = 0; i < additionalFeatures.size(); ++i)
-      result.additionalFeatures.push_back(additionalFeatures[i]);
+    for (size_t i = 0; i < additional_features.size(); ++i)
+      result.additional_features.push_back(additional_features[i]);
     return result;
   }
 #endif

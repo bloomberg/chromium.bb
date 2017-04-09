@@ -19,7 +19,7 @@ namespace content {
 namespace {
 
 const WebTouchPoint* FindTouchPoint(const WebTouchEvent& event, int id) {
-  for (unsigned i = 0; i < event.touchesLength; ++i) {
+  for (unsigned i = 0; i < event.touches_length; ++i) {
     if (event.touches[i].id == id)
       return &event.touches[i];
   }
@@ -28,7 +28,7 @@ const WebTouchPoint* FindTouchPoint(const WebTouchEvent& event, int id) {
 
 std::string TouchPointIdsToString(const WebTouchEvent& event) {
   std::stringstream ss;
-  for (unsigned i = 0; i < event.touchesLength; ++i) {
+  for (unsigned i = 0; i < event.touches_length; ++i) {
     if (i)
       ss << ",";
     ss << event.touches[i].id;
@@ -50,20 +50,20 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   error_msg->clear();
 
   // TouchScrollStarted is not part of a regular touch event stream.
-  if (event.type() == WebInputEvent::TouchScrollStarted)
+  if (event.GetType() == WebInputEvent::kTouchScrollStarted)
     return true;
 
   WebTouchEvent previous_event = previous_event_;
   previous_event_ = event;
 
-  if (!event.touchesLength) {
+  if (!event.touches_length) {
     error_msg->append("Touch event is empty.\n");
     return false;
   }
 
-  if (!WebInputEvent::isTouchEventType(event.type())) {
+  if (!WebInputEvent::IsTouchEventType(event.GetType())) {
     error_msg->append(StringPrintf("Touch event has invalid type: %s\n",
-                                   WebInputEvent::GetName(event.type())));
+                                   WebInputEvent::GetName(event.GetType())));
   }
 
   // Allow "hard" restarting of touch stream validation. This is necessary
@@ -73,10 +73,10 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
     previous_event = WebTouchEvent();
 
   // Unreleased points from the previous event should exist in the latest event.
-  for (unsigned i = 0; i < previous_event.touchesLength; ++i) {
+  for (unsigned i = 0; i < previous_event.touches_length; ++i) {
     const WebTouchPoint& previous_point = previous_event.touches[i];
-    if (previous_point.state == WebTouchPoint::StateCancelled ||
-        previous_point.state == WebTouchPoint::StateReleased)
+    if (previous_point.state == WebTouchPoint::kStateCancelled ||
+        previous_point.state == WebTouchPoint::kStateReleased)
       continue;
 
     const WebTouchPoint* point = FindTouchPoint(event, previous_point.id);
@@ -88,21 +88,21 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   }
 
   bool found_valid_state_for_type = false;
-  for (unsigned i = 0; i < event.touchesLength; ++i) {
+  for (unsigned i = 0; i < event.touches_length; ++i) {
     const WebTouchPoint& point = event.touches[i];
     const WebTouchPoint* previous_point =
         FindTouchPoint(previous_event, point.id);
 
     // The point should exist in the previous event if it is not a new point.
     if (!previous_point) {
-      if (point.state != WebTouchPoint::StatePressed)
+      if (point.state != WebTouchPoint::kStatePressed)
         error_msg->append(StringPrintf(
             "Active touch point (id=%d) not in previous event (ids=%s).\n",
             point.id, TouchPointIdsToString(previous_event).c_str()));
     } else {
-      if (point.state == WebTouchPoint::StatePressed &&
-          previous_point->state != WebTouchPoint::StateCancelled &&
-          previous_point->state != WebTouchPoint::StateReleased) {
+      if (point.state == WebTouchPoint::kStatePressed &&
+          previous_point->state != WebTouchPoint::kStateCancelled &&
+          previous_point->state != WebTouchPoint::kStateReleased) {
         error_msg->append(StringPrintf(
             "Pressed touch point (id=%d) already exists in previous event "
             "(ids=%s).\n",
@@ -111,13 +111,13 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
     }
 
     switch (point.state) {
-      case WebTouchPoint::StateUndefined:
+      case WebTouchPoint::kStateUndefined:
         error_msg->append(
             StringPrintf("Undefined touch point state (id=%d).\n", point.id));
         break;
 
-      case WebTouchPoint::StateReleased:
-        if (event.type() != WebInputEvent::TouchEnd) {
+      case WebTouchPoint::kStateReleased:
+        if (event.GetType() != WebInputEvent::kTouchEnd) {
           error_msg->append(StringPrintf(
               "Released touch point (id=%d) outside touchend.\n", point.id));
         } else {
@@ -125,8 +125,8 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
         }
         break;
 
-      case WebTouchPoint::StatePressed:
-        if (event.type() != WebInputEvent::TouchStart) {
+      case WebTouchPoint::kStatePressed:
+        if (event.GetType() != WebInputEvent::kTouchStart) {
           error_msg->append(StringPrintf(
               "Pressed touch point (id=%d) outside touchstart.\n", point.id));
         } else {
@@ -134,8 +134,8 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
         }
         break;
 
-      case WebTouchPoint::StateMoved:
-        if (event.type() != WebInputEvent::TouchMove) {
+      case WebTouchPoint::kStateMoved:
+        if (event.GetType() != WebInputEvent::kTouchMove) {
           error_msg->append(StringPrintf(
               "Moved touch point (id=%d) outside touchmove.\n", point.id));
         } else {
@@ -143,11 +143,11 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
         }
         break;
 
-      case WebTouchPoint::StateStationary:
+      case WebTouchPoint::kStateStationary:
         break;
 
-      case WebTouchPoint::StateCancelled:
-        if (event.type() != WebInputEvent::TouchCancel) {
+      case WebTouchPoint::kStateCancelled:
+        if (event.GetType() != WebInputEvent::kTouchCancel) {
           error_msg->append(StringPrintf(
               "Cancelled touch point (id=%d) outside touchcancel.\n",
               point.id));
@@ -161,7 +161,7 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   if (!found_valid_state_for_type) {
     error_msg->append(
         StringPrintf("No valid touch point corresponding to event type: %s\n",
-                     WebInputEvent::GetName(event.type())));
+                     WebInputEvent::GetName(event.GetType())));
   }
 
   return error_msg->empty();

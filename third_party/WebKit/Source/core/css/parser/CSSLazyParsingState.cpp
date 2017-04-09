@@ -12,56 +12,56 @@
 namespace blink {
 
 CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext* context,
-                                         Vector<String> escapedStrings,
-                                         const String& sheetText,
+                                         Vector<String> escaped_strings,
+                                         const String& sheet_text,
                                          StyleSheetContents* contents)
-    : m_context(context),
-      m_escapedStrings(std::move(escapedStrings)),
-      m_sheetText(sheetText),
-      m_owningContents(contents),
-      m_parsedStyleRules(0),
-      m_totalStyleRules(0),
-      m_styleRulesNeededForNextMilestone(0),
-      m_usage(UsageGe0),
-      m_shouldUseCount(m_context->isUseCounterRecordingEnabled()) {}
+    : context_(context),
+      escaped_strings_(std::move(escaped_strings)),
+      sheet_text_(sheet_text),
+      owning_contents_(contents),
+      parsed_style_rules_(0),
+      total_style_rules_(0),
+      style_rules_needed_for_next_milestone_(0),
+      usage_(kUsageGe0),
+      should_use_count_(context_->IsUseCounterRecordingEnabled()) {}
 
-void CSSLazyParsingState::finishInitialParsing() {
-  recordUsageMetrics();
+void CSSLazyParsingState::FinishInitialParsing() {
+  RecordUsageMetrics();
 }
 
-CSSLazyPropertyParserImpl* CSSLazyParsingState::createLazyParser(
+CSSLazyPropertyParserImpl* CSSLazyParsingState::CreateLazyParser(
     const CSSParserTokenRange& block) {
-  ++m_totalStyleRules;
+  ++total_style_rules_;
   return new CSSLazyPropertyParserImpl(std::move(block), this);
 }
 
-const CSSParserContext* CSSLazyParsingState::context() {
-  DCHECK(m_owningContents);
-  if (!m_shouldUseCount) {
-    DCHECK(!m_context->isUseCounterRecordingEnabled());
-    return m_context;
+const CSSParserContext* CSSLazyParsingState::Context() {
+  DCHECK(owning_contents_);
+  if (!should_use_count_) {
+    DCHECK(!context_->IsUseCounterRecordingEnabled());
+    return context_;
   }
 
   // Try as best as possible to grab a valid Document if the old Document has
   // gone away so we can still use UseCounter.
-  if (!m_document)
-    m_document = m_owningContents->anyOwnerDocument();
+  if (!document_)
+    document_ = owning_contents_->AnyOwnerDocument();
 
-  if (!m_context->isDocumentHandleEqual(m_document))
-    m_context = CSSParserContext::create(m_context, m_document);
-  return m_context;
+  if (!context_->IsDocumentHandleEqual(document_))
+    context_ = CSSParserContext::Create(context_, document_);
+  return context_;
 }
 
-void CSSLazyParsingState::countRuleParsed() {
-  ++m_parsedStyleRules;
-  while (m_parsedStyleRules > m_styleRulesNeededForNextMilestone) {
-    DCHECK_NE(UsageAll, m_usage);
-    ++m_usage;
-    recordUsageMetrics();
+void CSSLazyParsingState::CountRuleParsed() {
+  ++parsed_style_rules_;
+  while (parsed_style_rules_ > style_rules_needed_for_next_milestone_) {
+    DCHECK_NE(kUsageAll, usage_);
+    ++usage_;
+    RecordUsageMetrics();
   }
 }
 
-bool CSSLazyParsingState::shouldLazilyParseProperties(
+bool CSSLazyParsingState::ShouldLazilyParseProperties(
     const CSSSelectorList& selectors,
     const CSSParserTokenRange& block) const {
   // Simple heuristic for an empty block. Note that |block| here does not
@@ -76,59 +76,60 @@ bool CSSLazyParsingState::shouldLazilyParseProperties(
   //  list. This ensures we don't cause a collectFeatures() when we trigger
   //  parsing for attr() functions which would trigger expensive invalidation
   //  propagation.
-  for (const auto* s = selectors.first(); s; s = CSSSelectorList::next(*s)) {
+  for (const auto* s = selectors.First(); s; s = CSSSelectorList::Next(*s)) {
     for (const CSSSelector* current = s; current;
-         current = current->tagHistory()) {
-      const CSSSelector::PseudoType type(current->getPseudoType());
-      if (type == CSSSelector::PseudoBefore || type == CSSSelector::PseudoAfter)
+         current = current->TagHistory()) {
+      const CSSSelector::PseudoType type(current->GetPseudoType());
+      if (type == CSSSelector::kPseudoBefore ||
+          type == CSSSelector::kPseudoAfter)
         return false;
-      if (current->relation() != CSSSelector::SubSelector)
+      if (current->Relation() != CSSSelector::kSubSelector)
         break;
     }
   }
   return true;
 }
 
-void CSSLazyParsingState::recordUsageMetrics() {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, usageHistogram,
-                      ("Style.LazyUsage.Percent", UsageLastValue));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, totalRulesHistogram,
+void CSSLazyParsingState::RecordUsageMetrics() {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, usage_histogram,
+                      ("Style.LazyUsage.Percent", kUsageLastValue));
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, total_rules_histogram,
                       ("Style.TotalLazyRules", 0, 100000, 50));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, totalRulesFullUsageHistogram,
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, total_rules_full_usage_histogram,
                       ("Style.TotalLazyRules.FullUsage", 0, 100000, 50));
-  switch (m_usage) {
-    case UsageGe0:
-      totalRulesHistogram.count(m_totalStyleRules);
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules * .1;
+  switch (usage_) {
+    case kUsageGe0:
+      total_rules_histogram.Count(total_style_rules_);
+      style_rules_needed_for_next_milestone_ = total_style_rules_ * .1;
       break;
-    case UsageGt10:
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules * .25;
+    case kUsageGt10:
+      style_rules_needed_for_next_milestone_ = total_style_rules_ * .25;
       break;
-    case UsageGt25:
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules * .5;
+    case kUsageGt25:
+      style_rules_needed_for_next_milestone_ = total_style_rules_ * .5;
       break;
-    case UsageGt50:
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules * .75;
+    case kUsageGt50:
+      style_rules_needed_for_next_milestone_ = total_style_rules_ * .75;
       break;
-    case UsageGt75:
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules * .9;
+    case kUsageGt75:
+      style_rules_needed_for_next_milestone_ = total_style_rules_ * .9;
       break;
-    case UsageGt90:
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules - 1;
+    case kUsageGt90:
+      style_rules_needed_for_next_milestone_ = total_style_rules_ - 1;
       break;
-    case UsageAll:
-      totalRulesFullUsageHistogram.count(m_totalStyleRules);
-      m_styleRulesNeededForNextMilestone = m_totalStyleRules;
+    case kUsageAll:
+      total_rules_full_usage_histogram.Count(total_style_rules_);
+      style_rules_needed_for_next_milestone_ = total_style_rules_;
       break;
   }
 
-  usageHistogram.count(m_usage);
+  usage_histogram.Count(usage_);
 }
 
 DEFINE_TRACE(CSSLazyParsingState) {
-  visitor->trace(m_owningContents);
-  visitor->trace(m_document);
-  visitor->trace(m_context);
+  visitor->Trace(owning_contents_);
+  visitor->Trace(document_);
+  visitor->Trace(context_);
 }
 
 }  // namespace blink

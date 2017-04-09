@@ -31,15 +31,15 @@ class MockPrintContext : public PrintContext {
  public:
   MockPrintContext(LocalFrame* frame) : PrintContext(frame) {}
 
-  void outputLinkedDestinations(GraphicsContext& context,
-                                const IntRect& pageRect) {
-    PrintContext::outputLinkedDestinations(context, pageRect);
+  void OutputLinkedDestinations(GraphicsContext& context,
+                                const IntRect& page_rect) {
+    PrintContext::OutputLinkedDestinations(context, page_rect);
   }
 };
 
 class MockCanvas : public SkCanvas {
  public:
-  enum OperationType { DrawRect, DrawPoint };
+  enum OperationType { kDrawRect, kDrawPoint };
 
   struct Operation {
     OperationType type;
@@ -53,60 +53,61 @@ class MockCanvas : public SkCanvas {
                         SkData* value) override {
     if (rect.width() == 0 && rect.height() == 0) {
       SkPoint point = getTotalMatrix().mapXY(rect.x(), rect.y());
-      Operation operation = {DrawPoint,
+      Operation operation = {kDrawPoint,
                              SkRect::MakeXYWH(point.x(), point.y(), 0, 0)};
-      m_recordedOperations.push_back(operation);
+      recorded_operations_.push_back(operation);
     } else {
-      Operation operation = {DrawRect, rect};
+      Operation operation = {kDrawRect, rect};
       getTotalMatrix().mapRect(&operation.rect);
-      m_recordedOperations.push_back(operation);
+      recorded_operations_.push_back(operation);
     }
   }
 
-  const Vector<Operation>& recordedOperations() const {
-    return m_recordedOperations;
+  const Vector<Operation>& RecordedOperations() const {
+    return recorded_operations_;
   }
 
  private:
-  Vector<Operation> m_recordedOperations;
+  Vector<Operation> recorded_operations_;
 };
 
 class PrintContextTest : public RenderingTest {
  protected:
-  explicit PrintContextTest(LocalFrameClient* localFrameClient = nullptr)
-      : RenderingTest(localFrameClient) {}
+  explicit PrintContextTest(LocalFrameClient* local_frame_client = nullptr)
+      : RenderingTest(local_frame_client) {}
 
   void SetUp() override {
     RenderingTest::SetUp();
-    m_printContext = new MockPrintContext(document().frame());
+    print_context_ = new MockPrintContext(GetDocument().GetFrame());
   }
 
-  MockPrintContext& printContext() { return *m_printContext.get(); }
+  MockPrintContext& PrintContext() { return *print_context_.Get(); }
 
-  void setBodyInnerHTML(String bodyContent) {
-    document().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
-    document().body()->setInnerHTML(bodyContent);
+  void SetBodyInnerHTML(String body_content) {
+    GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
+    GetDocument().body()->setInnerHTML(body_content);
   }
 
-  void printSinglePage(MockCanvas& canvas) {
-    IntRect pageRect(0, 0, kPageWidth, kPageHeight);
-    printContext().begin(pageRect.width(), pageRect.height());
-    document().view()->updateAllLifecyclePhases();
-    PaintRecordBuilder builder(pageRect);
-    GraphicsContext& context = builder.context();
-    context.setPrinting(true);
-    document().view()->paintContents(context, GlobalPaintPrinting, pageRect);
+  void PrintSinglePage(MockCanvas& canvas) {
+    IntRect page_rect(0, 0, kPageWidth, kPageHeight);
+    PrintContext().begin(page_rect.Width(), page_rect.Height());
+    GetDocument().View()->UpdateAllLifecyclePhases();
+    PaintRecordBuilder builder(page_rect);
+    GraphicsContext& context = builder.Context();
+    context.SetPrinting(true);
+    GetDocument().View()->PaintContents(context, kGlobalPaintPrinting,
+                                        page_rect);
     {
-      DrawingRecorder recorder(context, *document().layoutView(),
+      DrawingRecorder recorder(context, *GetDocument().GetLayoutView(),
                                DisplayItem::kPrintedContentDestinationLocations,
-                               pageRect);
-      printContext().outputLinkedDestinations(context, pageRect);
+                               page_rect);
+      PrintContext().OutputLinkedDestinations(context, page_rect);
     }
-    builder.endRecording()->playback(&canvas);
-    printContext().end();
+    builder.EndRecording()->playback(&canvas);
+    PrintContext().end();
   }
 
-  static String absoluteBlockHtmlForLink(int x,
+  static String AbsoluteBlockHtmlForLink(int x,
                                          int y,
                                          int width,
                                          int height,
@@ -116,35 +117,35 @@ class PrintContextTest : public RenderingTest {
     ts << "<a style='position: absolute; left: " << x << "px; top: " << y
        << "px; width: " << width << "px; height: " << height << "px' href='"
        << url << "'>" << (children ? children : url) << "</a>";
-    return ts.release();
+    return ts.Release();
   }
 
-  static String inlineHtmlForLink(const char* url,
+  static String InlineHtmlForLink(const char* url,
                                   const char* children = nullptr) {
     TextStream ts;
     ts << "<a href='" << url << "'>" << (children ? children : url) << "</a>";
-    return ts.release();
+    return ts.Release();
   }
 
-  static String htmlForAnchor(int x,
+  static String HtmlForAnchor(int x,
                               int y,
                               const char* name,
-                              const char* textContent) {
+                              const char* text_content) {
     TextStream ts;
     ts << "<a name='" << name << "' style='position: absolute; left: " << x
-       << "px; top: " << y << "px'>" << textContent << "</a>";
-    return ts.release();
+       << "px; top: " << y << "px'>" << text_content << "</a>";
+    return ts.Release();
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<MockPrintContext> m_printContext;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  Persistent<MockPrintContext> print_context_;
 };
 
 class PrintContextFrameTest : public PrintContextTest {
  public:
   PrintContextFrameTest()
-      : PrintContextTest(SingleChildLocalFrameClient::create()) {}
+      : PrintContextTest(SingleChildLocalFrameClient::Create()) {}
 };
 
 #define EXPECT_SKRECT_EQ(expectedX, expectedY, expectedWidth, expectedHeight, \
@@ -156,204 +157,204 @@ class PrintContextFrameTest : public PrintContextTest {
 
 TEST_F(PrintContextTest, LinkTarget) {
   MockCanvas canvas;
-  setBodyInnerHTML(
-      absoluteBlockHtmlForLink(50, 60, 70, 80, "http://www.google.com") +
-      absoluteBlockHtmlForLink(150, 160, 170, 180,
+  SetBodyInnerHTML(
+      AbsoluteBlockHtmlForLink(50, 60, 70, 80, "http://www.google.com") +
+      AbsoluteBlockHtmlForLink(150, 160, 170, 180,
                                "http://www.google.com#fragment"));
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
   MockCanvas canvas;
-  setBodyInnerHTML("<div style='padding-top: 50px'>" +
-                   inlineHtmlForLink("http://www.google.com",
+  SetBodyInnerHTML("<div style='padding-top: 50px'>" +
+                   InlineHtmlForLink("http://www.google.com",
                                      "<img style='width: 111; height: 10'>") +
                    "<div> " +
-                   inlineHtmlForLink("http://www.google1.com",
+                   InlineHtmlForLink("http://www.google1.com",
                                      "<img style='width: 122; height: 20'>") +
                    "</div>" + "</div>");
-  printSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  PrintSinglePage(canvas);
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 50, 111, 10, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(0, 60, 122, 20, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetContainingABlock) {
   MockCanvas canvas;
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='padding-top: 50px'>" +
-      inlineHtmlForLink("http://www.google2.com",
+      InlineHtmlForLink("http://www.google2.com",
                         "<div style='width:133; height: 30'>BLOCK</div>") +
       "</div>");
-  printSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  PrintSinglePage(canvas);
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 50, 133, 30, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderInInlines) {
   MockCanvas canvas;
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<span><b><i><img style='width: 40px; height: 40px'><br>" +
-      inlineHtmlForLink("http://www.google3.com",
+      InlineHtmlForLink("http://www.google3.com",
                         "<img style='width: 144px; height: 40px'>") +
       "</i></b></span>");
-  printSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  PrintSinglePage(canvas);
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 40, 144, 40, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
   MockCanvas canvas;
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
         + "<span style='position: relative; top: 50px; left: 50px'><b><i><img style='width: 1px; height: 40px'><br>"
-        + inlineHtmlForLink("http://www.google3.com", "<img style='width: 155px; height: 50px'>")
+        + InlineHtmlForLink("http://www.google3.com", "<img style='width: 155px; height: 50px'>")
         + "</i></b></span>");
-  printSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  PrintSinglePage(canvas);
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 90, 155, 50, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetSvg) {
   MockCanvas canvas;
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg width='100' height='100'>"
       "<a xlink:href='http://www.w3.org'><rect x='20' y='20' width='50' "
       "height='50'/></a>"
       "<text x='10' y='90'><a "
       "xlink:href='http://www.google.com'><tspan>google</tspan></a></text>"
       "</svg>");
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(20, 20, 50, 50, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
   EXPECT_EQ(10, operations[1].rect.x());
   EXPECT_GE(90, operations[1].rect.y());
 }
 
 TEST_F(PrintContextTest, LinkedTarget) {
   MockCanvas canvas;
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
-  setBodyInnerHTML(
-      absoluteBlockHtmlForLink(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  SetBodyInnerHTML(
+      AbsoluteBlockHtmlForLink(
           50, 60, 70, 80,
           "#fragment")  // Generates a Link_Named_Dest_Key annotation
-      + absoluteBlockHtmlForLink(150, 160, 170, 180,
+      + AbsoluteBlockHtmlForLink(150, 160, 170, 180,
                                  "#not-found")  // Generates no annotation
       +
-      htmlForAnchor(250, 260, "fragment",
+      HtmlForAnchor(250, 260, "fragment",
                     "fragment")  // Generates a Define_Named_Dest_Key annotation
-      + htmlForAnchor(350, 360, "fragment-not-used",
+      + HtmlForAnchor(350, 360, "fragment-not-used",
                       "fragment-not-used"));  // Generates no annotation
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawPoint, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawPoint, operations[1].type);
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, EmptyLinkedTarget) {
   MockCanvas canvas;
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
-  setBodyInnerHTML(absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
-                   htmlForAnchor(250, 260, "fragment", ""));
-  printSinglePage(canvas);
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  SetBodyInnerHTML(AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
+                   HtmlForAnchor(250, 260, "fragment", ""));
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawPoint, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawPoint, operations[1].type);
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetBoundingBox) {
   MockCanvas canvas;
-  setBodyInnerHTML(
-      absoluteBlockHtmlForLink(50, 60, 70, 20, "http://www.google.com",
+  SetBodyInnerHTML(
+      AbsoluteBlockHtmlForLink(50, 60, 70, 20, "http://www.google.com",
                                "<img style='width: 200px; height: 100px'>"));
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
 }
 
 TEST_F(PrintContextFrameTest, WithSubframe) {
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
-  setBodyInnerHTML(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  SetBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
       "<iframe src='http://b.com/' width='500' height='500'"
       " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
       "left: 90px'></iframe>");
-  setChildFrameHTML(
-      absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
-      absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
-      absoluteBlockHtmlForLink(250, 260, 270, 280,
+  SetChildFrameHTML(
+      AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
+      AbsoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
+      AbsoluteBlockHtmlForLink(250, 260, 270, 280,
                                "http://www.google.com#fragment"));
 
   MockCanvas canvas;
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(250, 260, 170, 180, operations[0].rect);
-  EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[1].rect);
 }
 
 TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
-  setBodyInnerHTML(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  SetBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
       "<iframe src='http://b.com/' width='500' height='500'"
       " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
       "left: 90px'></iframe>");
-  setChildFrameHTML(
-      absoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com") +
-      absoluteBlockHtmlForLink(50, 60, 70, 80, "http://partly.visible.com") +
-      absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
-      absoluteBlockHtmlForLink(250, 260, 270, 280,
+  SetChildFrameHTML(
+      AbsoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com") +
+      AbsoluteBlockHtmlForLink(50, 60, 70, 80, "http://partly.visible.com") +
+      AbsoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
+      AbsoluteBlockHtmlForLink(250, 260, 270, 280,
                                "http://www.google.com#fragment") +
-      absoluteBlockHtmlForLink(850, 860, 70, 80,
+      AbsoluteBlockHtmlForLink(850, 860, 70, 80,
                                "http://another.invisible.com"));
 
-  childDocument().domWindow()->scrollTo(100, 100);
+  ChildDocument().domWindow()->scrollTo(100, 100);
 
   MockCanvas canvas;
-  printSinglePage(canvas);
+  PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
   ASSERT_EQ(3u, operations.size());
-  EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80,
                    operations[0].rect);  // FIXME: the rect should be clipped.
-  EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
-  EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
+  EXPECT_EQ(MockCanvas::kDrawRect, operations[2].type);
   EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[2].rect);
 }
 

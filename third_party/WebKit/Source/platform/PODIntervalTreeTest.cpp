@@ -34,58 +34,58 @@
 
 namespace blink {
 
-using TreeTestHelpers::initRandom;
-using TreeTestHelpers::nextRandom;
+using TreeTestHelpers::InitRandom;
+using TreeTestHelpers::NextRandom;
 
 #ifndef NDEBUG
 template <>
 struct ValueToString<float> {
-  static String toString(const float& value) { return String::number(value); }
+  static String ToString(const float& value) { return String::Number(value); }
 };
 
 template <>
 struct ValueToString<void*> {
-  static String toString(void* const& value) {
-    return String::format("0x%p", value);
+  static String ToString(void* const& value) {
+    return String::Format("0x%p", value);
   }
 };
 #endif
 
 TEST(PODIntervalTreeTest, TestInsertion) {
   PODIntervalTree<float> tree;
-  tree.add(PODInterval<float>(2, 4));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(PODInterval<float>(2, 4));
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 TEST(PODIntervalTreeTest, TestInsertionAndQuery) {
   PODIntervalTree<float> tree;
-  tree.add(PODInterval<float>(2, 4));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(PODInterval<float>(2, 4));
+  ASSERT_TRUE(tree.CheckInvariants());
   Vector<PODInterval<float>> result =
-      tree.allOverlaps(PODInterval<float>(1, 3));
+      tree.AllOverlaps(PODInterval<float>(1, 3));
   EXPECT_EQ(1U, result.size());
-  EXPECT_EQ(2, result[0].low());
-  EXPECT_EQ(4, result[0].high());
+  EXPECT_EQ(2, result[0].Low());
+  EXPECT_EQ(4, result[0].High());
 }
 
 TEST(PODIntervalTreeTest, TestQueryAgainstZeroSizeInterval) {
   PODIntervalTree<float> tree;
-  tree.add(PODInterval<float>(1, 2.5));
-  tree.add(PODInterval<float>(3.5, 5));
-  tree.add(PODInterval<float>(2, 4));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(PODInterval<float>(1, 2.5));
+  tree.Add(PODInterval<float>(3.5, 5));
+  tree.Add(PODInterval<float>(2, 4));
+  ASSERT_TRUE(tree.CheckInvariants());
   Vector<PODInterval<float>> result =
-      tree.allOverlaps(PODInterval<float>(3, 3));
+      tree.AllOverlaps(PODInterval<float>(3, 3));
   EXPECT_EQ(1U, result.size());
-  EXPECT_EQ(2, result[0].low());
-  EXPECT_EQ(4, result[0].high());
+  EXPECT_EQ(2, result[0].Low());
+  EXPECT_EQ(4, result[0].High());
 }
 
 #ifndef NDEBUG
 template <>
 struct ValueToString<int*> {
-  static String toString(int* const& value) {
-    return String::format("0x%p", value);
+  static String ToString(int* const& value) {
+    return String::Format("0x%p", value);
   }
 };
 #endif
@@ -97,15 +97,15 @@ TEST(PODIntervalTreeTest, TestDuplicateElementInsertion) {
   typedef PODIntervalTree<float, int*>::IntervalType IntervalType;
   IntervalType interval1(1, 3, &tmp1);
   IntervalType interval2(1, 3, &tmp2);
-  tree.add(interval1);
-  tree.add(interval2);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(interval1));
-  EXPECT_TRUE(tree.contains(interval2));
-  EXPECT_TRUE(tree.remove(interval1));
-  EXPECT_TRUE(tree.contains(interval2));
-  EXPECT_FALSE(tree.contains(interval1));
-  EXPECT_TRUE(tree.remove(interval2));
+  tree.Add(interval1);
+  tree.Add(interval2);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(interval1));
+  EXPECT_TRUE(tree.Contains(interval2));
+  EXPECT_TRUE(tree.Remove(interval1));
+  EXPECT_TRUE(tree.Contains(interval2));
+  EXPECT_FALSE(tree.Contains(interval1));
+  EXPECT_TRUE(tree.Remove(interval2));
   EXPECT_EQ(0, tree.size());
 }
 
@@ -124,9 +124,9 @@ struct UserData1 {
 #ifndef NDEBUG
 template <>
 struct ValueToString<UserData1> {
-  static String toString(const UserData1& value) {
-    return String("[UserData1 a=") + String::number(value.a) + " b=" +
-           String::number(value.b) + "]";
+  static String ToString(const UserData1& value) {
+    return String("[UserData1 a=") + String::Number(value.a) +
+           " b=" + String::Number(value.b) + "]";
   }
 };
 #endif
@@ -136,8 +136,8 @@ TEST(PODIntervalTreeTest, TestInsertionOfComplexUserData) {
   UserData1 data1;
   data1.a = 5;
   data1.b = 6;
-  tree.add(tree.createInterval(2, 4, data1));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(tree.CreateInterval(2, 4, data1));
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 TEST(PODIntervalTreeTest, TestQueryingOfComplexUserData) {
@@ -145,32 +145,32 @@ TEST(PODIntervalTreeTest, TestQueryingOfComplexUserData) {
   UserData1 data1;
   data1.a = 5;
   data1.b = 6;
-  tree.add(tree.createInterval(2, 4, data1));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(tree.CreateInterval(2, 4, data1));
+  ASSERT_TRUE(tree.CheckInvariants());
   Vector<PODInterval<float, UserData1>> overlaps =
-      tree.allOverlaps(tree.createInterval(3, 5, data1));
+      tree.AllOverlaps(tree.CreateInterval(3, 5, data1));
   EXPECT_EQ(1U, overlaps.size());
-  EXPECT_EQ(5, overlaps[0].data().a);
-  EXPECT_EQ(6, overlaps[0].data().b);
+  EXPECT_EQ(5, overlaps[0].Data().a);
+  EXPECT_EQ(6, overlaps[0].Data().b);
 }
 
 namespace {
 
 class EndpointType1 {
  public:
-  explicit EndpointType1(int value) : m_value(value) {}
+  explicit EndpointType1(int value) : value_(value) {}
 
-  int value() const { return m_value; }
+  int Value() const { return value_; }
 
   bool operator<(const EndpointType1& other) const {
-    return m_value < other.m_value;
+    return value_ < other.value_;
   }
   bool operator==(const EndpointType1& other) const {
-    return m_value == other.m_value;
+    return value_ == other.value_;
   }
 
  private:
-  int m_value;
+  int value_;
   // These operators should not be called by the interval tree.
   bool operator>(const EndpointType1& other);
   bool operator<=(const EndpointType1& other);
@@ -183,8 +183,8 @@ class EndpointType1 {
 #ifndef NDEBUG
 template <>
 struct ValueToString<EndpointType1> {
-  static String toString(const EndpointType1& value) {
-    return String("[EndpointType1 value=") + String::number(value.value()) +
+  static String ToString(const EndpointType1& value) {
+    return String("[EndpointType1 value=") + String::Number(value.Value()) +
            "]";
   }
 };
@@ -192,8 +192,8 @@ struct ValueToString<EndpointType1> {
 
 TEST(PODIntervalTreeTest, TestTreeDoesNotRequireMostOperators) {
   PODIntervalTree<EndpointType1> tree;
-  tree.add(tree.createInterval(EndpointType1(1), EndpointType1(2)));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(tree.CreateInterval(EndpointType1(1), EndpointType1(2)));
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 // Uncomment to debug a failure of the insertion and deletion test. Won't work
@@ -203,80 +203,80 @@ TEST(PODIntervalTreeTest, TestTreeDoesNotRequireMostOperators) {
 #ifndef NDEBUG
 template <>
 struct ValueToString<int> {
-  static String toString(const int& value) { return String::number(value); }
+  static String ToString(const int& value) { return String::Number(value); }
 };
 #endif
 
 namespace {
 
-void InsertionAndDeletionTest(int32_t seed, int treeSize) {
-  initRandom(seed);
-  int maximumValue = treeSize;
+void InsertionAndDeletionTest(int32_t seed, int tree_size) {
+  InitRandom(seed);
+  int maximum_value = tree_size;
   // Build the tree
   PODIntervalTree<int> tree;
-  Vector<PODInterval<int>> addedElements;
-  Vector<PODInterval<int>> removedElements;
-  for (int i = 0; i < treeSize; i++) {
-    int left = nextRandom(maximumValue);
-    int length = nextRandom(maximumValue);
+  Vector<PODInterval<int>> added_elements;
+  Vector<PODInterval<int>> removed_elements;
+  for (int i = 0; i < tree_size; i++) {
+    int left = NextRandom(maximum_value);
+    int length = NextRandom(maximum_value);
     PODInterval<int> interval(left, left + length);
-    tree.add(interval);
+    tree.Add(interval);
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
     DLOG(ERROR) << "*** Adding element "
                 << ValueToString<PODInterval<int>>::string(interval);
 #endif
-    addedElements.push_back(interval);
+    added_elements.push_back(interval);
   }
   // Churn the tree's contents.
   // First remove half of the elements in random order.
-  for (int i = 0; i < treeSize / 2; i++) {
-    int index = nextRandom(addedElements.size());
+  for (int i = 0; i < tree_size / 2; i++) {
+    int index = NextRandom(added_elements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
     DLOG(ERROR) << "*** Removing element "
                 << ValueToString<PODInterval<int>>::string(
                        addedElements[index]);
 #endif
-    ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed "
-                                                     << seed;
-    tree.remove(addedElements[index]);
-    removedElements.push_back(addedElements[index]);
-    addedElements.erase(index);
-    ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
+    ASSERT_TRUE(tree.Contains(added_elements[index]))
+        << "Test failed for seed " << seed;
+    tree.Remove(added_elements[index]);
+    removed_elements.push_back(added_elements[index]);
+    added_elements.erase(index);
+    ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
   }
   // Now randomly add or remove elements.
-  for (int i = 0; i < 2 * treeSize; i++) {
+  for (int i = 0; i < 2 * tree_size; i++) {
     bool add = false;
-    if (!addedElements.size())
+    if (!added_elements.size())
       add = true;
-    else if (!removedElements.size())
+    else if (!removed_elements.size())
       add = false;
     else
-      add = (nextRandom(2) == 1);
+      add = (NextRandom(2) == 1);
     if (add) {
-      int index = nextRandom(removedElements.size());
+      int index = NextRandom(removed_elements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
       DLOG(ERROR) << "*** Adding element "
                   << ValueToString<PODInterval<int>>::string(
                          removedElements[index]);
 #endif
-      tree.add(removedElements[index]);
-      addedElements.push_back(removedElements[index]);
-      removedElements.erase(index);
+      tree.Add(removed_elements[index]);
+      added_elements.push_back(removed_elements[index]);
+      removed_elements.erase(index);
     } else {
-      int index = nextRandom(addedElements.size());
+      int index = NextRandom(added_elements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
       DLOG(ERROR) << "*** Removing element "
                   << ValueToString<PODInterval<int>>::string(
                          addedElements[index]);
 #endif
-      ASSERT_TRUE(tree.contains(addedElements[index]))
+      ASSERT_TRUE(tree.Contains(added_elements[index]))
           << "Test failed for seed " << seed;
-      ASSERT_TRUE(tree.remove(addedElements[index])) << "Test failed for seed "
-                                                     << seed;
-      removedElements.push_back(addedElements[index]);
-      addedElements.erase(index);
+      ASSERT_TRUE(tree.Remove(added_elements[index]))
+          << "Test failed for seed " << seed;
+      removed_elements.push_back(added_elements[index]);
+      added_elements.erase(index);
     }
-    ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
+    ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
   }
 }
 
@@ -294,56 +294,56 @@ TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest3) {
   // This is the sequence of insertions and deletions that triggered
   // the failure in RandomDeletionAndInsertionRegressionTest2.
   PODIntervalTree<int> tree;
-  tree.add(tree.createInterval(0, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(4, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(8, 9));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(1, 4));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(3, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(4, 12));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(0, 2));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(0, 2));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(9, 13));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(0, 1));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(0, 2));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(9, 13));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(0, 2));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(0, 1));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(4, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(4, 12));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(tree.CreateInterval(0, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(4, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(8, 9));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(1, 4));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(3, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(4, 12));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(0, 2));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(0, 2));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(9, 13));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(0, 1));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(0, 2));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(9, 13));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(0, 2));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(0, 1));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(4, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(4, 12));
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest4) {
   // Even further reduced test case for
   // RandomDeletionAndInsertionRegressionTest3.
   PODIntervalTree<int> tree;
-  tree.add(tree.createInterval(0, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(8, 9));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(1, 4));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(3, 5));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(tree.createInterval(4, 12));
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(tree.createInterval(4, 12));
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(tree.CreateInterval(0, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(8, 9));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(1, 4));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(3, 5));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(tree.CreateInterval(4, 12));
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(tree.CreateInterval(4, 12));
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 }  // namespace blink

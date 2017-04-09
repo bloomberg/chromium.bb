@@ -24,16 +24,16 @@ MockColorChooser::~MockColorChooser() {
   test_runner_->DidCloseChooser();
 }
 
-void MockColorChooser::setSelectedColor(const blink::WebColor color) {}
+void MockColorChooser::SetSelectedColor(const blink::WebColor color) {}
 
-void MockColorChooser::endChooser() {
+void MockColorChooser::EndChooser() {
   delegate_->PostDelayedTask(base::Bind(&MockColorChooser::InvokeDidEndChooser,
                                         weak_factory_.GetWeakPtr()),
                              0);
 }
 
 void MockColorChooser::InvokeDidEndChooser() {
-  client_->didEndChooser();
+  client_->DidEndChooser();
 }
 
 }  // namespace test_runner

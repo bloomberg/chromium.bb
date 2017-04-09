@@ -10,24 +10,24 @@
 
 namespace blink {
 
-DOMRectReadOnly* DOMRectReadOnly::create(double x,
+DOMRectReadOnly* DOMRectReadOnly::Create(double x,
                                          double y,
                                          double width,
                                          double height) {
   return new DOMRectReadOnly(x, y, width, height);
 }
 
-ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.addNumber("x", x());
-  result.addNumber("y", y());
-  result.addNumber("width", width());
-  result.addNumber("height", height());
-  result.addNumber("top", top());
-  result.addNumber("right", right());
-  result.addNumber("bottom", bottom());
-  result.addNumber("left", left());
-  return result.scriptValue();
+ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.AddNumber("x", x());
+  result.AddNumber("y", y());
+  result.AddNumber("width", width());
+  result.AddNumber("height", height());
+  result.AddNumber("top", top());
+  result.AddNumber("right", right());
+  result.AddNumber("bottom", bottom());
+  result.AddNumber("left", left());
+  return result.GetScriptValue();
 }
 
 DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
@@ -39,6 +39,6 @@ DOMRectReadOnly::DOMRectReadOnly(double x,
                                  double y,
                                  double width,
                                  double height)
-    : m_x(x), m_y(y), m_width(width), m_height(height) {}
+    : x_(x), y_(y), width_(width), height_(height) {}
 
 }  // namespace blink

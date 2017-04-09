@@ -16,17 +16,17 @@ using namespace CSSPropertyParserHelpers;
 const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (CSSValue* imageValue = consumeImageOrNone(range, &context))
-    return imageValue;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (CSSValue* boxValue = consumeShapeBox(range))
-    list->append(*boxValue);
-  if (CSSValue* shapeValue =
-          CSSPropertyShapeUtils::consumeBasicShape(range, &context)) {
-    list->append(*shapeValue);
+  if (CSSValue* image_value = ConsumeImageOrNone(range, &context))
+    return image_value;
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (CSSValue* box_value = ConsumeShapeBox(range))
+    list->Append(*box_value);
+  if (CSSValue* shape_value =
+          CSSPropertyShapeUtils::ConsumeBasicShape(range, &context)) {
+    list->Append(*shape_value);
     if (list->length() < 2) {
-      if (CSSValue* boxValue = consumeShapeBox(range))
-        list->append(*boxValue);
+      if (CSSValue* box_value = ConsumeShapeBox(range))
+        list->Append(*box_value);
     }
   }
   if (!list->length())

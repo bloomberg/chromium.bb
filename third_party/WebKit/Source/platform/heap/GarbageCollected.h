@@ -37,12 +37,12 @@ struct IsGarbageCollectedMixin {
   };
 
   template <typename U>
-  static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
+  static YesType CheckMarker(typename U::IsGarbageCollectedMixinMarker*);
   template <typename U>
-  static NoType checkMarker(...);
+  static NoType CheckMarker(...);
 
  public:
-  static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+  static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
 };
 
 // The GarbageCollectedMixin interface and helper macro
@@ -69,14 +69,14 @@ struct IsGarbageCollectedMixin {
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
-  virtual void adjustAndMark(Visitor*) const = 0;
-  virtual void trace(Visitor*) {}
-  virtual bool isHeapObjectAlive() const = 0;
+  virtual void AdjustAndMark(Visitor*) const = 0;
+  virtual void Trace(Visitor*) {}
+  virtual bool IsHeapObjectAlive() const = 0;
 };
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)                 \
  public:                                                                      \
-  void adjustAndMark(VISITOR visitor) const override {                        \
+  void AdjustAndMark(VISITOR visitor) const override {                        \
     typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
                                       blink::GarbageCollected>                \
         IsSubclassOfGarbageCollected;                                         \
@@ -84,12 +84,12 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
         IsSubclassOfGarbageCollected::value,                                  \
         "only garbage collected objects can have garbage collected mixins");  \
     if (TraceEagerlyTrait<TYPE>::value) {                                     \
-      if (visitor->ensureMarked(static_cast<const TYPE*>(this)))              \
-        TraceTrait<TYPE>::trace(visitor, const_cast<TYPE*>(this));            \
+      if (visitor->EnsureMarked(static_cast<const TYPE*>(this)))              \
+        TraceTrait<TYPE>::Trace(visitor, const_cast<TYPE*>(this));            \
       return;                                                                 \
     }                                                                         \
-    visitor->mark(static_cast<const TYPE*>(this),                             \
-                  &blink::TraceTrait<TYPE>::trace);                           \
+    visitor->Mark(static_cast<const TYPE*>(this),                             \
+                  &blink::TraceTrait<TYPE>::Trace);                           \
   }                                                                           \
                                                                               \
  private:
@@ -118,14 +118,14 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   GC_PLUGIN_IGNORE("crbug.com/456823")                                   \
   NO_SANITIZE_UNRELATED_CAST void* operator new(size_t size) {           \
     void* object =                                                       \
-        TYPE::allocateObject(size, IsEagerlyFinalizedType<TYPE>::value); \
+        TYPE::AllocateObject(size, IsEagerlyFinalizedType<TYPE>::value); \
     ThreadState* state =                                                 \
-        ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();         \
-    state->enterGCForbiddenScopeIfNeeded(                                \
-        &(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker));   \
+        ThreadStateFor<ThreadingTrait<TYPE>::kAffinity>::GetState();     \
+    state->EnterGCForbiddenScopeIfNeeded(                                \
+        &(reinterpret_cast<TYPE*>(object)->mixin_constructor_marker_));  \
     return object;                                                       \
   }                                                                      \
-  GarbageCollectedMixinConstructorMarker m_mixinConstructorMarker;       \
+  GarbageCollectedMixinConstructorMarker mixin_constructor_marker_;      \
                                                                          \
  private:
 
@@ -153,8 +153,8 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
   DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)       \
  public:                                                        \
-  bool isHeapObjectAlive() const override {                     \
-    return ThreadHeap::isHeapObjectAlive(this);                 \
+  bool IsHeapObjectAlive() const override {                     \
+    return ThreadHeap::IsHeapObjectAlive(this);                 \
   }                                                             \
                                                                 \
  private:
@@ -175,8 +175,8 @@ class GarbageCollectedMixinConstructorMarker {
     // For now, assume the next out-of-line allocation request will
     // happen soon enough and take care of it. Mixin objects aren't
     // overly common.
-    ThreadState* state = ThreadState::current();
-    state->leaveGCForbiddenScopeIfNeeded(this);
+    ThreadState* state = ThreadState::Current();
+    state->LeaveGCForbiddenScopeIfNeeded(this);
   }
 };
 
@@ -213,7 +213,7 @@ class GarbageCollectedFinalized : public GarbageCollected<T> {
   // calling the destructor of a subclass.  This is useful for objects without
   // vtables that require explicit dispatching.  The name is intentionally a
   // bit long to make name conflicts less likely.
-  void finalizeGarbageCollectedObject() { static_cast<T*>(this)->~T(); }
+  void FinalizeGarbageCollectedObject() { static_cast<T*>(this)->~T(); }
 
   GarbageCollectedFinalized() {}
   ~GarbageCollectedFinalized() {}
@@ -255,12 +255,12 @@ class IsFullyDefined {
   };
 
   template <typename U, size_t sz = sizeof(U)>
-  static TrueType isSizeofKnown(U*);
-  static FalseType isSizeofKnown(...);
-  static T& t;
+  static TrueType IsSizeofKnown(U*);
+  static FalseType IsSizeofKnown(...);
+  static T& t_;
 
  public:
-  static const bool value = sizeof(TrueType) == sizeof(isSizeofKnown(&t));
+  static const bool value = sizeof(TrueType) == sizeof(IsSizeofKnown(&t_));
 };
 
 }  // namespace blink

@@ -62,79 +62,79 @@ class CORE_EXPORT MixedContentChecker final {
   DISALLOW_NEW();
 
  public:
-  static bool shouldBlockFetch(LocalFrame*,
+  static bool ShouldBlockFetch(LocalFrame*,
                                WebURLRequest::RequestContext,
                                WebURLRequest::FrameType,
                                ResourceRequest::RedirectStatus,
                                const KURL&,
                                SecurityViolationReportingPolicy =
-                                   SecurityViolationReportingPolicy::Report);
-  static bool shouldBlockFetch(LocalFrame* frame,
+                                   SecurityViolationReportingPolicy::kReport);
+  static bool ShouldBlockFetch(LocalFrame* frame,
                                const ResourceRequest& request,
                                const KURL& url,
                                SecurityViolationReportingPolicy status =
-                                   SecurityViolationReportingPolicy::Report) {
-    return shouldBlockFetch(frame, request.requestContext(),
-                            request.frameType(), request.redirectStatus(), url,
-                            status);
+                                   SecurityViolationReportingPolicy::kReport) {
+    return ShouldBlockFetch(frame, request.GetRequestContext(),
+                            request.GetFrameType(), request.GetRedirectStatus(),
+                            url, status);
   }
 
-  static bool shouldBlockWebSocket(
+  static bool ShouldBlockWebSocket(
       LocalFrame*,
       const KURL&,
       SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::Report);
+          SecurityViolationReportingPolicy::kReport);
 
-  static bool isMixedContent(SecurityOrigin*, const KURL&);
-  static bool isMixedFormAction(LocalFrame*,
+  static bool IsMixedContent(SecurityOrigin*, const KURL&);
+  static bool IsMixedFormAction(LocalFrame*,
                                 const KURL&,
                                 SecurityViolationReportingPolicy =
-                                    SecurityViolationReportingPolicy::Report);
+                                    SecurityViolationReportingPolicy::kReport);
 
-  static void checkMixedPrivatePublic(LocalFrame*,
-                                      const AtomicString& resourceIPAddress);
+  static void CheckMixedPrivatePublic(LocalFrame*,
+                                      const AtomicString& resource_ip_address);
 
-  static WebMixedContentContextType contextTypeForInspector(
+  static WebMixedContentContextType ContextTypeForInspector(
       LocalFrame*,
       const ResourceRequest&);
 
   // Returns the frame that should be considered the effective frame
   // for a mixed content check for the given frame type.
-  static Frame* effectiveFrameForFrameType(LocalFrame*,
+  static Frame* EffectiveFrameForFrameType(LocalFrame*,
                                            WebURLRequest::FrameType);
 
-  static void handleCertificateError(LocalFrame*,
+  static void HandleCertificateError(LocalFrame*,
                                      const ResourceResponse&,
                                      WebURLRequest::FrameType,
                                      WebURLRequest::RequestContext);
 
   // Receive information about mixed content found externally.
-  static void mixedContentFound(LocalFrame*,
-                                const KURL& mainResourceUrl,
-                                const KURL& mixedContentUrl,
+  static void MixedContentFound(LocalFrame*,
+                                const KURL& main_resource_url,
+                                const KURL& mixed_content_url,
                                 WebURLRequest::RequestContext,
-                                bool wasAllowed,
-                                bool hadRedirect,
+                                bool was_allowed,
+                                bool had_redirect,
                                 std::unique_ptr<SourceLocation>);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
 
-  static Frame* inWhichFrameIsContentMixed(Frame*,
+  static Frame* InWhichFrameIsContentMixed(Frame*,
                                            WebURLRequest::FrameType,
                                            const KURL&);
 
-  static void logToConsoleAboutFetch(LocalFrame*,
+  static void LogToConsoleAboutFetch(LocalFrame*,
                                      const KURL&,
                                      const KURL&,
                                      WebURLRequest::RequestContext,
                                      bool allowed,
                                      std::unique_ptr<SourceLocation>);
-  static void logToConsoleAboutWebSocket(LocalFrame*,
+  static void LogToConsoleAboutWebSocket(LocalFrame*,
                                          const KURL&,
                                          const KURL&,
                                          bool allowed);
-  static void count(Frame*, WebURLRequest::RequestContext);
+  static void Count(Frame*, WebURLRequest::RequestContext);
 };
 
 }  // namespace blink

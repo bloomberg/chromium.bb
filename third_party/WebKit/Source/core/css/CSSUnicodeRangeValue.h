@@ -33,30 +33,30 @@ namespace blink {
 
 class CSSUnicodeRangeValue : public CSSValue {
  public:
-  static CSSUnicodeRangeValue* create(UChar32 from, UChar32 to) {
+  static CSSUnicodeRangeValue* Create(UChar32 from, UChar32 to) {
     return new CSSUnicodeRangeValue(from, to);
   }
 
-  UChar32 from() const { return m_from; }
-  UChar32 to() const { return m_to; }
+  UChar32 From() const { return from_; }
+  UChar32 To() const { return to_; }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSUnicodeRangeValue&) const;
+  bool Equals(const CSSUnicodeRangeValue&) const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
   CSSUnicodeRangeValue(UChar32 from, UChar32 to)
-      : CSSValue(UnicodeRangeClass), m_from(from), m_to(to) {}
+      : CSSValue(kUnicodeRangeClass), from_(from), to_(to) {}
 
-  UChar32 m_from;
-  UChar32 m_to;
+  UChar32 from_;
+  UChar32 to_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, isUnicodeRangeValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, IsUnicodeRangeValue());
 
 }  // namespace blink
 

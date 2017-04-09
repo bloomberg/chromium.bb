@@ -13,11 +13,11 @@ namespace blink {
 
 namespace {
 template <typename Strategy>
-Node* commonAncestorContainerNode(const Node* containerA,
-                                  const Node* containerB) {
-  if (!containerA || !containerB)
+Node* CommonAncestorContainerNode(const Node* container_a,
+                                  const Node* container_b) {
+  if (!container_a || !container_b)
     return nullptr;
-  return Strategy::commonAncestor(*containerA, *containerB);
+  return Strategy::CommonAncestor(*container_a, *container_b);
 }
 }
 
@@ -25,29 +25,30 @@ template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end)
-    : m_startPosition(start),
-      m_endPosition(end)
+    : start_position_(start),
+      end_position_(end)
 #if DCHECK_IS_ON()
       ,
-      m_domTreeVersion(start.isNull() ? 0 : start.document()->domTreeVersion())
+      dom_tree_version_(start.IsNull() ? 0
+                                       : start.GetDocument()->DomTreeVersion())
 #endif
 {
-  if (m_startPosition.isNull()) {
-    DCHECK(m_endPosition.isNull());
+  if (start_position_.IsNull()) {
+    DCHECK(end_position_.IsNull());
     return;
   }
-  DCHECK(m_endPosition.isNotNull());
-  DCHECK_EQ(m_startPosition.document(), m_endPosition.document());
-  DCHECK(m_startPosition.isConnected());
-  DCHECK(m_endPosition.isConnected());
-  DCHECK_LE(m_startPosition, m_endPosition);
+  DCHECK(end_position_.IsNotNull());
+  DCHECK_EQ(start_position_.GetDocument(), end_position_.GetDocument());
+  DCHECK(start_position_.IsConnected());
+  DCHECK(end_position_.IsConnected());
+  DCHECK_LE(start_position_, end_position_);
 }
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(
     const EphemeralRangeTemplate<Strategy>& other)
-    : EphemeralRangeTemplate(other.m_startPosition, other.m_endPosition) {
-  DCHECK(other.isValid());
+    : EphemeralRangeTemplate(other.start_position_, other.end_position_) {
+  DCHECK(other.IsValid());
 }
 
 template <typename Strategy>
@@ -59,11 +60,11 @@ template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range) {
   if (!range)
     return;
-  DCHECK(range->isConnected());
-  m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
-  m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
+  DCHECK(range->IsConnected());
+  start_position_ = FromPositionInDOMTree<Strategy>(range->StartPosition());
+  end_position_ = FromPositionInDOMTree<Strategy>(range->EndPosition());
 #if DCHECK_IS_ON()
-  m_domTreeVersion = range->ownerDocument().domTreeVersion();
+  dom_tree_version_ = range->OwnerDocument().DomTreeVersion();
 #endif
 }
 
@@ -76,11 +77,11 @@ EphemeralRangeTemplate<Strategy>::~EphemeralRangeTemplate() {}
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(
     const EphemeralRangeTemplate<Strategy>& other) {
-  DCHECK(other.isValid());
-  m_startPosition = other.m_startPosition;
-  m_endPosition = other.m_endPosition;
+  DCHECK(other.IsValid());
+  start_position_ = other.start_position_;
+  end_position_ = other.end_position_;
 #if DCHECK_IS_ON()
-  m_domTreeVersion = other.m_domTreeVersion;
+  dom_tree_version_ = other.dom_tree_version_;
 #endif
   return *this;
 }
@@ -88,8 +89,8 @@ EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(
 template <typename Strategy>
 bool EphemeralRangeTemplate<Strategy>::operator==(
     const EphemeralRangeTemplate<Strategy>& other) const {
-  return startPosition() == other.startPosition() &&
-         endPosition() == other.endPosition();
+  return StartPosition() == other.StartPosition() &&
+         EndPosition() == other.EndPosition();
 }
 
 template <typename Strategy>
@@ -99,71 +100,71 @@ bool EphemeralRangeTemplate<Strategy>::operator!=(
 }
 
 template <typename Strategy>
-Document& EphemeralRangeTemplate<Strategy>::document() const {
-  DCHECK(isNotNull());
-  return *m_startPosition.document();
+Document& EphemeralRangeTemplate<Strategy>::GetDocument() const {
+  DCHECK(IsNotNull());
+  return *start_position_.GetDocument();
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::startPosition()
+PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::StartPosition()
     const {
-  DCHECK(isValid());
-  return m_startPosition;
+  DCHECK(IsValid());
+  return start_position_;
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::endPosition()
+PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::EndPosition()
     const {
-  DCHECK(isValid());
-  return m_endPosition;
+  DCHECK(IsValid());
+  return end_position_;
 }
 
 template <typename Strategy>
-Node* EphemeralRangeTemplate<Strategy>::commonAncestorContainer() const {
-  return commonAncestorContainerNode<Strategy>(
-      m_startPosition.computeContainerNode(),
-      m_endPosition.computeContainerNode());
+Node* EphemeralRangeTemplate<Strategy>::CommonAncestorContainer() const {
+  return CommonAncestorContainerNode<Strategy>(
+      start_position_.ComputeContainerNode(),
+      end_position_.ComputeContainerNode());
 }
 
 template <typename Strategy>
-bool EphemeralRangeTemplate<Strategy>::isCollapsed() const {
-  DCHECK(isValid());
-  return m_startPosition == m_endPosition;
+bool EphemeralRangeTemplate<Strategy>::IsCollapsed() const {
+  DCHECK(IsValid());
+  return start_position_ == end_position_;
 }
 
 template <typename Strategy>
 typename EphemeralRangeTemplate<Strategy>::RangeTraversal
-EphemeralRangeTemplate<Strategy>::nodes() const {
-  return RangeTraversal(m_startPosition.nodeAsRangeFirstNode(),
-                        m_endPosition.nodeAsRangePastLastNode());
+EphemeralRangeTemplate<Strategy>::Nodes() const {
+  return RangeTraversal(start_position_.NodeAsRangeFirstNode(),
+                        end_position_.NodeAsRangePastLastNode());
 }
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>
-EphemeralRangeTemplate<Strategy>::rangeOfContents(const Node& node) {
+EphemeralRangeTemplate<Strategy>::RangeOfContents(const Node& node) {
   return EphemeralRangeTemplate<Strategy>(
-      PositionTemplate<Strategy>::firstPositionInNode(&const_cast<Node&>(node)),
-      PositionTemplate<Strategy>::lastPositionInNode(&const_cast<Node&>(node)));
+      PositionTemplate<Strategy>::FirstPositionInNode(&const_cast<Node&>(node)),
+      PositionTemplate<Strategy>::LastPositionInNode(&const_cast<Node&>(node)));
 }
 
 #if DCHECK_IS_ON()
 template <typename Strategy>
-bool EphemeralRangeTemplate<Strategy>::isValid() const {
-  return m_startPosition.isNull() ||
-         m_domTreeVersion == m_startPosition.document()->domTreeVersion();
+bool EphemeralRangeTemplate<Strategy>::IsValid() const {
+  return start_position_.IsNull() ||
+         dom_tree_version_ == start_position_.GetDocument()->DomTreeVersion();
 }
 #else
 template <typename Strategy>
-bool EphemeralRangeTemplate<Strategy>::isValid() const {
+bool EphemeralRangeTemplate<Strategy>::IsValid() const {
   return true;
 }
 #endif
 
-Range* createRange(const EphemeralRange& range) {
-  if (range.isNull())
+Range* CreateRange(const EphemeralRange& range) {
+  if (range.IsNull())
     return nullptr;
-  return Range::create(range.document(), range.startPosition(),
-                       range.endPosition());
+  return Range::Create(range.GetDocument(), range.StartPosition(),
+                       range.EndPosition());
 }
 
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;

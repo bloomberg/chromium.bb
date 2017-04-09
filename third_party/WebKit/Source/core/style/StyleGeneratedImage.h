@@ -34,26 +34,26 @@ class CSSImageGeneratorValue;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
-  static StyleGeneratedImage* create(const CSSImageGeneratorValue& value) {
+  static StyleGeneratedImage* Create(const CSSImageGeneratorValue& value) {
     return new StyleGeneratedImage(value);
   }
 
-  WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
+  WrappedImagePtr Data() const override { return image_generator_value_.Get(); }
 
-  CSSValue* cssValue() const override;
-  CSSValue* computedCSSValue() const override;
+  CSSValue* CssValue() const override;
+  CSSValue* ComputedCSSValue() const override;
 
-  LayoutSize imageSize(const LayoutObject&,
+  LayoutSize ImageSize(const LayoutObject&,
                        float multiplier,
-                       const LayoutSize& defaultObjectSize) const override;
-  bool imageHasRelativeSize() const override { return !m_fixedSize; }
-  bool usesImageContainerSize() const override { return !m_fixedSize; }
-  void addClient(LayoutObject*) override;
-  void removeClient(LayoutObject*) override;
-  PassRefPtr<Image> image(const LayoutObject&,
-                          const IntSize&,
-                          float) const override;
-  bool knownToBeOpaque(const LayoutObject&) const override;
+                       const LayoutSize& default_object_size) const override;
+  bool ImageHasRelativeSize() const override { return !fixed_size_; }
+  bool UsesImageContainerSize() const override { return !fixed_size_; }
+  void AddClient(LayoutObject*) override;
+  void RemoveClient(LayoutObject*) override;
+  PassRefPtr<Image> GetImage(const LayoutObject&,
+                             const IntSize&,
+                             float) const override;
+  bool KnownToBeOpaque(const LayoutObject&) const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -62,11 +62,11 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 
   // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once
   // Member<> supports const types.
-  Member<CSSImageGeneratorValue> m_imageGeneratorValue;
-  const bool m_fixedSize;
+  Member<CSSImageGeneratorValue> image_generator_value_;
+  const bool fixed_size_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, isGeneratedImage());
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, IsGeneratedImage());
 
 }  // namespace blink
 #endif

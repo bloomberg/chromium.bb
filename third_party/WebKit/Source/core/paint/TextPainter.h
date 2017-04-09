@@ -37,90 +37,92 @@ class CORE_EXPORT TextPainter {
   TextPainter(GraphicsContext&,
               const Font&,
               const TextRun&,
-              const LayoutPoint& textOrigin,
-              const LayoutRect& textBounds,
+              const LayoutPoint& text_origin,
+              const LayoutRect& text_bounds,
               bool horizontal);
   ~TextPainter();
 
-  void setEmphasisMark(const AtomicString&, TextEmphasisPosition);
-  void setCombinedText(LayoutTextCombine* combinedText) {
-    m_combinedText = combinedText;
+  void SetEmphasisMark(const AtomicString&, TextEmphasisPosition);
+  void SetCombinedText(LayoutTextCombine* combined_text) {
+    combined_text_ = combined_text;
   }
-  void setEllipsisOffset(int offset) { m_ellipsisOffset = offset; }
+  void SetEllipsisOffset(int offset) { ellipsis_offset_ = offset; }
 
-  static void updateGraphicsContext(GraphicsContext&,
+  static void UpdateGraphicsContext(GraphicsContext&,
                                     const Style&,
                                     bool horizontal,
                                     GraphicsContextStateSaver&);
 
-  void clipDecorationsStripe(float upper, float stripeWidth, float dilation);
-  void paint(unsigned startOffset,
-             unsigned endOffset,
+  void ClipDecorationsStripe(float upper, float stripe_width, float dilation);
+  void Paint(unsigned start_offset,
+             unsigned end_offset,
              unsigned length,
              const Style&);
 
   struct Style {
     STACK_ALLOCATED();
-    Color currentColor;
-    Color fillColor;
-    Color strokeColor;
-    Color emphasisMarkColor;
-    float strokeWidth;
+    Color current_color;
+    Color fill_color;
+    Color stroke_color;
+    Color emphasis_mark_color;
+    float stroke_width;
     const ShadowList* shadow;
 
     bool operator==(const Style& other) {
-      return currentColor == other.currentColor &&
-             fillColor == other.fillColor && strokeColor == other.strokeColor &&
-             emphasisMarkColor == other.emphasisMarkColor &&
-             strokeWidth == other.strokeWidth && shadow == other.shadow;
+      return current_color == other.current_color &&
+             fill_color == other.fill_color &&
+             stroke_color == other.stroke_color &&
+             emphasis_mark_color == other.emphasis_mark_color &&
+             stroke_width == other.stroke_width && shadow == other.shadow;
     }
     bool operator!=(const Style& other) { return !(*this == other); }
   };
-  static Style textPaintingStyle(LineLayoutItem,
+  static Style TextPaintingStyle(LineLayoutItem,
                                  const ComputedStyle&,
                                  const PaintInfo&);
-  static Style selectionPaintingStyle(LineLayoutItem,
-                                      bool haveSelection,
+  static Style SelectionPaintingStyle(LineLayoutItem,
+                                      bool have_selection,
                                       const PaintInfo&,
-                                      const Style& textStyle);
-  static Color textColorForWhiteBackground(Color);
+                                      const Style& text_style);
+  static Color TextColorForWhiteBackground(Color);
 
-  enum RotationDirection { Counterclockwise, Clockwise };
-  static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);
+  enum RotationDirection { kCounterclockwise, kClockwise };
+  static AffineTransform Rotation(const LayoutRect& box_rect,
+                                  RotationDirection);
 
  private:
-  void updateGraphicsContext(const Style& style,
+  void UpdateGraphicsContext(const Style& style,
                              GraphicsContextStateSaver& saver) {
-    updateGraphicsContext(m_graphicsContext, style, m_horizontal, saver);
+    UpdateGraphicsContext(graphics_context_, style, horizontal_, saver);
   }
 
-  enum PaintInternalStep { PaintText, PaintEmphasisMark };
+  enum PaintInternalStep { kPaintText, kPaintEmphasisMark };
 
   template <PaintInternalStep step>
-  void paintInternalRun(TextRunPaintInfo&, unsigned from, unsigned to);
+  void PaintInternalRun(TextRunPaintInfo&, unsigned from, unsigned to);
 
   template <PaintInternalStep step>
-  void paintInternal(unsigned startOffset,
-                     unsigned endOffset,
-                     unsigned truncationPoint);
+  void PaintInternal(unsigned start_offset,
+                     unsigned end_offset,
+                     unsigned truncation_point);
 
-  void paintEmphasisMarkForCombinedText();
+  void PaintEmphasisMarkForCombinedText();
 
-  GraphicsContext& m_graphicsContext;
-  const Font& m_font;
-  const TextRun& m_run;
-  LayoutPoint m_textOrigin;
-  LayoutRect m_textBounds;
-  bool m_horizontal;
-  AtomicString m_emphasisMark;
-  int m_emphasisMarkOffset;
-  LayoutTextCombine* m_combinedText;
-  int m_ellipsisOffset;
+  GraphicsContext& graphics_context_;
+  const Font& font_;
+  const TextRun& run_;
+  LayoutPoint text_origin_;
+  LayoutRect text_bounds_;
+  bool horizontal_;
+  AtomicString emphasis_mark_;
+  int emphasis_mark_offset_;
+  LayoutTextCombine* combined_text_;
+  int ellipsis_offset_;
 };
 
-inline AffineTransform TextPainter::rotation(
-    const LayoutRect& boxRect,
-    RotationDirection rotationDirection) {
+inline AffineTransform TextPainter::Rotation(
+    const LayoutRect& box_rect,
+    RotationDirection rotation_direction) {
   // Why this matrix is correct: consider the case of a clockwise rotation.
 
   // Let the corner points that define |boxRect| be ABCD, where A is top-left
@@ -136,11 +138,11 @@ inline AffineTransform TextPainter::rotation(
   //    = (x() + maxY(), y() - x())
 
   // A similar argument derives the counter-clockwise case.
-  return rotationDirection == Clockwise
-             ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(),
-                               boxRect.y() - boxRect.x())
-             : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.y(),
-                               boxRect.x() + boxRect.maxY());
+  return rotation_direction == kClockwise
+             ? AffineTransform(0, 1, -1, 0, box_rect.X() + box_rect.MaxY(),
+                               box_rect.Y() - box_rect.X())
+             : AffineTransform(0, -1, 1, 0, box_rect.X() - box_rect.Y(),
+                               box_rect.X() + box_rect.MaxY());
 }
 
 }  // namespace blink

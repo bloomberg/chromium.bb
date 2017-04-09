@@ -54,37 +54,37 @@ class CORE_EXPORT WorkerThreadStartupData final {
   USING_FAST_MALLOC(WorkerThreadStartupData);
 
  public:
-  static std::unique_ptr<WorkerThreadStartupData> create(
-      const KURL& scriptURL,
-      const String& userAgent,
-      const String& sourceCode,
-      std::unique_ptr<Vector<char>> cachedMetaData,
-      WorkerThreadStartMode startMode,
-      const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders,
-      const String& referrerPolicy,
-      const SecurityOrigin* starterOrigin,
-      WorkerClients* workerClients,
-      WebAddressSpace addressSpace,
-      const Vector<String>* originTrialTokens,
-      std::unique_ptr<WorkerSettings> workerSettings,
-      WorkerV8Settings workerV8Settings) {
-    return WTF::wrapUnique(new WorkerThreadStartupData(
-        scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode,
-        contentSecurityPolicyHeaders, referrerPolicy, starterOrigin,
-        workerClients, addressSpace, originTrialTokens,
-        std::move(workerSettings), workerV8Settings));
+  static std::unique_ptr<WorkerThreadStartupData> Create(
+      const KURL& script_url,
+      const String& user_agent,
+      const String& source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data,
+      WorkerThreadStartMode start_mode,
+      const Vector<CSPHeaderAndType>* content_security_policy_headers,
+      const String& referrer_policy,
+      const SecurityOrigin* starter_origin,
+      WorkerClients* worker_clients,
+      WebAddressSpace address_space,
+      const Vector<String>* origin_trial_tokens,
+      std::unique_ptr<WorkerSettings> worker_settings,
+      WorkerV8Settings worker_v8_settings) {
+    return WTF::WrapUnique(new WorkerThreadStartupData(
+        script_url, user_agent, source_code, std::move(cached_meta_data),
+        start_mode, content_security_policy_headers, referrer_policy,
+        starter_origin, worker_clients, address_space, origin_trial_tokens,
+        std::move(worker_settings), worker_v8_settings));
   }
 
   ~WorkerThreadStartupData();
 
-  KURL m_scriptURL;
-  String m_userAgent;
-  String m_sourceCode;
-  std::unique_ptr<Vector<char>> m_cachedMetaData;
-  WorkerThreadStartMode m_startMode;
-  std::unique_ptr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
-  String m_referrerPolicy;
-  std::unique_ptr<Vector<String>> m_originTrialTokens;
+  KURL script_url_;
+  String user_agent_;
+  String source_code_;
+  std::unique_ptr<Vector<char>> cached_meta_data_;
+  WorkerThreadStartMode start_mode_;
+  std::unique_ptr<Vector<CSPHeaderAndType>> content_security_policy_headers_;
+  String referrer_policy_;
+  std::unique_ptr<Vector<String>> origin_trial_tokens_;
 
   // The SecurityOrigin of the Document creating a Worker may have
   // been configured with extra policy privileges when it was created
@@ -95,7 +95,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
   //
   // See SecurityOrigin::transferPrivilegesFrom() for details on what
   // privileges are transferred.
-  std::unique_ptr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
+  std::unique_ptr<SecurityOrigin::PrivilegeData> starter_origin_privilege_data_;
 
   // This object is created and initialized on the thread creating
   // a new worker context, but ownership of it and this WorkerThreadStartupData
@@ -105,27 +105,27 @@ class CORE_EXPORT WorkerThreadStartupData final {
   // to happen on a thread different than the thread creating the
   // persistent reference. If the worker thread creation context
   // supplies no extra 'clients', m_workerClients can be left as empty/null.
-  CrossThreadPersistent<WorkerClients> m_workerClients;
+  CrossThreadPersistent<WorkerClients> worker_clients_;
 
-  WebAddressSpace m_addressSpace;
+  WebAddressSpace address_space_;
 
-  std::unique_ptr<WorkerSettings> m_workerSettings;
+  std::unique_ptr<WorkerSettings> worker_settings_;
 
-  WorkerV8Settings m_workerV8Settings;
+  WorkerV8Settings worker_v8_settings_;
 
  private:
   WorkerThreadStartupData(
-      const KURL& scriptURL,
-      const String& userAgent,
-      const String& sourceCode,
-      std::unique_ptr<Vector<char>> cachedMetaData,
+      const KURL& script_url,
+      const String& user_agent,
+      const String& source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data,
       WorkerThreadStartMode,
-      const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders,
-      const String& referrerPolicy,
+      const Vector<CSPHeaderAndType>* content_security_policy_headers,
+      const String& referrer_policy,
       const SecurityOrigin*,
       WorkerClients*,
       WebAddressSpace,
-      const Vector<String>* originTrialTokens,
+      const Vector<String>* origin_trial_tokens,
       std::unique_ptr<WorkerSettings>,
       WorkerV8Settings);
 };

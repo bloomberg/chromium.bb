@@ -45,30 +45,32 @@ class LayoutBox;
 class FlexItem {
  public:
   FlexItem(LayoutBox*,
-           LayoutUnit flexBaseContentSize,
-           LayoutUnit hypotheticalMainContentSize,
-           LayoutUnit mainAxisBorderAndPadding,
-           LayoutUnit mainAxisMargin);
+           LayoutUnit flex_base_content_size,
+           LayoutUnit hypothetical_main_content_size,
+           LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_margin);
 
-  LayoutUnit hypotheticalMainAxisMarginBoxSize() const {
-    return hypotheticalMainContentSize + mainAxisBorderAndPadding +
-           mainAxisMargin;
+  LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
+    return hypothetical_main_content_size + main_axis_border_and_padding +
+           main_axis_margin;
   }
 
-  LayoutUnit flexBaseMarginBoxSize() const {
-    return flexBaseContentSize + mainAxisBorderAndPadding + mainAxisMargin;
+  LayoutUnit FlexBaseMarginBoxSize() const {
+    return flex_base_content_size + main_axis_border_and_padding +
+           main_axis_margin;
   }
 
-  LayoutUnit flexedMarginBoxSize() const {
-    return flexedContentSize + mainAxisBorderAndPadding + mainAxisMargin;
+  LayoutUnit FlexedMarginBoxSize() const {
+    return flexed_content_size + main_axis_border_and_padding +
+           main_axis_margin;
   }
 
   LayoutBox* box;
-  const LayoutUnit flexBaseContentSize;
-  const LayoutUnit hypotheticalMainContentSize;
-  const LayoutUnit mainAxisBorderAndPadding;
-  const LayoutUnit mainAxisMargin;
-  LayoutUnit flexedContentSize;
+  const LayoutUnit flex_base_content_size;
+  const LayoutUnit hypothetical_main_content_size;
+  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_margin;
+  LayoutUnit flexed_content_size;
   bool frozen;
 };
 
@@ -77,25 +79,25 @@ class FlexLayoutAlgorithm {
 
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
-                      LayoutUnit lineBreakLength,
-                      const Vector<FlexItem>& allItems);
+                      LayoutUnit line_break_length,
+                      const Vector<FlexItem>& all_items);
 
   // The hypothetical main size of an item is the flex base size clamped
   // according to its min and max main size properties
-  bool ComputeNextFlexLine(size_t& nextIndex,
-                           Vector<FlexItem>& lineItems,
-                           LayoutUnit& sumFlexBaseSize,
-                           double& totalFlexGrow,
-                           double& totalFlexShrink,
-                           double& totalWeightedFlexShrink,
-                           LayoutUnit& sumHypotheticalMainSize);
+  bool ComputeNextFlexLine(size_t& next_index,
+                           Vector<FlexItem>& line_items,
+                           LayoutUnit& sum_flex_base_size,
+                           double& total_flex_grow,
+                           double& total_flex_shrink,
+                           double& total_weighted_flex_shrink,
+                           LayoutUnit& sum_hypothetical_main_size);
 
  private:
-  bool isMultiline() const { return m_style->flexWrap() != FlexNoWrap; }
+  bool IsMultiline() const { return style_->FlexWrap() != kFlexNoWrap; }
 
-  const ComputedStyle* m_style;
-  LayoutUnit m_lineBreakLength;
-  const Vector<FlexItem>& m_allItems;
+  const ComputedStyle* style_;
+  LayoutUnit line_break_length_;
+  const Vector<FlexItem>& all_items_;
 };
 
 }  // namespace blink

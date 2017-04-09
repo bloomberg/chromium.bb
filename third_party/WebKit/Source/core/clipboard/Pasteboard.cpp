@@ -43,94 +43,94 @@
 
 namespace blink {
 
-Pasteboard* Pasteboard::generalPasteboard() {
+Pasteboard* Pasteboard::GeneralPasteboard() {
   static Pasteboard* pasteboard = new Pasteboard;
   return pasteboard;
 }
 
-Pasteboard::Pasteboard() : m_buffer(WebClipboard::BufferStandard) {}
+Pasteboard::Pasteboard() : buffer_(WebClipboard::kBufferStandard) {}
 
-bool Pasteboard::isSelectionMode() const {
-  return m_buffer == WebClipboard::BufferSelection;
+bool Pasteboard::IsSelectionMode() const {
+  return buffer_ == WebClipboard::kBufferSelection;
 }
 
-void Pasteboard::setSelectionMode(bool selectionMode) {
-  m_buffer = selectionMode ? WebClipboard::BufferSelection
-                           : WebClipboard::BufferStandard;
+void Pasteboard::SetSelectionMode(bool selection_mode) {
+  buffer_ = selection_mode ? WebClipboard::kBufferSelection
+                           : WebClipboard::kBufferStandard;
 }
 
-void Pasteboard::writePlainText(const String& text, SmartReplaceOption) {
+void Pasteboard::WritePlainText(const String& text, SmartReplaceOption) {
 // FIXME: add support for smart replace
 #if OS(WIN)
-  String plainText(text);
-  replaceNewlinesWithWindowsStyleNewlines(plainText);
-  Platform::current()->clipboard()->writePlainText(plainText);
+  String plain_text(text);
+  ReplaceNewlinesWithWindowsStyleNewlines(plain_text);
+  Platform::Current()->Clipboard()->WritePlainText(plain_text);
 #else
-  Platform::current()->clipboard()->writePlainText(text);
+  Platform::Current()->Clipboard()->WritePlainText(text);
 #endif
 }
 
-void Pasteboard::writeImage(Image* image,
+void Pasteboard::WriteImage(Image* image,
                             const KURL& url,
                             const String& title) {
   ASSERT(image);
 
-  const WebImage webImage(image);
-  if (webImage.isNull())
+  const WebImage web_image(image);
+  if (web_image.IsNull())
     return;
 
-  Platform::current()->clipboard()->writeImage(webImage, WebURL(url),
+  Platform::Current()->Clipboard()->WriteImage(web_image, WebURL(url),
                                                WebString(title));
 }
 
-void Pasteboard::writeDataObject(DataObject* dataObject) {
-  Platform::current()->clipboard()->writeDataObject(
-      dataObject->toWebDragData());
+void Pasteboard::WriteDataObject(DataObject* data_object) {
+  Platform::Current()->Clipboard()->WriteDataObject(
+      data_object->ToWebDragData());
 }
 
-bool Pasteboard::canSmartReplace() {
-  return Platform::current()->clipboard()->isFormatAvailable(
-      WebClipboard::FormatSmartPaste, m_buffer);
+bool Pasteboard::CanSmartReplace() {
+  return Platform::Current()->Clipboard()->IsFormatAvailable(
+      WebClipboard::kFormatSmartPaste, buffer_);
 }
 
-bool Pasteboard::isHTMLAvailable() {
-  return Platform::current()->clipboard()->isFormatAvailable(
-      WebClipboard::FormatHTML, m_buffer);
+bool Pasteboard::IsHTMLAvailable() {
+  return Platform::Current()->Clipboard()->IsFormatAvailable(
+      WebClipboard::kFormatHTML, buffer_);
 }
 
-String Pasteboard::plainText() {
-  return Platform::current()->clipboard()->readPlainText(m_buffer);
+String Pasteboard::PlainText() {
+  return Platform::Current()->Clipboard()->ReadPlainText(buffer_);
 }
 
-String Pasteboard::readHTML(KURL& url,
-                            unsigned& fragmentStart,
-                            unsigned& fragmentEnd) {
-  WebURL webURL;
-  WebString markup = Platform::current()->clipboard()->readHTML(
-      m_buffer, &webURL, &fragmentStart, &fragmentEnd);
-  if (!markup.isEmpty()) {
-    url = webURL;
+String Pasteboard::ReadHTML(KURL& url,
+                            unsigned& fragment_start,
+                            unsigned& fragment_end) {
+  WebURL web_url;
+  WebString markup = Platform::Current()->Clipboard()->ReadHTML(
+      buffer_, &web_url, &fragment_start, &fragment_end);
+  if (!markup.IsEmpty()) {
+    url = web_url;
     // fragmentStart and fragmentEnd are populated by WebClipboard::readHTML.
   } else {
     url = KURL();
-    fragmentStart = 0;
-    fragmentEnd = 0;
+    fragment_start = 0;
+    fragment_end = 0;
   }
   return markup;
 }
 
-void Pasteboard::writeHTML(const String& markup,
-                           const KURL& documentURL,
-                           const String& plainText,
-                           bool canSmartCopyOrDelete) {
-  String text = plainText;
+void Pasteboard::WriteHTML(const String& markup,
+                           const KURL& document_url,
+                           const String& plain_text,
+                           bool can_smart_copy_or_delete) {
+  String text = plain_text;
 #if OS(WIN)
-  replaceNewlinesWithWindowsStyleNewlines(text);
+  ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
-  replaceNBSPWithSpace(text);
+  ReplaceNBSPWithSpace(text);
 
-  Platform::current()->clipboard()->writeHTML(markup, documentURL, text,
-                                              canSmartCopyOrDelete);
+  Platform::Current()->Clipboard()->WriteHTML(markup, document_url, text,
+                                              can_smart_copy_or_delete);
 }
 
 }  // namespace blink

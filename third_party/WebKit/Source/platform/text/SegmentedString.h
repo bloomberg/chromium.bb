@@ -36,131 +36,131 @@ class PLATFORM_EXPORT SegmentedSubstring {
 
  public:
   SegmentedSubstring()
-      : m_length(0), m_doNotExcludeLineNumbers(true), m_is8Bit(false) {
-    m_data.string16Ptr = 0;
+      : length_(0), do_not_exclude_line_numbers_(true), is8_bit_(false) {
+    data_.string16_ptr = 0;
   }
 
   SegmentedSubstring(const String& str)
-      : m_length(str.length()), m_doNotExcludeLineNumbers(true), m_string(str) {
-    if (m_length) {
-      if (m_string.is8Bit()) {
-        m_is8Bit = true;
-        m_data.string8Ptr = m_string.characters8();
+      : length_(str.length()),
+        do_not_exclude_line_numbers_(true),
+        string_(str) {
+    if (length_) {
+      if (string_.Is8Bit()) {
+        is8_bit_ = true;
+        data_.string8_ptr = string_.Characters8();
       } else {
-        m_is8Bit = false;
-        m_data.string16Ptr = m_string.characters16();
+        is8_bit_ = false;
+        data_.string16_ptr = string_.Characters16();
       }
     } else {
-      m_is8Bit = false;
-      m_data.string8Ptr = nullptr;
+      is8_bit_ = false;
+      data_.string8_ptr = nullptr;
     }
   }
 
-  void clear() {
-    m_length = 0;
-    m_data.string16Ptr = nullptr;
-    m_is8Bit = false;
+  void Clear() {
+    length_ = 0;
+    data_.string16_ptr = nullptr;
+    is8_bit_ = false;
   }
 
-  bool is8Bit() { return m_is8Bit; }
+  bool Is8Bit() { return is8_bit_; }
 
-  bool excludeLineNumbers() const { return !m_doNotExcludeLineNumbers; }
-  bool doNotExcludeLineNumbers() const { return m_doNotExcludeLineNumbers; }
+  bool ExcludeLineNumbers() const { return !do_not_exclude_line_numbers_; }
+  bool DoNotExcludeLineNumbers() const { return do_not_exclude_line_numbers_; }
 
-  void setExcludeLineNumbers() { m_doNotExcludeLineNumbers = false; }
+  void SetExcludeLineNumbers() { do_not_exclude_line_numbers_ = false; }
 
-  int numberOfCharactersConsumed() const {
-    return m_string.length() - m_length;
-  }
+  int NumberOfCharactersConsumed() const { return string_.length() - length_; }
 
-  void appendTo(StringBuilder& builder) const {
-    int offset = m_string.length() - m_length;
+  void AppendTo(StringBuilder& builder) const {
+    int offset = string_.length() - length_;
 
     if (!offset) {
-      if (m_length)
-        builder.append(m_string);
+      if (length_)
+        builder.Append(string_);
     } else {
-      builder.append(m_string.substring(offset, m_length));
+      builder.Append(string_.Substring(offset, length_));
     }
   }
 
-  bool pushIfPossible(UChar c) {
-    if (!m_length)
+  bool PushIfPossible(UChar c) {
+    if (!length_)
       return false;
 
-    if (m_is8Bit) {
-      if (m_data.string8Ptr == m_string.characters8())
+    if (is8_bit_) {
+      if (data_.string8_ptr == string_.Characters8())
         return false;
 
-      if (*(m_data.string8Ptr - 1) != c)
+      if (*(data_.string8_ptr - 1) != c)
         return false;
 
-      --m_data.string8Ptr;
-      ++m_length;
+      --data_.string8_ptr;
+      ++length_;
       return true;
     }
 
-    if (m_data.string16Ptr == m_string.characters16())
+    if (data_.string16_ptr == string_.Characters16())
       return false;
 
-    if (*(m_data.string16Ptr - 1) != c)
+    if (*(data_.string16_ptr - 1) != c)
       return false;
 
-    --m_data.string16Ptr;
-    ++m_length;
+    --data_.string16_ptr;
+    ++length_;
     return true;
   }
 
-  UChar getCurrentChar8() { return *m_data.string8Ptr; }
+  UChar GetCurrentChar8() { return *data_.string8_ptr; }
 
-  UChar getCurrentChar16() {
-    return m_data.string16Ptr ? *m_data.string16Ptr : 0;
+  UChar GetCurrentChar16() {
+    return data_.string16_ptr ? *data_.string16_ptr : 0;
   }
 
-  UChar incrementAndGetCurrentChar8() {
-    ASSERT(m_data.string8Ptr);
-    return *++m_data.string8Ptr;
+  UChar IncrementAndGetCurrentChar8() {
+    ASSERT(data_.string8_ptr);
+    return *++data_.string8_ptr;
   }
 
-  UChar incrementAndGetCurrentChar16() {
-    ASSERT(m_data.string16Ptr);
-    return *++m_data.string16Ptr;
+  UChar IncrementAndGetCurrentChar16() {
+    ASSERT(data_.string16_ptr);
+    return *++data_.string16_ptr;
   }
 
-  String currentSubString(unsigned length) {
-    int offset = m_string.length() - m_length;
-    return m_string.substring(offset, length);
+  String CurrentSubString(unsigned length) {
+    int offset = string_.length() - length_;
+    return string_.Substring(offset, length);
   }
 
-  ALWAYS_INLINE UChar getCurrentChar() {
-    ASSERT(m_length);
-    if (is8Bit())
-      return getCurrentChar8();
-    return getCurrentChar16();
+  ALWAYS_INLINE UChar GetCurrentChar() {
+    ASSERT(length_);
+    if (Is8Bit())
+      return GetCurrentChar8();
+    return GetCurrentChar16();
   }
 
-  ALWAYS_INLINE UChar incrementAndGetCurrentChar() {
-    ASSERT(m_length);
-    if (is8Bit())
-      return incrementAndGetCurrentChar8();
-    return incrementAndGetCurrentChar16();
+  ALWAYS_INLINE UChar IncrementAndGetCurrentChar() {
+    ASSERT(length_);
+    if (Is8Bit())
+      return IncrementAndGetCurrentChar8();
+    return IncrementAndGetCurrentChar16();
   }
 
-  ALWAYS_INLINE bool haveOneCharacterLeft() const { return m_length == 1; }
+  ALWAYS_INLINE bool HaveOneCharacterLeft() const { return length_ == 1; }
 
-  ALWAYS_INLINE void decrementLength() { --m_length; }
+  ALWAYS_INLINE void DecrementLength() { --length_; }
 
-  ALWAYS_INLINE int length() const { return m_length; }
+  ALWAYS_INLINE int length() const { return length_; }
 
  private:
   union {
-    const LChar* string8Ptr;
-    const UChar* string16Ptr;
-  } m_data;
-  int m_length;
-  bool m_doNotExcludeLineNumbers;
-  bool m_is8Bit;
-  String m_string;
+    const LChar* string8_ptr;
+    const UChar* string16_ptr;
+  } data_;
+  int length_;
+  bool do_not_exclude_line_numbers_;
+  bool is8_bit_;
+  String string_;
 };
 
 class PLATFORM_EXPORT SegmentedString {
@@ -168,255 +168,255 @@ class PLATFORM_EXPORT SegmentedString {
 
  public:
   SegmentedString()
-      : m_currentChar(0),
-        m_numberOfCharactersConsumedPriorToCurrentString(0),
-        m_numberOfCharactersConsumedPriorToCurrentLine(0),
-        m_currentLine(0),
-        m_closed(false),
-        m_empty(true),
-        m_fastPathFlags(NoFastPath),
-        m_advanceFunc(&SegmentedString::advanceEmpty),
-        m_advanceAndUpdateLineNumberFunc(&SegmentedString::advanceEmpty) {}
+      : current_char_(0),
+        number_of_characters_consumed_prior_to_current_string_(0),
+        number_of_characters_consumed_prior_to_current_line_(0),
+        current_line_(0),
+        closed_(false),
+        empty_(true),
+        fast_path_flags_(kNoFastPath),
+        advance_func_(&SegmentedString::AdvanceEmpty),
+        advance_and_update_line_number_func_(&SegmentedString::AdvanceEmpty) {}
 
   SegmentedString(const String& str)
-      : m_currentString(str),
-        m_currentChar(0),
-        m_numberOfCharactersConsumedPriorToCurrentString(0),
-        m_numberOfCharactersConsumedPriorToCurrentLine(0),
-        m_currentLine(0),
-        m_closed(false),
-        m_empty(!str.length()),
-        m_fastPathFlags(NoFastPath) {
-    if (m_currentString.length())
-      m_currentChar = m_currentString.getCurrentChar();
-    updateAdvanceFunctionPointers();
+      : current_string_(str),
+        current_char_(0),
+        number_of_characters_consumed_prior_to_current_string_(0),
+        number_of_characters_consumed_prior_to_current_line_(0),
+        current_line_(0),
+        closed_(false),
+        empty_(!str.length()),
+        fast_path_flags_(kNoFastPath) {
+    if (current_string_.length())
+      current_char_ = current_string_.GetCurrentChar();
+    UpdateAdvanceFunctionPointers();
   }
 
-  void clear();
-  void close();
+  void Clear();
+  void Close();
 
-  void append(const SegmentedString&);
+  void Append(const SegmentedString&);
   enum class PrependType {
-    NewInput = 0,
-    Unconsume = 1,
+    kNewInput = 0,
+    kUnconsume = 1,
   };
-  void prepend(const SegmentedString&, PrependType);
+  void Prepend(const SegmentedString&, PrependType);
 
-  bool excludeLineNumbers() const {
-    return m_currentString.excludeLineNumbers();
+  bool ExcludeLineNumbers() const {
+    return current_string_.ExcludeLineNumbers();
   }
-  void setExcludeLineNumbers();
+  void SetExcludeLineNumbers();
 
-  void push(UChar);
+  void Push(UChar);
 
-  bool isEmpty() const { return m_empty; }
+  bool IsEmpty() const { return empty_; }
   unsigned length() const;
 
-  bool isClosed() const { return m_closed; }
+  bool IsClosed() const { return closed_; }
 
   enum LookAheadResult {
-    DidNotMatch,
-    DidMatch,
-    NotEnoughCharacters,
+    kDidNotMatch,
+    kDidMatch,
+    kNotEnoughCharacters,
   };
 
-  LookAheadResult lookAhead(const String& string) {
-    return lookAheadInline(string, TextCaseSensitive);
+  LookAheadResult LookAhead(const String& string) {
+    return LookAheadInline(string, kTextCaseSensitive);
   }
-  LookAheadResult lookAheadIgnoringCase(const String& string) {
-    return lookAheadInline(string, TextCaseASCIIInsensitive);
+  LookAheadResult LookAheadIgnoringCase(const String& string) {
+    return LookAheadInline(string, kTextCaseASCIIInsensitive);
   }
 
-  void advance() {
-    if (m_fastPathFlags & Use8BitAdvance) {
-      m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-      decrementAndCheckLength();
+  void Advance() {
+    if (fast_path_flags_ & kUse8BitAdvance) {
+      current_char_ = current_string_.IncrementAndGetCurrentChar8();
+      DecrementAndCheckLength();
       return;
     }
 
-    (this->*m_advanceFunc)();
+    (this->*advance_func_)();
   }
 
-  inline void advanceAndUpdateLineNumber() {
-    if (m_fastPathFlags & Use8BitAdvance) {
-      bool haveNewLine =
-          (m_currentChar == '\n') &
-          !!(m_fastPathFlags & Use8BitAdvanceAndUpdateLineNumbers);
-      m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-      decrementAndCheckLength();
+  inline void AdvanceAndUpdateLineNumber() {
+    if (fast_path_flags_ & kUse8BitAdvance) {
+      bool have_new_line =
+          (current_char_ == '\n') &
+          !!(fast_path_flags_ & kUse8BitAdvanceAndUpdateLineNumbers);
+      current_char_ = current_string_.IncrementAndGetCurrentChar8();
+      DecrementAndCheckLength();
 
-      if (haveNewLine) {
-        ++m_currentLine;
-        m_numberOfCharactersConsumedPriorToCurrentLine =
-            m_numberOfCharactersConsumedPriorToCurrentString +
-            m_currentString.numberOfCharactersConsumed();
+      if (have_new_line) {
+        ++current_line_;
+        number_of_characters_consumed_prior_to_current_line_ =
+            number_of_characters_consumed_prior_to_current_string_ +
+            current_string_.NumberOfCharactersConsumed();
       }
 
       return;
     }
 
-    (this->*m_advanceAndUpdateLineNumberFunc)();
+    (this->*advance_and_update_line_number_func_)();
   }
 
-  void advanceAndASSERT(UChar expectedCharacter) {
-    DCHECK_EQ(expectedCharacter, currentChar());
-    advance();
+  void AdvanceAndASSERT(UChar expected_character) {
+    DCHECK_EQ(expected_character, CurrentChar());
+    Advance();
   }
 
-  void advanceAndASSERTIgnoringCase(UChar expectedCharacter) {
-    DCHECK_EQ(WTF::Unicode::foldCase(currentChar()),
-              WTF::Unicode::foldCase(expectedCharacter));
-    advance();
+  void AdvanceAndASSERTIgnoringCase(UChar expected_character) {
+    DCHECK_EQ(WTF::Unicode::FoldCase(CurrentChar()),
+              WTF::Unicode::FoldCase(expected_character));
+    Advance();
   }
 
-  void advancePastNonNewline() {
-    ASSERT(currentChar() != '\n');
-    advance();
+  void AdvancePastNonNewline() {
+    ASSERT(CurrentChar() != '\n');
+    Advance();
   }
 
-  void advancePastNewlineAndUpdateLineNumber() {
-    ASSERT(currentChar() == '\n');
-    if (m_currentString.length() > 1) {
-      int newLineFlag = m_currentString.doNotExcludeLineNumbers();
-      m_currentLine += newLineFlag;
-      if (newLineFlag)
-        m_numberOfCharactersConsumedPriorToCurrentLine =
-            numberOfCharactersConsumed() + 1;
-      decrementAndCheckLength();
-      m_currentChar = m_currentString.incrementAndGetCurrentChar();
+  void AdvancePastNewlineAndUpdateLineNumber() {
+    ASSERT(CurrentChar() == '\n');
+    if (current_string_.length() > 1) {
+      int new_line_flag = current_string_.DoNotExcludeLineNumbers();
+      current_line_ += new_line_flag;
+      if (new_line_flag)
+        number_of_characters_consumed_prior_to_current_line_ =
+            NumberOfCharactersConsumed() + 1;
+      DecrementAndCheckLength();
+      current_char_ = current_string_.IncrementAndGetCurrentChar();
       return;
     }
-    advanceAndUpdateLineNumberSlowCase();
+    AdvanceAndUpdateLineNumberSlowCase();
   }
 
   // Writes the consumed characters into consumedCharacters, which must
   // have space for at least |count| characters.
-  void advance(unsigned count, UChar* consumedCharacters);
+  void Advance(unsigned count, UChar* consumed_characters);
 
-  int numberOfCharactersConsumed() const {
-    int numberOfPushedCharacters = 0;
-    return m_numberOfCharactersConsumedPriorToCurrentString +
-           m_currentString.numberOfCharactersConsumed() -
-           numberOfPushedCharacters;
+  int NumberOfCharactersConsumed() const {
+    int number_of_pushed_characters = 0;
+    return number_of_characters_consumed_prior_to_current_string_ +
+           current_string_.NumberOfCharactersConsumed() -
+           number_of_pushed_characters;
   }
 
-  String toString() const;
+  String ToString() const;
 
-  UChar currentChar() const { return m_currentChar; }
+  UChar CurrentChar() const { return current_char_; }
 
   // The method is moderately slow, comparing to currentLine method.
-  OrdinalNumber currentColumn() const;
-  OrdinalNumber currentLine() const;
+  OrdinalNumber CurrentColumn() const;
+  OrdinalNumber CurrentLine() const;
   // Sets value of line/column variables. Column is specified indirectly by a
   // parameter columnAftreProlog which is a value of column that we should get
   // after a prolog (first prologLength characters) has been consumed.
-  void setCurrentPosition(OrdinalNumber line,
-                          OrdinalNumber columnAftreProlog,
-                          int prologLength);
+  void SetCurrentPosition(OrdinalNumber line,
+                          OrdinalNumber column_aftre_prolog,
+                          int prolog_length);
 
  private:
   enum FastPathFlags {
-    NoFastPath = 0,
-    Use8BitAdvanceAndUpdateLineNumbers = 1 << 0,
-    Use8BitAdvance = 1 << 1,
+    kNoFastPath = 0,
+    kUse8BitAdvanceAndUpdateLineNumbers = 1 << 0,
+    kUse8BitAdvance = 1 << 1,
   };
 
-  void append(const SegmentedSubstring&);
-  void prepend(const SegmentedSubstring&, PrependType);
+  void Append(const SegmentedSubstring&);
+  void Prepend(const SegmentedSubstring&, PrependType);
 
-  void advance8();
-  void advance16();
-  void advanceAndUpdateLineNumber8();
-  void advanceAndUpdateLineNumber16();
-  void advanceSlowCase();
-  void advanceAndUpdateLineNumberSlowCase();
-  void advanceEmpty();
-  void advanceSubstring();
+  void Advance8();
+  void Advance16();
+  void AdvanceAndUpdateLineNumber8();
+  void AdvanceAndUpdateLineNumber16();
+  void AdvanceSlowCase();
+  void AdvanceAndUpdateLineNumberSlowCase();
+  void AdvanceEmpty();
+  void AdvanceSubstring();
 
-  void updateSlowCaseFunctionPointers();
+  void UpdateSlowCaseFunctionPointers();
 
-  void decrementAndCheckLength() {
-    ASSERT(m_currentString.length() > 1);
-    m_currentString.decrementLength();
-    if (m_currentString.haveOneCharacterLeft())
-      updateSlowCaseFunctionPointers();
+  void DecrementAndCheckLength() {
+    ASSERT(current_string_.length() > 1);
+    current_string_.DecrementLength();
+    if (current_string_.HaveOneCharacterLeft())
+      UpdateSlowCaseFunctionPointers();
   }
 
-  void updateAdvanceFunctionPointers() {
-    if (m_currentString.length() > 1) {
-      if (m_currentString.is8Bit()) {
-        m_advanceFunc = &SegmentedString::advance8;
-        m_fastPathFlags = Use8BitAdvance;
-        if (m_currentString.doNotExcludeLineNumbers()) {
-          m_advanceAndUpdateLineNumberFunc =
-              &SegmentedString::advanceAndUpdateLineNumber8;
-          m_fastPathFlags |= Use8BitAdvanceAndUpdateLineNumbers;
+  void UpdateAdvanceFunctionPointers() {
+    if (current_string_.length() > 1) {
+      if (current_string_.Is8Bit()) {
+        advance_func_ = &SegmentedString::Advance8;
+        fast_path_flags_ = kUse8BitAdvance;
+        if (current_string_.DoNotExcludeLineNumbers()) {
+          advance_and_update_line_number_func_ =
+              &SegmentedString::AdvanceAndUpdateLineNumber8;
+          fast_path_flags_ |= kUse8BitAdvanceAndUpdateLineNumbers;
         } else {
-          m_advanceAndUpdateLineNumberFunc = &SegmentedString::advance8;
+          advance_and_update_line_number_func_ = &SegmentedString::Advance8;
         }
         return;
       }
 
-      m_advanceFunc = &SegmentedString::advance16;
-      m_fastPathFlags = NoFastPath;
-      if (m_currentString.doNotExcludeLineNumbers())
-        m_advanceAndUpdateLineNumberFunc =
-            &SegmentedString::advanceAndUpdateLineNumber16;
+      advance_func_ = &SegmentedString::Advance16;
+      fast_path_flags_ = kNoFastPath;
+      if (current_string_.DoNotExcludeLineNumbers())
+        advance_and_update_line_number_func_ =
+            &SegmentedString::AdvanceAndUpdateLineNumber16;
       else
-        m_advanceAndUpdateLineNumberFunc = &SegmentedString::advance16;
+        advance_and_update_line_number_func_ = &SegmentedString::Advance16;
       return;
     }
 
-    if (!m_currentString.length() && !isComposite()) {
-      m_advanceFunc = &SegmentedString::advanceEmpty;
-      m_fastPathFlags = NoFastPath;
-      m_advanceAndUpdateLineNumberFunc = &SegmentedString::advanceEmpty;
+    if (!current_string_.length() && !IsComposite()) {
+      advance_func_ = &SegmentedString::AdvanceEmpty;
+      fast_path_flags_ = kNoFastPath;
+      advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
     }
 
-    updateSlowCaseFunctionPointers();
+    UpdateSlowCaseFunctionPointers();
   }
 
-  inline LookAheadResult lookAheadInline(const String& string,
-                                         TextCaseSensitivity caseSensitivity) {
-    if (string.length() <= static_cast<unsigned>(m_currentString.length())) {
-      String currentSubstring =
-          m_currentString.currentSubString(string.length());
-      if (currentSubstring.startsWith(string, caseSensitivity))
-        return DidMatch;
-      return DidNotMatch;
+  inline LookAheadResult LookAheadInline(const String& string,
+                                         TextCaseSensitivity case_sensitivity) {
+    if (string.length() <= static_cast<unsigned>(current_string_.length())) {
+      String current_substring =
+          current_string_.CurrentSubString(string.length());
+      if (current_substring.StartsWith(string, case_sensitivity))
+        return kDidMatch;
+      return kDidNotMatch;
     }
-    return lookAheadSlowCase(string, caseSensitivity);
+    return LookAheadSlowCase(string, case_sensitivity);
   }
 
-  LookAheadResult lookAheadSlowCase(const String& string,
-                                    TextCaseSensitivity caseSensitivity) {
+  LookAheadResult LookAheadSlowCase(const String& string,
+                                    TextCaseSensitivity case_sensitivity) {
     unsigned count = string.length();
     if (count > length())
-      return NotEnoughCharacters;
-    UChar* consumedCharacters;
-    String consumedString =
-        String::createUninitialized(count, consumedCharacters);
-    advance(count, consumedCharacters);
-    LookAheadResult result = DidNotMatch;
-    if (consumedString.startsWith(string, caseSensitivity))
-      result = DidMatch;
-    prepend(SegmentedString(consumedString), PrependType::Unconsume);
+      return kNotEnoughCharacters;
+    UChar* consumed_characters;
+    String consumed_string =
+        String::CreateUninitialized(count, consumed_characters);
+    Advance(count, consumed_characters);
+    LookAheadResult result = kDidNotMatch;
+    if (consumed_string.StartsWith(string, case_sensitivity))
+      result = kDidMatch;
+    Prepend(SegmentedString(consumed_string), PrependType::kUnconsume);
     return result;
   }
 
-  bool isComposite() const { return !m_substrings.isEmpty(); }
+  bool IsComposite() const { return !substrings_.IsEmpty(); }
 
-  SegmentedSubstring m_currentString;
-  UChar m_currentChar;
-  int m_numberOfCharactersConsumedPriorToCurrentString;
-  int m_numberOfCharactersConsumedPriorToCurrentLine;
-  int m_currentLine;
-  Deque<SegmentedSubstring> m_substrings;
-  bool m_closed;
-  bool m_empty;
-  unsigned char m_fastPathFlags;
-  void (SegmentedString::*m_advanceFunc)();
-  void (SegmentedString::*m_advanceAndUpdateLineNumberFunc)();
+  SegmentedSubstring current_string_;
+  UChar current_char_;
+  int number_of_characters_consumed_prior_to_current_string_;
+  int number_of_characters_consumed_prior_to_current_line_;
+  int current_line_;
+  Deque<SegmentedSubstring> substrings_;
+  bool closed_;
+  bool empty_;
+  unsigned char fast_path_flags_;
+  void (SegmentedString::*advance_func_)();
+  void (SegmentedString::*advance_and_update_line_number_func_)();
 };
 
 }  // namespace blink

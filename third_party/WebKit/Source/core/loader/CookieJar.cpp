@@ -39,34 +39,34 @@
 
 namespace blink {
 
-static WebCookieJar* toCookieJar(const Document* document) {
-  if (!document || !document->frame())
+static WebCookieJar* ToCookieJar(const Document* document) {
+  if (!document || !document->GetFrame())
     return 0;
-  return document->frame()->loader().client()->cookieJar();
+  return document->GetFrame()->Loader().Client()->CookieJar();
 }
 
-String cookies(const Document* document, const KURL& url) {
-  WebCookieJar* cookieJar = toCookieJar(document);
-  if (!cookieJar)
+String Cookies(const Document* document, const KURL& url) {
+  WebCookieJar* cookie_jar = ToCookieJar(document);
+  if (!cookie_jar)
     return String();
-  return cookieJar->cookies(url, document->firstPartyForCookies());
+  return cookie_jar->Cookies(url, document->FirstPartyForCookies());
 }
 
-void setCookies(Document* document,
+void SetCookies(Document* document,
                 const KURL& url,
-                const String& cookieString) {
-  WebCookieJar* cookieJar = toCookieJar(document);
-  if (!cookieJar)
+                const String& cookie_string) {
+  WebCookieJar* cookie_jar = ToCookieJar(document);
+  if (!cookie_jar)
     return;
-  cookieJar->setCookie(url, document->firstPartyForCookies(), cookieString);
+  cookie_jar->SetCookie(url, document->FirstPartyForCookies(), cookie_string);
 }
 
-bool cookiesEnabled(const Document* document) {
-  WebCookieJar* cookieJar = toCookieJar(document);
-  if (!cookieJar)
+bool CookiesEnabled(const Document* document) {
+  WebCookieJar* cookie_jar = ToCookieJar(document);
+  if (!cookie_jar)
     return false;
-  return cookieJar->cookiesEnabled(document->cookieURL(),
-                                   document->firstPartyForCookies());
+  return cookie_jar->CookiesEnabled(document->CookieURL(),
+                                    document->FirstPartyForCookies());
 }
 
 }  // namespace blink

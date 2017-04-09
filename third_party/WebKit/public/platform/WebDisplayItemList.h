@@ -36,37 +36,37 @@ class WebDisplayItemList {
  public:
   virtual ~WebDisplayItemList() {}
 
-  virtual void appendDrawingItem(const WebRect& visualRect,
+  virtual void AppendDrawingItem(const WebRect& visual_rect,
                                  sk_sp<const cc::PaintRecord>) {}
 
-  virtual void appendClipItem(const WebRect& clipRect,
-                              const WebVector<SkRRect>& roundedClipRects) {}
-  virtual void appendEndClipItem() {}
-  virtual void appendClipPathItem(const SkPath&, bool antialias) {}
-  virtual void appendEndClipPathItem() {}
-  virtual void appendFloatClipItem(const WebFloatRect& clipRect) {}
-  virtual void appendEndFloatClipItem() {}
-  virtual void appendTransformItem(const SkMatrix44&) {}
-  virtual void appendEndTransformItem() {}
-  virtual void appendCompositingItem(float opacity,
+  virtual void AppendClipItem(const WebRect& clip_rect,
+                              const WebVector<SkRRect>& rounded_clip_rects) {}
+  virtual void AppendEndClipItem() {}
+  virtual void AppendClipPathItem(const SkPath&, bool antialias) {}
+  virtual void AppendEndClipPathItem() {}
+  virtual void AppendFloatClipItem(const WebFloatRect& clip_rect) {}
+  virtual void AppendEndFloatClipItem() {}
+  virtual void AppendTransformItem(const SkMatrix44&) {}
+  virtual void AppendEndTransformItem() {}
+  virtual void AppendCompositingItem(float opacity,
                                      SkBlendMode,
                                      SkRect* bounds,
                                      SkColorFilter*) {}
-  virtual void appendEndCompositingItem() {}
+  virtual void AppendEndCompositingItem() {}
 
   // TODO(loyso): This should use CompositorFilterOperation. crbug.com/584551
-  virtual void appendFilterItem(const cc::FilterOperations&,
+  virtual void AppendFilterItem(const cc::FilterOperations&,
                                 const WebFloatRect& filter_bounds,
                                 const WebFloatPoint& origin) {}
-  virtual void appendEndFilterItem() {}
+  virtual void AppendEndFilterItem() {}
 
   // Scroll containers are identified by an opaque pointer.
   using ScrollContainerId = const void*;
-  virtual void appendScrollItem(const WebSize& scrollOffset,
+  virtual void AppendScrollItem(const WebSize& scroll_offset,
                                 ScrollContainerId) {}
-  virtual void appendEndScrollItem() {}
+  virtual void AppendEndScrollItem() {}
 
-  virtual void setIsSuitableForGpuRasterization(bool isSuitable) {}
+  virtual void SetIsSuitableForGpuRasterization(bool is_suitable) {}
 };
 
 }  // namespace blink

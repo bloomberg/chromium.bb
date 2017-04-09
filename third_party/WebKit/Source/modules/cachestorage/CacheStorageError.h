@@ -21,12 +21,12 @@ class CacheStorageError {
   // For CallbackPromiseAdapter. Ownership of a given error is not
   // transferred.
   using WebType = WebServiceWorkerCacheError;
-  static DOMException* take(ScriptPromiseResolver*,
-                            WebServiceWorkerCacheError webError) {
-    return createException(webError);
+  static DOMException* Take(ScriptPromiseResolver*,
+                            WebServiceWorkerCacheError web_error) {
+    return CreateException(web_error);
   }
 
-  static DOMException* createException(WebServiceWorkerCacheError webError);
+  static DOMException* CreateException(WebServiceWorkerCacheError web_error);
 };
 
 }  // namespace blink

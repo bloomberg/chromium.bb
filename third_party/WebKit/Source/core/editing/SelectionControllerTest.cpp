@@ -16,116 +16,123 @@ class SelectionControllerTest : public EditingTestBase {
  protected:
   SelectionControllerTest() = default;
 
-  const VisibleSelection& visibleSelectionInDOMTree() const {
-    return selection().computeVisibleSelectionInDOMTreeDeprecated();
+  const VisibleSelection& VisibleSelectionInDOMTree() const {
+    return Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
   }
 
-  const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {
-    return selection().selectionInFlatTree();
+  const VisibleSelectionInFlatTree& GetVisibleSelectionInFlatTree() const {
+    return Selection().GetSelectionInFlatTree();
   }
 
-  void setCaretAtHitTestResult(const HitTestResult&);
-  void setNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
+  void SetCaretAtHitTestResult(const HitTestResult&);
+  void SetNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           TextGranularity);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SelectionControllerTest);
 };
 
-void SelectionControllerTest::setCaretAtHitTestResult(
-    const HitTestResult& hitTestResult) {
-  frame().eventHandler().selectionController().setCaretAtHitTestResult(
-      hitTestResult);
+void SelectionControllerTest::SetCaretAtHitTestResult(
+    const HitTestResult& hit_test_result) {
+  GetFrame().GetEventHandler().GetSelectionController().SetCaretAtHitTestResult(
+      hit_test_result);
 }
 
-void SelectionControllerTest::setNonDirectionalSelectionIfNeeded(
-    const SelectionInFlatTree& newSelection,
+void SelectionControllerTest::SetNonDirectionalSelectionIfNeeded(
+    const SelectionInFlatTree& new_selection,
     TextGranularity granularity) {
-  frame()
-      .eventHandler()
-      .selectionController()
-      .setNonDirectionalSelectionIfNeeded(
-          newSelection, granularity, SelectionController::DoNotAdjustEndpoints,
-          HandleVisibility::NotVisible);
+  GetFrame()
+      .GetEventHandler()
+      .GetSelectionController()
+      .SetNonDirectionalSelectionIfNeeded(
+          new_selection, granularity,
+          SelectionController::kDoNotAdjustEndpoints,
+          HandleVisibility::kNotVisible);
 }
 
 TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
-  const char* bodyContent = "<span id=top>top</span><span id=host></span>";
-  const char* shadowContent = "<span id=bottom>bottom</span>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+  const char* body_content = "<span id=top>top</span><span id=host></span>";
+  const char* shadow_content = "<span id=bottom>bottom</span>";
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* top = document().getElementById("top")->firstChild();
-  Node* bottom = shadowRoot->getElementById("bottom")->firstChild();
-  Node* host = document().getElementById("host");
+  Node* top = GetDocument().GetElementById("top")->FirstChild();
+  Node* bottom = shadow_root->GetElementById("bottom")->FirstChild();
+  Node* host = GetDocument().GetElementById("host");
 
   // top to bottom
-  setNonDirectionalSelectionIfNeeded(SelectionInFlatTree::Builder()
-                                         .collapse(PositionInFlatTree(top, 1))
-                                         .extend(PositionInFlatTree(bottom, 3))
-                                         .build(),
-                                     CharacterGranularity);
-  EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().base());
-  EXPECT_EQ(Position::beforeNode(host), visibleSelectionInDOMTree().extent());
-  EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().start());
-  EXPECT_EQ(Position(top, 3), visibleSelectionInDOMTree().end());
+  SetNonDirectionalSelectionIfNeeded(SelectionInFlatTree::Builder()
+                                         .Collapse(PositionInFlatTree(top, 1))
+                                         .Extend(PositionInFlatTree(bottom, 3))
+                                         .Build(),
+                                     kCharacterGranularity);
+  EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Base());
+  EXPECT_EQ(Position::BeforeNode(host), VisibleSelectionInDOMTree().Extent());
+  EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Start());
+  EXPECT_EQ(Position(top, 3), VisibleSelectionInDOMTree().end());
 
-  EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().base());
+  EXPECT_EQ(PositionInFlatTree(top, 1), GetVisibleSelectionInFlatTree().Base());
   EXPECT_EQ(PositionInFlatTree(bottom, 3),
-            visibleSelectionInFlatTree().extent());
-  EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().start());
-  EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
+            GetVisibleSelectionInFlatTree().Extent());
+  EXPECT_EQ(PositionInFlatTree(top, 1),
+            GetVisibleSelectionInFlatTree().Start());
+  EXPECT_EQ(PositionInFlatTree(bottom, 3),
+            GetVisibleSelectionInFlatTree().end());
 
   // bottom to top
-  setNonDirectionalSelectionIfNeeded(
+  SetNonDirectionalSelectionIfNeeded(
       SelectionInFlatTree::Builder()
-          .collapse(PositionInFlatTree(bottom, 3))
-          .extend(PositionInFlatTree(top, 1))
-          .build(),
-      CharacterGranularity);
-  EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().base());
-  EXPECT_EQ(Position::beforeNode(bottom->parentNode()),
-            visibleSelectionInDOMTree().extent());
-  EXPECT_EQ(Position(bottom, 0), visibleSelectionInDOMTree().start());
-  EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().end());
+          .Collapse(PositionInFlatTree(bottom, 3))
+          .Extend(PositionInFlatTree(top, 1))
+          .Build(),
+      kCharacterGranularity);
+  EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().Base());
+  EXPECT_EQ(Position::BeforeNode(bottom->parentNode()),
+            VisibleSelectionInDOMTree().Extent());
+  EXPECT_EQ(Position(bottom, 0), VisibleSelectionInDOMTree().Start());
+  EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().end());
 
-  EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().base());
-  EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().extent());
-  EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().start());
-  EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
+  EXPECT_EQ(PositionInFlatTree(bottom, 3),
+            GetVisibleSelectionInFlatTree().Base());
+  EXPECT_EQ(PositionInFlatTree(top, 1),
+            GetVisibleSelectionInFlatTree().Extent());
+  EXPECT_EQ(PositionInFlatTree(top, 1),
+            GetVisibleSelectionInFlatTree().Start());
+  EXPECT_EQ(PositionInFlatTree(bottom, 3),
+            GetVisibleSelectionInFlatTree().end());
 }
 
 TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
-  const char* bodyContent = "<div id='sample' contenteditable>sample</div>";
-  setBodyContent(bodyContent);
-  document().settings()->setScriptEnabled(true);
-  Element* script = document().createElement("script");
+  const char* body_content = "<div id='sample' contenteditable>sample</div>";
+  SetBodyContent(body_content);
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* script = GetDocument().createElement("script");
   script->setInnerHTML(
       "var sample = document.getElementById('sample');"
       "sample.addEventListener('onselectstart', "
       "  event => elem.parentNode.removeChild(elem));");
-  document().body()->appendChild(script);
-  document().view()->updateAllLifecyclePhases();
-  frame().eventHandler().selectionController().handleGestureLongPress(
+  GetDocument().body()->AppendChild(script);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetFrame().GetEventHandler().GetSelectionController().HandleGestureLongPress(
       WebGestureEvent(),
-      frame().eventHandler().hitTestResultAtPoint(IntPoint(8, 8)));
+      GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(8, 8)));
 }
 
 // For http://crbug.com/704827
 TEST_F(SelectionControllerTest, setCaretAtHitTestResultWithNullPosition) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "#sample:before {content: '&nbsp;'}"
       "#sample { user-select: none; }"
       "</style>"
       "<div id=sample></div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Hit "&nbsp;" in before pseudo element of "sample".
-  setCaretAtHitTestResult(
-      frame().eventHandler().hitTestResultAtPoint(IntPoint(10, 10)));
+  SetCaretAtHitTestResult(
+      GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(10, 10)));
 
-  EXPECT_TRUE(selection().selectionInDOMTree().isNone());
+  EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsNone());
 }
 
 }  // namespace blink

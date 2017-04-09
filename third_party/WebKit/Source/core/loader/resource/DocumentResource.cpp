@@ -30,13 +30,13 @@
 
 namespace blink {
 
-DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request,
+DocumentResource* DocumentResource::FetchSVGDocument(FetchRequest& request,
                                                      ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(WebURLRequest::RequestContextImage);
-  return toDocumentResource(
-      fetcher->requestResource(request, SVGDocumentResourceFactory()));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  return ToDocumentResource(
+      fetcher->RequestResource(request, SVGDocumentResourceFactory()));
 }
 
 DocumentResource::DocumentResource(const ResourceRequest& request,
@@ -44,39 +44,39 @@ DocumentResource::DocumentResource(const ResourceRequest& request,
                                    const ResourceLoaderOptions& options)
     : TextResource(request, type, options, "application/xml", String()) {
   // FIXME: We'll support more types to support HTMLImports.
-  DCHECK_EQ(type, SVGDocument);
+  DCHECK_EQ(type, kSVGDocument);
 }
 
 DocumentResource::~DocumentResource() {}
 
 DEFINE_TRACE(DocumentResource) {
-  visitor->trace(m_document);
-  Resource::trace(visitor);
+  visitor->Trace(document_);
+  Resource::Trace(visitor);
 }
 
-void DocumentResource::checkNotify() {
-  if (data() && mimeTypeAllowed()) {
+void DocumentResource::CheckNotify() {
+  if (Data() && MimeTypeAllowed()) {
     // We don't need to create a new frame because the new document belongs to
     // the parent UseElement.
-    m_document = createDocument(response().url());
-    m_document->setContent(decodedText());
+    document_ = CreateDocument(GetResponse().Url());
+    document_->SetContent(DecodedText());
   }
-  Resource::checkNotify();
+  Resource::CheckNotify();
 }
 
-bool DocumentResource::mimeTypeAllowed() const {
-  DCHECK_EQ(getType(), SVGDocument);
-  AtomicString mimeType = response().mimeType();
-  if (response().isHTTP())
-    mimeType = httpContentType();
-  return mimeType == "image/svg+xml" || mimeType == "text/xml" ||
-         mimeType == "application/xml" || mimeType == "application/xhtml+xml";
+bool DocumentResource::MimeTypeAllowed() const {
+  DCHECK_EQ(GetType(), kSVGDocument);
+  AtomicString mime_type = GetResponse().MimeType();
+  if (GetResponse().IsHTTP())
+    mime_type = HttpContentType();
+  return mime_type == "image/svg+xml" || mime_type == "text/xml" ||
+         mime_type == "application/xml" || mime_type == "application/xhtml+xml";
 }
 
-Document* DocumentResource::createDocument(const KURL& url) {
-  switch (getType()) {
-    case SVGDocument:
-      return XMLDocument::createSVG(DocumentInit(url));
+Document* DocumentResource::CreateDocument(const KURL& url) {
+  switch (GetType()) {
+    case kSVGDocument:
+      return XMLDocument::CreateSVG(DocumentInit(url));
     default:
       // FIXME: We'll add more types to support HTMLImports.
       NOTREACHED();

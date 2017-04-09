@@ -42,41 +42,41 @@ class PLATFORM_EXPORT GraphicsContextStateSaver final {
 
  public:
   GraphicsContextStateSaver(GraphicsContext& context,
-                            bool saveAndRestore = true)
-      : m_context(context), m_saveAndRestore(saveAndRestore) {
-    if (m_saveAndRestore)
-      m_context.save();
+                            bool save_and_restore = true)
+      : context_(context), save_and_restore_(save_and_restore) {
+    if (save_and_restore_)
+      context_.Save();
   }
 
   ~GraphicsContextStateSaver() {
-    if (m_saveAndRestore)
-      m_context.restore();
+    if (save_and_restore_)
+      context_.Restore();
   }
 
-  void save() {
-    ASSERT(!m_saveAndRestore);
-    m_context.save();
-    m_saveAndRestore = true;
+  void Save() {
+    ASSERT(!save_and_restore_);
+    context_.Save();
+    save_and_restore_ = true;
   }
 
-  void saveIfNeeded() {
-    if (saved())
+  void SaveIfNeeded() {
+    if (Saved())
       return;
-    save();
+    Save();
   }
 
-  void restore() {
-    ASSERT(m_saveAndRestore);
-    m_context.restore();
-    m_saveAndRestore = false;
+  void Restore() {
+    ASSERT(save_and_restore_);
+    context_.Restore();
+    save_and_restore_ = false;
   }
 
-  GraphicsContext& context() const { return m_context; }
-  bool saved() const { return m_saveAndRestore; }
+  GraphicsContext& Context() const { return context_; }
+  bool Saved() const { return save_and_restore_; }
 
  private:
-  GraphicsContext& m_context;
-  bool m_saveAndRestore;
+  GraphicsContext& context_;
+  bool save_and_restore_;
 };
 
 }  // namespace blink

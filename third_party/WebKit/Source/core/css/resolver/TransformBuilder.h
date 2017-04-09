@@ -45,9 +45,9 @@ class TransformBuilder {
   STATIC_ONLY(TransformBuilder);
 
  public:
-  static bool hasRelativeLengths(const CSSValueList&);
-  static TransformOperations createTransformOperations(
-      const CSSValue& inValue,
+  static bool HasRelativeLengths(const CSSValueList&);
+  static TransformOperations CreateTransformOperations(
+      const CSSValue& in_value,
       const CSSToLengthConversionData&);
 };
 

@@ -14,200 +14,201 @@
 namespace blink {
 
 HostsUsingFeatures::~HostsUsingFeatures() {
-  updateMeasurementsAndClear();
+  UpdateMeasurementsAndClear();
 }
 
-HostsUsingFeatures::Value::Value() : m_countBits(0) {}
+HostsUsingFeatures::Value::Value() : count_bits_(0) {}
 
-void HostsUsingFeatures::countAnyWorld(Document& document, Feature feature) {
-  document.HostsUsingFeaturesValue().count(feature);
+void HostsUsingFeatures::CountAnyWorld(Document& document, Feature feature) {
+  document.HostsUsingFeaturesValue().Count(feature);
 }
 
-void HostsUsingFeatures::countMainWorldOnly(const ScriptState* scriptState,
+void HostsUsingFeatures::CountMainWorldOnly(const ScriptState* script_state,
                                             Document& document,
                                             Feature feature) {
-  if (!scriptState || !scriptState->world().isMainWorld())
+  if (!script_state || !script_state->World().IsMainWorld())
     return;
-  countAnyWorld(document, feature);
+  CountAnyWorld(document, feature);
 }
 
-static Document* documentFromEventTarget(EventTarget& target) {
-  ExecutionContext* executionContext = target.getExecutionContext();
-  if (!executionContext)
+static Document* DocumentFromEventTarget(EventTarget& target) {
+  ExecutionContext* execution_context = target.GetExecutionContext();
+  if (!execution_context)
     return nullptr;
-  if (executionContext->isDocument())
-    return toDocument(executionContext);
-  if (LocalDOMWindow* executingWindow = executionContext->executingWindow())
-    return executingWindow->document();
+  if (execution_context->IsDocument())
+    return ToDocument(execution_context);
+  if (LocalDOMWindow* executing_window = execution_context->ExecutingWindow())
+    return executing_window->document();
   return nullptr;
 }
 
-void HostsUsingFeatures::countHostOrIsolatedWorldHumanReadableName(
-    const ScriptState* scriptState,
+void HostsUsingFeatures::CountHostOrIsolatedWorldHumanReadableName(
+    const ScriptState* script_state,
     EventTarget& target,
     Feature feature) {
-  if (!scriptState)
+  if (!script_state)
     return;
-  Document* document = documentFromEventTarget(target);
+  Document* document = DocumentFromEventTarget(target);
   if (!document)
     return;
-  if (scriptState->world().isMainWorld()) {
-    document->HostsUsingFeaturesValue().count(feature);
+  if (script_state->World().IsMainWorld()) {
+    document->HostsUsingFeaturesValue().Count(feature);
     return;
   }
-  if (Page* page = document->page())
-    page->hostsUsingFeatures().countName(
-        feature, scriptState->world().isolatedWorldHumanReadableName());
+  if (Page* page = document->GetPage())
+    page->GetHostsUsingFeatures().CountName(
+        feature, script_state->World().IsolatedWorldHumanReadableName());
 }
 
-void HostsUsingFeatures::Value::count(Feature feature) {
-  DCHECK(feature < Feature::NumberOfFeatures);
-  m_countBits |= 1 << static_cast<unsigned>(feature);
+void HostsUsingFeatures::Value::Count(Feature feature) {
+  DCHECK(feature < Feature::kNumberOfFeatures);
+  count_bits_ |= 1 << static_cast<unsigned>(feature);
 }
 
-void HostsUsingFeatures::countName(Feature feature, const String& name) {
-  auto result = m_valueByName.insert(name, Value());
-  result.storedValue->value.count(feature);
+void HostsUsingFeatures::CountName(Feature feature, const String& name) {
+  auto result = value_by_name_.insert(name, Value());
+  result.stored_value->value.Count(feature);
 }
 
-void HostsUsingFeatures::clear() {
-  m_valueByName.clear();
-  m_urlAndValues.clear();
+void HostsUsingFeatures::Clear() {
+  value_by_name_.Clear();
+  url_and_values_.Clear();
 }
 
-void HostsUsingFeatures::documentDetached(Document& document) {
+void HostsUsingFeatures::DocumentDetached(Document& document) {
   HostsUsingFeatures::Value counter = document.HostsUsingFeaturesValue();
-  if (counter.isEmpty())
+  if (counter.IsEmpty())
     return;
 
-  const KURL& url = document.url();
-  if (!url.protocolIsInHTTPFamily())
+  const KURL& url = document.Url();
+  if (!url.ProtocolIsInHTTPFamily())
     return;
 
-  m_urlAndValues.push_back(std::make_pair(url, counter));
-  document.HostsUsingFeaturesValue().clear();
-  DCHECK(document.HostsUsingFeaturesValue().isEmpty());
+  url_and_values_.push_back(std::make_pair(url, counter));
+  document.HostsUsingFeaturesValue().Clear();
+  DCHECK(document.HostsUsingFeaturesValue().IsEmpty());
 }
 
-void HostsUsingFeatures::updateMeasurementsAndClear() {
-  if (!m_urlAndValues.isEmpty()) {
-    recordHostToRappor();
-    recordETLDPlus1ToRappor();
-    m_urlAndValues.clear();
+void HostsUsingFeatures::UpdateMeasurementsAndClear() {
+  if (!url_and_values_.IsEmpty()) {
+    RecordHostToRappor();
+    RecordETLDPlus1ToRappor();
+    url_and_values_.Clear();
   }
-  if (!m_valueByName.isEmpty())
-    recordNamesToRappor();
+  if (!value_by_name_.IsEmpty())
+    RecordNamesToRappor();
 }
 
-void HostsUsingFeatures::recordHostToRappor() {
-  DCHECK(!m_urlAndValues.isEmpty());
+void HostsUsingFeatures::RecordHostToRappor() {
+  DCHECK(!url_and_values_.IsEmpty());
 
   // Aggregate values by hosts.
-  HashMap<String, HostsUsingFeatures::Value> aggregatedByHost;
-  for (const auto& urlAndValue : m_urlAndValues) {
-    DCHECK(!urlAndValue.first.isEmpty());
-    auto result =
-        aggregatedByHost.insert(urlAndValue.first.host(), urlAndValue.second);
-    if (!result.isNewEntry)
-      result.storedValue->value.aggregate(urlAndValue.second);
+  HashMap<String, HostsUsingFeatures::Value> aggregated_by_host;
+  for (const auto& url_and_value : url_and_values_) {
+    DCHECK(!url_and_value.first.IsEmpty());
+    auto result = aggregated_by_host.insert(url_and_value.first.Host(),
+                                            url_and_value.second);
+    if (!result.is_new_entry)
+      result.stored_value->value.Aggregate(url_and_value.second);
   }
 
   // Report to RAPPOR.
-  for (auto& hostAndValue : aggregatedByHost)
-    hostAndValue.value.recordHostToRappor(hostAndValue.key);
+  for (auto& host_and_value : aggregated_by_host)
+    host_and_value.value.RecordHostToRappor(host_and_value.key);
 }
 
-void HostsUsingFeatures::recordETLDPlus1ToRappor() {
-  DCHECK(!m_urlAndValues.isEmpty());
+void HostsUsingFeatures::RecordETLDPlus1ToRappor() {
+  DCHECK(!url_and_values_.IsEmpty());
 
   // Aggregate values by URL.
-  HashMap<String, HostsUsingFeatures::Value> aggregatedByURL;
-  for (const auto& urlAndValue : m_urlAndValues) {
-    DCHECK(!urlAndValue.first.isEmpty());
-    auto result = aggregatedByURL.insert(urlAndValue.first, urlAndValue.second);
-    if (!result.isNewEntry)
-      result.storedValue->value.aggregate(urlAndValue.second);
+  HashMap<String, HostsUsingFeatures::Value> aggregated_by_url;
+  for (const auto& url_and_value : url_and_values_) {
+    DCHECK(!url_and_value.first.IsEmpty());
+    auto result =
+        aggregated_by_url.insert(url_and_value.first, url_and_value.second);
+    if (!result.is_new_entry)
+      result.stored_value->value.Aggregate(url_and_value.second);
   }
 
   // Report to RAPPOR.
-  for (auto& urlAndValue : aggregatedByURL)
-    urlAndValue.value.recordETLDPlus1ToRappor(
-        KURL(ParsedURLString, urlAndValue.key));
+  for (auto& url_and_value : aggregated_by_url)
+    url_and_value.value.RecordETLDPlus1ToRappor(
+        KURL(kParsedURLString, url_and_value.key));
 }
 
-void HostsUsingFeatures::recordNamesToRappor() {
-  DCHECK(!m_valueByName.isEmpty());
+void HostsUsingFeatures::RecordNamesToRappor() {
+  DCHECK(!value_by_name_.IsEmpty());
 
-  for (auto& nameAndValue : m_valueByName)
-    nameAndValue.value.recordNameToRappor(nameAndValue.key);
+  for (auto& name_and_value : value_by_name_)
+    name_and_value.value.RecordNameToRappor(name_and_value.key);
 
-  m_valueByName.clear();
+  value_by_name_.Clear();
 }
 
-void HostsUsingFeatures::Value::aggregate(HostsUsingFeatures::Value other) {
-  m_countBits |= other.m_countBits;
+void HostsUsingFeatures::Value::Aggregate(HostsUsingFeatures::Value other) {
+  count_bits_ |= other.count_bits_;
 }
 
-void HostsUsingFeatures::Value::recordHostToRappor(const String& host) {
-  if (get(Feature::ElementCreateShadowRoot))
-    Platform::current()->recordRappor("WebComponents.ElementCreateShadowRoot",
+void HostsUsingFeatures::Value::RecordHostToRappor(const String& host) {
+  if (Get(Feature::kElementCreateShadowRoot))
+    Platform::Current()->RecordRappor("WebComponents.ElementCreateShadowRoot",
                                       host);
-  if (get(Feature::ElementAttachShadow))
-    Platform::current()->recordRappor("WebComponents.ElementAttachShadow",
+  if (Get(Feature::kElementAttachShadow))
+    Platform::Current()->RecordRappor("WebComponents.ElementAttachShadow",
                                       host);
-  if (get(Feature::DocumentRegisterElement))
-    Platform::current()->recordRappor("WebComponents.DocumentRegisterElement",
+  if (Get(Feature::kDocumentRegisterElement))
+    Platform::Current()->RecordRappor("WebComponents.DocumentRegisterElement",
                                       host);
-  if (get(Feature::EventPath))
-    Platform::current()->recordRappor("WebComponents.EventPath", host);
-  if (get(Feature::DeviceMotionInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kEventPath))
+    Platform::Current()->RecordRappor("WebComponents.EventPath", host);
+  if (Get(Feature::kDeviceMotionInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.DeviceMotion.Insecure", host);
-  if (get(Feature::DeviceOrientationInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kDeviceOrientationInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.DeviceOrientation.Insecure", host);
-  if (get(Feature::FullscreenInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kFullscreenInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.Fullscreen.Insecure", host);
-  if (get(Feature::GeolocationInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kGeolocationInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.Geolocation.Insecure", host);
-  if (get(Feature::ApplicationCacheManifestSelectInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kApplicationCacheManifestSelectInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.ApplicationCacheManifestSelect.Insecure",
         host);
-  if (get(Feature::ApplicationCacheAPIInsecureHost))
-    Platform::current()->recordRappor(
+  if (Get(Feature::kApplicationCacheAPIInsecureHost))
+    Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure", host);
 }
 
-void HostsUsingFeatures::Value::recordNameToRappor(const String& name) {
-  if (get(Feature::EventPath))
-    Platform::current()->recordRappor("WebComponents.EventPath.Extensions",
+void HostsUsingFeatures::Value::RecordNameToRappor(const String& name) {
+  if (Get(Feature::kEventPath))
+    Platform::Current()->RecordRappor("WebComponents.EventPath.Extensions",
                                       name);
 }
 
-void HostsUsingFeatures::Value::recordETLDPlus1ToRappor(const KURL& url) {
-  if (get(Feature::GetUserMediaInsecureHost))
-    Platform::current()->recordRapporURL(
+void HostsUsingFeatures::Value::RecordETLDPlus1ToRappor(const KURL& url) {
+  if (Get(Feature::kGetUserMediaInsecureHost))
+    Platform::Current()->RecordRapporURL(
         "PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Insecure", WebURL(url));
-  if (get(Feature::GetUserMediaSecureHost))
-    Platform::current()->recordRapporURL(
+  if (Get(Feature::kGetUserMediaSecureHost))
+    Platform::Current()->RecordRapporURL(
         "PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Secure", WebURL(url));
-  if (get(Feature::RTCPeerConnectionAudio))
-    Platform::current()->recordRapporURL("RTCPeerConnection.Audio",
+  if (Get(Feature::kRTCPeerConnectionAudio))
+    Platform::Current()->RecordRapporURL("RTCPeerConnection.Audio",
                                          WebURL(url));
-  if (get(Feature::RTCPeerConnectionVideo))
-    Platform::current()->recordRapporURL("RTCPeerConnection.Video",
+  if (Get(Feature::kRTCPeerConnectionVideo))
+    Platform::Current()->RecordRapporURL("RTCPeerConnection.Video",
                                          WebURL(url));
-  if (get(Feature::RTCPeerConnectionDataChannel))
-    Platform::current()->recordRapporURL("RTCPeerConnection.DataChannel",
+  if (Get(Feature::kRTCPeerConnectionDataChannel))
+    Platform::Current()->RecordRapporURL("RTCPeerConnection.DataChannel",
                                          WebURL(url));
-  if (get(Feature::RTCPeerConnectionUsed) &&
-      !get(Feature::RTCPeerConnectionAudio) &&
-      !get(Feature::RTCPeerConnectionVideo) &&
-      !get(Feature::RTCPeerConnectionDataChannel)) {
-    Platform::current()->recordRapporURL("RTCPeerConnection.Unconnected",
+  if (Get(Feature::kRTCPeerConnectionUsed) &&
+      !Get(Feature::kRTCPeerConnectionAudio) &&
+      !Get(Feature::kRTCPeerConnectionVideo) &&
+      !Get(Feature::kRTCPeerConnectionDataChannel)) {
+    Platform::Current()->RecordRapporURL("RTCPeerConnection.Unconnected",
                                          WebURL(url));
   }
 }

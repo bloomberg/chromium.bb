@@ -13,64 +13,66 @@
 
 namespace blink {
 
-void BlockFlowPainter::paintContents(const PaintInfo& paintInfo,
-                                     const LayoutPoint& paintOffset) {
+void BlockFlowPainter::PaintContents(const PaintInfo& paint_info,
+                                     const LayoutPoint& paint_offset) {
   // Avoid painting descendants of the root element when stylesheets haven't
   // loaded. This eliminates FOUC.  It's ok not to draw, because later on, when
   // all the stylesheets do load, styleResolverMayHaveChanged() on Document will
   // trigger a full paint invalidation.
-  if (m_layoutBlockFlow.document().didLayoutWithPendingStylesheets() &&
-      !m_layoutBlockFlow.isLayoutView())
+  if (layout_block_flow_.GetDocument().DidLayoutWithPendingStylesheets() &&
+      !layout_block_flow_.IsLayoutView())
     return;
 
-  if (!m_layoutBlockFlow.childrenInline()) {
-    BlockPainter(m_layoutBlockFlow).paintContents(paintInfo, paintOffset);
+  if (!layout_block_flow_.ChildrenInline()) {
+    BlockPainter(layout_block_flow_).PaintContents(paint_info, paint_offset);
     return;
   }
-  if (shouldPaintDescendantOutlines(paintInfo.phase))
-    ObjectPainter(m_layoutBlockFlow)
-        .paintInlineChildrenOutlines(paintInfo, paintOffset);
+  if (ShouldPaintDescendantOutlines(paint_info.phase))
+    ObjectPainter(layout_block_flow_)
+        .PaintInlineChildrenOutlines(paint_info, paint_offset);
   else
-    LineBoxListPainter(m_layoutBlockFlow.lineBoxes())
-        .paint(m_layoutBlockFlow, paintInfo, paintOffset);
+    LineBoxListPainter(layout_block_flow_.LineBoxes())
+        .Paint(layout_block_flow_, paint_info, paint_offset);
 }
 
-void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo,
-                                   const LayoutPoint& paintOffset) {
-  if (!m_layoutBlockFlow.floatingObjects())
+void BlockFlowPainter::PaintFloats(const PaintInfo& paint_info,
+                                   const LayoutPoint& paint_offset) {
+  if (!layout_block_flow_.GetFloatingObjects())
     return;
 
-  DCHECK(paintInfo.phase == PaintPhaseFloat ||
-         paintInfo.phase == PaintPhaseSelection ||
-         paintInfo.phase == PaintPhaseTextClip);
-  PaintInfo floatPaintInfo(paintInfo);
-  if (paintInfo.phase == PaintPhaseFloat)
-    floatPaintInfo.phase = PaintPhaseForeground;
+  DCHECK(paint_info.phase == kPaintPhaseFloat ||
+         paint_info.phase == kPaintPhaseSelection ||
+         paint_info.phase == kPaintPhaseTextClip);
+  PaintInfo float_paint_info(paint_info);
+  if (paint_info.phase == kPaintPhaseFloat)
+    float_paint_info.phase = kPaintPhaseForeground;
 
-  for (const auto& floatingObject :
-       m_layoutBlockFlow.floatingObjects()->set()) {
-    if (!floatingObject->shouldPaint())
+  for (const auto& floating_object :
+       layout_block_flow_.GetFloatingObjects()->Set()) {
+    if (!floating_object->ShouldPaint())
       continue;
 
-    const LayoutBox* floatingLayoutObject = floatingObject->layoutObject();
+    const LayoutBox* floating_layout_object =
+        floating_object->GetLayoutObject();
     // TODO(wangxianzhu): Should this be a DCHECK?
-    if (floatingLayoutObject->hasSelfPaintingLayer())
+    if (floating_layout_object->HasSelfPaintingLayer())
       continue;
 
     // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make
     // this much cleaner.
-    LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
-        *floatingObject,
-        LayoutPoint(paintOffset.x() +
-                        m_layoutBlockFlow.xPositionForFloatIncludingMargin(
-                            *floatingObject) -
-                        floatingLayoutObject->location().x(),
-                    paintOffset.y() +
-                        m_layoutBlockFlow.yPositionForFloatIncludingMargin(
-                            *floatingObject) -
-                        floatingLayoutObject->location().y()));
-    ObjectPainter(*floatingLayoutObject)
-        .paintAllPhasesAtomically(floatPaintInfo, childPoint);
+    LayoutPoint child_point =
+        layout_block_flow_.FlipFloatForWritingModeForChild(
+            *floating_object,
+            LayoutPoint(paint_offset.X() +
+                            layout_block_flow_.XPositionForFloatIncludingMargin(
+                                *floating_object) -
+                            floating_layout_object->Location().X(),
+                        paint_offset.Y() +
+                            layout_block_flow_.YPositionForFloatIncludingMargin(
+                                *floating_object) -
+                            floating_layout_object->Location().Y()));
+    ObjectPainter(*floating_layout_object)
+        .PaintAllPhasesAtomically(float_paint_info, child_point);
   }
 }
 

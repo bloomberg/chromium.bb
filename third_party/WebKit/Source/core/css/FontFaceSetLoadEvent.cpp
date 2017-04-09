@@ -34,22 +34,22 @@ namespace blink {
 
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type,
                                            const FontFaceArray& fontfaces)
-    : Event(type, false, false), m_fontfaces(fontfaces) {}
+    : Event(type, false, false), fontfaces_(fontfaces) {}
 
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(
     const AtomicString& type,
     const FontFaceSetLoadEventInit& initializer)
-    : Event(type, initializer), m_fontfaces(initializer.fontfaces()) {}
+    : Event(type, initializer), fontfaces_(initializer.fontfaces()) {}
 
 FontFaceSetLoadEvent::~FontFaceSetLoadEvent() {}
 
-const AtomicString& FontFaceSetLoadEvent::interfaceName() const {
+const AtomicString& FontFaceSetLoadEvent::InterfaceName() const {
   return EventNames::FontFaceSetLoadEvent;
 }
 
 DEFINE_TRACE(FontFaceSetLoadEvent) {
-  visitor->trace(m_fontfaces);
-  Event::trace(visitor);
+  visitor->Trace(fontfaces_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

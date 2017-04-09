@@ -40,25 +40,25 @@ class DeviceOrientationEvent final : public Event {
 
  public:
   ~DeviceOrientationEvent() override;
-  static DeviceOrientationEvent* create() { return new DeviceOrientationEvent; }
-  static DeviceOrientationEvent* create(
-      const AtomicString& eventType,
+  static DeviceOrientationEvent* Create() { return new DeviceOrientationEvent; }
+  static DeviceOrientationEvent* Create(
+      const AtomicString& event_type,
       const DeviceOrientationEventInit& initializer) {
-    return new DeviceOrientationEvent(eventType, initializer);
+    return new DeviceOrientationEvent(event_type, initializer);
   }
-  static DeviceOrientationEvent* create(const AtomicString& eventType,
+  static DeviceOrientationEvent* Create(const AtomicString& event_type,
                                         DeviceOrientationData* orientation) {
-    return new DeviceOrientationEvent(eventType, orientation);
+    return new DeviceOrientationEvent(event_type, orientation);
   }
 
-  DeviceOrientationData* orientation() const { return m_orientation.get(); }
+  DeviceOrientationData* Orientation() const { return orientation_.Get(); }
 
-  double alpha(bool& isNull) const;
-  double beta(bool& isNull) const;
-  double gamma(bool& isNull) const;
+  double alpha(bool& is_null) const;
+  double beta(bool& is_null) const;
+  double gamma(bool& is_null) const;
   bool absolute() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -66,16 +66,17 @@ class DeviceOrientationEvent final : public Event {
   DeviceOrientationEvent();
   DeviceOrientationEvent(const AtomicString&,
                          const DeviceOrientationEventInit&);
-  DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
+  DeviceOrientationEvent(const AtomicString& event_type,
+                         DeviceOrientationData*);
 
-  Member<DeviceOrientationData> m_orientation;
+  Member<DeviceOrientationData> orientation_;
 };
 
 DEFINE_TYPE_CASTS(DeviceOrientationEvent,
                   Event,
                   event,
-                  event->interfaceName() == EventNames::DeviceOrientationEvent,
-                  event.interfaceName() == EventNames::DeviceOrientationEvent);
+                  event->InterfaceName() == EventNames::DeviceOrientationEvent,
+                  event.InterfaceName() == EventNames::DeviceOrientationEvent);
 
 }  // namespace blink
 

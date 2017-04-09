@@ -31,20 +31,20 @@ WebGLDebugRendererInfo::WebGLDebugRendererInfo(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {}
 
-WebGLExtensionName WebGLDebugRendererInfo::name() const {
-  return WebGLDebugRendererInfoName;
+WebGLExtensionName WebGLDebugRendererInfo::GetName() const {
+  return kWebGLDebugRendererInfoName;
 }
 
-WebGLDebugRendererInfo* WebGLDebugRendererInfo::create(
+WebGLDebugRendererInfo* WebGLDebugRendererInfo::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLDebugRendererInfo(context);
 }
 
-bool WebGLDebugRendererInfo::supported(WebGLRenderingContextBase*) {
+bool WebGLDebugRendererInfo::Supported(WebGLRenderingContextBase*) {
   return true;
 }
 
-const char* WebGLDebugRendererInfo::extensionName() {
+const char* WebGLDebugRendererInfo::ExtensionName() {
   return "WEBGL_debug_renderer_info";
 }
 

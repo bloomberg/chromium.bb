@@ -20,25 +20,25 @@ namespace blink {
 const char kSVGPrefix[] = "svg-";
 const unsigned kSVGPrefixLength = sizeof(kSVGPrefix) - 1;
 
-static bool isSVGPrefixed(const String& property) {
-  return property.startsWith(kSVGPrefix);
+static bool IsSVGPrefixed(const String& property) {
+  return property.StartsWith(kSVGPrefix);
 }
 
-static String removeSVGPrefix(const String& property) {
-  DCHECK(isSVGPrefixed(property));
-  return property.substring(kSVGPrefixLength);
+static String RemoveSVGPrefix(const String& property) {
+  DCHECK(IsSVGPrefixed(property));
+  return property.Substring(kSVGPrefixLength);
 }
 
-CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(
+CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
     const String& property,
     const Document& document) {
-  if (CSSVariableParser::isValidVariableName(property))
+  if (CSSVariableParser::IsValidVariableName(property))
     return CSSPropertyVariable;
 
   // Disallow prefixed properties.
   if (property[0] == '-')
     return CSSPropertyInvalid;
-  if (isASCIIUpper(property[0]))
+  if (IsASCIIUpper(property[0]))
     return CSSPropertyInvalid;
   if (property == "cssFloat")
     return CSSPropertyFloat;
@@ -50,33 +50,33 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(
     // Disallow hyphenated properties.
     if (property[i] == '-')
       return CSSPropertyInvalid;
-    if (isASCIIUpper(property[i]))
-      builder.append('-');
-    builder.append(property[i]);
+    if (IsASCIIUpper(property[i]))
+      builder.Append('-');
+    builder.Append(property[i]);
   }
-  return cssPropertyID(builder.toString());
+  return cssPropertyID(builder.ToString());
 }
 
-CSSPropertyID AnimationInputHelpers::keyframeAttributeToPresentationAttribute(
+CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
     const String& property,
     const Element& element) {
   if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() ||
-      !element.isSVGElement() || !isSVGPrefixed(property))
+      !element.IsSVGElement() || !IsSVGPrefixed(property))
     return CSSPropertyInvalid;
 
-  String unprefixedProperty = removeSVGPrefix(property);
-  if (SVGElement::isAnimatableCSSProperty(
-          QualifiedName(nullAtom, AtomicString(unprefixedProperty), nullAtom)))
-    return cssPropertyID(unprefixedProperty);
+  String unprefixed_property = RemoveSVGPrefix(property);
+  if (SVGElement::IsAnimatableCSSProperty(QualifiedName(
+          g_null_atom, AtomicString(unprefixed_property), g_null_atom)))
+    return cssPropertyID(unprefixed_property);
 
   return CSSPropertyInvalid;
 }
 
 using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
 
-const AttributeNameMap& getSupportedAttributes() {
-  DEFINE_STATIC_LOCAL(AttributeNameMap, supportedAttributes, ());
-  if (supportedAttributes.isEmpty()) {
+const AttributeNameMap& GetSupportedAttributes() {
+  DEFINE_STATIC_LOCAL(AttributeNameMap, supported_attributes, ());
+  if (supported_attributes.IsEmpty()) {
     // Fill the set for the first use.
     // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
     const QualifiedName* attributes[] = {
@@ -177,55 +177,55 @@ const AttributeNameMap& getSupportedAttributes() {
         &SVGNames::zAttr,
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++) {
-      DCHECK(!SVGElement::isAnimatableCSSProperty(*attributes[i]));
-      supportedAttributes.set(*attributes[i], attributes[i]);
+      DCHECK(!SVGElement::IsAnimatableCSSProperty(*attributes[i]));
+      supported_attributes.Set(*attributes[i], attributes[i]);
     }
   }
-  return supportedAttributes;
+  return supported_attributes;
 }
 
-QualifiedName svgAttributeName(const String& property) {
-  DCHECK(!isSVGPrefixed(property));
-  return QualifiedName(nullAtom, AtomicString(property), nullAtom);
+QualifiedName SvgAttributeName(const String& property) {
+  DCHECK(!IsSVGPrefixed(property));
+  return QualifiedName(g_null_atom, AtomicString(property), g_null_atom);
 }
 
-const QualifiedName* AnimationInputHelpers::keyframeAttributeToSVGAttribute(
+const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
     const String& property,
     Element& element) {
   if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() ||
-      !element.isSVGElement() || !isSVGPrefixed(property))
+      !element.IsSVGElement() || !IsSVGPrefixed(property))
     return nullptr;
 
-  SVGElement& svgElement = toSVGElement(element);
-  if (isSVGSMILElement(svgElement))
+  SVGElement& svg_element = ToSVGElement(element);
+  if (IsSVGSMILElement(svg_element))
     return nullptr;
 
-  String unprefixedProperty = removeSVGPrefix(property);
-  QualifiedName attributeName = svgAttributeName(unprefixedProperty);
-  const AttributeNameMap& supportedAttributes = getSupportedAttributes();
-  auto iter = supportedAttributes.find(attributeName);
-  if (iter == supportedAttributes.end() ||
-      !svgElement.propertyFromAttribute(*iter->value))
+  String unprefixed_property = RemoveSVGPrefix(property);
+  QualifiedName attribute_name = SvgAttributeName(unprefixed_property);
+  const AttributeNameMap& supported_attributes = GetSupportedAttributes();
+  auto iter = supported_attributes.Find(attribute_name);
+  if (iter == supported_attributes.end() ||
+      !svg_element.PropertyFromAttribute(*iter->value))
     return nullptr;
 
   return iter->value;
 }
 
-PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(
+PassRefPtr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
     const String& string,
     Document* document,
-    ExceptionState& exceptionState) {
-  if (string.isEmpty()) {
-    exceptionState.throwTypeError("Easing may not be the empty string");
+    ExceptionState& exception_state) {
+  if (string.IsEmpty()) {
+    exception_state.ThrowTypeError("Easing may not be the empty string");
     return nullptr;
   }
 
   const CSSValue* value =
-      CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
-  if (!value || !value->isValueList()) {
-    DCHECK(!value || value->isCSSWideKeyword());
+      CSSParser::ParseSingleValue(CSSPropertyTransitionTimingFunction, string);
+  if (!value || !value->IsValueList()) {
+    DCHECK(!value || value->IsCSSWideKeyword());
     if (document) {
-      if (string.startsWith("function")) {
+      if (string.StartsWith("function")) {
         // Due to a bug in old versions of the web-animations-next
         // polyfill, in some circumstances the string passed in here
         // may be a Javascript function instead of the allowed values
@@ -237,24 +237,24 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(
         // linear case is special because 'linear' is the default value
         // for easing. See http://crbug.com/601672
         if (string == "function (a){return a}") {
-          UseCounter::count(*document,
-                            UseCounter::WebAnimationsEasingAsFunctionLinear);
+          UseCounter::Count(*document,
+                            UseCounter::kWebAnimationsEasingAsFunctionLinear);
         } else {
-          UseCounter::count(*document,
-                            UseCounter::WebAnimationsEasingAsFunctionOther);
+          UseCounter::Count(*document,
+                            UseCounter::kWebAnimationsEasingAsFunctionOther);
         }
       }
     }
-    exceptionState.throwTypeError("'" + string +
-                                  "' is not a valid value for easing");
+    exception_state.ThrowTypeError("'" + string +
+                                   "' is not a valid value for easing");
     return nullptr;
   }
-  const CSSValueList* valueList = toCSSValueList(value);
-  if (valueList->length() > 1) {
-    exceptionState.throwTypeError("Easing may not be set to a list of values");
+  const CSSValueList* value_list = ToCSSValueList(value);
+  if (value_list->length() > 1) {
+    exception_state.ThrowTypeError("Easing may not be set to a list of values");
     return nullptr;
   }
-  return CSSToStyleMap::mapAnimationTimingFunction(valueList->item(0), true);
+  return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0), true);
 }
 
 }  // namespace blink

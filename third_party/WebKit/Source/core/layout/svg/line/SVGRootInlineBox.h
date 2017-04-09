@@ -31,33 +31,33 @@ class SVGRootInlineBox final : public RootInlineBox {
  public:
   SVGRootInlineBox(LineLayoutItem block) : RootInlineBox(block) {}
 
-  bool isSVGRootInlineBox() const override { return true; }
+  bool IsSVGRootInlineBox() const override { return true; }
 
-  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-  void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
+  LayoutUnit VirtualLogicalHeight() const override { return logical_height_; }
+  void SetLogicalHeight(LayoutUnit height) { logical_height_ = height; }
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom) const override;
+             LayoutUnit line_top,
+             LayoutUnit line_bottom) const override;
 
-  void markDirty() override;
+  void MarkDirty() override;
 
-  void computePerCharacterLayoutInformation();
+  void ComputePerCharacterLayoutInformation();
 
-  InlineBox* closestLeafChildForPosition(const LayoutPoint&);
+  InlineBox* ClosestLeafChildForPosition(const LayoutPoint&);
 
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
-                   LayoutUnit lineTop,
-                   LayoutUnit lineBottom) final;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   LayoutUnit line_top,
+                   LayoutUnit line_bottom) final;
 
  private:
-  void reorderValueLists();
-  LayoutRect layoutInlineBoxes(InlineBox&);
+  void ReorderValueLists();
+  LayoutRect LayoutInlineBoxes(InlineBox&);
 
-  LayoutUnit m_logicalHeight;
+  LayoutUnit logical_height_;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGRootInlineBox);

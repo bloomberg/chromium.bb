@@ -34,9 +34,9 @@ class SVGFEFloodElement final : public SVGFilterPrimitiveStandardAttributes {
  private:
   explicit SVGFEFloodElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*,
-                                const QualifiedName& attrName) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*,
+                                const QualifiedName& attr_name) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 };
 
 }  // namespace blink

@@ -14,51 +14,51 @@ using testing::UnorderedElementsAre;
 namespace blink {
 
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
-  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::create(iframe);
-  String errorMessage;
+  Document* document = Document::Create();
+  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
+  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::Create(iframe);
+  String error_message;
   Vector<WebFeaturePolicyFeature> result;
 
   allow->setValue("");
-  result = allow->parseAllowedFeatureNames(errorMessage);
-  EXPECT_TRUE(result.isEmpty());
+  result = allow->ParseAllowedFeatureNames(error_message);
+  EXPECT_TRUE(result.IsEmpty());
 
   allow->setValue("fullscreen");
-  result = allow->parseAllowedFeatureNames(errorMessage);
+  result = allow->ParseAllowedFeatureNames(error_message);
   EXPECT_THAT(result,
-              UnorderedElementsAre(WebFeaturePolicyFeature::Fullscreen));
+              UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen));
 
   allow->setValue("fullscreen payment vibrate");
-  result = allow->parseAllowedFeatureNames(errorMessage);
-  EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::Fullscreen,
-                                           WebFeaturePolicyFeature::Payment,
-                                           WebFeaturePolicyFeature::Vibrate));
+  result = allow->ParseAllowedFeatureNames(error_message);
+  EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen,
+                                           WebFeaturePolicyFeature::kPayment,
+                                           WebFeaturePolicyFeature::kVibrate));
 }
 
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesInvalid) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
-  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::create(iframe);
-  String errorMessage;
+  Document* document = Document::Create();
+  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
+  HTMLIFrameElementAllow* allow = HTMLIFrameElementAllow::Create(iframe);
+  String error_message;
   Vector<WebFeaturePolicyFeature> result;
 
   allow->setValue("invalid");
-  result = allow->parseAllowedFeatureNames(errorMessage);
-  EXPECT_TRUE(result.isEmpty());
-  EXPECT_EQ("'invalid' is an invalid feature name.", errorMessage);
+  result = allow->ParseAllowedFeatureNames(error_message);
+  EXPECT_TRUE(result.IsEmpty());
+  EXPECT_EQ("'invalid' is an invalid feature name.", error_message);
 
   allow->setValue("fullscreen invalid1 invalid2");
-  result = allow->parseAllowedFeatureNames(errorMessage);
+  result = allow->ParseAllowedFeatureNames(error_message);
   EXPECT_THAT(result,
-              UnorderedElementsAre(WebFeaturePolicyFeature::Fullscreen));
-  EXPECT_EQ("'invalid1', 'invalid2' are invalid feature names.", errorMessage);
+              UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen));
+  EXPECT_EQ("'invalid1', 'invalid2' are invalid feature names.", error_message);
 
   allow->setValue("fullscreen invalid vibrate fullscreen");
-  result = allow->parseAllowedFeatureNames(errorMessage);
-  EXPECT_EQ("'invalid' is an invalid feature name.", errorMessage);
-  EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::Fullscreen,
-                                           WebFeaturePolicyFeature::Vibrate));
+  result = allow->ParseAllowedFeatureNames(error_message);
+  EXPECT_EQ("'invalid' is an invalid feature name.", error_message);
+  EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen,
+                                           WebFeaturePolicyFeature::kVibrate));
 }
 
 }  // namespace blink

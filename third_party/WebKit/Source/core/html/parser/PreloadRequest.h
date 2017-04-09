@@ -26,115 +26,116 @@ class CORE_EXPORT PreloadRequest {
 
  public:
   enum RequestType {
-    RequestTypePreload,
-    RequestTypePreconnect,
-    RequestTypeLinkRelPreload
+    kRequestTypePreload,
+    kRequestTypePreconnect,
+    kRequestTypeLinkRelPreload
   };
 
   // TODO(csharrison): Move the implementation to the cpp file when core/html
   // gets its own testing source set in html/BUILD.gn.
-  static std::unique_ptr<PreloadRequest> createIfNeeded(
-      const String& initiatorName,
-      const TextPosition& initiatorPosition,
-      const String& resourceURL,
-      const KURL& baseURL,
-      Resource::Type resourceType,
-      const ReferrerPolicy referrerPolicy,
-      const FetchRequest::ResourceWidth& resourceWidth =
+  static std::unique_ptr<PreloadRequest> CreateIfNeeded(
+      const String& initiator_name,
+      const TextPosition& initiator_position,
+      const String& resource_url,
+      const KURL& base_url,
+      Resource::Type resource_type,
+      const ReferrerPolicy referrer_policy,
+      const FetchRequest::ResourceWidth& resource_width =
           FetchRequest::ResourceWidth(),
-      const ClientHintsPreferences& clientHintsPreferences =
+      const ClientHintsPreferences& client_hints_preferences =
           ClientHintsPreferences(),
-      RequestType requestType = RequestTypePreload) {
+      RequestType request_type = kRequestTypePreload) {
     // Never preload data URLs. We also disallow relative ref URLs which become
     // data URLs if the document's URL is a data URL. We don't want to create
     // extra resource requests with data URLs to avoid copy / initialization
     // overhead, which can be significant for large URLs.
-    if (resourceURL.isEmpty() || resourceURL.startsWith("#") ||
-        protocolIs(resourceURL, "data")) {
+    if (resource_url.IsEmpty() || resource_url.StartsWith("#") ||
+        ProtocolIs(resource_url, "data")) {
       return nullptr;
     }
-    return WTF::wrapUnique(new PreloadRequest(
-        initiatorName, initiatorPosition, resourceURL, baseURL, resourceType,
-        resourceWidth, clientHintsPreferences, requestType, referrerPolicy));
+    return WTF::WrapUnique(new PreloadRequest(
+        initiator_name, initiator_position, resource_url, base_url,
+        resource_type, resource_width, client_hints_preferences, request_type,
+        referrer_policy));
   }
 
-  bool isSafeToSendToAnotherThread() const;
+  bool IsSafeToSendToAnotherThread() const;
 
-  Resource* start(Document*);
+  Resource* Start(Document*);
 
-  double discoveryTime() const { return m_discoveryTime; }
-  void setDefer(FetchRequest::DeferOption defer) { m_defer = defer; }
-  void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
-  void setCrossOrigin(CrossOriginAttributeValue crossOrigin) {
-    m_crossOrigin = crossOrigin;
+  double DiscoveryTime() const { return discovery_time_; }
+  void SetDefer(FetchRequest::DeferOption defer) { defer_ = defer; }
+  void SetCharset(const String& charset) { charset_ = charset.IsolatedCopy(); }
+  void SetCrossOrigin(CrossOriginAttributeValue cross_origin) {
+    cross_origin_ = cross_origin;
   }
-  CrossOriginAttributeValue crossOrigin() const { return m_crossOrigin; }
+  CrossOriginAttributeValue CrossOrigin() const { return cross_origin_; }
 
-  void setNonce(const String& nonce) { m_nonce = nonce.isolatedCopy(); }
-  const String& nonce() const { return m_nonce; }
+  void SetNonce(const String& nonce) { nonce_ = nonce.IsolatedCopy(); }
+  const String& Nonce() const { return nonce_; }
 
-  Resource::Type resourceType() const { return m_resourceType; }
+  Resource::Type ResourceType() const { return resource_type_; }
 
-  const String& resourceURL() const { return m_resourceURL; }
-  float resourceWidth() const {
-    return m_resourceWidth.isSet ? m_resourceWidth.width : 0;
+  const String& ResourceURL() const { return resource_url_; }
+  float ResourceWidth() const {
+    return resource_width_.is_set ? resource_width_.width : 0;
   }
-  const KURL& baseURL() const { return m_baseURL; }
-  bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
-  bool isLinkRelPreload() const {
-    return m_requestType == RequestTypeLinkRelPreload;
+  const KURL& BaseURL() const { return base_url_; }
+  bool IsPreconnect() const { return request_type_ == kRequestTypePreconnect; }
+  bool IsLinkRelPreload() const {
+    return request_type_ == kRequestTypeLinkRelPreload;
   }
-  const ClientHintsPreferences& preferences() const {
-    return m_clientHintsPreferences;
+  const ClientHintsPreferences& Preferences() const {
+    return client_hints_preferences_;
   }
-  ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
-  void setIntegrityMetadata(const IntegrityMetadataSet& metadataSet) {
-    m_integrityMetadata = metadataSet;
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  void SetIntegrityMetadata(const IntegrityMetadataSet& metadata_set) {
+    integrity_metadata_ = metadata_set;
   }
-  const IntegrityMetadataSet& integrityMetadata() const {
-    return m_integrityMetadata;
+  const IntegrityMetadataSet& IntegrityMetadata() const {
+    return integrity_metadata_;
   }
 
  private:
-  PreloadRequest(const String& initiatorName,
-                 const TextPosition& initiatorPosition,
-                 const String& resourceURL,
-                 const KURL& baseURL,
-                 Resource::Type resourceType,
-                 const FetchRequest::ResourceWidth& resourceWidth,
-                 const ClientHintsPreferences& clientHintsPreferences,
-                 RequestType requestType,
-                 const ReferrerPolicy referrerPolicy)
-      : m_initiatorName(initiatorName),
-        m_initiatorPosition(initiatorPosition),
-        m_resourceURL(resourceURL.isolatedCopy()),
-        m_baseURL(baseURL.copy()),
-        m_resourceType(resourceType),
-        m_crossOrigin(CrossOriginAttributeNotSet),
-        m_discoveryTime(monotonicallyIncreasingTime()),
-        m_defer(FetchRequest::NoDefer),
-        m_resourceWidth(resourceWidth),
-        m_clientHintsPreferences(clientHintsPreferences),
-        m_requestType(requestType),
-        m_referrerPolicy(referrerPolicy) {}
+  PreloadRequest(const String& initiator_name,
+                 const TextPosition& initiator_position,
+                 const String& resource_url,
+                 const KURL& base_url,
+                 Resource::Type resource_type,
+                 const FetchRequest::ResourceWidth& resource_width,
+                 const ClientHintsPreferences& client_hints_preferences,
+                 RequestType request_type,
+                 const ReferrerPolicy referrer_policy)
+      : initiator_name_(initiator_name),
+        initiator_position_(initiator_position),
+        resource_url_(resource_url.IsolatedCopy()),
+        base_url_(base_url.Copy()),
+        resource_type_(resource_type),
+        cross_origin_(kCrossOriginAttributeNotSet),
+        discovery_time_(MonotonicallyIncreasingTime()),
+        defer_(FetchRequest::kNoDefer),
+        resource_width_(resource_width),
+        client_hints_preferences_(client_hints_preferences),
+        request_type_(request_type),
+        referrer_policy_(referrer_policy) {}
 
-  KURL completeURL(Document*);
+  KURL CompleteURL(Document*);
 
-  String m_initiatorName;
-  TextPosition m_initiatorPosition;
-  String m_resourceURL;
-  KURL m_baseURL;
-  String m_charset;
-  Resource::Type m_resourceType;
-  CrossOriginAttributeValue m_crossOrigin;
-  String m_nonce;
-  double m_discoveryTime;
-  FetchRequest::DeferOption m_defer;
-  FetchRequest::ResourceWidth m_resourceWidth;
-  ClientHintsPreferences m_clientHintsPreferences;
-  RequestType m_requestType;
-  ReferrerPolicy m_referrerPolicy;
-  IntegrityMetadataSet m_integrityMetadata;
+  String initiator_name_;
+  TextPosition initiator_position_;
+  String resource_url_;
+  KURL base_url_;
+  String charset_;
+  Resource::Type resource_type_;
+  CrossOriginAttributeValue cross_origin_;
+  String nonce_;
+  double discovery_time_;
+  FetchRequest::DeferOption defer_;
+  FetchRequest::ResourceWidth resource_width_;
+  ClientHintsPreferences client_hints_preferences_;
+  RequestType request_type_;
+  ReferrerPolicy referrer_policy_;
+  IntegrityMetadataSet integrity_metadata_;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;

@@ -10,13 +10,13 @@
 namespace blink {
 
 DoublePoint::DoublePoint(const LayoutPoint& p)
-    : m_x(p.x().toDouble()), m_y(p.y().toDouble()) {}
+    : x_(p.X().ToDouble()), y_(p.Y().ToDouble()) {}
 
 DoublePoint::DoublePoint(const FloatSize& size)
-    : m_x(size.width()), m_y(size.height()) {}
+    : x_(size.Width()), y_(size.Height()) {}
 
-String DoublePoint::toString() const {
-  return String::format("%lg,%lg", x(), y());
+String DoublePoint::ToString() const {
+  return String::Format("%lg,%lg", X(), Y());
 }
 
 }  // namespace blink

@@ -30,10 +30,10 @@ namespace blink {
 
 template <typename FunctionType, typename... Ps>
 std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, Ps...>,
-                         WTF::CrossThreadAffinity>>
-crossThreadBind(FunctionType function, Ps&&... parameters) {
-  return WTF::bindInternal<WTF::CrossThreadAffinity>(
-      function, CrossThreadCopier<typename std::decay<Ps>::type>::copy(
+                         WTF::kCrossThreadAffinity>>
+CrossThreadBind(FunctionType function, Ps&&... parameters) {
+  return WTF::BindInternal<WTF::kCrossThreadAffinity>(
+      function, CrossThreadCopier<typename std::decay<Ps>::type>::Copy(
                     std::forward<Ps>(parameters))...);
 }
 

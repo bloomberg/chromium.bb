@@ -39,27 +39,27 @@ using namespace blink;
 
 namespace blink {
 
-static_assert(static_cast<NSScrollerStyle>(ScrollerStyleLegacy) ==
+static_assert(static_cast<NSScrollerStyle>(kScrollerStyleLegacy) ==
                   NSScrollerStyleLegacy,
               "ScrollerStyleLegacy must match NSScrollerStyleLegacy");
-static_assert(static_cast<NSScrollerStyle>(ScrollerStyleOverlay) ==
+static_assert(static_cast<NSScrollerStyle>(kScrollerStyleOverlay) ==
                   NSScrollerStyleOverlay,
               "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
 
-void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
-    float initialButtonDelay,
-    float autoscrollButtonDelay,
-    ScrollerStyle preferredScrollerStyle,
+void WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
+    float initial_button_delay,
+    float autoscroll_button_delay,
+    ScrollerStyle preferred_scroller_style,
     bool redraw,
-    WebScrollbarButtonsPlacement buttonPlacement) {
-  ScrollbarTheme& theme = ScrollbarTheme::theme();
-  if (theme.isMockTheme())
+    WebScrollbarButtonsPlacement button_placement) {
+  ScrollbarTheme& theme = ScrollbarTheme::GetTheme();
+  if (theme.IsMockTheme())
     return;
 
-  static_cast<ScrollbarThemeMac&>(theme).preferencesChanged(
-      initialButtonDelay, autoscrollButtonDelay,
-      static_cast<NSScrollerStyle>(preferredScrollerStyle), redraw,
-      buttonPlacement);
+  static_cast<ScrollbarThemeMac&>(theme).PreferencesChanged(
+      initial_button_delay, autoscroll_button_delay,
+      static_cast<NSScrollerStyle>(preferred_scroller_style), redraw,
+      button_placement);
 }
 
 }  // namespace blink

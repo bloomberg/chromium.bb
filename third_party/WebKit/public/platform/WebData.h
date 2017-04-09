@@ -48,33 +48,33 @@ class SharedBuffer;
 //
 class BLINK_PLATFORM_EXPORT WebData {
  public:
-  ~WebData() { reset(); }
+  ~WebData() { Reset(); }
 
   WebData() {}
 
-  WebData(const char* data, size_t size) { assign(data, size); }
+  WebData(const char* data, size_t size) { Assign(data, size); }
 
   template <int N>
   WebData(const char (&data)[N]) {
-    assign(data, N - 1);
+    Assign(data, N - 1);
   }
 
-  WebData(const WebData& d) { assign(d); }
+  WebData(const WebData& d) { Assign(d); }
 
   WebData& operator=(const WebData& d) {
-    assign(d);
+    Assign(d);
     return *this;
   }
 
-  void reset();
-  void assign(const WebData&);
-  void assign(const char* data, size_t size);
+  void Reset();
+  void Assign(const WebData&);
+  void Assign(const char* data, size_t size);
 
   size_t size() const;
-  const char* data() const;
+  const char* Data() const;
 
-  bool isEmpty() const { return !size(); }
-  bool isNull() const { return m_private.isNull(); }
+  bool IsEmpty() const { return !size(); }
+  bool IsNull() const { return private_.IsNull(); }
 
 #if INSIDE_BLINK
   WebData(PassRefPtr<SharedBuffer>);
@@ -83,18 +83,18 @@ class BLINK_PLATFORM_EXPORT WebData {
 #else
   template <class C>
   WebData(const C& c) {
-    assign(c.data(), c.size());
+    Assign(c.data(), c.size());
   }
 
   template <class C>
   WebData& operator=(const C& c) {
-    assign(c.data(), c.size());
+    Assign(c.data(), c.size());
     return *this;
   }
 #endif
 
  private:
-  WebPrivatePtr<SharedBuffer> m_private;
+  WebPrivatePtr<SharedBuffer> private_;
 };
 
 }  // namespace blink

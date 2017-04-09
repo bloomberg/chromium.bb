@@ -898,8 +898,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   // Simulate a user click to force an autofill of the form's DOM value, not
   // just the suggested value.
-  content::SimulateMouseClick(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left);
+  content::SimulateMouseClick(WebContents(), 0,
+                              blink::WebMouseEvent::Button::kLeft);
 
   // The form should be filled with the previously submitted username.
   CheckElementValue("username_field", "my_username");
@@ -1134,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckElementValue("password_field", "");
   // Let the user interact with the page.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   // Wait until that interaction causes the password value to be revealed.
   WaitForElementValue("password_field", "random");
   // And check that after the side-effects of the interaction took place, the
@@ -1508,7 +1508,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   WaitForElementValue("username_field", "user");
   CheckElementValue("password_field", "12345");
 }
@@ -1829,7 +1829,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       "window.domAutomationController.send(usernameRect.left);", &left));
 
   content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::Left,
+                                blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(left + 1, top + 1));
   // Make sure the popup would be shown.
   observing_autofill_client->Wait();
@@ -2071,9 +2071,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       RenderFrameHost(),
       "window.domAutomationController.send(iframeRect.left);", &left));
 
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(left + 1,
-                                                                     top + 1));
+  content::SimulateMouseClickAt(WebContents(), 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(left + 1, top + 1));
   // Verify username is not autofilled
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
       RenderFrameHost(), "sendMessage('get_username');", &empty_username));
@@ -2130,9 +2130,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       RenderFrameHost(),
       "window.domAutomationController.send(iframeRect.left);", &left));
 
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(left + 1,
-                                                                     top + 1));
+  content::SimulateMouseClickAt(WebContents(), 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(left + 1, top + 1));
   // Verify password has been autofilled
   WaitForElementValue("iframe", "password_field", "pa55w0rd");
 
@@ -2437,7 +2437,7 @@ IN_PROC_BROWSER_TEST_F(
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -2485,7 +2485,7 @@ IN_PROC_BROWSER_TEST_F(
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -2532,7 +2532,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -2592,7 +2592,7 @@ IN_PROC_BROWSER_TEST_F(
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -2649,7 +2649,7 @@ IN_PROC_BROWSER_TEST_F(
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -2771,7 +2771,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   CheckElementValue("hidden_password_form_username", "myusername");
   CheckElementValue("hidden_password_form_password", "mypassword");
@@ -2805,7 +2805,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   CheckElementValue("form_with_hidden_password_username", "myusername");
   CheckElementValue("form_with_hidden_password_password", "mypassword");
@@ -2839,7 +2839,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   std::string get_username =
       "window.domAutomationController.send("
@@ -3243,7 +3243,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   base::HistogramTester histograms;
 
   content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::Left,
+                                blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(left + 1, top + 1));
   // Ensure the warning would be shown.
   observing_autofill_client->Wait();
@@ -3299,7 +3299,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   base::HistogramTester histograms;
 
   content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::Left,
+                                blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(left + 1, top + 1));
   // Force a round-trip.
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),

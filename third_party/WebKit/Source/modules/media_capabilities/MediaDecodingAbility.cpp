@@ -7,29 +7,29 @@
 namespace blink {
 
 // static
-MediaDecodingAbility* MediaDecodingAbility::take(
+MediaDecodingAbility* MediaDecodingAbility::Take(
     ScriptPromiseResolver*,
-    std::unique_ptr<WebMediaDecodingAbility> webMediaDecodingAbility) {
-  DCHECK(webMediaDecodingAbility);
-  return new MediaDecodingAbility(std::move(webMediaDecodingAbility));
+    std::unique_ptr<WebMediaDecodingAbility> web_media_decoding_ability) {
+  DCHECK(web_media_decoding_ability);
+  return new MediaDecodingAbility(std::move(web_media_decoding_ability));
 }
 
 bool MediaDecodingAbility::supported() const {
-  return m_webMediaDecodingAbility->supported;
+  return web_media_decoding_ability_->supported;
 }
 
 bool MediaDecodingAbility::smooth() const {
-  return m_webMediaDecodingAbility->smooth;
+  return web_media_decoding_ability_->smooth;
 }
 
 bool MediaDecodingAbility::powerEfficient() const {
-  return m_webMediaDecodingAbility->powerEfficient;
+  return web_media_decoding_ability_->power_efficient;
 }
 
 DEFINE_TRACE(MediaDecodingAbility) {}
 
 MediaDecodingAbility::MediaDecodingAbility(
-    std::unique_ptr<WebMediaDecodingAbility> webMediaDecodingAbility)
-    : m_webMediaDecodingAbility(std::move(webMediaDecodingAbility)) {}
+    std::unique_ptr<WebMediaDecodingAbility> web_media_decoding_ability)
+    : web_media_decoding_ability_(std::move(web_media_decoding_ability)) {}
 
 }  // namespace blink

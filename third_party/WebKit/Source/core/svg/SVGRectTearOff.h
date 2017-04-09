@@ -42,31 +42,31 @@ class SVGRectTearOff : public SVGPropertyTearOff<SVGRect>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGRectTearOff* create(
+  static SVGRectTearOff* Create(
       SVGRect* target,
-      SVGElement* contextElement,
-      PropertyIsAnimValType propertyIsAnimVal,
-      const QualifiedName& attributeName = QualifiedName::null()) {
-    return new SVGRectTearOff(target, contextElement, propertyIsAnimVal,
-                              attributeName);
+      SVGElement* context_element,
+      PropertyIsAnimValType property_is_anim_val,
+      const QualifiedName& attribute_name = QualifiedName::Null()) {
+    return new SVGRectTearOff(target, context_element, property_is_anim_val,
+                              attribute_name);
   }
 
   void setX(float, ExceptionState&);
   void setY(float, ExceptionState&);
   void setWidth(float, ExceptionState&);
   void setHeight(float, ExceptionState&);
-  float x() { return target()->x(); }
-  float y() { return target()->y(); }
-  float width() { return target()->width(); }
-  float height() { return target()->height(); }
+  float x() { return Target()->X(); }
+  float y() { return Target()->Y(); }
+  float width() { return Target()->Width(); }
+  float height() { return Target()->Height(); }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   SVGRectTearOff(SVGRect*,
-                 SVGElement* contextElement,
+                 SVGElement* context_element,
                  PropertyIsAnimValType,
-                 const QualifiedName& attributeName = QualifiedName::null());
+                 const QualifiedName& attribute_name = QualifiedName::Null());
 };
 
 }  // namespace blink

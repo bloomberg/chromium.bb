@@ -39,65 +39,67 @@ class Document;
 
 class CSSFontFaceSrcValue : public CSSValue {
  public:
-  static CSSFontFaceSrcValue* create(
-      const String& specifiedResource,
-      const String& absoluteResource,
+  static CSSFontFaceSrcValue* Create(
+      const String& specified_resource,
+      const String& absolute_resource,
       const Referrer& referrer,
-      ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) {
-    return new CSSFontFaceSrcValue(specifiedResource, absoluteResource,
+      ContentSecurityPolicyDisposition should_check_content_security_policy) {
+    return new CSSFontFaceSrcValue(specified_resource, absolute_resource,
                                    referrer, false,
-                                   shouldCheckContentSecurityPolicy);
+                                   should_check_content_security_policy);
   }
-  static CSSFontFaceSrcValue* createLocal(
-      const String& absoluteResource,
-      ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) {
-    return new CSSFontFaceSrcValue(emptyString, absoluteResource, Referrer(),
-                                   true, shouldCheckContentSecurityPolicy);
+  static CSSFontFaceSrcValue* CreateLocal(
+      const String& absolute_resource,
+      ContentSecurityPolicyDisposition should_check_content_security_policy) {
+    return new CSSFontFaceSrcValue(g_empty_string, absolute_resource,
+                                   Referrer(), true,
+                                   should_check_content_security_policy);
   }
 
-  const String& resource() const { return m_absoluteResource; }
-  const String& format() const { return m_format; }
-  bool isLocal() const { return m_isLocal; }
+  const String& GetResource() const { return absolute_resource_; }
+  const String& Format() const { return format_; }
+  bool IsLocal() const { return is_local_; }
 
-  void setFormat(const String& format) { m_format = format; }
+  void SetFormat(const String& format) { format_ = format; }
 
-  bool isSupportedFormat() const;
+  bool IsSupportedFormat() const;
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool hasFailedOrCanceledSubresources() const;
+  bool HasFailedOrCanceledSubresources() const;
 
-  FontResource* fetch(Document*) const;
+  FontResource* Fetch(Document*) const;
 
-  bool equals(const CSSFontFaceSrcValue&) const;
+  bool Equals(const CSSFontFaceSrcValue&) const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(m_fetched);
-    CSSValue::traceAfterDispatch(visitor);
+    visitor->Trace(fetched_);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
   CSSFontFaceSrcValue(
-      const String& specifiedResource,
-      const String& absoluteResource,
+      const String& specified_resource,
+      const String& absolute_resource,
       const Referrer& referrer,
       bool local,
-      ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
-      : CSSValue(FontFaceSrcClass),
-        m_absoluteResource(absoluteResource),
-        m_specifiedResource(specifiedResource),
-        m_referrer(referrer),
-        m_isLocal(local),
-        m_shouldCheckContentSecurityPolicy(shouldCheckContentSecurityPolicy) {}
+      ContentSecurityPolicyDisposition should_check_content_security_policy)
+      : CSSValue(kFontFaceSrcClass),
+        absolute_resource_(absolute_resource),
+        specified_resource_(specified_resource),
+        referrer_(referrer),
+        is_local_(local),
+        should_check_content_security_policy_(
+            should_check_content_security_policy) {}
 
-  void restoreCachedResourceIfNeeded(Document*) const;
+  void RestoreCachedResourceIfNeeded(Document*) const;
 
-  String m_absoluteResource;
-  String m_specifiedResource;
-  String m_format;
-  Referrer m_referrer;
-  bool m_isLocal;
-  ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
+  String absolute_resource_;
+  String specified_resource_;
+  String format_;
+  Referrer referrer_;
+  bool is_local_;
+  ContentSecurityPolicyDisposition should_check_content_security_policy_;
 
   class FontResourceHelper
       : public GarbageCollectedFinalized<FontResourceHelper>,
@@ -105,25 +107,25 @@ class CSSFontFaceSrcValue : public CSSValue {
     USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
 
    public:
-    static FontResourceHelper* create(FontResource* resource) {
+    static FontResourceHelper* Create(FontResource* resource) {
       return new FontResourceHelper(resource);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      ResourceOwner<FontResource>::trace(visitor);
+      ResourceOwner<FontResource>::Trace(visitor);
     }
 
    private:
-    FontResourceHelper(FontResource* resource) { setResource(resource); }
+    FontResourceHelper(FontResource* resource) { SetResource(resource); }
 
-    String debugName() const override {
+    String DebugName() const override {
       return "CSSFontFaceSrcValue::FontResourceHelper";
     }
   };
-  mutable Member<FontResourceHelper> m_fetched;
+  mutable Member<FontResourceHelper> fetched_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, IsFontFaceSrcValue());
 
 }  // namespace blink
 

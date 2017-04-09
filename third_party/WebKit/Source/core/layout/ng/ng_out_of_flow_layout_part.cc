@@ -22,10 +22,10 @@ namespace {
 bool IsContainingBlockForAbsoluteDescendant(
     const ComputedStyle& container_style,
     const ComputedStyle& descendant_style) {
-  EPosition position = descendant_style.position();
-  bool contains_fixed = container_style.canContainFixedPositionObjects();
+  EPosition position = descendant_style.GetPosition();
+  bool contains_fixed = container_style.CanContainFixedPositionObjects();
   bool contains_absolute =
-      container_style.canContainAbsolutePositionObjects() || contains_fixed;
+      container_style.CanContainAbsolutePositionObjects() || contains_fixed;
 
   return (contains_absolute && position == EPosition::kAbsolute) ||
          (contains_fixed && position == EPosition::kFixed);
@@ -39,14 +39,14 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     NGFragmentBuilder* container_builder)
     : container_style_(container_style), container_builder_(container_builder) {
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(container_style_.getWritingMode()));
+      FromPlatformWritingMode(container_style_.GetWritingMode()));
 
   NGBoxStrut borders = ComputeBorders(container_space, container_style_);
   container_border_offset_ =
       NGLogicalOffset{borders.inline_start, borders.block_start};
   container_border_physical_offset_ =
       container_border_offset_.ConvertToPhysical(
-          writing_mode, container_style_.direction(),
+          writing_mode, container_style_.Direction(),
           container_builder_->Size().ConvertToPhysical(writing_mode),
           NGPhysicalSize());
 
@@ -59,7 +59,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   space_builder.SetAvailableSize(space_size);
   space_builder.SetPercentageResolutionSize(space_size);
   space_builder.SetIsNewFormattingContext(true);
-  space_builder.SetTextDirection(container_style_.direction());
+  space_builder.SetTextDirection(container_style_.Direction());
   container_space_ = space_builder.ToConstraintSpace(writing_mode);
 }
 
@@ -89,8 +89,8 @@ void NGOutOfFlowLayoutPart::Run() {
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
-    out_of_flow_candidates.clear();
-    out_of_flow_candidate_positions.clear();
+    out_of_flow_candidates.Clear();
+    out_of_flow_candidate_positions.Clear();
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
         &out_of_flow_candidates, &out_of_flow_candidate_positions);
   }
@@ -111,7 +111,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
   NGWritingMode descendant_writing_mode(
-      FromPlatformWritingMode(descendant.Style().getWritingMode()));
+      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
 
   if (AbsoluteNeedsChildInlineSize(descendant.Style())) {
     inline_estimate = descendant.ComputeMinMaxContentSize();
@@ -127,7 +127,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
     NGBoxFragment fragment(
         descendant_writing_mode,
-        toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
+        ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get()));
 
     block_estimate = fragment.BlockSize();
   }
@@ -167,7 +167,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // As the block_estimate is always in the descendant's writing mode, we build
   // the constraint space in the descendant's writing mode.
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(descendant.Style().getWritingMode()));
+      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
   NGLogicalSize container_size(
       container_space_->AvailableSize()
           .ConvertToPhysical(container_space_->WritingMode())
@@ -189,7 +189,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   builder.SetIsNewFormattingContext(true);
   RefPtr<NGConstraintSpace> space = builder.ToConstraintSpace(writing_mode);
 
-  return descendant.Layout(space.get());
+  return descendant.Layout(space.Get());
 }
 
 }  // namespace blink

@@ -115,7 +115,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
  private:
   void InformHostOfCacheStats() {
     WebCache::UsageStats stats;
-    WebCache::getUsageStats(&stats);
+    WebCache::GetUsageStats(&stats);
     RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
         static_cast<uint64_t>(stats.capacity),
         static_cast<uint64_t>(stats.size)));
@@ -185,7 +185,7 @@ class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
     }
 
     WebCache::ResourceTypeStats stats;
-    WebCache::getResourceTypeStats(&stats);
+    WebCache::GetResourceTypeStats(&stats);
     usage_data_->web_cache_stats =
         chrome::mojom::ResourceTypeStats::From(stats);
 
@@ -256,9 +256,9 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   // URLs since it should never be visible to the user.
   // See also ChromeContentClient::AddAdditionalSchemes that adds it as an
   // empty document scheme.
-  WebString native_scheme(WebString::fromASCII(chrome::kChromeNativeScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+  WebString native_scheme(WebString::FromASCII(chrome::kChromeNativeScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(native_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
 
   thread->GetInterfaceRegistry()->AddInterface(

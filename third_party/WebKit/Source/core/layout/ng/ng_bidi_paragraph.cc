@@ -20,10 +20,10 @@ bool NGBidiParagraph::SetParagraph(const String& text,
   ubidi_ = ubidi_open();
   ICUError error;
   ubidi_setPara(
-      ubidi_, text.characters16(), text.length(),
-      block_style.getUnicodeBidi() == UnicodeBidi::kPlaintext
+      ubidi_, text.Characters16(), text.length(),
+      block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext
           ? UBIDI_DEFAULT_LTR
-          : (block_style.direction() == TextDirection::kRtl ? UBIDI_RTL
+          : (block_style.Direction() == TextDirection::kRtl ? UBIDI_RTL
                                                             : UBIDI_LTR),
       nullptr, &error);
   if (U_FAILURE(error)) {
@@ -47,8 +47,8 @@ void NGBidiParagraph::IndicesInVisualOrder(
     Vector<int32_t, 32>* indices_in_visual_order_out) {
   // Check the size before passing the raw pointers to ICU.
   CHECK_EQ(levels.size(), indices_in_visual_order_out->size());
-  ubidi_reorderVisual(levels.data(), levels.size(),
-                      indices_in_visual_order_out->data());
+  ubidi_reorderVisual(levels.Data(), levels.size(),
+                      indices_in_visual_order_out->Data());
 }
 
 }  // namespace blink

@@ -18,35 +18,35 @@ class URLSearchParamsIterationSource final
     : public PairIterable<String, String>::IterationSource {
  public:
   URLSearchParamsIterationSource(Vector<std::pair<String, String>> params)
-      : m_params(params), m_current(0) {}
+      : params_(params), current_(0) {}
 
-  bool next(ScriptState*,
+  bool Next(ScriptState*,
             String& key,
             String& value,
             ExceptionState&) override {
-    if (m_current >= m_params.size())
+    if (current_ >= params_.size())
       return false;
 
-    key = m_params[m_current].first;
-    value = m_params[m_current].second;
-    m_current++;
+    key = params_[current_].first;
+    value = params_[current_].second;
+    current_++;
     return true;
   }
 
  private:
-  Vector<std::pair<String, String>> m_params;
-  size_t m_current;
+  Vector<std::pair<String, String>> params_;
+  size_t current_;
 };
 
 }  // namespace
 
-URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init,
-                                         ExceptionState& exceptionState) {
+URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
+                                         ExceptionState& exception_state) {
   if (init.isUSVString()) {
-    const String& queryString = init.getAsUSVString();
-    if (queryString.startsWith('?'))
-      return new URLSearchParams(queryString.substring(1));
-    return new URLSearchParams(queryString);
+    const String& query_string = init.getAsUSVString();
+    if (query_string.StartsWith('?'))
+      return new URLSearchParams(query_string.Substring(1));
+    return new URLSearchParams(query_string);
   }
   // TODO(sof): copy constructor no longer in the spec,
   // consider removing.
@@ -54,127 +54,127 @@ URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init,
     return new URLSearchParams(init.getAsURLSearchParams());
 
   if (init.isUSVStringSequenceSequence()) {
-    return URLSearchParams::create(init.getAsUSVStringSequenceSequence(),
-                                   exceptionState);
+    return URLSearchParams::Create(init.getAsUSVStringSequenceSequence(),
+                                   exception_state);
   }
 
   DCHECK(init.isNull());
   return new URLSearchParams(String());
 }
 
-URLSearchParams* URLSearchParams::create(const Vector<Vector<String>>& init,
-                                         ExceptionState& exceptionState) {
+URLSearchParams* URLSearchParams::Create(const Vector<Vector<String>>& init,
+                                         ExceptionState& exception_state) {
   URLSearchParams* instance = new URLSearchParams(String());
   if (!init.size())
     return instance;
   for (unsigned i = 0; i < init.size(); ++i) {
     const Vector<String>& pair = init[i];
     if (pair.size() != 2) {
-      exceptionState.throwTypeError(ExceptionMessages::failedToConstruct(
+      exception_state.ThrowTypeError(ExceptionMessages::FailedToConstruct(
           "URLSearchParams",
           "Sequence initializer must only contain pair elements"));
       return nullptr;
     }
-    instance->appendWithoutUpdate(pair[0], pair[1]);
+    instance->AppendWithoutUpdate(pair[0], pair[1]);
   }
-  instance->runUpdateSteps();
+  instance->RunUpdateSteps();
   return instance;
 }
 
-URLSearchParams::URLSearchParams(const String& queryString, DOMURL* urlObject)
-    : m_urlObject(urlObject) {
-  if (!queryString.isEmpty())
-    setInput(queryString);
+URLSearchParams::URLSearchParams(const String& query_string, DOMURL* url_object)
+    : url_object_(url_object) {
+  if (!query_string.IsEmpty())
+    SetInput(query_string);
 }
 
-URLSearchParams::URLSearchParams(URLSearchParams* searchParams) {
-  DCHECK(searchParams);
-  m_params = searchParams->m_params;
+URLSearchParams::URLSearchParams(URLSearchParams* search_params) {
+  DCHECK(search_params);
+  params_ = search_params->params_;
 }
 
 URLSearchParams::~URLSearchParams() {}
 
 DEFINE_TRACE(URLSearchParams) {
-  visitor->trace(m_urlObject);
+  visitor->Trace(url_object_);
 }
 
 #if DCHECK_IS_ON()
-DOMURL* URLSearchParams::urlObject() const {
-  return m_urlObject;
+DOMURL* URLSearchParams::UrlObject() const {
+  return url_object_;
 }
 #endif
 
-void URLSearchParams::runUpdateSteps() {
-  if (!m_urlObject)
+void URLSearchParams::RunUpdateSteps() {
+  if (!url_object_)
     return;
 
-  if (m_urlObject->isInUpdate())
+  if (url_object_->IsInUpdate())
     return;
 
-  m_urlObject->setSearchInternal(toString());
+  url_object_->SetSearchInternal(toString());
 }
 
-static String decodeString(String input) {
-  return decodeURLEscapeSequences(input.replace('+', ' '));
+static String DecodeString(String input) {
+  return DecodeURLEscapeSequences(input.Replace('+', ' '));
 }
 
-void URLSearchParams::setInput(const String& queryString) {
-  m_params.clear();
+void URLSearchParams::SetInput(const String& query_string) {
+  params_.Clear();
 
   size_t start = 0;
-  size_t queryStringLength = queryString.length();
-  while (start < queryStringLength) {
-    size_t nameStart = start;
-    size_t nameValueEnd = queryString.find('&', start);
-    if (nameValueEnd == kNotFound)
-      nameValueEnd = queryStringLength;
-    if (nameValueEnd > start) {
-      size_t endOfName = queryString.find('=', start);
-      if (endOfName == kNotFound || endOfName > nameValueEnd)
-        endOfName = nameValueEnd;
-      String name =
-          decodeString(queryString.substring(nameStart, endOfName - nameStart));
+  size_t query_string_length = query_string.length();
+  while (start < query_string_length) {
+    size_t name_start = start;
+    size_t name_value_end = query_string.Find('&', start);
+    if (name_value_end == kNotFound)
+      name_value_end = query_string_length;
+    if (name_value_end > start) {
+      size_t end_of_name = query_string.Find('=', start);
+      if (end_of_name == kNotFound || end_of_name > name_value_end)
+        end_of_name = name_value_end;
+      String name = DecodeString(
+          query_string.Substring(name_start, end_of_name - name_start));
       String value;
-      if (endOfName != nameValueEnd)
-        value = decodeString(
-            queryString.substring(endOfName + 1, nameValueEnd - endOfName - 1));
-      if (value.isNull())
+      if (end_of_name != name_value_end)
+        value = DecodeString(query_string.Substring(
+            end_of_name + 1, name_value_end - end_of_name - 1));
+      if (value.IsNull())
         value = "";
-      appendWithoutUpdate(name, value);
+      AppendWithoutUpdate(name, value);
     }
-    start = nameValueEnd + 1;
+    start = name_value_end + 1;
   }
-  runUpdateSteps();
+  RunUpdateSteps();
 }
 
 String URLSearchParams::toString() const {
-  Vector<char> encodedData;
-  encodeAsFormData(encodedData);
-  return String(encodedData.data(), encodedData.size());
+  Vector<char> encoded_data;
+  EncodeAsFormData(encoded_data);
+  return String(encoded_data.Data(), encoded_data.size());
 }
 
-void URLSearchParams::appendWithoutUpdate(const String& name,
+void URLSearchParams::AppendWithoutUpdate(const String& name,
                                           const String& value) {
-  m_params.push_back(std::make_pair(name, value));
+  params_.push_back(std::make_pair(name, value));
 }
 
 void URLSearchParams::append(const String& name, const String& value) {
-  appendWithoutUpdate(name, value);
-  runUpdateSteps();
+  AppendWithoutUpdate(name, value);
+  RunUpdateSteps();
 }
 
 void URLSearchParams::deleteAllWithName(const String& name) {
-  for (size_t i = 0; i < m_params.size();) {
-    if (m_params[i].first == name)
-      m_params.erase(i);
+  for (size_t i = 0; i < params_.size();) {
+    if (params_[i].first == name)
+      params_.erase(i);
     else
       i++;
   }
-  runUpdateSteps();
+  RunUpdateSteps();
 }
 
 String URLSearchParams::get(const String& name) const {
-  for (const auto& param : m_params) {
+  for (const auto& param : params_) {
     if (param.first == name)
       return param.second;
   }
@@ -183,7 +183,7 @@ String URLSearchParams::get(const String& name) const {
 
 Vector<String> URLSearchParams::getAll(const String& name) const {
   Vector<String> result;
-  for (const auto& param : m_params) {
+  for (const auto& param : params_) {
     if (param.first == name)
       result.push_back(param.second);
   }
@@ -191,7 +191,7 @@ Vector<String> URLSearchParams::getAll(const String& name) const {
 }
 
 bool URLSearchParams::has(const String& name) const {
-  for (const auto& param : m_params) {
+  for (const auto& param : params_) {
     if (param.first == name)
       return true;
   }
@@ -199,46 +199,46 @@ bool URLSearchParams::has(const String& name) const {
 }
 
 void URLSearchParams::set(const String& name, const String& value) {
-  bool foundMatch = false;
-  for (size_t i = 0; i < m_params.size();) {
+  bool found_match = false;
+  for (size_t i = 0; i < params_.size();) {
     // If there are any name-value whose name is 'name', set
     // the value of the first such name-value pair to 'value'
     // and remove the others.
-    if (m_params[i].first == name) {
-      if (!foundMatch) {
-        m_params[i++].second = value;
-        foundMatch = true;
+    if (params_[i].first == name) {
+      if (!found_match) {
+        params_[i++].second = value;
+        found_match = true;
       } else {
-        m_params.erase(i);
+        params_.erase(i);
       }
     } else {
       i++;
     }
   }
   // Otherwise, append a new name-value pair to the list.
-  if (!foundMatch)
+  if (!found_match)
     append(name, value);
   else
-    runUpdateSteps();
+    RunUpdateSteps();
 }
 
-void URLSearchParams::encodeAsFormData(Vector<char>& encodedData) const {
-  for (const auto& param : m_params)
-    FormDataEncoder::addKeyValuePairAsFormData(
-        encodedData, param.first.utf8(), param.second.utf8(),
-        EncodedFormData::FormURLEncoded, FormDataEncoder::DoNotNormalizeCRLF);
+void URLSearchParams::EncodeAsFormData(Vector<char>& encoded_data) const {
+  for (const auto& param : params_)
+    FormDataEncoder::AddKeyValuePairAsFormData(
+        encoded_data, param.first.Utf8(), param.second.Utf8(),
+        EncodedFormData::kFormURLEncoded, FormDataEncoder::kDoNotNormalizeCRLF);
 }
 
-PassRefPtr<EncodedFormData> URLSearchParams::toEncodedFormData() const {
-  Vector<char> encodedData;
-  encodeAsFormData(encodedData);
-  return EncodedFormData::create(encodedData.data(), encodedData.size());
+PassRefPtr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
+  Vector<char> encoded_data;
+  EncodeAsFormData(encoded_data);
+  return EncodedFormData::Create(encoded_data.Data(), encoded_data.size());
 }
 
-PairIterable<String, String>::IterationSource* URLSearchParams::startIteration(
+PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new URLSearchParamsIterationSource(m_params);
+  return new URLSearchParamsIterationSource(params_);
 }
 
 }  // namespace blink

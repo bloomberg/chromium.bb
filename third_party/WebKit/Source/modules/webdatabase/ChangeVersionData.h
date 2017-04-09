@@ -35,15 +35,15 @@ class ChangeVersionData {
   STACK_ALLOCATED();
 
  public:
-  ChangeVersionData(String oldVersion, String newVersion)
-      : m_oldVersion(oldVersion), m_newVersion(newVersion) {}
+  ChangeVersionData(String old_version, String new_version)
+      : old_version_(old_version), new_version_(new_version) {}
 
-  String oldVersion() const { return m_oldVersion; }
-  String newVersion() const { return m_newVersion; }
+  String OldVersion() const { return old_version_; }
+  String NewVersion() const { return new_version_; }
 
  private:
-  String m_oldVersion;
-  String m_newVersion;
+  String old_version_;
+  String new_version_;
 };
 
 }  // namespace blink

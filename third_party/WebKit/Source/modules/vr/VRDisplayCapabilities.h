@@ -19,23 +19,23 @@ class VRDisplayCapabilities final
  public:
   VRDisplayCapabilities();
 
-  bool hasPosition() const { return m_hasPosition; }
-  bool hasExternalDisplay() const { return m_hasExternalDisplay; }
-  bool canPresent() const { return m_canPresent; }
-  unsigned maxLayers() const { return m_maxLayers; }
+  bool hasPosition() const { return has_position_; }
+  bool hasExternalDisplay() const { return has_external_display_; }
+  bool canPresent() const { return can_present_; }
+  unsigned maxLayers() const { return max_layers_; }
 
-  void setHasPosition(bool value) { m_hasPosition = value; }
-  void setHasExternalDisplay(bool value) { m_hasExternalDisplay = value; }
-  void setCanPresent(bool value) { m_canPresent = value; }
-  void setMaxLayers(unsigned value) { m_maxLayers = value; }
+  void SetHasPosition(bool value) { has_position_ = value; }
+  void SetHasExternalDisplay(bool value) { has_external_display_ = value; }
+  void SetCanPresent(bool value) { can_present_ = value; }
+  void SetMaxLayers(unsigned value) { max_layers_ = value; }
 
   DECLARE_VIRTUAL_TRACE()
 
  private:
-  bool m_hasPosition;
-  bool m_hasExternalDisplay;
-  bool m_canPresent;
-  unsigned m_maxLayers;
+  bool has_position_;
+  bool has_external_display_;
+  bool can_present_;
+  unsigned max_layers_;
 };
 
 }  // namespace blink

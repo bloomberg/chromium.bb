@@ -20,11 +20,11 @@ class EnableNavigationPreloadCallbacks final
   ~EnableNavigationPreloadCallbacks() override;
 
   // WebEnableNavigationPreloadCallbacks interface.
-  void onSuccess() override;
-  void onError(const WebServiceWorkerError&) override;
+  void OnSuccess() override;
+  void OnError(const WebServiceWorkerError&) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
   WTF_MAKE_NONCOPYABLE(EnableNavigationPreloadCallbacks);
 };
 
@@ -36,11 +36,11 @@ class GetNavigationPreloadStateCallbacks final
   ~GetNavigationPreloadStateCallbacks() override;
 
   // WebGetNavigationPreloadStateCallbacks interface.
-  void onSuccess(const WebNavigationPreloadState&) override;
-  void onError(const WebServiceWorkerError&) override;
+  void OnSuccess(const WebNavigationPreloadState&) override;
+  void OnError(const WebServiceWorkerError&) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
   WTF_MAKE_NONCOPYABLE(GetNavigationPreloadStateCallbacks);
 };
 
@@ -52,11 +52,11 @@ class SetNavigationPreloadHeaderCallbacks final
   ~SetNavigationPreloadHeaderCallbacks() override;
 
   // WebSetNavigationPreloadHeaderCallbacks interface.
-  void onSuccess(void) override;
-  void onError(const WebServiceWorkerError&) override;
+  void OnSuccess(void) override;
+  void OnError(const WebServiceWorkerError&) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
   WTF_MAKE_NONCOPYABLE(SetNavigationPreloadHeaderCallbacks);
 };
 

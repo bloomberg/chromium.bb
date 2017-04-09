@@ -75,106 +75,108 @@ namespace blink {
 
 using namespace cssvalue;
 
-inline static bool isFlexOrGrid(const ComputedStyle* style) {
-  return style && style->isDisplayFlexibleOrGridBox();
+inline static bool IsFlexOrGrid(const ComputedStyle* style) {
+  return style && style->IsDisplayFlexibleOrGridBox();
 }
 
-inline static CSSValue* zoomAdjustedPixelValueOrAuto(
+inline static CSSValue* ZoomAdjustedPixelValueOrAuto(
     const Length& length,
     const ComputedStyle& style) {
-  if (length.isAuto())
-    return CSSIdentifierValue::create(CSSValueAuto);
-  return zoomAdjustedPixelValue(length.value(), style);
+  if (length.IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  return ZoomAdjustedPixelValue(length.Value(), style);
 }
 
-static CSSValue* zoomAdjustedPixelValueForLength(const Length& length,
+static CSSValue* ZoomAdjustedPixelValueForLength(const Length& length,
                                                  const ComputedStyle& style) {
-  if (length.isFixed())
-    return zoomAdjustedPixelValue(length.value(), style);
-  return CSSValue::create(length, style.effectiveZoom());
+  if (length.IsFixed())
+    return ZoomAdjustedPixelValue(length.Value(), style);
+  return CSSValue::Create(length, style.EffectiveZoom());
 }
 
-static CSSValue* pixelValueForUnzoomedLength(
-    const UnzoomedLength& unzoomedLength,
+static CSSValue* PixelValueForUnzoomedLength(
+    const UnzoomedLength& unzoomed_length,
     const ComputedStyle& style) {
-  const Length& length = unzoomedLength.length();
-  if (length.isFixed())
-    return CSSPrimitiveValue::create(length.value(),
-                                     CSSPrimitiveValue::UnitType::Pixels);
-  return CSSValue::create(length, style.effectiveZoom());
+  const Length& length = unzoomed_length.length();
+  if (length.IsFixed())
+    return CSSPrimitiveValue::Create(length.Value(),
+                                     CSSPrimitiveValue::UnitType::kPixels);
+  return CSSValue::Create(length, style.EffectiveZoom());
 }
 
-static CSSValueList* createPositionListForLayer(CSSPropertyID propertyID,
+static CSSValueList* CreatePositionListForLayer(CSSPropertyID property_id,
                                                 const FillLayer& layer,
                                                 const ComputedStyle& style) {
-  CSSValueList* positionList = CSSValueList::createSpaceSeparated();
-  if (layer.isBackgroundXOriginSet()) {
-    DCHECK(propertyID == CSSPropertyBackgroundPosition ||
-           propertyID == CSSPropertyWebkitMaskPosition);
-    positionList->append(
-        *CSSIdentifierValue::create(layer.backgroundXOrigin()));
+  CSSValueList* position_list = CSSValueList::CreateSpaceSeparated();
+  if (layer.IsBackgroundXOriginSet()) {
+    DCHECK(property_id == CSSPropertyBackgroundPosition ||
+           property_id == CSSPropertyWebkitMaskPosition);
+    position_list->Append(
+        *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
   }
-  positionList->append(
-      *zoomAdjustedPixelValueForLength(layer.xPosition(), style));
-  if (layer.isBackgroundYOriginSet()) {
-    DCHECK(propertyID == CSSPropertyBackgroundPosition ||
-           propertyID == CSSPropertyWebkitMaskPosition);
-    positionList->append(
-        *CSSIdentifierValue::create(layer.backgroundYOrigin()));
+  position_list->Append(
+      *ZoomAdjustedPixelValueForLength(layer.XPosition(), style));
+  if (layer.IsBackgroundYOriginSet()) {
+    DCHECK(property_id == CSSPropertyBackgroundPosition ||
+           property_id == CSSPropertyWebkitMaskPosition);
+    position_list->Append(
+        *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
   }
-  positionList->append(
-      *zoomAdjustedPixelValueForLength(layer.yPosition(), style));
-  return positionList;
+  position_list->Append(
+      *ZoomAdjustedPixelValueForLength(layer.YPosition(), style));
+  return position_list;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::currentColorOrValidColor(
+CSSValue* ComputedStyleCSSValueMapping::CurrentColorOrValidColor(
     const ComputedStyle& style,
     const StyleColor& color) {
   // This function does NOT look at visited information, so that computed style
   // doesn't expose that.
-  return CSSColorValue::create(color.resolve(style.color()).rgb());
+  return CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
 }
 
-static CSSValue* valueForFillSize(const FillSize& fillSize,
+static CSSValue* ValueForFillSize(const FillSize& fill_size,
                                   const ComputedStyle& style) {
-  if (fillSize.type == Contain)
-    return CSSIdentifierValue::create(CSSValueContain);
+  if (fill_size.type == kContain)
+    return CSSIdentifierValue::Create(CSSValueContain);
 
-  if (fillSize.type == Cover)
-    return CSSIdentifierValue::create(CSSValueCover);
+  if (fill_size.type == kCover)
+    return CSSIdentifierValue::Create(CSSValueCover);
 
-  if (fillSize.size.height().isAuto())
-    return zoomAdjustedPixelValueForLength(fillSize.size.width(), style);
+  if (fill_size.size.Height().IsAuto())
+    return ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*zoomAdjustedPixelValueForLength(fillSize.size.width(), style));
-  list->append(*zoomAdjustedPixelValueForLength(fillSize.size.height(), style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style));
+  list->Append(
+      *ZoomAdjustedPixelValueForLength(fill_size.size.Height(), style));
   return list;
 }
 
-static CSSValue* valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat yRepeat) {
+static CSSValue* ValueForFillRepeat(EFillRepeat x_repeat,
+                                    EFillRepeat y_repeat) {
   // For backwards compatibility, if both values are equal, just return one of
   // them. And if the two values are equivalent to repeat-x or repeat-y, just
   // return the shorthand.
-  if (xRepeat == yRepeat)
-    return CSSIdentifierValue::create(xRepeat);
-  if (xRepeat == RepeatFill && yRepeat == NoRepeatFill)
-    return CSSIdentifierValue::create(CSSValueRepeatX);
-  if (xRepeat == NoRepeatFill && yRepeat == RepeatFill)
-    return CSSIdentifierValue::create(CSSValueRepeatY);
+  if (x_repeat == y_repeat)
+    return CSSIdentifierValue::Create(x_repeat);
+  if (x_repeat == kRepeatFill && y_repeat == kNoRepeatFill)
+    return CSSIdentifierValue::Create(CSSValueRepeatX);
+  if (x_repeat == kNoRepeatFill && y_repeat == kRepeatFill)
+    return CSSIdentifierValue::Create(CSSValueRepeatY);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*CSSIdentifierValue::create(xRepeat));
-  list->append(*CSSIdentifierValue::create(yRepeat));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSIdentifierValue::Create(x_repeat));
+  list->Append(*CSSIdentifierValue::Create(y_repeat));
   return list;
 }
 
-static CSSValue* valueForFillSourceType(EMaskSourceType type) {
+static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
   switch (type) {
-    case MaskAlpha:
-      return CSSIdentifierValue::create(CSSValueAlpha);
-    case MaskLuminance:
-      return CSSIdentifierValue::create(CSSValueLuminance);
+    case kMaskAlpha:
+      return CSSIdentifierValue::Create(CSSValueAlpha);
+    case kMaskLuminance:
+      return CSSIdentifierValue::Create(CSSValueLuminance);
   }
 
   ASSERT_NOT_REACHED();
@@ -182,117 +184,119 @@ static CSSValue* valueForFillSourceType(EMaskSourceType type) {
   return nullptr;
 }
 
-static CSSValue* valueForPositionOffset(const ComputedStyle& style,
-                                        CSSPropertyID propertyID,
-                                        const LayoutObject* layoutObject) {
+static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
+                                        CSSPropertyID property_id,
+                                        const LayoutObject* layout_object) {
   Length offset, opposite;
-  switch (propertyID) {
+  switch (property_id) {
     case CSSPropertyLeft:
-      offset = style.left();
-      opposite = style.right();
+      offset = style.Left();
+      opposite = style.Right();
       break;
     case CSSPropertyRight:
-      offset = style.right();
-      opposite = style.left();
+      offset = style.Right();
+      opposite = style.Left();
       break;
     case CSSPropertyTop:
-      offset = style.top();
-      opposite = style.bottom();
+      offset = style.Top();
+      opposite = style.Bottom();
       break;
     case CSSPropertyBottom:
-      offset = style.bottom();
-      opposite = style.top();
+      offset = style.Bottom();
+      opposite = style.Top();
       break;
     default:
       return nullptr;
   }
 
-  if (offset.isPercentOrCalc() && layoutObject && layoutObject->isBox() &&
-      layoutObject->isPositioned()) {
-    LayoutUnit containingBlockSize =
-        (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight)
-            ? toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent()
-            : toLayoutBox(layoutObject)
-                  ->containingBlockLogicalHeightForGetComputedStyle();
-    return zoomAdjustedPixelValue(valueForLength(offset, containingBlockSize),
+  if (offset.IsPercentOrCalc() && layout_object && layout_object->IsBox() &&
+      layout_object->IsPositioned()) {
+    LayoutUnit containing_block_size =
+        (property_id == CSSPropertyLeft || property_id == CSSPropertyRight)
+            ? ToLayoutBox(layout_object)
+                  ->ContainingBlockLogicalWidthForContent()
+            : ToLayoutBox(layout_object)
+                  ->ContainingBlockLogicalHeightForGetComputedStyle();
+    return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
                                   style);
   }
 
-  if (offset.isAuto() && layoutObject) {
+  if (offset.IsAuto() && layout_object) {
     // If the property applies to a positioned element and the resolved value of
     // the display property is not none, the resolved value is the used value.
-    if (layoutObject->isInFlowPositioned()) {
+    if (layout_object->IsInFlowPositioned()) {
       // If e.g. left is auto and right is not auto, then left's computed value
       // is negative right. So we get the opposite length unit and see if it is
       // auto.
-      if (opposite.isAuto())
-        return CSSPrimitiveValue::create(0,
-                                         CSSPrimitiveValue::UnitType::Pixels);
+      if (opposite.IsAuto())
+        return CSSPrimitiveValue::Create(0,
+                                         CSSPrimitiveValue::UnitType::kPixels);
 
-      if (opposite.isPercentOrCalc()) {
-        if (layoutObject->isBox()) {
-          LayoutUnit containingBlockSize =
-              (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight)
-                  ? toLayoutBox(layoutObject)
-                        ->containingBlockLogicalWidthForContent()
-                  : toLayoutBox(layoutObject)
-                        ->containingBlockLogicalHeightForGetComputedStyle();
-          return zoomAdjustedPixelValue(
-              -floatValueForLength(opposite, containingBlockSize), style);
+      if (opposite.IsPercentOrCalc()) {
+        if (layout_object->IsBox()) {
+          LayoutUnit containing_block_size =
+              (property_id == CSSPropertyLeft ||
+               property_id == CSSPropertyRight)
+                  ? ToLayoutBox(layout_object)
+                        ->ContainingBlockLogicalWidthForContent()
+                  : ToLayoutBox(layout_object)
+                        ->ContainingBlockLogicalHeightForGetComputedStyle();
+          return ZoomAdjustedPixelValue(
+              -FloatValueForLength(opposite, containing_block_size), style);
         }
         // FIXME:  fall back to auto for position:relative, display:inline
-        return CSSIdentifierValue::create(CSSValueAuto);
+        return CSSIdentifierValue::Create(CSSValueAuto);
       }
 
       // Length doesn't provide operator -, so multiply by -1.
       opposite *= -1.f;
-      return zoomAdjustedPixelValueForLength(opposite, style);
+      return ZoomAdjustedPixelValueForLength(opposite, style);
     }
 
-    if (layoutObject->isOutOfFlowPositioned() && layoutObject->isBox()) {
+    if (layout_object->IsOutOfFlowPositioned() && layout_object->IsBox()) {
       // For fixed and absolute positioned elements, the top, left, bottom, and
       // right are defined relative to the corresponding sides of the containing
       // block.
-      LayoutBlock* container = layoutObject->containingBlock();
-      const LayoutBox* layoutBox = toLayoutBox(layoutObject);
+      LayoutBlock* container = layout_object->ContainingBlock();
+      const LayoutBox* layout_box = ToLayoutBox(layout_object);
 
       // clientOffset is the distance from this object's border edge to the
       // container's padding edge. Thus it includes margins which we subtract
       // below.
-      const LayoutSize clientOffset =
-          layoutBox->locationOffset() -
-          LayoutSize(container->clientLeft(), container->clientTop());
+      const LayoutSize client_offset =
+          layout_box->LocationOffset() -
+          LayoutSize(container->ClientLeft(), container->ClientTop());
       LayoutUnit position;
 
-      switch (propertyID) {
+      switch (property_id) {
         case CSSPropertyLeft:
-          position = clientOffset.width() - layoutBox->marginLeft();
+          position = client_offset.Width() - layout_box->MarginLeft();
           break;
         case CSSPropertyTop:
-          position = clientOffset.height() - layoutBox->marginTop();
+          position = client_offset.Height() - layout_box->MarginTop();
           break;
         case CSSPropertyRight:
-          position = container->clientWidth() - layoutBox->marginRight() -
-                     (layoutBox->offsetWidth() + clientOffset.width());
+          position = container->ClientWidth() - layout_box->MarginRight() -
+                     (layout_box->OffsetWidth() + client_offset.Width());
           break;
         case CSSPropertyBottom:
-          position = container->clientHeight() - layoutBox->marginBottom() -
-                     (layoutBox->offsetHeight() + clientOffset.height());
+          position = container->ClientHeight() - layout_box->MarginBottom() -
+                     (layout_box->OffsetHeight() + client_offset.Height());
           break;
         default:
           ASSERT_NOT_REACHED();
       }
-      return zoomAdjustedPixelValue(position, style);
+      return ZoomAdjustedPixelValue(position, style);
     }
   }
 
-  if (offset.isAuto())
-    return CSSIdentifierValue::create(CSSValueAuto);
+  if (offset.IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
 
-  return zoomAdjustedPixelValueForLength(offset, style);
+  return ZoomAdjustedPixelValueForLength(offset, style);
 }
 
-static CSSBorderImageSliceValue* valueForNinePieceImageSlice(
+static CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
     const NinePieceImage& image) {
   // Create the slices.
   CSSPrimitiveValue* top = nullptr;
@@ -301,71 +305,73 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(
   CSSPrimitiveValue* left = nullptr;
 
   // TODO(alancutter): Make this code aware of calc lengths.
-  if (image.imageSlices().top().isPercentOrCalc())
-    top = CSSPrimitiveValue::create(image.imageSlices().top().value(),
-                                    CSSPrimitiveValue::UnitType::Percentage);
+  if (image.ImageSlices().Top().IsPercentOrCalc())
+    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
+                                    CSSPrimitiveValue::UnitType::kPercentage);
   else
-    top = CSSPrimitiveValue::create(image.imageSlices().top().value(),
-                                    CSSPrimitiveValue::UnitType::Number);
+    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
+                                    CSSPrimitiveValue::UnitType::kNumber);
 
-  if (image.imageSlices().right() == image.imageSlices().top() &&
-      image.imageSlices().bottom() == image.imageSlices().top() &&
-      image.imageSlices().left() == image.imageSlices().top()) {
+  if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
+      image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
+      image.ImageSlices().Left() == image.ImageSlices().Top()) {
     right = top;
     bottom = top;
     left = top;
   } else {
-    if (image.imageSlices().right().isPercentOrCalc())
+    if (image.ImageSlices().Right().IsPercentOrCalc())
       right =
-          CSSPrimitiveValue::create(image.imageSlices().right().value(),
-                                    CSSPrimitiveValue::UnitType::Percentage);
+          CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
+                                    CSSPrimitiveValue::UnitType::kPercentage);
     else
-      right = CSSPrimitiveValue::create(image.imageSlices().right().value(),
-                                        CSSPrimitiveValue::UnitType::Number);
+      right = CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 
-    if (image.imageSlices().bottom() == image.imageSlices().top() &&
-        image.imageSlices().right() == image.imageSlices().left()) {
+    if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
+        image.ImageSlices().Right() == image.ImageSlices().Left()) {
       bottom = top;
       left = right;
     } else {
-      if (image.imageSlices().bottom().isPercentOrCalc())
+      if (image.ImageSlices().Bottom().IsPercentOrCalc())
         bottom =
-            CSSPrimitiveValue::create(image.imageSlices().bottom().value(),
-                                      CSSPrimitiveValue::UnitType::Percentage);
+            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
+                                      CSSPrimitiveValue::UnitType::kPercentage);
       else
-        bottom = CSSPrimitiveValue::create(image.imageSlices().bottom().value(),
-                                           CSSPrimitiveValue::UnitType::Number);
+        bottom =
+            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
+                                      CSSPrimitiveValue::UnitType::kNumber);
 
-      if (image.imageSlices().left() == image.imageSlices().right()) {
+      if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
         left = right;
       } else {
-        if (image.imageSlices().left().isPercentOrCalc())
-          left = CSSPrimitiveValue::create(
-              image.imageSlices().left().value(),
-              CSSPrimitiveValue::UnitType::Percentage);
+        if (image.ImageSlices().Left().IsPercentOrCalc())
+          left = CSSPrimitiveValue::Create(
+              image.ImageSlices().Left().Value(),
+              CSSPrimitiveValue::UnitType::kPercentage);
         else
-          left = CSSPrimitiveValue::create(image.imageSlices().left().value(),
-                                           CSSPrimitiveValue::UnitType::Number);
+          left =
+              CSSPrimitiveValue::Create(image.ImageSlices().Left().Value(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
       }
     }
   }
 
-  return CSSBorderImageSliceValue::create(
-      CSSQuadValue::create(top, right, bottom, left,
-                           CSSQuadValue::SerializeAsQuad),
-      image.fill());
+  return CSSBorderImageSliceValue::Create(
+      CSSQuadValue::Create(top, right, bottom, left,
+                           CSSQuadValue::kSerializeAsQuad),
+      image.Fill());
 }
 
-static CSSValue* valueForBorderImageLength(
-    const BorderImageLength& borderImageLength,
+static CSSValue* ValueForBorderImageLength(
+    const BorderImageLength& border_image_length,
     const ComputedStyle& style) {
-  if (borderImageLength.isNumber())
-    return CSSPrimitiveValue::create(borderImageLength.number(),
-                                     CSSPrimitiveValue::UnitType::Number);
-  return CSSValue::create(borderImageLength.length(), style.effectiveZoom());
+  if (border_image_length.IsNumber())
+    return CSSPrimitiveValue::Create(border_image_length.Number(),
+                                     CSSPrimitiveValue::UnitType::kNumber);
+  return CSSValue::Create(border_image_length.length(), style.EffectiveZoom());
 }
 
-static CSSQuadValue* valueForNinePieceImageQuad(const BorderImageLengthBox& box,
+static CSSQuadValue* ValueForNinePieceImageQuad(const BorderImageLengthBox& box,
                                                 const ComputedStyle& style) {
   // Create the slices.
   CSSValue* top = nullptr;
@@ -373,237 +379,242 @@ static CSSQuadValue* valueForNinePieceImageQuad(const BorderImageLengthBox& box,
   CSSValue* bottom = nullptr;
   CSSValue* left = nullptr;
 
-  top = valueForBorderImageLength(box.top(), style);
+  top = ValueForBorderImageLength(box.Top(), style);
 
-  if (box.right() == box.top() && box.bottom() == box.top() &&
-      box.left() == box.top()) {
+  if (box.Right() == box.Top() && box.Bottom() == box.Top() &&
+      box.Left() == box.Top()) {
     right = top;
     bottom = top;
     left = top;
   } else {
-    right = valueForBorderImageLength(box.right(), style);
+    right = ValueForBorderImageLength(box.Right(), style);
 
-    if (box.bottom() == box.top() && box.right() == box.left()) {
+    if (box.Bottom() == box.Top() && box.Right() == box.Left()) {
       bottom = top;
       left = right;
     } else {
-      bottom = valueForBorderImageLength(box.bottom(), style);
+      bottom = ValueForBorderImageLength(box.Bottom(), style);
 
-      if (box.left() == box.right())
+      if (box.Left() == box.Right())
         left = right;
       else
-        left = valueForBorderImageLength(box.left(), style);
+        left = ValueForBorderImageLength(box.Left(), style);
     }
   }
-  return CSSQuadValue::create(top, right, bottom, left,
-                              CSSQuadValue::SerializeAsQuad);
+  return CSSQuadValue::Create(top, right, bottom, left,
+                              CSSQuadValue::kSerializeAsQuad);
 }
 
-static CSSValueID valueForRepeatRule(int rule) {
+static CSSValueID ValueForRepeatRule(int rule) {
   switch (rule) {
-    case RepeatImageRule:
+    case kRepeatImageRule:
       return CSSValueRepeat;
-    case RoundImageRule:
+    case kRoundImageRule:
       return CSSValueRound;
-    case SpaceImageRule:
+    case kSpaceImageRule:
       return CSSValueSpace;
     default:
       return CSSValueStretch;
   }
 }
 
-static CSSValue* valueForNinePieceImageRepeat(const NinePieceImage& image) {
-  CSSIdentifierValue* horizontalRepeat = nullptr;
-  CSSIdentifierValue* verticalRepeat = nullptr;
+static CSSValue* ValueForNinePieceImageRepeat(const NinePieceImage& image) {
+  CSSIdentifierValue* horizontal_repeat = nullptr;
+  CSSIdentifierValue* vertical_repeat = nullptr;
 
-  horizontalRepeat =
-      CSSIdentifierValue::create(valueForRepeatRule(image.horizontalRule()));
-  if (image.horizontalRule() == image.verticalRule()) {
-    verticalRepeat = horizontalRepeat;
+  horizontal_repeat =
+      CSSIdentifierValue::Create(ValueForRepeatRule(image.HorizontalRule()));
+  if (image.HorizontalRule() == image.VerticalRule()) {
+    vertical_repeat = horizontal_repeat;
   } else {
-    verticalRepeat =
-        CSSIdentifierValue::create(valueForRepeatRule(image.verticalRule()));
+    vertical_repeat =
+        CSSIdentifierValue::Create(ValueForRepeatRule(image.VerticalRule()));
   }
-  return CSSValuePair::create(horizontalRepeat, verticalRepeat,
-                              CSSValuePair::DropIdenticalValues);
+  return CSSValuePair::Create(horizontal_repeat, vertical_repeat,
+                              CSSValuePair::kDropIdenticalValues);
 }
 
-static CSSValue* valueForNinePieceImage(const NinePieceImage& image,
+static CSSValue* ValueForNinePieceImage(const NinePieceImage& image,
                                         const ComputedStyle& style) {
-  if (!image.hasImage())
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (!image.HasImage())
+    return CSSIdentifierValue::Create(CSSValueNone);
 
   // Image first.
-  CSSValue* imageValue = nullptr;
-  if (image.image())
-    imageValue = image.image()->computedCSSValue();
+  CSSValue* image_value = nullptr;
+  if (image.GetImage())
+    image_value = image.GetImage()->ComputedCSSValue();
 
   // Create the image slice.
-  CSSBorderImageSliceValue* imageSlices = valueForNinePieceImageSlice(image);
+  CSSBorderImageSliceValue* image_slices = ValueForNinePieceImageSlice(image);
 
   // Create the border area slices.
-  CSSValue* borderSlices =
-      valueForNinePieceImageQuad(image.borderSlices(), style);
+  CSSValue* border_slices =
+      ValueForNinePieceImageQuad(image.BorderSlices(), style);
 
   // Create the border outset.
-  CSSValue* outset = valueForNinePieceImageQuad(image.outset(), style);
+  CSSValue* outset = ValueForNinePieceImageQuad(image.Outset(), style);
 
   // Create the repeat rules.
-  CSSValue* repeat = valueForNinePieceImageRepeat(image);
+  CSSValue* repeat = ValueForNinePieceImageRepeat(image);
 
-  return createBorderImageValue(imageValue, imageSlices, borderSlices, outset,
-                                repeat);
+  return CreateBorderImageValue(image_value, image_slices, border_slices,
+                                outset, repeat);
 }
 
-static CSSValue* valueForReflection(const StyleReflection* reflection,
+static CSSValue* ValueForReflection(const StyleReflection* reflection,
                                     const ComputedStyle& style) {
   if (!reflection)
-    return CSSIdentifierValue::create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueNone);
 
   CSSPrimitiveValue* offset = nullptr;
   // TODO(alancutter): Make this work correctly for calc lengths.
-  if (reflection->offset().isPercentOrCalc())
-    offset = CSSPrimitiveValue::create(reflection->offset().percent(),
-                                       CSSPrimitiveValue::UnitType::Percentage);
+  if (reflection->Offset().IsPercentOrCalc())
+    offset =
+        CSSPrimitiveValue::Create(reflection->Offset().Percent(),
+                                  CSSPrimitiveValue::UnitType::kPercentage);
   else
-    offset = zoomAdjustedPixelValue(reflection->offset().value(), style);
+    offset = ZoomAdjustedPixelValue(reflection->Offset().Value(), style);
 
   CSSIdentifierValue* direction = nullptr;
-  switch (reflection->direction()) {
-    case ReflectionBelow:
-      direction = CSSIdentifierValue::create(CSSValueBelow);
+  switch (reflection->Direction()) {
+    case kReflectionBelow:
+      direction = CSSIdentifierValue::Create(CSSValueBelow);
       break;
-    case ReflectionAbove:
-      direction = CSSIdentifierValue::create(CSSValueAbove);
+    case kReflectionAbove:
+      direction = CSSIdentifierValue::Create(CSSValueAbove);
       break;
-    case ReflectionLeft:
-      direction = CSSIdentifierValue::create(CSSValueLeft);
+    case kReflectionLeft:
+      direction = CSSIdentifierValue::Create(CSSValueLeft);
       break;
-    case ReflectionRight:
-      direction = CSSIdentifierValue::create(CSSValueRight);
+    case kReflectionRight:
+      direction = CSSIdentifierValue::Create(CSSValueRight);
       break;
   }
 
-  return CSSReflectValue::create(
-      direction, offset, valueForNinePieceImage(reflection->mask(), style));
+  return CSSReflectValue::Create(
+      direction, offset, ValueForNinePieceImage(reflection->Mask(), style));
 }
 
-static CSSValueList* valueForItemPositionWithOverflowAlignment(
+static CSSValueList* ValueForItemPositionWithOverflowAlignment(
     const StyleSelfAlignmentData& data) {
-  CSSValueList* result = CSSValueList::createSpaceSeparated();
-  if (data.positionType() == LegacyPosition)
-    result->append(*CSSIdentifierValue::create(CSSValueLegacy));
-  if (data.position() == ItemPositionAuto) {
+  CSSValueList* result = CSSValueList::CreateSpaceSeparated();
+  if (data.PositionType() == kLegacyPosition)
+    result->Append(*CSSIdentifierValue::Create(CSSValueLegacy));
+  if (data.GetPosition() == kItemPositionAuto) {
     // To avoid needing to copy the RareNonInheritedData, we repurpose the
     // 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster
     // but also mean 'normal' after running it.
-    result->append(*CSSIdentifierValue::create(
-        ComputedStyle::initialDefaultAlignment().position()));
-  } else if (data.position() == ItemPositionBaseline) {
-    result->append(
-        *CSSValuePair::create(CSSIdentifierValue::create(CSSValueBaseline),
-                              CSSIdentifierValue::create(CSSValueBaseline),
-                              CSSValuePair::DropIdenticalValues));
-  } else if (data.position() == ItemPositionLastBaseline) {
-    result->append(
-        *CSSValuePair::create(CSSIdentifierValue::create(CSSValueLast),
-                              CSSIdentifierValue::create(CSSValueBaseline),
-                              CSSValuePair::DropIdenticalValues));
+    result->Append(*CSSIdentifierValue::Create(
+        ComputedStyle::InitialDefaultAlignment().GetPosition()));
+  } else if (data.GetPosition() == kItemPositionBaseline) {
+    result->Append(
+        *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueBaseline),
+                              CSSIdentifierValue::Create(CSSValueBaseline),
+                              CSSValuePair::kDropIdenticalValues));
+  } else if (data.GetPosition() == kItemPositionLastBaseline) {
+    result->Append(
+        *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueLast),
+                              CSSIdentifierValue::Create(CSSValueBaseline),
+                              CSSValuePair::kDropIdenticalValues));
   } else {
-    result->append(*CSSIdentifierValue::create(data.position()));
+    result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
-  if (data.position() >= ItemPositionCenter &&
-      data.overflow() != OverflowAlignmentDefault)
-    result->append(*CSSIdentifierValue::create(data.overflow()));
+  if (data.GetPosition() >= kItemPositionCenter &&
+      data.Overflow() != kOverflowAlignmentDefault)
+    result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_LE(result->length(), 2u);
   return result;
 }
 
-static CSSValueList* valuesForGridShorthand(
+static CSSValueList* ValuesForGridShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
-    const LayoutObject* layoutObject,
-    Node* styledNode,
-    bool allowVisitedStyle) {
-  CSSValueList* list = CSSValueList::createSlashSeparated();
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
   for (size_t i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value = ComputedStyleCSSValueMapping::get(
-        shorthand.properties()[i], style, layoutObject, styledNode,
-        allowVisitedStyle);
+    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+        shorthand.properties()[i], style, layout_object, styled_node,
+        allow_visited_style);
     DCHECK(value);
-    list->append(*value);
+    list->Append(*value);
   }
   return list;
 }
 
-static CSSValueList* valuesForShorthandProperty(
+static CSSValueList* ValuesForShorthandProperty(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
-    const LayoutObject* layoutObject,
-    Node* styledNode,
-    bool allowVisitedStyle) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (size_t i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value = ComputedStyleCSSValueMapping::get(
-        shorthand.properties()[i], style, layoutObject, styledNode,
-        allowVisitedStyle);
+    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+        shorthand.properties()[i], style, layout_object, styled_node,
+        allow_visited_style);
     DCHECK(value);
-    list->append(*value);
+    list->Append(*value);
   }
   return list;
 }
 
-static CSSValue* expandNoneLigaturesValue() {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*CSSIdentifierValue::create(CSSValueNoCommonLigatures));
-  list->append(*CSSIdentifierValue::create(CSSValueNoDiscretionaryLigatures));
-  list->append(*CSSIdentifierValue::create(CSSValueNoHistoricalLigatures));
-  list->append(*CSSIdentifierValue::create(CSSValueNoContextual));
+static CSSValue* ExpandNoneLigaturesValue() {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoCommonLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoDiscretionaryLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoHistoricalLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoContextual));
   return list;
 }
 
-static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style,
-                                              const LayoutObject* layoutObject,
-                                              Node* styledNode,
-                                              bool allowVisitedStyle) {
-  enum VariantShorthandCases { AllNormal, NoneLigatures, ConcatenateNonNormal };
-  VariantShorthandCases shorthandCase = AllNormal;
+static CSSValue* ValuesForFontVariantProperty(const ComputedStyle& style,
+                                              const LayoutObject* layout_object,
+                                              Node* styled_node,
+                                              bool allow_visited_style) {
+  enum VariantShorthandCases {
+    kAllNormal,
+    kNoneLigatures,
+    kConcatenateNonNormal
+  };
+  VariantShorthandCases shorthand_case = kAllNormal;
   for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
-    const CSSValue* value = ComputedStyleCSSValueMapping::get(
-        fontVariantShorthand().properties()[i], style, layoutObject, styledNode,
-        allowVisitedStyle);
+    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+        fontVariantShorthand().properties()[i], style, layout_object,
+        styled_node, allow_visited_style);
 
-    if (shorthandCase == AllNormal && value->isIdentifierValue() &&
-        toCSSIdentifierValue(value)->getValueID() == CSSValueNone &&
+    if (shorthand_case == kAllNormal && value->IsIdentifierValue() &&
+        ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone &&
         fontVariantShorthand().properties()[i] ==
             CSSPropertyFontVariantLigatures) {
-      shorthandCase = NoneLigatures;
-    } else if (!(value->isIdentifierValue() &&
-                 toCSSIdentifierValue(value)->getValueID() == CSSValueNormal)) {
-      shorthandCase = ConcatenateNonNormal;
+      shorthand_case = kNoneLigatures;
+    } else if (!(value->IsIdentifierValue() &&
+                 ToCSSIdentifierValue(value)->GetValueID() == CSSValueNormal)) {
+      shorthand_case = kConcatenateNonNormal;
       break;
     }
   }
 
-  switch (shorthandCase) {
-    case AllNormal:
-      return CSSIdentifierValue::create(CSSValueNormal);
-    case NoneLigatures:
-      return CSSIdentifierValue::create(CSSValueNone);
-    case ConcatenateNonNormal: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
+  switch (shorthand_case) {
+    case kAllNormal:
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    case kNoneLigatures:
+      return CSSIdentifierValue::Create(CSSValueNone);
+    case kConcatenateNonNormal: {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
-        const CSSValue* value = ComputedStyleCSSValueMapping::get(
-            fontVariantShorthand().properties()[i], style, layoutObject,
-            styledNode, allowVisitedStyle);
+        const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+            fontVariantShorthand().properties()[i], style, layout_object,
+            styled_node, allow_visited_style);
         DCHECK(value);
-        if (value->isIdentifierValue() &&
-            toCSSIdentifierValue(value)->getValueID() == CSSValueNone) {
-          list->append(*expandNoneLigaturesValue());
-        } else if (!(value->isIdentifierValue() &&
-                     toCSSIdentifierValue(value)->getValueID() ==
+        if (value->IsIdentifierValue() &&
+            ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone) {
+          list->Append(*ExpandNoneLigaturesValue());
+        } else if (!(value->IsIdentifierValue() &&
+                     ToCSSIdentifierValue(value)->GetValueID() ==
                          CSSValueNormal)) {
-          list->append(*value);
+          list->Append(*value);
         }
       }
       return list;
@@ -614,105 +625,105 @@ static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style,
   }
 }
 
-static CSSValueList* valuesForBackgroundShorthand(
+static CSSValueList* ValuesForBackgroundShorthand(
     const ComputedStyle& style,
-    const LayoutObject* layoutObject,
-    Node* styledNode,
-    bool allowVisitedStyle) {
-  CSSValueList* ret = CSSValueList::createCommaSeparated();
-  const FillLayer* currLayer = &style.backgroundLayers();
-  for (; currLayer; currLayer = currLayer->next()) {
-    CSSValueList* list = CSSValueList::createSlashSeparated();
-    CSSValueList* beforeSlash = CSSValueList::createSpaceSeparated();
-    if (!currLayer->next()) {  // color only for final layer
-      const CSSValue* value = ComputedStyleCSSValueMapping::get(
-          CSSPropertyBackgroundColor, style, layoutObject, styledNode,
-          allowVisitedStyle);
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* ret = CSSValueList::CreateCommaSeparated();
+  const FillLayer* curr_layer = &style.BackgroundLayers();
+  for (; curr_layer; curr_layer = curr_layer->Next()) {
+    CSSValueList* list = CSSValueList::CreateSlashSeparated();
+    CSSValueList* before_slash = CSSValueList::CreateSpaceSeparated();
+    if (!curr_layer->Next()) {  // color only for final layer
+      const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+          CSSPropertyBackgroundColor, style, layout_object, styled_node,
+          allow_visited_style);
       DCHECK(value);
-      beforeSlash->append(*value);
+      before_slash->Append(*value);
     }
-    beforeSlash->append(currLayer->image()
-                            ? *currLayer->image()->computedCSSValue()
-                            : *CSSIdentifierValue::create(CSSValueNone));
-    beforeSlash->append(
-        *valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
-    beforeSlash->append(*CSSIdentifierValue::create(currLayer->attachment()));
-    beforeSlash->append(*createPositionListForLayer(
-        CSSPropertyBackgroundPosition, *currLayer, style));
-    list->append(*beforeSlash);
-    CSSValueList* afterSlash = CSSValueList::createSpaceSeparated();
-    afterSlash->append(*valueForFillSize(currLayer->size(), style));
-    afterSlash->append(*CSSIdentifierValue::create(currLayer->origin()));
-    afterSlash->append(*CSSIdentifierValue::create(currLayer->clip()));
-    list->append(*afterSlash);
-    ret->append(*list);
+    before_slash->Append(curr_layer->GetImage()
+                             ? *curr_layer->GetImage()->ComputedCSSValue()
+                             : *CSSIdentifierValue::Create(CSSValueNone));
+    before_slash->Append(
+        *ValueForFillRepeat(curr_layer->RepeatX(), curr_layer->RepeatY()));
+    before_slash->Append(*CSSIdentifierValue::Create(curr_layer->Attachment()));
+    before_slash->Append(*CreatePositionListForLayer(
+        CSSPropertyBackgroundPosition, *curr_layer, style));
+    list->Append(*before_slash);
+    CSSValueList* after_slash = CSSValueList::CreateSpaceSeparated();
+    after_slash->Append(*ValueForFillSize(curr_layer->size(), style));
+    after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Origin()));
+    after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Clip()));
+    list->Append(*after_slash);
+    ret->Append(*list);
   }
   return ret;
 }
 
 static CSSValueList*
-valueForContentPositionAndDistributionWithOverflowAlignment(
+ValueForContentPositionAndDistributionWithOverflowAlignment(
     const StyleContentAlignmentData& data,
-    CSSValueID normalBehaviorValueID) {
-  CSSValueList* result = CSSValueList::createSpaceSeparated();
+    CSSValueID normal_behavior_value_id) {
+  CSSValueList* result = CSSValueList::CreateSpaceSeparated();
   // Handle content-distribution values
-  if (data.distribution() != ContentDistributionDefault)
-    result->append(*CSSIdentifierValue::create(data.distribution()));
+  if (data.Distribution() != kContentDistributionDefault)
+    result->Append(*CSSIdentifierValue::Create(data.Distribution()));
 
   // Handle content-position values (either as fallback or actual value)
-  switch (data.position()) {
-    case ContentPositionNormal:
+  switch (data.GetPosition()) {
+    case kContentPositionNormal:
       // Handle 'normal' value, not valid as content-distribution fallback.
-      if (data.distribution() == ContentDistributionDefault) {
-        result->append(*CSSIdentifierValue::create(
+      if (data.Distribution() == kContentDistributionDefault) {
+        result->Append(*CSSIdentifierValue::Create(
             RuntimeEnabledFeatures::cssGridLayoutEnabled()
                 ? CSSValueNormal
-                : normalBehaviorValueID));
+                : normal_behavior_value_id));
       }
       break;
-    case ContentPositionLastBaseline:
-      result->append(
-          *CSSValuePair::create(CSSIdentifierValue::create(CSSValueLast),
-                                CSSIdentifierValue::create(CSSValueBaseline),
-                                CSSValuePair::DropIdenticalValues));
+    case kContentPositionLastBaseline:
+      result->Append(
+          *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueLast),
+                                CSSIdentifierValue::Create(CSSValueBaseline),
+                                CSSValuePair::kDropIdenticalValues));
       break;
     default:
-      result->append(*CSSIdentifierValue::create(data.position()));
+      result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
 
   // Handle overflow-alignment (only allowed for content-position values)
-  if ((data.position() >= ContentPositionCenter ||
-       data.distribution() != ContentDistributionDefault) &&
-      data.overflow() != OverflowAlignmentDefault)
-    result->append(*CSSIdentifierValue::create(data.overflow()));
+  if ((data.GetPosition() >= kContentPositionCenter ||
+       data.Distribution() != kContentDistributionDefault) &&
+      data.Overflow() != kOverflowAlignmentDefault)
+    result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_GT(result->length(), 0u);
   DCHECK_LE(result->length(), 3u);
   return result;
 }
 
-static CSSValue* valueForLineHeight(const ComputedStyle& style) {
-  Length length = style.lineHeight();
-  if (length.isNegative())
-    return CSSIdentifierValue::create(CSSValueNormal);
+static CSSValue* ValueForLineHeight(const ComputedStyle& style) {
+  Length length = style.LineHeight();
+  if (length.IsNegative())
+    return CSSIdentifierValue::Create(CSSValueNormal);
 
-  return zoomAdjustedPixelValue(
-      floatValueForLength(length, style.getFontDescription().computedSize()),
+  return ZoomAdjustedPixelValue(
+      FloatValueForLength(length, style.GetFontDescription().ComputedSize()),
       style);
 }
 
-static CSSValue* valueForPosition(const LengthPoint& position,
+static CSSValue* ValueForPosition(const LengthPoint& position,
                                   const ComputedStyle& style) {
-  DCHECK((position.x() == Auto) == (position.y() == Auto));
-  if (position.x() == Auto) {
-    return CSSIdentifierValue::create(CSSValueAuto);
+  DCHECK((position.X() == kAuto) == (position.Y() == kAuto));
+  if (position.X() == kAuto) {
+    return CSSIdentifierValue::Create(CSSValueAuto);
   }
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*zoomAdjustedPixelValueForLength(position.x(), style));
-  list->append(*zoomAdjustedPixelValueForLength(position.y(), style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ZoomAdjustedPixelValueForLength(position.X(), style));
+  list->Append(*ZoomAdjustedPixelValueForLength(position.Y(), style));
   return list;
 }
 
-static CSSValueID identifierForFamily(const AtomicString& family) {
+static CSSValueID IdentifierForFamily(const AtomicString& family) {
   if (family == FontFamilyNames::webkit_cursive)
     return CSSValueCursive;
   if (family == FontFamilyNames::webkit_fantasy)
@@ -728,180 +739,184 @@ static CSSValueID identifierForFamily(const AtomicString& family) {
   return CSSValueInvalid;
 }
 
-static CSSValue* valueForFamily(const AtomicString& family) {
-  if (CSSValueID familyIdentifier = identifierForFamily(family))
-    return CSSIdentifierValue::create(familyIdentifier);
-  return CSSFontFamilyValue::create(family.getString());
+static CSSValue* ValueForFamily(const AtomicString& family) {
+  if (CSSValueID family_identifier = IdentifierForFamily(family))
+    return CSSIdentifierValue::Create(family_identifier);
+  return CSSFontFamilyValue::Create(family.GetString());
 }
 
-static CSSValueList* valueForFontFamily(const ComputedStyle& style) {
-  const FontFamily& firstFamily = style.getFontDescription().family();
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  for (const FontFamily* family = &firstFamily; family; family = family->next())
-    list->append(*valueForFamily(family->family()));
+static CSSValueList* ValueForFontFamily(const ComputedStyle& style) {
+  const FontFamily& first_family = style.GetFontDescription().Family();
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FontFamily* family = &first_family; family;
+       family = family->Next())
+    list->Append(*ValueForFamily(family->Family()));
   return list;
 }
 
-static CSSPrimitiveValue* valueForFontSize(const ComputedStyle& style) {
-  return zoomAdjustedPixelValue(style.getFontDescription().computedSize(),
+static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle& style) {
+  return ZoomAdjustedPixelValue(style.GetFontDescription().ComputedSize(),
                                 style);
 }
 
-static CSSIdentifierValue* valueForFontStretch(const ComputedStyle& style) {
-  return CSSIdentifierValue::create(style.getFontDescription().stretch());
+static CSSIdentifierValue* ValueForFontStretch(const ComputedStyle& style) {
+  return CSSIdentifierValue::Create(style.GetFontDescription().Stretch());
 }
 
-static CSSIdentifierValue* valueForFontStyle(const ComputedStyle& style) {
-  return CSSIdentifierValue::create(style.getFontDescription().style());
+static CSSIdentifierValue* ValueForFontStyle(const ComputedStyle& style) {
+  return CSSIdentifierValue::Create(style.GetFontDescription().Style());
 }
 
-static CSSIdentifierValue* valueForFontWeight(const ComputedStyle& style) {
-  return CSSIdentifierValue::create(style.getFontDescription().weight());
+static CSSIdentifierValue* ValueForFontWeight(const ComputedStyle& style) {
+  return CSSIdentifierValue::Create(style.GetFontDescription().Weight());
 }
 
-static CSSIdentifierValue* valueForFontVariantCaps(const ComputedStyle& style) {
-  FontDescription::FontVariantCaps variantCaps =
-      style.getFontDescription().variantCaps();
-  switch (variantCaps) {
-    case FontDescription::CapsNormal:
-      return CSSIdentifierValue::create(CSSValueNormal);
-    case FontDescription::SmallCaps:
-      return CSSIdentifierValue::create(CSSValueSmallCaps);
-    case FontDescription::AllSmallCaps:
-      return CSSIdentifierValue::create(CSSValueAllSmallCaps);
-    case FontDescription::PetiteCaps:
-      return CSSIdentifierValue::create(CSSValuePetiteCaps);
-    case FontDescription::AllPetiteCaps:
-      return CSSIdentifierValue::create(CSSValueAllPetiteCaps);
-    case FontDescription::Unicase:
-      return CSSIdentifierValue::create(CSSValueUnicase);
-    case FontDescription::TitlingCaps:
-      return CSSIdentifierValue::create(CSSValueTitlingCaps);
+static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle& style) {
+  FontDescription::FontVariantCaps variant_caps =
+      style.GetFontDescription().VariantCaps();
+  switch (variant_caps) {
+    case FontDescription::kCapsNormal:
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    case FontDescription::kSmallCaps:
+      return CSSIdentifierValue::Create(CSSValueSmallCaps);
+    case FontDescription::kAllSmallCaps:
+      return CSSIdentifierValue::Create(CSSValueAllSmallCaps);
+    case FontDescription::kPetiteCaps:
+      return CSSIdentifierValue::Create(CSSValuePetiteCaps);
+    case FontDescription::kAllPetiteCaps:
+      return CSSIdentifierValue::Create(CSSValueAllPetiteCaps);
+    case FontDescription::kUnicase:
+      return CSSIdentifierValue::Create(CSSValueUnicase);
+    case FontDescription::kTitlingCaps:
+      return CSSIdentifierValue::Create(CSSValueTitlingCaps);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-static CSSValue* valueForFontVariantLigatures(const ComputedStyle& style) {
-  FontDescription::LigaturesState commonLigaturesState =
-      style.getFontDescription().commonLigaturesState();
-  FontDescription::LigaturesState discretionaryLigaturesState =
-      style.getFontDescription().discretionaryLigaturesState();
-  FontDescription::LigaturesState historicalLigaturesState =
-      style.getFontDescription().historicalLigaturesState();
-  FontDescription::LigaturesState contextualLigaturesState =
-      style.getFontDescription().contextualLigaturesState();
-  if (commonLigaturesState == FontDescription::NormalLigaturesState &&
-      discretionaryLigaturesState == FontDescription::NormalLigaturesState &&
-      historicalLigaturesState == FontDescription::NormalLigaturesState &&
-      contextualLigaturesState == FontDescription::NormalLigaturesState)
-    return CSSIdentifierValue::create(CSSValueNormal);
+static CSSValue* ValueForFontVariantLigatures(const ComputedStyle& style) {
+  FontDescription::LigaturesState common_ligatures_state =
+      style.GetFontDescription().CommonLigaturesState();
+  FontDescription::LigaturesState discretionary_ligatures_state =
+      style.GetFontDescription().DiscretionaryLigaturesState();
+  FontDescription::LigaturesState historical_ligatures_state =
+      style.GetFontDescription().HistoricalLigaturesState();
+  FontDescription::LigaturesState contextual_ligatures_state =
+      style.GetFontDescription().ContextualLigaturesState();
+  if (common_ligatures_state == FontDescription::kNormalLigaturesState &&
+      discretionary_ligatures_state == FontDescription::kNormalLigaturesState &&
+      historical_ligatures_state == FontDescription::kNormalLigaturesState &&
+      contextual_ligatures_state == FontDescription::kNormalLigaturesState)
+    return CSSIdentifierValue::Create(CSSValueNormal);
 
-  if (commonLigaturesState == FontDescription::DisabledLigaturesState &&
-      discretionaryLigaturesState == FontDescription::DisabledLigaturesState &&
-      historicalLigaturesState == FontDescription::DisabledLigaturesState &&
-      contextualLigaturesState == FontDescription::DisabledLigaturesState)
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (common_ligatures_state == FontDescription::kDisabledLigaturesState &&
+      discretionary_ligatures_state ==
+          FontDescription::kDisabledLigaturesState &&
+      historical_ligatures_state == FontDescription::kDisabledLigaturesState &&
+      contextual_ligatures_state == FontDescription::kDisabledLigaturesState)
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* valueList = CSSValueList::createSpaceSeparated();
-  if (commonLigaturesState != FontDescription::NormalLigaturesState)
-    valueList->append(*CSSIdentifierValue::create(
-        commonLigaturesState == FontDescription::DisabledLigaturesState
+  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+  if (common_ligatures_state != FontDescription::kNormalLigaturesState)
+    value_list->Append(*CSSIdentifierValue::Create(
+        common_ligatures_state == FontDescription::kDisabledLigaturesState
             ? CSSValueNoCommonLigatures
             : CSSValueCommonLigatures));
-  if (discretionaryLigaturesState != FontDescription::NormalLigaturesState)
-    valueList->append(*CSSIdentifierValue::create(
-        discretionaryLigaturesState == FontDescription::DisabledLigaturesState
+  if (discretionary_ligatures_state != FontDescription::kNormalLigaturesState)
+    value_list->Append(*CSSIdentifierValue::Create(
+        discretionary_ligatures_state ==
+                FontDescription::kDisabledLigaturesState
             ? CSSValueNoDiscretionaryLigatures
             : CSSValueDiscretionaryLigatures));
-  if (historicalLigaturesState != FontDescription::NormalLigaturesState)
-    valueList->append(*CSSIdentifierValue::create(
-        historicalLigaturesState == FontDescription::DisabledLigaturesState
+  if (historical_ligatures_state != FontDescription::kNormalLigaturesState)
+    value_list->Append(*CSSIdentifierValue::Create(
+        historical_ligatures_state == FontDescription::kDisabledLigaturesState
             ? CSSValueNoHistoricalLigatures
             : CSSValueHistoricalLigatures));
-  if (contextualLigaturesState != FontDescription::NormalLigaturesState)
-    valueList->append(*CSSIdentifierValue::create(
-        contextualLigaturesState == FontDescription::DisabledLigaturesState
+  if (contextual_ligatures_state != FontDescription::kNormalLigaturesState)
+    value_list->Append(*CSSIdentifierValue::Create(
+        contextual_ligatures_state == FontDescription::kDisabledLigaturesState
             ? CSSValueNoContextual
             : CSSValueContextual));
-  return valueList;
+  return value_list;
 }
 
-static CSSValue* valueForFontVariantNumeric(const ComputedStyle& style) {
-  FontVariantNumeric variantNumeric =
-      style.getFontDescription().variantNumeric();
-  if (variantNumeric.isAllNormal())
-    return CSSIdentifierValue::create(CSSValueNormal);
+static CSSValue* ValueForFontVariantNumeric(const ComputedStyle& style) {
+  FontVariantNumeric variant_numeric =
+      style.GetFontDescription().VariantNumeric();
+  if (variant_numeric.IsAllNormal())
+    return CSSIdentifierValue::Create(CSSValueNormal);
 
-  CSSValueList* valueList = CSSValueList::createSpaceSeparated();
-  if (variantNumeric.numericFigureValue() != FontVariantNumeric::NormalFigure)
-    valueList->append(*CSSIdentifierValue::create(
-        variantNumeric.numericFigureValue() == FontVariantNumeric::LiningNums
+  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+  if (variant_numeric.NumericFigureValue() != FontVariantNumeric::kNormalFigure)
+    value_list->Append(*CSSIdentifierValue::Create(
+        variant_numeric.NumericFigureValue() == FontVariantNumeric::kLiningNums
             ? CSSValueLiningNums
             : CSSValueOldstyleNums));
-  if (variantNumeric.numericSpacingValue() !=
-      FontVariantNumeric::NormalSpacing) {
-    valueList->append(
-        *CSSIdentifierValue::create(variantNumeric.numericSpacingValue() ==
-                                            FontVariantNumeric::ProportionalNums
-                                        ? CSSValueProportionalNums
-                                        : CSSValueTabularNums));
+  if (variant_numeric.NumericSpacingValue() !=
+      FontVariantNumeric::kNormalSpacing) {
+    value_list->Append(*CSSIdentifierValue::Create(
+        variant_numeric.NumericSpacingValue() ==
+                FontVariantNumeric::kProportionalNums
+            ? CSSValueProportionalNums
+            : CSSValueTabularNums));
   }
-  if (variantNumeric.numericFractionValue() !=
-      FontVariantNumeric::NormalFraction)
-    valueList->append(*CSSIdentifierValue::create(
-        variantNumeric.numericFractionValue() ==
-                FontVariantNumeric::DiagonalFractions
+  if (variant_numeric.NumericFractionValue() !=
+      FontVariantNumeric::kNormalFraction)
+    value_list->Append(*CSSIdentifierValue::Create(
+        variant_numeric.NumericFractionValue() ==
+                FontVariantNumeric::kDiagonalFractions
             ? CSSValueDiagonalFractions
             : CSSValueStackedFractions));
-  if (variantNumeric.ordinalValue() == FontVariantNumeric::OrdinalOn)
-    valueList->append(*CSSIdentifierValue::create(CSSValueOrdinal));
-  if (variantNumeric.slashedZeroValue() == FontVariantNumeric::SlashedZeroOn)
-    valueList->append(*CSSIdentifierValue::create(CSSValueSlashedZero));
+  if (variant_numeric.OrdinalValue() == FontVariantNumeric::kOrdinalOn)
+    value_list->Append(*CSSIdentifierValue::Create(CSSValueOrdinal));
+  if (variant_numeric.SlashedZeroValue() == FontVariantNumeric::kSlashedZeroOn)
+    value_list->Append(*CSSIdentifierValue::Create(CSSValueSlashedZero));
 
-  return valueList;
+  return value_list;
 }
 
-static CSSValue* specifiedValueForGridTrackBreadth(
-    const GridLength& trackBreadth,
+static CSSValue* SpecifiedValueForGridTrackBreadth(
+    const GridLength& track_breadth,
     const ComputedStyle& style) {
-  if (!trackBreadth.isLength())
-    return CSSPrimitiveValue::create(trackBreadth.flex(),
-                                     CSSPrimitiveValue::UnitType::Fraction);
+  if (!track_breadth.IsLength())
+    return CSSPrimitiveValue::Create(track_breadth.Flex(),
+                                     CSSPrimitiveValue::UnitType::kFraction);
 
-  const Length& trackBreadthLength = trackBreadth.length();
-  if (trackBreadthLength.isAuto())
-    return CSSIdentifierValue::create(CSSValueAuto);
-  return zoomAdjustedPixelValueForLength(trackBreadthLength, style);
+  const Length& track_breadth_length = track_breadth.length();
+  if (track_breadth_length.IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  return ZoomAdjustedPixelValueForLength(track_breadth_length, style);
 }
 
-static CSSValue* specifiedValueForGridTrackSize(const GridTrackSize& trackSize,
+static CSSValue* SpecifiedValueForGridTrackSize(const GridTrackSize& track_size,
                                                 const ComputedStyle& style) {
-  switch (trackSize.type()) {
-    case LengthTrackSizing:
-      return specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(),
+  switch (track_size.GetType()) {
+    case kLengthTrackSizing:
+      return SpecifiedValueForGridTrackBreadth(track_size.MinTrackBreadth(),
                                                style);
-    case MinMaxTrackSizing: {
-      if (trackSize.minTrackBreadth().isAuto() &&
-          trackSize.maxTrackBreadth().isFlex()) {
-        return CSSPrimitiveValue::create(trackSize.maxTrackBreadth().flex(),
-                                         CSSPrimitiveValue::UnitType::Fraction);
+    case kMinMaxTrackSizing: {
+      if (track_size.MinTrackBreadth().IsAuto() &&
+          track_size.MaxTrackBreadth().IsFlex()) {
+        return CSSPrimitiveValue::Create(
+            track_size.MaxTrackBreadth().Flex(),
+            CSSPrimitiveValue::UnitType::kFraction);
       }
 
-      auto* minMaxTrackBreadths = CSSFunctionValue::create(CSSValueMinmax);
-      minMaxTrackBreadths->append(*specifiedValueForGridTrackBreadth(
-          trackSize.minTrackBreadth(), style));
-      minMaxTrackBreadths->append(*specifiedValueForGridTrackBreadth(
-          trackSize.maxTrackBreadth(), style));
-      return minMaxTrackBreadths;
+      auto* min_max_track_breadths = CSSFunctionValue::Create(CSSValueMinmax);
+      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
+          track_size.MinTrackBreadth(), style));
+      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
+          track_size.MaxTrackBreadth(), style));
+      return min_max_track_breadths;
     }
-    case FitContentTrackSizing: {
-      auto* fitContentTrackBreadth =
-          CSSFunctionValue::create(CSSValueFitContent);
-      fitContentTrackBreadth->append(*specifiedValueForGridTrackBreadth(
-          trackSize.fitContentTrackBreadth(), style));
-      return fitContentTrackBreadth;
+    case kFitContentTrackSizing: {
+      auto* fit_content_track_breadth =
+          CSSFunctionValue::Create(CSSValueFitContent);
+      fit_content_track_breadth->Append(*SpecifiedValueForGridTrackBreadth(
+          track_size.FitContentTrackBreadth(), style));
+      return fit_content_track_breadth;
     }
   }
   NOTREACHED();
@@ -914,573 +929,582 @@ class OrderedNamedLinesCollector {
 
  public:
   OrderedNamedLinesCollector(const ComputedStyle& style,
-                             bool isRowAxis,
-                             size_t autoRepeatTracksCount)
-      : m_orderedNamedGridLines(isRowAxis ? style.orderedNamedGridColumnLines()
-                                          : style.orderedNamedGridRowLines()),
-        m_orderedNamedAutoRepeatGridLines(
-            isRowAxis ? style.autoRepeatOrderedNamedGridColumnLines()
-                      : style.autoRepeatOrderedNamedGridRowLines()),
-        m_insertionPoint(isRowAxis ? style.gridAutoRepeatColumnsInsertionPoint()
-                                   : style.gridAutoRepeatRowsInsertionPoint()),
-        m_autoRepeatTotalTracks(autoRepeatTracksCount),
-        m_autoRepeatTrackListLength(isRowAxis
-                                        ? style.gridAutoRepeatColumns().size()
-                                        : style.gridAutoRepeatRows().size()) {}
+                             bool is_row_axis,
+                             size_t auto_repeat_tracks_count)
+      : ordered_named_grid_lines_(is_row_axis
+                                      ? style.OrderedNamedGridColumnLines()
+                                      : style.OrderedNamedGridRowLines()),
+        ordered_named_auto_repeat_grid_lines_(
+            is_row_axis ? style.AutoRepeatOrderedNamedGridColumnLines()
+                        : style.AutoRepeatOrderedNamedGridRowLines()),
+        insertion_point_(is_row_axis
+                             ? style.GridAutoRepeatColumnsInsertionPoint()
+                             : style.GridAutoRepeatRowsInsertionPoint()),
+        auto_repeat_total_tracks_(auto_repeat_tracks_count),
+        auto_repeat_track_list_length_(
+            is_row_axis ? style.GridAutoRepeatColumns().size()
+                        : style.GridAutoRepeatRows().size()) {}
 
-  bool isEmpty() const {
-    return m_orderedNamedGridLines.isEmpty() &&
-           m_orderedNamedAutoRepeatGridLines.isEmpty();
+  bool IsEmpty() const {
+    return ordered_named_grid_lines_.IsEmpty() &&
+           ordered_named_auto_repeat_grid_lines_.IsEmpty();
   }
-  void collectLineNamesForIndex(CSSGridLineNamesValue&, size_t index) const;
+  void CollectLineNamesForIndex(CSSGridLineNamesValue&, size_t index) const;
 
  private:
-  enum NamedLinesType { NamedLines, AutoRepeatNamedLines };
-  void appendLines(CSSGridLineNamesValue&, size_t index, NamedLinesType) const;
+  enum NamedLinesType { kNamedLines, kAutoRepeatNamedLines };
+  void AppendLines(CSSGridLineNamesValue&, size_t index, NamedLinesType) const;
 
-  const OrderedNamedGridLines& m_orderedNamedGridLines;
-  const OrderedNamedGridLines& m_orderedNamedAutoRepeatGridLines;
-  size_t m_insertionPoint;
-  size_t m_autoRepeatTotalTracks;
-  size_t m_autoRepeatTrackListLength;
+  const OrderedNamedGridLines& ordered_named_grid_lines_;
+  const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines_;
+  size_t insertion_point_;
+  size_t auto_repeat_total_tracks_;
+  size_t auto_repeat_track_list_length_;
 };
 
-void OrderedNamedLinesCollector::appendLines(
-    CSSGridLineNamesValue& lineNamesValue,
+void OrderedNamedLinesCollector::AppendLines(
+    CSSGridLineNamesValue& line_names_value,
     size_t index,
     NamedLinesType type) const {
-  auto iter = type == NamedLines
-                  ? m_orderedNamedGridLines.find(index)
-                  : m_orderedNamedAutoRepeatGridLines.find(index);
-  auto endIter = type == NamedLines ? m_orderedNamedGridLines.end()
-                                    : m_orderedNamedAutoRepeatGridLines.end();
-  if (iter == endIter)
+  auto iter = type == kNamedLines
+                  ? ordered_named_grid_lines_.Find(index)
+                  : ordered_named_auto_repeat_grid_lines_.Find(index);
+  auto end_iter = type == kNamedLines
+                      ? ordered_named_grid_lines_.end()
+                      : ordered_named_auto_repeat_grid_lines_.end();
+  if (iter == end_iter)
     return;
 
-  for (auto lineName : iter->value)
-    lineNamesValue.append(*CSSCustomIdentValue::create(AtomicString(lineName)));
+  for (auto line_name : iter->value)
+    line_names_value.Append(
+        *CSSCustomIdentValue::Create(AtomicString(line_name)));
 }
 
-void OrderedNamedLinesCollector::collectLineNamesForIndex(
-    CSSGridLineNamesValue& lineNamesValue,
+void OrderedNamedLinesCollector::CollectLineNamesForIndex(
+    CSSGridLineNamesValue& line_names_value,
     size_t i) const {
-  DCHECK(!isEmpty());
-  if (m_orderedNamedAutoRepeatGridLines.isEmpty() || i < m_insertionPoint) {
-    appendLines(lineNamesValue, i, NamedLines);
+  DCHECK(!IsEmpty());
+  if (ordered_named_auto_repeat_grid_lines_.IsEmpty() || i < insertion_point_) {
+    AppendLines(line_names_value, i, kNamedLines);
     return;
   }
 
-  DCHECK(m_autoRepeatTotalTracks);
+  DCHECK(auto_repeat_total_tracks_);
 
-  if (i > m_insertionPoint + m_autoRepeatTotalTracks) {
-    appendLines(lineNamesValue, i - (m_autoRepeatTotalTracks - 1), NamedLines);
+  if (i > insertion_point_ + auto_repeat_total_tracks_) {
+    AppendLines(line_names_value, i - (auto_repeat_total_tracks_ - 1),
+                kNamedLines);
     return;
   }
 
-  if (i == m_insertionPoint) {
-    appendLines(lineNamesValue, i, NamedLines);
-    appendLines(lineNamesValue, 0, AutoRepeatNamedLines);
+  if (i == insertion_point_) {
+    AppendLines(line_names_value, i, kNamedLines);
+    AppendLines(line_names_value, 0, kAutoRepeatNamedLines);
     return;
   }
 
-  if (i == m_insertionPoint + m_autoRepeatTotalTracks) {
-    appendLines(lineNamesValue, m_autoRepeatTrackListLength,
-                AutoRepeatNamedLines);
-    appendLines(lineNamesValue, m_insertionPoint + 1, NamedLines);
+  if (i == insertion_point_ + auto_repeat_total_tracks_) {
+    AppendLines(line_names_value, auto_repeat_track_list_length_,
+                kAutoRepeatNamedLines);
+    AppendLines(line_names_value, insertion_point_ + 1, kNamedLines);
     return;
   }
 
-  size_t autoRepeatIndexInFirstRepetition =
-      (i - m_insertionPoint) % m_autoRepeatTrackListLength;
-  if (!autoRepeatIndexInFirstRepetition && i > m_insertionPoint)
-    appendLines(lineNamesValue, m_autoRepeatTrackListLength,
-                AutoRepeatNamedLines);
-  appendLines(lineNamesValue, autoRepeatIndexInFirstRepetition,
-              AutoRepeatNamedLines);
+  size_t auto_repeat_index_in_first_repetition =
+      (i - insertion_point_) % auto_repeat_track_list_length_;
+  if (!auto_repeat_index_in_first_repetition && i > insertion_point_)
+    AppendLines(line_names_value, auto_repeat_track_list_length_,
+                kAutoRepeatNamedLines);
+  AppendLines(line_names_value, auto_repeat_index_in_first_repetition,
+              kAutoRepeatNamedLines);
 }
 
-static void addValuesForNamedGridLinesAtIndex(
+static void AddValuesForNamedGridLinesAtIndex(
     OrderedNamedLinesCollector& collector,
     size_t i,
     CSSValueList& list) {
-  if (collector.isEmpty())
+  if (collector.IsEmpty())
     return;
 
-  CSSGridLineNamesValue* lineNames = CSSGridLineNamesValue::create();
-  collector.collectLineNamesForIndex(*lineNames, i);
-  if (lineNames->length())
-    list.append(*lineNames);
+  CSSGridLineNamesValue* line_names = CSSGridLineNamesValue::Create();
+  collector.CollectLineNamesForIndex(*line_names, i);
+  if (line_names->length())
+    list.Append(*line_names);
 }
 
-static CSSValue* valueForGridTrackSizeList(GridTrackSizingDirection direction,
+static CSSValue* ValueForGridTrackSizeList(GridTrackSizingDirection direction,
                                            const ComputedStyle& style) {
-  const Vector<GridTrackSize>& autoTrackSizes =
-      direction == ForColumns ? style.gridAutoColumns() : style.gridAutoRows();
+  const Vector<GridTrackSize>& auto_track_sizes =
+      direction == kForColumns ? style.GridAutoColumns() : style.GridAutoRows();
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  for (auto& trackSize : autoTrackSizes)
-    list->append(*specifiedValueForGridTrackSize(trackSize, style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (auto& track_size : auto_track_sizes)
+    list->Append(*SpecifiedValueForGridTrackSize(track_size, style));
   return list;
 }
 
-static CSSValue* valueForGridTrackList(GridTrackSizingDirection direction,
-                                       const LayoutObject* layoutObject,
+static CSSValue* ValueForGridTrackList(GridTrackSizingDirection direction,
+                                       const LayoutObject* layout_object,
                                        const ComputedStyle& style) {
-  bool isRowAxis = direction == ForColumns;
-  const Vector<GridTrackSize>& trackSizes =
-      isRowAxis ? style.gridTemplateColumns() : style.gridTemplateRows();
-  const Vector<GridTrackSize>& autoRepeatTrackSizes =
-      isRowAxis ? style.gridAutoRepeatColumns() : style.gridAutoRepeatRows();
-  bool isLayoutGrid = layoutObject && layoutObject->isLayoutGrid();
+  bool is_row_axis = direction == kForColumns;
+  const Vector<GridTrackSize>& track_sizes =
+      is_row_axis ? style.GridTemplateColumns() : style.GridTemplateRows();
+  const Vector<GridTrackSize>& auto_repeat_track_sizes =
+      is_row_axis ? style.GridAutoRepeatColumns() : style.GridAutoRepeatRows();
+  bool is_layout_grid = layout_object && layout_object->IsLayoutGrid();
 
   // Handle the 'none' case.
-  bool trackListIsEmpty =
-      trackSizes.isEmpty() && autoRepeatTrackSizes.isEmpty();
-  if (isLayoutGrid && trackListIsEmpty) {
+  bool track_list_is_empty =
+      track_sizes.IsEmpty() && auto_repeat_track_sizes.IsEmpty();
+  if (is_layout_grid && track_list_is_empty) {
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
-    auto& positions = isRowAxis ? toLayoutGrid(layoutObject)->columnPositions()
-                                : toLayoutGrid(layoutObject)->rowPositions();
-    trackListIsEmpty = positions.size() == 1;
+    auto& positions = is_row_axis
+                          ? ToLayoutGrid(layout_object)->ColumnPositions()
+                          : ToLayoutGrid(layout_object)->RowPositions();
+    track_list_is_empty = positions.size() == 1;
   }
 
-  if (trackListIsEmpty)
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (track_list_is_empty)
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  size_t autoRepeatTotalTracks =
-      isLayoutGrid
-          ? toLayoutGrid(layoutObject)->autoRepeatCountForDirection(direction)
+  size_t auto_repeat_total_tracks =
+      is_layout_grid
+          ? ToLayoutGrid(layout_object)->AutoRepeatCountForDirection(direction)
           : 0;
-  OrderedNamedLinesCollector collector(style, isRowAxis, autoRepeatTotalTracks);
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  size_t insertionIndex;
-  if (isLayoutGrid) {
-    const auto* grid = toLayoutGrid(layoutObject);
-    Vector<LayoutUnit> computedTrackSizes =
-        grid->trackSizesForComputedStyle(direction);
-    size_t numTracks = computedTrackSizes.size();
+  OrderedNamedLinesCollector collector(style, is_row_axis,
+                                       auto_repeat_total_tracks);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  size_t insertion_index;
+  if (is_layout_grid) {
+    const auto* grid = ToLayoutGrid(layout_object);
+    Vector<LayoutUnit> computed_track_sizes =
+        grid->TrackSizesForComputedStyle(direction);
+    size_t num_tracks = computed_track_sizes.size();
 
-    for (size_t i = 0; i < numTracks; ++i) {
-      addValuesForNamedGridLinesAtIndex(collector, i, *list);
-      list->append(*zoomAdjustedPixelValue(computedTrackSizes[i], style));
+    for (size_t i = 0; i < num_tracks; ++i) {
+      AddValuesForNamedGridLinesAtIndex(collector, i, *list);
+      list->Append(*ZoomAdjustedPixelValue(computed_track_sizes[i], style));
     }
-    addValuesForNamedGridLinesAtIndex(collector, numTracks + 1, *list);
+    AddValuesForNamedGridLinesAtIndex(collector, num_tracks + 1, *list);
 
-    insertionIndex = numTracks;
+    insertion_index = num_tracks;
   } else {
-    for (size_t i = 0; i < trackSizes.size(); ++i) {
-      addValuesForNamedGridLinesAtIndex(collector, i, *list);
-      list->append(*specifiedValueForGridTrackSize(trackSizes[i], style));
+    for (size_t i = 0; i < track_sizes.size(); ++i) {
+      AddValuesForNamedGridLinesAtIndex(collector, i, *list);
+      list->Append(*SpecifiedValueForGridTrackSize(track_sizes[i], style));
     }
-    insertionIndex = trackSizes.size();
+    insertion_index = track_sizes.size();
   }
   // Those are the trailing <string>* allowed in the syntax.
-  addValuesForNamedGridLinesAtIndex(collector, insertionIndex, *list);
+  AddValuesForNamedGridLinesAtIndex(collector, insertion_index, *list);
   return list;
 }
 
-static CSSValue* valueForGridPosition(const GridPosition& position) {
-  if (position.isAuto())
-    return CSSIdentifierValue::create(CSSValueAuto);
+static CSSValue* ValueForGridPosition(const GridPosition& position) {
+  if (position.IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
 
-  if (position.isNamedGridArea())
-    return CSSCustomIdentValue::create(position.namedGridLine());
+  if (position.IsNamedGridArea())
+    return CSSCustomIdentValue::Create(position.NamedGridLine());
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (position.isSpan()) {
-    list->append(*CSSIdentifierValue::create(CSSValueSpan));
-    list->append(*CSSPrimitiveValue::create(
-        position.spanPosition(), CSSPrimitiveValue::UnitType::Number));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (position.IsSpan()) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueSpan));
+    list->Append(*CSSPrimitiveValue::Create(
+        position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
   } else {
-    list->append(*CSSPrimitiveValue::create(
-        position.integerPosition(), CSSPrimitiveValue::UnitType::Number));
+    list->Append(*CSSPrimitiveValue::Create(
+        position.IntegerPosition(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
-  if (!position.namedGridLine().isNull())
-    list->append(*CSSCustomIdentValue::create(position.namedGridLine()));
+  if (!position.NamedGridLine().IsNull())
+    list->Append(*CSSCustomIdentValue::Create(position.NamedGridLine()));
   return list;
 }
 
-static LayoutRect sizingBox(const LayoutObject* layoutObject) {
-  if (!layoutObject->isBox())
+static LayoutRect SizingBox(const LayoutObject* layout_object) {
+  if (!layout_object->IsBox())
     return LayoutRect();
 
-  const LayoutBox* box = toLayoutBox(layoutObject);
-  return box->style()->boxSizing() == EBoxSizing::kBorderBox
-             ? box->borderBoxRect()
-             : box->computedCSSContentBoxRect();
+  const LayoutBox* box = ToLayoutBox(layout_object);
+  return box->Style()->BoxSizing() == EBoxSizing::kBorderBox
+             ? box->BorderBoxRect()
+             : box->ComputedCSSContentBoxRect();
 }
 
-static CSSValue* renderTextDecorationFlagsToCSSValue(int textDecoration) {
+static CSSValue* RenderTextDecorationFlagsToCSSValue(int text_decoration) {
   // Blink value is ignored.
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (textDecoration & TextDecorationUnderline)
-    list->append(*CSSIdentifierValue::create(CSSValueUnderline));
-  if (textDecoration & TextDecorationOverline)
-    list->append(*CSSIdentifierValue::create(CSSValueOverline));
-  if (textDecoration & TextDecorationLineThrough)
-    list->append(*CSSIdentifierValue::create(CSSValueLineThrough));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (text_decoration & kTextDecorationUnderline)
+    list->Append(*CSSIdentifierValue::Create(CSSValueUnderline));
+  if (text_decoration & kTextDecorationOverline)
+    list->Append(*CSSIdentifierValue::Create(CSSValueOverline));
+  if (text_decoration & kTextDecorationLineThrough)
+    list->Append(*CSSIdentifierValue::Create(CSSValueLineThrough));
 
   if (!list->length())
-    return CSSIdentifierValue::create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueNone);
   return list;
 }
 
-static CSSValue* valueForTextDecorationStyle(
-    TextDecorationStyle textDecorationStyle) {
-  switch (textDecorationStyle) {
-    case TextDecorationStyleSolid:
-      return CSSIdentifierValue::create(CSSValueSolid);
-    case TextDecorationStyleDouble:
-      return CSSIdentifierValue::create(CSSValueDouble);
-    case TextDecorationStyleDotted:
-      return CSSIdentifierValue::create(CSSValueDotted);
-    case TextDecorationStyleDashed:
-      return CSSIdentifierValue::create(CSSValueDashed);
-    case TextDecorationStyleWavy:
-      return CSSIdentifierValue::create(CSSValueWavy);
+static CSSValue* ValueForTextDecorationStyle(
+    TextDecorationStyle text_decoration_style) {
+  switch (text_decoration_style) {
+    case kTextDecorationStyleSolid:
+      return CSSIdentifierValue::Create(CSSValueSolid);
+    case kTextDecorationStyleDouble:
+      return CSSIdentifierValue::Create(CSSValueDouble);
+    case kTextDecorationStyleDotted:
+      return CSSIdentifierValue::Create(CSSValueDotted);
+    case kTextDecorationStyleDashed:
+      return CSSIdentifierValue::Create(CSSValueDashed);
+    case kTextDecorationStyleWavy:
+      return CSSIdentifierValue::Create(CSSValueWavy);
   }
 
   NOTREACHED();
-  return CSSInitialValue::create();
+  return CSSInitialValue::Create();
 }
 
-static CSSValue* valueForTextDecorationSkip(
-    TextDecorationSkip textDecorationSkip) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (textDecorationSkip & TextDecorationSkipObjects)
-    list->append(*CSSIdentifierValue::create(CSSValueObjects));
-  if (textDecorationSkip & TextDecorationSkipInk)
-    list->append(*CSSIdentifierValue::create(CSSValueInk));
+static CSSValue* ValueForTextDecorationSkip(
+    TextDecorationSkip text_decoration_skip) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (text_decoration_skip & kTextDecorationSkipObjects)
+    list->Append(*CSSIdentifierValue::Create(CSSValueObjects));
+  if (text_decoration_skip & kTextDecorationSkipInk)
+    list->Append(*CSSIdentifierValue::Create(CSSValueInk));
 
   DCHECK(list->length());
   return list;
 }
 
-static CSSValue* touchActionFlagsToCSSValue(TouchAction touchAction) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (touchAction == TouchActionAuto) {
-    list->append(*CSSIdentifierValue::create(CSSValueAuto));
-  } else if (touchAction == TouchActionNone) {
-    list->append(*CSSIdentifierValue::create(CSSValueNone));
-  } else if (touchAction == TouchActionManipulation) {
-    list->append(*CSSIdentifierValue::create(CSSValueManipulation));
+static CSSValue* TouchActionFlagsToCSSValue(TouchAction touch_action) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (touch_action == kTouchActionAuto) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
+  } else if (touch_action == kTouchActionNone) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueNone));
+  } else if (touch_action == kTouchActionManipulation) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueManipulation));
   } else {
-    if ((touchAction & TouchActionPanX) == TouchActionPanX)
-      list->append(*CSSIdentifierValue::create(CSSValuePanX));
-    else if (touchAction & TouchActionPanLeft)
-      list->append(*CSSIdentifierValue::create(CSSValuePanLeft));
-    else if (touchAction & TouchActionPanRight)
-      list->append(*CSSIdentifierValue::create(CSSValuePanRight));
-    if ((touchAction & TouchActionPanY) == TouchActionPanY)
-      list->append(*CSSIdentifierValue::create(CSSValuePanY));
-    else if (touchAction & TouchActionPanUp)
-      list->append(*CSSIdentifierValue::create(CSSValuePanUp));
-    else if (touchAction & TouchActionPanDown)
-      list->append(*CSSIdentifierValue::create(CSSValuePanDown));
+    if ((touch_action & kTouchActionPanX) == kTouchActionPanX)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanX));
+    else if (touch_action & kTouchActionPanLeft)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanLeft));
+    else if (touch_action & kTouchActionPanRight)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanRight));
+    if ((touch_action & kTouchActionPanY) == kTouchActionPanY)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanY));
+    else if (touch_action & kTouchActionPanUp)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanUp));
+    else if (touch_action & kTouchActionPanDown)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePanDown));
 
-    if ((touchAction & TouchActionPinchZoom) == TouchActionPinchZoom)
-      list->append(*CSSIdentifierValue::create(CSSValuePinchZoom));
+    if ((touch_action & kTouchActionPinchZoom) == kTouchActionPinchZoom)
+      list->Append(*CSSIdentifierValue::Create(CSSValuePinchZoom));
   }
 
   DCHECK(list->length());
   return list;
 }
 
-static CSSValue* valueForWillChange(
-    const Vector<CSSPropertyID>& willChangeProperties,
-    bool willChangeContents,
-    bool willChangeScrollPosition) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  if (willChangeContents)
-    list->append(*CSSIdentifierValue::create(CSSValueContents));
-  if (willChangeScrollPosition)
-    list->append(*CSSIdentifierValue::create(CSSValueScrollPosition));
-  for (size_t i = 0; i < willChangeProperties.size(); ++i)
-    list->append(*CSSCustomIdentValue::create(willChangeProperties[i]));
+static CSSValue* ValueForWillChange(
+    const Vector<CSSPropertyID>& will_change_properties,
+    bool will_change_contents,
+    bool will_change_scroll_position) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (will_change_contents)
+    list->Append(*CSSIdentifierValue::Create(CSSValueContents));
+  if (will_change_scroll_position)
+    list->Append(*CSSIdentifierValue::Create(CSSValueScrollPosition));
+  for (size_t i = 0; i < will_change_properties.size(); ++i)
+    list->Append(*CSSCustomIdentValue::Create(will_change_properties[i]));
   if (!list->length())
-    list->append(*CSSIdentifierValue::create(CSSValueAuto));
+    list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
   return list;
 }
 
-static CSSValue* valueForAnimationDelay(const CSSTimingData* timingData) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  if (timingData) {
-    for (size_t i = 0; i < timingData->delayList().size(); ++i)
-      list->append(*CSSPrimitiveValue::create(
-          timingData->delayList()[i], CSSPrimitiveValue::UnitType::Seconds));
+static CSSValue* ValueForAnimationDelay(const CSSTimingData* timing_data) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (timing_data) {
+    for (size_t i = 0; i < timing_data->DelayList().size(); ++i)
+      list->Append(*CSSPrimitiveValue::Create(
+          timing_data->DelayList()[i], CSSPrimitiveValue::UnitType::kSeconds));
   } else {
-    list->append(*CSSPrimitiveValue::create(
-        CSSTimingData::initialDelay(), CSSPrimitiveValue::UnitType::Seconds));
+    list->Append(*CSSPrimitiveValue::Create(
+        CSSTimingData::InitialDelay(), CSSPrimitiveValue::UnitType::kSeconds));
   }
   return list;
 }
 
-static CSSValue* valueForAnimationDirection(
+static CSSValue* ValueForAnimationDirection(
     Timing::PlaybackDirection direction) {
   switch (direction) {
     case Timing::PlaybackDirection::NORMAL:
-      return CSSIdentifierValue::create(CSSValueNormal);
+      return CSSIdentifierValue::Create(CSSValueNormal);
     case Timing::PlaybackDirection::ALTERNATE_NORMAL:
-      return CSSIdentifierValue::create(CSSValueAlternate);
+      return CSSIdentifierValue::Create(CSSValueAlternate);
     case Timing::PlaybackDirection::REVERSE:
-      return CSSIdentifierValue::create(CSSValueReverse);
+      return CSSIdentifierValue::Create(CSSValueReverse);
     case Timing::PlaybackDirection::ALTERNATE_REVERSE:
-      return CSSIdentifierValue::create(CSSValueAlternateReverse);
+      return CSSIdentifierValue::Create(CSSValueAlternateReverse);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-static CSSValue* valueForAnimationDuration(const CSSTimingData* timingData) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  if (timingData) {
-    for (size_t i = 0; i < timingData->durationList().size(); ++i)
-      list->append(*CSSPrimitiveValue::create(
-          timingData->durationList()[i], CSSPrimitiveValue::UnitType::Seconds));
+static CSSValue* ValueForAnimationDuration(const CSSTimingData* timing_data) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (timing_data) {
+    for (size_t i = 0; i < timing_data->DurationList().size(); ++i)
+      list->Append(
+          *CSSPrimitiveValue::Create(timing_data->DurationList()[i],
+                                     CSSPrimitiveValue::UnitType::kSeconds));
   } else {
-    list->append(
-        *CSSPrimitiveValue::create(CSSTimingData::initialDuration(),
-                                   CSSPrimitiveValue::UnitType::Seconds));
+    list->Append(
+        *CSSPrimitiveValue::Create(CSSTimingData::InitialDuration(),
+                                   CSSPrimitiveValue::UnitType::kSeconds));
   }
   return list;
 }
 
-static CSSValue* valueForAnimationFillMode(Timing::FillMode fillMode) {
-  switch (fillMode) {
+static CSSValue* ValueForAnimationFillMode(Timing::FillMode fill_mode) {
+  switch (fill_mode) {
     case Timing::FillMode::NONE:
-      return CSSIdentifierValue::create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueNone);
     case Timing::FillMode::FORWARDS:
-      return CSSIdentifierValue::create(CSSValueForwards);
+      return CSSIdentifierValue::Create(CSSValueForwards);
     case Timing::FillMode::BACKWARDS:
-      return CSSIdentifierValue::create(CSSValueBackwards);
+      return CSSIdentifierValue::Create(CSSValueBackwards);
     case Timing::FillMode::BOTH:
-      return CSSIdentifierValue::create(CSSValueBoth);
+      return CSSIdentifierValue::Create(CSSValueBoth);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-static CSSValue* valueForAnimationIterationCount(double iterationCount) {
-  if (iterationCount == std::numeric_limits<double>::infinity())
-    return CSSIdentifierValue::create(CSSValueInfinite);
-  return CSSPrimitiveValue::create(iterationCount,
-                                   CSSPrimitiveValue::UnitType::Number);
+static CSSValue* ValueForAnimationIterationCount(double iteration_count) {
+  if (iteration_count == std::numeric_limits<double>::infinity())
+    return CSSIdentifierValue::Create(CSSValueInfinite);
+  return CSSPrimitiveValue::Create(iteration_count,
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
-static CSSValue* valueForAnimationPlayState(EAnimPlayState playState) {
-  if (playState == AnimPlayStatePlaying)
-    return CSSIdentifierValue::create(CSSValueRunning);
-  DCHECK_EQ(playState, AnimPlayStatePaused);
-  return CSSIdentifierValue::create(CSSValuePaused);
+static CSSValue* ValueForAnimationPlayState(EAnimPlayState play_state) {
+  if (play_state == kAnimPlayStatePlaying)
+    return CSSIdentifierValue::Create(CSSValueRunning);
+  DCHECK_EQ(play_state, kAnimPlayStatePaused);
+  return CSSIdentifierValue::Create(CSSValuePaused);
 }
 
-static CSSValue* createTimingFunctionValue(
-    const TimingFunction* timingFunction) {
-  switch (timingFunction->getType()) {
+static CSSValue* CreateTimingFunctionValue(
+    const TimingFunction* timing_function) {
+  switch (timing_function->GetType()) {
     case TimingFunction::Type::CUBIC_BEZIER: {
-      const CubicBezierTimingFunction* bezierTimingFunction =
-          toCubicBezierTimingFunction(timingFunction);
-      if (bezierTimingFunction->getEaseType() !=
+      const CubicBezierTimingFunction* bezier_timing_function =
+          ToCubicBezierTimingFunction(timing_function);
+      if (bezier_timing_function->GetEaseType() !=
           CubicBezierTimingFunction::EaseType::CUSTOM) {
-        CSSValueID valueId = CSSValueInvalid;
-        switch (bezierTimingFunction->getEaseType()) {
+        CSSValueID value_id = CSSValueInvalid;
+        switch (bezier_timing_function->GetEaseType()) {
           case CubicBezierTimingFunction::EaseType::EASE:
-            valueId = CSSValueEase;
+            value_id = CSSValueEase;
             break;
           case CubicBezierTimingFunction::EaseType::EASE_IN:
-            valueId = CSSValueEaseIn;
+            value_id = CSSValueEaseIn;
             break;
           case CubicBezierTimingFunction::EaseType::EASE_OUT:
-            valueId = CSSValueEaseOut;
+            value_id = CSSValueEaseOut;
             break;
           case CubicBezierTimingFunction::EaseType::EASE_IN_OUT:
-            valueId = CSSValueEaseInOut;
+            value_id = CSSValueEaseInOut;
             break;
           default:
             NOTREACHED();
             return nullptr;
         }
-        return CSSIdentifierValue::create(valueId);
+        return CSSIdentifierValue::Create(value_id);
       }
-      return CSSCubicBezierTimingFunctionValue::create(
-          bezierTimingFunction->x1(), bezierTimingFunction->y1(),
-          bezierTimingFunction->x2(), bezierTimingFunction->y2());
+      return CSSCubicBezierTimingFunctionValue::Create(
+          bezier_timing_function->X1(), bezier_timing_function->Y1(),
+          bezier_timing_function->X2(), bezier_timing_function->Y2());
     }
 
     case TimingFunction::Type::STEPS: {
-      const StepsTimingFunction* stepsTimingFunction =
-          toStepsTimingFunction(timingFunction);
+      const StepsTimingFunction* steps_timing_function =
+          ToStepsTimingFunction(timing_function);
       StepsTimingFunction::StepPosition position =
-          stepsTimingFunction->getStepPosition();
-      int steps = stepsTimingFunction->numberOfSteps();
+          steps_timing_function->GetStepPosition();
+      int steps = steps_timing_function->NumberOfSteps();
       DCHECK(position == StepsTimingFunction::StepPosition::START ||
              position == StepsTimingFunction::StepPosition::END);
 
       if (steps > 1)
-        return CSSStepsTimingFunctionValue::create(steps, position);
-      CSSValueID valueId = position == StepsTimingFunction::StepPosition::START
-                               ? CSSValueStepStart
-                               : CSSValueStepEnd;
-      return CSSIdentifierValue::create(valueId);
+        return CSSStepsTimingFunctionValue::Create(steps, position);
+      CSSValueID value_id = position == StepsTimingFunction::StepPosition::START
+                                ? CSSValueStepStart
+                                : CSSValueStepEnd;
+      return CSSIdentifierValue::Create(value_id);
     }
 
     default:
-      return CSSIdentifierValue::create(CSSValueLinear);
+      return CSSIdentifierValue::Create(CSSValueLinear);
   }
 }
 
-static CSSValue* valueForAnimationTimingFunction(
-    const CSSTimingData* timingData) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  if (timingData) {
-    for (size_t i = 0; i < timingData->timingFunctionList().size(); ++i)
-      list->append(*createTimingFunctionValue(
-          timingData->timingFunctionList()[i].get()));
+static CSSValue* ValueForAnimationTimingFunction(
+    const CSSTimingData* timing_data) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (timing_data) {
+    for (size_t i = 0; i < timing_data->TimingFunctionList().size(); ++i)
+      list->Append(*CreateTimingFunctionValue(
+          timing_data->TimingFunctionList()[i].Get()));
   } else {
-    list->append(*createTimingFunctionValue(
-        CSSTimingData::initialTimingFunction().get()));
+    list->Append(*CreateTimingFunctionValue(
+        CSSTimingData::InitialTimingFunction().Get()));
   }
   return list;
 }
 
-static CSSValueList* valuesForBorderRadiusCorner(LengthSize radius,
+static CSSValueList* ValuesForBorderRadiusCorner(LengthSize radius,
                                                  const ComputedStyle& style) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (radius.width().type() == Percent)
-    list->append(*CSSPrimitiveValue::create(
-        radius.width().percent(), CSSPrimitiveValue::UnitType::Percentage));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (radius.Width().GetType() == kPercent)
+    list->Append(*CSSPrimitiveValue::Create(
+        radius.Width().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   else
-    list->append(*zoomAdjustedPixelValueForLength(radius.width(), style));
-  if (radius.height().type() == Percent)
-    list->append(*CSSPrimitiveValue::create(
-        radius.height().percent(), CSSPrimitiveValue::UnitType::Percentage));
+    list->Append(*ZoomAdjustedPixelValueForLength(radius.Width(), style));
+  if (radius.Height().GetType() == kPercent)
+    list->Append(*CSSPrimitiveValue::Create(
+        radius.Height().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   else
-    list->append(*zoomAdjustedPixelValueForLength(radius.height(), style));
+    list->Append(*ZoomAdjustedPixelValueForLength(radius.Height(), style));
   return list;
 }
 
-static const CSSValue& valueForBorderRadiusCorner(LengthSize radius,
+static const CSSValue& ValueForBorderRadiusCorner(LengthSize radius,
                                                   const ComputedStyle& style) {
-  CSSValueList& list = *valuesForBorderRadiusCorner(radius, style);
-  if (list.item(0) == list.item(1))
-    return list.item(0);
+  CSSValueList& list = *ValuesForBorderRadiusCorner(radius, style);
+  if (list.Item(0) == list.Item(1))
+    return list.Item(0);
   return list;
 }
 
-static CSSFunctionValue* valueForMatrixTransform(TransformationMatrix transform,
+static CSSFunctionValue* ValueForMatrixTransform(TransformationMatrix transform,
                                                  const ComputedStyle& style) {
-  CSSFunctionValue* transformValue = nullptr;
-  transform.zoom(1 / style.effectiveZoom());
-  if (transform.isAffine()) {
-    transformValue = CSSFunctionValue::create(CSSValueMatrix);
+  CSSFunctionValue* transform_value = nullptr;
+  transform.Zoom(1 / style.EffectiveZoom());
+  if (transform.IsAffine()) {
+    transform_value = CSSFunctionValue::Create(CSSValueMatrix);
 
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.a(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.b(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.c(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.d(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.e(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.f(), CSSPrimitiveValue::UnitType::Number));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.A(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.B(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.C(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.D(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.E(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.F(), CSSPrimitiveValue::UnitType::kNumber));
   } else {
-    transformValue = CSSFunctionValue::create(CSSValueMatrix3d);
+    transform_value = CSSFunctionValue::Create(CSSValueMatrix3d);
 
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m11(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m12(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m13(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m14(), CSSPrimitiveValue::UnitType::Number));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M11(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M12(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M13(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M14(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m21(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m22(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m23(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m24(), CSSPrimitiveValue::UnitType::Number));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M21(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M22(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M23(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M24(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m31(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m32(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m33(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m34(), CSSPrimitiveValue::UnitType::Number));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M31(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M32(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M33(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M34(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m41(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m42(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m43(), CSSPrimitiveValue::UnitType::Number));
-    transformValue->append(*CSSPrimitiveValue::create(
-        transform.m44(), CSSPrimitiveValue::UnitType::Number));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M41(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M42(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M43(), CSSPrimitiveValue::UnitType::kNumber));
+    transform_value->Append(*CSSPrimitiveValue::Create(
+        transform.M44(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
-  return transformValue;
+  return transform_value;
 }
 
-static CSSValue* computedTransform(const LayoutObject* layoutObject,
+static CSSValue* ComputedTransform(const LayoutObject* layout_object,
                                    const ComputedStyle& style) {
-  if (!layoutObject || !style.hasTransform())
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (!layout_object || !style.HasTransform())
+    return CSSIdentifierValue::Create(CSSValueNone);
 
   IntRect box;
-  if (layoutObject->isBox())
-    box = pixelSnappedIntRect(toLayoutBox(layoutObject)->borderBoxRect());
+  if (layout_object->IsBox())
+    box = PixelSnappedIntRect(ToLayoutBox(layout_object)->BorderBoxRect());
 
   TransformationMatrix transform;
-  style.applyTransform(transform, LayoutSize(box.size()),
-                       ComputedStyle::ExcludeTransformOrigin,
-                       ComputedStyle::ExcludeMotionPath,
-                       ComputedStyle::ExcludeIndependentTransformProperties);
+  style.ApplyTransform(transform, LayoutSize(box.size()),
+                       ComputedStyle::kExcludeTransformOrigin,
+                       ComputedStyle::kExcludeMotionPath,
+                       ComputedStyle::kExcludeIndependentTransformProperties);
 
   // FIXME: Need to print out individual functions
   // (https://bugs.webkit.org/show_bug.cgi?id=23924)
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*valueForMatrixTransform(transform, style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ValueForMatrixTransform(transform, style));
 
   return list;
 }
 
-static CSSValue* createTransitionPropertyValue(
+static CSSValue* CreateTransitionPropertyValue(
     const CSSTransitionData::TransitionProperty& property) {
-  if (property.propertyType == CSSTransitionData::TransitionNone)
-    return CSSIdentifierValue::create(CSSValueNone);
-  if (property.propertyType == CSSTransitionData::TransitionUnknownProperty)
-    return CSSCustomIdentValue::create(property.propertyString);
-  DCHECK_EQ(property.propertyType, CSSTransitionData::TransitionKnownProperty);
-  return CSSCustomIdentValue::create(
-      getPropertyNameAtomicString(property.unresolvedProperty));
+  if (property.property_type == CSSTransitionData::kTransitionNone)
+    return CSSIdentifierValue::Create(CSSValueNone);
+  if (property.property_type == CSSTransitionData::kTransitionUnknownProperty)
+    return CSSCustomIdentValue::Create(property.property_string);
+  DCHECK_EQ(property.property_type,
+            CSSTransitionData::kTransitionKnownProperty);
+  return CSSCustomIdentValue::Create(
+      getPropertyNameAtomicString(property.unresolved_property));
 }
 
-static CSSValue* valueForTransitionProperty(
-    const CSSTransitionData* transitionData) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  if (transitionData) {
-    for (size_t i = 0; i < transitionData->propertyList().size(); ++i)
-      list->append(
-          *createTransitionPropertyValue(transitionData->propertyList()[i]));
+static CSSValue* ValueForTransitionProperty(
+    const CSSTransitionData* transition_data) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (transition_data) {
+    for (size_t i = 0; i < transition_data->PropertyList().size(); ++i)
+      list->Append(
+          *CreateTransitionPropertyValue(transition_data->PropertyList()[i]));
   } else {
-    list->append(*CSSIdentifierValue::create(CSSValueAll));
+    list->Append(*CSSIdentifierValue::Create(CSSValueAll));
   }
   return list;
 }
 
-CSSValueID valueForQuoteType(const QuoteType quoteType) {
-  switch (quoteType) {
+CSSValueID ValueForQuoteType(const QuoteType quote_type) {
+  switch (quote_type) {
     case NO_OPEN_QUOTE:
       return CSSValueNoOpenQuote;
     case NO_CLOSE_QUOTE:
@@ -1494,37 +1518,37 @@ CSSValueID valueForQuoteType(const QuoteType quoteType) {
   return CSSValueInvalid;
 }
 
-static CSSValue* valueForContentData(const ComputedStyle& style) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  for (const ContentData* contentData = style.contentData(); contentData;
-       contentData = contentData->next()) {
-    if (contentData->isCounter()) {
+static CSSValue* ValueForContentData(const ComputedStyle& style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (const ContentData* content_data = style.GetContentData(); content_data;
+       content_data = content_data->Next()) {
+    if (content_data->IsCounter()) {
       const CounterContent* counter =
-          toCounterContentData(contentData)->counter();
+          ToCounterContentData(content_data)->Counter();
       DCHECK(counter);
       CSSCustomIdentValue* identifier =
-          CSSCustomIdentValue::create(counter->identifier());
-      CSSStringValue* separator = CSSStringValue::create(counter->separator());
-      CSSValueID listStyleIdent = CSSValueNone;
-      if (counter->listStyle() != EListStyleType::kNone) {
+          CSSCustomIdentValue::Create(counter->Identifier());
+      CSSStringValue* separator = CSSStringValue::Create(counter->Separator());
+      CSSValueID list_style_ident = CSSValueNone;
+      if (counter->ListStyle() != EListStyleType::kNone) {
         // TODO(sashab): Change this to use a converter instead of
         // CSSPrimitiveValueMappings.
-        listStyleIdent =
-            CSSIdentifierValue::create(counter->listStyle())->getValueID();
+        list_style_ident =
+            CSSIdentifierValue::Create(counter->ListStyle())->GetValueID();
       }
-      CSSIdentifierValue* listStyle =
-          CSSIdentifierValue::create(listStyleIdent);
-      list->append(*CSSCounterValue::create(identifier, listStyle, separator));
-    } else if (contentData->isImage()) {
-      const StyleImage* image = toImageContentData(contentData)->image();
+      CSSIdentifierValue* list_style =
+          CSSIdentifierValue::Create(list_style_ident);
+      list->Append(*CSSCounterValue::Create(identifier, list_style, separator));
+    } else if (content_data->IsImage()) {
+      const StyleImage* image = ToImageContentData(content_data)->GetImage();
       DCHECK(image);
-      list->append(*image->computedCSSValue());
-    } else if (contentData->isText()) {
-      list->append(
-          *CSSStringValue::create(toTextContentData(contentData)->text()));
-    } else if (contentData->isQuote()) {
-      const QuoteType quoteType = toQuoteContentData(contentData)->quote();
-      list->append(*CSSIdentifierValue::create(valueForQuoteType(quoteType)));
+      list->Append(*image->ComputedCSSValue());
+    } else if (content_data->IsText()) {
+      list->Append(
+          *CSSStringValue::Create(ToTextContentData(content_data)->GetText()));
+    } else if (content_data->IsQuote()) {
+      const QuoteType quote_type = ToQuoteContentData(content_data)->Quote();
+      list->Append(*CSSIdentifierValue::Create(ValueForQuoteType(quote_type)));
     } else {
       NOTREACHED();
     }
@@ -1532,172 +1556,172 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
   return list;
 }
 
-static CSSValue* valueForCounterDirectives(const ComputedStyle& style,
-                                           CSSPropertyID propertyID) {
-  const CounterDirectiveMap* map = style.counterDirectives();
+static CSSValue* ValueForCounterDirectives(const ComputedStyle& style,
+                                           CSSPropertyID property_id) {
+  const CounterDirectiveMap* map = style.GetCounterDirectives();
   if (!map)
-    return CSSIdentifierValue::create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (const auto& item : *map) {
-    bool isValidCounterValue = propertyID == CSSPropertyCounterIncrement
-                                   ? item.value.isIncrement()
-                                   : item.value.isReset();
-    if (!isValidCounterValue)
+    bool is_valid_counter_value = property_id == CSSPropertyCounterIncrement
+                                      ? item.value.IsIncrement()
+                                      : item.value.IsReset();
+    if (!is_valid_counter_value)
       continue;
 
-    list->append(*CSSCustomIdentValue::create(item.key));
-    short number = propertyID == CSSPropertyCounterIncrement
-                       ? item.value.incrementValue()
-                       : item.value.resetValue();
-    list->append(*CSSPrimitiveValue::create(
-        (double)number, CSSPrimitiveValue::UnitType::Integer));
+    list->Append(*CSSCustomIdentValue::Create(item.key));
+    short number = property_id == CSSPropertyCounterIncrement
+                       ? item.value.IncrementValue()
+                       : item.value.ResetValue();
+    list->Append(*CSSPrimitiveValue::Create(
+        (double)number, CSSPrimitiveValue::UnitType::kInteger));
   }
 
   if (!list->length())
-    return CSSIdentifierValue::create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueNone);
 
   return list;
 }
 
-static CSSValue* valueForShape(const ComputedStyle& style,
-                               ShapeValue* shapeValue) {
-  if (!shapeValue)
-    return CSSIdentifierValue::create(CSSValueNone);
-  if (shapeValue->type() == ShapeValue::Box)
-    return CSSIdentifierValue::create(shapeValue->cssBox());
-  if (shapeValue->type() == ShapeValue::Image) {
-    if (shapeValue->image())
-      return shapeValue->image()->computedCSSValue();
-    return CSSIdentifierValue::create(CSSValueNone);
+static CSSValue* ValueForShape(const ComputedStyle& style,
+                               ShapeValue* shape_value) {
+  if (!shape_value)
+    return CSSIdentifierValue::Create(CSSValueNone);
+  if (shape_value->GetType() == ShapeValue::kBox)
+    return CSSIdentifierValue::Create(shape_value->CssBox());
+  if (shape_value->GetType() == ShapeValue::kImage) {
+    if (shape_value->GetImage())
+      return shape_value->GetImage()->ComputedCSSValue();
+    return CSSIdentifierValue::Create(CSSValueNone);
   }
 
-  DCHECK_EQ(shapeValue->type(), ShapeValue::Shape);
+  DCHECK_EQ(shape_value->GetType(), ShapeValue::kShape);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*valueForBasicShape(style, shapeValue->shape()));
-  if (shapeValue->cssBox() != BoxMissing)
-    list->append(*CSSIdentifierValue::create(shapeValue->cssBox()));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ValueForBasicShape(style, shape_value->Shape()));
+  if (shape_value->CssBox() != kBoxMissing)
+    list->Append(*CSSIdentifierValue::Create(shape_value->CssBox()));
   return list;
 }
 
-static CSSValueList* valuesForSidesShorthand(
+static CSSValueList* ValuesForSidesShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
-    const LayoutObject* layoutObject,
-    Node* styledNode,
-    bool allowVisitedStyle) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // Assume the properties are in the usual order top, right, bottom, left.
-  const CSSValue* topValue = ComputedStyleCSSValueMapping::get(
-      shorthand.properties()[0], style, layoutObject, styledNode,
-      allowVisitedStyle);
-  const CSSValue* rightValue = ComputedStyleCSSValueMapping::get(
-      shorthand.properties()[1], style, layoutObject, styledNode,
-      allowVisitedStyle);
-  const CSSValue* bottomValue = ComputedStyleCSSValueMapping::get(
-      shorthand.properties()[2], style, layoutObject, styledNode,
-      allowVisitedStyle);
-  const CSSValue* leftValue = ComputedStyleCSSValueMapping::get(
-      shorthand.properties()[3], style, layoutObject, styledNode,
-      allowVisitedStyle);
+  const CSSValue* top_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[0], style, layout_object, styled_node,
+      allow_visited_style);
+  const CSSValue* right_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[1], style, layout_object, styled_node,
+      allow_visited_style);
+  const CSSValue* bottom_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[2], style, layout_object, styled_node,
+      allow_visited_style);
+  const CSSValue* left_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[3], style, layout_object, styled_node,
+      allow_visited_style);
 
   // All 4 properties must be specified.
-  if (!topValue || !rightValue || !bottomValue || !leftValue)
+  if (!top_value || !right_value || !bottom_value || !left_value)
     return nullptr;
 
-  bool showLeft = !dataEquivalent(rightValue, leftValue);
-  bool showBottom = !dataEquivalent(topValue, bottomValue) || showLeft;
-  bool showRight = !dataEquivalent(topValue, rightValue) || showBottom;
+  bool show_left = !DataEquivalent(right_value, left_value);
+  bool show_bottom = !DataEquivalent(top_value, bottom_value) || show_left;
+  bool show_right = !DataEquivalent(top_value, right_value) || show_bottom;
 
-  list->append(*topValue);
-  if (showRight)
-    list->append(*rightValue);
-  if (showBottom)
-    list->append(*bottomValue);
-  if (showLeft)
-    list->append(*leftValue);
-
-  return list;
-}
-
-static CSSValueList* valueForBorderRadiusShorthand(const ComputedStyle& style) {
-  CSSValueList* list = CSSValueList::createSlashSeparated();
-
-  bool showHorizontalBottomLeft = style.borderTopRightRadius().width() !=
-                                  style.borderBottomLeftRadius().width();
-  bool showHorizontalBottomRight =
-      showHorizontalBottomLeft || (style.borderBottomRightRadius().width() !=
-                                   style.borderTopLeftRadius().width());
-  bool showHorizontalTopRight =
-      showHorizontalBottomRight || (style.borderTopRightRadius().width() !=
-                                    style.borderTopLeftRadius().width());
-
-  bool showVerticalBottomLeft = style.borderTopRightRadius().height() !=
-                                style.borderBottomLeftRadius().height();
-  bool showVerticalBottomRight =
-      showVerticalBottomLeft || (style.borderBottomRightRadius().height() !=
-                                 style.borderTopLeftRadius().height());
-  bool showVerticalTopRight =
-      showVerticalBottomRight || (style.borderTopRightRadius().height() !=
-                                  style.borderTopLeftRadius().height());
-
-  CSSValueList* topLeftRadius =
-      valuesForBorderRadiusCorner(style.borderTopLeftRadius(), style);
-  CSSValueList* topRightRadius =
-      valuesForBorderRadiusCorner(style.borderTopRightRadius(), style);
-  CSSValueList* bottomRightRadius =
-      valuesForBorderRadiusCorner(style.borderBottomRightRadius(), style);
-  CSSValueList* bottomLeftRadius =
-      valuesForBorderRadiusCorner(style.borderBottomLeftRadius(), style);
-
-  CSSValueList* horizontalRadii = CSSValueList::createSpaceSeparated();
-  horizontalRadii->append(topLeftRadius->item(0));
-  if (showHorizontalTopRight)
-    horizontalRadii->append(topRightRadius->item(0));
-  if (showHorizontalBottomRight)
-    horizontalRadii->append(bottomRightRadius->item(0));
-  if (showHorizontalBottomLeft)
-    horizontalRadii->append(bottomLeftRadius->item(0));
-
-  list->append(*horizontalRadii);
-
-  CSSValueList* verticalRadii = CSSValueList::createSpaceSeparated();
-  verticalRadii->append(topLeftRadius->item(1));
-  if (showVerticalTopRight)
-    verticalRadii->append(topRightRadius->item(1));
-  if (showVerticalBottomRight)
-    verticalRadii->append(bottomRightRadius->item(1));
-  if (showVerticalBottomLeft)
-    verticalRadii->append(bottomLeftRadius->item(1));
-
-  if (!verticalRadii->equals(toCSSValueList(list->item(0))))
-    list->append(*verticalRadii);
+  list->Append(*top_value);
+  if (show_right)
+    list->Append(*right_value);
+  if (show_bottom)
+    list->Append(*bottom_value);
+  if (show_left)
+    list->Append(*left_value);
 
   return list;
 }
 
-static CSSValue* strokeDashArrayToCSSValueList(const SVGDashArray& dashes,
+static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle& style) {
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+
+  bool show_horizontal_bottom_left = style.BorderTopRightRadius().Width() !=
+                                     style.BorderBottomLeftRadius().Width();
+  bool show_horizontal_bottom_right =
+      show_horizontal_bottom_left || (style.BorderBottomRightRadius().Width() !=
+                                      style.BorderTopLeftRadius().Width());
+  bool show_horizontal_top_right =
+      show_horizontal_bottom_right || (style.BorderTopRightRadius().Width() !=
+                                       style.BorderTopLeftRadius().Width());
+
+  bool show_vertical_bottom_left = style.BorderTopRightRadius().Height() !=
+                                   style.BorderBottomLeftRadius().Height();
+  bool show_vertical_bottom_right =
+      show_vertical_bottom_left || (style.BorderBottomRightRadius().Height() !=
+                                    style.BorderTopLeftRadius().Height());
+  bool show_vertical_top_right =
+      show_vertical_bottom_right || (style.BorderTopRightRadius().Height() !=
+                                     style.BorderTopLeftRadius().Height());
+
+  CSSValueList* top_left_radius =
+      ValuesForBorderRadiusCorner(style.BorderTopLeftRadius(), style);
+  CSSValueList* top_right_radius =
+      ValuesForBorderRadiusCorner(style.BorderTopRightRadius(), style);
+  CSSValueList* bottom_right_radius =
+      ValuesForBorderRadiusCorner(style.BorderBottomRightRadius(), style);
+  CSSValueList* bottom_left_radius =
+      ValuesForBorderRadiusCorner(style.BorderBottomLeftRadius(), style);
+
+  CSSValueList* horizontal_radii = CSSValueList::CreateSpaceSeparated();
+  horizontal_radii->Append(top_left_radius->Item(0));
+  if (show_horizontal_top_right)
+    horizontal_radii->Append(top_right_radius->Item(0));
+  if (show_horizontal_bottom_right)
+    horizontal_radii->Append(bottom_right_radius->Item(0));
+  if (show_horizontal_bottom_left)
+    horizontal_radii->Append(bottom_left_radius->Item(0));
+
+  list->Append(*horizontal_radii);
+
+  CSSValueList* vertical_radii = CSSValueList::CreateSpaceSeparated();
+  vertical_radii->Append(top_left_radius->Item(1));
+  if (show_vertical_top_right)
+    vertical_radii->Append(top_right_radius->Item(1));
+  if (show_vertical_bottom_right)
+    vertical_radii->Append(bottom_right_radius->Item(1));
+  if (show_vertical_bottom_left)
+    vertical_radii->Append(bottom_left_radius->Item(1));
+
+  if (!vertical_radii->Equals(ToCSSValueList(list->Item(0))))
+    list->Append(*vertical_radii);
+
+  return list;
+}
+
+static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray& dashes,
                                                const ComputedStyle& style) {
-  if (dashes.isEmpty())
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (dashes.IsEmpty())
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  for (const Length& dashLength : dashes.vector())
-    list->append(*zoomAdjustedPixelValueForLength(dashLength, style));
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const Length& dash_length : dashes.GetVector())
+    list->Append(*ZoomAdjustedPixelValueForLength(dash_length, style));
 
   return list;
 }
 
-static CSSValue* paintOrderToCSSValueList(const SVGComputedStyle& svgStyle) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle& svg_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (int i = 0; i < 3; i++) {
-    EPaintOrderType paintOrderType = svgStyle.paintOrderType(i);
-    switch (paintOrderType) {
+    EPaintOrderType paint_order_type = svg_style.PaintOrderType(i);
+    switch (paint_order_type) {
       case PT_FILL:
       case PT_STROKE:
       case PT_MARKERS:
-        list->append(*CSSIdentifierValue::create(paintOrderType));
+        list->Append(*CSSIdentifierValue::Create(paint_order_type));
         break;
       case PT_NONE:
       default:
@@ -1709,224 +1733,224 @@ static CSSValue* paintOrderToCSSValueList(const SVGComputedStyle& svgStyle) {
   return list;
 }
 
-static CSSValue* adjustSVGPaintForCurrentColor(SVGPaintType paintType,
+static CSSValue* AdjustSVGPaintForCurrentColor(SVGPaintType paint_type,
                                                const String& url,
                                                const Color& color,
-                                               const Color& currentColor) {
-  if (paintType >= SVG_PAINTTYPE_URI_NONE) {
-    CSSValueList* values = CSSValueList::createSpaceSeparated();
-    values->append(*CSSURIValue::create(AtomicString(url)));
-    if (paintType == SVG_PAINTTYPE_URI_NONE)
-      values->append(*CSSIdentifierValue::create(CSSValueNone));
-    else if (paintType == SVG_PAINTTYPE_URI_CURRENTCOLOR)
-      values->append(*CSSColorValue::create(currentColor.rgb()));
-    else if (paintType == SVG_PAINTTYPE_URI_RGBCOLOR)
-      values->append(*CSSColorValue::create(color.rgb()));
+                                               const Color& current_color) {
+  if (paint_type >= SVG_PAINTTYPE_URI_NONE) {
+    CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+    values->Append(*CSSURIValue::Create(AtomicString(url)));
+    if (paint_type == SVG_PAINTTYPE_URI_NONE)
+      values->Append(*CSSIdentifierValue::Create(CSSValueNone));
+    else if (paint_type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
+      values->Append(*CSSColorValue::Create(current_color.Rgb()));
+    else if (paint_type == SVG_PAINTTYPE_URI_RGBCOLOR)
+      values->Append(*CSSColorValue::Create(color.Rgb()));
     return values;
   }
-  if (paintType == SVG_PAINTTYPE_NONE)
-    return CSSIdentifierValue::create(CSSValueNone);
-  if (paintType == SVG_PAINTTYPE_CURRENTCOLOR)
-    return CSSColorValue::create(currentColor.rgb());
+  if (paint_type == SVG_PAINTTYPE_NONE)
+    return CSSIdentifierValue::Create(CSSValueNone);
+  if (paint_type == SVG_PAINTTYPE_CURRENTCOLOR)
+    return CSSColorValue::Create(current_color.Rgb());
 
-  return CSSColorValue::create(color.rgb());
+  return CSSColorValue::Create(color.Rgb());
 }
 
-static inline AtomicString serializeAsFragmentIdentifier(
+static inline AtomicString SerializeAsFragmentIdentifier(
     const AtomicString& resource) {
   return "#" + resource;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::valueForShadowData(
+CSSValue* ComputedStyleCSSValueMapping::ValueForShadowData(
     const ShadowData& shadow,
     const ComputedStyle& style,
-    bool useSpread) {
-  CSSPrimitiveValue* x = zoomAdjustedPixelValue(shadow.x(), style);
-  CSSPrimitiveValue* y = zoomAdjustedPixelValue(shadow.y(), style);
-  CSSPrimitiveValue* blur = zoomAdjustedPixelValue(shadow.blur(), style);
+    bool use_spread) {
+  CSSPrimitiveValue* x = ZoomAdjustedPixelValue(shadow.X(), style);
+  CSSPrimitiveValue* y = ZoomAdjustedPixelValue(shadow.Y(), style);
+  CSSPrimitiveValue* blur = ZoomAdjustedPixelValue(shadow.Blur(), style);
   CSSPrimitiveValue* spread =
-      useSpread ? zoomAdjustedPixelValue(shadow.spread(), style) : nullptr;
-  CSSIdentifierValue* shadowStyle =
-      shadow.style() == Normal ? nullptr
-                               : CSSIdentifierValue::create(CSSValueInset);
-  CSSValue* color = currentColorOrValidColor(style, shadow.color());
-  return CSSShadowValue::create(x, y, blur, spread, shadowStyle, color);
+      use_spread ? ZoomAdjustedPixelValue(shadow.Spread(), style) : nullptr;
+  CSSIdentifierValue* shadow_style =
+      shadow.Style() == kNormal ? nullptr
+                                : CSSIdentifierValue::Create(CSSValueInset);
+  CSSValue* color = CurrentColorOrValidColor(style, shadow.GetColor());
+  return CSSShadowValue::Create(x, y, blur, spread, shadow_style, color);
 }
 
-CSSValue* ComputedStyleCSSValueMapping::valueForShadowList(
-    const ShadowList* shadowList,
+CSSValue* ComputedStyleCSSValueMapping::ValueForShadowList(
+    const ShadowList* shadow_list,
     const ComputedStyle& style,
-    bool useSpread) {
-  if (!shadowList)
-    return CSSIdentifierValue::create(CSSValueNone);
+    bool use_spread) {
+  if (!shadow_list)
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* list = CSSValueList::createCommaSeparated();
-  size_t shadowCount = shadowList->shadows().size();
-  for (size_t i = 0; i < shadowCount; ++i)
-    list->append(
-        *valueForShadowData(shadowList->shadows()[i], style, useSpread));
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  size_t shadow_count = shadow_list->Shadows().size();
+  for (size_t i = 0; i < shadow_count; ++i)
+    list->Append(
+        *ValueForShadowData(shadow_list->Shadows()[i], style, use_spread));
   return list;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::valueForFilter(
+CSSValue* ComputedStyleCSSValueMapping::ValueForFilter(
     const ComputedStyle& style,
-    const FilterOperations& filterOperations) {
-  if (filterOperations.operations().isEmpty())
-    return CSSIdentifierValue::create(CSSValueNone);
+    const FilterOperations& filter_operations) {
+  if (filter_operations.Operations().IsEmpty())
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  CSSFunctionValue* filterValue = nullptr;
+  CSSFunctionValue* filter_value = nullptr;
 
-  for (const auto& operation : filterOperations.operations()) {
-    FilterOperation* filterOperation = operation.get();
-    switch (filterOperation->type()) {
+  for (const auto& operation : filter_operations.Operations()) {
+    FilterOperation* filter_operation = operation.Get();
+    switch (filter_operation->GetType()) {
       case FilterOperation::REFERENCE:
-        filterValue = CSSFunctionValue::create(CSSValueUrl);
-        filterValue->append(*CSSStringValue::create(
-            toReferenceFilterOperation(filterOperation)->url()));
+        filter_value = CSSFunctionValue::Create(CSSValueUrl);
+        filter_value->Append(*CSSStringValue::Create(
+            ToReferenceFilterOperation(filter_operation)->Url()));
         break;
       case FilterOperation::GRAYSCALE:
-        filterValue = CSSFunctionValue::create(CSSValueGrayscale);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicColorMatrixFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueGrayscale);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SEPIA:
-        filterValue = CSSFunctionValue::create(CSSValueSepia);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicColorMatrixFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueSepia);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SATURATE:
-        filterValue = CSSFunctionValue::create(CSSValueSaturate);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicColorMatrixFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueSaturate);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::HUE_ROTATE:
-        filterValue = CSSFunctionValue::create(CSSValueHueRotate);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicColorMatrixFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Degrees));
+        filter_value = CSSFunctionValue::Create(CSSValueHueRotate);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kDegrees));
         break;
       case FilterOperation::INVERT:
-        filterValue = CSSFunctionValue::create(CSSValueInvert);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicComponentTransferFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueInvert);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::OPACITY:
-        filterValue = CSSFunctionValue::create(CSSValueOpacity);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicComponentTransferFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueOpacity);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BRIGHTNESS:
-        filterValue = CSSFunctionValue::create(CSSValueBrightness);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicComponentTransferFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueBrightness);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::CONTRAST:
-        filterValue = CSSFunctionValue::create(CSSValueContrast);
-        filterValue->append(*CSSPrimitiveValue::create(
-            toBasicComponentTransferFilterOperation(filterOperation)->amount(),
-            CSSPrimitiveValue::UnitType::Number));
+        filter_value = CSSFunctionValue::Create(CSSValueContrast);
+        filter_value->Append(*CSSPrimitiveValue::Create(
+            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BLUR:
-        filterValue = CSSFunctionValue::create(CSSValueBlur);
-        filterValue->append(*zoomAdjustedPixelValue(
-            toBlurFilterOperation(filterOperation)->stdDeviation().value(),
+        filter_value = CSSFunctionValue::Create(CSSValueBlur);
+        filter_value->Append(*ZoomAdjustedPixelValue(
+            ToBlurFilterOperation(filter_operation)->StdDeviation().Value(),
             style));
         break;
       case FilterOperation::DROP_SHADOW: {
-        const auto& dropShadowOperation =
-            toDropShadowFilterOperation(*filterOperation);
-        filterValue = CSSFunctionValue::create(CSSValueDropShadow);
+        const auto& drop_shadow_operation =
+            ToDropShadowFilterOperation(*filter_operation);
+        filter_value = CSSFunctionValue::Create(CSSValueDropShadow);
         // We want our computed style to look like that of a text shadow (has
         // neither spread nor inset style).
-        filterValue->append(
-            *valueForShadowData(dropShadowOperation.shadow(), style, false));
+        filter_value->Append(
+            *ValueForShadowData(drop_shadow_operation.Shadow(), style, false));
         break;
       }
       default:
         NOTREACHED();
         break;
     }
-    list->append(*filterValue);
+    list->Append(*filter_value);
   }
 
   return list;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::valueForFont(
+CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
     const ComputedStyle& style) {
   // Add a slash between size and line-height.
-  CSSValueList* sizeAndLineHeight = CSSValueList::createSlashSeparated();
-  sizeAndLineHeight->append(*valueForFontSize(style));
-  sizeAndLineHeight->append(*valueForLineHeight(style));
+  CSSValueList* size_and_line_height = CSSValueList::CreateSlashSeparated();
+  size_and_line_height->Append(*ValueForFontSize(style));
+  size_and_line_height->Append(*ValueForLineHeight(style));
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*valueForFontStyle(style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ValueForFontStyle(style));
 
   // Check that non-initial font-variant subproperties are not conflicting with
   // this serialization.
-  CSSValue* ligaturesValue = valueForFontVariantLigatures(style);
-  CSSValue* numericValue = valueForFontVariantNumeric(style);
-  if (!dataEquivalent<CSSValue>(ligaturesValue,
-                                CSSIdentifierValue::create(CSSValueNormal)) ||
-      !dataEquivalent<CSSValue>(numericValue,
-                                CSSIdentifierValue::create(CSSValueNormal)))
+  CSSValue* ligatures_value = ValueForFontVariantLigatures(style);
+  CSSValue* numeric_value = ValueForFontVariantNumeric(style);
+  if (!DataEquivalent<CSSValue>(ligatures_value,
+                                CSSIdentifierValue::Create(CSSValueNormal)) ||
+      !DataEquivalent<CSSValue>(numeric_value,
+                                CSSIdentifierValue::Create(CSSValueNormal)))
     return nullptr;
 
-  CSSIdentifierValue* capsValue = valueForFontVariantCaps(style);
-  if (capsValue->getValueID() != CSSValueNormal &&
-      capsValue->getValueID() != CSSValueSmallCaps)
+  CSSIdentifierValue* caps_value = ValueForFontVariantCaps(style);
+  if (caps_value->GetValueID() != CSSValueNormal &&
+      caps_value->GetValueID() != CSSValueSmallCaps)
     return nullptr;
-  list->append(*capsValue);
+  list->Append(*caps_value);
 
-  list->append(*valueForFontWeight(style));
-  list->append(*valueForFontStretch(style));
-  list->append(*sizeAndLineHeight);
-  list->append(*valueForFontFamily(style));
+  list->Append(*ValueForFontWeight(style));
+  list->Append(*ValueForFontStretch(style));
+  list->Append(*size_and_line_height);
+  list->Append(*ValueForFontFamily(style));
 
   return list;
 }
 
-static CSSValue* valueForScrollSnapDestination(const LengthPoint& destination,
+static CSSValue* ValueForScrollSnapDestination(const LengthPoint& destination,
                                                const ComputedStyle& style) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*zoomAdjustedPixelValueForLength(destination.x(), style));
-  list->append(*zoomAdjustedPixelValueForLength(destination.y(), style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ZoomAdjustedPixelValueForLength(destination.X(), style));
+  list->Append(*ZoomAdjustedPixelValueForLength(destination.Y(), style));
   return list;
 }
 
-static CSSValue* valueForScrollSnapPoints(const ScrollSnapPoints& points,
+static CSSValue* ValueForScrollSnapPoints(const ScrollSnapPoints& points,
                                           const ComputedStyle& style) {
-  if (points.hasRepeat) {
-    CSSFunctionValue* repeat = CSSFunctionValue::create(CSSValueRepeat);
-    repeat->append(
-        *zoomAdjustedPixelValueForLength(points.repeatOffset, style));
+  if (points.has_repeat) {
+    CSSFunctionValue* repeat = CSSFunctionValue::Create(CSSValueRepeat);
+    repeat->Append(
+        *ZoomAdjustedPixelValueForLength(points.repeat_offset, style));
     return repeat;
   }
 
-  return CSSIdentifierValue::create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueNone);
 }
 
-static CSSValue* valueForScrollSnapCoordinate(
+static CSSValue* ValueForScrollSnapCoordinate(
     const Vector<LengthPoint>& coordinates,
     const ComputedStyle& style) {
-  if (coordinates.isEmpty())
-    return CSSIdentifierValue::create(CSSValueNone);
+  if (coordinates.IsEmpty())
+    return CSSIdentifierValue::Create(CSSValueNone);
 
-  CSSValueList* list = CSSValueList::createCommaSeparated();
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
 
   for (auto& coordinate : coordinates) {
-    auto pair = CSSValueList::createSpaceSeparated();
-    pair->append(*zoomAdjustedPixelValueForLength(coordinate.x(), style));
-    pair->append(*zoomAdjustedPixelValueForLength(coordinate.y(), style));
-    list->append(*pair);
+    auto pair = CSSValueList::CreateSpaceSeparated();
+    pair->Append(*ZoomAdjustedPixelValueForLength(coordinate.X(), style));
+    pair->Append(*ZoomAdjustedPixelValueForLength(coordinate.Y(), style));
+    list->Append(*pair);
   }
 
   return list;
@@ -1934,191 +1958,192 @@ static CSSValue* valueForScrollSnapCoordinate(
 
 // Returns a suitable value for the page-break-(before|after) property, given
 // the computed value of the more general break-(before|after) property.
-static CSSValue* valueForPageBreakBetween(EBreakBetween breakValue) {
-  switch (breakValue) {
+static CSSValue* ValueForPageBreakBetween(EBreakBetween break_value) {
+  switch (break_value) {
     case EBreakBetween::kAvoidColumn:
     case EBreakBetween::kColumn:
     case EBreakBetween::kRecto:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueAuto);
     case EBreakBetween::kPage:
-      return CSSIdentifierValue::create(CSSValueAlways);
+      return CSSIdentifierValue::Create(CSSValueAlways);
     case EBreakBetween::kAvoidPage:
-      return CSSIdentifierValue::create(CSSValueAvoid);
+      return CSSIdentifierValue::Create(CSSValueAvoid);
     default:
-      return CSSIdentifierValue::create(breakValue);
+      return CSSIdentifierValue::Create(break_value);
   }
 }
 
 // Returns a suitable value for the -webkit-column-break-(before|after)
 // property, given the computed value of the more general break-(before|after)
 // property.
-static CSSValue* valueForWebkitColumnBreakBetween(EBreakBetween breakValue) {
-  switch (breakValue) {
+static CSSValue* ValueForWebkitColumnBreakBetween(EBreakBetween break_value) {
+  switch (break_value) {
     case EBreakBetween::kAvoidPage:
     case EBreakBetween::kLeft:
     case EBreakBetween::kPage:
     case EBreakBetween::kRecto:
     case EBreakBetween::kRight:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueAuto);
     case EBreakBetween::kColumn:
-      return CSSIdentifierValue::create(CSSValueAlways);
+      return CSSIdentifierValue::Create(CSSValueAlways);
     case EBreakBetween::kAvoidColumn:
-      return CSSIdentifierValue::create(CSSValueAvoid);
+      return CSSIdentifierValue::Create(CSSValueAvoid);
     default:
-      return CSSIdentifierValue::create(breakValue);
+      return CSSIdentifierValue::Create(break_value);
   }
 }
 
 // Returns a suitable value for the page-break-inside property, given the
 // computed value of the more general break-inside property.
-static CSSValue* valueForPageBreakInside(EBreakInside breakValue) {
-  switch (breakValue) {
+static CSSValue* ValueForPageBreakInside(EBreakInside break_value) {
+  switch (break_value) {
     case EBreakInside::kAvoidColumn:
-      return CSSIdentifierValue::create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueAuto);
     case EBreakInside::kAvoidPage:
-      return CSSIdentifierValue::create(CSSValueAvoid);
+      return CSSIdentifierValue::Create(CSSValueAvoid);
     default:
-      return CSSIdentifierValue::create(breakValue);
+      return CSSIdentifierValue::Create(break_value);
   }
 }
 
 // Returns a suitable value for the -webkit-column-break-inside property, given
 // the computed value of the more general break-inside property.
-static CSSValue* valueForWebkitColumnBreakInside(EBreakInside breakValue) {
-  switch (breakValue) {
+static CSSValue* ValueForWebkitColumnBreakInside(EBreakInside break_value) {
+  switch (break_value) {
     case EBreakInside::kAvoidPage:
-      return CSSIdentifierValue::create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueAuto);
     case EBreakInside::kAvoidColumn:
-      return CSSIdentifierValue::create(CSSValueAvoid);
+      return CSSIdentifierValue::Create(CSSValueAvoid);
     default:
-      return CSSIdentifierValue::create(breakValue);
+      return CSSIdentifierValue::Create(break_value);
   }
 }
 
-const CSSValue* ComputedStyleCSSValueMapping::get(
-    const AtomicString customPropertyName,
+const CSSValue* ComputedStyleCSSValueMapping::Get(
+    const AtomicString custom_property_name,
     const ComputedStyle& style,
     const PropertyRegistry* registry) {
   if (registry) {
     const PropertyRegistration* registration =
-        registry->registration(customPropertyName);
+        registry->Registration(custom_property_name);
     if (registration) {
-      const CSSValue* result = style.getRegisteredVariable(
-          customPropertyName, registration->inherits());
+      const CSSValue* result = style.GetRegisteredVariable(
+          custom_property_name, registration->Inherits());
       if (result)
         return result;
-      return registration->initial();
+      return registration->Initial();
     }
   }
 
-  bool isInheritedProperty = true;
+  bool is_inherited_property = true;
   CSSVariableData* data =
-      style.getVariable(customPropertyName, isInheritedProperty);
+      style.GetVariable(custom_property_name, is_inherited_property);
   if (!data)
     return nullptr;
 
-  return CSSCustomPropertyDeclaration::create(customPropertyName, data);
+  return CSSCustomPropertyDeclaration::Create(custom_property_name, data);
 }
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
-ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style) {
+ComputedStyleCSSValueMapping::GetVariables(const ComputedStyle& style) {
   // TODO(timloh): Also return non-inherited variables
-  StyleInheritedVariables* variables = style.inheritedVariables();
+  StyleInheritedVariables* variables = style.InheritedVariables();
   if (variables)
-    return variables->getVariables();
+    return variables->GetVariables();
   return nullptr;
 }
 
-static bool widthOrHeightPropertyAppliesToObject(const LayoutObject& object) {
+static bool WidthOrHeightPropertyAppliesToObject(const LayoutObject& object) {
   // According to
   // http://www.w3.org/TR/CSS2/visudet.html#the-width-property and
   // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the "width" or
   // "height" property does not apply to non-atomic inline elements.
-  if (!object.isAtomicInlineLevel() && object.isInline())
+  if (!object.IsAtomicInlineLevel() && object.IsInline())
     return false;
 
   // Non-root SVG should be treated as non-atomic inline no matter how we
   // implement it internally (e.g. LayoutSVGBlock is based on LayoutBlockFlow).
-  return !object.isSVGChild();
+  return !object.IsSVGChild();
 }
 
-const CSSValue* ComputedStyleCSSValueMapping::get(
-    CSSPropertyID propertyID,
+const CSSValue* ComputedStyleCSSValueMapping::Get(
+    CSSPropertyID property_id,
     const ComputedStyle& style,
-    const LayoutObject* layoutObject,
-    Node* styledNode,
-    bool allowVisitedStyle) {
-  const SVGComputedStyle& svgStyle = style.svgStyle();
-  propertyID = CSSProperty::resolveDirectionAwareProperty(
-      propertyID, style.direction(), style.getWritingMode());
-  switch (propertyID) {
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  property_id = CSSProperty::ResolveDirectionAwareProperty(
+      property_id, style.Direction(), style.GetWritingMode());
+  switch (property_id) {
     case CSSPropertyInvalid:
       return nullptr;
 
     case CSSPropertyBackgroundColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyBackgroundColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.backgroundColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBackgroundColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BackgroundColor());
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskImage
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next()) {
-        if (currLayer->image())
-          list->append(*currLayer->image()->computedCSSValue());
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer = property_id == CSSPropertyWebkitMaskImage
+                                        ? &style.MaskLayers()
+                                        : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next()) {
+        if (curr_layer->GetImage())
+          list->Append(*curr_layer->GetImage()->ComputedCSSValue());
         else
-          list->append(*CSSIdentifierValue::create(CSSValueNone));
+          list->Append(*CSSIdentifierValue::Create(CSSValueNone));
       }
       return list;
     }
     case CSSPropertyBackgroundSize:
     case CSSPropertyWebkitMaskSize: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskSize
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(*valueForFillSize(currLayer->size(), style));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer = property_id == CSSPropertyWebkitMaskSize
+                                        ? &style.MaskLayers()
+                                        : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(*ValueForFillSize(curr_layer->size(), style));
       return list;
     }
     case CSSPropertyBackgroundRepeat:
     case CSSPropertyWebkitMaskRepeat: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskRepeat
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(
-            *valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer = property_id == CSSPropertyWebkitMaskRepeat
+                                        ? &style.MaskLayers()
+                                        : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(
+            *ValueForFillRepeat(curr_layer->RepeatX(), curr_layer->RepeatY()));
       return list;
     }
     case CSSPropertyMaskSourceType: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      for (const FillLayer* currLayer = &style.maskLayers(); currLayer;
-           currLayer = currLayer->next())
-        list->append(*valueForFillSourceType(currLayer->maskSourceType()));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
+           curr_layer = curr_layer->Next())
+        list->Append(*ValueForFillSourceType(curr_layer->MaskSourceType()));
       return list;
     }
     case CSSPropertyWebkitMaskComposite: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskComposite
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(*CSSIdentifierValue::create(currLayer->composite()));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer =
+          property_id == CSSPropertyWebkitMaskComposite
+              ? &style.MaskLayers()
+              : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(*CSSIdentifierValue::Create(curr_layer->Composite()));
       return list;
     }
     case CSSPropertyBackgroundAttachment: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      for (const FillLayer* currLayer = &style.backgroundLayers(); currLayer;
-           currLayer = currLayer->next())
-        list->append(*CSSIdentifierValue::create(currLayer->attachment()));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+           curr_layer = curr_layer->Next())
+        list->Append(*CSSIdentifierValue::Create(curr_layer->Attachment()));
       return list;
     }
     case CSSPropertyBackgroundClip:
@@ -2127,357 +2152,359 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskClip:
     case CSSPropertyWebkitMaskOrigin: {
-      bool isClip = propertyID == CSSPropertyBackgroundClip ||
-                    propertyID == CSSPropertyWebkitBackgroundClip ||
-                    propertyID == CSSPropertyWebkitMaskClip;
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = (propertyID == CSSPropertyWebkitMaskClip ||
-                                    propertyID == CSSPropertyWebkitMaskOrigin)
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next()) {
-        EFillBox box = isClip ? currLayer->clip() : currLayer->origin();
-        list->append(*CSSIdentifierValue::create(box));
+      bool is_clip = property_id == CSSPropertyBackgroundClip ||
+                     property_id == CSSPropertyWebkitBackgroundClip ||
+                     property_id == CSSPropertyWebkitMaskClip;
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer = (property_id == CSSPropertyWebkitMaskClip ||
+                                     property_id == CSSPropertyWebkitMaskOrigin)
+                                        ? &style.MaskLayers()
+                                        : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next()) {
+        EFillBox box = is_clip ? curr_layer->Clip() : curr_layer->Origin();
+        list->Append(*CSSIdentifierValue::Create(box));
       }
       return list;
     }
     case CSSPropertyBackgroundPosition:
     case CSSPropertyWebkitMaskPosition: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskPosition
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(
-            *createPositionListForLayer(propertyID, *currLayer, style));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer = property_id == CSSPropertyWebkitMaskPosition
+                                        ? &style.MaskLayers()
+                                        : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(
+            *CreatePositionListForLayer(property_id, *curr_layer, style));
       return list;
     }
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyWebkitMaskPositionX: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskPositionX
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(
-            *zoomAdjustedPixelValueForLength(currLayer->xPosition(), style));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer =
+          property_id == CSSPropertyWebkitMaskPositionX
+              ? &style.MaskLayers()
+              : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(
+            *ZoomAdjustedPixelValueForLength(curr_layer->XPosition(), style));
       return list;
     }
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionY: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskPositionY
-                                       ? &style.maskLayers()
-                                       : &style.backgroundLayers();
-      for (; currLayer; currLayer = currLayer->next())
-        list->append(
-            *zoomAdjustedPixelValueForLength(currLayer->yPosition(), style));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const FillLayer* curr_layer =
+          property_id == CSSPropertyWebkitMaskPositionY
+              ? &style.MaskLayers()
+              : &style.BackgroundLayers();
+      for (; curr_layer; curr_layer = curr_layer->Next())
+        list->Append(
+            *ZoomAdjustedPixelValueForLength(curr_layer->YPosition(), style));
       return list;
     }
     case CSSPropertyBorderCollapse:
-      if (style.borderCollapse() == EBorderCollapse::kCollapse)
-        return CSSIdentifierValue::create(CSSValueCollapse);
-      return CSSIdentifierValue::create(CSSValueSeparate);
+      if (style.BorderCollapse() == EBorderCollapse::kCollapse)
+        return CSSIdentifierValue::Create(CSSValueCollapse);
+      return CSSIdentifierValue::Create(CSSValueSeparate);
     case CSSPropertyBorderSpacing: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      list->append(
-          *zoomAdjustedPixelValue(style.horizontalBorderSpacing(), style));
-      list->append(
-          *zoomAdjustedPixelValue(style.verticalBorderSpacing(), style));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(
+          *ZoomAdjustedPixelValue(style.HorizontalBorderSpacing(), style));
+      list->Append(
+          *ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style));
       return list;
     }
     case CSSPropertyWebkitBorderHorizontalSpacing:
-      return zoomAdjustedPixelValue(style.horizontalBorderSpacing(), style);
+      return ZoomAdjustedPixelValue(style.HorizontalBorderSpacing(), style);
     case CSSPropertyWebkitBorderVerticalSpacing:
-      return zoomAdjustedPixelValue(style.verticalBorderSpacing(), style);
+      return ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style);
     case CSSPropertyBorderImageSource:
-      if (style.borderImageSource())
-        return style.borderImageSource()->computedCSSValue();
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (style.BorderImageSource())
+        return style.BorderImageSource()->ComputedCSSValue();
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyBorderTopColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyBorderTopColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.borderTopColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderTopColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderTopColor());
     case CSSPropertyBorderRightColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyBorderRightColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.borderRightColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderRightColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderRightColor());
     case CSSPropertyBorderBottomColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyBorderBottomColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.borderBottomColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderBottomColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderBottomColor());
     case CSSPropertyBorderLeftColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyBorderLeftColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.borderLeftColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderLeftColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderLeftColor());
     case CSSPropertyBorderTopStyle:
-      return CSSIdentifierValue::create(style.borderTopStyle());
+      return CSSIdentifierValue::Create(style.BorderTopStyle());
     case CSSPropertyBorderRightStyle:
-      return CSSIdentifierValue::create(style.borderRightStyle());
+      return CSSIdentifierValue::Create(style.BorderRightStyle());
     case CSSPropertyBorderBottomStyle:
-      return CSSIdentifierValue::create(style.borderBottomStyle());
+      return CSSIdentifierValue::Create(style.BorderBottomStyle());
     case CSSPropertyBorderLeftStyle:
-      return CSSIdentifierValue::create(style.borderLeftStyle());
+      return CSSIdentifierValue::Create(style.BorderLeftStyle());
     case CSSPropertyBorderTopWidth:
-      return zoomAdjustedPixelValue(style.borderTopWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderTopWidth(), style);
     case CSSPropertyBorderRightWidth:
-      return zoomAdjustedPixelValue(style.borderRightWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderRightWidth(), style);
     case CSSPropertyBorderBottomWidth:
-      return zoomAdjustedPixelValue(style.borderBottomWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
     case CSSPropertyBorderLeftWidth:
-      return zoomAdjustedPixelValue(style.borderLeftWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderLeftWidth(), style);
     case CSSPropertyBottom:
-      return valueForPositionOffset(style, CSSPropertyBottom, layoutObject);
+      return ValueForPositionOffset(style, CSSPropertyBottom, layout_object);
     case CSSPropertyWebkitBoxAlign:
-      return CSSIdentifierValue::create(style.boxAlign());
+      return CSSIdentifierValue::Create(style.BoxAlign());
     case CSSPropertyWebkitBoxDecorationBreak:
-      if (style.boxDecorationBreak() == BoxDecorationBreakSlice)
-        return CSSIdentifierValue::create(CSSValueSlice);
-      return CSSIdentifierValue::create(CSSValueClone);
+      if (style.BoxDecorationBreak() == kBoxDecorationBreakSlice)
+        return CSSIdentifierValue::Create(CSSValueSlice);
+      return CSSIdentifierValue::Create(CSSValueClone);
     case CSSPropertyWebkitBoxDirection:
-      return CSSIdentifierValue::create(style.boxDirection());
+      return CSSIdentifierValue::Create(style.BoxDirection());
     case CSSPropertyWebkitBoxFlex:
-      return CSSPrimitiveValue::create(style.boxFlex(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.BoxFlex(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWebkitBoxFlexGroup:
-      return CSSPrimitiveValue::create(style.boxFlexGroup(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.BoxFlexGroup(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWebkitBoxLines:
-      return CSSIdentifierValue::create(style.boxLines());
+      return CSSIdentifierValue::Create(style.BoxLines());
     case CSSPropertyWebkitBoxOrdinalGroup:
-      return CSSPrimitiveValue::create(style.boxOrdinalGroup(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWebkitBoxOrient:
-      return CSSIdentifierValue::create(style.boxOrient());
+      return CSSIdentifierValue::Create(style.BoxOrient());
     case CSSPropertyWebkitBoxPack:
-      return CSSIdentifierValue::create(style.boxPack());
+      return CSSIdentifierValue::Create(style.BoxPack());
     case CSSPropertyWebkitBoxReflect:
-      return valueForReflection(style.boxReflect(), style);
+      return ValueForReflection(style.BoxReflect(), style);
     case CSSPropertyBoxShadow:
-      return valueForShadowList(style.boxShadow(), style, true);
+      return ValueForShadowList(style.BoxShadow(), style, true);
     case CSSPropertyCaptionSide:
-      return CSSIdentifierValue::create(style.captionSide());
+      return CSSIdentifierValue::Create(style.CaptionSide());
     case CSSPropertyCaretColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyCaretColor).rgb())
-                 : currentColorOrValidColor(
-                       style, style.caretColor().isAutoColor()
-                                  ? StyleColor::currentColor()
-                                  : style.caretColor().toStyleColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyCaretColor).Rgb())
+                 : CurrentColorOrValidColor(
+                       style, style.CaretColor().IsAutoColor()
+                                  ? StyleColor::CurrentColor()
+                                  : style.CaretColor().ToStyleColor());
     case CSSPropertyClear:
-      return CSSIdentifierValue::create(style.clear());
+      return CSSIdentifierValue::Create(style.Clear());
     case CSSPropertyColor:
-      return CSSColorValue::create(
-          allowVisitedStyle
-              ? style.visitedDependentColor(CSSPropertyColor).rgb()
-              : style.color().rgb());
+      return CSSColorValue::Create(
+          allow_visited_style
+              ? style.VisitedDependentColor(CSSPropertyColor).Rgb()
+              : style.GetColor().Rgb());
     case CSSPropertyWebkitPrintColorAdjust:
-      return CSSIdentifierValue::create(style.printColorAdjust());
+      return CSSIdentifierValue::Create(style.PrintColorAdjust());
     case CSSPropertyColumnCount:
-      if (style.hasAutoColumnCount())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSPrimitiveValue::create(style.columnCount(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      if (style.HasAutoColumnCount())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSPrimitiveValue::Create(style.ColumnCount(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyColumnFill:
-      return CSSIdentifierValue::create(style.getColumnFill());
+      return CSSIdentifierValue::Create(style.GetColumnFill());
     case CSSPropertyColumnGap:
-      if (style.hasNormalColumnGap())
-        return CSSIdentifierValue::create(CSSValueNormal);
-      return zoomAdjustedPixelValue(style.columnGap(), style);
+      if (style.HasNormalColumnGap())
+        return CSSIdentifierValue::Create(CSSValueNormal);
+      return ZoomAdjustedPixelValue(style.ColumnGap(), style);
     case CSSPropertyColumnRuleColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyOutlineColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.columnRuleColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyOutlineColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.ColumnRuleColor());
     case CSSPropertyColumnRuleStyle:
-      return CSSIdentifierValue::create(style.columnRuleStyle());
+      return CSSIdentifierValue::Create(style.ColumnRuleStyle());
     case CSSPropertyColumnRuleWidth:
-      return zoomAdjustedPixelValue(style.columnRuleWidth(), style);
+      return ZoomAdjustedPixelValue(style.ColumnRuleWidth(), style);
     case CSSPropertyColumnSpan:
-      return CSSIdentifierValue::create(style.getColumnSpan() ? CSSValueAll
+      return CSSIdentifierValue::Create(style.GetColumnSpan() ? CSSValueAll
                                                               : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
-      return valueForWebkitColumnBreakBetween(style.breakAfter());
+      return ValueForWebkitColumnBreakBetween(style.BreakAfter());
     case CSSPropertyWebkitColumnBreakBefore:
-      return valueForWebkitColumnBreakBetween(style.breakBefore());
+      return ValueForWebkitColumnBreakBetween(style.BreakBefore());
     case CSSPropertyWebkitColumnBreakInside:
-      return valueForWebkitColumnBreakInside(style.breakInside());
+      return ValueForWebkitColumnBreakInside(style.BreakInside());
     case CSSPropertyColumnWidth:
-      if (style.hasAutoColumnWidth())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return zoomAdjustedPixelValue(style.columnWidth(), style);
+      if (style.HasAutoColumnWidth())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return ZoomAdjustedPixelValue(style.ColumnWidth(), style);
     case CSSPropertyTabSize:
-      return CSSPrimitiveValue::create(
-          style.getTabSize().getPixelSize(1.0),
-          style.getTabSize().isSpaces() ? CSSPrimitiveValue::UnitType::Number
-                                        : CSSPrimitiveValue::UnitType::Pixels);
+      return CSSPrimitiveValue::Create(
+          style.GetTabSize().GetPixelSize(1.0),
+          style.GetTabSize().IsSpaces() ? CSSPrimitiveValue::UnitType::kNumber
+                                        : CSSPrimitiveValue::UnitType::kPixels);
     case CSSPropertyTextSizeAdjust:
-      if (style.getTextSizeAdjust().isAuto())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSPrimitiveValue::create(
-          style.getTextSizeAdjust().multiplier() * 100,
-          CSSPrimitiveValue::UnitType::Percentage);
+      if (style.GetTextSizeAdjust().IsAuto())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSPrimitiveValue::Create(
+          style.GetTextSizeAdjust().Multiplier() * 100,
+          CSSPrimitiveValue::UnitType::kPercentage);
     case CSSPropertyCursor: {
       CSSValueList* list = nullptr;
-      CursorList* cursors = style.cursors();
+      CursorList* cursors = style.Cursors();
       if (cursors && cursors->size() > 0) {
-        list = CSSValueList::createCommaSeparated();
+        list = CSSValueList::CreateCommaSeparated();
         for (const CursorData& cursor : *cursors) {
-          if (StyleImage* image = cursor.image()) {
-            list->append(*CSSCursorImageValue::create(
-                *image->computedCSSValue(), cursor.hotSpotSpecified(),
-                cursor.hotSpot()));
+          if (StyleImage* image = cursor.GetImage()) {
+            list->Append(*CSSCursorImageValue::Create(
+                *image->ComputedCSSValue(), cursor.HotSpotSpecified(),
+                cursor.HotSpot()));
           }
         }
       }
-      CSSValue* value = CSSIdentifierValue::create(style.cursor());
+      CSSValue* value = CSSIdentifierValue::Create(style.Cursor());
       if (list) {
-        list->append(*value);
+        list->Append(*value);
         return list;
       }
       return value;
     }
     case CSSPropertyDirection:
-      return CSSIdentifierValue::create(style.direction());
+      return CSSIdentifierValue::Create(style.Direction());
     case CSSPropertyDisplay:
-      return CSSIdentifierValue::create(style.display());
+      return CSSIdentifierValue::Create(style.Display());
     case CSSPropertyEmptyCells:
-      return CSSIdentifierValue::create(style.emptyCells());
+      return CSSIdentifierValue::Create(style.EmptyCells());
     case CSSPropertyPlaceContent: {
       // TODO (jfernandez): The spec states that we should return the specified
       // value.
-      return valuesForShorthandProperty(placeContentShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(placeContentShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     }
     case CSSPropertyPlaceItems: {
       // TODO (jfernandez): The spec states that we should return the specified
       // value.
-      return valuesForShorthandProperty(placeItemsShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(placeItemsShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     }
     case CSSPropertyPlaceSelf: {
       // TODO (jfernandez): The spec states that we should return the specified
       // value.
-      return valuesForShorthandProperty(placeSelfShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(placeSelfShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     }
     case CSSPropertyAlignContent:
-      return valueForContentPositionAndDistributionWithOverflowAlignment(
-          style.alignContent(), CSSValueStretch);
+      return ValueForContentPositionAndDistributionWithOverflowAlignment(
+          style.AlignContent(), CSSValueStretch);
     case CSSPropertyAlignItems:
-      return valueForItemPositionWithOverflowAlignment(style.alignItems());
+      return ValueForItemPositionWithOverflowAlignment(style.AlignItems());
     case CSSPropertyAlignSelf:
-      return valueForItemPositionWithOverflowAlignment(style.alignSelf());
+      return ValueForItemPositionWithOverflowAlignment(style.AlignSelf());
     case CSSPropertyFlex:
-      return valuesForShorthandProperty(flexShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(flexShorthand(), style, layout_object,
+                                        styled_node, allow_visited_style);
     case CSSPropertyFlexBasis:
-      return zoomAdjustedPixelValueForLength(style.flexBasis(), style);
+      return ZoomAdjustedPixelValueForLength(style.FlexBasis(), style);
     case CSSPropertyFlexDirection:
-      return CSSIdentifierValue::create(style.flexDirection());
+      return CSSIdentifierValue::Create(style.FlexDirection());
     case CSSPropertyFlexFlow:
-      return valuesForShorthandProperty(flexFlowShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(flexFlowShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyFlexGrow:
-      return CSSPrimitiveValue::create(style.flexGrow(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.FlexGrow(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFlexShrink:
-      return CSSPrimitiveValue::create(style.flexShrink(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.FlexShrink(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFlexWrap:
-      return CSSIdentifierValue::create(style.flexWrap());
+      return CSSIdentifierValue::Create(style.FlexWrap());
     case CSSPropertyJustifyContent:
-      return valueForContentPositionAndDistributionWithOverflowAlignment(
-          style.justifyContent(), CSSValueFlexStart);
+      return ValueForContentPositionAndDistributionWithOverflowAlignment(
+          style.JustifyContent(), CSSValueFlexStart);
     case CSSPropertyOrder:
-      return CSSPrimitiveValue::create(style.order(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.Order(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFloat:
-      if (style.display() != EDisplay::kNone && style.hasOutOfFlowPosition())
-        return CSSIdentifierValue::create(CSSValueNone);
-      return CSSIdentifierValue::create(style.floating());
+      if (style.Display() != EDisplay::kNone && style.HasOutOfFlowPosition())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSIdentifierValue::Create(style.Floating());
     case CSSPropertyFont:
-      return valueForFont(style);
+      return ValueForFont(style);
     case CSSPropertyFontFamily:
-      return valueForFontFamily(style);
+      return ValueForFontFamily(style);
     case CSSPropertyFontSize:
-      return valueForFontSize(style);
+      return ValueForFontSize(style);
     case CSSPropertyFontSizeAdjust:
-      if (style.hasFontSizeAdjust())
-        return CSSPrimitiveValue::create(style.fontSizeAdjust(),
-                                         CSSPrimitiveValue::UnitType::Number);
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (style.HasFontSizeAdjust())
+        return CSSPrimitiveValue::Create(style.FontSizeAdjust(),
+                                         CSSPrimitiveValue::UnitType::kNumber);
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyFontStretch:
-      return valueForFontStretch(style);
+      return ValueForFontStretch(style);
     case CSSPropertyFontStyle:
-      return valueForFontStyle(style);
+      return ValueForFontStyle(style);
     case CSSPropertyFontVariant:
-      return valuesForFontVariantProperty(style, layoutObject, styledNode,
-                                          allowVisitedStyle);
+      return ValuesForFontVariantProperty(style, layout_object, styled_node,
+                                          allow_visited_style);
     case CSSPropertyFontWeight:
-      return valueForFontWeight(style);
+      return ValueForFontWeight(style);
     case CSSPropertyFontFeatureSettings: {
-      const FontFeatureSettings* featureSettings =
-          style.getFontDescription().featureSettings();
-      if (!featureSettings || !featureSettings->size())
-        return CSSIdentifierValue::create(CSSValueNormal);
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      for (unsigned i = 0; i < featureSettings->size(); ++i) {
-        const FontFeature& feature = featureSettings->at(i);
-        CSSFontFeatureValue* featureValue =
-            CSSFontFeatureValue::create(feature.tag(), feature.value());
-        list->append(*featureValue);
+      const FontFeatureSettings* feature_settings =
+          style.GetFontDescription().FeatureSettings();
+      if (!feature_settings || !feature_settings->size())
+        return CSSIdentifierValue::Create(CSSValueNormal);
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      for (unsigned i = 0; i < feature_settings->size(); ++i) {
+        const FontFeature& feature = feature_settings->at(i);
+        CSSFontFeatureValue* feature_value =
+            CSSFontFeatureValue::Create(feature.Tag(), feature.Value());
+        list->Append(*feature_value);
       }
       return list;
     }
     case CSSPropertyFontVariationSettings: {
       DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
-      const FontVariationSettings* variationSettings =
-          style.getFontDescription().variationSettings();
-      if (!variationSettings || !variationSettings->size())
-        return CSSIdentifierValue::create(CSSValueNormal);
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      for (unsigned i = 0; i < variationSettings->size(); ++i) {
-        const FontVariationAxis& variationAxis = variationSettings->at(i);
-        CSSFontVariationValue* variationValue = CSSFontVariationValue::create(
-            variationAxis.tag(), variationAxis.value());
-        list->append(*variationValue);
+      const FontVariationSettings* variation_settings =
+          style.GetFontDescription().VariationSettings();
+      if (!variation_settings || !variation_settings->size())
+        return CSSIdentifierValue::Create(CSSValueNormal);
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      for (unsigned i = 0; i < variation_settings->size(); ++i) {
+        const FontVariationAxis& variation_axis = variation_settings->at(i);
+        CSSFontVariationValue* variation_value = CSSFontVariationValue::Create(
+            variation_axis.Tag(), variation_axis.Value());
+        list->Append(*variation_value);
       }
       return list;
     }
     case CSSPropertyGridAutoFlow: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      switch (style.getGridAutoFlow()) {
-        case AutoFlowRow:
-        case AutoFlowRowDense:
-          list->append(*CSSIdentifierValue::create(CSSValueRow));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      switch (style.GetGridAutoFlow()) {
+        case kAutoFlowRow:
+        case kAutoFlowRowDense:
+          list->Append(*CSSIdentifierValue::Create(CSSValueRow));
           break;
-        case AutoFlowColumn:
-        case AutoFlowColumnDense:
-          list->append(*CSSIdentifierValue::create(CSSValueColumn));
+        case kAutoFlowColumn:
+        case kAutoFlowColumnDense:
+          list->Append(*CSSIdentifierValue::Create(CSSValueColumn));
           break;
         default:
           NOTREACHED();
       }
 
-      switch (style.getGridAutoFlow()) {
-        case AutoFlowRowDense:
-        case AutoFlowColumnDense:
-          list->append(*CSSIdentifierValue::create(CSSValueDense));
+      switch (style.GetGridAutoFlow()) {
+        case kAutoFlowRowDense:
+        case kAutoFlowColumnDense:
+          list->Append(*CSSIdentifierValue::Create(CSSValueDense));
           break;
         default:
           // Do nothing.
@@ -2494,921 +2521,926 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     // of implicit tracks added to the grid. See
     // http://lists.w3.org/Archives/Public/www-style/2013Nov/0014.html
     case CSSPropertyGridAutoColumns:
-      return valueForGridTrackSizeList(ForColumns, style);
+      return ValueForGridTrackSizeList(kForColumns, style);
     case CSSPropertyGridAutoRows:
-      return valueForGridTrackSizeList(ForRows, style);
+      return ValueForGridTrackSizeList(kForRows, style);
 
     case CSSPropertyGridTemplateColumns:
-      return valueForGridTrackList(ForColumns, layoutObject, style);
+      return ValueForGridTrackList(kForColumns, layout_object, style);
     case CSSPropertyGridTemplateRows:
-      return valueForGridTrackList(ForRows, layoutObject, style);
+      return ValueForGridTrackList(kForRows, layout_object, style);
 
     case CSSPropertyGridColumnStart:
-      return valueForGridPosition(style.gridColumnStart());
+      return ValueForGridPosition(style.GridColumnStart());
     case CSSPropertyGridColumnEnd:
-      return valueForGridPosition(style.gridColumnEnd());
+      return ValueForGridPosition(style.GridColumnEnd());
     case CSSPropertyGridRowStart:
-      return valueForGridPosition(style.gridRowStart());
+      return ValueForGridPosition(style.GridRowStart());
     case CSSPropertyGridRowEnd:
-      return valueForGridPosition(style.gridRowEnd());
+      return ValueForGridPosition(style.GridRowEnd());
     case CSSPropertyGridColumn:
-      return valuesForGridShorthand(gridColumnShorthand(), style, layoutObject,
-                                    styledNode, allowVisitedStyle);
+      return ValuesForGridShorthand(gridColumnShorthand(), style, layout_object,
+                                    styled_node, allow_visited_style);
     case CSSPropertyGridRow:
-      return valuesForGridShorthand(gridRowShorthand(), style, layoutObject,
-                                    styledNode, allowVisitedStyle);
+      return ValuesForGridShorthand(gridRowShorthand(), style, layout_object,
+                                    styled_node, allow_visited_style);
     case CSSPropertyGridArea:
-      return valuesForGridShorthand(gridAreaShorthand(), style, layoutObject,
-                                    styledNode, allowVisitedStyle);
+      return ValuesForGridShorthand(gridAreaShorthand(), style, layout_object,
+                                    styled_node, allow_visited_style);
     case CSSPropertyGridTemplate:
-      return valuesForGridShorthand(gridTemplateShorthand(), style,
-                                    layoutObject, styledNode,
-                                    allowVisitedStyle);
+      return ValuesForGridShorthand(gridTemplateShorthand(), style,
+                                    layout_object, styled_node,
+                                    allow_visited_style);
     case CSSPropertyGrid:
-      return valuesForGridShorthand(gridShorthand(), style, layoutObject,
-                                    styledNode, allowVisitedStyle);
+      return ValuesForGridShorthand(gridShorthand(), style, layout_object,
+                                    styled_node, allow_visited_style);
     case CSSPropertyGridTemplateAreas:
-      if (!style.namedGridAreaRowCount()) {
-        DCHECK(!style.namedGridAreaColumnCount());
-        return CSSIdentifierValue::create(CSSValueNone);
+      if (!style.NamedGridAreaRowCount()) {
+        DCHECK(!style.NamedGridAreaColumnCount());
+        return CSSIdentifierValue::Create(CSSValueNone);
       }
 
-      return CSSGridTemplateAreasValue::create(
-          style.namedGridArea(), style.namedGridAreaRowCount(),
-          style.namedGridAreaColumnCount());
+      return CSSGridTemplateAreasValue::Create(
+          style.NamedGridArea(), style.NamedGridAreaRowCount(),
+          style.NamedGridAreaColumnCount());
     case CSSPropertyGridColumnGap:
-      return zoomAdjustedPixelValueForLength(style.gridColumnGap(), style);
+      return ZoomAdjustedPixelValueForLength(style.GridColumnGap(), style);
     case CSSPropertyGridRowGap:
-      return zoomAdjustedPixelValueForLength(style.gridRowGap(), style);
+      return ZoomAdjustedPixelValueForLength(style.GridRowGap(), style);
     case CSSPropertyGridGap:
-      return valuesForShorthandProperty(gridGapShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(gridGapShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
 
     case CSSPropertyHeight:
-      if (layoutObject) {
-        if (!widthOrHeightPropertyAppliesToObject(*layoutObject))
-          return CSSIdentifierValue::create(CSSValueAuto);
-        return zoomAdjustedPixelValue(sizingBox(layoutObject).height(), style);
+      if (layout_object) {
+        if (!WidthOrHeightPropertyAppliesToObject(*layout_object))
+          return CSSIdentifierValue::Create(CSSValueAuto);
+        return ZoomAdjustedPixelValue(SizingBox(layout_object).Height(), style);
       }
-      return zoomAdjustedPixelValueForLength(style.height(), style);
+      return ZoomAdjustedPixelValueForLength(style.Height(), style);
     case CSSPropertyWebkitHighlight:
-      if (style.highlight() == nullAtom)
-        return CSSIdentifierValue::create(CSSValueNone);
-      return CSSStringValue::create(style.highlight());
+      if (style.Highlight() == g_null_atom)
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSStringValue::Create(style.Highlight());
     case CSSPropertyHyphens:
-      return CSSIdentifierValue::create(style.getHyphens());
+      return CSSIdentifierValue::Create(style.GetHyphens());
     case CSSPropertyWebkitHyphenateCharacter:
-      if (style.hyphenationString().isNull())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSStringValue::create(style.hyphenationString());
+      if (style.HyphenationString().IsNull())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSStringValue::Create(style.HyphenationString());
     case CSSPropertyImageRendering:
-      return CSSIdentifierValue::create(style.imageRendering());
+      return CSSIdentifierValue::Create(style.ImageRendering());
     case CSSPropertyImageOrientation:
-      if (style.respectImageOrientation() == RespectImageOrientation)
-        return CSSIdentifierValue::create(CSSValueFromImage);
-      return CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Degrees);
+      if (style.RespectImageOrientation() == kRespectImageOrientation)
+        return CSSIdentifierValue::Create(CSSValueFromImage);
+      return CSSPrimitiveValue::Create(0,
+                                       CSSPrimitiveValue::UnitType::kDegrees);
     case CSSPropertyIsolation:
-      return CSSIdentifierValue::create(style.isolation());
+      return CSSIdentifierValue::Create(style.Isolation());
     case CSSPropertyJustifyItems:
-      return valueForItemPositionWithOverflowAlignment(style.justifyItems());
+      return ValueForItemPositionWithOverflowAlignment(style.JustifyItems());
     case CSSPropertyJustifySelf:
-      return valueForItemPositionWithOverflowAlignment(style.justifySelf());
+      return ValueForItemPositionWithOverflowAlignment(style.JustifySelf());
     case CSSPropertyLeft:
-      return valueForPositionOffset(style, CSSPropertyLeft, layoutObject);
+      return ValueForPositionOffset(style, CSSPropertyLeft, layout_object);
     case CSSPropertyLetterSpacing:
-      if (!style.letterSpacing())
-        return CSSIdentifierValue::create(CSSValueNormal);
-      return zoomAdjustedPixelValue(style.letterSpacing(), style);
+      if (!style.LetterSpacing())
+        return CSSIdentifierValue::Create(CSSValueNormal);
+      return ZoomAdjustedPixelValue(style.LetterSpacing(), style);
     case CSSPropertyWebkitLineClamp:
-      if (style.lineClamp().isNone())
-        return CSSIdentifierValue::create(CSSValueNone);
-      return CSSPrimitiveValue::create(
-          style.lineClamp().value(),
-          style.lineClamp().isPercentage()
-              ? CSSPrimitiveValue::UnitType::Percentage
-              : CSSPrimitiveValue::UnitType::Number);
+      if (style.LineClamp().IsNone())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSPrimitiveValue::Create(
+          style.LineClamp().Value(),
+          style.LineClamp().IsPercentage()
+              ? CSSPrimitiveValue::UnitType::kPercentage
+              : CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyLineHeight:
-      return valueForLineHeight(style);
+      return ValueForLineHeight(style);
     case CSSPropertyLineHeightStep:
-      return zoomAdjustedPixelValue(style.lineHeightStep(), style);
+      return ZoomAdjustedPixelValue(style.LineHeightStep(), style);
     case CSSPropertyListStyleImage:
-      if (style.listStyleImage())
-        return style.listStyleImage()->computedCSSValue();
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (style.ListStyleImage())
+        return style.ListStyleImage()->ComputedCSSValue();
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyListStylePosition:
-      return CSSIdentifierValue::create(style.listStylePosition());
+      return CSSIdentifierValue::Create(style.ListStylePosition());
     case CSSPropertyListStyleType:
-      return CSSIdentifierValue::create(style.listStyleType());
+      return CSSIdentifierValue::Create(style.ListStyleType());
     case CSSPropertyWebkitLocale:
-      if (style.locale().isNull())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSStringValue::create(style.locale());
+      if (style.Locale().IsNull())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSStringValue::Create(style.Locale());
     case CSSPropertyMarginTop: {
-      Length marginTop = style.marginTop();
-      if (marginTop.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(marginTop, style);
-      return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginTop(),
+      Length margin_top = style.MarginTop();
+      if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(margin_top, style);
+      return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginTop(),
                                     style);
     }
     case CSSPropertyMarginRight: {
-      Length marginRight = style.marginRight();
-      if (marginRight.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(marginRight, style);
+      Length margin_right = style.MarginRight();
+      if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(margin_right, style);
       float value;
-      if (marginRight.isPercentOrCalc()) {
+      if (margin_right.IsPercentOrCalc()) {
         // LayoutBox gives a marginRight() that is the distance between the
         // right-edge of the child box and the right-edge of the containing box,
         // when display == EDisplay::kBlock. Let's calculate the absolute value
         // of the specified margin-right % instead of relying on LayoutBox's
         // marginRight() value.
-        value = minimumValueForLength(
-                    marginRight, toLayoutBox(layoutObject)
-                                     ->containingBlockLogicalWidthForContent())
-                    .toFloat();
+        value = MinimumValueForLength(
+                    margin_right, ToLayoutBox(layout_object)
+                                      ->ContainingBlockLogicalWidthForContent())
+                    .ToFloat();
       } else {
-        value = toLayoutBox(layoutObject)->marginRight().toFloat();
+        value = ToLayoutBox(layout_object)->MarginRight().ToFloat();
       }
-      return zoomAdjustedPixelValue(value, style);
+      return ZoomAdjustedPixelValue(value, style);
     }
     case CSSPropertyMarginBottom: {
-      Length marginBottom = style.marginBottom();
-      if (marginBottom.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(marginBottom, style);
-      return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginBottom(),
+      Length margin_bottom = style.MarginBottom();
+      if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(margin_bottom, style);
+      return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginBottom(),
                                     style);
     }
     case CSSPropertyMarginLeft: {
-      Length marginLeft = style.marginLeft();
-      if (marginLeft.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(marginLeft, style);
-      return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginLeft(),
+      Length margin_left = style.MarginLeft();
+      if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(margin_left, style);
+      return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginLeft(),
                                     style);
     }
     case CSSPropertyWebkitUserModify:
-      return CSSIdentifierValue::create(style.userModify());
+      return CSSIdentifierValue::Create(style.UserModify());
     case CSSPropertyMaxHeight: {
-      const Length& maxHeight = style.maxHeight();
-      if (maxHeight.isMaxSizeNone())
-        return CSSIdentifierValue::create(CSSValueNone);
-      return zoomAdjustedPixelValueForLength(maxHeight, style);
+      const Length& max_height = style.MaxHeight();
+      if (max_height.IsMaxSizeNone())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return ZoomAdjustedPixelValueForLength(max_height, style);
     }
     case CSSPropertyMaxWidth: {
-      const Length& maxWidth = style.maxWidth();
-      if (maxWidth.isMaxSizeNone())
-        return CSSIdentifierValue::create(CSSValueNone);
-      return zoomAdjustedPixelValueForLength(maxWidth, style);
+      const Length& max_width = style.MaxWidth();
+      if (max_width.IsMaxSizeNone())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return ZoomAdjustedPixelValueForLength(max_width, style);
     }
     case CSSPropertyMinHeight:
-      if (style.minHeight().isAuto()) {
-        Node* parent = styledNode->parentNode();
-        if (isFlexOrGrid(parent ? parent->ensureComputedStyle() : nullptr))
-          return CSSIdentifierValue::create(CSSValueAuto);
-        return zoomAdjustedPixelValue(0, style);
+      if (style.MinHeight().IsAuto()) {
+        Node* parent = styled_node->parentNode();
+        if (IsFlexOrGrid(parent ? parent->EnsureComputedStyle() : nullptr))
+          return CSSIdentifierValue::Create(CSSValueAuto);
+        return ZoomAdjustedPixelValue(0, style);
       }
-      return zoomAdjustedPixelValueForLength(style.minHeight(), style);
+      return ZoomAdjustedPixelValueForLength(style.MinHeight(), style);
     case CSSPropertyMinWidth:
-      if (style.minWidth().isAuto()) {
-        Node* parent = styledNode->parentNode();
-        if (isFlexOrGrid(parent ? parent->ensureComputedStyle() : nullptr))
-          return CSSIdentifierValue::create(CSSValueAuto);
-        return zoomAdjustedPixelValue(0, style);
+      if (style.MinWidth().IsAuto()) {
+        Node* parent = styled_node->parentNode();
+        if (IsFlexOrGrid(parent ? parent->EnsureComputedStyle() : nullptr))
+          return CSSIdentifierValue::Create(CSSValueAuto);
+        return ZoomAdjustedPixelValue(0, style);
       }
-      return zoomAdjustedPixelValueForLength(style.minWidth(), style);
+      return ZoomAdjustedPixelValueForLength(style.MinWidth(), style);
     case CSSPropertyObjectFit:
-      return CSSIdentifierValue::create(style.getObjectFit());
+      return CSSIdentifierValue::Create(style.GetObjectFit());
     case CSSPropertyObjectPosition:
-      return CSSValuePair::create(
-          zoomAdjustedPixelValueForLength(style.objectPosition().x(), style),
-          zoomAdjustedPixelValueForLength(style.objectPosition().y(), style),
-          CSSValuePair::KeepIdenticalValues);
+      return CSSValuePair::Create(
+          ZoomAdjustedPixelValueForLength(style.ObjectPosition().X(), style),
+          ZoomAdjustedPixelValueForLength(style.ObjectPosition().Y(), style),
+          CSSValuePair::kKeepIdenticalValues);
     case CSSPropertyOpacity:
-      return CSSPrimitiveValue::create(style.opacity(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.Opacity(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyOrphans:
-      return CSSPrimitiveValue::create(style.orphans(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.Orphans(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyOutlineColor:
-      return allowVisitedStyle
-                 ? CSSColorValue::create(
-                       style.visitedDependentColor(CSSPropertyOutlineColor)
-                           .rgb())
-                 : currentColorOrValidColor(style, style.outlineColor());
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyOutlineColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.OutlineColor());
     case CSSPropertyOutlineOffset:
-      return zoomAdjustedPixelValue(style.outlineOffset(), style);
+      return ZoomAdjustedPixelValue(style.OutlineOffset(), style);
     case CSSPropertyOutlineStyle:
-      if (style.outlineStyleIsAuto())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSIdentifierValue::create(style.outlineStyle());
+      if (style.OutlineStyleIsAuto())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSIdentifierValue::Create(style.OutlineStyle());
     case CSSPropertyOutlineWidth:
-      return zoomAdjustedPixelValue(style.outlineWidth(), style);
+      return ZoomAdjustedPixelValue(style.OutlineWidth(), style);
     case CSSPropertyOverflow:
-      if (style.overflowX() == style.overflowY())
-        return CSSIdentifierValue::create(style.overflowX());
+      if (style.OverflowX() == style.OverflowY())
+        return CSSIdentifierValue::Create(style.OverflowX());
       return nullptr;
     case CSSPropertyOverflowAnchor:
-      return CSSIdentifierValue::create(style.overflowAnchor());
+      return CSSIdentifierValue::Create(style.OverflowAnchor());
     case CSSPropertyOverflowWrap:
-      return CSSIdentifierValue::create(style.overflowWrap());
+      return CSSIdentifierValue::Create(style.OverflowWrap());
     case CSSPropertyOverflowX:
-      return CSSIdentifierValue::create(style.overflowX());
+      return CSSIdentifierValue::Create(style.OverflowX());
     case CSSPropertyOverflowY:
-      return CSSIdentifierValue::create(style.overflowY());
+      return CSSIdentifierValue::Create(style.OverflowY());
     case CSSPropertyPaddingTop: {
-      Length paddingTop = style.paddingTop();
-      if (paddingTop.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(paddingTop, style);
-      return zoomAdjustedPixelValue(
-          toLayoutBox(layoutObject)->computedCSSPaddingTop(), style);
+      Length padding_top = style.PaddingTop();
+      if (padding_top.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(padding_top, style);
+      return ZoomAdjustedPixelValue(
+          ToLayoutBox(layout_object)->ComputedCSSPaddingTop(), style);
     }
     case CSSPropertyPaddingRight: {
-      Length paddingRight = style.paddingRight();
-      if (paddingRight.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(paddingRight, style);
-      return zoomAdjustedPixelValue(
-          toLayoutBox(layoutObject)->computedCSSPaddingRight(), style);
+      Length padding_right = style.PaddingRight();
+      if (padding_right.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(padding_right, style);
+      return ZoomAdjustedPixelValue(
+          ToLayoutBox(layout_object)->ComputedCSSPaddingRight(), style);
     }
     case CSSPropertyPaddingBottom: {
-      Length paddingBottom = style.paddingBottom();
-      if (paddingBottom.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(paddingBottom, style);
-      return zoomAdjustedPixelValue(
-          toLayoutBox(layoutObject)->computedCSSPaddingBottom(), style);
+      Length padding_bottom = style.PaddingBottom();
+      if (padding_bottom.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(padding_bottom, style);
+      return ZoomAdjustedPixelValue(
+          ToLayoutBox(layout_object)->ComputedCSSPaddingBottom(), style);
     }
     case CSSPropertyPaddingLeft: {
-      Length paddingLeft = style.paddingLeft();
-      if (paddingLeft.isFixed() || !layoutObject || !layoutObject->isBox())
-        return zoomAdjustedPixelValueForLength(paddingLeft, style);
-      return zoomAdjustedPixelValue(
-          toLayoutBox(layoutObject)->computedCSSPaddingLeft(), style);
+      Length padding_left = style.PaddingLeft();
+      if (padding_left.IsFixed() || !layout_object || !layout_object->IsBox())
+        return ZoomAdjustedPixelValueForLength(padding_left, style);
+      return ZoomAdjustedPixelValue(
+          ToLayoutBox(layout_object)->ComputedCSSPaddingLeft(), style);
     }
     case CSSPropertyBreakAfter:
-      return CSSIdentifierValue::create(style.breakAfter());
+      return CSSIdentifierValue::Create(style.BreakAfter());
     case CSSPropertyBreakBefore:
-      return CSSIdentifierValue::create(style.breakBefore());
+      return CSSIdentifierValue::Create(style.BreakBefore());
     case CSSPropertyBreakInside:
-      return CSSIdentifierValue::create(style.breakInside());
+      return CSSIdentifierValue::Create(style.BreakInside());
     case CSSPropertyPageBreakAfter:
-      return valueForPageBreakBetween(style.breakAfter());
+      return ValueForPageBreakBetween(style.BreakAfter());
     case CSSPropertyPageBreakBefore:
-      return valueForPageBreakBetween(style.breakBefore());
+      return ValueForPageBreakBetween(style.BreakBefore());
     case CSSPropertyPageBreakInside:
-      return valueForPageBreakInside(style.breakInside());
+      return ValueForPageBreakInside(style.BreakInside());
     case CSSPropertyPosition:
-      return CSSIdentifierValue::create(style.position());
+      return CSSIdentifierValue::Create(style.GetPosition());
     case CSSPropertyQuotes:
-      if (!style.quotes()) {
+      if (!style.Quotes()) {
         // TODO(ramya.v): We should return the quote values that we're actually
         // using.
         return nullptr;
       }
-      if (style.quotes()->size()) {
-        CSSValueList* list = CSSValueList::createSpaceSeparated();
-        for (int i = 0; i < style.quotes()->size(); i++) {
-          list->append(
-              *CSSStringValue::create(style.quotes()->getOpenQuote(i)));
-          list->append(
-              *CSSStringValue::create(style.quotes()->getCloseQuote(i)));
+      if (style.Quotes()->size()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        for (int i = 0; i < style.Quotes()->size(); i++) {
+          list->Append(
+              *CSSStringValue::Create(style.Quotes()->GetOpenQuote(i)));
+          list->Append(
+              *CSSStringValue::Create(style.Quotes()->GetCloseQuote(i)));
         }
         return list;
       }
-      return CSSIdentifierValue::create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyRight:
-      return valueForPositionOffset(style, CSSPropertyRight, layoutObject);
+      return ValueForPositionOffset(style, CSSPropertyRight, layout_object);
     case CSSPropertyWebkitRubyPosition:
-      return CSSIdentifierValue::create(style.getRubyPosition());
+      return CSSIdentifierValue::Create(style.GetRubyPosition());
     case CSSPropertyScrollBehavior:
-      return CSSIdentifierValue::create(style.getScrollBehavior());
+      return CSSIdentifierValue::Create(style.GetScrollBehavior());
     case CSSPropertyTableLayout:
-      return CSSIdentifierValue::create(style.tableLayout());
+      return CSSIdentifierValue::Create(style.TableLayout());
     case CSSPropertyTextAlign:
-      return CSSIdentifierValue::create(style.textAlign());
+      return CSSIdentifierValue::Create(style.GetTextAlign());
     case CSSPropertyTextAlignLast:
-      return CSSIdentifierValue::create(style.getTextAlignLast());
+      return CSSIdentifierValue::Create(style.GetTextAlignLast());
     case CSSPropertyTextDecoration:
       if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-        return valuesForShorthandProperty(textDecorationShorthand(), style,
-                                          layoutObject, styledNode,
-                                          allowVisitedStyle);
+        return ValuesForShorthandProperty(textDecorationShorthand(), style,
+                                          layout_object, styled_node,
+                                          allow_visited_style);
     // Fall through.
     case CSSPropertyTextDecorationLine:
-      return renderTextDecorationFlagsToCSSValue(style.getTextDecoration());
+      return RenderTextDecorationFlagsToCSSValue(style.GetTextDecoration());
     case CSSPropertyTextDecorationSkip:
-      return valueForTextDecorationSkip(style.getTextDecorationSkip());
+      return ValueForTextDecorationSkip(style.GetTextDecorationSkip());
     case CSSPropertyTextDecorationStyle:
-      return valueForTextDecorationStyle(style.getTextDecorationStyle());
+      return ValueForTextDecorationStyle(style.GetTextDecorationStyle());
     case CSSPropertyTextDecorationColor:
-      return currentColorOrValidColor(style, style.textDecorationColor());
+      return CurrentColorOrValidColor(style, style.TextDecorationColor());
     case CSSPropertyTextJustify:
-      return CSSIdentifierValue::create(style.getTextJustify());
+      return CSSIdentifierValue::Create(style.GetTextJustify());
     case CSSPropertyTextUnderlinePosition:
-      return CSSIdentifierValue::create(style.getTextUnderlinePosition());
+      return CSSIdentifierValue::Create(style.GetTextUnderlinePosition());
     case CSSPropertyWebkitTextDecorationsInEffect:
-      return renderTextDecorationFlagsToCSSValue(
-          style.textDecorationsInEffect());
+      return RenderTextDecorationFlagsToCSSValue(
+          style.TextDecorationsInEffect());
     case CSSPropertyWebkitTextFillColor:
-      return currentColorOrValidColor(style, style.textFillColor());
+      return CurrentColorOrValidColor(style, style.TextFillColor());
     case CSSPropertyWebkitTextEmphasisColor:
-      return currentColorOrValidColor(style, style.textEmphasisColor());
+      return CurrentColorOrValidColor(style, style.TextEmphasisColor());
     case CSSPropertyWebkitTextEmphasisPosition:
-      return CSSIdentifierValue::create(style.getTextEmphasisPosition());
+      return CSSIdentifierValue::Create(style.GetTextEmphasisPosition());
     case CSSPropertyWebkitTextEmphasisStyle:
-      switch (style.getTextEmphasisMark()) {
-        case TextEmphasisMarkNone:
-          return CSSIdentifierValue::create(CSSValueNone);
-        case TextEmphasisMarkCustom:
-          return CSSStringValue::create(style.textEmphasisCustomMark());
-        case TextEmphasisMarkAuto:
+      switch (style.GetTextEmphasisMark()) {
+        case kTextEmphasisMarkNone:
+          return CSSIdentifierValue::Create(CSSValueNone);
+        case kTextEmphasisMarkCustom:
+          return CSSStringValue::Create(style.TextEmphasisCustomMark());
+        case kTextEmphasisMarkAuto:
           NOTREACHED();
         // Fall through
-        case TextEmphasisMarkDot:
-        case TextEmphasisMarkCircle:
-        case TextEmphasisMarkDoubleCircle:
-        case TextEmphasisMarkTriangle:
-        case TextEmphasisMarkSesame: {
-          CSSValueList* list = CSSValueList::createSpaceSeparated();
-          list->append(
-              *CSSIdentifierValue::create(style.getTextEmphasisFill()));
-          list->append(
-              *CSSIdentifierValue::create(style.getTextEmphasisMark()));
+        case kTextEmphasisMarkDot:
+        case kTextEmphasisMarkCircle:
+        case kTextEmphasisMarkDoubleCircle:
+        case kTextEmphasisMarkTriangle:
+        case kTextEmphasisMarkSesame: {
+          CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+          list->Append(
+              *CSSIdentifierValue::Create(style.GetTextEmphasisFill()));
+          list->Append(
+              *CSSIdentifierValue::Create(style.GetTextEmphasisMark()));
           return list;
         }
       }
     case CSSPropertyTextIndent: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      list->append(*zoomAdjustedPixelValueForLength(style.textIndent(), style));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(*ZoomAdjustedPixelValueForLength(style.TextIndent(), style));
       if (RuntimeEnabledFeatures::css3TextEnabled() &&
-          (style.getTextIndentLine() == TextIndentEachLine ||
-           style.getTextIndentType() == TextIndentHanging)) {
-        if (style.getTextIndentLine() == TextIndentEachLine)
-          list->append(*CSSIdentifierValue::create(CSSValueEachLine));
-        if (style.getTextIndentType() == TextIndentHanging)
-          list->append(*CSSIdentifierValue::create(CSSValueHanging));
+          (style.GetTextIndentLine() == kTextIndentEachLine ||
+           style.GetTextIndentType() == kTextIndentHanging)) {
+        if (style.GetTextIndentLine() == kTextIndentEachLine)
+          list->Append(*CSSIdentifierValue::Create(CSSValueEachLine));
+        if (style.GetTextIndentType() == kTextIndentHanging)
+          list->Append(*CSSIdentifierValue::Create(CSSValueHanging));
       }
       return list;
     }
     case CSSPropertyTextShadow:
-      return valueForShadowList(style.textShadow(), style, false);
+      return ValueForShadowList(style.TextShadow(), style, false);
     case CSSPropertyTextRendering:
-      return CSSIdentifierValue::create(
-          style.getFontDescription().textRendering());
+      return CSSIdentifierValue::Create(
+          style.GetFontDescription().TextRendering());
     case CSSPropertyTextOverflow:
-      if (style.getTextOverflow())
-        return CSSIdentifierValue::create(CSSValueEllipsis);
-      return CSSIdentifierValue::create(CSSValueClip);
+      if (style.GetTextOverflow())
+        return CSSIdentifierValue::Create(CSSValueEllipsis);
+      return CSSIdentifierValue::Create(CSSValueClip);
     case CSSPropertyWebkitTextSecurity:
-      return CSSIdentifierValue::create(style.textSecurity());
+      return CSSIdentifierValue::Create(style.TextSecurity());
     case CSSPropertyWebkitTextStrokeColor:
-      return currentColorOrValidColor(style, style.textStrokeColor());
+      return CurrentColorOrValidColor(style, style.TextStrokeColor());
     case CSSPropertyWebkitTextStrokeWidth:
-      return zoomAdjustedPixelValue(style.textStrokeWidth(), style);
+      return ZoomAdjustedPixelValue(style.TextStrokeWidth(), style);
     case CSSPropertyTextTransform:
-      return CSSIdentifierValue::create(style.textTransform());
+      return CSSIdentifierValue::Create(style.TextTransform());
     case CSSPropertyTop:
-      return valueForPositionOffset(style, CSSPropertyTop, layoutObject);
+      return ValueForPositionOffset(style, CSSPropertyTop, layout_object);
     case CSSPropertyTouchAction:
-      return touchActionFlagsToCSSValue(style.getTouchAction());
+      return TouchActionFlagsToCSSValue(style.GetTouchAction());
     case CSSPropertyUnicodeBidi:
-      return CSSIdentifierValue::create(style.getUnicodeBidi());
+      return CSSIdentifierValue::Create(style.GetUnicodeBidi());
     case CSSPropertyVerticalAlign:
-      switch (style.verticalAlign()) {
+      switch (style.VerticalAlign()) {
         case EVerticalAlign::kBaseline:
-          return CSSIdentifierValue::create(CSSValueBaseline);
+          return CSSIdentifierValue::Create(CSSValueBaseline);
         case EVerticalAlign::kMiddle:
-          return CSSIdentifierValue::create(CSSValueMiddle);
+          return CSSIdentifierValue::Create(CSSValueMiddle);
         case EVerticalAlign::kSub:
-          return CSSIdentifierValue::create(CSSValueSub);
+          return CSSIdentifierValue::Create(CSSValueSub);
         case EVerticalAlign::kSuper:
-          return CSSIdentifierValue::create(CSSValueSuper);
+          return CSSIdentifierValue::Create(CSSValueSuper);
         case EVerticalAlign::kTextTop:
-          return CSSIdentifierValue::create(CSSValueTextTop);
+          return CSSIdentifierValue::Create(CSSValueTextTop);
         case EVerticalAlign::kTextBottom:
-          return CSSIdentifierValue::create(CSSValueTextBottom);
+          return CSSIdentifierValue::Create(CSSValueTextBottom);
         case EVerticalAlign::kTop:
-          return CSSIdentifierValue::create(CSSValueTop);
+          return CSSIdentifierValue::Create(CSSValueTop);
         case EVerticalAlign::kBottom:
-          return CSSIdentifierValue::create(CSSValueBottom);
+          return CSSIdentifierValue::Create(CSSValueBottom);
         case EVerticalAlign::kBaselineMiddle:
-          return CSSIdentifierValue::create(CSSValueWebkitBaselineMiddle);
+          return CSSIdentifierValue::Create(CSSValueWebkitBaselineMiddle);
         case EVerticalAlign::kLength:
-          return zoomAdjustedPixelValueForLength(style.getVerticalAlignLength(),
+          return ZoomAdjustedPixelValueForLength(style.GetVerticalAlignLength(),
                                                  style);
       }
       NOTREACHED();
       return nullptr;
     case CSSPropertyVisibility:
-      return CSSIdentifierValue::create(style.visibility());
+      return CSSIdentifierValue::Create(style.Visibility());
     case CSSPropertyWhiteSpace:
-      return CSSIdentifierValue::create(style.whiteSpace());
+      return CSSIdentifierValue::Create(style.WhiteSpace());
     case CSSPropertyWidows:
-      return CSSPrimitiveValue::create(style.widows(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.Widows(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWidth:
-      if (layoutObject) {
-        if (!widthOrHeightPropertyAppliesToObject(*layoutObject))
-          return CSSIdentifierValue::create(CSSValueAuto);
-        return zoomAdjustedPixelValue(sizingBox(layoutObject).width(), style);
+      if (layout_object) {
+        if (!WidthOrHeightPropertyAppliesToObject(*layout_object))
+          return CSSIdentifierValue::Create(CSSValueAuto);
+        return ZoomAdjustedPixelValue(SizingBox(layout_object).Width(), style);
       }
-      return zoomAdjustedPixelValueForLength(style.width(), style);
+      return ZoomAdjustedPixelValueForLength(style.Width(), style);
     case CSSPropertyWillChange:
-      return valueForWillChange(style.willChangeProperties(),
-                                style.willChangeContents(),
-                                style.willChangeScrollPosition());
+      return ValueForWillChange(style.WillChangeProperties(),
+                                style.WillChangeContents(),
+                                style.WillChangeScrollPosition());
     case CSSPropertyWordBreak:
-      return CSSIdentifierValue::create(style.wordBreak());
+      return CSSIdentifierValue::Create(style.WordBreak());
     case CSSPropertyWordSpacing:
-      return zoomAdjustedPixelValue(style.wordSpacing(), style);
+      return ZoomAdjustedPixelValue(style.WordSpacing(), style);
     case CSSPropertyWordWrap:
-      return CSSIdentifierValue::create(style.overflowWrap());
+      return CSSIdentifierValue::Create(style.OverflowWrap());
     case CSSPropertyWebkitLineBreak:
-      return CSSIdentifierValue::create(style.getLineBreak());
+      return CSSIdentifierValue::Create(style.GetLineBreak());
     case CSSPropertyResize:
-      return CSSIdentifierValue::create(style.resize());
+      return CSSIdentifierValue::Create(style.Resize());
     case CSSPropertyFontKerning:
-      return CSSIdentifierValue::create(
-          style.getFontDescription().getKerning());
+      return CSSIdentifierValue::Create(
+          style.GetFontDescription().GetKerning());
     case CSSPropertyWebkitFontSmoothing:
-      return CSSIdentifierValue::create(
-          style.getFontDescription().fontSmoothing());
+      return CSSIdentifierValue::Create(
+          style.GetFontDescription().FontSmoothing());
     case CSSPropertyFontVariantLigatures:
-      return valueForFontVariantLigatures(style);
+      return ValueForFontVariantLigatures(style);
     case CSSPropertyFontVariantCaps:
-      return valueForFontVariantCaps(style);
+      return ValueForFontVariantCaps(style);
     case CSSPropertyFontVariantNumeric:
-      return valueForFontVariantNumeric(style);
+      return ValueForFontVariantNumeric(style);
     case CSSPropertyZIndex:
-      if (style.hasAutoZIndex() || !style.isStackingContext())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSPrimitiveValue::create(style.zIndex(),
-                                       CSSPrimitiveValue::UnitType::Integer);
+      if (style.HasAutoZIndex() || !style.IsStackingContext())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSPrimitiveValue::Create(style.ZIndex(),
+                                       CSSPrimitiveValue::UnitType::kInteger);
     case CSSPropertyZoom:
-      return CSSPrimitiveValue::create(style.zoom(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.Zoom(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyBoxSizing:
-      if (style.boxSizing() == EBoxSizing::kContentBox)
-        return CSSIdentifierValue::create(CSSValueContentBox);
-      return CSSIdentifierValue::create(CSSValueBorderBox);
+      if (style.BoxSizing() == EBoxSizing::kContentBox)
+        return CSSIdentifierValue::Create(CSSValueContentBox);
+      return CSSIdentifierValue::Create(CSSValueBorderBox);
     case CSSPropertyWebkitAppRegion:
-      return CSSIdentifierValue::create(style.getDraggableRegionMode() ==
-                                                DraggableRegionDrag
+      return CSSIdentifierValue::Create(style.GetDraggableRegionMode() ==
+                                                kDraggableRegionDrag
                                             ? CSSValueDrag
                                             : CSSValueNoDrag);
     case CSSPropertyAnimationDelay:
-      return valueForAnimationDelay(style.animations());
+      return ValueForAnimationDelay(style.Animations());
     case CSSPropertyAnimationDirection: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        for (size_t i = 0; i < animationData->directionList().size(); ++i)
-          list->append(
-              *valueForAnimationDirection(animationData->directionList()[i]));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        for (size_t i = 0; i < animation_data->DirectionList().size(); ++i)
+          list->Append(
+              *ValueForAnimationDirection(animation_data->DirectionList()[i]));
       } else {
-        list->append(*CSSIdentifierValue::create(CSSValueNormal));
+        list->Append(*CSSIdentifierValue::Create(CSSValueNormal));
       }
       return list;
     }
     case CSSPropertyAnimationDuration:
-      return valueForAnimationDuration(style.animations());
+      return ValueForAnimationDuration(style.Animations());
     case CSSPropertyAnimationFillMode: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        for (size_t i = 0; i < animationData->fillModeList().size(); ++i)
-          list->append(
-              *valueForAnimationFillMode(animationData->fillModeList()[i]));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        for (size_t i = 0; i < animation_data->FillModeList().size(); ++i)
+          list->Append(
+              *ValueForAnimationFillMode(animation_data->FillModeList()[i]));
       } else {
-        list->append(*CSSIdentifierValue::create(CSSValueNone));
+        list->Append(*CSSIdentifierValue::Create(CSSValueNone));
       }
       return list;
     }
     case CSSPropertyAnimationIterationCount: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        for (size_t i = 0; i < animationData->iterationCountList().size(); ++i)
-          list->append(*valueForAnimationIterationCount(
-              animationData->iterationCountList()[i]));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        for (size_t i = 0; i < animation_data->IterationCountList().size(); ++i)
+          list->Append(*ValueForAnimationIterationCount(
+              animation_data->IterationCountList()[i]));
       } else {
-        list->append(*CSSPrimitiveValue::create(
-            CSSAnimationData::initialIterationCount(),
-            CSSPrimitiveValue::UnitType::Number));
+        list->Append(*CSSPrimitiveValue::Create(
+            CSSAnimationData::InitialIterationCount(),
+            CSSPrimitiveValue::UnitType::kNumber));
       }
       return list;
     }
     case CSSPropertyAnimationName: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        for (size_t i = 0; i < animationData->nameList().size(); ++i)
-          list->append(
-              *CSSCustomIdentValue::create(animationData->nameList()[i]));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        for (size_t i = 0; i < animation_data->NameList().size(); ++i)
+          list->Append(
+              *CSSCustomIdentValue::Create(animation_data->NameList()[i]));
       } else {
-        list->append(*CSSIdentifierValue::create(CSSValueNone));
+        list->Append(*CSSIdentifierValue::Create(CSSValueNone));
       }
       return list;
     }
     case CSSPropertyAnimationPlayState: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        for (size_t i = 0; i < animationData->playStateList().size(); ++i)
-          list->append(
-              *valueForAnimationPlayState(animationData->playStateList()[i]));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        for (size_t i = 0; i < animation_data->PlayStateList().size(); ++i)
+          list->Append(
+              *ValueForAnimationPlayState(animation_data->PlayStateList()[i]));
       } else {
-        list->append(*CSSIdentifierValue::create(CSSValueRunning));
+        list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
       }
       return list;
     }
     case CSSPropertyAnimationTimingFunction:
-      return valueForAnimationTimingFunction(style.animations());
+      return ValueForAnimationTimingFunction(style.Animations());
     case CSSPropertyAnimation: {
-      const CSSAnimationData* animationData = style.animations();
-      if (animationData) {
-        CSSValueList* animationsList = CSSValueList::createCommaSeparated();
-        for (size_t i = 0; i < animationData->nameList().size(); ++i) {
-          CSSValueList* list = CSSValueList::createSpaceSeparated();
-          list->append(
-              *CSSCustomIdentValue::create(animationData->nameList()[i]));
-          list->append(*CSSPrimitiveValue::create(
-              CSSTimingData::getRepeated(animationData->durationList(), i),
-              CSSPrimitiveValue::UnitType::Seconds));
-          list->append(*createTimingFunctionValue(
-              CSSTimingData::getRepeated(animationData->timingFunctionList(), i)
-                  .get()));
-          list->append(*CSSPrimitiveValue::create(
-              CSSTimingData::getRepeated(animationData->delayList(), i),
-              CSSPrimitiveValue::UnitType::Seconds));
-          list->append(
-              *valueForAnimationIterationCount(CSSTimingData::getRepeated(
-                  animationData->iterationCountList(), i)));
-          list->append(*valueForAnimationDirection(
-              CSSTimingData::getRepeated(animationData->directionList(), i)));
-          list->append(*valueForAnimationFillMode(
-              CSSTimingData::getRepeated(animationData->fillModeList(), i)));
-          list->append(*valueForAnimationPlayState(
-              CSSTimingData::getRepeated(animationData->playStateList(), i)));
-          animationsList->append(*list);
+      const CSSAnimationData* animation_data = style.Animations();
+      if (animation_data) {
+        CSSValueList* animations_list = CSSValueList::CreateCommaSeparated();
+        for (size_t i = 0; i < animation_data->NameList().size(); ++i) {
+          CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+          list->Append(
+              *CSSCustomIdentValue::Create(animation_data->NameList()[i]));
+          list->Append(*CSSPrimitiveValue::Create(
+              CSSTimingData::GetRepeated(animation_data->DurationList(), i),
+              CSSPrimitiveValue::UnitType::kSeconds));
+          list->Append(*CreateTimingFunctionValue(
+              CSSTimingData::GetRepeated(animation_data->TimingFunctionList(),
+                                         i)
+                  .Get()));
+          list->Append(*CSSPrimitiveValue::Create(
+              CSSTimingData::GetRepeated(animation_data->DelayList(), i),
+              CSSPrimitiveValue::UnitType::kSeconds));
+          list->Append(
+              *ValueForAnimationIterationCount(CSSTimingData::GetRepeated(
+                  animation_data->IterationCountList(), i)));
+          list->Append(*ValueForAnimationDirection(
+              CSSTimingData::GetRepeated(animation_data->DirectionList(), i)));
+          list->Append(*ValueForAnimationFillMode(
+              CSSTimingData::GetRepeated(animation_data->FillModeList(), i)));
+          list->Append(*ValueForAnimationPlayState(
+              CSSTimingData::GetRepeated(animation_data->PlayStateList(), i)));
+          animations_list->Append(*list);
         }
-        return animationsList;
+        return animations_list;
       }
 
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       // animation-name default value.
-      list->append(*CSSIdentifierValue::create(CSSValueNone));
-      list->append(
-          *CSSPrimitiveValue::create(CSSAnimationData::initialDuration(),
-                                     CSSPrimitiveValue::UnitType::Seconds));
-      list->append(*createTimingFunctionValue(
-          CSSAnimationData::initialTimingFunction().get()));
-      list->append(
-          *CSSPrimitiveValue::create(CSSAnimationData::initialDelay(),
-                                     CSSPrimitiveValue::UnitType::Seconds));
-      list->append(
-          *CSSPrimitiveValue::create(CSSAnimationData::initialIterationCount(),
-                                     CSSPrimitiveValue::UnitType::Number));
-      list->append(
-          *valueForAnimationDirection(CSSAnimationData::initialDirection()));
-      list->append(
-          *valueForAnimationFillMode(CSSAnimationData::initialFillMode()));
+      list->Append(*CSSIdentifierValue::Create(CSSValueNone));
+      list->Append(
+          *CSSPrimitiveValue::Create(CSSAnimationData::InitialDuration(),
+                                     CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*CreateTimingFunctionValue(
+          CSSAnimationData::InitialTimingFunction().Get()));
+      list->Append(
+          *CSSPrimitiveValue::Create(CSSAnimationData::InitialDelay(),
+                                     CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(
+          *CSSPrimitiveValue::Create(CSSAnimationData::InitialIterationCount(),
+                                     CSSPrimitiveValue::UnitType::kNumber));
+      list->Append(
+          *ValueForAnimationDirection(CSSAnimationData::InitialDirection()));
+      list->Append(
+          *ValueForAnimationFillMode(CSSAnimationData::InitialFillMode()));
       // Initial animation-play-state.
-      list->append(*CSSIdentifierValue::create(CSSValueRunning));
+      list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
       return list;
     }
     case CSSPropertyWebkitAppearance:
-      return CSSIdentifierValue::create(style.appearance());
+      return CSSIdentifierValue::Create(style.Appearance());
     case CSSPropertyBackfaceVisibility:
-      return CSSIdentifierValue::create(
-          (style.backfaceVisibility() == BackfaceVisibilityHidden)
+      return CSSIdentifierValue::Create(
+          (style.BackfaceVisibility() == kBackfaceVisibilityHidden)
               ? CSSValueHidden
               : CSSValueVisible);
     case CSSPropertyWebkitBorderImage:
-      return valueForNinePieceImage(style.borderImage(), style);
+      return ValueForNinePieceImage(style.BorderImage(), style);
     case CSSPropertyBorderImageOutset:
-      return valueForNinePieceImageQuad(style.borderImage().outset(), style);
+      return ValueForNinePieceImageQuad(style.BorderImage().Outset(), style);
     case CSSPropertyBorderImageRepeat:
-      return valueForNinePieceImageRepeat(style.borderImage());
+      return ValueForNinePieceImageRepeat(style.BorderImage());
     case CSSPropertyBorderImageSlice:
-      return valueForNinePieceImageSlice(style.borderImage());
+      return ValueForNinePieceImageSlice(style.BorderImage());
     case CSSPropertyBorderImageWidth:
-      return valueForNinePieceImageQuad(style.borderImage().borderSlices(),
+      return ValueForNinePieceImageQuad(style.BorderImage().BorderSlices(),
                                         style);
     case CSSPropertyWebkitMaskBoxImage:
-      return valueForNinePieceImage(style.maskBoxImage(), style);
+      return ValueForNinePieceImage(style.MaskBoxImage(), style);
     case CSSPropertyWebkitMaskBoxImageOutset:
-      return valueForNinePieceImageQuad(style.maskBoxImage().outset(), style);
+      return ValueForNinePieceImageQuad(style.MaskBoxImage().Outset(), style);
     case CSSPropertyWebkitMaskBoxImageRepeat:
-      return valueForNinePieceImageRepeat(style.maskBoxImage());
+      return ValueForNinePieceImageRepeat(style.MaskBoxImage());
     case CSSPropertyWebkitMaskBoxImageSlice:
-      return valueForNinePieceImageSlice(style.maskBoxImage());
+      return ValueForNinePieceImageSlice(style.MaskBoxImage());
     case CSSPropertyWebkitMaskBoxImageWidth:
-      return valueForNinePieceImageQuad(style.maskBoxImage().borderSlices(),
+      return ValueForNinePieceImageQuad(style.MaskBoxImage().BorderSlices(),
                                         style);
     case CSSPropertyWebkitMaskBoxImageSource:
-      if (style.maskBoxImageSource())
-        return style.maskBoxImageSource()->computedCSSValue();
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (style.MaskBoxImageSource())
+        return style.MaskBoxImageSource()->ComputedCSSValue();
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyWebkitFontSizeDelta:
       // Not a real style property -- used by the editing engine -- so has no
       // computed value.
       return nullptr;
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginAfterCollapse:
-      return CSSIdentifierValue::create(style.marginAfterCollapse());
+      return CSSIdentifierValue::Create(style.MarginAfterCollapse());
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:
-      return CSSIdentifierValue::create(style.marginBeforeCollapse());
+      return CSSIdentifierValue::Create(style.MarginBeforeCollapse());
     case CSSPropertyPerspective:
-      if (!style.hasPerspective())
-        return CSSIdentifierValue::create(CSSValueNone);
-      return zoomAdjustedPixelValue(style.perspective(), style);
+      if (!style.HasPerspective())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      return ZoomAdjustedPixelValue(style.Perspective(), style);
     case CSSPropertyPerspectiveOrigin: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (layoutObject) {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (layout_object) {
         LayoutRect box;
-        if (layoutObject->isBox())
-          box = toLayoutBox(layoutObject)->borderBoxRect();
+        if (layout_object->IsBox())
+          box = ToLayoutBox(layout_object)->BorderBoxRect();
 
-        list->append(*zoomAdjustedPixelValue(
-            minimumValueForLength(style.perspectiveOriginX(), box.width()),
+        list->Append(*ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.PerspectiveOriginX(), box.Width()),
             style));
-        list->append(*zoomAdjustedPixelValue(
-            minimumValueForLength(style.perspectiveOriginY(), box.height()),
+        list->Append(*ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
             style));
       } else {
-        list->append(*zoomAdjustedPixelValueForLength(
-            style.perspectiveOriginX(), style));
-        list->append(*zoomAdjustedPixelValueForLength(
-            style.perspectiveOriginY(), style));
+        list->Append(*ZoomAdjustedPixelValueForLength(
+            style.PerspectiveOriginX(), style));
+        list->Append(*ZoomAdjustedPixelValueForLength(
+            style.PerspectiveOriginY(), style));
       }
       return list;
     }
     case CSSPropertyWebkitRtlOrdering:
-      return CSSIdentifierValue::create(style.rtlOrdering() == EOrder::kVisual
+      return CSSIdentifierValue::Create(style.RtlOrdering() == EOrder::kVisual
                                             ? CSSValueVisual
                                             : CSSValueLogical);
     case CSSPropertyWebkitTapHighlightColor:
-      return currentColorOrValidColor(style, style.tapHighlightColor());
+      return CurrentColorOrValidColor(style, style.TapHighlightColor());
     case CSSPropertyWebkitUserDrag:
-      return CSSIdentifierValue::create(style.userDrag());
+      return CSSIdentifierValue::Create(style.UserDrag());
     case CSSPropertyUserSelect:
-      return CSSIdentifierValue::create(style.userSelect());
+      return CSSIdentifierValue::Create(style.UserSelect());
     case CSSPropertyBorderBottomLeftRadius:
-      return &valueForBorderRadiusCorner(style.borderBottomLeftRadius(), style);
+      return &ValueForBorderRadiusCorner(style.BorderBottomLeftRadius(), style);
     case CSSPropertyBorderBottomRightRadius:
-      return &valueForBorderRadiusCorner(style.borderBottomRightRadius(),
+      return &ValueForBorderRadiusCorner(style.BorderBottomRightRadius(),
                                          style);
     case CSSPropertyBorderTopLeftRadius:
-      return &valueForBorderRadiusCorner(style.borderTopLeftRadius(), style);
+      return &ValueForBorderRadiusCorner(style.BorderTopLeftRadius(), style);
     case CSSPropertyBorderTopRightRadius:
-      return &valueForBorderRadiusCorner(style.borderTopRightRadius(), style);
+      return &ValueForBorderRadiusCorner(style.BorderTopRightRadius(), style);
     case CSSPropertyClip: {
-      if (style.hasAutoClip())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      CSSValue* top = zoomAdjustedPixelValueOrAuto(style.clip().top(), style);
+      if (style.HasAutoClip())
+        return CSSIdentifierValue::Create(CSSValueAuto);
+      CSSValue* top = ZoomAdjustedPixelValueOrAuto(style.Clip().Top(), style);
       CSSValue* right =
-          zoomAdjustedPixelValueOrAuto(style.clip().right(), style);
+          ZoomAdjustedPixelValueOrAuto(style.Clip().Right(), style);
       CSSValue* bottom =
-          zoomAdjustedPixelValueOrAuto(style.clip().bottom(), style);
-      CSSValue* left = zoomAdjustedPixelValueOrAuto(style.clip().left(), style);
-      return CSSQuadValue::create(top, right, bottom, left,
-                                  CSSQuadValue::SerializeAsRect);
+          ZoomAdjustedPixelValueOrAuto(style.Clip().Bottom(), style);
+      CSSValue* left = ZoomAdjustedPixelValueOrAuto(style.Clip().Left(), style);
+      return CSSQuadValue::Create(top, right, bottom, left,
+                                  CSSQuadValue::kSerializeAsRect);
     }
     case CSSPropertySpeak:
-      return CSSIdentifierValue::create(style.speak());
+      return CSSIdentifierValue::Create(style.Speak());
     case CSSPropertyTransform:
-      return computedTransform(layoutObject, style);
+      return ComputedTransform(layout_object, style);
     case CSSPropertyTransformBox:
-      return CSSIdentifierValue::create(style.transformBox());
+      return CSSIdentifierValue::Create(style.TransformBox());
     case CSSPropertyTransformOrigin: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (layoutObject) {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (layout_object) {
         LayoutRect box;
-        if (layoutObject->isBox())
-          box = toLayoutBox(layoutObject)->borderBoxRect();
+        if (layout_object->IsBox())
+          box = ToLayoutBox(layout_object)->BorderBoxRect();
 
-        list->append(*zoomAdjustedPixelValue(
-            minimumValueForLength(style.transformOriginX(), box.width()),
+        list->Append(*ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.TransformOriginX(), box.Width()),
             style));
-        list->append(*zoomAdjustedPixelValue(
-            minimumValueForLength(style.transformOriginY(), box.height()),
+        list->Append(*ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.TransformOriginY(), box.Height()),
             style));
-        if (style.transformOriginZ() != 0)
-          list->append(
-              *zoomAdjustedPixelValue(style.transformOriginZ(), style));
+        if (style.TransformOriginZ() != 0)
+          list->Append(
+              *ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
       } else {
-        list->append(
-            *zoomAdjustedPixelValueForLength(style.transformOriginX(), style));
-        list->append(
-            *zoomAdjustedPixelValueForLength(style.transformOriginY(), style));
-        if (style.transformOriginZ() != 0)
-          list->append(
-              *zoomAdjustedPixelValue(style.transformOriginZ(), style));
+        list->Append(
+            *ZoomAdjustedPixelValueForLength(style.TransformOriginX(), style));
+        list->Append(
+            *ZoomAdjustedPixelValueForLength(style.TransformOriginY(), style));
+        if (style.TransformOriginZ() != 0)
+          list->Append(
+              *ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
       }
       return list;
     }
     case CSSPropertyTransformStyle:
-      return CSSIdentifierValue::create(
-          (style.transformStyle3D() == TransformStyle3DPreserve3D)
+      return CSSIdentifierValue::Create(
+          (style.TransformStyle3D() == kTransformStyle3DPreserve3D)
               ? CSSValuePreserve3d
               : CSSValueFlat);
     case CSSPropertyTransitionDelay:
-      return valueForAnimationDelay(style.transitions());
+      return ValueForAnimationDelay(style.Transitions());
     case CSSPropertyTransitionDuration:
-      return valueForAnimationDuration(style.transitions());
+      return ValueForAnimationDuration(style.Transitions());
     case CSSPropertyTransitionProperty:
-      return valueForTransitionProperty(style.transitions());
+      return ValueForTransitionProperty(style.Transitions());
     case CSSPropertyTransitionTimingFunction:
-      return valueForAnimationTimingFunction(style.transitions());
+      return ValueForAnimationTimingFunction(style.Transitions());
     case CSSPropertyTransition: {
-      const CSSTransitionData* transitionData = style.transitions();
-      if (transitionData) {
-        CSSValueList* transitionsList = CSSValueList::createCommaSeparated();
-        for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
-          CSSValueList* list = CSSValueList::createSpaceSeparated();
-          list->append(*createTransitionPropertyValue(
-              transitionData->propertyList()[i]));
-          list->append(*CSSPrimitiveValue::create(
-              CSSTimingData::getRepeated(transitionData->durationList(), i),
-              CSSPrimitiveValue::UnitType::Seconds));
-          list->append(*createTimingFunctionValue(
-              CSSTimingData::getRepeated(transitionData->timingFunctionList(),
+      const CSSTransitionData* transition_data = style.Transitions();
+      if (transition_data) {
+        CSSValueList* transitions_list = CSSValueList::CreateCommaSeparated();
+        for (size_t i = 0; i < transition_data->PropertyList().size(); ++i) {
+          CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+          list->Append(*CreateTransitionPropertyValue(
+              transition_data->PropertyList()[i]));
+          list->Append(*CSSPrimitiveValue::Create(
+              CSSTimingData::GetRepeated(transition_data->DurationList(), i),
+              CSSPrimitiveValue::UnitType::kSeconds));
+          list->Append(*CreateTimingFunctionValue(
+              CSSTimingData::GetRepeated(transition_data->TimingFunctionList(),
                                          i)
-                  .get()));
-          list->append(*CSSPrimitiveValue::create(
-              CSSTimingData::getRepeated(transitionData->delayList(), i),
-              CSSPrimitiveValue::UnitType::Seconds));
-          transitionsList->append(*list);
+                  .Get()));
+          list->Append(*CSSPrimitiveValue::Create(
+              CSSTimingData::GetRepeated(transition_data->DelayList(), i),
+              CSSPrimitiveValue::UnitType::kSeconds));
+          transitions_list->Append(*list);
         }
-        return transitionsList;
+        return transitions_list;
       }
 
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       // transition-property default value.
-      list->append(*CSSIdentifierValue::create(CSSValueAll));
-      list->append(
-          *CSSPrimitiveValue::create(CSSTransitionData::initialDuration(),
-                                     CSSPrimitiveValue::UnitType::Seconds));
-      list->append(*createTimingFunctionValue(
-          CSSTransitionData::initialTimingFunction().get()));
-      list->append(
-          *CSSPrimitiveValue::create(CSSTransitionData::initialDelay(),
-                                     CSSPrimitiveValue::UnitType::Seconds));
+      list->Append(*CSSIdentifierValue::Create(CSSValueAll));
+      list->Append(
+          *CSSPrimitiveValue::Create(CSSTransitionData::InitialDuration(),
+                                     CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*CreateTimingFunctionValue(
+          CSSTransitionData::InitialTimingFunction().Get()));
+      list->Append(
+          *CSSPrimitiveValue::Create(CSSTransitionData::InitialDelay(),
+                                     CSSPrimitiveValue::UnitType::kSeconds));
       return list;
     }
     case CSSPropertyPointerEvents:
-      return CSSIdentifierValue::create(style.pointerEvents());
+      return CSSIdentifierValue::Create(style.PointerEvents());
     case CSSPropertyWritingMode:
     case CSSPropertyWebkitWritingMode:
-      return CSSIdentifierValue::create(style.getWritingMode());
+      return CSSIdentifierValue::Create(style.GetWritingMode());
     case CSSPropertyWebkitTextCombine:
-      if (style.getTextCombine() == TextCombineAll)
-        return CSSIdentifierValue::create(CSSValueHorizontal);
+      if (style.GetTextCombine() == kTextCombineAll)
+        return CSSIdentifierValue::Create(CSSValueHorizontal);
     case CSSPropertyTextCombineUpright:
-      return CSSIdentifierValue::create(style.getTextCombine());
+      return CSSIdentifierValue::Create(style.GetTextCombine());
     case CSSPropertyWebkitTextOrientation:
-      if (style.getTextOrientation() == TextOrientationMixed)
-        return CSSIdentifierValue::create(CSSValueVerticalRight);
+      if (style.GetTextOrientation() == kTextOrientationMixed)
+        return CSSIdentifierValue::Create(CSSValueVerticalRight);
     case CSSPropertyTextOrientation:
-      return CSSIdentifierValue::create(style.getTextOrientation());
+      return CSSIdentifierValue::Create(style.GetTextOrientation());
     case CSSPropertyContent:
-      return valueForContentData(style);
+      return ValueForContentData(style);
     case CSSPropertyCounterIncrement:
-      return valueForCounterDirectives(style, propertyID);
+      return ValueForCounterDirectives(style, property_id);
     case CSSPropertyCounterReset:
-      return valueForCounterDirectives(style, propertyID);
+      return ValueForCounterDirectives(style, property_id);
     case CSSPropertyClipPath:
-      if (ClipPathOperation* operation = style.clipPath()) {
-        if (operation->type() == ClipPathOperation::SHAPE)
-          return valueForBasicShape(
-              style, toShapeClipPathOperation(operation)->basicShape());
-        if (operation->type() == ClipPathOperation::REFERENCE) {
-          return CSSURIValue::create(
-              AtomicString(toReferenceClipPathOperation(operation)->url()));
+      if (ClipPathOperation* operation = style.ClipPath()) {
+        if (operation->GetType() == ClipPathOperation::SHAPE)
+          return ValueForBasicShape(
+              style, ToShapeClipPathOperation(operation)->GetBasicShape());
+        if (operation->GetType() == ClipPathOperation::REFERENCE) {
+          return CSSURIValue::Create(
+              AtomicString(ToReferenceClipPathOperation(operation)->Url()));
         }
       }
-      return CSSIdentifierValue::create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyShapeMargin:
-      return CSSValue::create(style.shapeMargin(), style.effectiveZoom());
+      return CSSValue::Create(style.ShapeMargin(), style.EffectiveZoom());
     case CSSPropertyShapeImageThreshold:
-      return CSSPrimitiveValue::create(style.shapeImageThreshold(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(style.ShapeImageThreshold(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyShapeOutside:
-      return valueForShape(style, style.shapeOutside());
+      return ValueForShape(style, style.ShapeOutside());
     case CSSPropertyFilter:
-      return valueForFilter(style, style.filter());
+      return ValueForFilter(style, style.Filter());
     case CSSPropertyBackdropFilter:
-      return valueForFilter(style, style.backdropFilter());
+      return ValueForFilter(style, style.BackdropFilter());
     case CSSPropertyMixBlendMode:
-      return CSSIdentifierValue::create(style.blendMode());
+      return CSSIdentifierValue::Create(style.BlendMode());
 
     case CSSPropertyBackgroundBlendMode: {
-      CSSValueList* list = CSSValueList::createCommaSeparated();
-      for (const FillLayer* currLayer = &style.backgroundLayers(); currLayer;
-           currLayer = currLayer->next())
-        list->append(*CSSIdentifierValue::create(currLayer->blendMode()));
+      CSSValueList* list = CSSValueList::CreateCommaSeparated();
+      for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+           curr_layer = curr_layer->Next())
+        list->Append(*CSSIdentifierValue::Create(curr_layer->BlendMode()));
       return list;
     }
     case CSSPropertyBackground:
-      return valuesForBackgroundShorthand(style, layoutObject, styledNode,
-                                          allowVisitedStyle);
+      return ValuesForBackgroundShorthand(style, layout_object, styled_node,
+                                          allow_visited_style);
     case CSSPropertyBorder: {
-      const CSSValue* value = get(CSSPropertyBorderTop, style, layoutObject,
-                                  styledNode, allowVisitedStyle);
-      const CSSPropertyID properties[] = {CSSPropertyBorderRight,
-                                          CSSPropertyBorderBottom,
-                                          CSSPropertyBorderLeft};
-      for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
-        if (!dataEquivalent(value, get(properties[i], style, layoutObject,
-                                       styledNode, allowVisitedStyle)))
+      const CSSValue* value = Get(CSSPropertyBorderTop, style, layout_object,
+                                  styled_node, allow_visited_style);
+      const CSSPropertyID kProperties[] = {CSSPropertyBorderRight,
+                                           CSSPropertyBorderBottom,
+                                           CSSPropertyBorderLeft};
+      for (size_t i = 0; i < WTF_ARRAY_LENGTH(kProperties); ++i) {
+        if (!DataEquivalent(value, Get(kProperties[i], style, layout_object,
+                                       styled_node, allow_visited_style)))
           return nullptr;
       }
       return value;
     }
     case CSSPropertyBorderBottom:
-      return valuesForShorthandProperty(borderBottomShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(borderBottomShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyBorderColor:
-      return valuesForSidesShorthand(borderColorShorthand(), style,
-                                     layoutObject, styledNode,
-                                     allowVisitedStyle);
+      return ValuesForSidesShorthand(borderColorShorthand(), style,
+                                     layout_object, styled_node,
+                                     allow_visited_style);
     case CSSPropertyBorderLeft:
-      return valuesForShorthandProperty(borderLeftShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(borderLeftShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyBorderImage:
-      return valueForNinePieceImage(style.borderImage(), style);
+      return ValueForNinePieceImage(style.BorderImage(), style);
     case CSSPropertyBorderRadius:
-      return valueForBorderRadiusShorthand(style);
+      return ValueForBorderRadiusShorthand(style);
     case CSSPropertyBorderRight:
-      return valuesForShorthandProperty(borderRightShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(borderRightShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyBorderStyle:
-      return valuesForSidesShorthand(borderStyleShorthand(), style,
-                                     layoutObject, styledNode,
-                                     allowVisitedStyle);
+      return ValuesForSidesShorthand(borderStyleShorthand(), style,
+                                     layout_object, styled_node,
+                                     allow_visited_style);
     case CSSPropertyBorderTop:
-      return valuesForShorthandProperty(borderTopShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(borderTopShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyBorderWidth:
-      return valuesForSidesShorthand(borderWidthShorthand(), style,
-                                     layoutObject, styledNode,
-                                     allowVisitedStyle);
+      return ValuesForSidesShorthand(borderWidthShorthand(), style,
+                                     layout_object, styled_node,
+                                     allow_visited_style);
     case CSSPropertyColumnRule:
-      return valuesForShorthandProperty(columnRuleShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(columnRuleShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyColumns:
-      return valuesForShorthandProperty(columnsShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(columnsShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyListStyle:
-      return valuesForShorthandProperty(listStyleShorthand(), style,
-                                        layoutObject, styledNode,
-                                        allowVisitedStyle);
+      return ValuesForShorthandProperty(listStyleShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyMargin:
-      return valuesForSidesShorthand(marginShorthand(), style, layoutObject,
-                                     styledNode, allowVisitedStyle);
+      return ValuesForSidesShorthand(marginShorthand(), style, layout_object,
+                                     styled_node, allow_visited_style);
     case CSSPropertyOutline:
-      return valuesForShorthandProperty(outlineShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(outlineShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyPadding:
-      return valuesForSidesShorthand(paddingShorthand(), style, layoutObject,
-                                     styledNode, allowVisitedStyle);
+      return ValuesForSidesShorthand(paddingShorthand(), style, layout_object,
+                                     styled_node, allow_visited_style);
     // Individual properties not part of the spec.
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
       return nullptr;
 
     case CSSPropertyMotion:
-      return valuesForShorthandProperty(motionShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(motionShorthand(), style, layout_object,
+                                        styled_node, allow_visited_style);
 
     case CSSPropertyOffset:
-      return valuesForShorthandProperty(offsetShorthand(), style, layoutObject,
-                                        styledNode, allowVisitedStyle);
+      return ValuesForShorthandProperty(offsetShorthand(), style, layout_object,
+                                        styled_node, allow_visited_style);
 
     case CSSPropertyOffsetAnchor:
-      return valueForPosition(style.offsetAnchor(), style);
+      return ValueForPosition(style.OffsetAnchor(), style);
 
     case CSSPropertyOffsetPosition:
-      return valueForPosition(style.offsetPosition(), style);
+      return ValueForPosition(style.OffsetPosition(), style);
 
     case CSSPropertyOffsetPath:
-      if (const StylePath* styleMotionPath = style.offsetPath())
-        return styleMotionPath->computedCSSValue();
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (const StylePath* style_motion_path = style.OffsetPath())
+        return style_motion_path->ComputedCSSValue();
+      return CSSIdentifierValue::Create(CSSValueNone);
 
     case CSSPropertyOffsetDistance:
-      return zoomAdjustedPixelValueForLength(style.offsetDistance(), style);
+      return ZoomAdjustedPixelValueForLength(style.OffsetDistance(), style);
 
     case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation: {
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (style.offsetRotation().type == OffsetRotationAuto)
-        list->append(*CSSIdentifierValue::create(CSSValueAuto));
-      list->append(*CSSPrimitiveValue::create(
-          style.offsetRotation().angle, CSSPrimitiveValue::UnitType::Degrees));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (style.OffsetRotation().type == kOffsetRotationAuto)
+        list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
+      list->Append(*CSSPrimitiveValue::Create(
+          style.OffsetRotation().angle, CSSPrimitiveValue::UnitType::kDegrees));
       return list;
     }
 
@@ -3489,218 +3521,218 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
 
     // SVG properties.
     case CSSPropertyClipRule:
-      return CSSIdentifierValue::create(svgStyle.clipRule());
+      return CSSIdentifierValue::Create(svg_style.ClipRule());
     case CSSPropertyFloodOpacity:
-      return CSSPrimitiveValue::create(svgStyle.floodOpacity(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(svg_style.FloodOpacity(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyStopOpacity:
-      return CSSPrimitiveValue::create(svgStyle.stopOpacity(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(svg_style.StopOpacity(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyColorInterpolation:
-      return CSSIdentifierValue::create(svgStyle.colorInterpolation());
+      return CSSIdentifierValue::Create(svg_style.ColorInterpolation());
     case CSSPropertyColorInterpolationFilters:
-      return CSSIdentifierValue::create(svgStyle.colorInterpolationFilters());
+      return CSSIdentifierValue::Create(svg_style.ColorInterpolationFilters());
     case CSSPropertyFillOpacity:
-      return CSSPrimitiveValue::create(svgStyle.fillOpacity(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(svg_style.FillOpacity(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFillRule:
-      return CSSIdentifierValue::create(svgStyle.fillRule());
+      return CSSIdentifierValue::Create(svg_style.FillRule());
     case CSSPropertyColorRendering:
-      return CSSIdentifierValue::create(svgStyle.colorRendering());
+      return CSSIdentifierValue::Create(svg_style.ColorRendering());
     case CSSPropertyShapeRendering:
-      return CSSIdentifierValue::create(svgStyle.shapeRendering());
+      return CSSIdentifierValue::Create(svg_style.ShapeRendering());
     case CSSPropertyStrokeLinecap:
-      return CSSIdentifierValue::create(svgStyle.capStyle());
+      return CSSIdentifierValue::Create(svg_style.CapStyle());
     case CSSPropertyStrokeLinejoin:
-      return CSSIdentifierValue::create(svgStyle.joinStyle());
+      return CSSIdentifierValue::Create(svg_style.JoinStyle());
     case CSSPropertyStrokeMiterlimit:
-      return CSSPrimitiveValue::create(svgStyle.strokeMiterLimit(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(svg_style.StrokeMiterLimit(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyStrokeOpacity:
-      return CSSPrimitiveValue::create(svgStyle.strokeOpacity(),
-                                       CSSPrimitiveValue::UnitType::Number);
+      return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
+                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyAlignmentBaseline:
-      return CSSIdentifierValue::create(svgStyle.alignmentBaseline());
+      return CSSIdentifierValue::Create(svg_style.AlignmentBaseline());
     case CSSPropertyDominantBaseline:
-      return CSSIdentifierValue::create(svgStyle.dominantBaseline());
+      return CSSIdentifierValue::Create(svg_style.DominantBaseline());
     case CSSPropertyTextAnchor:
-      return CSSIdentifierValue::create(svgStyle.textAnchor());
+      return CSSIdentifierValue::Create(svg_style.TextAnchor());
     case CSSPropertyMask:
-      if (!svgStyle.maskerResource().isEmpty())
-        return CSSURIValue::create(
-            serializeAsFragmentIdentifier(svgStyle.maskerResource()));
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (!svg_style.MaskerResource().IsEmpty())
+        return CSSURIValue::Create(
+            SerializeAsFragmentIdentifier(svg_style.MaskerResource()));
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyFloodColor:
-      return currentColorOrValidColor(style, svgStyle.floodColor());
+      return CurrentColorOrValidColor(style, svg_style.FloodColor());
     case CSSPropertyLightingColor:
-      return currentColorOrValidColor(style, svgStyle.lightingColor());
+      return CurrentColorOrValidColor(style, svg_style.LightingColor());
     case CSSPropertyStopColor:
-      return currentColorOrValidColor(style, svgStyle.stopColor());
+      return CurrentColorOrValidColor(style, svg_style.StopColor());
     case CSSPropertyFill:
-      return adjustSVGPaintForCurrentColor(
-          svgStyle.fillPaintType(), svgStyle.fillPaintUri(),
-          svgStyle.fillPaintColor(), style.color());
+      return AdjustSVGPaintForCurrentColor(
+          svg_style.FillPaintType(), svg_style.FillPaintUri(),
+          svg_style.FillPaintColor(), style.GetColor());
     case CSSPropertyMarkerEnd:
-      if (!svgStyle.markerEndResource().isEmpty())
-        return CSSURIValue::create(
-            serializeAsFragmentIdentifier(svgStyle.markerEndResource()));
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (!svg_style.MarkerEndResource().IsEmpty())
+        return CSSURIValue::Create(
+            SerializeAsFragmentIdentifier(svg_style.MarkerEndResource()));
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyMarkerMid:
-      if (!svgStyle.markerMidResource().isEmpty())
-        return CSSURIValue::create(
-            serializeAsFragmentIdentifier(svgStyle.markerMidResource()));
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (!svg_style.MarkerMidResource().IsEmpty())
+        return CSSURIValue::Create(
+            SerializeAsFragmentIdentifier(svg_style.MarkerMidResource()));
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyMarkerStart:
-      if (!svgStyle.markerStartResource().isEmpty())
-        return CSSURIValue::create(
-            serializeAsFragmentIdentifier(svgStyle.markerStartResource()));
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (!svg_style.MarkerStartResource().IsEmpty())
+        return CSSURIValue::Create(
+            SerializeAsFragmentIdentifier(svg_style.MarkerStartResource()));
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyStroke:
-      return adjustSVGPaintForCurrentColor(
-          svgStyle.strokePaintType(), svgStyle.strokePaintUri(),
-          svgStyle.strokePaintColor(), style.color());
+      return AdjustSVGPaintForCurrentColor(
+          svg_style.StrokePaintType(), svg_style.StrokePaintUri(),
+          svg_style.StrokePaintColor(), style.GetColor());
     case CSSPropertyStrokeDasharray:
-      return strokeDashArrayToCSSValueList(*svgStyle.strokeDashArray(), style);
+      return StrokeDashArrayToCSSValueList(*svg_style.StrokeDashArray(), style);
     case CSSPropertyStrokeDashoffset:
-      return zoomAdjustedPixelValueForLength(svgStyle.strokeDashOffset(),
+      return ZoomAdjustedPixelValueForLength(svg_style.StrokeDashOffset(),
                                              style);
     case CSSPropertyStrokeWidth:
-      return pixelValueForUnzoomedLength(svgStyle.strokeWidth(), style);
+      return PixelValueForUnzoomedLength(svg_style.StrokeWidth(), style);
     case CSSPropertyBaselineShift: {
-      switch (svgStyle.baselineShift()) {
+      switch (svg_style.BaselineShift()) {
         case BS_SUPER:
-          return CSSIdentifierValue::create(CSSValueSuper);
+          return CSSIdentifierValue::Create(CSSValueSuper);
         case BS_SUB:
-          return CSSIdentifierValue::create(CSSValueSub);
+          return CSSIdentifierValue::Create(CSSValueSub);
         case BS_LENGTH:
-          return zoomAdjustedPixelValueForLength(svgStyle.baselineShiftValue(),
+          return ZoomAdjustedPixelValueForLength(svg_style.BaselineShiftValue(),
                                                  style);
       }
       NOTREACHED();
       return nullptr;
     }
     case CSSPropertyBufferedRendering:
-      return CSSIdentifierValue::create(svgStyle.bufferedRendering());
+      return CSSIdentifierValue::Create(svg_style.BufferedRendering());
     case CSSPropertyPaintOrder:
-      return paintOrderToCSSValueList(svgStyle);
+      return PaintOrderToCSSValueList(svg_style);
     case CSSPropertyVectorEffect:
-      return CSSIdentifierValue::create(svgStyle.vectorEffect());
+      return CSSIdentifierValue::Create(svg_style.VectorEffect());
     case CSSPropertyMaskType:
-      return CSSIdentifierValue::create(svgStyle.maskType());
+      return CSSIdentifierValue::Create(svg_style.MaskType());
     case CSSPropertyMarker:
       // the above properties are not yet implemented in the engine
       return nullptr;
     case CSSPropertyD:
-      if (const StylePath* stylePath = svgStyle.d())
-        return stylePath->computedCSSValue();
-      return CSSIdentifierValue::create(CSSValueNone);
+      if (const StylePath* style_path = svg_style.D())
+        return style_path->ComputedCSSValue();
+      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyCx:
-      return zoomAdjustedPixelValueForLength(svgStyle.cx(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.Cx(), style);
     case CSSPropertyCy:
-      return zoomAdjustedPixelValueForLength(svgStyle.cy(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.Cy(), style);
     case CSSPropertyX:
-      return zoomAdjustedPixelValueForLength(svgStyle.x(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.X(), style);
     case CSSPropertyY:
-      return zoomAdjustedPixelValueForLength(svgStyle.y(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.Y(), style);
     case CSSPropertyR:
-      return zoomAdjustedPixelValueForLength(svgStyle.r(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.R(), style);
     case CSSPropertyRx:
-      return zoomAdjustedPixelValueForLength(svgStyle.rx(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.Rx(), style);
     case CSSPropertyRy:
-      return zoomAdjustedPixelValueForLength(svgStyle.ry(), style);
+      return ZoomAdjustedPixelValueForLength(svg_style.Ry(), style);
     case CSSPropertyScrollSnapType:
-      return CSSIdentifierValue::create(style.getScrollSnapType());
+      return CSSIdentifierValue::Create(style.GetScrollSnapType());
     case CSSPropertyScrollSnapPointsX:
-      return valueForScrollSnapPoints(style.scrollSnapPointsX(), style);
+      return ValueForScrollSnapPoints(style.ScrollSnapPointsX(), style);
     case CSSPropertyScrollSnapPointsY:
-      return valueForScrollSnapPoints(style.scrollSnapPointsY(), style);
+      return ValueForScrollSnapPoints(style.ScrollSnapPointsY(), style);
     case CSSPropertyScrollSnapCoordinate:
-      return valueForScrollSnapCoordinate(style.scrollSnapCoordinate(), style);
+      return ValueForScrollSnapCoordinate(style.ScrollSnapCoordinate(), style);
     case CSSPropertyScrollSnapDestination:
-      return valueForScrollSnapDestination(style.scrollSnapDestination(),
+      return ValueForScrollSnapDestination(style.ScrollSnapDestination(),
                                            style);
     case CSSPropertyTranslate: {
-      if (!style.translate())
-        return CSSIdentifierValue::create(CSSValueNone);
+      if (!style.Translate())
+        return CSSIdentifierValue::Create(CSSValueNone);
 
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (layoutObject && layoutObject->isBox()) {
-        LayoutRect box = toLayoutBox(layoutObject)->borderBoxRect();
-        list->append(*zoomAdjustedPixelValue(
-            floatValueForLength(style.translate()->x(), box.width().toFloat()),
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (layout_object && layout_object->IsBox()) {
+        LayoutRect box = ToLayoutBox(layout_object)->BorderBoxRect();
+        list->Append(*ZoomAdjustedPixelValue(
+            FloatValueForLength(style.Translate()->X(), box.Width().ToFloat()),
             style));
 
-        if (!style.translate()->y().isZero() || style.translate()->z() != 0)
-          list->append(*zoomAdjustedPixelValue(
-              floatValueForLength(style.translate()->y(),
-                                  box.height().toFloat()),
+        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0)
+          list->Append(*ZoomAdjustedPixelValue(
+              FloatValueForLength(style.Translate()->Y(),
+                                  box.Height().ToFloat()),
               style));
 
       } else {
         // No box to resolve the percentage values
-        list->append(
-            *zoomAdjustedPixelValueForLength(style.translate()->x(), style));
+        list->Append(
+            *ZoomAdjustedPixelValueForLength(style.Translate()->X(), style));
 
-        if (!style.translate()->y().isZero() || style.translate()->z() != 0)
-          list->append(
-              *zoomAdjustedPixelValueForLength(style.translate()->y(), style));
+        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0)
+          list->Append(
+              *ZoomAdjustedPixelValueForLength(style.Translate()->Y(), style));
       }
 
-      if (style.translate()->z() != 0)
-        list->append(*zoomAdjustedPixelValue(style.translate()->z(), style));
+      if (style.Translate()->Z() != 0)
+        list->Append(*ZoomAdjustedPixelValue(style.Translate()->Z(), style));
 
       return list;
     }
     case CSSPropertyRotate: {
-      if (!style.rotate())
-        return CSSIdentifierValue::create(CSSValueNone);
+      if (!style.Rotate())
+        return CSSIdentifierValue::Create(CSSValueNone);
 
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (style.rotate()->x() != 0 || style.rotate()->y() != 0 ||
-          style.rotate()->z() != 1) {
-        list->append(*CSSPrimitiveValue::create(
-            style.rotate()->x(), CSSPrimitiveValue::UnitType::Number));
-        list->append(*CSSPrimitiveValue::create(
-            style.rotate()->y(), CSSPrimitiveValue::UnitType::Number));
-        list->append(*CSSPrimitiveValue::create(
-            style.rotate()->z(), CSSPrimitiveValue::UnitType::Number));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (style.Rotate()->X() != 0 || style.Rotate()->Y() != 0 ||
+          style.Rotate()->Z() != 1) {
+        list->Append(*CSSPrimitiveValue::Create(
+            style.Rotate()->X(), CSSPrimitiveValue::UnitType::kNumber));
+        list->Append(*CSSPrimitiveValue::Create(
+            style.Rotate()->Y(), CSSPrimitiveValue::UnitType::kNumber));
+        list->Append(*CSSPrimitiveValue::Create(
+            style.Rotate()->Z(), CSSPrimitiveValue::UnitType::kNumber));
       }
-      list->append(*CSSPrimitiveValue::create(
-          style.rotate()->angle(), CSSPrimitiveValue::UnitType::Degrees));
+      list->Append(*CSSPrimitiveValue::Create(
+          style.Rotate()->Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return list;
     }
     case CSSPropertyScale: {
-      if (!style.scale())
-        return CSSIdentifierValue::create(CSSValueNone);
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      list->append(*CSSPrimitiveValue::create(
-          style.scale()->x(), CSSPrimitiveValue::UnitType::Number));
-      if (style.scale()->y() == 1 && style.scale()->z() == 1)
+      if (!style.Scale())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(*CSSPrimitiveValue::Create(
+          style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));
+      if (style.Scale()->Y() == 1 && style.Scale()->Z() == 1)
         return list;
-      list->append(*CSSPrimitiveValue::create(
-          style.scale()->y(), CSSPrimitiveValue::UnitType::Number));
-      if (style.scale()->z() != 1)
-        list->append(*CSSPrimitiveValue::create(
-            style.scale()->z(), CSSPrimitiveValue::UnitType::Number));
+      list->Append(*CSSPrimitiveValue::Create(
+          style.Scale()->Y(), CSSPrimitiveValue::UnitType::kNumber));
+      if (style.Scale()->Z() != 1)
+        list->Append(*CSSPrimitiveValue::Create(
+            style.Scale()->Z(), CSSPrimitiveValue::UnitType::kNumber));
       return list;
     }
     case CSSPropertyContain: {
-      if (!style.contain())
-        return CSSIdentifierValue::create(CSSValueNone);
-      if (style.contain() == ContainsStrict)
-        return CSSIdentifierValue::create(CSSValueStrict);
-      if (style.contain() == ContainsContent)
-        return CSSIdentifierValue::create(CSSValueContent);
+      if (!style.Contain())
+        return CSSIdentifierValue::Create(CSSValueNone);
+      if (style.Contain() == kContainsStrict)
+        return CSSIdentifierValue::Create(CSSValueStrict);
+      if (style.Contain() == kContainsContent)
+        return CSSIdentifierValue::Create(CSSValueContent);
 
-      CSSValueList* list = CSSValueList::createSpaceSeparated();
-      if (style.containsStyle())
-        list->append(*CSSIdentifierValue::create(CSSValueStyle));
-      if (style.contain() & ContainsLayout)
-        list->append(*CSSIdentifierValue::create(CSSValueLayout));
-      if (style.containsPaint())
-        list->append(*CSSIdentifierValue::create(CSSValuePaint));
-      if (style.containsSize())
-        list->append(*CSSIdentifierValue::create(CSSValueSize));
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (style.ContainsStyle())
+        list->Append(*CSSIdentifierValue::Create(CSSValueStyle));
+      if (style.Contain() & kContainsLayout)
+        list->Append(*CSSIdentifierValue::Create(CSSValueLayout));
+      if (style.ContainsPaint())
+        list->Append(*CSSIdentifierValue::Create(CSSValuePaint));
+      if (style.ContainsSize())
+        list->Append(*CSSIdentifierValue::Create(CSSValueSize));
       DCHECK(list->length());
       return list;
     }

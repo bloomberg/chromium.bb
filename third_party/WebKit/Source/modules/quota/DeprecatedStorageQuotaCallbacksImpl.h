@@ -44,13 +44,13 @@ namespace blink {
 class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
     : public StorageQuotaCallbacks {
  public:
-  static DeprecatedStorageQuotaCallbacksImpl* create(
+  static DeprecatedStorageQuotaCallbacksImpl* Create(
       StorageUsageCallback* success,
       StorageErrorCallback* error) {
     return new DeprecatedStorageQuotaCallbacksImpl(success, error);
   }
 
-  static DeprecatedStorageQuotaCallbacksImpl* create(
+  static DeprecatedStorageQuotaCallbacksImpl* Create(
       StorageQuotaCallback* success,
       StorageErrorCallback* error) {
     return new DeprecatedStorageQuotaCallbacksImpl(success, error);
@@ -59,11 +59,11 @@ class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
   ~DeprecatedStorageQuotaCallbacksImpl() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void didQueryStorageUsageAndQuota(unsigned long long usageInBytes,
-                                    unsigned long long quotaInBytes) override;
-  void didGrantStorageQuota(unsigned long long usageInBytes,
-                            unsigned long long grantedQuotaInBytes) override;
-  void didFail(WebStorageQuotaError) override;
+  void DidQueryStorageUsageAndQuota(unsigned long long usage_in_bytes,
+                                    unsigned long long quota_in_bytes) override;
+  void DidGrantStorageQuota(unsigned long long usage_in_bytes,
+                            unsigned long long granted_quota_in_bytes) override;
+  void DidFail(WebStorageQuotaError) override;
 
  private:
   DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*,
@@ -71,9 +71,9 @@ class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
   DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback*,
                                       StorageErrorCallback*);
 
-  Member<StorageUsageCallback> m_usageCallback;
-  Member<StorageQuotaCallback> m_quotaCallback;
-  Member<StorageErrorCallback> m_errorCallback;
+  Member<StorageUsageCallback> usage_callback_;
+  Member<StorageQuotaCallback> quota_callback_;
+  Member<StorageErrorCallback> error_callback_;
 };
 
 }  // namespace blink

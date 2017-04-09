@@ -45,42 +45,42 @@ class SpeechRecognitionClientProxy final : public SpeechRecognitionClient,
 
   // Constructing a proxy object with a 0 WebSpeechRecognizer is safe in
   // itself, but attempting to call start/stop/abort on it will crash.
-  static std::unique_ptr<SpeechRecognitionClientProxy> create(
+  static std::unique_ptr<SpeechRecognitionClientProxy> Create(
       WebSpeechRecognizer*);
 
   // SpeechRecognitionClient:
-  void start(SpeechRecognition*,
+  void Start(SpeechRecognition*,
              const SpeechGrammarList*,
              const String& lang,
              bool continuous,
-             bool interimResults,
-             unsigned long maxAlternatives,
+             bool interim_results,
+             unsigned long max_alternatives,
              MediaStreamTrack*) override;
-  void stop(SpeechRecognition*) override;
-  void abort(SpeechRecognition*) override;
+  void Stop(SpeechRecognition*) override;
+  void Abort(SpeechRecognition*) override;
 
   // WebSpeechRecognizerClient:
-  void didStartAudio(const WebSpeechRecognitionHandle&) override;
-  void didStartSound(const WebSpeechRecognitionHandle&) override;
-  void didEndSound(const WebSpeechRecognitionHandle&) override;
-  void didEndAudio(const WebSpeechRecognitionHandle&) override;
-  void didReceiveResults(
+  void DidStartAudio(const WebSpeechRecognitionHandle&) override;
+  void DidStartSound(const WebSpeechRecognitionHandle&) override;
+  void DidEndSound(const WebSpeechRecognitionHandle&) override;
+  void DidEndAudio(const WebSpeechRecognitionHandle&) override;
+  void DidReceiveResults(
       const WebSpeechRecognitionHandle&,
-      const WebVector<WebSpeechRecognitionResult>& newFinalResults,
-      const WebVector<WebSpeechRecognitionResult>& currentInterimResults)
+      const WebVector<WebSpeechRecognitionResult>& new_final_results,
+      const WebVector<WebSpeechRecognitionResult>& current_interim_results)
       override;
-  void didReceiveNoMatch(const WebSpeechRecognitionHandle&,
+  void DidReceiveNoMatch(const WebSpeechRecognitionHandle&,
                          const WebSpeechRecognitionResult&) override;
-  void didReceiveError(const WebSpeechRecognitionHandle&,
+  void DidReceiveError(const WebSpeechRecognitionHandle&,
                        const WebString& message,
                        WebSpeechRecognizerClient::ErrorCode) override;
-  void didStart(const WebSpeechRecognitionHandle&) override;
-  void didEnd(const WebSpeechRecognitionHandle&) override;
+  void DidStart(const WebSpeechRecognitionHandle&) override;
+  void DidEnd(const WebSpeechRecognitionHandle&) override;
 
  private:
   SpeechRecognitionClientProxy(WebSpeechRecognizer*);
 
-  WebSpeechRecognizer* m_recognizer;
+  WebSpeechRecognizer* recognizer_;
 };
 
 }  // namespace blink

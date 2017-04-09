@@ -58,7 +58,7 @@ namespace content {
 
 // static
 BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
-  blink::WebPluginContainer* container = node.pluginContainer();
+  blink::WebPluginContainer* container = node.PluginContainer();
   if (!container)
     return nullptr;
 
@@ -138,12 +138,12 @@ void BrowserPlugin::SendSatisfySequence(const cc::SurfaceSequence& sequence) {
 
 void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
                                        const base::string16& attribute_value) {
-  if (!container())
+  if (!Container())
     return;
 
-  blink::WebElement element = container()->element();
-  element.setAttribute(blink::WebString::fromUTF8(attribute_name),
-                       blink::WebString::fromUTF16(attribute_value));
+  blink::WebElement element = Container()->GetElement();
+  element.SetAttribute(blink::WebString::FromUTF8(attribute_name),
+                       blink::WebString::FromUTF16(attribute_value));
 }
 
 void BrowserPlugin::Attach() {
@@ -154,11 +154,11 @@ void BrowserPlugin::Attach() {
   attach_params.visible = visible_;
   attach_params.view_rect = view_rect();
   attach_params.is_full_page_plugin = false;
-  if (container()) {
-    blink::WebLocalFrame* frame = container()->document().frame();
+  if (Container()) {
+    blink::WebLocalFrame* frame = Container()->GetDocument().GetFrame();
     attach_params.is_full_page_plugin =
-        frame->view()->mainFrame()->isWebLocalFrame() &&
-        frame->view()->mainFrame()->document().isPluginDocument();
+        frame->View()->MainFrame()->IsWebLocalFrame() &&
+        frame->View()->MainFrame()->GetDocument().IsPluginDocument();
   }
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
       render_frame_routing_id_,
@@ -170,10 +170,10 @@ void BrowserPlugin::Attach() {
   // Post an update event to the associated accessibility object.
   auto* render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_routing_id());
-  if (render_frame && render_frame->render_accessibility() && container()) {
-    blink::WebElement element = container()->element();
-    blink::WebAXObject ax_element = element.accessibilityObject();
-    if (!ax_element.isDetached()) {
+  if (render_frame && render_frame->render_accessibility() && Container()) {
+    blink::WebElement element = Container()->GetElement();
+    blink::WebAXObject ax_element = element.AccessibilityObject();
+    if (!ax_element.IsDetached()) {
       render_frame->render_accessibility()->HandleAXEvent(
           ax_element,
           ui::AX_EVENT_CHILDREN_CHANGED);
@@ -203,7 +203,7 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
   auto* render_view = render_frame ? render_frame->GetRenderView() : nullptr;
   if (!render_view)
     return;
-  render_view->GetWebView()->advanceFocus(reverse);
+  render_view->GetWebView()->AdvanceFocus(reverse);
 }
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
@@ -251,10 +251,10 @@ void BrowserPlugin::OnSetTooltipText(int instance_id,
 
 void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
                                               bool accept) {
-  if (container()) {
-    container()->requestTouchEventType(
-        accept ? WebPluginContainer::TouchEventRequestTypeRaw
-               : WebPluginContainer::TouchEventRequestTypeNone);
+  if (Container()) {
+    Container()->RequestTouchEventType(
+        accept ? WebPluginContainer::kTouchEventRequestTypeRaw
+               : WebPluginContainer::kTouchEventRequestTypeNone);
   }
 }
 
@@ -289,16 +289,16 @@ bool BrowserPlugin::ShouldGuestBeFocused() const {
   return plugin_focused_ && embedder_focused;
 }
 
-WebPluginContainer* BrowserPlugin::container() const {
+WebPluginContainer* BrowserPlugin::Container() const {
   return container_;
 }
 
-bool BrowserPlugin::initialize(WebPluginContainer* container) {
+bool BrowserPlugin::Initialize(WebPluginContainer* container) {
   DCHECK(container);
-  DCHECK_EQ(this, container->plugin());
+  DCHECK_EQ(this, container->Plugin());
 
   container_ = container;
-  container_->setWantsWheelEvents(true);
+  container_->SetWantsWheelEvents(true);
 
   g_plugin_container_map.Get().insert(std::make_pair(container_, this));
 
@@ -333,7 +333,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
   }
 }
 
-void BrowserPlugin::destroy() {
+void BrowserPlugin::Destroy() {
   if (container_) {
     // The BrowserPlugin's WebPluginContainer is deleted immediately after this
     // call returns, so let's not keep a reference to it around.
@@ -351,26 +351,26 @@ void BrowserPlugin::destroy() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-v8::Local<v8::Object> BrowserPlugin::v8ScriptableObject(v8::Isolate* isolate) {
+v8::Local<v8::Object> BrowserPlugin::V8ScriptableObject(v8::Isolate* isolate) {
   if (!delegate_)
     return v8::Local<v8::Object>();
 
   return delegate_->V8ScriptableObject(isolate);
 }
 
-bool BrowserPlugin::supportsKeyboardFocus() const {
+bool BrowserPlugin::SupportsKeyboardFocus() const {
   return visible_;
 }
 
-bool BrowserPlugin::supportsEditCommands() const {
+bool BrowserPlugin::SupportsEditCommands() const {
   return true;
 }
 
-bool BrowserPlugin::supportsInputMethod() const {
+bool BrowserPlugin::SupportsInputMethod() const {
   return true;
 }
 
-bool BrowserPlugin::canProcessDrag() const {
+bool BrowserPlugin::CanProcessDrag() const {
   return true;
 }
 
@@ -380,7 +380,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
   return IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart;
 }
 
-void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
+void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
                                    const WebRect& clip_rect,
                                    const WebRect& unobscured_rect,
                                    const WebVector<WebRect>& cut_outs_rects,
@@ -392,9 +392,9 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
   // We will use the local root's RenderWidget to convert coordinates to Window.
   // If this local root belongs to an OOPIF, on the browser side we will have to
   // consider the displacement of the child frame in root window.
-  RenderFrameImpl::FromWebFrame(container()->document().frame())
+  RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
       ->GetRenderWidget()
-      ->convertViewportToWindow(&rect_in_css);
+      ->ConvertViewportToWindow(&rect_in_css);
   view_rect_ = rect_in_css;
 
   if (!ready_) {
@@ -419,12 +419,12 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
   }
 }
 
-void BrowserPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
+void BrowserPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {
   plugin_focused_ = focused;
   UpdateGuestFocusState(focus_type);
 }
 
-void BrowserPlugin::updateVisibility(bool visible) {
+void BrowserPlugin::UpdateVisibility(bool visible) {
   if (visible_ == visible)
     return;
 
@@ -440,13 +440,13 @@ void BrowserPlugin::updateVisibility(bool visible) {
       visible));
 }
 
-blink::WebInputEventResult BrowserPlugin::handleInputEvent(
+blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& cursor_info) {
   if (guest_crashed_ || !attached())
-    return blink::WebInputEventResult::NotHandled;
+    return blink::WebInputEventResult::kNotHandled;
 
-  DCHECK(!blink::WebInputEvent::isTouchEventType(event.type()));
+  DCHECK(!blink::WebInputEvent::IsTouchEventType(event.GetType()));
 
   // With direct event routing turned on, BrowserPlugin should almost never
   // see wheel events any more. The two exceptions are (1) scroll bubbling, and
@@ -455,25 +455,25 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
   // it's in a top-level embedder. In both cases we should indicate the event
   // as not handled (for GesturePinch on Mac, indicating the event has been
   // handled leads to touchpad pinch not working).
-  if (event.type() == blink::WebInputEvent::MouseWheel)
-    return blink::WebInputEventResult::NotHandled;
+  if (event.GetType() == blink::WebInputEvent::kMouseWheel)
+    return blink::WebInputEventResult::kNotHandled;
 
-  if (blink::WebInputEvent::isGestureEventType(event.type())) {
+  if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
-    DCHECK(blink::WebInputEvent::GestureTapDown == event.type() ||
-           gesture_event.resendingPluginId == browser_plugin_instance_id_);
+    DCHECK(blink::WebInputEvent::kGestureTapDown == event.GetType() ||
+           gesture_event.resending_plugin_id == browser_plugin_instance_id_);
 
     // We shouldn't be forwarding GestureEvents to the Guest anymore. Indicate
     // we handled this only if it's a non-resent event.
-    return gesture_event.resendingPluginId == browser_plugin_instance_id_
-               ? blink::WebInputEventResult::NotHandled
-               : blink::WebInputEventResult::HandledApplication;
+    return gesture_event.resending_plugin_id == browser_plugin_instance_id_
+               ? blink::WebInputEventResult::kNotHandled
+               : blink::WebInputEventResult::kHandledApplication;
   }
 
-  if (event.type() == blink::WebInputEvent::ContextMenu)
-    return blink::WebInputEventResult::HandledSuppressed;
+  if (event.GetType() == blink::WebInputEvent::kContextMenu)
+    return blink::WebInputEventResult::kHandledSuppressed;
 
-  if (blink::WebInputEvent::isKeyboardEventType(event.type()) &&
+  if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()) &&
       !edit_commands_.empty()) {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
@@ -489,13 +489,13 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
 
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.
-  if (event.type() == blink::WebInputEvent::GestureFlingStart)
-    return blink::WebInputEventResult::NotHandled;
+  if (event.GetType() == blink::WebInputEvent::kGestureFlingStart)
+    return blink::WebInputEventResult::kNotHandled;
 
-  return blink::WebInputEventResult::HandledApplication;
+  return blink::WebInputEventResult::kHandledApplication;
 }
 
-bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,
+bool BrowserPlugin::HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                                            const blink::WebDragData& drag_data,
                                            blink::WebDragOperationsMask mask,
                                            const blink::WebPoint& position,
@@ -512,40 +512,36 @@ bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,
   return true;
 }
 
-void BrowserPlugin::didReceiveResponse(
-    const blink::WebURLResponse& response) {
-}
+void BrowserPlugin::DidReceiveResponse(const blink::WebURLResponse& response) {}
 
-void BrowserPlugin::didReceiveData(const char* data, int data_length) {
+void BrowserPlugin::DidReceiveData(const char* data, int data_length) {
   if (delegate_)
     delegate_->PluginDidReceiveData(data, data_length);
 }
 
-void BrowserPlugin::didFinishLoading() {
+void BrowserPlugin::DidFinishLoading() {
   if (delegate_)
     delegate_->PluginDidFinishLoading();
 }
 
-void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {
-}
+void BrowserPlugin::DidFailLoading(const blink::WebURLError& error) {}
 
-bool BrowserPlugin::executeEditCommand(const blink::WebString& name) {
+bool BrowserPlugin::ExecuteEditCommand(const blink::WebString& name) {
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ExecuteEditCommand(
-      browser_plugin_instance_id_,
-      name.utf8()));
+      browser_plugin_instance_id_, name.Utf8()));
 
   // BrowserPlugin swallows edit commands.
   return true;
 }
 
-bool BrowserPlugin::executeEditCommand(const blink::WebString& name,
+bool BrowserPlugin::ExecuteEditCommand(const blink::WebString& name,
                                        const blink::WebString& value) {
-  edit_commands_.push_back(EditCommand(name.utf8(), value.utf8()));
+  edit_commands_.push_back(EditCommand(name.Utf8(), value.Utf8()));
   // BrowserPlugin swallows edit commands.
   return true;
 }
 
-bool BrowserPlugin::setComposition(
+bool BrowserPlugin::SetComposition(
     const blink::WebString& text,
     const blink::WebVector<blink::WebCompositionUnderline>& underlines,
     const blink::WebRange& replacementRange,
@@ -555,16 +551,16 @@ bool BrowserPlugin::setComposition(
     return false;
 
   BrowserPluginHostMsg_SetComposition_Params params;
-  params.text = text.utf16();
+  params.text = text.Utf16();
   for (size_t i = 0; i < underlines.size(); ++i) {
     params.underlines.push_back(underlines[i]);
   }
 
   params.replacement_range =
-      replacementRange.isNull()
+      replacementRange.IsNull()
           ? gfx::Range::InvalidRange()
-          : gfx::Range(static_cast<uint32_t>(replacementRange.startOffset()),
-                       static_cast<uint32_t>(replacementRange.endOffset()));
+          : gfx::Range(static_cast<uint32_t>(replacementRange.StartOffset()),
+                       static_cast<uint32_t>(replacementRange.EndOffset()));
   params.selection_start = selectionStart;
   params.selection_end = selectionEnd;
 
@@ -574,7 +570,7 @@ bool BrowserPlugin::setComposition(
   return true;
 }
 
-bool BrowserPlugin::commitText(
+bool BrowserPlugin::CommitText(
     const blink::WebString& text,
     const blink::WebVector<blink::WebCompositionUnderline>& underlines,
     const blink::WebRange& replacementRange,
@@ -587,32 +583,32 @@ bool BrowserPlugin::commitText(
     std_underlines.push_back(std_underlines[i]);
   }
   gfx::Range replacement_range =
-      replacementRange.isNull()
+      replacementRange.IsNull()
           ? gfx::Range::InvalidRange()
-          : gfx::Range(static_cast<uint32_t>(replacementRange.startOffset()),
-                       static_cast<uint32_t>(replacementRange.endOffset()));
+          : gfx::Range(static_cast<uint32_t>(replacementRange.StartOffset()),
+                       static_cast<uint32_t>(replacementRange.EndOffset()));
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeCommitText(
-      browser_plugin_instance_id_, text.utf16(), std_underlines,
+      browser_plugin_instance_id_, text.Utf16(), std_underlines,
       replacement_range, relative_cursor_pos));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }
 
-bool BrowserPlugin::finishComposingText(
+bool BrowserPlugin::FinishComposingText(
     blink::WebInputMethodController::ConfirmCompositionBehavior
         selection_behavior) {
   if (!attached())
     return false;
   bool keep_selection =
-      (selection_behavior == blink::WebInputMethodController::KeepSelection);
+      (selection_behavior == blink::WebInputMethodController::kKeepSelection);
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_ImeFinishComposingText(keep_selection));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }
 
-void BrowserPlugin::extendSelectionAndDelete(int before, int after) {
+void BrowserPlugin::ExtendSelectionAndDelete(int before, int after) {
   if (!attached())
     return;
   BrowserPluginManager::Get()->Send(

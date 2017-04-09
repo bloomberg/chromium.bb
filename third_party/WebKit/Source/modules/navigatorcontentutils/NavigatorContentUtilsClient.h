@@ -38,19 +38,19 @@ class NavigatorContentUtilsClient
     : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
  public:
   virtual ~NavigatorContentUtilsClient() {}
-  virtual void registerProtocolHandler(const String& scheme,
+  virtual void RegisterProtocolHandler(const String& scheme,
                                        const KURL&,
                                        const String& title) = 0;
 
   enum CustomHandlersState {
-    CustomHandlersNew,
-    CustomHandlersRegistered,
-    CustomHandlersDeclined
+    kCustomHandlersNew,
+    kCustomHandlersRegistered,
+    kCustomHandlersDeclined
   };
 
-  virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme,
+  virtual CustomHandlersState IsProtocolHandlerRegistered(const String& scheme,
                                                           const KURL&) = 0;
-  virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
+  virtual void UnregisterProtocolHandler(const String& scheme, const KURL&) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

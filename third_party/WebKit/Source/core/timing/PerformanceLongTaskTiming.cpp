@@ -11,50 +11,52 @@ namespace blink {
 
 namespace {
 
-double clampToMillisecond(double timeInMillis) {
+double ClampToMillisecond(double time_in_millis) {
   // Long task times are clamped to 1 millisecond for security.
-  return floor(timeInMillis);
+  return floor(time_in_millis);
 }
 
 }  // namespace
 
 // static
-PerformanceLongTaskTiming* PerformanceLongTaskTiming::create(double startTime,
-                                                             double endTime,
-                                                             String name,
-                                                             String frameSrc,
-                                                             String frameId,
-                                                             String frameName) {
-  return new PerformanceLongTaskTiming(startTime, endTime, name, frameSrc,
-                                       frameId, frameName);
+PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
+    double start_time,
+    double end_time,
+    String name,
+    String frame_src,
+    String frame_id,
+    String frame_name) {
+  return new PerformanceLongTaskTiming(start_time, end_time, name, frame_src,
+                                       frame_id, frame_name);
 }
 
-PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
-                                                     double endTime,
+PerformanceLongTaskTiming::PerformanceLongTaskTiming(double start_time,
+                                                     double end_time,
                                                      String name,
-                                                     String culpritFrameSrc,
-                                                     String culpritFrameId,
-                                                     String culpritFrameName)
+                                                     String culprit_frame_src,
+                                                     String culprit_frame_id,
+                                                     String culprit_frame_name)
     : PerformanceEntry(name,
                        "longtask",
-                       clampToMillisecond(startTime),
-                       clampToMillisecond(endTime)) {
+                       ClampToMillisecond(start_time),
+                       ClampToMillisecond(end_time)) {
   // Only one possible task type exists currently: "script"
   // Only one possible container type exists currently: "iframe"
-  TaskAttributionTiming* attributionEntry = TaskAttributionTiming::create(
-      "script", "iframe", culpritFrameSrc, culpritFrameId, culpritFrameName);
-  m_attribution.push_back(*attributionEntry);
+  TaskAttributionTiming* attribution_entry =
+      TaskAttributionTiming::Create("script", "iframe", culprit_frame_src,
+                                    culprit_frame_id, culprit_frame_name);
+  attribution_.push_back(*attribution_entry);
 }
 
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
 
 TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
-  return m_attribution;
+  return attribution_;
 }
 
 DEFINE_TRACE(PerformanceLongTaskTiming) {
-  visitor->trace(m_attribution);
-  PerformanceEntry::trace(visitor);
+  visitor->Trace(attribution_);
+  PerformanceEntry::Trace(visitor);
 }
 
 }  // namespace blink

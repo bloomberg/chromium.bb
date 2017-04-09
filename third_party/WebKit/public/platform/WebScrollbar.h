@@ -36,57 +36,57 @@ namespace blink {
 // A const accessor interface for a WebKit scrollbar
 class BLINK_PLATFORM_EXPORT WebScrollbar {
  public:
-  enum Orientation { Horizontal, Vertical };
+  enum Orientation { kHorizontal, kVertical };
 
-  enum ScrollDirection { ScrollBackward, ScrollForward };
+  enum ScrollDirection { kScrollBackward, kScrollForward };
 
   enum ScrollGranularity {
-    ScrollByLine,
-    ScrollByPage,
-    ScrollByDocument,
-    ScrollByPixel
+    kScrollByLine,
+    kScrollByPage,
+    kScrollByDocument,
+    kScrollByPixel
   };
 
-  enum ScrollbarControlSize { RegularScrollbar, SmallScrollbar };
+  enum ScrollbarControlSize { kRegularScrollbar, kSmallScrollbar };
 
   enum ScrollbarPart {
-    NoPart = 0,
-    BackButtonStartPart = 1,
-    ForwardButtonStartPart = 1 << 1,
-    BackTrackPart = 1 << 2,
-    ThumbPart = 1 << 3,
-    ForwardTrackPart = 1 << 4,
-    BackButtonEndPart = 1 << 5,
-    ForwardButtonEndPart = 1 << 6,
-    ScrollbarBGPart = 1 << 7,
-    TrackBGPart = 1 << 8,
-    AllParts = 0xffffffff
+    kNoPart = 0,
+    kBackButtonStartPart = 1,
+    kForwardButtonStartPart = 1 << 1,
+    kBackTrackPart = 1 << 2,
+    kThumbPart = 1 << 3,
+    kForwardTrackPart = 1 << 4,
+    kBackButtonEndPart = 1 << 5,
+    kForwardButtonEndPart = 1 << 6,
+    kScrollbarBGPart = 1 << 7,
+    kTrackBGPart = 1 << 8,
+    kAllParts = 0xffffffff
   };
 
   virtual ~WebScrollbar() {}
 
   // Return true if this is an overlay scrollbar.
-  virtual bool isOverlay() const = 0;
+  virtual bool IsOverlay() const = 0;
 
   // Gets the current value (i.e. position inside the region).
-  virtual int value() const = 0;
+  virtual int Value() const = 0;
 
-  virtual WebPoint location() const = 0;
+  virtual WebPoint Location() const = 0;
   virtual WebSize size() const = 0;
-  virtual bool enabled() const = 0;
-  virtual int maximum() const = 0;
-  virtual int totalSize() const = 0;
-  virtual bool isScrollableAreaActive() const = 0;
-  virtual void getTickmarks(WebVector<WebRect>& tickmarks) const = 0;
-  virtual ScrollbarControlSize controlSize() const = 0;
-  virtual ScrollbarPart pressedPart() const = 0;
-  virtual ScrollbarPart hoveredPart() const = 0;
-  virtual WebScrollbarOverlayColorTheme scrollbarOverlayColorTheme() const = 0;
-  virtual bool isCustomScrollbar() const = 0;
-  virtual Orientation orientation() const = 0;
-  virtual bool isLeftSideVerticalScrollbar() const = 0;
-  virtual float elasticOverscroll() const = 0;
-  virtual void setElasticOverscroll(float) = 0;
+  virtual bool Enabled() const = 0;
+  virtual int Maximum() const = 0;
+  virtual int TotalSize() const = 0;
+  virtual bool IsScrollableAreaActive() const = 0;
+  virtual void GetTickmarks(WebVector<WebRect>& tickmarks) const = 0;
+  virtual ScrollbarControlSize GetControlSize() const = 0;
+  virtual ScrollbarPart PressedPart() const = 0;
+  virtual ScrollbarPart HoveredPart() const = 0;
+  virtual WebScrollbarOverlayColorTheme ScrollbarOverlayColorTheme() const = 0;
+  virtual bool IsCustomScrollbar() const = 0;
+  virtual Orientation GetOrientation() const = 0;
+  virtual bool IsLeftSideVerticalScrollbar() const = 0;
+  virtual float ElasticOverscroll() const = 0;
+  virtual void SetElasticOverscroll(float) = 0;
 };
 
 }  // namespace blink

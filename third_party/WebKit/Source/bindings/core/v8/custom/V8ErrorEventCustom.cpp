@@ -39,21 +39,22 @@ void V8ErrorEvent::errorAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
 
-  auto privateError = V8PrivateProperty::getErrorEventError(isolate);
-  v8::Local<v8::Value> cachedError = privateError.getOrUndefined(info.Holder());
-  if (!cachedError->IsUndefined()) {
-    v8SetReturnValue(info, cachedError);
+  auto private_error = V8PrivateProperty::GetErrorEventError(isolate);
+  v8::Local<v8::Value> cached_error =
+      private_error.GetOrUndefined(info.Holder());
+  if (!cached_error->IsUndefined()) {
+    V8SetReturnValue(info, cached_error);
     return;
   }
 
   ErrorEvent* event = V8ErrorEvent::toImpl(info.Holder());
-  ScriptState* scriptState = ScriptState::from(isolate->GetCurrentContext());
-  ScriptValue error = event->error(scriptState);
-  v8::Local<v8::Value> errorValue =
-      error.isEmpty() ? v8::Local<v8::Value>(v8::Null(isolate))
-                      : error.v8Value();
-  privateError.set(info.Holder(), errorValue);
-  v8SetReturnValue(info, errorValue);
+  ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
+  ScriptValue error = event->error(script_state);
+  v8::Local<v8::Value> error_value =
+      error.IsEmpty() ? v8::Local<v8::Value>(v8::Null(isolate))
+                      : error.V8Value();
+  private_error.Set(info.Holder(), error_value);
+  V8SetReturnValue(info, error_value);
 }
 
 }  // namespace blink

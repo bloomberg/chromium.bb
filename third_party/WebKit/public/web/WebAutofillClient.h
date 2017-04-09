@@ -40,19 +40,19 @@ class WebKeyboardEvent;
 class WebAutofillClient {
  public:
   // These methods are called when the users edits a text-field.
-  virtual void textFieldDidEndEditing(const WebInputElement&) {}
-  virtual void textFieldDidChange(const WebFormControlElement&) {}
-  virtual void textFieldDidReceiveKeyDown(const WebInputElement&,
+  virtual void TextFieldDidEndEditing(const WebInputElement&) {}
+  virtual void TextFieldDidChange(const WebFormControlElement&) {}
+  virtual void TextFieldDidReceiveKeyDown(const WebInputElement&,
                                           const WebKeyboardEvent&) {}
   // This is called when a datalist indicator is clicked.
-  virtual void openTextDataListChooser(const WebInputElement&) {}
+  virtual void OpenTextDataListChooser(const WebInputElement&) {}
   // This is called when the datalist for an input has changed.
-  virtual void dataListOptionsChanged(const WebInputElement&) {}
+  virtual void DataListOptionsChanged(const WebInputElement&) {}
   // Called the first time the user interacts with the page after a load.
-  virtual void firstUserGestureObserved() {}
+  virtual void FirstUserGestureObserved() {}
 
-  virtual void didAssociateFormControlsDynamically() {}
-  virtual void ajaxSucceeded() {}
+  virtual void DidAssociateFormControlsDynamically() {}
+  virtual void AjaxSucceeded() {}
 
  protected:
   virtual ~WebAutofillClient() {}

@@ -27,282 +27,282 @@
 
 namespace blink {
 
-IntPoint determineHotSpot(Image* image,
-                          bool hotSpotSpecified,
-                          const IntPoint& specifiedHotSpot) {
-  if (image->isNull())
+IntPoint DetermineHotSpot(Image* image,
+                          bool hot_spot_specified,
+                          const IntPoint& specified_hot_spot) {
+  if (image->IsNull())
     return IntPoint();
 
-  IntRect imageRect = image->rect();
+  IntRect image_rect = image->Rect();
 
   // Hot spot must be inside cursor rectangle.
-  if (hotSpotSpecified) {
-    if (imageRect.contains(specifiedHotSpot)) {
-      return specifiedHotSpot;
+  if (hot_spot_specified) {
+    if (image_rect.Contains(specified_hot_spot)) {
+      return specified_hot_spot;
     }
 
-    return IntPoint(
-        clampTo<int>(specifiedHotSpot.x(), imageRect.x(), imageRect.maxX() - 1),
-        clampTo<int>(specifiedHotSpot.y(), imageRect.y(),
-                     imageRect.maxY() - 1));
+    return IntPoint(clampTo<int>(specified_hot_spot.X(), image_rect.X(),
+                                 image_rect.MaxX() - 1),
+                    clampTo<int>(specified_hot_spot.Y(), image_rect.Y(),
+                                 image_rect.MaxY() - 1));
   }
 
   // If hot spot is not specified externally, it can be extracted from some
   // image formats (e.g. .cur).
-  IntPoint intrinsicHotSpot;
-  bool imageHasIntrinsicHotSpot = image->getHotSpot(intrinsicHotSpot);
-  if (imageHasIntrinsicHotSpot && imageRect.contains(intrinsicHotSpot))
-    return intrinsicHotSpot;
+  IntPoint intrinsic_hot_spot;
+  bool image_has_intrinsic_hot_spot = image->GetHotSpot(intrinsic_hot_spot);
+  if (image_has_intrinsic_hot_spot && image_rect.Contains(intrinsic_hot_spot))
+    return intrinsic_hot_spot;
 
   // If neither is provided, use a default value of (0, 0).
   return IntPoint();
 }
 
-Cursor::Cursor(Image* image, bool hotSpotSpecified, const IntPoint& hotSpot)
-    : m_type(Custom),
-      m_image(image),
-      m_hotSpot(determineHotSpot(image, hotSpotSpecified, hotSpot)),
-      m_imageScaleFactor(1) {}
+Cursor::Cursor(Image* image, bool hot_spot_specified, const IntPoint& hot_spot)
+    : type_(kCustom),
+      image_(image),
+      hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
+      image_scale_factor_(1) {}
 
 Cursor::Cursor(Image* image,
-               bool hotSpotSpecified,
-               const IntPoint& hotSpot,
+               bool hot_spot_specified,
+               const IntPoint& hot_spot,
                float scale)
-    : m_type(Custom),
-      m_image(image),
-      m_hotSpot(determineHotSpot(image, hotSpotSpecified, hotSpot)),
-      m_imageScaleFactor(scale) {}
+    : type_(kCustom),
+      image_(image),
+      hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
+      image_scale_factor_(scale) {}
 
-Cursor::Cursor(Type type) : m_type(type), m_imageScaleFactor(1) {}
+Cursor::Cursor(Type type) : type_(type), image_scale_factor_(1) {}
 
 Cursor::Cursor(const Cursor& other)
-    : m_type(other.m_type),
-      m_image(other.m_image),
-      m_hotSpot(other.m_hotSpot),
-      m_imageScaleFactor(other.m_imageScaleFactor) {}
+    : type_(other.type_),
+      image_(other.image_),
+      hot_spot_(other.hot_spot_),
+      image_scale_factor_(other.image_scale_factor_) {}
 
 Cursor& Cursor::operator=(const Cursor& other) {
-  m_type = other.m_type;
-  m_image = other.m_image;
-  m_hotSpot = other.m_hotSpot;
-  m_imageScaleFactor = other.m_imageScaleFactor;
+  type_ = other.type_;
+  image_ = other.image_;
+  hot_spot_ = other.hot_spot_;
+  image_scale_factor_ = other.image_scale_factor_;
   return *this;
 }
 
 Cursor::~Cursor() {}
 
-const Cursor& pointerCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Pointer));
+const Cursor& PointerCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kPointer));
   return c;
 }
 
-const Cursor& crossCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Cross));
+const Cursor& CrossCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kCross));
   return c;
 }
 
-const Cursor& handCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Hand));
+const Cursor& HandCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kHand));
   return c;
 }
 
-const Cursor& moveCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Move));
+const Cursor& MoveCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kMove));
   return c;
 }
 
-const Cursor& verticalTextCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::VerticalText));
+const Cursor& VerticalTextCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kVerticalText));
   return c;
 }
 
-const Cursor& cellCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Cell));
+const Cursor& CellCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kCell));
   return c;
 }
 
-const Cursor& contextMenuCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::ContextMenu));
+const Cursor& ContextMenuCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kContextMenu));
   return c;
 }
 
-const Cursor& aliasCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Alias));
+const Cursor& AliasCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kAlias));
   return c;
 }
 
-const Cursor& zoomInCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::ZoomIn));
+const Cursor& ZoomInCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kZoomIn));
   return c;
 }
 
-const Cursor& zoomOutCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::ZoomOut));
+const Cursor& ZoomOutCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kZoomOut));
   return c;
 }
 
-const Cursor& copyCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Copy));
+const Cursor& CopyCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kCopy));
   return c;
 }
 
-const Cursor& noneCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::None));
+const Cursor& NoneCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNone));
   return c;
 }
 
-const Cursor& progressCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Progress));
+const Cursor& ProgressCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kProgress));
   return c;
 }
 
-const Cursor& noDropCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NoDrop));
+const Cursor& NoDropCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNoDrop));
   return c;
 }
 
-const Cursor& notAllowedCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NotAllowed));
+const Cursor& NotAllowedCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNotAllowed));
   return c;
 }
 
-const Cursor& iBeamCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::IBeam));
+const Cursor& IBeamCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kIBeam));
   return c;
 }
 
-const Cursor& waitCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Wait));
+const Cursor& WaitCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kWait));
   return c;
 }
 
-const Cursor& helpCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Help));
+const Cursor& HelpCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kHelp));
   return c;
 }
 
-const Cursor& eastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::EastResize));
+const Cursor& EastResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kEastResize));
   return c;
 }
 
-const Cursor& northResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthResize));
+const Cursor& NorthResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthResize));
   return c;
 }
 
-const Cursor& northEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthEastResize));
+const Cursor& NorthEastResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthEastResize));
   return c;
 }
 
-const Cursor& northWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthWestResize));
+const Cursor& NorthWestResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthWestResize));
   return c;
 }
 
-const Cursor& southResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthResize));
+const Cursor& SouthResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthResize));
   return c;
 }
 
-const Cursor& southEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthEastResize));
+const Cursor& SouthEastResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthEastResize));
   return c;
 }
 
-const Cursor& southWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthWestResize));
+const Cursor& SouthWestResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthWestResize));
   return c;
 }
 
-const Cursor& westResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::WestResize));
+const Cursor& WestResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kWestResize));
   return c;
 }
 
-const Cursor& northSouthResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthSouthResize));
+const Cursor& NorthSouthResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthSouthResize));
   return c;
 }
 
-const Cursor& eastWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::EastWestResize));
+const Cursor& EastWestResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kEastWestResize));
   return c;
 }
 
-const Cursor& northEastSouthWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthEastSouthWestResize));
+const Cursor& NorthEastSouthWestResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthEastSouthWestResize));
   return c;
 }
 
-const Cursor& northWestSouthEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthWestSouthEastResize));
+const Cursor& NorthWestSouthEastResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthWestSouthEastResize));
   return c;
 }
 
-const Cursor& columnResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::ColumnResize));
+const Cursor& ColumnResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kColumnResize));
   return c;
 }
 
-const Cursor& rowResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::RowResize));
+const Cursor& RowResizeCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kRowResize));
   return c;
 }
 
-const Cursor& middlePanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::MiddlePanning));
+const Cursor& MiddlePanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kMiddlePanning));
   return c;
 }
 
-const Cursor& eastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::EastPanning));
+const Cursor& EastPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kEastPanning));
   return c;
 }
 
-const Cursor& northPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthPanning));
+const Cursor& NorthPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthPanning));
   return c;
 }
 
-const Cursor& northEastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthEastPanning));
+const Cursor& NorthEastPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthEastPanning));
   return c;
 }
 
-const Cursor& northWestPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::NorthWestPanning));
+const Cursor& NorthWestPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kNorthWestPanning));
   return c;
 }
 
-const Cursor& southPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthPanning));
+const Cursor& SouthPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthPanning));
   return c;
 }
 
-const Cursor& southEastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthEastPanning));
+const Cursor& SouthEastPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthEastPanning));
   return c;
 }
 
-const Cursor& southWestPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::SouthWestPanning));
+const Cursor& SouthWestPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kSouthWestPanning));
   return c;
 }
 
-const Cursor& westPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::WestPanning));
+const Cursor& WestPanningCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kWestPanning));
   return c;
 }
 
-const Cursor& grabCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Grab));
+const Cursor& GrabCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kGrab));
   return c;
 }
 
-const Cursor& grabbingCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Grabbing));
+const Cursor& GrabbingCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kGrabbing));
   return c;
 }
 

@@ -36,27 +36,27 @@
 namespace blink {
 
 FloatSize::FloatSize(const LayoutSize& size)
-    : m_width(size.width().toFloat()), m_height(size.height().toFloat()) {}
+    : width_(size.Width().ToFloat()), height_(size.Height().ToFloat()) {}
 
-float FloatSize::diagonalLength() const {
-  return hypotf(m_width, m_height);
+float FloatSize::DiagonalLength() const {
+  return hypotf(width_, height_);
 }
 
-bool FloatSize::isZero() const {
-  return fabs(m_width) < std::numeric_limits<float>::epsilon() &&
-         fabs(m_height) < std::numeric_limits<float>::epsilon();
+bool FloatSize::IsZero() const {
+  return fabs(width_) < std::numeric_limits<float>::epsilon() &&
+         fabs(height_) < std::numeric_limits<float>::epsilon();
 }
 
-bool FloatSize::isExpressibleAsIntSize() const {
-  return isWithinIntRange(m_width) && isWithinIntRange(m_height);
+bool FloatSize::IsExpressibleAsIntSize() const {
+  return isWithinIntRange(width_) && isWithinIntRange(height_);
 }
 
-FloatSize FloatSize::narrowPrecision(double width, double height) {
+FloatSize FloatSize::NarrowPrecision(double width, double height) {
   return FloatSize(clampTo<float>(width), clampTo<float>(height));
 }
 
-String FloatSize::toString() const {
-  return String::format("%lgx%lg", width(), height());
+String FloatSize::ToString() const {
+  return String::Format("%lgx%lg", Width(), Height());
 }
 
 }  // namespace blink

@@ -109,7 +109,7 @@ void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
 
   timeout_timer_.Stop();
   used_ = true;
-  if (type == blink::WebIDBTaskTypeNormal) {
+  if (type == blink::kWebIDBTaskTypeNormal) {
     task_queue_.push(task);
     ++diagnostics_.tasks_scheduled;
   } else {
@@ -142,7 +142,7 @@ void IndexedDBTransaction::RunTasksIfStarted() {
 }
 
 void IndexedDBTransaction::Abort() {
-  Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+  Abort(IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                "Internal error (unknown cause)"));
 }
 
@@ -265,7 +265,7 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
   // Switch statement to protect against adding new enum values.
   switch (result) {
     case IndexedDBBackingStore::BlobWriteResult::FAILURE_ASYNC:
-      Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionDataError,
+      Abort(IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionDataError,
                                    "Failed to write blobs."));
       return leveldb::Status::OK();
     case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
@@ -386,11 +386,12 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     IndexedDBDatabaseError error;
     if (leveldb_env::IndicatesDiskFull(s)) {
       error = IndexedDBDatabaseError(
-          blink::WebIDBDatabaseExceptionQuotaError,
+          blink::kWebIDBDatabaseExceptionQuotaError,
           "Encountered disk full while committing transaction.");
     } else {
-      error = IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                                     "Internal error committing transaction.");
+      error =
+          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Internal error committing transaction.");
     }
     callbacks_->OnAbort(*this, error);
     database_->TransactionFinished(this, false);
@@ -460,7 +461,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   // Otherwise, start a timer in case the front-end gets wedged and
   // never requests further activity. Read-only transactions don't
   // block other transactions, so don't time those out.
-  if (mode_ != blink::WebIDBTransactionModeReadOnly) {
+  if (mode_ != blink::kWebIDBTransactionModeReadOnly) {
     timeout_timer_.Start(
         FROM_HERE, GetInactivityTimeout(),
         base::Bind(&IndexedDBTransaction::Timeout, ptr_factory_.GetWeakPtr()));
@@ -474,7 +475,7 @@ base::TimeDelta IndexedDBTransaction::GetInactivityTimeout() const {
 
 void IndexedDBTransaction::Timeout() {
   Abort(IndexedDBDatabaseError(
-      blink::WebIDBDatabaseExceptionTimeoutError,
+      blink::kWebIDBDatabaseExceptionTimeoutError,
       base::ASCIIToUTF16("Transaction timed out due to inactivity.")));
 }
 
@@ -488,7 +489,7 @@ void IndexedDBTransaction::CloseOpenCursors() {
 void IndexedDBTransaction::AddPendingObserver(
     int32_t observer_id,
     const IndexedDBObserver::Options& options) {
-  DCHECK_NE(mode(), blink::WebIDBTransactionModeVersionChange);
+  DCHECK_NE(mode(), blink::kWebIDBTransactionModeVersionChange);
   pending_observers_.push_back(base::MakeUnique<IndexedDBObserver>(
       observer_id, object_store_ids_, options));
 }

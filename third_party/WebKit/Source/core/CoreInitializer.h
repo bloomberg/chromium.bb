@@ -41,19 +41,19 @@ class CORE_EXPORT CoreInitializer {
   WTF_MAKE_NONCOPYABLE(CoreInitializer);
 
  public:
-  CoreInitializer() : m_isInitialized(false) {}
+  CoreInitializer() : is_initialized_(false) {}
   virtual ~CoreInitializer() {}
 
   // Should be called by clients before trying to create Frames.
-  virtual void initialize();
+  virtual void Initialize();
 
  protected:
-  bool isInitialized() const { return m_isInitialized; }
+  bool IsInitialized() const { return is_initialized_; }
 
  private:
-  void registerEventFactory();
+  void RegisterEventFactory();
 
-  bool m_isInitialized;
+  bool is_initialized_;
 };
 
 }  // namespace blink

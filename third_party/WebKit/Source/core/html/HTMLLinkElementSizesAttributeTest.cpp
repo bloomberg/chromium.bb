@@ -15,11 +15,11 @@ class HTMLLinkElementSizesAttributeTest : public testing::Test {};
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {
-  Document* document = Document::create();
+  Document* document = Document::Create();
   HTMLLinkElement* link =
-      HTMLLinkElement::create(*document, /* createdByParser: */ false);
+      HTMLLinkElement::Create(*document, /* createdByParser: */ false);
   DOMTokenList* sizes = link->sizes();
-  EXPECT_EQ(nullAtom, sizes->value());
+  EXPECT_EQ(g_null_atom, sizes->value());
   sizes->setValue("   a b  c ");
   EXPECT_EQ("   a b  c ", link->getAttribute(HTMLNames::sizesAttr));
   EXPECT_EQ("   a b  c ", sizes->value());
@@ -27,11 +27,11 @@ TEST(HTMLLinkElementSizesAttributeTest,
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesAttribute_updatesSizesPropertyValue) {
-  Document* document = Document::create();
+  Document* document = Document::Create();
   HTMLLinkElement* link =
-      HTMLLinkElement::create(*document, /* createdByParser: */ false);
+      HTMLLinkElement::Create(*document, /* createdByParser: */ false);
   DOMTokenList* sizes = link->sizes();
-  EXPECT_EQ(nullAtom, sizes->value());
+  EXPECT_EQ(g_null_atom, sizes->value());
   link->setAttribute(HTMLNames::sizesAttr, "y  x ");
   EXPECT_EQ("y  x ", sizes->value());
 }

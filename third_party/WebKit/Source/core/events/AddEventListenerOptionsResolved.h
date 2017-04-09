@@ -22,23 +22,23 @@ class CORE_EXPORT AddEventListenerOptionsResolved
   AddEventListenerOptionsResolved(const AddEventListenerOptions&);
   virtual ~AddEventListenerOptionsResolved();
 
-  void setPassiveForcedForDocumentTarget(bool forced) {
-    m_passiveForcedForDocumentTarget = forced;
+  void SetPassiveForcedForDocumentTarget(bool forced) {
+    passive_forced_for_document_target_ = forced;
   }
-  bool passiveForcedForDocumentTarget() const {
-    return m_passiveForcedForDocumentTarget;
+  bool PassiveForcedForDocumentTarget() const {
+    return passive_forced_for_document_target_;
   }
 
   // Set whether passive was specified when the options were
   // created by callee.
-  void setPassiveSpecified(bool specified) { m_passiveSpecified = specified; }
-  bool passiveSpecified() const { return m_passiveSpecified; }
+  void SetPassiveSpecified(bool specified) { passive_specified_ = specified; }
+  bool PassiveSpecified() const { return passive_specified_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  bool m_passiveForcedForDocumentTarget;
-  bool m_passiveSpecified;
+  bool passive_forced_for_document_target_;
+  bool passive_specified_;
 };
 
 }  // namespace blink

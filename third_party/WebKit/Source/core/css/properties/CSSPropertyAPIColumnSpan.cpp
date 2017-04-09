@@ -11,7 +11,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIColumnSpan::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumeIdent<CSSValueAll, CSSValueNone>(
+  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAll, CSSValueNone>(
       range);
 }
 

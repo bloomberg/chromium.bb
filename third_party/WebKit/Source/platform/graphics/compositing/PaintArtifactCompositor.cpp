@@ -50,16 +50,16 @@ namespace blink {
 
 template class RasterInvalidationTrackingMap<const cc::Layer>;
 static RasterInvalidationTrackingMap<const cc::Layer>&
-ccLayersRasterInvalidationTrackingMap() {
+CcLayersRasterInvalidationTrackingMap() {
   DEFINE_STATIC_LOCAL(RasterInvalidationTrackingMap<const cc::Layer>, map, ());
   return map;
 }
 
 template <typename T>
-static std::unique_ptr<JSONArray> sizeAsJSONArray(const T& size) {
-  std::unique_ptr<JSONArray> array = JSONArray::create();
-  array->pushDouble(size.width());
-  array->pushDouble(size.height());
+static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
+  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  array->PushDouble(size.Width());
+  array->PushDouble(size.Height());
   return array;
 }
 
@@ -68,7 +68,7 @@ static std::unique_ptr<JSONArray> sizeAsJSONArray(const T& size) {
 // we update the property trees. We should explore optimizing our management of
 // the sequence number through the use of a dirty bit or similar. See
 // http://crbug.com/692842#c4.
-static int sPropertyTreeSequenceNumber = 1;
+static int g_s_property_tree_sequence_number = 1;
 
 class PaintArtifactCompositor::ContentLayerClientImpl
     : public cc::ContentLayerClient {
@@ -76,26 +76,26 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
-  ContentLayerClientImpl(DisplayItem::Id paintChunkId)
-      : m_id(paintChunkId),
-        m_debugName(paintChunkId.client.debugName()),
-        m_ccPictureLayer(cc::PictureLayer::Create(this)) {}
+  ContentLayerClientImpl(DisplayItem::Id paint_chunk_id)
+      : id_(paint_chunk_id),
+        debug_name_(paint_chunk_id.client.DebugName()),
+        cc_picture_layer_(cc::PictureLayer::Create(this)) {}
 
-  void SetDisplayList(scoped_refptr<cc::DisplayItemList> ccDisplayItemList) {
-    m_ccDisplayItemList = std::move(ccDisplayItemList);
+  void SetDisplayList(scoped_refptr<cc::DisplayItemList> cc_display_item_list) {
+    cc_display_item_list_ = std::move(cc_display_item_list);
   }
-  void SetPaintableRegion(gfx::Rect region) { m_paintableRegion = region; }
+  void SetPaintableRegion(gfx::Rect region) { paintable_region_ = region; }
 
-  void addPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
-    m_paintChunkDebugData.push_back(std::move(json));
+  void AddPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
+    paint_chunk_debug_data_.push_back(std::move(json));
   }
-  void clearPaintChunkDebugData() { m_paintChunkDebugData.clear(); }
+  void ClearPaintChunkDebugData() { paint_chunk_debug_data_.Clear(); }
 
   // cc::ContentLayerClient
-  gfx::Rect PaintableRegion() override { return m_paintableRegion; }
+  gfx::Rect PaintableRegion() override { return paintable_region_; }
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting) override {
-    return m_ccDisplayItemList;
+    return cc_display_item_list_;
   }
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override {
@@ -103,308 +103,313 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     return 0;
   }
 
-  void resetTrackedRasterInvalidations() {
+  void ResetTrackedRasterInvalidations() {
     RasterInvalidationTracking* tracking =
-        ccLayersRasterInvalidationTrackingMap().find(m_ccPictureLayer.get());
+        CcLayersRasterInvalidationTrackingMap().Find(cc_picture_layer_.get());
     if (!tracking)
       return;
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-      tracking->trackedRasterInvalidations.clear();
+      tracking->tracked_raster_invalidations.Clear();
     else
-      ccLayersRasterInvalidationTrackingMap().remove(m_ccPictureLayer.get());
+      CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
   }
 
-  bool hasTrackedRasterInvalidations() const {
+  bool HasTrackedRasterInvalidations() const {
     RasterInvalidationTracking* tracking =
-        ccLayersRasterInvalidationTrackingMap().find(m_ccPictureLayer.get());
+        CcLayersRasterInvalidationTrackingMap().Find(cc_picture_layer_.get());
     if (tracking)
-      return !tracking->trackedRasterInvalidations.isEmpty();
+      return !tracking->tracked_raster_invalidations.IsEmpty();
     return false;
   }
 
-  void setNeedsDisplayRect(const gfx::Rect& rect,
-                           RasterInvalidationInfo* rasterInvalidationInfo) {
-    m_ccPictureLayer->SetNeedsDisplayRect(rect);
+  void SetNeedsDisplayRect(const gfx::Rect& rect,
+                           RasterInvalidationInfo* raster_invalidation_info) {
+    cc_picture_layer_->SetNeedsDisplayRect(rect);
 
-    if (!rasterInvalidationInfo || rect.IsEmpty())
+    if (!raster_invalidation_info || rect.IsEmpty())
       return;
 
     RasterInvalidationTracking& tracking =
-        ccLayersRasterInvalidationTrackingMap().add(m_ccPictureLayer.get());
+        CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
 
-    tracking.trackedRasterInvalidations.push_back(*rasterInvalidationInfo);
+    tracking.tracked_raster_invalidations.push_back(*raster_invalidation_info);
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
       // invalidation rect.
-      IntRect r = rasterInvalidationInfo->rect;
-      r.inflate(1);
-      tracking.rasterInvalidationRegionSinceLastPaint.unite(r);
+      IntRect r = raster_invalidation_info->rect;
+      r.Inflate(1);
+      tracking.raster_invalidation_region_since_last_paint.Unite(r);
     }
   }
 
-  std::unique_ptr<JSONObject> layerAsJSON(LayerTreeFlags flags) {
-    std::unique_ptr<JSONObject> json = JSONObject::create();
-    json->setString("name", m_debugName);
-    IntSize bounds(m_ccPictureLayer->bounds().width(),
-                   m_ccPictureLayer->bounds().height());
-    if (!bounds.isEmpty())
-      json->setArray("bounds", sizeAsJSONArray(bounds));
-    json->setBoolean("contentsOpaque", m_ccPictureLayer->contents_opaque());
-    json->setBoolean("drawsContent", m_ccPictureLayer->DrawsContent());
+  std::unique_ptr<JSONObject> LayerAsJSON(LayerTreeFlags flags) {
+    std::unique_ptr<JSONObject> json = JSONObject::Create();
+    json->SetString("name", debug_name_);
+    IntSize bounds(cc_picture_layer_->bounds().width(),
+                   cc_picture_layer_->bounds().height());
+    if (!bounds.IsEmpty())
+      json->SetArray("bounds", SizeAsJSONArray(bounds));
+    json->SetBoolean("contentsOpaque", cc_picture_layer_->contents_opaque());
+    json->SetBoolean("drawsContent", cc_picture_layer_->DrawsContent());
 
-    if (flags & LayerTreeIncludesDebugInfo) {
-      std::unique_ptr<JSONArray> paintChunkContentsArray = JSONArray::create();
-      for (const auto& debugData : m_paintChunkDebugData) {
-        paintChunkContentsArray->pushValue(debugData->clone());
+    if (flags & kLayerTreeIncludesDebugInfo) {
+      std::unique_ptr<JSONArray> paint_chunk_contents_array =
+          JSONArray::Create();
+      for (const auto& debug_data : paint_chunk_debug_data_) {
+        paint_chunk_contents_array->PushValue(debug_data->Clone());
       }
-      json->setArray("paintChunkContents", std::move(paintChunkContentsArray));
+      json->SetArray("paintChunkContents",
+                     std::move(paint_chunk_contents_array));
     }
 
-    ccLayersRasterInvalidationTrackingMap().asJSON(m_ccPictureLayer.get(),
+    CcLayersRasterInvalidationTrackingMap().AsJSON(cc_picture_layer_.get(),
                                                    json.get());
     return json;
   }
 
-  scoped_refptr<cc::PictureLayer> ccPictureLayer() { return m_ccPictureLayer; }
+  scoped_refptr<cc::PictureLayer> CcPictureLayer() { return cc_picture_layer_; }
 
-  bool matches(const PaintChunk& paintChunk) {
-    return paintChunk.id && m_id == *paintChunk.id;
+  bool Matches(const PaintChunk& paint_chunk) {
+    return paint_chunk.id && id_ == *paint_chunk.id;
   }
 
  private:
-  PaintChunk::Id m_id;
-  String m_debugName;
-  scoped_refptr<cc::PictureLayer> m_ccPictureLayer;
-  scoped_refptr<cc::DisplayItemList> m_ccDisplayItemList;
-  gfx::Rect m_paintableRegion;
-  Vector<std::unique_ptr<JSONArray>> m_paintChunkDebugData;
+  PaintChunk::Id id_;
+  String debug_name_;
+  scoped_refptr<cc::PictureLayer> cc_picture_layer_;
+  scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
+  gfx::Rect paintable_region_;
+  Vector<std::unique_ptr<JSONArray>> paint_chunk_debug_data_;
 };
 
 PaintArtifactCompositor::PaintArtifactCompositor() {
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
-  m_rootLayer = cc::Layer::Create();
-  m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
-      m_rootLayer.get());
-  m_isTrackingRasterInvalidations = false;
+  root_layer_ = cc::Layer::Create();
+  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+      root_layer_.get());
+  is_tracking_raster_invalidations_ = false;
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {}
 
-void PaintArtifactCompositor::setTracksRasterInvalidations(
-    bool tracksPaintInvalidations) {
-  resetTrackedRasterInvalidations();
-  m_isTrackingRasterInvalidations = tracksPaintInvalidations;
+void PaintArtifactCompositor::SetTracksRasterInvalidations(
+    bool tracks_paint_invalidations) {
+  ResetTrackedRasterInvalidations();
+  is_tracking_raster_invalidations_ = tracks_paint_invalidations;
 }
 
-void PaintArtifactCompositor::resetTrackedRasterInvalidations() {
-  for (auto& client : m_contentLayerClients)
-    client->resetTrackedRasterInvalidations();
+void PaintArtifactCompositor::ResetTrackedRasterInvalidations() {
+  for (auto& client : content_layer_clients_)
+    client->ResetTrackedRasterInvalidations();
 }
 
-bool PaintArtifactCompositor::hasTrackedRasterInvalidations() const {
-  for (auto& client : m_contentLayerClients) {
-    if (client->hasTrackedRasterInvalidations())
+bool PaintArtifactCompositor::HasTrackedRasterInvalidations() const {
+  for (auto& client : content_layer_clients_) {
+    if (client->HasTrackedRasterInvalidations())
       return true;
   }
   return false;
 }
 
-std::unique_ptr<JSONObject> PaintArtifactCompositor::layersAsJSON(
+std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
-  std::unique_ptr<JSONArray> layersJSON = JSONArray::create();
-  for (const auto& client : m_contentLayerClients) {
-    layersJSON->pushObject(client->layerAsJSON(flags));
+  std::unique_ptr<JSONArray> layers_json = JSONArray::Create();
+  for (const auto& client : content_layer_clients_) {
+    layers_json->PushObject(client->LayerAsJSON(flags));
   }
-  std::unique_ptr<JSONObject> json = JSONObject::create();
-  json->setArray("layers", std::move(layersJSON));
+  std::unique_ptr<JSONObject> json = JSONObject::Create();
+  json->SetArray("layers", std::move(layers_json));
   return json;
 }
 
-static scoped_refptr<cc::Layer> foreignLayerForPaintChunk(
-    const PaintArtifact& paintArtifact,
-    const PaintChunk& paintChunk,
-    gfx::Vector2dF& layerOffset) {
-  if (paintChunk.size() != 1)
+static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
+    const PaintArtifact& paint_artifact,
+    const PaintChunk& paint_chunk,
+    gfx::Vector2dF& layer_offset) {
+  if (paint_chunk.size() != 1)
     return nullptr;
 
-  const auto& displayItem =
-      paintArtifact.getDisplayItemList()[paintChunk.beginIndex];
-  if (!displayItem.isForeignLayer())
+  const auto& display_item =
+      paint_artifact.GetDisplayItemList()[paint_chunk.begin_index];
+  if (!display_item.IsForeignLayer())
     return nullptr;
 
-  const auto& foreignLayerDisplayItem =
-      static_cast<const ForeignLayerDisplayItem&>(displayItem);
-  layerOffset = gfx::Vector2dF(foreignLayerDisplayItem.location().x(),
-                               foreignLayerDisplayItem.location().y());
-  scoped_refptr<cc::Layer> layer = foreignLayerDisplayItem.layer();
-  layer->SetBounds(foreignLayerDisplayItem.bounds());
+  const auto& foreign_layer_display_item =
+      static_cast<const ForeignLayerDisplayItem&>(display_item);
+  layer_offset = gfx::Vector2dF(foreign_layer_display_item.Location().X(),
+                                foreign_layer_display_item.Location().Y());
+  scoped_refptr<cc::Layer> layer = foreign_layer_display_item.GetLayer();
+  layer->SetBounds(foreign_layer_display_item.Bounds());
   layer->SetIsDrawable(true);
   return layer;
 }
 
 std::unique_ptr<PaintArtifactCompositor::ContentLayerClientImpl>
-PaintArtifactCompositor::clientForPaintChunk(
-    const PaintChunk& paintChunk,
-    const PaintArtifact& paintArtifact) {
+PaintArtifactCompositor::ClientForPaintChunk(
+    const PaintChunk& paint_chunk,
+    const PaintArtifact& paint_artifact) {
   // TODO(chrishtr): for now, just using a linear walk. In the future we can
   // optimize this by using the same techniques used in PaintController for
   // display lists.
-  for (auto& client : m_contentLayerClients) {
-    if (client && client->matches(paintChunk))
+  for (auto& client : content_layer_clients_) {
+    if (client && client->Matches(paint_chunk))
       return std::move(client);
   }
 
-  return WTF::wrapUnique(new ContentLayerClientImpl(
-      paintChunk.id
-          ? *paintChunk.id
-          : paintArtifact.getDisplayItemList()[paintChunk.beginIndex].getId()));
+  return WTF::WrapUnique(new ContentLayerClientImpl(
+      paint_chunk.id
+          ? *paint_chunk.id
+          : paint_artifact.GetDisplayItemList()[paint_chunk.begin_index]
+                .GetId()));
 }
 
 scoped_refptr<cc::Layer>
-PaintArtifactCompositor::compositedLayerForPendingLayer(
-    const PaintArtifact& paintArtifact,
-    const PendingLayer& pendingLayer,
-    gfx::Vector2dF& layerOffset,
-    Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
-    RasterInvalidationTrackingMap<const PaintChunk>* trackingMap,
-    bool storeDebugInfo) {
-  DCHECK(pendingLayer.paintChunks.size());
-  const PaintChunk& firstPaintChunk = *pendingLayer.paintChunks[0];
-  DCHECK(firstPaintChunk.size());
+PaintArtifactCompositor::CompositedLayerForPendingLayer(
+    const PaintArtifact& paint_artifact,
+    const PendingLayer& pending_layer,
+    gfx::Vector2dF& layer_offset,
+    Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
+    RasterInvalidationTrackingMap<const PaintChunk>* tracking_map,
+    bool store_debug_info) {
+  DCHECK(pending_layer.paint_chunks.size());
+  const PaintChunk& first_paint_chunk = *pending_layer.paint_chunks[0];
+  DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
-  if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(
-          paintArtifact, firstPaintChunk, layerOffset)) {
-    DCHECK_EQ(pendingLayer.paintChunks.size(), 1u);
-    return foreignLayer;
+  if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
+          paint_artifact, first_paint_chunk, layer_offset)) {
+    DCHECK_EQ(pending_layer.paint_chunks.size(), 1u);
+    return foreign_layer;
   }
 
   // The common case: create or reuse a PictureLayer for painted content.
-  std::unique_ptr<ContentLayerClientImpl> contentLayerClient =
-      clientForPaintChunk(firstPaintChunk, paintArtifact);
+  std::unique_ptr<ContentLayerClientImpl> content_layer_client =
+      ClientForPaintChunk(first_paint_chunk, paint_artifact);
 
-  gfx::Rect ccCombinedBounds(enclosingIntRect(pendingLayer.bounds));
+  gfx::Rect cc_combined_bounds(EnclosingIntRect(pending_layer.bounds));
 
-  layerOffset = ccCombinedBounds.OffsetFromOrigin();
-  scoped_refptr<cc::DisplayItemList> displayList =
-      PaintChunksToCcLayer::convert(pendingLayer.paintChunks,
-                                    pendingLayer.propertyTreeState, layerOffset,
-                                    paintArtifact.getDisplayItemList());
-  contentLayerClient->SetDisplayList(std::move(displayList));
-  contentLayerClient->SetPaintableRegion(gfx::Rect(ccCombinedBounds.size()));
+  layer_offset = cc_combined_bounds.OffsetFromOrigin();
+  scoped_refptr<cc::DisplayItemList> display_list =
+      PaintChunksToCcLayer::Convert(
+          pending_layer.paint_chunks, pending_layer.property_tree_state,
+          layer_offset, paint_artifact.GetDisplayItemList());
+  content_layer_client->SetDisplayList(std::move(display_list));
+  content_layer_client->SetPaintableRegion(
+      gfx::Rect(cc_combined_bounds.size()));
 
-  scoped_refptr<cc::PictureLayer> ccPictureLayer =
-      contentLayerClient->ccPictureLayer();
-  ccPictureLayer->SetBounds(ccCombinedBounds.size());
-  ccPictureLayer->SetIsDrawable(true);
-  ccPictureLayer->SetContentsOpaque(pendingLayer.knownToBeOpaque);
-  contentLayerClient->clearPaintChunkDebugData();
+  scoped_refptr<cc::PictureLayer> cc_picture_layer =
+      content_layer_client->CcPictureLayer();
+  cc_picture_layer->SetBounds(cc_combined_bounds.size());
+  cc_picture_layer->SetIsDrawable(true);
+  cc_picture_layer->SetContentsOpaque(pending_layer.known_to_be_opaque);
+  content_layer_client->ClearPaintChunkDebugData();
 
-  for (const auto& paintChunk : pendingLayer.paintChunks) {
-    RasterInvalidationTracking* rasterTracking =
-        trackingMap ? trackingMap->find(paintChunk) : nullptr;
-    DCHECK(!rasterTracking ||
-           rasterTracking->trackedRasterInvalidations.size() ==
-               paintChunk->rasterInvalidationRects.size());
+  for (const auto& paint_chunk : pending_layer.paint_chunks) {
+    RasterInvalidationTracking* raster_tracking =
+        tracking_map ? tracking_map->Find(paint_chunk) : nullptr;
+    DCHECK(!raster_tracking ||
+           raster_tracking->tracked_raster_invalidations.size() ==
+               paint_chunk->raster_invalidation_rects.size());
 
-    if (storeDebugInfo) {
-      contentLayerClient->addPaintChunkDebugData(
-          paintArtifact.getDisplayItemList().subsequenceAsJSON(
-              paintChunk->beginIndex, paintChunk->endIndex,
-              DisplayItemList::SkipNonDrawings |
-                  DisplayItemList::ShownOnlyDisplayItemTypes));
+    if (store_debug_info) {
+      content_layer_client->AddPaintChunkDebugData(
+          paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
+              paint_chunk->begin_index, paint_chunk->end_index,
+              DisplayItemList::kSkipNonDrawings |
+                  DisplayItemList::kShownOnlyDisplayItemTypes));
     }
 
-    for (unsigned index = 0; index < paintChunk->rasterInvalidationRects.size();
-         ++index) {
+    for (unsigned index = 0;
+         index < paint_chunk->raster_invalidation_rects.size(); ++index) {
       IntRect rect(
-          enclosingIntRect(paintChunk->rasterInvalidationRects[index]));
-      gfx::Rect ccInvalidationRect(rect.x(), rect.y(),
-                                   std::max(0, rect.width()),
-                                   std::max(0, rect.height()));
-      if (ccInvalidationRect.IsEmpty())
+          EnclosingIntRect(paint_chunk->raster_invalidation_rects[index]));
+      gfx::Rect cc_invalidation_rect(rect.X(), rect.Y(),
+                                     std::max(0, rect.Width()),
+                                     std::max(0, rect.Height()));
+      if (cc_invalidation_rect.IsEmpty())
         continue;
       // Raster paintChunk.rasterInvalidationRects is in the space of the
       // containing transform node, so need to subtract off the layer offset.
-      ccInvalidationRect.Offset(-ccCombinedBounds.OffsetFromOrigin());
-      contentLayerClient->setNeedsDisplayRect(
-          ccInvalidationRect,
-          rasterTracking ? &rasterTracking->trackedRasterInvalidations[index]
-                         : nullptr);
+      cc_invalidation_rect.Offset(-cc_combined_bounds.OffsetFromOrigin());
+      content_layer_client->SetNeedsDisplayRect(
+          cc_invalidation_rect,
+          raster_tracking
+              ? &raster_tracking->tracked_raster_invalidations[index]
+              : nullptr);
     }
   }
 
-  newContentLayerClients.push_back(std::move(contentLayerClient));
-  return ccPictureLayer;
+  new_content_layer_clients.push_back(std::move(content_layer_client));
+  return cc_picture_layer;
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
-    const PaintChunk& firstPaintChunk,
-    bool chunkIsForeign)
-    : bounds(firstPaintChunk.bounds),
-      knownToBeOpaque(firstPaintChunk.knownToBeOpaque),
-      backfaceHidden(firstPaintChunk.properties.backfaceHidden),
-      propertyTreeState(firstPaintChunk.properties.propertyTreeState),
-      isForeign(chunkIsForeign) {
-  paintChunks.push_back(&firstPaintChunk);
+    const PaintChunk& first_paint_chunk,
+    bool chunk_is_foreign)
+    : bounds(first_paint_chunk.bounds),
+      known_to_be_opaque(first_paint_chunk.known_to_be_opaque),
+      backface_hidden(first_paint_chunk.properties.backface_hidden),
+      property_tree_state(first_paint_chunk.properties.property_tree_state),
+      is_foreign(chunk_is_foreign) {
+  paint_chunks.push_back(&first_paint_chunk);
 }
 
-void PaintArtifactCompositor::PendingLayer::merge(const PendingLayer& guest) {
-  DCHECK(!isForeign && !guest.isForeign);
-  DCHECK_EQ(backfaceHidden, guest.backfaceHidden);
+void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
+  DCHECK(!is_foreign && !guest.is_foreign);
+  DCHECK_EQ(backface_hidden, guest.backface_hidden);
 
-  paintChunks.appendVector(guest.paintChunks);
-  FloatClipRect guestBoundsInHome(guest.bounds);
-  GeometryMapper::localToAncestorVisualRect(
-      guest.propertyTreeState, propertyTreeState, guestBoundsInHome);
-  FloatRect oldBounds = bounds;
-  bounds.unite(guestBoundsInHome.rect());
-  if (bounds != oldBounds)
-    knownToBeOpaque = false;
+  paint_chunks.AppendVector(guest.paint_chunks);
+  FloatClipRect guest_bounds_in_home(guest.bounds);
+  GeometryMapper::LocalToAncestorVisualRect(
+      guest.property_tree_state, property_tree_state, guest_bounds_in_home);
+  FloatRect old_bounds = bounds;
+  bounds.Unite(guest_bounds_in_home.Rect());
+  if (bounds != old_bounds)
+    known_to_be_opaque = false;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
   // If we knew the new bounds is enclosed by the mapped opaque region of
   // the guest layer, we can deduce the merged layer being opaque too.
 }
 
-static bool canUpcastTo(const PropertyTreeState& guest,
+static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home);
-bool PaintArtifactCompositor::PendingLayer::canMerge(
+bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest) const {
-  if (isForeign || guest.isForeign)
+  if (is_foreign || guest.is_foreign)
     return false;
-  if (backfaceHidden != guest.backfaceHidden)
+  if (backface_hidden != guest.backface_hidden)
     return false;
-  if (propertyTreeState.effect() != guest.propertyTreeState.effect())
+  if (property_tree_state.Effect() != guest.property_tree_state.Effect())
     return false;
-  return canUpcastTo(guest.propertyTreeState, propertyTreeState);
+  return CanUpcastTo(guest.property_tree_state, property_tree_state);
 }
 
-void PaintArtifactCompositor::PendingLayer::upcast(
-    const PropertyTreeState& newState) {
-  DCHECK(!isForeign);
-  FloatClipRect floatClipRect(bounds);
-  GeometryMapper::localToAncestorVisualRect(propertyTreeState, newState,
-                                            floatClipRect);
-  bounds = floatClipRect.rect();
+void PaintArtifactCompositor::PendingLayer::Upcast(
+    const PropertyTreeState& new_state) {
+  DCHECK(!is_foreign);
+  FloatClipRect float_clip_rect(bounds);
+  GeometryMapper::LocalToAncestorVisualRect(property_tree_state, new_state,
+                                            float_clip_rect);
+  bounds = float_clip_rect.Rect();
 
-  propertyTreeState = newState;
+  property_tree_state = new_state;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
   // A local visual rect mapped to an ancestor space may become a polygon
   // (e.g. consider transformed clip), also effects may affect the opaque
   // region. To determine whether the layer is still opaque, we need to
   // query conservative opaque rect after mapping to an ancestor space,
   // which is not supported by GeometryMapper yet.
-  knownToBeOpaque = false;
+  known_to_be_opaque = false;
 }
 
-static bool isNonCompositingAncestorOf(
+static bool IsNonCompositingAncestorOf(
     const TransformPaintPropertyNode* ancestor,
     const TransformPaintPropertyNode* node) {
-  for (; node != ancestor; node = node->parent()) {
-    if (!node || node->hasDirectCompositingReasons())
+  for (; node != ancestor; node = node->Parent()) {
+    if (!node || node->HasDirectCompositingReasons())
       return false;
   }
   return true;
@@ -420,80 +425,80 @@ static bool isNonCompositingAncestorOf(
 //    be within compositing boundary of the home transform space.
 // 4. The guest transform space must be within compositing boundary of the home
 //    transform space.
-static bool canUpcastTo(const PropertyTreeState& guest,
+static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
-  DCHECK_EQ(home.effect(), guest.effect());
+  DCHECK_EQ(home.Effect(), guest.Effect());
 
-  for (const ClipPaintPropertyNode* currentClip = guest.clip();
-       currentClip != home.clip(); currentClip = currentClip->parent()) {
-    if (!currentClip || currentClip->hasDirectCompositingReasons())
+  for (const ClipPaintPropertyNode* current_clip = guest.Clip();
+       current_clip != home.Clip(); current_clip = current_clip->Parent()) {
+    if (!current_clip || current_clip->HasDirectCompositingReasons())
       return false;
-    if (!isNonCompositingAncestorOf(home.transform(),
-                                    currentClip->localTransformSpace()))
+    if (!IsNonCompositingAncestorOf(home.Transform(),
+                                    current_clip->LocalTransformSpace()))
       return false;
   }
 
-  return isNonCompositingAncestorOf(home.transform(), guest.transform());
+  return IsNonCompositingAncestorOf(home.Transform(), guest.Transform());
 }
 
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
 // Otherwise, return the child of 'ancestor' that is an ancestor of 'node' or
 // 'node' itself.
-static const EffectPaintPropertyNode* strictChildOfAlongPath(
+static const EffectPaintPropertyNode* StrictChildOfAlongPath(
     const EffectPaintPropertyNode* ancestor,
     const EffectPaintPropertyNode* node) {
-  for (; node; node = node->parent()) {
-    if (node->parent() == ancestor)
+  for (; node; node = node->Parent()) {
+    if (node->Parent() == ancestor)
       return node;
   }
   return nullptr;
 }
 
-bool PaintArtifactCompositor::mightOverlap(const PendingLayer& layerA,
-                                           const PendingLayer& layerB) {
-  PropertyTreeState rootPropertyTreeState(TransformPaintPropertyNode::root(),
-                                          ClipPaintPropertyNode::root(),
-                                          EffectPaintPropertyNode::root());
+bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
+                                           const PendingLayer& layer_b) {
+  PropertyTreeState root_property_tree_state(TransformPaintPropertyNode::Root(),
+                                             ClipPaintPropertyNode::Root(),
+                                             EffectPaintPropertyNode::Root());
 
-  FloatClipRect boundsA(layerA.bounds);
-  GeometryMapper::localToAncestorVisualRect(layerA.propertyTreeState,
-                                            rootPropertyTreeState, boundsA);
-  FloatClipRect boundsB(layerB.bounds);
-  GeometryMapper::localToAncestorVisualRect(layerB.propertyTreeState,
-                                            rootPropertyTreeState, boundsB);
+  FloatClipRect bounds_a(layer_a.bounds);
+  GeometryMapper::LocalToAncestorVisualRect(layer_a.property_tree_state,
+                                            root_property_tree_state, bounds_a);
+  FloatClipRect bounds_b(layer_b.bounds);
+  GeometryMapper::LocalToAncestorVisualRect(layer_b.property_tree_state,
+                                            root_property_tree_state, bounds_b);
 
-  return boundsA.rect().intersects(boundsB.rect());
+  return bounds_a.Rect().Intersects(bounds_b.Rect());
 }
 
-bool PaintArtifactCompositor::canDecompositeEffect(
+bool PaintArtifactCompositor::CanDecompositeEffect(
     const EffectPaintPropertyNode* effect,
     const PendingLayer& layer) {
   // If the effect associated with the layer is deeper than than the effect
   // we are attempting to decomposite, than implies some previous decision
   // did not allow to decomposite intermediate effects.
-  if (layer.propertyTreeState.effect() != effect)
+  if (layer.property_tree_state.Effect() != effect)
     return false;
-  if (layer.isForeign)
+  if (layer.is_foreign)
     return false;
   // TODO(trchen): Exotic blending layer may be decomposited only if it could
   // be merged into the first layer of the current group.
-  if (effect->blendMode() != SkBlendMode::kSrcOver)
+  if (effect->BlendMode() != SkBlendMode::kSrcOver)
     return false;
-  if (effect->hasDirectCompositingReasons())
+  if (effect->HasDirectCompositingReasons())
     return false;
-  if (!canUpcastTo(layer.propertyTreeState,
-                   PropertyTreeState(effect->localTransformSpace(),
-                                     effect->outputClip(), effect)))
+  if (!CanUpcastTo(layer.property_tree_state,
+                   PropertyTreeState(effect->LocalTransformSpace(),
+                                     effect->OutputClip(), effect)))
     return false;
   return true;
 }
 
-void PaintArtifactCompositor::layerizeGroup(
-    const PaintArtifact& paintArtifact,
-    Vector<PendingLayer>& pendingLayers,
-    const EffectPaintPropertyNode& currentGroup,
-    Vector<PaintChunk>::const_iterator& chunkIt) {
-  size_t firstLayerInCurrentGroup = pendingLayers.size();
+void PaintArtifactCompositor::LayerizeGroup(
+    const PaintArtifact& paint_artifact,
+    Vector<PendingLayer>& pending_layers,
+    const EffectPaintPropertyNode& current_group,
+    Vector<PaintChunk>::const_iterator& chunk_it) {
+  size_t first_layer_in_current_group = pending_layers.size();
   // The worst case time complexity of the algorithm is O(pqd), where
   // p = the number of paint chunks.
   // q = average number of trials to find a squash layer or rejected
@@ -512,31 +517,32 @@ void PaintArtifactCompositor::layerizeGroup(
   // previous layer. Again finding the host costs O(qd). Merging would cost O(p)
   // due to copying the chunk list. Subtotal: O((qd + p)d) = O(qd^2 + pd)
   // Assuming p > d, the total complexity would be O(pqd + qd^2 + pd) = O(pqd)
-  while (chunkIt != paintArtifact.paintChunks().end()) {
+  while (chunk_it != paint_artifact.PaintChunks().end()) {
     // Look at the effect node of the next chunk. There are 3 possible cases:
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
     // C. The next chunk belongs to some subgroup of the current group.
-    const EffectPaintPropertyNode* chunkEffect =
-        chunkIt->properties.propertyTreeState.effect();
-    if (chunkEffect == &currentGroup) {
+    const EffectPaintPropertyNode* chunk_effect =
+        chunk_it->properties.property_tree_state.Effect();
+    if (chunk_effect == &current_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
-      bool isForeign = paintArtifact.getDisplayItemList()[chunkIt->beginIndex]
-                           .isForeignLayer();
-      pendingLayers.push_back(PendingLayer(*chunkIt++, isForeign));
-      if (isForeign)
+      bool is_foreign =
+          paint_artifact.GetDisplayItemList()[chunk_it->begin_index]
+              .IsForeignLayer();
+      pending_layers.push_back(PendingLayer(*chunk_it++, is_foreign));
+      if (is_foreign)
         continue;
     } else {
       const EffectPaintPropertyNode* subgroup =
-          strictChildOfAlongPath(&currentGroup, chunkEffect);
+          StrictChildOfAlongPath(&current_group, chunk_effect);
       // Case B: This means we need to close the current group without
       //         processing the next chunk.
       if (!subgroup)
         break;
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
-      size_t firstLayerInSubgroup = pendingLayers.size();
-      layerizeGroup(paintArtifact, pendingLayers, *subgroup, chunkIt);
+      size_t first_layer_in_subgroup = pending_layers.size();
+      LayerizeGroup(paint_artifact, pending_layers, *subgroup, chunk_it);
       // Now the chunk iterator stepped over the subgroup we just saw.
       // If the subgroup generated 2 or more layers then the subgroup must be
       // composited to satisfy grouping requirement.
@@ -544,134 +550,136 @@ void PaintArtifactCompositor::layerizeGroup(
       // for example,  Opacity(A+B) != Opacity(A) + Opacity(B), thus an effect
       // either applied 100% within a layer, or not at all applied within layer
       // (i.e. applied by compositor render surface instead).
-      if (pendingLayers.size() != firstLayerInSubgroup + 1)
+      if (pending_layers.size() != first_layer_in_subgroup + 1)
         continue;
       // Now attempt to "decomposite" subgroup.
-      PendingLayer& subgroupLayer = pendingLayers[firstLayerInSubgroup];
-      if (!canDecompositeEffect(subgroup, subgroupLayer))
+      PendingLayer& subgroup_layer = pending_layers[first_layer_in_subgroup];
+      if (!CanDecompositeEffect(subgroup, subgroup_layer))
         continue;
-      subgroupLayer.upcast(PropertyTreeState(subgroup->localTransformSpace(),
-                                             subgroup->outputClip(),
-                                             &currentGroup));
+      subgroup_layer.Upcast(PropertyTreeState(subgroup->LocalTransformSpace(),
+                                              subgroup->OutputClip(),
+                                              &current_group));
     }
     // At this point pendingLayers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
     // processed. Now determine whether it could be merged into a previous
     // layer.
-    const PendingLayer& newLayer = pendingLayers.back();
-    DCHECK(!newLayer.isForeign);
-    DCHECK_EQ(&currentGroup, newLayer.propertyTreeState.effect());
+    const PendingLayer& new_layer = pending_layers.back();
+    DCHECK(!new_layer.is_foreign);
+    DCHECK_EQ(&current_group, new_layer.property_tree_state.Effect());
     // This iterates pendingLayers[firstLayerInCurrentGroup:-1] in reverse.
-    for (size_t candidateIndex = pendingLayers.size() - 1;
-         candidateIndex-- > firstLayerInCurrentGroup;) {
-      PendingLayer& candidateLayer = pendingLayers[candidateIndex];
-      if (candidateLayer.canMerge(newLayer)) {
-        candidateLayer.merge(newLayer);
-        pendingLayers.pop_back();
+    for (size_t candidate_index = pending_layers.size() - 1;
+         candidate_index-- > first_layer_in_current_group;) {
+      PendingLayer& candidate_layer = pending_layers[candidate_index];
+      if (candidate_layer.CanMerge(new_layer)) {
+        candidate_layer.Merge(new_layer);
+        pending_layers.pop_back();
         break;
       }
-      if (mightOverlap(newLayer, candidateLayer))
+      if (MightOverlap(new_layer, candidate_layer))
         break;
     }
   }
 }
 
-void PaintArtifactCompositor::collectPendingLayers(
-    const PaintArtifact& paintArtifact,
-    Vector<PendingLayer>& pendingLayers) {
+void PaintArtifactCompositor::CollectPendingLayers(
+    const PaintArtifact& paint_artifact,
+    Vector<PendingLayer>& pending_layers) {
   Vector<PaintChunk>::const_iterator cursor =
-      paintArtifact.paintChunks().begin();
-  layerizeGroup(paintArtifact, pendingLayers, *EffectPaintPropertyNode::root(),
-                cursor);
-  DCHECK_EQ(paintArtifact.paintChunks().end(), cursor);
+      paint_artifact.PaintChunks().begin();
+  LayerizeGroup(paint_artifact, pending_layers,
+                *EffectPaintPropertyNode::Root(), cursor);
+  DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
 }
 
-void PaintArtifactCompositor::update(
-    const PaintArtifact& paintArtifact,
-    RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations,
-    bool storeDebugInfo,
-    CompositorElementIdSet& compositedElementIds) {
+void PaintArtifactCompositor::Update(
+    const PaintArtifact& paint_artifact,
+    RasterInvalidationTrackingMap<const PaintChunk>* raster_chunk_invalidations,
+    bool store_debug_info,
+    CompositorElementIdSet& composited_element_ids) {
 #ifndef NDEBUG
-  storeDebugInfo = true;
+  store_debug_info = true;
 #endif
 
-  DCHECK(m_rootLayer);
+  DCHECK(root_layer_);
 
-  cc::LayerTreeHost* layerTreeHost = m_rootLayer->layer_tree_host();
+  cc::LayerTreeHost* layer_tree_host = root_layer_->layer_tree_host();
 
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
-  if (!layerTreeHost)
+  if (!layer_tree_host)
     return;
 
-  if (m_extraDataForTestingEnabled)
-    m_extraDataForTesting = WTF::wrapUnique(new ExtraDataForTesting);
+  if (extra_data_for_testing_enabled_)
+    extra_data_for_testing_ = WTF::WrapUnique(new ExtraDataForTesting);
 
-  m_rootLayer->RemoveAllChildren();
+  root_layer_->RemoveAllChildren();
 
-  m_rootLayer->set_property_tree_sequence_number(sPropertyTreeSequenceNumber);
+  root_layer_->set_property_tree_sequence_number(
+      g_s_property_tree_sequence_number);
 
-  PropertyTreeManager propertyTreeManager(*layerTreeHost->property_trees(),
-                                          m_rootLayer.get(),
-                                          sPropertyTreeSequenceNumber);
+  PropertyTreeManager property_tree_manager(*layer_tree_host->property_trees(),
+                                            root_layer_.get(),
+                                            g_s_property_tree_sequence_number);
 
-  Vector<PendingLayer, 0> pendingLayers;
-  collectPendingLayers(paintArtifact, pendingLayers);
+  Vector<PendingLayer, 0> pending_layers;
+  CollectPendingLayers(paint_artifact, pending_layers);
 
-  Vector<std::unique_ptr<ContentLayerClientImpl>> newContentLayerClients;
-  newContentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
-  for (const PendingLayer& pendingLayer : pendingLayers) {
-    gfx::Vector2dF layerOffset;
-    scoped_refptr<cc::Layer> layer = compositedLayerForPendingLayer(
-        paintArtifact, pendingLayer, layerOffset, newContentLayerClients,
-        rasterChunkInvalidations, storeDebugInfo);
+  Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
+  new_content_layer_clients.ReserveCapacity(
+      paint_artifact.PaintChunks().size());
+  for (const PendingLayer& pending_layer : pending_layers) {
+    gfx::Vector2dF layer_offset;
+    scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
+        paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
+        raster_chunk_invalidations, store_debug_info);
 
-    const auto* transform = pendingLayer.propertyTreeState.transform();
-    int transformId =
-        propertyTreeManager.ensureCompositorTransformNode(transform);
-    int clipId = propertyTreeManager.ensureCompositorClipNode(
-        pendingLayer.propertyTreeState.clip());
-    int effectId = propertyTreeManager.switchToEffectNode(
-        *pendingLayer.propertyTreeState.effect());
+    const auto* transform = pending_layer.property_tree_state.Transform();
+    int transform_id =
+        property_tree_manager.EnsureCompositorTransformNode(transform);
+    int clip_id = property_tree_manager.EnsureCompositorClipNode(
+        pending_layer.property_tree_state.Clip());
+    int effect_id = property_tree_manager.SwitchToEffectNode(
+        *pending_layer.property_tree_state.Effect());
 
-    layer->set_offset_to_transform_parent(layerOffset);
-    CompositorElementId elementId =
-        pendingLayer.propertyTreeState.compositorElementId();
-    if (elementId) {
-      layer->SetElementId(elementId);
-      compositedElementIds.insert(elementId);
+    layer->set_offset_to_transform_parent(layer_offset);
+    CompositorElementId element_id =
+        pending_layer.property_tree_state.GetCompositorElementId();
+    if (element_id) {
+      layer->SetElementId(element_id);
+      composited_element_ids.insert(element_id);
     }
 
-    m_rootLayer->AddChild(layer);
-    layer->set_property_tree_sequence_number(sPropertyTreeSequenceNumber);
-    layer->SetTransformTreeIndex(transformId);
-    layer->SetClipTreeIndex(clipId);
-    layer->SetEffectTreeIndex(effectId);
-    propertyTreeManager.updateLayerScrollMapping(layer.get(), transform);
+    root_layer_->AddChild(layer);
+    layer->set_property_tree_sequence_number(g_s_property_tree_sequence_number);
+    layer->SetTransformTreeIndex(transform_id);
+    layer->SetClipTreeIndex(clip_id);
+    layer->SetEffectTreeIndex(effect_id);
+    property_tree_manager.UpdateLayerScrollMapping(layer.get(), transform);
 
-    layer->SetShouldCheckBackfaceVisibility(pendingLayer.backfaceHidden);
+    layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
 
-    if (m_extraDataForTestingEnabled)
-      m_extraDataForTesting->contentLayers.push_back(layer);
+    if (extra_data_for_testing_enabled_)
+      extra_data_for_testing_->content_layers.push_back(layer);
   }
-  m_contentLayerClients.clear();
-  m_contentLayerClients.swap(newContentLayerClients);
+  content_layer_clients_.Clear();
+  content_layer_clients_.Swap(new_content_layer_clients);
 
   // Mark the property trees as having been rebuilt.
-  layerTreeHost->property_trees()->sequence_number =
-      sPropertyTreeSequenceNumber;
-  layerTreeHost->property_trees()->needs_rebuild = false;
-  layerTreeHost->property_trees()->ResetCachedData();
+  layer_tree_host->property_trees()->sequence_number =
+      g_s_property_tree_sequence_number;
+  layer_tree_host->property_trees()->needs_rebuild = false;
+  layer_tree_host->property_trees()->ResetCachedData();
 
-  sPropertyTreeSequenceNumber++;
+  g_s_property_tree_sequence_number++;
 }
 
 #ifndef NDEBUG
-void PaintArtifactCompositor::showDebugData() {
-  LOG(ERROR) << layersAsJSON(LayerTreeIncludesDebugInfo)
-                    ->toPrettyJSONString()
-                    .utf8()
-                    .data();
+void PaintArtifactCompositor::ShowDebugData() {
+  LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo)
+                    ->ToPrettyJSONString()
+                    .Utf8()
+                    .Data();
 }
 #endif
 

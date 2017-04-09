@@ -18,43 +18,43 @@ class SpellCheckRequester;
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
-  static ColdModeSpellCheckRequester* create(LocalFrame&);
+  static ColdModeSpellCheckRequester* Create(LocalFrame&);
 
-  void setNeedsMoreInvocationForTesting() {
-    m_needsMoreInvocationForTesting = true;
+  void SetNeedsMoreInvocationForTesting() {
+    needs_more_invocation_for_testing_ = true;
   }
 
-  void invoke(IdleDeadline*);
-  bool fullDocumentChecked() const;
+  void Invoke(IdleDeadline*);
+  bool FullDocumentChecked() const;
 
   DECLARE_TRACE();
 
  private:
   explicit ColdModeSpellCheckRequester(LocalFrame&);
 
-  LocalFrame& frame() const { return *m_frame; }
-  SpellCheckRequester& spellCheckRequester() const;
+  LocalFrame& GetFrame() const { return *frame_; }
+  SpellCheckRequester& GetSpellCheckRequester() const;
 
   // Perform checking task incrementally based on the stored state.
-  void step();
+  void Step();
 
-  void searchForNextRootEditable();
-  void initializeForCurrentRootEditable();
-  bool haveMoreChunksToCheck();
-  void requestCheckingForNextChunk();
-  void finishCheckingCurrentRootEditable();
+  void SearchForNextRootEditable();
+  void InitializeForCurrentRootEditable();
+  bool HaveMoreChunksToCheck();
+  void RequestCheckingForNextChunk();
+  void FinishCheckingCurrentRootEditable();
 
-  void resetCheckingProgress();
-  void chunkAndRequestFullCheckingFor(const Element&);
+  void ResetCheckingProgress();
+  void ChunkAndRequestFullCheckingFor(const Element&);
 
-  const Member<LocalFrame> m_frame;
-  Member<Node> m_nextNode;
-  Member<Element> m_currentRootEditable;
-  int m_currentFullLength;
-  int m_currentChunkIndex;
-  Position m_currentChunkStart;
-  uint64_t m_lastCheckedDOMTreeVersion;
-  mutable bool m_needsMoreInvocationForTesting;
+  const Member<LocalFrame> frame_;
+  Member<Node> next_node_;
+  Member<Element> current_root_editable_;
+  int current_full_length_;
+  int current_chunk_index_;
+  Position current_chunk_start_;
+  uint64_t last_checked_dom_tree_version_;
+  mutable bool needs_more_invocation_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(ColdModeSpellCheckRequester);
 };

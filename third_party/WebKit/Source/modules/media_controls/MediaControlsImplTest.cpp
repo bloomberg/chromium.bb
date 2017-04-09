@@ -40,587 +40,592 @@ namespace {
 class MockChromeClient : public EmptyChromeClient {
  public:
   // EmptyChromeClient overrides:
-  WebScreenInfo screenInfo() const override {
-    WebScreenInfo screenInfo;
-    screenInfo.orientationType = WebScreenOrientationLandscapePrimary;
-    return screenInfo;
+  WebScreenInfo GetScreenInfo() const override {
+    WebScreenInfo screen_info;
+    screen_info.orientation_type = kWebScreenOrientationLandscapePrimary;
+    return screen_info;
   }
 };
 
 class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   // WebMediaPlayer overrides:
-  WebTimeRanges seekable() const override { return m_seekable; }
-  bool hasVideo() const override { return true; }
+  WebTimeRanges Seekable() const override { return seekable_; }
+  bool HasVideo() const override { return true; }
 
-  WebTimeRanges m_seekable;
+  WebTimeRanges seekable_;
 };
 
 class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
  public:
-  void stateChanged(WebRemotePlaybackState) override {}
-  void availabilityChanged(
+  void StateChanged(WebRemotePlaybackState) override {}
+  void AvailabilityChanged(
       WebRemotePlaybackAvailability availability) override {
-    m_availability = availability;
+    availability_ = availability;
   }
-  void promptCancelled() override {}
-  bool remotePlaybackAvailable() const override {
-    return m_availability == WebRemotePlaybackAvailability::DeviceAvailable;
+  void PromptCancelled() override {}
+  bool RemotePlaybackAvailable() const override {
+    return availability_ == WebRemotePlaybackAvailability::kDeviceAvailable;
   }
 
  private:
-  WebRemotePlaybackAvailability m_availability =
-      WebRemotePlaybackAvailability::Unknown;
+  WebRemotePlaybackAvailability availability_ =
+      WebRemotePlaybackAvailability::kUnknown;
 };
 
 class MockLayoutObject : public LayoutObject {
  public:
   MockLayoutObject() : LayoutObject(nullptr) {}
 
-  const char* name() const override { return "MockLayoutObject"; }
-  void layout() override {}
-  FloatRect localBoundingBoxRectForAccessibility() const override {
+  const char* GetName() const override { return "MockLayoutObject"; }
+  void GetLayout() override {}
+  FloatRect LocalBoundingBoxRectForAccessibility() const override {
     return FloatRect();
   }
 
-  void setShouldDoFullPaintInvalidation(PaintInvalidationReason) {
-    m_fullPaintInvalidationCallCount++;
+  void SetShouldDoFullPaintInvalidation(PaintInvalidationReason) {
+    full_paint_invalidation_call_count_++;
   }
 
-  int fullPaintInvalidationCallCount() const {
-    return m_fullPaintInvalidationCallCount;
+  int FullPaintInvalidationCallCount() const {
+    return full_paint_invalidation_call_count_;
   }
 
  private:
-  int m_fullPaintInvalidationCallCount = 0;
+  int full_paint_invalidation_call_count_ = 0;
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
+  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
 
-  std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
+  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return WTF::wrapUnique(new MockVideoWebMediaPlayer);
+    return WTF::WrapUnique(new MockVideoWebMediaPlayer);
   }
 
-  WebRemotePlaybackClient* createWebRemotePlaybackClient(
+  WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override {
-    if (!m_remotePlaybackClient) {
-      m_remotePlaybackClient = WTF::wrapUnique(new MockWebRemotePlaybackClient);
+    if (!remote_playback_client_) {
+      remote_playback_client_ =
+          WTF::WrapUnique(new MockWebRemotePlaybackClient);
     }
-    return m_remotePlaybackClient.get();
+    return remote_playback_client_.get();
   }
 
  private:
-  std::unique_ptr<MockWebRemotePlaybackClient> m_remotePlaybackClient;
+  std::unique_ptr<MockWebRemotePlaybackClient> remote_playback_client_;
 };
 
-Element* getElementByShadowPseudoId(Node& rootNode,
-                                    const char* shadowPseudoId) {
-  for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
-    if (element.shadowPseudoId() == shadowPseudoId)
+Element* GetElementByShadowPseudoId(Node& root_node,
+                                    const char* shadow_pseudo_id) {
+  for (Element& element : ElementTraversal::DescendantsOf(root_node)) {
+    if (element.ShadowPseudoId() == shadow_pseudo_id)
       return &element;
   }
   return nullptr;
 }
 
-bool isElementVisible(Element& element) {
-  const StylePropertySet* inlineStyle = element.inlineStyle();
+bool IsElementVisible(Element& element) {
+  const StylePropertySet* inline_style = element.InlineStyle();
 
-  if (!inlineStyle)
+  if (!inline_style)
     return true;
 
-  if (inlineStyle->getPropertyValue(CSSPropertyDisplay) == "none")
+  if (inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
     return false;
 
-  if (inlineStyle->hasProperty(CSSPropertyOpacity) &&
-      inlineStyle->getPropertyValue(CSSPropertyOpacity).toDouble() == 0.0) {
+  if (inline_style->HasProperty(CSSPropertyOpacity) &&
+      inline_style->GetPropertyValue(CSSPropertyOpacity).ToDouble() == 0.0) {
     return false;
   }
 
-  if (inlineStyle->getPropertyValue(CSSPropertyVisibility) == "hidden")
+  if (inline_style->GetPropertyValue(CSSPropertyVisibility) == "hidden")
     return false;
 
   if (Element* parent = element.parentElement())
-    return isElementVisible(*parent);
+    return IsElementVisible(*parent);
 
   return true;
 }
 
 // This must match MediaControlDownloadButtonElement::DownloadActionMetrics.
 enum DownloadActionMetrics {
-  Shown = 0,
-  Clicked,
-  Count  // Keep last.
+  kShown = 0,
+  kClicked,
+  kCount  // Keep last.
 };
 
 }  // namespace
 
 class MediaControlsImplTest : public ::testing::Test {
  protected:
-  virtual void SetUp() { initializePage(); }
+  virtual void SetUp() { InitializePage(); }
 
-  void initializePage() {
+  void InitializePage() {
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = new MockChromeClient();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients,
-                                           StubLocalFrameClient::create());
+    FillWithEmptyClients(clients);
+    clients.chrome_client = new MockChromeClient();
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients,
+                                           StubLocalFrameClient::Create());
 
-    document().write("<video>");
+    GetDocument().write("<video>");
     HTMLVideoElement& video =
-        toHTMLVideoElement(*document().querySelector("video"));
-    m_mediaControls = static_cast<MediaControlsImpl*>(video.mediaControls());
+        toHTMLVideoElement(*GetDocument().QuerySelector("video"));
+    media_controls_ = static_cast<MediaControlsImpl*>(video.GetMediaControls());
 
     // If scripts are not enabled, controls will always be shown.
-    m_pageHolder->frame().settings()->setScriptEnabled(true);
+    page_holder_->GetFrame().GetSettings()->SetScriptEnabled(true);
   }
 
-  void simulateRouteAvailable() {
-    m_mediaControls->mediaElement().remoteRouteAvailabilityChanged(
-        WebRemotePlaybackAvailability::DeviceAvailable);
+  void SimulateRouteAvailable() {
+    media_controls_->MediaElement().RemoteRouteAvailabilityChanged(
+        WebRemotePlaybackAvailability::kDeviceAvailable);
   }
 
-  void ensureSizing() {
+  void EnsureSizing() {
     // Fire the size-change callback to ensure that the controls have
     // been properly notified of the video size.
-    m_mediaControls->notifyElementSizeChanged(
-        m_mediaControls->mediaElement().getBoundingClientRect());
+    media_controls_->NotifyElementSizeChanged(
+        media_controls_->MediaElement().getBoundingClientRect());
   }
 
-  void simulateHideMediaControlsTimerFired() {
-    m_mediaControls->hideMediaControlsTimerFired(nullptr);
+  void SimulateHideMediaControlsTimerFired() {
+    media_controls_->HideMediaControlsTimerFired(nullptr);
   }
 
-  void simulateLoadedMetadata() { m_mediaControls->onLoadedMetadata(); }
+  void SimulateLoadedMetadata() { media_controls_->OnLoadedMetadata(); }
 
-  MediaControlsImpl& mediaControls() { return *m_mediaControls; }
-  MockVideoWebMediaPlayer* webMediaPlayer() {
+  MediaControlsImpl& MediaControls() { return *media_controls_; }
+  MockVideoWebMediaPlayer* WebMediaPlayer() {
     return static_cast<MockVideoWebMediaPlayer*>(
-        mediaControls().mediaElement().webMediaPlayer());
+        MediaControls().MediaElement().GetWebMediaPlayer());
   }
-  Document& document() { return m_pageHolder->document(); }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
 
-  HistogramTester& histogramTester() { return m_histogramTester; }
+  HistogramTester& GetHistogramTester() { return histogram_tester_; }
 
-  void loadMediaWithDuration(double duration) {
-    mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-    testing::runPendingTasks();
-    WebTimeRange timeRange(0.0, duration);
-    webMediaPlayer()->m_seekable.assign(&timeRange, 1);
-    mediaControls().mediaElement().durationChanged(duration,
+  void LoadMediaWithDuration(double duration) {
+    MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+    testing::RunPendingTasks();
+    WebTimeRange time_range(0.0, duration);
+    WebMediaPlayer()->seekable_.Assign(&time_range, 1);
+    MediaControls().MediaElement().DurationChanged(duration,
                                                    false /* requestSeek */);
-    simulateLoadedMetadata();
+    SimulateLoadedMetadata();
   }
 
-  void setReady() {
-    mediaControls().mediaElement().setReadyState(
+  void SetReady() {
+    MediaControls().MediaElement().SetReadyState(
         HTMLMediaElement::kHaveEnoughData);
   }
 
-  void mouseDownAt(WebFloatPoint pos);
-  void mouseMoveTo(WebFloatPoint pos);
-  void mouseUpAt(WebFloatPoint pos);
+  void MouseDownAt(WebFloatPoint pos);
+  void MouseMoveTo(WebFloatPoint pos);
+  void MouseUpAt(WebFloatPoint pos);
 
  private:
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<MediaControlsImpl> m_mediaControls;
-  HistogramTester m_histogramTester;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  Persistent<MediaControlsImpl> media_controls_;
+  HistogramTester histogram_tester_;
 };
 
-void MediaControlsImplTest::mouseDownAt(WebFloatPoint pos) {
-  WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown, pos /* client pos */,
-                               pos /* screen pos */,
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseDownEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
+  WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown,
+                                 pos /* client pos */, pos /* screen pos */,
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
 }
 
-void MediaControlsImplTest::mouseMoveTo(WebFloatPoint pos) {
-  WebMouseEvent mouseMoveEvent(WebInputEvent::MouseMove, pos /* client pos */,
-                               pos /* screen pos */,
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent, {});
+void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
+  WebMouseEvent mouse_move_event(WebInputEvent::kMouseMove,
+                                 pos /* client pos */, pos /* screen pos */,
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, {});
 }
 
-void MediaControlsImplTest::mouseUpAt(WebFloatPoint pos) {
-  WebMouseEvent mouseUpEvent(
-      WebMouseEvent::MouseUp, pos /* client pos */, pos /* screen pos */,
-      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
-      WebInputEvent::TimeStampForTesting);
-  mouseUpEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
+void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
+  WebMouseEvent mouse_up_event(
+      WebMouseEvent::kMouseUp, pos /* client pos */, pos /* screen pos */,
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
 }
 
 TEST_F(MediaControlsImplTest, HideAndShow) {
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
-  Element* panel = getElementByShadowPseudoId(mediaControls(),
+  Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
 
-  ASSERT_TRUE(isElementVisible(*panel));
-  mediaControls().hide();
-  ASSERT_FALSE(isElementVisible(*panel));
-  mediaControls().show();
-  ASSERT_TRUE(isElementVisible(*panel));
+  ASSERT_TRUE(IsElementVisible(*panel));
+  MediaControls().Hide();
+  ASSERT_FALSE(IsElementVisible(*panel));
+  MediaControls().Show();
+  ASSERT_TRUE(IsElementVisible(*panel));
 }
 
 TEST_F(MediaControlsImplTest, Reset) {
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
-  Element* panel = getElementByShadowPseudoId(mediaControls(),
+  Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
 
-  ASSERT_TRUE(isElementVisible(*panel));
-  mediaControls().reset();
-  ASSERT_TRUE(isElementVisible(*panel));
+  ASSERT_TRUE(IsElementVisible(*panel));
+  MediaControls().Reset();
+  ASSERT_TRUE(IsElementVisible(*panel));
 }
 
 TEST_F(MediaControlsImplTest, HideAndReset) {
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
-  Element* panel = getElementByShadowPseudoId(mediaControls(),
+  Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
 
-  ASSERT_TRUE(isElementVisible(*panel));
-  mediaControls().hide();
-  ASSERT_FALSE(isElementVisible(*panel));
-  mediaControls().reset();
-  ASSERT_FALSE(isElementVisible(*panel));
+  ASSERT_TRUE(IsElementVisible(*panel));
+  MediaControls().Hide();
+  ASSERT_FALSE(IsElementVisible(*panel));
+  MediaControls().Reset();
+  ASSERT_FALSE(IsElementVisible(*panel));
 }
 
 TEST_F(MediaControlsImplTest, ResetDoesNotTriggerInitialLayout) {
-  Document& document = this->document();
-  int oldElementCount = document.styleEngine().styleForElementCount();
+  Document& document = this->GetDocument();
+  int old_element_count = document.GetStyleEngine().StyleForElementCount();
   // Also assert that there are no layouts yet.
-  ASSERT_EQ(0, oldElementCount);
-  mediaControls().reset();
-  int newElementCount = document.styleEngine().styleForElementCount();
-  ASSERT_EQ(oldElementCount, newElementCount);
+  ASSERT_EQ(0, old_element_count);
+  MediaControls().Reset();
+  int new_element_count = document.GetStyleEngine().StyleForElementCount();
+  ASSERT_EQ(old_element_count, new_element_count);
 }
 
 TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
-  ensureSizing();
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  EnsureSizing();
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
-  Element* castButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-cast-button");
-  ASSERT_NE(nullptr, castButton);
+  Element* cast_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-cast-button");
+  ASSERT_NE(nullptr, cast_button);
 
-  ASSERT_FALSE(isElementVisible(*castButton));
+  ASSERT_FALSE(IsElementVisible(*cast_button));
 
-  simulateRouteAvailable();
-  ASSERT_TRUE(isElementVisible(*castButton));
+  SimulateRouteAvailable();
+  ASSERT_TRUE(IsElementVisible(*cast_button));
 }
 
 TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
-  ensureSizing();
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  EnsureSizing();
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
-  Element* castButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-cast-button");
-  ASSERT_NE(nullptr, castButton);
+  Element* cast_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-cast-button");
+  ASSERT_NE(nullptr, cast_button);
 
-  ASSERT_FALSE(isElementVisible(*castButton));
-  simulateRouteAvailable();
-  ASSERT_TRUE(isElementVisible(*castButton));
+  ASSERT_FALSE(IsElementVisible(*cast_button));
+  SimulateRouteAvailable();
+  ASSERT_TRUE(IsElementVisible(*cast_button));
 
-  mediaControls().mediaElement().setBooleanAttribute(
+  MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  ASSERT_FALSE(isElementVisible(*castButton));
+  ASSERT_FALSE(IsElementVisible(*cast_button));
 
-  mediaControls().mediaElement().setBooleanAttribute(
+  MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  ASSERT_TRUE(isElementVisible(*castButton));
+  ASSERT_TRUE(IsElementVisible(*cast_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefault) {
-  Element* castOverlayButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-overlay-cast-button");
-  ASSERT_NE(nullptr, castOverlayButton);
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
 
-  simulateRouteAvailable();
-  ASSERT_TRUE(isElementVisible(*castOverlayButton));
+  SimulateRouteAvailable();
+  ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
-  Element* castOverlayButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-overlay-cast-button");
-  ASSERT_NE(nullptr, castOverlayButton);
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
 
-  ASSERT_FALSE(isElementVisible(*castOverlayButton));
-  simulateRouteAvailable();
-  ASSERT_TRUE(isElementVisible(*castOverlayButton));
+  ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
+  SimulateRouteAvailable();
+  ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 
-  mediaControls().mediaElement().setBooleanAttribute(
+  MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  ASSERT_FALSE(isElementVisible(*castOverlayButton));
+  ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
 
-  mediaControls().mediaElement().setBooleanAttribute(
+  MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  ASSERT_TRUE(isElementVisible(*castOverlayButton));
+  ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
-  Element* castOverlayButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-overlay-cast-button");
-  ASSERT_NE(nullptr, castOverlayButton);
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
 
-  EXPECT_FALSE(isElementVisible(*castOverlayButton));
-  simulateRouteAvailable();
-  EXPECT_TRUE(isElementVisible(*castOverlayButton));
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+  SimulateRouteAvailable();
+  EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
 
-  document().settings()->setMediaControlsEnabled(false);
-  EXPECT_FALSE(isElementVisible(*castOverlayButton));
+  GetDocument().GetSettings()->SetMediaControlsEnabled(false);
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
 
-  document().settings()->setMediaControlsEnabled(true);
-  EXPECT_TRUE(isElementVisible(*castOverlayButton));
+  GetDocument().GetSettings()->SetMediaControlsEnabled(true);
+  EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
 TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
-  Element* overflowList = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-overflow-menu-list");
-  ASSERT_NE(nullptr, overflowList);
+  Element* overflow_list = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overflow-menu-list");
+  ASSERT_NE(nullptr, overflow_list);
 
-  Element* panel = getElementByShadowPseudoId(mediaControls(),
+  Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
 
-  mediaControls().mediaElement().setSrc("http://example.com");
-  mediaControls().mediaElement().play();
-  testing::runPendingTasks();
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+  testing::RunPendingTasks();
 
-  mediaControls().show();
-  mediaControls().toggleOverflowMenu();
-  EXPECT_TRUE(isElementVisible(*overflowList));
+  MediaControls().Show();
+  MediaControls().ToggleOverflowMenu();
+  EXPECT_TRUE(IsElementVisible(*overflow_list));
 
-  simulateHideMediaControlsTimerFired();
-  EXPECT_TRUE(isElementVisible(*overflowList));
-  EXPECT_TRUE(isElementVisible(*panel));
+  SimulateHideMediaControlsTimerFired();
+  EXPECT_TRUE(IsElementVisible(*overflow_list));
+  EXPECT_TRUE(IsElementVisible(*panel));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonDisplayed) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* downloadButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, downloadButton);
+  Element* download_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, download_button);
 
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-  simulateLoadedMetadata();
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
 
   // Download button should normally be displayed.
-  EXPECT_TRUE(isElementVisible(*downloadButton));
+  EXPECT_TRUE(IsElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedEmptyUrl) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* downloadButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, downloadButton);
+  Element* download_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, download_button);
 
   // Download button should not be displayed when URL is empty.
-  mediaControls().mediaElement().setSrc("");
-  testing::runPendingTasks();
-  simulateLoadedMetadata();
-  EXPECT_FALSE(isElementVisible(*downloadButton));
+  MediaControls().MediaElement().SetSrc("");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  EXPECT_FALSE(IsElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonDisplayedHiddenAndDisplayed) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* downloadButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, downloadButton);
+  Element* download_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, download_button);
 
   // Initially show button.
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-  simulateLoadedMetadata();
-  EXPECT_TRUE(isElementVisible(*downloadButton));
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Shown, 1);
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  EXPECT_TRUE(IsElementVisible(*download_button));
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kShown, 1);
 
   // Hide button.
-  mediaControls().mediaElement().setSrc("");
-  testing::runPendingTasks();
-  EXPECT_FALSE(isElementVisible(*downloadButton));
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Shown, 1);
+  MediaControls().MediaElement().SetSrc("");
+  testing::RunPendingTasks();
+  EXPECT_FALSE(IsElementVisible(*download_button));
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kShown, 1);
 
   // Showing button again should not increment Shown count.
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-  EXPECT_TRUE(isElementVisible(*downloadButton));
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Shown, 1);
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  EXPECT_TRUE(IsElementVisible(*download_button));
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kShown, 1);
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonRecordsClickOnlyOnce) {
-  ensureSizing();
+  EnsureSizing();
 
-  MediaControlDownloadButtonElement* downloadButton =
+  MediaControlDownloadButtonElement* download_button =
       static_cast<MediaControlDownloadButtonElement*>(
-          getElementByShadowPseudoId(
-              mediaControls(), "-internal-media-controls-download-button"));
-  ASSERT_NE(nullptr, downloadButton);
+          GetElementByShadowPseudoId(
+              MediaControls(), "-internal-media-controls-download-button"));
+  ASSERT_NE(nullptr, download_button);
 
   // Initially show button.
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-  simulateLoadedMetadata();
-  EXPECT_TRUE(isElementVisible(*downloadButton));
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Shown, 1);
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  EXPECT_TRUE(IsElementVisible(*download_button));
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kShown, 1);
 
   // Click button once.
-  downloadButton->dispatchSimulatedClick(
-      Event::createBubble(EventTypeNames::click), SendNoEvents);
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Clicked, 1);
+  download_button->DispatchSimulatedClick(
+      Event::CreateBubble(EventTypeNames::click), kSendNoEvents);
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kClicked, 1);
 
   // Clicking button again should not increment Clicked count.
-  downloadButton->dispatchSimulatedClick(
-      Event::createBubble(EventTypeNames::click), SendNoEvents);
-  histogramTester().expectBucketCount("Media.Controls.Download",
-                                      DownloadActionMetrics::Clicked, 1);
+  download_button->DispatchSimulatedClick(
+      Event::CreateBubble(EventTypeNames::click), kSendNoEvents);
+  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
+                                         DownloadActionMetrics::kClicked, 1);
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* downloadButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, downloadButton);
+  Element* download_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, download_button);
 
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
 
   // Download button should not be displayed when duration is infinite.
-  mediaControls().mediaElement().durationChanged(
+  MediaControls().MediaElement().DurationChanged(
       std::numeric_limits<double>::infinity(), false /* requestSeek */);
-  simulateLoadedMetadata();
-  EXPECT_FALSE(isElementVisible(*downloadButton));
+  SimulateLoadedMetadata();
+  EXPECT_FALSE(IsElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* downloadButton = getElementByShadowPseudoId(
-      mediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, downloadButton);
+  Element* download_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, download_button);
 
   // Download button should not be displayed for HLS streams.
-  mediaControls().mediaElement().setSrc("https://example.com/foo.m3u8");
-  testing::runPendingTasks();
-  simulateLoadedMetadata();
-  EXPECT_FALSE(isElementVisible(*downloadButton));
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.m3u8");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  EXPECT_FALSE(IsElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
-  ensureSizing();
+  EnsureSizing();
 
   // Tests the case where the real length of the video, |exactDuration|, gets
   // rounded up slightly to |roundedUpDuration| when setting the timeline's
   // |max| attribute (crbug.com/695065).
-  double exactDuration = 596.586667;
-  double roundedUpDuration = 596.587;
-  loadMediaWithDuration(exactDuration);
+  double exact_duration = 596.586667;
+  double rounded_up_duration = 596.587;
+  LoadMediaWithDuration(exact_duration);
 
   // Simulate a click slightly past the end of the track of the timeline's
   // underlying <input type="range">. This would set the |value| to the |max|
   // attribute, which can be slightly rounded relative to the duration.
-  MediaControlTimelineElement* timeline = mediaControls().timelineElement();
-  timeline->setValueAsNumber(roundedUpDuration, ASSERT_NO_EXCEPTION);
-  ASSERT_EQ(roundedUpDuration, timeline->valueAsNumber());
-  EXPECT_EQ(0.0, mediaControls().mediaElement().currentTime());
-  timeline->dispatchInputEvent();
-  EXPECT_EQ(exactDuration, mediaControls().mediaElement().currentTime());
+  MediaControlTimelineElement* timeline = MediaControls().TimelineElement();
+  timeline->setValueAsNumber(rounded_up_duration, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(rounded_up_duration, timeline->valueAsNumber());
+  EXPECT_EQ(0.0, MediaControls().MediaElement().currentTime());
+  timeline->DispatchInputEvent();
+  EXPECT_EQ(exact_duration, MediaControls().MediaElement().currentTime());
 }
 
 TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
-  ensureSizing();
+  EnsureSizing();
 
-  MediaControlCurrentTimeDisplayElement* currentTimeDisplay =
+  MediaControlCurrentTimeDisplayElement* current_time_display =
       static_cast<MediaControlCurrentTimeDisplayElement*>(
-          getElementByShadowPseudoId(
-              mediaControls(), "-webkit-media-controls-current-time-display"));
+          GetElementByShadowPseudoId(
+              MediaControls(), "-webkit-media-controls-current-time-display"));
 
   double duration = 600;
-  loadMediaWithDuration(duration);
+  LoadMediaWithDuration(duration);
 
   // Simulate seeking the underlying range to 50%. Current time display should
   // update synchronously (rather than waiting for media to finish seeking).
-  mediaControls().timelineElement()->setValueAsNumber(duration / 2,
+  MediaControls().TimelineElement()->setValueAsNumber(duration / 2,
                                                       ASSERT_NO_EXCEPTION);
-  mediaControls().timelineElement()->dispatchInputEvent();
-  EXPECT_EQ(duration / 2, currentTimeDisplay->currentValue());
+  MediaControls().TimelineElement()->DispatchInputEvent();
+  EXPECT_EQ(duration / 2, current_time_display->CurrentValue());
 }
 
 TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
-  ensureSizing();
+  EnsureSizing();
 
-  Element* volumeSlider = mediaControls().volumeSliderElement();
+  Element* volume_slider = MediaControls().VolumeSliderElement();
 
-  MockLayoutObject layoutObject;
-  LayoutObject* prevLayoutObject = volumeSlider->layoutObject();
-  volumeSlider->setLayoutObject(&layoutObject);
+  MockLayoutObject layout_object;
+  LayoutObject* prev_layout_object = volume_slider->GetLayoutObject();
+  volume_slider->SetLayoutObject(&layout_object);
 
-  Event* event = Event::create(EventTypeNames::input);
-  volumeSlider->defaultEventHandler(event);
-  EXPECT_EQ(1, layoutObject.fullPaintInvalidationCallCount());
+  Event* event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_EQ(1, layout_object.FullPaintInvalidationCallCount());
 
-  event = Event::create(EventTypeNames::input);
-  volumeSlider->defaultEventHandler(event);
-  EXPECT_EQ(2, layoutObject.fullPaintInvalidationCallCount());
+  event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_EQ(2, layout_object.FullPaintInvalidationCallCount());
 
-  event = Event::create(EventTypeNames::input);
-  volumeSlider->defaultEventHandler(event);
-  EXPECT_EQ(3, layoutObject.fullPaintInvalidationCallCount());
+  event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_EQ(3, layout_object.FullPaintInvalidationCallCount());
 
-  volumeSlider->setLayoutObject(prevLayoutObject);
+  volume_slider->SetLayoutObject(prev_layout_object);
 }
 
 TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
-  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
-  testing::runPendingTasks();
-  setReady();
-  ensureSizing();
-  testing::runPendingTasks();
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SetReady();
+  EnsureSizing();
+  testing::RunPendingTasks();
 
-  MediaControlTimelineElement* timeline = mediaControls().timelineElement();
-  ASSERT_TRUE(isElementVisible(*timeline));
+  MediaControlTimelineElement* timeline = MediaControls().TimelineElement();
+  ASSERT_TRUE(IsElementVisible(*timeline));
   ASSERT_LT(0, timeline->getBoundingClientRect()->width());
 
-  mediaControls().mediaElement().play();
-  testing::runPendingTasks();
+  MediaControls().MediaElement().Play();
+  testing::RunPendingTasks();
 
-  histogramTester().expectUniqueSample(
+  GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.Width.InlineLandscape",
       timeline->getBoundingClientRect()->width(), 1);
-  histogramTester().expectTotalCount("Media.Timeline.Width.InlinePortrait", 0);
-  histogramTester().expectTotalCount("Media.Timeline.Width.FullscreenLandscape",
-                                     0);
-  histogramTester().expectTotalCount("Media.Timeline.Width.FullscreenPortrait",
-                                     0);
+  GetHistogramTester().ExpectTotalCount("Media.Timeline.Width.InlinePortrait",
+                                        0);
+  GetHistogramTester().ExpectTotalCount(
+      "Media.Timeline.Width.FullscreenLandscape", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Media.Timeline.Width.FullscreenPortrait", 0);
 }
 
 // TODO(johnme): Fix and re-enable this on Android.
@@ -631,34 +636,37 @@ TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
 #endif
 TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
   double duration = 540;  // 9 minutes
-  loadMediaWithDuration(duration);
-  ensureSizing();
-  testing::runPendingTasks();
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  testing::RunPendingTasks();
 
-  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
-  ClientRect* timelineRect =
-      mediaControls().timelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timelineRect->width());
+  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
+  ClientRect* timeline_rect =
+      MediaControls().TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timeline_rect->width());
 
-  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+  EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  WebFloatPoint trackCenter(timelineRect->left() + timelineRect->width() / 2,
-                            timelineRect->top() + timelineRect->height() / 2);
-  mouseDownAt(trackCenter);
-  mouseUpAt(trackCenter);
-  testing::runPendingTasks();
+  WebFloatPoint track_center(
+      timeline_rect->left() + timeline_rect->width() / 2,
+      timeline_rect->top() + timeline_rect->height() / 2);
+  MouseDownAt(track_center);
+  MouseUpAt(track_center);
+  testing::RunPendingTasks();
 
-  EXPECT_LE(0.49 * duration, mediaControls().mediaElement().currentTime());
-  EXPECT_GE(0.51 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_LE(0.49 * duration, MediaControls().MediaElement().currentTime());
+  EXPECT_GE(0.51 * duration, MediaControls().MediaElement().currentTime());
 
-  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
-                                       0 /* SeekType::kClick */, 1);
-  histogramTester().expectTotalCount(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+                                          0 /* SeekType::kClick */, 1);
+  GetHistogramTester().ExpectTotalCount(
       "Media.Timeline.DragGestureDuration.128_255", 0);
-  histogramTester().expectTotalCount("Media.Timeline.DragPercent.128_255", 0);
-  histogramTester().expectTotalCount(
+  GetHistogramTester().ExpectTotalCount("Media.Timeline.DragPercent.128_255",
+                                        0);
+  GetHistogramTester().ExpectTotalCount(
       "Media.Timeline.DragSumAbsTimeDelta.128_255", 0);
-  histogramTester().expectTotalCount("Media.Timeline.DragTimeDelta.128_255", 0);
+  GetHistogramTester().ExpectTotalCount("Media.Timeline.DragTimeDelta.128_255",
+                                        0);
 }
 
 // TODO(johnme): Fix and re-enable this on Android.
@@ -671,39 +679,39 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
 #endif
 TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
   double duration = 540;  // 9 minutes
-  loadMediaWithDuration(duration);
-  ensureSizing();
-  testing::runPendingTasks();
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  testing::RunPendingTasks();
 
-  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
-  ClientRect* timelineRect =
-      mediaControls().timelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timelineRect->width());
+  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
+  ClientRect* timeline_rect =
+      MediaControls().TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timeline_rect->width());
 
-  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+  EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  float y = timelineRect->top() + timelineRect->height() / 2;
-  WebFloatPoint thumb(timelineRect->left(), y);
-  WebFloatPoint trackTwoThirds(
-      timelineRect->left() + timelineRect->width() * 2 / 3, y);
-  mouseDownAt(thumb);
-  mouseMoveTo(trackTwoThirds);
-  mouseUpAt(trackTwoThirds);
+  float y = timeline_rect->top() + timeline_rect->height() / 2;
+  WebFloatPoint thumb(timeline_rect->left(), y);
+  WebFloatPoint track_two_thirds(
+      timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
+  MouseDownAt(thumb);
+  MouseMoveTo(track_two_thirds);
+  MouseUpAt(track_two_thirds);
 
-  EXPECT_LE(0.66 * duration, mediaControls().mediaElement().currentTime());
-  EXPECT_GE(0.68 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_LE(0.66 * duration, MediaControls().MediaElement().currentTime());
+  EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
 
-  histogramTester().expectUniqueSample(
+  GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.SeekType.128_255",
       1 /* SeekType::kDragFromCurrentPosition */, 1);
-  histogramTester().expectTotalCount(
+  GetHistogramTester().ExpectTotalCount(
       "Media.Timeline.DragGestureDuration.128_255", 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                       47 /* [60.0%, 70.0%) */, 1);
-  histogramTester().expectUniqueSample(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                          47 /* [60.0%, 70.0%) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.DragSumAbsTimeDelta.128_255", 16 /* [4m, 8m) */, 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
-                                       40 /* [4m, 8m) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta.128_255", 40 /* [4m, 8m) */, 1);
 }
 
 // TODO(johnme): Fix and re-enable this on Android.
@@ -715,39 +723,40 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
 #endif
 TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
   double duration = 540;  // 9 minutes
-  loadMediaWithDuration(duration);
-  ensureSizing();
-  testing::runPendingTasks();
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  testing::RunPendingTasks();
 
-  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
-  ClientRect* timelineRect =
-      mediaControls().timelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timelineRect->width());
+  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
+  ClientRect* timeline_rect =
+      MediaControls().TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timeline_rect->width());
 
-  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+  EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  float y = timelineRect->top() + timelineRect->height() / 2;
-  WebFloatPoint trackOneThird(
-      timelineRect->left() + timelineRect->width() * 1 / 3, y);
-  WebFloatPoint trackTwoThirds(
-      timelineRect->left() + timelineRect->width() * 2 / 3, y);
-  mouseDownAt(trackOneThird);
-  mouseMoveTo(trackTwoThirds);
-  mouseUpAt(trackTwoThirds);
+  float y = timeline_rect->top() + timeline_rect->height() / 2;
+  WebFloatPoint track_one_third(
+      timeline_rect->left() + timeline_rect->width() * 1 / 3, y);
+  WebFloatPoint track_two_thirds(
+      timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
+  MouseDownAt(track_one_third);
+  MouseMoveTo(track_two_thirds);
+  MouseUpAt(track_two_thirds);
 
-  EXPECT_LE(0.66 * duration, mediaControls().mediaElement().currentTime());
-  EXPECT_GE(0.68 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_LE(0.66 * duration, MediaControls().MediaElement().currentTime());
+  EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
 
-  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
-                                       2 /* SeekType::kDragFromElsewhere */, 1);
-  histogramTester().expectTotalCount(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+                                          2 /* SeekType::kDragFromElsewhere */,
+                                          1);
+  GetHistogramTester().ExpectTotalCount(
       "Media.Timeline.DragGestureDuration.128_255", 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                       42 /* [30.0%, 35.0%) */, 1);
-  histogramTester().expectUniqueSample(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                          42 /* [30.0%, 35.0%) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.DragSumAbsTimeDelta.128_255", 15 /* [2m, 4m) */, 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
-                                       39 /* [2m, 4m) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta.128_255", 39 /* [2m, 4m) */, 1);
 }
 
 // TODO(johnme): Fix and re-enable this on Android.
@@ -759,83 +768,84 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
 #endif
 TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
   double duration = 540;  // 9 minutes
-  loadMediaWithDuration(duration);
-  ensureSizing();
-  testing::runPendingTasks();
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  testing::RunPendingTasks();
 
-  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
-  ClientRect* timelineRect =
-      mediaControls().timelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timelineRect->width());
+  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
+  ClientRect* timeline_rect =
+      MediaControls().TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timeline_rect->width());
 
-  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+  EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  float y = timelineRect->top() + timelineRect->height() / 2;
-  WebFloatPoint trackTwoThirds(
-      timelineRect->left() + timelineRect->width() * 2 / 3, y);
-  WebFloatPoint trackEnd(timelineRect->left() + timelineRect->width(), y);
-  WebFloatPoint trackOneThird(
-      timelineRect->left() + timelineRect->width() * 1 / 3, y);
-  mouseDownAt(trackTwoThirds);
-  mouseMoveTo(trackEnd);
-  mouseMoveTo(trackOneThird);
-  mouseUpAt(trackOneThird);
+  float y = timeline_rect->top() + timeline_rect->height() / 2;
+  WebFloatPoint track_two_thirds(
+      timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
+  WebFloatPoint track_end(timeline_rect->left() + timeline_rect->width(), y);
+  WebFloatPoint track_one_third(
+      timeline_rect->left() + timeline_rect->width() * 1 / 3, y);
+  MouseDownAt(track_two_thirds);
+  MouseMoveTo(track_end);
+  MouseMoveTo(track_one_third);
+  MouseUpAt(track_one_third);
 
-  EXPECT_LE(0.32 * duration, mediaControls().mediaElement().currentTime());
-  EXPECT_GE(0.34 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_LE(0.32 * duration, MediaControls().MediaElement().currentTime());
+  EXPECT_GE(0.34 * duration, MediaControls().MediaElement().currentTime());
 
-  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
-                                       2 /* SeekType::kDragFromElsewhere */, 1);
-  histogramTester().expectTotalCount(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+                                          2 /* SeekType::kDragFromElsewhere */,
+                                          1);
+  GetHistogramTester().ExpectTotalCount(
       "Media.Timeline.DragGestureDuration.128_255", 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                       8 /* (-35.0%, -30.0%] */, 1);
-  histogramTester().expectUniqueSample(
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                          8 /* (-35.0%, -30.0%] */, 1);
+  GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.DragSumAbsTimeDelta.128_255", 17 /* [8m, 15m) */, 1);
-  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
-                                       9 /* (-4m, -2m] */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta.128_255", 9 /* (-4m, -2m] */, 1);
 }
 
 TEST_F(MediaControlsImplTest, ControlsRemainVisibleDuringKeyboardInteraction) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      m_platform;
+      platform;
 
   // DocumentParserTiming has DCHECKS to make sure time > 0.0.
-  m_platform->advanceClockSeconds(1);
+  platform->AdvanceClockSeconds(1);
 
   // Need to reinitialize page since we changed the platform.
-  initializePage();
-  ensureSizing();
+  InitializePage();
+  EnsureSizing();
 
-  Element* panel = mediaControls().panelElement();
+  Element* panel = MediaControls().PanelElement();
 
-  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
-  mediaControls().mediaElement().setSrc("http://example.com");
-  mediaControls().mediaElement().play();
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
 
   // Controls start out visible.
-  EXPECT_TRUE(isElementVisible(*panel));
+  EXPECT_TRUE(IsElementVisible(*panel));
 
   // Tabbing between controls prevents controls from hiding.
-  m_platform->runForPeriodSeconds(2);
-  mediaControls().dispatchEvent(Event::create("focusin"));
-  m_platform->runForPeriodSeconds(2);
-  EXPECT_TRUE(isElementVisible(*panel));
+  platform->RunForPeriodSeconds(2);
+  MediaControls().DispatchEvent(Event::Create("focusin"));
+  platform->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
 
   // Seeking on the timeline or volume bar prevents controls from hiding.
-  mediaControls().dispatchEvent(Event::create("input"));
-  m_platform->runForPeriodSeconds(2);
-  EXPECT_TRUE(isElementVisible(*panel));
+  MediaControls().DispatchEvent(Event::Create("input"));
+  platform->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
 
   // Pressing a key prevents controls from hiding.
-  mediaControls().panelElement()->dispatchEvent(Event::create("keypress"));
-  m_platform->runForPeriodSeconds(2);
-  EXPECT_TRUE(isElementVisible(*panel));
+  MediaControls().PanelElement()->DispatchEvent(Event::Create("keypress"));
+  platform->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
 
   // Once user interaction stops, controls can hide.
-  m_platform->runForPeriodSeconds(2);
-  EXPECT_FALSE(isElementVisible(*panel));
+  platform->RunForPeriodSeconds(2);
+  EXPECT_FALSE(IsElementVisible(*panel));
 }
 
 }  // namespace blink

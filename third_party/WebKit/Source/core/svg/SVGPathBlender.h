@@ -33,20 +33,20 @@ class SVGPathBlender final {
   STACK_ALLOCATED();
 
  public:
-  SVGPathBlender(SVGPathByteStreamSource* fromSource,
-                 SVGPathByteStreamSource* toSource,
+  SVGPathBlender(SVGPathByteStreamSource* from_source,
+                 SVGPathByteStreamSource* to_source,
                  SVGPathConsumer*);
 
-  bool addAnimatedPath(unsigned repeatCount);
-  bool blendAnimatedPath(float);
+  bool AddAnimatedPath(unsigned repeat_count);
+  bool BlendAnimatedPath(float);
 
  private:
   class BlendState;
-  bool blendAnimatedPath(BlendState&);
+  bool BlendAnimatedPath(BlendState&);
 
-  SVGPathByteStreamSource* m_fromSource;
-  SVGPathByteStreamSource* m_toSource;
-  SVGPathConsumer* m_consumer;
+  SVGPathByteStreamSource* from_source_;
+  SVGPathByteStreamSource* to_source_;
+  SVGPathConsumer* consumer_;
 };
 
 }  // namespace blink

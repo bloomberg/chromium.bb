@@ -42,7 +42,7 @@ namespace blink {
 class WebDeviceMotionListener : public WebPlatformEventListener {
  public:
   // This method is called every time new device motion data is available.
-  virtual void didChangeDeviceMotion(const device::MotionData&) = 0;
+  virtual void DidChangeDeviceMotion(const device::MotionData&) = 0;
 
   virtual ~WebDeviceMotionListener() {}
 };

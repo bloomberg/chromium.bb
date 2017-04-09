@@ -36,97 +36,97 @@
 
 namespace blink {
 
-void WebHTTPLoadInfo::initialize() {
-  m_private = adoptRef(new ResourceLoadInfo());
+void WebHTTPLoadInfo::Initialize() {
+  private_ = AdoptRef(new ResourceLoadInfo());
 }
 
-void WebHTTPLoadInfo::reset() {
-  m_private.reset();
+void WebHTTPLoadInfo::Reset() {
+  private_.Reset();
 }
 
-void WebHTTPLoadInfo::assign(const WebHTTPLoadInfo& r) {
-  m_private = r.m_private;
+void WebHTTPLoadInfo::Assign(const WebHTTPLoadInfo& r) {
+  private_ = r.private_;
 }
 
 WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo> value)
-    : m_private(value) {}
+    : private_(value) {}
 
 WebHTTPLoadInfo::operator WTF::PassRefPtr<ResourceLoadInfo>() const {
-  return m_private.get();
+  return private_.Get();
 }
 
-int WebHTTPLoadInfo::httpStatusCode() const {
-  ASSERT(!m_private.isNull());
-  return m_private->httpStatusCode;
+int WebHTTPLoadInfo::HttpStatusCode() const {
+  ASSERT(!private_.IsNull());
+  return private_->http_status_code;
 }
 
-void WebHTTPLoadInfo::setHTTPStatusCode(int statusCode) {
-  ASSERT(!m_private.isNull());
-  m_private->httpStatusCode = statusCode;
+void WebHTTPLoadInfo::SetHTTPStatusCode(int status_code) {
+  ASSERT(!private_.IsNull());
+  private_->http_status_code = status_code;
 }
 
-WebString WebHTTPLoadInfo::httpStatusText() const {
-  ASSERT(!m_private.isNull());
-  return m_private->httpStatusText;
+WebString WebHTTPLoadInfo::HttpStatusText() const {
+  ASSERT(!private_.IsNull());
+  return private_->http_status_text;
 }
 
-void WebHTTPLoadInfo::setHTTPStatusText(const WebString& statusText) {
-  ASSERT(!m_private.isNull());
-  m_private->httpStatusText = statusText;
+void WebHTTPLoadInfo::SetHTTPStatusText(const WebString& status_text) {
+  ASSERT(!private_.IsNull());
+  private_->http_status_text = status_text;
 }
 
-static void addHeader(HTTPHeaderMap* map,
+static void AddHeader(HTTPHeaderMap* map,
                       const WebString& name,
                       const WebString& value) {
-  HTTPHeaderMap::AddResult result = map->add(name, value);
+  HTTPHeaderMap::AddResult result = map->Add(name, value);
   // It is important that values are separated by '\n', not comma, otherwise
   // Set-Cookie header is not parseable.
-  if (!result.isNewEntry)
-    result.storedValue->value =
-        result.storedValue->value + "\n" + String(value);
+  if (!result.is_new_entry)
+    result.stored_value->value =
+        result.stored_value->value + "\n" + String(value);
 }
 
-void WebHTTPLoadInfo::addRequestHeader(const WebString& name,
+void WebHTTPLoadInfo::AddRequestHeader(const WebString& name,
                                        const WebString& value) {
-  ASSERT(!m_private.isNull());
-  addHeader(&m_private->requestHeaders, name, value);
+  ASSERT(!private_.IsNull());
+  AddHeader(&private_->request_headers, name, value);
 }
 
-void WebHTTPLoadInfo::addResponseHeader(const WebString& name,
+void WebHTTPLoadInfo::AddResponseHeader(const WebString& name,
                                         const WebString& value) {
-  ASSERT(!m_private.isNull());
-  addHeader(&m_private->responseHeaders, name, value);
+  ASSERT(!private_.IsNull());
+  AddHeader(&private_->response_headers, name, value);
 }
 
-WebString WebHTTPLoadInfo::requestHeadersText() const {
-  ASSERT(!m_private.isNull());
-  return m_private->requestHeadersText;
+WebString WebHTTPLoadInfo::RequestHeadersText() const {
+  ASSERT(!private_.IsNull());
+  return private_->request_headers_text;
 }
 
-void WebHTTPLoadInfo::setRequestHeadersText(const WebString& headersText) {
-  ASSERT(!m_private.isNull());
-  m_private->requestHeadersText = headersText;
+void WebHTTPLoadInfo::SetRequestHeadersText(const WebString& headers_text) {
+  ASSERT(!private_.IsNull());
+  private_->request_headers_text = headers_text;
 }
 
-WebString WebHTTPLoadInfo::responseHeadersText() const {
-  ASSERT(!m_private.isNull());
-  return m_private->responseHeadersText;
+WebString WebHTTPLoadInfo::ResponseHeadersText() const {
+  ASSERT(!private_.IsNull());
+  return private_->response_headers_text;
 }
 
-void WebHTTPLoadInfo::setResponseHeadersText(const WebString& headersText) {
-  ASSERT(!m_private.isNull());
-  m_private->responseHeadersText = headersText;
+void WebHTTPLoadInfo::SetResponseHeadersText(const WebString& headers_text) {
+  ASSERT(!private_.IsNull());
+  private_->response_headers_text = headers_text;
 }
 
-WebString WebHTTPLoadInfo::npnNegotiatedProtocol() const {
-  ASSERT(!m_private.isNull());
-  return m_private->npnNegotiatedProtocol;
+WebString WebHTTPLoadInfo::NpnNegotiatedProtocol() const {
+  ASSERT(!private_.IsNull());
+  return private_->npn_negotiated_protocol;
 }
 
-void WebHTTPLoadInfo::setNPNNegotiatedProtocol(
-    const WebString& npnNegotiatedProtocol) {
-  ASSERT(!m_private.isNull());
-  m_private->npnNegotiatedProtocol = npnNegotiatedProtocol;
+void WebHTTPLoadInfo::SetNPNNegotiatedProtocol(
+    const WebString& npn_negotiated_protocol) {
+  ASSERT(!private_.IsNull());
+  private_->npn_negotiated_protocol = npn_negotiated_protocol;
 }
 
 }  // namespace blink

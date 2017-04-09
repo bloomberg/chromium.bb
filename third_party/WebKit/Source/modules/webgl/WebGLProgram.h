@@ -40,27 +40,27 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLProgram() override;
 
-  static WebGLProgram* create(WebGLRenderingContextBase*);
+  static WebGLProgram* Create(WebGLRenderingContextBase*);
 
-  bool linkStatus(WebGLRenderingContextBase*);
+  bool LinkStatus(WebGLRenderingContextBase*);
 
-  unsigned linkCount() const { return m_linkCount; }
+  unsigned LinkCount() const { return link_count_; }
 
   // This is to be called everytime after the program is successfully linked.
   // We don't deal with integer overflow here, assuming in reality a program
   // will never be linked so many times.
   // Also, we invalidate the cached program info.
-  void increaseLinkCount();
+  void IncreaseLinkCount();
 
-  unsigned activeTransformFeedbackCount() const {
-    return m_activeTransformFeedbackCount;
+  unsigned ActiveTransformFeedbackCount() const {
+    return active_transform_feedback_count_;
   }
-  void increaseActiveTransformFeedbackCount();
-  void decreaseActiveTransformFeedbackCount();
+  void IncreaseActiveTransformFeedbackCount();
+  void DecreaseActiveTransformFeedbackCount();
 
-  WebGLShader* getAttachedShader(GLenum);
-  bool attachShader(WebGLShader*);
-  bool detachShader(WebGLShader*);
+  WebGLShader* GetAttachedShader(GLenum);
+  bool AttachShader(WebGLShader*);
+  bool DetachShader(WebGLShader*);
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -68,27 +68,27 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
  protected:
   explicit WebGLProgram(WebGLRenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isProgram() const override { return true; }
+  bool IsProgram() const override { return true; }
 
-  void cacheInfoIfNeeded(WebGLRenderingContextBase*);
+  void CacheInfoIfNeeded(WebGLRenderingContextBase*);
 
-  GLint m_linkStatus;
+  GLint link_status_;
 
   // This is used to track whether a WebGLUniformLocation belongs to this
   // program or not.
-  unsigned m_linkCount;
+  unsigned link_count_;
 
   // This is used to track the program being used by active transform
   // feedback objects.
-  unsigned m_activeTransformFeedbackCount;
+  unsigned active_transform_feedback_count_;
 
-  TraceWrapperMember<WebGLShader> m_vertexShader;
-  TraceWrapperMember<WebGLShader> m_fragmentShader;
+  TraceWrapperMember<WebGLShader> vertex_shader_;
+  TraceWrapperMember<WebGLShader> fragment_shader_;
 
-  bool m_infoValid;
+  bool info_valid_;
 };
 
 }  // namespace blink

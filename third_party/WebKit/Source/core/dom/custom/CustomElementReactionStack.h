@@ -28,13 +28,13 @@ class CORE_EXPORT CustomElementReactionStack final
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-  void push();
-  void popInvokingReactions();
-  void enqueueToCurrentQueue(Element*, CustomElementReaction*);
-  void enqueueToBackupQueue(Element*, CustomElementReaction*);
-  void clearQueue(Element*);
+  void Push();
+  void PopInvokingReactions();
+  void EnqueueToCurrentQueue(Element*, CustomElementReaction*);
+  void EnqueueToBackupQueue(Element*, CustomElementReaction*);
+  void ClearQueue(Element*);
 
-  static CustomElementReactionStack& current();
+  static CustomElementReactionStack& Current();
 
  private:
   friend class CustomElementReactionStackTestSupport;
@@ -42,15 +42,15 @@ class CORE_EXPORT CustomElementReactionStack final
   using ElementReactionQueueMap =
       HeapHashMap<TraceWrapperMember<Element>,
                   Member<CustomElementReactionQueue>>;
-  ElementReactionQueueMap m_map;
+  ElementReactionQueueMap map_;
 
   using ElementQueue = HeapVector<Member<Element>, 1>;
-  HeapVector<Member<ElementQueue>> m_stack;
-  Member<ElementQueue> m_backupQueue;
+  HeapVector<Member<ElementQueue>> stack_;
+  Member<ElementQueue> backup_queue_;
 
-  void invokeBackupQueue();
-  void invokeReactions(ElementQueue&);
-  void enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
+  void InvokeBackupQueue();
+  void InvokeReactions(ElementQueue&);
+  void Enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
 };
 
 class CORE_EXPORT CustomElementReactionStackTestSupport final {
@@ -58,7 +58,7 @@ class CORE_EXPORT CustomElementReactionStackTestSupport final {
   friend class ResetCustomElementReactionStackForTest;
 
   CustomElementReactionStackTestSupport() = delete;
-  static CustomElementReactionStack* setCurrentForTest(
+  static CustomElementReactionStack* SetCurrentForTest(
       CustomElementReactionStack*);
 };
 

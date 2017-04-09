@@ -40,47 +40,47 @@ namespace blink {
 
 V0CustomElementMicrotaskImportStep::V0CustomElementMicrotaskImportStep(
     HTMLImportChild* import)
-    : m_import(import), m_queue(import->loader()->microtaskQueue()) {}
+    : import_(import), queue_(import->Loader()->MicrotaskQueue()) {}
 
 V0CustomElementMicrotaskImportStep::~V0CustomElementMicrotaskImportStep() {}
 
-void V0CustomElementMicrotaskImportStep::invalidate() {
-  m_queue = V0CustomElementSyncMicrotaskQueue::create();
-  m_import.clear();
+void V0CustomElementMicrotaskImportStep::Invalidate() {
+  queue_ = V0CustomElementSyncMicrotaskQueue::Create();
+  import_.Clear();
 }
 
-bool V0CustomElementMicrotaskImportStep::shouldWaitForImport() const {
-  return m_import && !m_import->loader()->isDone();
+bool V0CustomElementMicrotaskImportStep::ShouldWaitForImport() const {
+  return import_ && !import_->Loader()->IsDone();
 }
 
-void V0CustomElementMicrotaskImportStep::didUpgradeAllCustomElements() {
-  DCHECK(m_queue);
-  if (m_import)
-    m_import->didFinishUpgradingCustomElements();
+void V0CustomElementMicrotaskImportStep::DidUpgradeAllCustomElements() {
+  DCHECK(queue_);
+  if (import_)
+    import_->DidFinishUpgradingCustomElements();
 }
 
 V0CustomElementMicrotaskStep::Result
-V0CustomElementMicrotaskImportStep::process() {
-  m_queue->dispatch();
-  if (!m_queue->isEmpty() || shouldWaitForImport())
-    return Processing;
+V0CustomElementMicrotaskImportStep::Process() {
+  queue_->Dispatch();
+  if (!queue_->IsEmpty() || ShouldWaitForImport())
+    return kProcessing;
 
-  didUpgradeAllCustomElements();
-  return FinishedProcessing;
+  DidUpgradeAllCustomElements();
+  return kFinishedProcessing;
 }
 
 DEFINE_TRACE(V0CustomElementMicrotaskImportStep) {
-  visitor->trace(m_import);
-  visitor->trace(m_queue);
-  V0CustomElementMicrotaskStep::trace(visitor);
+  visitor->Trace(import_);
+  visitor->Trace(queue_);
+  V0CustomElementMicrotaskStep::Trace(visitor);
 }
 
 #if !defined(NDEBUG)
-void V0CustomElementMicrotaskImportStep::show(unsigned indent) {
+void V0CustomElementMicrotaskImportStep::Show(unsigned indent) {
   fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "",
-          shouldWaitForImport(), m_import && m_import->isSync(),
-          m_import ? m_import->url().getString().utf8().data() : "null");
-  m_queue->show(indent + 1);
+          ShouldWaitForImport(), import_ && import_->IsSync(),
+          import_ ? import_->Url().GetString().Utf8().Data() : "null");
+  queue_->Show(indent + 1);
 }
 #endif
 

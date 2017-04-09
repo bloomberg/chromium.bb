@@ -12,20 +12,20 @@ namespace blink {
 
 class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
  public:
-  static PaintFilterEffect* create(Filter*, const PaintFlags&);
+  static PaintFilterEffect* Create(Filter*, const PaintFlags&);
   ~PaintFilterEffect() override;
 
-  FilterEffectType getFilterEffectType() const override {
-    return FilterEffectTypeSourceInput;
+  FilterEffectType GetFilterEffectType() const override {
+    return kFilterEffectTypeSourceInput;
   }
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
-  sk_sp<SkImageFilter> createImageFilter() override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
  private:
   PaintFilterEffect(Filter*, const PaintFlags&);
 
-  PaintFlags m_flags;
+  PaintFlags flags_;
 };
 
 }  // namespace blink

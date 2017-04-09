@@ -46,14 +46,14 @@ struct FrameData {
 
   // Clear the cached image data on the frame, and (optionally) the metadata.
   // Returns whether there was cached image data to clear.
-  void clear(bool clearMetadata);
+  void Clear(bool clear_metadata);
 
-  ImageOrientation m_orientation;
-  float m_duration;
-  bool m_haveMetadata : 1;
-  bool m_isComplete : 1;
-  bool m_hasAlpha : 1;
-  size_t m_frameBytes;
+  ImageOrientation orientation_;
+  float duration_;
+  bool have_metadata_ : 1;
+  bool is_complete_ : 1;
+  bool has_alpha_ : 1;
+  size_t frame_bytes_;
 };
 
 }  // namespace blink
@@ -63,7 +63,7 @@ template <>
 struct VectorTraits<blink::FrameData>
     : public SimpleClassVectorTraits<blink::FrameData> {
   STATIC_ONLY(VectorTraits);
-  static const bool canInitializeWithMemset =
+  static const bool kCanInitializeWithMemset =
       false;  // Not all FrameData members initialize to 0.
 };
 }

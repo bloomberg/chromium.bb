@@ -39,11 +39,11 @@ class CORE_EXPORT HTMLParserScriptRunnerHost : public GarbageCollectedMixin {
   virtual ~HTMLParserScriptRunnerHost() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  virtual void notifyScriptLoaded(PendingScript*) = 0;
-  virtual HTMLInputStream& inputStream() = 0;
+  virtual void NotifyScriptLoaded(PendingScript*) = 0;
+  virtual HTMLInputStream& InputStream() = 0;
 
-  virtual bool hasPreloadScanner() const = 0;
-  virtual void appendCurrentInputStreamToPreloadScannerAndScan() = 0;
+  virtual bool HasPreloadScanner() const = 0;
+  virtual void AppendCurrentInputStreamToPreloadScannerAndScan() = 0;
 };
 
 }  // namespace blink

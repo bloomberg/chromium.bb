@@ -19,7 +19,7 @@ NGLogicalSize NGPhysicalSize::ConvertToLogical(NGWritingMode mode) const {
 }
 
 String NGPhysicalSize::ToString() const {
-  return String::format("%dx%d", width.toInt(), height.toInt());
+  return String::Format("%dx%d", width.ToInt(), height.ToInt());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGPhysicalSize& value) {

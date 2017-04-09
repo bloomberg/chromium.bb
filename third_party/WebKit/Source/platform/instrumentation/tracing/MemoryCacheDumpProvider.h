@@ -17,7 +17,7 @@ namespace blink {
 class PLATFORM_EXPORT MemoryCacheDumpClient : public GarbageCollectedMixin {
  public:
   virtual ~MemoryCacheDumpClient() {}
-  virtual bool onMemoryDump(WebMemoryDumpLevelOfDetail,
+  virtual bool OnMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) = 0;
 
   DECLARE_VIRTUAL_TRACE();
@@ -31,22 +31,22 @@ class PLATFORM_EXPORT MemoryCacheDumpProvider final
 
  public:
   // This class is singleton since there is a global MemoryCache object.
-  static MemoryCacheDumpProvider* instance();
+  static MemoryCacheDumpProvider* Instance();
   ~MemoryCacheDumpProvider() override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&,
                     base::trace_event::ProcessMemoryDump*) override;
 
-  void setMemoryCache(MemoryCacheDumpClient* client) {
-    DCHECK(isMainThread());
-    m_client = client;
+  void SetMemoryCache(MemoryCacheDumpClient* client) {
+    DCHECK(IsMainThread());
+    client_ = client;
   }
 
  private:
   MemoryCacheDumpProvider();
 
-  WeakPersistent<MemoryCacheDumpClient> m_client;
+  WeakPersistent<MemoryCacheDumpClient> client_;
 
   WTF_MAKE_NONCOPYABLE(MemoryCacheDumpProvider);
 };

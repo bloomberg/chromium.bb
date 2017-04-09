@@ -14,16 +14,16 @@ class CORE_EXPORT AudioTrackList final : public TrackListBase<AudioTrack> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioTrackList* create(HTMLMediaElement&);
+  static AudioTrackList* Create(HTMLMediaElement&);
 
   ~AudioTrackList() override;
 
-  bool hasEnabledTrack() const;
+  bool HasEnabledTrack() const;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  DEFINE_INLINE_TRACE() { TrackListBase<AudioTrack>::trace(visitor); }
+  DEFINE_INLINE_TRACE() { TrackListBase<AudioTrack>::Trace(visitor); }
 
  private:
   explicit AudioTrackList(HTMLMediaElement&);

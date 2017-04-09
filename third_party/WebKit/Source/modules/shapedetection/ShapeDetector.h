@@ -22,14 +22,14 @@ class MODULES_EXPORT ShapeDetector
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  ScriptPromise detectShapesOnImageData(ScriptPromiseResolver*, ImageData*);
-  ScriptPromise detectShapesOnImageElement(ScriptPromiseResolver*,
+  ScriptPromise DetectShapesOnImageData(ScriptPromiseResolver*, ImageData*);
+  ScriptPromise DetectShapesOnImageElement(ScriptPromiseResolver*,
                                            const HTMLImageElement*);
 
-  virtual ScriptPromise doDetect(ScriptPromiseResolver*,
+  virtual ScriptPromise DoDetect(ScriptPromiseResolver*,
                                  mojo::ScopedSharedBufferHandle,
-                                 int imageWidth,
-                                 int imageHeight) = 0;
+                                 int image_width,
+                                 int image_height) = 0;
 };
 
 }  // namespace blink

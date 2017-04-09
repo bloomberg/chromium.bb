@@ -38,38 +38,38 @@
 
 namespace blink {
 
-void GeneratedImage::drawPattern(GraphicsContext& destContext,
-                                 const FloatRect& srcRect,
+void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
+                                 const FloatRect& src_rect,
                                  const FloatSize& scale,
                                  const FloatPoint& phase,
-                                 SkBlendMode compositeOp,
-                                 const FloatRect& destRect,
-                                 const FloatSize& repeatSpacing) {
-  FloatRect tileRect = srcRect;
-  tileRect.expand(FloatSize(repeatSpacing));
+                                 SkBlendMode composite_op,
+                                 const FloatRect& dest_rect,
+                                 const FloatSize& repeat_spacing) {
+  FloatRect tile_rect = src_rect;
+  tile_rect.Expand(FloatSize(repeat_spacing));
 
-  std::unique_ptr<PaintController> paintController = PaintController::create();
-  GraphicsContext context(*paintController);
-  context.beginRecording(tileRect);
-  drawTile(context, srcRect);
-  sk_sp<PaintRecord> record = context.endRecording();
+  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  GraphicsContext context(*paint_controller);
+  context.BeginRecording(tile_rect);
+  DrawTile(context, src_rect);
+  sk_sp<PaintRecord> record = context.EndRecording();
 
-  SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
-  patternMatrix.preScale(scale.width(), scale.height());
-  patternMatrix.preTranslate(tileRect.x(), tileRect.y());
+  SkMatrix pattern_matrix = SkMatrix::MakeTrans(phase.X(), phase.Y());
+  pattern_matrix.preScale(scale.Width(), scale.Height());
+  pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 
   RefPtr<Pattern> pattern =
-      Pattern::createPaintRecordPattern(std::move(record));
+      Pattern::CreatePaintRecordPattern(std::move(record));
 
-  PaintFlags fillFlags = destContext.fillFlags();
-  pattern->applyToFlags(fillFlags, patternMatrix);
-  fillFlags.setColor(SK_ColorBLACK);
-  fillFlags.setBlendMode(compositeOp);
+  PaintFlags fill_flags = dest_context.FillFlags();
+  pattern->ApplyToFlags(fill_flags, pattern_matrix);
+  fill_flags.setColor(SK_ColorBLACK);
+  fill_flags.setBlendMode(composite_op);
 
-  destContext.drawRect(destRect, fillFlags);
+  dest_context.DrawRect(dest_rect, fill_flags);
 }
 
-sk_sp<SkImage> GeneratedImage::imageForCurrentFrame() {
+sk_sp<SkImage> GeneratedImage::ImageForCurrentFrame() {
   return nullptr;
 }
 

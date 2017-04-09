@@ -17,24 +17,25 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
     : public V8ScriptValueDeserializer {
  public:
   explicit V8ScriptValueDeserializerForModules(
-      RefPtr<ScriptState> scriptState,
-      RefPtr<SerializedScriptValue> serializedScriptValue,
+      RefPtr<ScriptState> script_state,
+      RefPtr<SerializedScriptValue> serialized_script_value,
       const Options& options = Options())
-      : V8ScriptValueDeserializer(scriptState, serializedScriptValue, options) {
-  }
+      : V8ScriptValueDeserializer(script_state,
+                                  serialized_script_value,
+                                  options) {}
 
  protected:
-  ScriptWrappable* readDOMObject(SerializationTag) override;
+  ScriptWrappable* ReadDOMObject(SerializationTag) override;
 
  private:
-  bool readOneByte(uint8_t* byte) {
+  bool ReadOneByte(uint8_t* byte) {
     const void* data;
-    if (!readRawBytes(1, &data))
+    if (!ReadRawBytes(1, &data))
       return false;
     *byte = *reinterpret_cast<const uint8_t*>(data);
     return true;
   }
-  CryptoKey* readCryptoKey();
+  CryptoKey* ReadCryptoKey();
 };
 
 }  // namespace blink

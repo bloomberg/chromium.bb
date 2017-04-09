@@ -33,36 +33,36 @@ namespace blink {
 using namespace HTMLNames;
 
 ClassList::ClassList(Element* element)
-    : DOMTokenList(nullptr), m_element(element) {}
+    : DOMTokenList(nullptr), element_(element) {}
 
 unsigned ClassList::length() const {
-  return m_element->hasClass() ? classNames().size() : 0;
+  return element_->HasClass() ? ClassNames().size() : 0;
 }
 
 const AtomicString ClassList::item(unsigned index) const {
   if (index >= length())
     return AtomicString();
-  return classNames()[index];
+  return ClassNames()[index];
 }
 
-bool ClassList::containsInternal(const AtomicString& token) const {
-  return m_element->hasClass() && classNames().contains(token);
+bool ClassList::ContainsInternal(const AtomicString& token) const {
+  return element_->HasClass() && ClassNames().Contains(token);
 }
 
-const SpaceSplitString& ClassList::classNames() const {
-  DCHECK(m_element->hasClass());
-  if (m_element->document().inQuirksMode()) {
-    if (!m_classNamesForQuirksMode)
-      m_classNamesForQuirksMode = WTF::wrapUnique(
-          new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
-    return *m_classNamesForQuirksMode.get();
+const SpaceSplitString& ClassList::ClassNames() const {
+  DCHECK(element_->HasClass());
+  if (element_->GetDocument().InQuirksMode()) {
+    if (!class_names_for_quirks_mode_)
+      class_names_for_quirks_mode_ = WTF::WrapUnique(
+          new SpaceSplitString(value(), SpaceSplitString::kShouldNotFoldCase));
+    return *class_names_for_quirks_mode_.get();
   }
-  return m_element->classNames();
+  return element_->ClassNames();
 }
 
 DEFINE_TRACE(ClassList) {
-  visitor->trace(m_element);
-  DOMTokenList::trace(visitor);
+  visitor->Trace(element_);
+  DOMTokenList::Trace(visitor);
 }
 
 }  // namespace blink

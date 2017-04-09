@@ -13,13 +13,13 @@ void* StructTraits<common::mojom::String16DataView, WTF::String>::SetUpContext(
     const WTF::String& input) {
   // If it is null (i.e., StructTraits<>::IsNull() returns true), this method is
   // guaranteed not to be called.
-  DCHECK(!input.isNull());
+  DCHECK(!input.IsNull());
 
-  if (!input.is8Bit())
+  if (!input.Is8Bit())
     return nullptr;
 
-  return new base::string16(input.characters8(),
-                            input.characters8() + input.length());
+  return new base::string16(input.Characters8(),
+                            input.Characters8() + input.length());
 }
 
 // static
@@ -27,7 +27,7 @@ ConstCArray<uint16_t> StructTraits<common::mojom::String16DataView,
                                    WTF::String>::data(const WTF::String& input,
                                                       void* context) {
   auto contextObject = static_cast<base::string16*>(context);
-  DCHECK_EQ(input.is8Bit(), !!contextObject);
+  DCHECK_EQ(input.Is8Bit(), !!contextObject);
 
   if (contextObject) {
     return ConstCArray<uint16_t>(
@@ -36,7 +36,7 @@ ConstCArray<uint16_t> StructTraits<common::mojom::String16DataView,
   }
 
   return ConstCArray<uint16_t>(
-      input.length(), reinterpret_cast<const uint16_t*>(input.characters16()));
+      input.length(), reinterpret_cast<const uint16_t*>(input.Characters16()));
 }
 
 // static

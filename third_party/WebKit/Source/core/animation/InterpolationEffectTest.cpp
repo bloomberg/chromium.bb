@@ -14,10 +14,10 @@ namespace {
 
 class SampleInterpolation : public LegacyStyleInterpolation {
  public:
-  static PassRefPtr<LegacyStyleInterpolation> create(
+  static PassRefPtr<LegacyStyleInterpolation> Create(
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end) {
-    return adoptRef(new SampleInterpolation(std::move(start), std::move(end)));
+    return AdoptRef(new SampleInterpolation(std::move(start), std::move(end)));
   }
 
  private:
@@ -28,112 +28,112 @@ class SampleInterpolation : public LegacyStyleInterpolation {
                                  CSSPropertyBackgroundColor) {}
 };
 
-const double duration = 1.0;
+const double kDuration = 1.0;
 
 }  // namespace
 
 class AnimationInterpolationEffectTest : public ::testing::Test {
  protected:
-  InterpolableValue* interpolationValue(
+  InterpolableValue* InterpolationValue(
       LegacyStyleInterpolation& interpolation) {
-    return interpolation.getCachedValueForTesting();
+    return interpolation.GetCachedValueForTesting();
   }
 
-  double getInterpolableNumber(PassRefPtr<Interpolation> value) {
+  double GetInterpolableNumber(PassRefPtr<Interpolation> value) {
     LegacyStyleInterpolation& interpolation =
-        toLegacyStyleInterpolation(*value.get());
-    return toInterpolableNumber(interpolationValue(interpolation))->value();
+        ToLegacyStyleInterpolation(*value.Get());
+    return ToInterpolableNumber(InterpolationValue(interpolation))->Value();
   }
 };
 
 TEST_F(AnimationInterpolationEffectTest, SingleInterpolation) {
-  InterpolationEffect interpolationEffect;
-  interpolationEffect.addInterpolation(
-      SampleInterpolation::create(InterpolableNumber::create(0),
-                                  InterpolableNumber::create(10)),
+  InterpolationEffect interpolation_effect;
+  interpolation_effect.AddInterpolation(
+      SampleInterpolation::Create(InterpolableNumber::Create(0),
+                                  InterpolableNumber::Create(10)),
       RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
-  Vector<RefPtr<Interpolation>> activeInterpolations;
-  interpolationEffect.getActiveInterpolations(-2, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(0ul, activeInterpolations.size());
+  Vector<RefPtr<Interpolation>> active_interpolations;
+  interpolation_effect.GetActiveInterpolations(-2, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(0ul, active_interpolations.size());
 
-  interpolationEffect.getActiveInterpolations(-0.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_EQ(-5, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(-0.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_EQ(-5, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolationEffect.getActiveInterpolations(0.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(5, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(0.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(5, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolationEffect.getActiveInterpolations(1.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(1.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(15, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolationEffect.getActiveInterpolations(3, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(0ul, activeInterpolations.size());
+  interpolation_effect.GetActiveInterpolations(3, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(0ul, active_interpolations.size());
 }
 
 TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations) {
-  InterpolationEffect interpolationEffect;
-  interpolationEffect.addInterpolation(
-      SampleInterpolation::create(InterpolableNumber::create(10),
-                                  InterpolableNumber::create(15)),
+  InterpolationEffect interpolation_effect;
+  interpolation_effect.AddInterpolation(
+      SampleInterpolation::Create(InterpolableNumber::Create(10),
+                                  InterpolableNumber::Create(15)),
       RefPtr<TimingFunction>(), 1, 2, 1, 3);
-  interpolationEffect.addInterpolation(
-      SampleInterpolation::create(InterpolableNumber::create(0),
-                                  InterpolableNumber::create(1)),
-      LinearTimingFunction::shared(), 0, 1, 0, 1);
-  interpolationEffect.addInterpolation(
-      SampleInterpolation::create(InterpolableNumber::create(1),
-                                  InterpolableNumber::create(6)),
-      CubicBezierTimingFunction::preset(
+  interpolation_effect.AddInterpolation(
+      SampleInterpolation::Create(InterpolableNumber::Create(0),
+                                  InterpolableNumber::Create(1)),
+      LinearTimingFunction::Shared(), 0, 1, 0, 1);
+  interpolation_effect.AddInterpolation(
+      SampleInterpolation::Create(InterpolableNumber::Create(1),
+                                  InterpolableNumber::Create(6)),
+      CubicBezierTimingFunction::Preset(
           CubicBezierTimingFunction::EaseType::EASE),
       0.5, 1.5, 0.5, 1.5);
 
-  Vector<RefPtr<Interpolation>> activeInterpolations;
-  interpolationEffect.getActiveInterpolations(-0.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(0ul, activeInterpolations.size());
+  Vector<RefPtr<Interpolation>> active_interpolations;
+  interpolation_effect.GetActiveInterpolations(-0.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(0ul, active_interpolations.size());
 
-  interpolationEffect.getActiveInterpolations(0, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(0, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(0, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(0, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolationEffect.getActiveInterpolations(0.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(2ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(0.5f, getInterpolableNumber(activeInterpolations.at(0)));
-  EXPECT_FLOAT_EQ(1, getInterpolableNumber(activeInterpolations.at(1)));
+  interpolation_effect.GetActiveInterpolations(0.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(2ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(0.5f, GetInterpolableNumber(active_interpolations.at(0)));
+  EXPECT_FLOAT_EQ(1, GetInterpolableNumber(active_interpolations.at(1)));
 
-  interpolationEffect.getActiveInterpolations(1, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(2ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(1, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(2ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
   EXPECT_FLOAT_EQ(5.0282884f,
-                  getInterpolableNumber(activeInterpolations.at(1)));
+                  GetInterpolableNumber(active_interpolations.at(1)));
 
-  interpolationEffect.getActiveInterpolations(1, duration * 1000,
-                                              activeInterpolations);
-  EXPECT_EQ(2ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(10, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(1, kDuration * 1000,
+                                               active_interpolations);
+  EXPECT_EQ(2ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
   EXPECT_FLOAT_EQ(5.0120168f,
-                  getInterpolableNumber(activeInterpolations.at(1)));
+                  GetInterpolableNumber(active_interpolations.at(1)));
 
-  interpolationEffect.getActiveInterpolations(1.5, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(12.5f, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(1.5, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(12.5f, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolationEffect.getActiveInterpolations(2, duration,
-                                              activeInterpolations);
-  EXPECT_EQ(1ul, activeInterpolations.size());
-  EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations.at(0)));
+  interpolation_effect.GetActiveInterpolations(2, kDuration,
+                                               active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
+  EXPECT_FLOAT_EQ(15, GetInterpolableNumber(active_interpolations.at(0)));
 }
 
 }  // namespace blink

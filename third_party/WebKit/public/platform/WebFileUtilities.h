@@ -50,13 +50,13 @@ class WebFileUtilities {
 #else
   typedef int FileHandle;
 #endif
-  virtual bool getFileInfo(const WebString& path, WebFileInfo& result) {
+  virtual bool GetFileInfo(const WebString& path, WebFileInfo& result) {
     return false;
   }
-  virtual WebString directoryName(const WebString& path) { return WebString(); }
-  virtual WebString baseName(const WebString& path) { return WebString(); }
-  virtual bool isDirectory(const WebString& path) { return false; }
-  virtual WebURL filePathToURL(const WebString& path) { return WebURL(); }
+  virtual WebString DirectoryName(const WebString& path) { return WebString(); }
+  virtual WebString BaseName(const WebString& path) { return WebString(); }
+  virtual bool IsDirectory(const WebString& path) { return false; }
+  virtual WebURL FilePathToURL(const WebString& path) { return WebURL(); }
 
  protected:
   ~WebFileUtilities() {}

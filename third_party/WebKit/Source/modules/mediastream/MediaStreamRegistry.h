@@ -39,19 +39,19 @@ class MediaStreamDescriptor;
 class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
  public:
   // Returns a single instance of MediaStreamRegistry.
-  static MediaStreamRegistry& registry();
+  static MediaStreamRegistry& Registry();
 
   // Registers a blob URL referring to the specified stream data.
-  void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-  void unregisterURL(const KURL&) override;
-  bool contains(const String&) override;
+  void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+  void UnregisterURL(const KURL&) override;
+  bool Contains(const String&) override;
 
-  MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
+  MediaStreamDescriptor* LookupMediaStreamDescriptor(const String& url);
 
  private:
   MediaStreamRegistry();
   PersistentHeapHashMap<String, Member<MediaStreamDescriptor>>
-      m_streamDescriptors;
+      stream_descriptors_;
 };
 
 }  // namespace blink

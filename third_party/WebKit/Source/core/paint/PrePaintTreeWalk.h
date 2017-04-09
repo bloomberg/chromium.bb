@@ -22,37 +22,37 @@ struct PrePaintTreeWalkContext;
 class PrePaintTreeWalk {
  public:
   PrePaintTreeWalk() {}
-  void walk(FrameView& rootFrame);
+  void Walk(FrameView& root_frame);
 
  private:
-  void walk(FrameView&, const PrePaintTreeWalkContext&);
-  void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
+  void Walk(FrameView&, const PrePaintTreeWalkContext&);
+  void Walk(const LayoutObject&, const PrePaintTreeWalkContext&);
 
   // Invalidates paint-layer painting optimizations, such as subsequence caching
   // and empty paint phase optimizations if clips from the context have changed.
-  ALWAYS_INLINE void invalidatePaintLayerOptimizationsIfNeeded(
+  ALWAYS_INLINE void InvalidatePaintLayerOptimizationsIfNeeded(
       const LayoutObject&,
       PrePaintTreeWalkContext&);
 
   // Returns in |clipRect| the clip applied to children for the given
   // contaiing block context + effect, in the space of ancestorState adjusted
   // by ancestorPaintOffset.
-  ALWAYS_INLINE void computeClipRectForContext(
+  ALWAYS_INLINE void ComputeClipRectForContext(
       const PaintPropertyTreeBuilderContext::ContainingBlockContext&,
       const EffectPaintPropertyNode*,
-      const PropertyTreeState& ancestorState,
-      const LayoutPoint& ancestorPaintOffset,
+      const PropertyTreeState& ancestor_state,
+      const LayoutPoint& ancestor_paint_offset,
       FloatClipRect&);
 
   bool ALWAYS_INLINE
-  needsTreeBuilderContextUpdate(const FrameView&,
+  NeedsTreeBuilderContextUpdate(const FrameView&,
                                 const PrePaintTreeWalkContext&);
   bool ALWAYS_INLINE
-  needsTreeBuilderContextUpdate(const LayoutObject&,
+  NeedsTreeBuilderContextUpdate(const LayoutObject&,
                                 const PrePaintTreeWalkContext&);
 
-  PaintPropertyTreeBuilder m_propertyTreeBuilder;
-  PaintInvalidator m_paintInvalidator;
+  PaintPropertyTreeBuilder property_tree_builder_;
+  PaintInvalidator paint_invalidator_;
 };
 
 }  // namespace blink

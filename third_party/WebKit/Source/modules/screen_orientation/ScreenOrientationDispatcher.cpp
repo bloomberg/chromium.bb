@@ -10,35 +10,36 @@
 
 namespace blink {
 
-ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance() {
-  DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher, screenOrientationDispatcher,
+ScreenOrientationDispatcher& ScreenOrientationDispatcher::Instance() {
+  DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher,
+                      screen_orientation_dispatcher,
                       (new ScreenOrientationDispatcher));
-  return screenOrientationDispatcher;
+  return screen_orientation_dispatcher;
 }
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher() {}
 
 ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
-  DCHECK(!m_listener);
+  DCHECK(!listener_);
 }
 
 DEFINE_TRACE(ScreenOrientationDispatcher) {
-  PlatformEventDispatcher::trace(visitor);
+  PlatformEventDispatcher::Trace(visitor);
 }
 
-void ScreenOrientationDispatcher::startListening() {
-  DCHECK(!m_listener);
+void ScreenOrientationDispatcher::StartListening() {
+  DCHECK(!listener_);
 
-  Platform::current()->connector()->BindInterface(
-      device::mojom::blink::kServiceName, mojo::MakeRequest(&m_listener));
-  m_listener->Start();
+  Platform::Current()->GetConnector()->BindInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&listener_));
+  listener_->Start();
 }
 
-void ScreenOrientationDispatcher::stopListening() {
-  DCHECK(m_listener);
+void ScreenOrientationDispatcher::StopListening() {
+  DCHECK(listener_);
 
-  m_listener->Stop();
-  m_listener.reset();
+  listener_->Stop();
+  listener_.reset();
 }
 
 }  // namespace blink

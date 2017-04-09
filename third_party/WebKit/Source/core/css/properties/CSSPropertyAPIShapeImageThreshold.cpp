@@ -11,7 +11,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIShapeImageThreshold::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumeNumber(range, ValueRangeAll);
+  return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
 }
 
 }  // namespace blink

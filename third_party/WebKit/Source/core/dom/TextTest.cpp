@@ -15,29 +15,29 @@ namespace blink {
 class TextTest : public EditingTestBase {};
 
 TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {
-  setBodyContent(
+  SetBodyContent(
       "<style>pre::first-letter {color:red;}</style><pre "
       "id=sample>a<span>b</span></pre>");
 
-  Node* sample = document().getElementById("sample");
-  Text* text = toText(sample->firstChild());
+  Node* sample = GetDocument().GetElementById("sample");
+  Text* text = ToText(sample->firstChild());
   text->setData(" ");
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(text->layoutObject()->isTextFragment());
+  EXPECT_FALSE(text->GetLayoutObject()->IsTextFragment());
 }
 
 TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter) {
-  setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
+  SetBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
-  Element* pre = document().querySelector("pre");
-  Text* text = toText(pre->firstChild());
+  Element* pre = GetDocument().QuerySelector("pre");
+  Text* text = ToText(pre->FirstChild());
 
-  Range* range = Range::create(document(), text, 0, text, 2);
+  Range* range = Range::Create(GetDocument(), text, 0, text, 2);
   range->deleteContents(ASSERT_NO_EXCEPTION);
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(text->layoutObject()->isTextFragment());
+  EXPECT_FALSE(text->GetLayoutObject()->IsTextFragment());
 }
 
 }  // namespace blink

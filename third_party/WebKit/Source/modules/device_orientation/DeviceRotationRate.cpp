@@ -28,34 +28,34 @@
 namespace blink {
 
 DeviceRotationRate::DeviceRotationRate(
-    DeviceMotionData::RotationRate* rotationRate)
-    : m_rotationRate(rotationRate) {}
+    DeviceMotionData::RotationRate* rotation_rate)
+    : rotation_rate_(rotation_rate) {}
 
 DEFINE_TRACE(DeviceRotationRate) {
-  visitor->trace(m_rotationRate);
+  visitor->Trace(rotation_rate_);
 }
 
-double DeviceRotationRate::alpha(bool& isNull) const {
-  if (m_rotationRate->canProvideAlpha())
-    return m_rotationRate->alpha();
+double DeviceRotationRate::alpha(bool& is_null) const {
+  if (rotation_rate_->CanProvideAlpha())
+    return rotation_rate_->Alpha();
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 
-double DeviceRotationRate::beta(bool& isNull) const {
-  if (m_rotationRate->canProvideBeta())
-    return m_rotationRate->beta();
+double DeviceRotationRate::beta(bool& is_null) const {
+  if (rotation_rate_->CanProvideBeta())
+    return rotation_rate_->Beta();
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 
-double DeviceRotationRate::gamma(bool& isNull) const {
-  if (m_rotationRate->canProvideGamma())
-    return m_rotationRate->gamma();
+double DeviceRotationRate::gamma(bool& is_null) const {
+  if (rotation_rate_->CanProvideGamma())
+    return rotation_rate_->Gamma();
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 

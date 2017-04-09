@@ -57,23 +57,21 @@ class CORE_EXPORT ScriptFunction
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  explicit ScriptFunction(ScriptState* scriptState)
-      : m_scriptState(scriptState)
-  {
-  }
+  explicit ScriptFunction(ScriptState* script_state)
+      : script_state_(script_state) {}
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
-  v8::Local<v8::Function> bindToV8Function();
+  v8::Local<v8::Function> BindToV8Function();
 
  private:
-  virtual ScriptValue call(ScriptValue) = 0;
-  static void callCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  virtual ScriptValue Call(ScriptValue) = 0;
+  static void CallCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
 #if DCHECK_IS_ON()
   // bindToV8Function must not be called twice.
-  bool m_bindToV8FunctionAlreadyCalled = false;
+  bool bind_to_v8_function_already_called_ = false;
 #endif
 };
 

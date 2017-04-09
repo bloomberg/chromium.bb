@@ -51,39 +51,39 @@ class PLATFORM_EXPORT HTTPHeaderMap final {
   ~HTTPHeaderMap();
 
   // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadHTTPHeaderMapData> copyData() const;
+  std::unique_ptr<CrossThreadHTTPHeaderMapData> CopyData() const;
 
-  void adopt(std::unique_ptr<CrossThreadHTTPHeaderMapData>);
+  void Adopt(std::unique_ptr<CrossThreadHTTPHeaderMapData>);
 
   typedef HashMap<AtomicString, AtomicString, CaseFoldingHash> MapType;
   typedef MapType::AddResult AddResult;
   typedef MapType::const_iterator const_iterator;
 
-  size_t size() const { return m_headers.size(); }
-  const_iterator begin() const { return m_headers.begin(); }
-  const_iterator end() const { return m_headers.end(); }
-  const_iterator find(const AtomicString& k) const { return m_headers.find(k); }
-  void clear() { m_headers.clear(); }
-  bool contains(const AtomicString& k) const { return m_headers.contains(k); }
-  const AtomicString& get(const AtomicString& k) const {
-    return m_headers.at(k);
+  size_t size() const { return headers_.size(); }
+  const_iterator begin() const { return headers_.begin(); }
+  const_iterator end() const { return headers_.end(); }
+  const_iterator Find(const AtomicString& k) const { return headers_.Find(k); }
+  void Clear() { headers_.Clear(); }
+  bool Contains(const AtomicString& k) const { return headers_.Contains(k); }
+  const AtomicString& Get(const AtomicString& k) const {
+    return headers_.at(k);
   }
-  AddResult set(const AtomicString& k, const AtomicString& v) {
-    return m_headers.set(k, v);
+  AddResult Set(const AtomicString& k, const AtomicString& v) {
+    return headers_.Set(k, v);
   }
-  AddResult add(const AtomicString& k, const AtomicString& v) {
-    return m_headers.insert(k, v);
+  AddResult Add(const AtomicString& k, const AtomicString& v) {
+    return headers_.insert(k, v);
   }
-  void remove(const AtomicString& k) { m_headers.erase(k); }
+  void Remove(const AtomicString& k) { headers_.erase(k); }
   bool operator!=(const HTTPHeaderMap& rhs) const {
-    return m_headers != rhs.m_headers;
+    return headers_ != rhs.headers_;
   }
   bool operator==(const HTTPHeaderMap& rhs) const {
-    return m_headers == rhs.m_headers;
+    return headers_ == rhs.headers_;
   }
 
  private:
-  HashMap<AtomicString, AtomicString, CaseFoldingHash> m_headers;
+  HashMap<AtomicString, AtomicString, CaseFoldingHash> headers_;
 };
 
 }  // namespace blink

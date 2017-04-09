@@ -44,10 +44,10 @@ inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 
-bool HTMLNoScriptElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  if (document().canExecuteScripts(NotAboutToExecuteScript))
+bool HTMLNoScriptElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+  if (GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
     return false;
-  return Element::layoutObjectIsNeeded(style);
+  return Element::LayoutObjectIsNeeded(style);
 }
 
 }  // namespace blink

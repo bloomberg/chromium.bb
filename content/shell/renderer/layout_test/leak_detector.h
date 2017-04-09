@@ -33,7 +33,7 @@ class LeakDetector : public blink::WebLeakDetectorClient {
   void TryLeakDetection(blink::WebFrame* frame);
 
   // WebLeakDetectorClient:
-  void onLeakDetectionComplete(const Result& result) override;
+  void OnLeakDetectionComplete(const Result& result) override;
 
  private:
   BlinkTestRunner* test_runner_;

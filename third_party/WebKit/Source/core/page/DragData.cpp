@@ -39,79 +39,79 @@
 namespace blink {
 
 DragData::DragData(DataObject* data,
-                   const IntPoint& clientPosition,
-                   const IntPoint& globalPosition,
-                   DragOperation sourceOperationMask,
+                   const IntPoint& client_position,
+                   const IntPoint& global_position,
+                   DragOperation source_operation_mask,
                    DragApplicationFlags flags)
-    : m_clientPosition(clientPosition),
-      m_globalPosition(globalPosition),
-      m_platformDragData(data),
-      m_draggingSourceOperationMask(sourceOperationMask),
-      m_applicationFlags(flags) {}
+    : client_position_(client_position),
+      global_position_(global_position),
+      platform_drag_data_(data),
+      dragging_source_operation_mask_(source_operation_mask),
+      application_flags_(flags) {}
 
-bool DragData::containsHTML() const {
-  return m_platformDragData->types().contains(mimeTypeTextHTML);
+bool DragData::ContainsHTML() const {
+  return platform_drag_data_->Types().Contains(kMimeTypeTextHTML);
 }
 
-bool DragData::containsURL(FilenameConversionPolicy filenamePolicy) const {
-  return m_platformDragData->types().contains(mimeTypeTextURIList) ||
-         (filenamePolicy == ConvertFilenames &&
-          m_platformDragData->containsFilenames());
+bool DragData::ContainsURL(FilenameConversionPolicy filename_policy) const {
+  return platform_drag_data_->Types().Contains(kMimeTypeTextURIList) ||
+         (filename_policy == kConvertFilenames &&
+          platform_drag_data_->ContainsFilenames());
 }
 
-String DragData::asURL(FilenameConversionPolicy filenamePolicy,
+String DragData::AsURL(FilenameConversionPolicy filename_policy,
                        String* title) const {
   String url;
-  if (m_platformDragData->types().contains(mimeTypeTextURIList))
-    m_platformDragData->urlAndTitle(url, title);
-  else if (filenamePolicy == ConvertFilenames && containsFiles())
-    url = filePathToURL(m_platformDragData->filenames()[0]);
+  if (platform_drag_data_->Types().Contains(kMimeTypeTextURIList))
+    platform_drag_data_->UrlAndTitle(url, title);
+  else if (filename_policy == kConvertFilenames && ContainsFiles())
+    url = FilePathToURL(platform_drag_data_->Filenames()[0]);
   return url;
 }
 
-bool DragData::containsFiles() const {
-  return m_platformDragData->containsFilenames();
+bool DragData::ContainsFiles() const {
+  return platform_drag_data_->ContainsFilenames();
 }
 
-int DragData::modifiers() const {
-  return m_platformDragData->modifiers();
+int DragData::GetModifiers() const {
+  return platform_drag_data_->GetModifiers();
 }
 
-void DragData::asFilePaths(Vector<String>& result) const {
-  const Vector<String>& filenames = m_platformDragData->filenames();
+void DragData::AsFilePaths(Vector<String>& result) const {
+  const Vector<String>& filenames = platform_drag_data_->Filenames();
   for (size_t i = 0; i < filenames.size(); ++i) {
-    if (!filenames[i].isEmpty())
+    if (!filenames[i].IsEmpty())
       result.push_back(filenames[i]);
   }
 }
 
-unsigned DragData::numberOfFiles() const {
-  return m_platformDragData->filenames().size();
+unsigned DragData::NumberOfFiles() const {
+  return platform_drag_data_->Filenames().size();
 }
 
-bool DragData::containsPlainText() const {
-  return m_platformDragData->types().contains(mimeTypeTextPlain);
+bool DragData::ContainsPlainText() const {
+  return platform_drag_data_->Types().Contains(kMimeTypeTextPlain);
 }
 
-String DragData::asPlainText() const {
-  return m_platformDragData->getData(mimeTypeTextPlain);
+String DragData::AsPlainText() const {
+  return platform_drag_data_->GetData(kMimeTypeTextPlain);
 }
 
-bool DragData::canSmartReplace() const {
+bool DragData::CanSmartReplace() const {
   // Mimic the situations in which mac allows drag&drop to do a smart replace.
   // This is allowed whenever the drag data contains a 'range' (ie.,
   // ClipboardWin::writeRange is called). For example, dragging a link
   // should not result in a space being added.
-  return m_platformDragData->types().contains(mimeTypeTextPlain) &&
-         !m_platformDragData->types().contains(mimeTypeTextURIList);
+  return platform_drag_data_->Types().Contains(kMimeTypeTextPlain) &&
+         !platform_drag_data_->Types().Contains(kMimeTypeTextURIList);
 }
 
-bool DragData::containsCompatibleContent() const {
-  return containsPlainText() || containsURL() || containsHTML() ||
-         containsFiles();
+bool DragData::ContainsCompatibleContent() const {
+  return ContainsPlainText() || ContainsURL() || ContainsHTML() ||
+         ContainsFiles();
 }
 
-DocumentFragment* DragData::asFragment(LocalFrame* frame) const {
+DocumentFragment* DragData::AsFragment(LocalFrame* frame) const {
   /*
      * Order is richest format first. On OSX this is:
      * * Web Archive
@@ -122,27 +122,27 @@ DocumentFragment* DragData::asFragment(LocalFrame* frame) const {
      * * PICT
      */
 
-  if (containsFiles()) {
+  if (ContainsFiles()) {
     // FIXME: Implement this. Should be pretty simple to make some HTML
     // and call createFragmentFromMarkup.
   }
 
-  if (containsHTML()) {
+  if (ContainsHTML()) {
     String html;
-    KURL baseURL;
-    m_platformDragData->htmlAndBaseURL(html, baseURL);
-    DCHECK(frame->document());
+    KURL base_url;
+    platform_drag_data_->HtmlAndBaseURL(html, base_url);
+    DCHECK(frame->GetDocument());
     if (DocumentFragment* fragment =
-            createFragmentFromMarkup(*frame->document(), html, baseURL,
-                                     DisallowScriptingAndPluginContent))
+            CreateFragmentFromMarkup(*frame->GetDocument(), html, base_url,
+                                     kDisallowScriptingAndPluginContent))
       return fragment;
   }
 
   return nullptr;
 }
 
-String DragData::droppedFileSystemId() const {
-  return m_platformDragData->filesystemId();
+String DragData::DroppedFileSystemId() const {
+  return platform_drag_data_->FilesystemId();
 }
 
 }  // namespace blink

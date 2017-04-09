@@ -31,117 +31,117 @@
 
 namespace blink {
 
-StyleRuleImport* StyleRuleImport::create(const String& href,
+StyleRuleImport* StyleRuleImport::Create(const String& href,
                                          MediaQuerySet* media) {
   return new StyleRuleImport(href, media);
 }
 
 StyleRuleImport::StyleRuleImport(const String& href, MediaQuerySet* media)
-    : StyleRuleBase(Import),
-      m_parentStyleSheet(nullptr),
-      m_styleSheetClient(new ImportedStyleSheetClient(this)),
-      m_strHref(href),
-      m_mediaQueries(media),
-      m_loading(false) {
-  if (!m_mediaQueries)
-    m_mediaQueries = MediaQuerySet::create(String());
+    : StyleRuleBase(kImport),
+      parent_style_sheet_(nullptr),
+      style_sheet_client_(new ImportedStyleSheetClient(this)),
+      str_href_(href),
+      media_queries_(media),
+      loading_(false) {
+  if (!media_queries_)
+    media_queries_ = MediaQuerySet::Create(String());
 }
 
 StyleRuleImport::~StyleRuleImport() {}
 
-void StyleRuleImport::dispose() {
-  if (m_resource)
-    m_resource->removeClient(m_styleSheetClient);
-  m_resource = nullptr;
+void StyleRuleImport::Dispose() {
+  if (resource_)
+    resource_->RemoveClient(style_sheet_client_);
+  resource_ = nullptr;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport) {
-  visitor->trace(m_styleSheetClient);
-  visitor->trace(m_parentStyleSheet);
-  visitor->trace(m_mediaQueries);
-  visitor->trace(m_styleSheet);
-  visitor->trace(m_resource);
-  StyleRuleBase::traceAfterDispatch(visitor);
+  visitor->Trace(style_sheet_client_);
+  visitor->Trace(parent_style_sheet_);
+  visitor->Trace(media_queries_);
+  visitor->Trace(style_sheet_);
+  visitor->Trace(resource_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
-void StyleRuleImport::setCSSStyleSheet(
+void StyleRuleImport::SetCSSStyleSheet(
     const String& href,
-    const KURL& baseURL,
-    ReferrerPolicy referrerPolicy,
+    const KURL& base_url,
+    ReferrerPolicy referrer_policy,
     const String& charset,
-    const CSSStyleSheetResource* cachedStyleSheet) {
-  if (m_styleSheet)
-    m_styleSheet->clearOwnerRule();
+    const CSSStyleSheetResource* cached_style_sheet) {
+  if (style_sheet_)
+    style_sheet_->ClearOwnerRule();
 
   Document* document = nullptr;
-  const CSSParserContext* context = strictCSSParserContext();
-  if (m_parentStyleSheet) {
-    document = m_parentStyleSheet->singleOwnerDocument();
-    context = m_parentStyleSheet->parserContext();
+  const CSSParserContext* context = StrictCSSParserContext();
+  if (parent_style_sheet_) {
+    document = parent_style_sheet_->SingleOwnerDocument();
+    context = parent_style_sheet_->ParserContext();
   }
-  context = CSSParserContext::create(context, baseURL, referrerPolicy, charset,
-                                     document);
+  context = CSSParserContext::Create(context, base_url, referrer_policy,
+                                     charset, document);
 
-  m_styleSheet = StyleSheetContents::create(this, href, context);
+  style_sheet_ = StyleSheetContents::Create(this, href, context);
 
-  m_styleSheet->parseAuthorStyleSheet(
-      cachedStyleSheet, document ? document->getSecurityOrigin() : 0);
+  style_sheet_->ParseAuthorStyleSheet(
+      cached_style_sheet, document ? document->GetSecurityOrigin() : 0);
 
-  m_loading = false;
+  loading_ = false;
 
-  if (m_parentStyleSheet) {
-    m_parentStyleSheet->notifyLoadedSheet(cachedStyleSheet);
-    m_parentStyleSheet->checkLoaded();
+  if (parent_style_sheet_) {
+    parent_style_sheet_->NotifyLoadedSheet(cached_style_sheet);
+    parent_style_sheet_->CheckLoaded();
   }
 }
 
-bool StyleRuleImport::isLoading() const {
-  return m_loading || (m_styleSheet && m_styleSheet->isLoading());
+bool StyleRuleImport::IsLoading() const {
+  return loading_ || (style_sheet_ && style_sheet_->IsLoading());
 }
 
-void StyleRuleImport::requestStyleSheet() {
-  if (!m_parentStyleSheet)
+void StyleRuleImport::RequestStyleSheet() {
+  if (!parent_style_sheet_)
     return;
-  Document* document = m_parentStyleSheet->singleOwnerDocument();
+  Document* document = parent_style_sheet_->SingleOwnerDocument();
   if (!document)
     return;
 
-  ResourceFetcher* fetcher = document->fetcher();
+  ResourceFetcher* fetcher = document->Fetcher();
   if (!fetcher)
     return;
 
-  KURL absURL;
-  if (!m_parentStyleSheet->baseURL().isNull()) {
+  KURL abs_url;
+  if (!parent_style_sheet_->BaseURL().IsNull()) {
     // use parent styleheet's URL as the base URL
-    absURL = KURL(m_parentStyleSheet->baseURL(), m_strHref);
+    abs_url = KURL(parent_style_sheet_->BaseURL(), str_href_);
   } else {
-    absURL = document->completeURL(m_strHref);
+    abs_url = document->CompleteURL(str_href_);
   }
 
   // Check for a cycle in our import chain.  If we encounter a stylesheet
   // in our parent chain with the same URL, then just bail.
-  StyleSheetContents* rootSheet = m_parentStyleSheet;
-  for (StyleSheetContents* sheet = m_parentStyleSheet; sheet;
-       sheet = sheet->parentStyleSheet()) {
-    if (equalIgnoringFragmentIdentifier(absURL, sheet->baseURL()) ||
-        equalIgnoringFragmentIdentifier(
-            absURL, document->completeURL(sheet->originalURL())))
+  StyleSheetContents* root_sheet = parent_style_sheet_;
+  for (StyleSheetContents* sheet = parent_style_sheet_; sheet;
+       sheet = sheet->ParentStyleSheet()) {
+    if (EqualIgnoringFragmentIdentifier(abs_url, sheet->BaseURL()) ||
+        EqualIgnoringFragmentIdentifier(
+            abs_url, document->CompleteURL(sheet->OriginalURL())))
       return;
-    rootSheet = sheet;
+    root_sheet = sheet;
   }
 
-  FetchRequest request(ResourceRequest(absURL), FetchInitiatorTypeNames::css,
-                       m_parentStyleSheet->charset());
-  m_resource = CSSStyleSheetResource::fetch(request, fetcher);
-  if (m_resource) {
+  FetchRequest request(ResourceRequest(abs_url), FetchInitiatorTypeNames::css,
+                       parent_style_sheet_->Charset());
+  resource_ = CSSStyleSheetResource::Fetch(request, fetcher);
+  if (resource_) {
     // if the import rule is issued dynamically, the sheet may be
     // removed from the pending sheet count, so let the doc know
     // the sheet being imported is pending.
-    if (m_parentStyleSheet && m_parentStyleSheet->loadCompleted() &&
-        rootSheet == m_parentStyleSheet)
-      m_parentStyleSheet->startLoadingDynamicSheet();
-    m_loading = true;
-    m_resource->addClient(m_styleSheetClient);
+    if (parent_style_sheet_ && parent_style_sheet_->LoadCompleted() &&
+        root_sheet == parent_style_sheet_)
+      parent_style_sheet_->StartLoadingDynamicSheet();
+    loading_ = true;
+    resource_->AddClient(style_sheet_client_);
   }
 }
 

@@ -23,32 +23,32 @@ class MediaQueryData {
   WTF_MAKE_NONCOPYABLE(MediaQueryData);
 
  private:
-  MediaQuery::RestrictorType m_restrictor;
-  String m_mediaType;
-  ExpressionHeapVector m_expressions;
-  String m_mediaFeature;
-  Vector<CSSParserToken, 4> m_valueList;
-  bool m_mediaTypeSet;
+  MediaQuery::RestrictorType restrictor_;
+  String media_type_;
+  ExpressionHeapVector expressions_;
+  String media_feature_;
+  Vector<CSSParserToken, 4> value_list_;
+  bool media_type_set_;
 
  public:
   MediaQueryData();
-  void clear();
-  bool addExpression();
-  bool tryAddParserToken(CSSParserTokenType, const CSSParserToken&);
-  void setMediaType(const String&);
-  MediaQuery* takeMediaQuery();
+  void Clear();
+  bool AddExpression();
+  bool TryAddParserToken(CSSParserTokenType, const CSSParserToken&);
+  void SetMediaType(const String&);
+  MediaQuery* TakeMediaQuery();
 
-  inline bool currentMediaQueryChanged() const {
-    return (m_restrictor != MediaQuery::None || m_mediaTypeSet ||
-            m_expressions.size() > 0);
+  inline bool CurrentMediaQueryChanged() const {
+    return (restrictor_ != MediaQuery::kNone || media_type_set_ ||
+            expressions_.size() > 0);
   }
-  inline MediaQuery::RestrictorType restrictor() { return m_restrictor; }
+  inline MediaQuery::RestrictorType Restrictor() { return restrictor_; }
 
-  inline void setRestrictor(MediaQuery::RestrictorType restrictor) {
-    m_restrictor = restrictor;
+  inline void SetRestrictor(MediaQuery::RestrictorType restrictor) {
+    restrictor_ = restrictor;
   }
 
-  inline void setMediaFeature(const String& str) { m_mediaFeature = str; }
+  inline void SetMediaFeature(const String& str) { media_feature_ = str; }
 };
 
 class CORE_EXPORT MediaQueryParser {
@@ -56,60 +56,60 @@ class CORE_EXPORT MediaQueryParser {
   WTF_MAKE_NONCOPYABLE(MediaQueryParser);
 
  public:
-  static MediaQuerySet* parseMediaQuerySet(const String&);
-  static MediaQuerySet* parseMediaQuerySet(CSSParserTokenRange);
-  static MediaQuerySet* parseMediaCondition(CSSParserTokenRange);
+  static MediaQuerySet* ParseMediaQuerySet(const String&);
+  static MediaQuerySet* ParseMediaQuerySet(CSSParserTokenRange);
+  static MediaQuerySet* ParseMediaCondition(CSSParserTokenRange);
 
  private:
   enum ParserType {
-    MediaQuerySetParser,
-    MediaConditionParser,
+    kMediaQuerySetParser,
+    kMediaConditionParser,
   };
 
   MediaQueryParser(ParserType);
   virtual ~MediaQueryParser();
 
-  MediaQuerySet* parseImpl(CSSParserTokenRange);
+  MediaQuerySet* ParseImpl(CSSParserTokenRange);
 
-  void processToken(const CSSParserToken&);
+  void ProcessToken(const CSSParserToken&);
 
-  void readRestrictor(CSSParserTokenType, const CSSParserToken&);
-  void readMediaNot(CSSParserTokenType, const CSSParserToken&);
-  void readMediaType(CSSParserTokenType, const CSSParserToken&);
-  void readAnd(CSSParserTokenType, const CSSParserToken&);
-  void readFeatureStart(CSSParserTokenType, const CSSParserToken&);
-  void readFeature(CSSParserTokenType, const CSSParserToken&);
-  void readFeatureColon(CSSParserTokenType, const CSSParserToken&);
-  void readFeatureValue(CSSParserTokenType, const CSSParserToken&);
-  void readFeatureEnd(CSSParserTokenType, const CSSParserToken&);
-  void skipUntilComma(CSSParserTokenType, const CSSParserToken&);
-  void skipUntilBlockEnd(CSSParserTokenType, const CSSParserToken&);
-  void done(CSSParserTokenType, const CSSParserToken&);
+  void ReadRestrictor(CSSParserTokenType, const CSSParserToken&);
+  void ReadMediaNot(CSSParserTokenType, const CSSParserToken&);
+  void ReadMediaType(CSSParserTokenType, const CSSParserToken&);
+  void ReadAnd(CSSParserTokenType, const CSSParserToken&);
+  void ReadFeatureStart(CSSParserTokenType, const CSSParserToken&);
+  void ReadFeature(CSSParserTokenType, const CSSParserToken&);
+  void ReadFeatureColon(CSSParserTokenType, const CSSParserToken&);
+  void ReadFeatureValue(CSSParserTokenType, const CSSParserToken&);
+  void ReadFeatureEnd(CSSParserTokenType, const CSSParserToken&);
+  void SkipUntilComma(CSSParserTokenType, const CSSParserToken&);
+  void SkipUntilBlockEnd(CSSParserTokenType, const CSSParserToken&);
+  void Done(CSSParserTokenType, const CSSParserToken&);
 
   using State = void (MediaQueryParser::*)(CSSParserTokenType,
                                            const CSSParserToken&);
 
-  void setStateAndRestrict(State, MediaQuery::RestrictorType);
-  void handleBlocks(const CSSParserToken&);
+  void SetStateAndRestrict(State, MediaQuery::RestrictorType);
+  void HandleBlocks(const CSSParserToken&);
 
-  State m_state;
-  ParserType m_parserType;
-  MediaQueryData m_mediaQueryData;
-  Member<MediaQuerySet> m_querySet;
-  MediaQueryBlockWatcher m_blockWatcher;
+  State state_;
+  ParserType parser_type_;
+  MediaQueryData media_query_data_;
+  Member<MediaQuerySet> query_set_;
+  MediaQueryBlockWatcher block_watcher_;
 
-  const static State ReadRestrictor;
-  const static State ReadMediaNot;
-  const static State ReadMediaType;
-  const static State ReadAnd;
-  const static State ReadFeatureStart;
-  const static State ReadFeature;
-  const static State ReadFeatureColon;
-  const static State ReadFeatureValue;
-  const static State ReadFeatureEnd;
-  const static State SkipUntilComma;
-  const static State SkipUntilBlockEnd;
-  const static State Done;
+  const static State kReadRestrictor;
+  const static State kReadMediaNot;
+  const static State kReadMediaType;
+  const static State kReadAnd;
+  const static State kReadFeatureStart;
+  const static State kReadFeature;
+  const static State kReadFeatureColon;
+  const static State kReadFeatureValue;
+  const static State kReadFeatureEnd;
+  const static State kSkipUntilComma;
+  const static State kSkipUntilBlockEnd;
+  const static State kDone;
 };
 
 }  // namespace blink

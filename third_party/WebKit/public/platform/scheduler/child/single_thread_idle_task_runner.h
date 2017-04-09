@@ -64,7 +64,7 @@ class SingleThreadIdleTaskRunner
   // literals). They may not include " chars.
   SingleThreadIdleTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
-      Delegate* Delegate,
+      Delegate* delegate,
       const char* tracing_category);
 
   virtual void PostIdleTask(const tracked_objects::Location& from_here,

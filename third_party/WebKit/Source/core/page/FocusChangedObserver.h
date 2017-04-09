@@ -16,10 +16,10 @@ class Page;
 class CORE_EXPORT FocusChangedObserver : public GarbageCollectedMixin {
  public:
   explicit FocusChangedObserver(Page*);
-  virtual void focusedFrameChanged() = 0;
+  virtual void FocusedFrameChanged() = 0;
 
  protected:
-  bool isFrameFocused(LocalFrame*);
+  bool IsFrameFocused(LocalFrame*);
   virtual ~FocusChangedObserver() {}
 };
 

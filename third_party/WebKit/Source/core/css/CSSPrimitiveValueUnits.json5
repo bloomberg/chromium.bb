@@ -8,111 +8,111 @@
   data: [
     {
       name: "em",
-      unit_type: "Ems",
+      unit_type: "kEms",
     },
     {
       name: "ex",
-      unit_type: "Exs",
+      unit_type: "kExs",
     },
     {
       name: "px",
-      unit_type: "Pixels",
+      unit_type: "kPixels",
     },
     {
       name: "cm",
-      unit_type: "Centimeters",
+      unit_type: "kCentimeters",
     },
     {
       name: "mm",
-      unit_type: "Millimeters",
+      unit_type: "kMillimeters",
     },
     {
       name: "in",
-      unit_type: "Inches",
+      unit_type: "kInches",
     },
     {
       name: "pt",
-      unit_type: "Points",
+      unit_type: "kPoints",
     },
     {
       name: "pc",
-      unit_type: "Picas",
+      unit_type: "kPicas",
     },
     {
       name: "deg",
-      unit_type: "Degrees",
+      unit_type: "kDegrees",
     },
     {
       name: "rad",
-      unit_type: "Radians",
+      unit_type: "kRadians",
     },
     {
       name: "grad",
-      unit_type: "Gradians",
+      unit_type: "kGradians",
     },
     {
       name: "ms",
-      unit_type: "Milliseconds",
+      unit_type: "kMilliseconds",
     },
     {
       name: "s",
-      unit_type: "Seconds",
+      unit_type: "kSeconds",
     },
     {
       name: "hz",
-      unit_type: "Hertz",
+      unit_type: "kHertz",
     },
     {
       name: "khz",
-      unit_type: "Kilohertz",
+      unit_type: "kKilohertz",
     },
     {
       name: "dpi",
-      unit_type: "DotsPerInch",
+      unit_type: "kDotsPerInch",
     },
     {
       name: "dpcm",
-      unit_type: "DotsPerCentimeter",
+      unit_type: "kDotsPerCentimeter",
     },
     {
       name: "dppx",
-      unit_type: "DotsPerPixel",
+      unit_type: "kDotsPerPixel",
     },
     {
       name: "vw",
-      unit_type: "ViewportWidth",
+      unit_type: "kViewportWidth",
     },
     {
       name: "vh",
-      unit_type: "ViewportHeight",
+      unit_type: "kViewportHeight",
     },
     {
       name: "vmin",
-      unit_type: "ViewportMin",
+      unit_type: "kViewportMin",
     },
     {
       name: "vmax",
-      unit_type: "ViewportMax",
+      unit_type: "kViewportMax",
     },
     {
       name: "rem",
-      unit_type: "Rems",
+      unit_type: "kRems",
     },
     {
       name: "fr",
-      unit_type: "Fraction",
+      unit_type: "kFraction",
     },
     {
       name: "turn",
-      unit_type: "Turns",
+      unit_type: "kTurns",
     },
     {
       name: "ch",
-      unit_type: "Chs",
+      unit_type: "kChs",
     },
     {
       name: "__qem",
-      unit_type: "QuirkyEms",
+      unit_type: "kQuirkyEms",
     },
   ],
 }

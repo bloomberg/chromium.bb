@@ -21,7 +21,7 @@ class CompositorMutator : public GarbageCollectedFinalized<CompositorMutator> {
   // connected CompositorWorkers and AnimationWorklets.
   // Returns true if any animation callbacks requested an animation frame
   // (i.e. should be reinvoked next frame).
-  virtual bool mutate(double monotonicTimeNow,
+  virtual bool Mutate(double monotonic_time_now,
                       CompositorMutableStateProvider*) = 0;
 };
 

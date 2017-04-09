@@ -15,42 +15,42 @@ class LayoutBox;
 class ComputedStyle;
 
 enum GridPositionSide {
-  ColumnStartSide,
-  ColumnEndSide,
-  RowStartSide,
-  RowEndSide
+  kColumnStartSide,
+  kColumnEndSide,
+  kRowStartSide,
+  kRowEndSide
 };
 
-enum GridTrackSizingDirection { ForColumns, ForRows };
+enum GridTrackSizingDirection { kForColumns, kForRows };
 
 class NamedLineCollection {
   WTF_MAKE_NONCOPYABLE(NamedLineCollection);
 
  public:
   NamedLineCollection(const ComputedStyle&,
-                      const String& namedLine,
+                      const String& named_line,
                       GridTrackSizingDirection,
-                      size_t lastLine,
-                      size_t autoRepeatTracksCount);
+                      size_t last_line,
+                      size_t auto_repeat_tracks_count);
 
-  static bool isValidNamedLineOrArea(const String& namedLine,
+  static bool IsValidNamedLineOrArea(const String& named_line,
                                      const ComputedStyle&,
                                      GridPositionSide);
 
-  bool hasNamedLines();
-  size_t firstPosition();
+  bool HasNamedLines();
+  size_t FirstPosition();
 
-  bool contains(size_t line);
+  bool Contains(size_t line);
 
  private:
-  size_t find(size_t line);
-  const Vector<size_t>* m_namedLinesIndexes = nullptr;
-  const Vector<size_t>* m_autoRepeatNamedLinesIndexes = nullptr;
+  size_t Find(size_t line);
+  const Vector<size_t>* named_lines_indexes_ = nullptr;
+  const Vector<size_t>* auto_repeat_named_lines_indexes_ = nullptr;
 
-  size_t m_insertionPoint;
-  size_t m_lastLine;
-  size_t m_autoRepeatTotalTracks;
-  size_t m_autoRepeatTrackListLength;
+  size_t insertion_point_;
+  size_t last_line_;
+  size_t auto_repeat_total_tracks_;
+  size_t auto_repeat_track_list_length_;
 };
 
 // This is a utility class with all the code related to grid items positions
@@ -59,21 +59,22 @@ class GridPositionsResolver {
   DISALLOW_NEW();
 
  public:
-  static size_t explicitGridColumnCount(const ComputedStyle&,
-                                        size_t autoRepeatColumnsCount);
-  static size_t explicitGridRowCount(const ComputedStyle&,
-                                     size_t autoRepeatRowsCount);
+  static size_t ExplicitGridColumnCount(const ComputedStyle&,
+                                        size_t auto_repeat_columns_count);
+  static size_t ExplicitGridRowCount(const ComputedStyle&,
+                                     size_t auto_repeat_rows_count);
 
-  static GridPositionSide initialPositionSide(GridTrackSizingDirection);
-  static GridPositionSide finalPositionSide(GridTrackSizingDirection);
+  static GridPositionSide InitialPositionSide(GridTrackSizingDirection);
+  static GridPositionSide FinalPositionSide(GridTrackSizingDirection);
 
-  static size_t spanSizeForAutoPlacedItem(const ComputedStyle&,
+  static size_t SpanSizeForAutoPlacedItem(const ComputedStyle&,
                                           const LayoutBox&,
                                           GridTrackSizingDirection);
-  static GridSpan resolveGridPositionsFromStyle(const ComputedStyle&,
-                                                const LayoutBox&,
-                                                GridTrackSizingDirection,
-                                                size_t autoRepeatTracksCount);
+  static GridSpan ResolveGridPositionsFromStyle(
+      const ComputedStyle&,
+      const LayoutBox&,
+      GridTrackSizingDirection,
+      size_t auto_repeat_tracks_count);
 };
 
 }  // namespace blink

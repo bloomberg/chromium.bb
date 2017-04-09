@@ -16,64 +16,64 @@ namespace {
 
 TEST(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
-  request.addHTTPHeaderField("Orange", "Orange");
-  request.addHTTPHeaderField("Apple", "Red");
-  request.addHTTPHeaderField("Kiwifruit", "Green");
-  request.addHTTPHeaderField("Content-Type", "application/octet-stream");
-  request.addHTTPHeaderField("Strawberry", "Red");
+  request.AddHTTPHeaderField("Orange", "Orange");
+  request.AddHTTPHeaderField("Apple", "Red");
+  request.AddHTTPHeaderField("Kiwifruit", "Green");
+  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
+  request.AddHTTPHeaderField("Strawberry", "Red");
 
-  ResourceRequest preflight = createAccessControlPreflightRequest(request);
+  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
-            preflight.httpHeaderField("Access-Control-Request-Headers"));
+            preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
-  request.addHTTPHeaderField("Accept", "everything");
-  request.addHTTPHeaderField("Accept-Language", "everything");
-  request.addHTTPHeaderField("Content-Language", "everything");
-  request.addHTTPHeaderField("Save-Data", "on");
+  request.AddHTTPHeaderField("Accept", "everything");
+  request.AddHTTPHeaderField("Accept-Language", "everything");
+  request.AddHTTPHeaderField("Content-Language", "everything");
+  request.AddHTTPHeaderField("Save-Data", "on");
 
-  ResourceRequest preflight = createAccessControlPreflightRequest(request);
+  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
 
   // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
   // request headers should cause "Access-Control-Request-Headers:" to be
   // left out in the preflight request.
-  EXPECT_EQ(nullAtom,
-            preflight.httpHeaderField("Access-Control-Request-Headers"));
+  EXPECT_EQ(g_null_atom,
+            preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.addHTTPHeaderField("Content-Type", "text/plain");
+  request.AddHTTPHeaderField("Content-Type", "text/plain");
 
-  ResourceRequest preflight = createAccessControlPreflightRequest(request);
+  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
 
   // Empty list also; see comment in test above.
-  EXPECT_EQ(nullAtom,
-            preflight.httpHeaderField("Access-Control-Request-Headers"));
+  EXPECT_EQ(g_null_atom,
+            preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
-  request.addHTTPHeaderField("X-Custom-Header", "foobar");
+  request.AddHTTPHeaderField("X-Custom-Header", "foobar");
 
-  ResourceRequest preflight = createAccessControlPreflightRequest(request);
+  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("x-custom-header",
-            preflight.httpHeaderField("Access-Control-Request-Headers"));
+            preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(CreateAccessControlPreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.addHTTPHeaderField("Content-Type", "application/octet-stream");
+  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
 
-  ResourceRequest preflight = createAccessControlPreflightRequest(request);
+  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("content-type",
-            preflight.httpHeaderField("Access-Control-Request-Headers"));
+            preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 }  // namespace

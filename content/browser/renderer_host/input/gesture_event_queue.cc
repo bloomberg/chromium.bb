@@ -60,9 +60,9 @@ bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
   GestureQueue::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
-    if (it->event.type() == WebInputEvent::GestureFlingStart)
+    if (it->event.GetType() == WebInputEvent::kGestureFlingStart)
       return false;
-    if (it->event.type() == WebInputEvent::GestureFlingCancel)
+    if (it->event.GetType() == WebInputEvent::kGestureFlingCancel)
       return true;
     it++;
   }
@@ -73,8 +73,8 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (debounce_interval_ <= base::TimeDelta())
     return true;
-  switch (gesture_event.event.type()) {
-    case WebInputEvent::GestureScrollUpdate:
+  switch (gesture_event.event.GetType()) {
+    case WebInputEvent::kGestureScrollUpdate:
       if (!scrolling_in_progress_) {
         debounce_deferring_timer_.Start(
             FROM_HERE,
@@ -89,9 +89,9 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
       debouncing_deferral_queue_.clear();
       return true;
 
-    case WebInputEvent::GesturePinchBegin:
-    case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::kGesturePinchUpdate:
       // TODO(rjkroege): Debounce pinch (http://crbug.com/147647)
       return true;
     default:
@@ -105,31 +105,31 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
 
 bool GestureEventQueue::ShouldForwardForGFCFiltering(
     const GestureEventWithLatencyInfo& gesture_event) const {
-  return gesture_event.event.type() != WebInputEvent::GestureFlingCancel ||
+  return gesture_event.event.GetType() != WebInputEvent::kGestureFlingCancel ||
          !ShouldDiscardFlingCancelEvent(gesture_event);
 }
 
 bool GestureEventQueue::ShouldForwardForTapSuppression(
     const GestureEventWithLatencyInfo& gesture_event) {
-  switch (gesture_event.event.type()) {
-    case WebInputEvent::GestureFlingCancel:
-      if (gesture_event.event.sourceDevice ==
-          blink::WebGestureDeviceTouchscreen)
+  switch (gesture_event.event.GetType()) {
+    case WebInputEvent::kGestureFlingCancel:
+      if (gesture_event.event.source_device ==
+          blink::kWebGestureDeviceTouchscreen)
         touchscreen_tap_suppression_controller_.GestureFlingCancel();
       else
         touchpad_tap_suppression_controller_.GestureFlingCancel();
       return true;
-    case WebInputEvent::GestureTapDown:
-    case WebInputEvent::GestureShowPress:
-    case WebInputEvent::GestureTapUnconfirmed:
-    case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GestureTap:
-    case WebInputEvent::GestureDoubleTap:
-    case WebInputEvent::GestureLongPress:
-    case WebInputEvent::GestureLongTap:
-    case WebInputEvent::GestureTwoFingerTap:
-      if (gesture_event.event.sourceDevice ==
-          blink::WebGestureDeviceTouchscreen) {
+    case WebInputEvent::kGestureTapDown:
+    case WebInputEvent::kGestureShowPress:
+    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::kGestureTap:
+    case WebInputEvent::kGestureDoubleTap:
+    case WebInputEvent::kGestureLongPress:
+    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::kGestureTwoFingerTap:
+      if (gesture_event.event.source_device ==
+          blink::kWebGestureDeviceTouchscreen) {
         return !touchscreen_tap_suppression_controller_.FilterTapEvent(
             gesture_event);
       }
@@ -143,27 +143,27 @@ void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (allow_multiple_inflight_events_) {
     // Event coalescing should be handled in compositor thread event queue.
-    if (gesture_event.event.type() == WebInputEvent::GestureFlingCancel)
+    if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel)
       fling_in_progress_ = false;
-    else if (gesture_event.event.type() == WebInputEvent::GestureFlingStart)
+    else if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart)
       fling_in_progress_ = true;
     coalesced_gesture_events_.push_back(gesture_event);
     client_->SendGestureEventImmediately(gesture_event);
     return;
   }
 
-  switch (gesture_event.event.type()) {
-    case WebInputEvent::GestureFlingCancel:
+  switch (gesture_event.event.GetType()) {
+    case WebInputEvent::kGestureFlingCancel:
       fling_in_progress_ = false;
       break;
-    case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::kGestureFlingStart:
       fling_in_progress_ = true;
       break;
-    case WebInputEvent::GesturePinchUpdate:
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       QueueScrollOrPinchAndForwardIfNecessary(gesture_event);
       return;
-    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::kGestureScrollBegin:
       if (OnScrollBegin(gesture_event))
         return;
     default:
@@ -180,13 +180,13 @@ bool GestureEventQueue::OnScrollBegin(
   // If a synthetic scroll begin is encountered, it can cancel out a previous
   // synthetic scroll end. This allows a later gesture scroll update to coalesce
   // with the previous one. crbug.com/607340.
-  bool synthetic = gesture_event.event.data.scrollBegin.synthetic;
+  bool synthetic = gesture_event.event.data.scroll_begin.synthetic;
   bool have_unsent_events =
       EventsInFlightCount() < coalesced_gesture_events_.size();
   if (synthetic && have_unsent_events) {
     GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
-    if (last_event->event.type() == WebInputEvent::GestureScrollEnd &&
-        last_event->event.data.scrollEnd.synthetic) {
+    if (last_event->event.GetType() == WebInputEvent::kGestureScrollEnd &&
+        last_event->event.data.scroll_end.synthetic) {
       coalesced_gesture_events_.pop_back();
       return true;
     }
@@ -212,7 +212,7 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     // GestureScroll/Pinch as they don't need to go through the queue in
     // |InputHandlerProxy::HandleInputEventWithLatencyInfo|.
     for (size_t i = 0; i < coalesced_gesture_events_.size(); ++i) {
-      if (coalesced_gesture_events_[i].event.type() == type) {
+      if (coalesced_gesture_events_[i].event.GetType() == type) {
         event_index = i;
         break;
       }
@@ -223,14 +223,14 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     // coalesced Gesture{Scroll,Pinch}Update pair is received prior to the first
     // event ack.
     if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
-        coalesced_gesture_events_[0].event.type() != type &&
-        coalesced_gesture_events_[1].event.type() == type) {
+        coalesced_gesture_events_[0].event.GetType() != type &&
+        coalesced_gesture_events_[1].event.GetType() == type) {
       event_index = 1;
     }
   }
   GestureEventWithLatencyInfo event_with_latency =
       coalesced_gesture_events_[event_index];
-  DCHECK_EQ(event_with_latency.event.type(), type);
+  DCHECK_EQ(event_with_latency.event.GetType(), type);
   event_with_latency.latency.AddNewLatencyFrom(latency);
 
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
@@ -239,9 +239,9 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   client_->OnGestureEventAck(event_with_latency, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (type == WebInputEvent::GestureFlingCancel) {
-    if (event_with_latency.event.sourceDevice ==
-        blink::WebGestureDeviceTouchscreen)
+  if (type == WebInputEvent::kGestureFlingCancel) {
+    if (event_with_latency.event.source_device ==
+        blink::kWebGestureDeviceTouchscreen)
       touchscreen_tap_suppression_controller_.GestureFlingCancelAck(processed);
     else
       touchpad_tap_suppression_controller_.GestureFlingCancelAck(processed);
@@ -268,16 +268,17 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   // Check for the coupled GesturePinchUpdate before sending either event,
   // handling the case where the first GestureScrollUpdate ack is synchronous.
   GestureEventWithLatencyInfo second_gesture_event;
-  if (first_gesture_event.event.type() == WebInputEvent::GestureScrollUpdate &&
+  if (first_gesture_event.event.GetType() ==
+          WebInputEvent::kGestureScrollUpdate &&
       coalesced_gesture_events_.size() > 1 &&
-      coalesced_gesture_events_[1].event.type() ==
-          WebInputEvent::GesturePinchUpdate) {
+      coalesced_gesture_events_[1].event.GetType() ==
+          WebInputEvent::kGesturePinchUpdate) {
     second_gesture_event = coalesced_gesture_events_[1];
     ignore_next_ack_ = true;
   }
 
   client_->SendGestureEventImmediately(first_gesture_event);
-  if (second_gesture_event.event.type() != WebInputEvent::Undefined)
+  if (second_gesture_event.event.GetType() != WebInputEvent::kUndefined)
     client_->SendGestureEventImmediately(second_gesture_event);
 }
 
@@ -326,7 +327,7 @@ void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
       // (similarly for an in-flight pinch with a new scroll).
       const GestureEventWithLatencyInfo& first_event =
           coalesced_gesture_events_.front();
-      if (gesture_event.event.type() != first_event.event.type() &&
+      if (gesture_event.event.GetType() != first_event.event.GetType() &&
           ui::IsCompatibleScrollorPinch(gesture_event.event,
                                         first_event.event)) {
         ignore_next_ack_ = true;

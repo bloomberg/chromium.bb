@@ -3550,7 +3550,7 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
           web_contents->GetBrowserContext());
   if (prerender_manager &&
       prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
-    *visibility_state = blink::WebPageVisibilityStatePrerender;
+    *visibility_state = blink::kWebPageVisibilityStatePrerender;
   }
 }
 

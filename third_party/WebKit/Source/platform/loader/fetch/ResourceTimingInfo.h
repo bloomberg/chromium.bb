@@ -51,78 +51,79 @@ class PLATFORM_EXPORT ResourceTimingInfo
   WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
-  static PassRefPtr<ResourceTimingInfo> create(const AtomicString& type,
+  static PassRefPtr<ResourceTimingInfo> Create(const AtomicString& type,
                                                const double time,
-                                               bool isMainResource) {
-    return adoptRef(new ResourceTimingInfo(type, time, isMainResource));
+                                               bool is_main_resource) {
+    return AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
-  static PassRefPtr<ResourceTimingInfo> adopt(
+  static PassRefPtr<ResourceTimingInfo> Adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadResourceTimingInfoData> copyData() const;
+  std::unique_ptr<CrossThreadResourceTimingInfoData> CopyData() const;
 
-  double initialTime() const { return m_initialTime; }
-  bool isMainResource() const { return m_isMainResource; }
+  double InitialTime() const { return initial_time_; }
+  bool IsMainResource() const { return is_main_resource_; }
 
-  void setInitiatorType(const AtomicString& type) { m_type = type; }
-  const AtomicString& initiatorType() const { return m_type; }
+  void SetInitiatorType(const AtomicString& type) { type_ = type; }
+  const AtomicString& InitiatorType() const { return type_; }
 
-  void setOriginalTimingAllowOrigin(
-      const AtomicString& originalTimingAllowOrigin) {
-    m_originalTimingAllowOrigin = originalTimingAllowOrigin;
+  void SetOriginalTimingAllowOrigin(
+      const AtomicString& original_timing_allow_origin) {
+    original_timing_allow_origin_ = original_timing_allow_origin;
   }
-  const AtomicString& originalTimingAllowOrigin() const {
-    return m_originalTimingAllowOrigin;
-  }
-
-  void setLoadFinishTime(double time) { m_loadFinishTime = time; }
-  double loadFinishTime() const { return m_loadFinishTime; }
-
-  void setInitialURL(const KURL& url) { m_initialURL = url; }
-  const KURL& initialURL() const { return m_initialURL; }
-
-  void setFinalResponse(const ResourceResponse& response) {
-    m_finalResponse = response;
-  }
-  const ResourceResponse& finalResponse() const { return m_finalResponse; }
-
-  void addRedirect(const ResourceResponse& redirectResponse, bool crossOrigin);
-  const Vector<ResourceResponse>& redirectChain() const {
-    return m_redirectChain;
+  const AtomicString& OriginalTimingAllowOrigin() const {
+    return original_timing_allow_origin_;
   }
 
-  void addFinalTransferSize(long long encodedDataLength) {
-    m_transferSize += encodedDataLength;
-  }
-  long long transferSize() const { return m_transferSize; }
+  void SetLoadFinishTime(double time) { load_finish_time_ = time; }
+  double LoadFinishTime() const { return load_finish_time_; }
 
-  void clearLoadTimings() {
-    m_finalResponse.setResourceLoadTiming(nullptr);
-    for (ResourceResponse& redirect : m_redirectChain)
-      redirect.setResourceLoadTiming(nullptr);
+  void SetInitialURL(const KURL& url) { initial_url_ = url; }
+  const KURL& InitialURL() const { return initial_url_; }
+
+  void SetFinalResponse(const ResourceResponse& response) {
+    final_response_ = response;
+  }
+  const ResourceResponse& FinalResponse() const { return final_response_; }
+
+  void AddRedirect(const ResourceResponse& redirect_response,
+                   bool cross_origin);
+  const Vector<ResourceResponse>& RedirectChain() const {
+    return redirect_chain_;
+  }
+
+  void AddFinalTransferSize(long long encoded_data_length) {
+    transfer_size_ += encoded_data_length;
+  }
+  long long TransferSize() const { return transfer_size_; }
+
+  void ClearLoadTimings() {
+    final_response_.SetResourceLoadTiming(nullptr);
+    for (ResourceResponse& redirect : redirect_chain_)
+      redirect.SetResourceLoadTiming(nullptr);
   }
 
  private:
   ResourceTimingInfo(const AtomicString& type,
                      const double time,
-                     bool isMainResource)
-      : m_type(type),
-        m_initialTime(time),
-        m_transferSize(0),
-        m_isMainResource(isMainResource),
-        m_hasCrossOriginRedirect(false) {}
+                     bool is_main_resource)
+      : type_(type),
+        initial_time_(time),
+        transfer_size_(0),
+        is_main_resource_(is_main_resource),
+        has_cross_origin_redirect_(false) {}
 
-  AtomicString m_type;
-  AtomicString m_originalTimingAllowOrigin;
-  double m_initialTime;
-  double m_loadFinishTime;
-  KURL m_initialURL;
-  ResourceResponse m_finalResponse;
-  Vector<ResourceResponse> m_redirectChain;
-  long long m_transferSize;
-  bool m_isMainResource;
-  bool m_hasCrossOriginRedirect;
+  AtomicString type_;
+  AtomicString original_timing_allow_origin_;
+  double initial_time_;
+  double load_finish_time_;
+  KURL initial_url_;
+  ResourceResponse final_response_;
+  Vector<ResourceResponse> redirect_chain_;
+  long long transfer_size_;
+  bool is_main_resource_;
+  bool has_cross_origin_redirect_;
 };
 
 struct CrossThreadResourceTimingInfoData {
@@ -132,23 +133,23 @@ struct CrossThreadResourceTimingInfoData {
  public:
   CrossThreadResourceTimingInfoData() {}
 
-  String m_type;
-  String m_originalTimingAllowOrigin;
-  double m_initialTime;
-  double m_loadFinishTime;
-  KURL m_initialURL;
-  std::unique_ptr<CrossThreadResourceResponseData> m_finalResponse;
-  Vector<std::unique_ptr<CrossThreadResourceResponseData>> m_redirectChain;
-  long long m_transferSize;
-  bool m_isMainResource;
+  String type_;
+  String original_timing_allow_origin_;
+  double initial_time_;
+  double load_finish_time_;
+  KURL initial_url_;
+  std::unique_ptr<CrossThreadResourceResponseData> final_response_;
+  Vector<std::unique_ptr<CrossThreadResourceResponseData>> redirect_chain_;
+  long long transfer_size_;
+  bool is_main_resource_;
 };
 
 template <>
 struct CrossThreadCopier<ResourceTimingInfo> {
   typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceTimingInfoData>>
       Type;
-  static Type copy(const ResourceTimingInfo& info) {
-    return WTF::passed(info.copyData());
+  static Type Copy(const ResourceTimingInfo& info) {
+    return WTF::Passed(info.CopyData());
   }
 };
 

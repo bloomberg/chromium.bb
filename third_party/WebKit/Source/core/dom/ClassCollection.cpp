@@ -34,14 +34,16 @@
 
 namespace blink {
 
-ClassCollection::ClassCollection(ContainerNode& rootNode,
-                                 const AtomicString& classNames)
-    : HTMLCollection(rootNode, ClassCollectionType, DoesNotOverrideItemAfter),
-      m_classNames(classNames,
-                   document().inQuirksMode()
-                       ? SpaceSplitString::ShouldFoldCase
-                       : SpaceSplitString::ShouldNotFoldCase),
-      m_originalClassNames(classNames) {}
+ClassCollection::ClassCollection(ContainerNode& root_node,
+                                 const AtomicString& class_names)
+    : HTMLCollection(root_node,
+                     kClassCollectionType,
+                     kDoesNotOverrideItemAfter),
+      class_names_(class_names,
+                   GetDocument().InQuirksMode()
+                       ? SpaceSplitString::kShouldFoldCase
+                       : SpaceSplitString::kShouldNotFoldCase),
+      original_class_names_(class_names) {}
 
 ClassCollection::~ClassCollection() {}
 

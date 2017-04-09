@@ -37,8 +37,8 @@ class CORE_EXPORT HTMLParserOptions {
   DISALLOW_NEW();
 
  public:
-  bool scriptEnabled = false;
-  bool pluginsEnabled = false;
+  bool script_enabled = false;
+  bool plugins_enabled = false;
 
   explicit HTMLParserOptions(Document* = nullptr);
 };

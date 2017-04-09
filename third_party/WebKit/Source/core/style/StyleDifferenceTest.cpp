@@ -10,46 +10,46 @@
 namespace blink {
 
 TEST(StyleDifferenceTest, StreamOutputDefault) {
-  std::stringstream stringStream;
+  std::stringstream string_stream;
   StyleDifference diff;
-  stringStream << diff;
+  string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
       "visualRectUpdate=0, propertySpecificDifferences=, "
       "scrollAnchorDisablingPropertyChanged=0}",
-      stringStream.str());
+      string_stream.str());
 }
 
 TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
-  std::stringstream stringStream;
+  std::stringstream string_stream;
   StyleDifference diff;
-  diff.setNeedsPaintInvalidationObject();
-  diff.setNeedsPositionedMovementLayout();
-  diff.setNeedsRecomputeOverflow();
-  diff.setNeedsVisualRectUpdate();
-  diff.setTransformChanged();
-  diff.setScrollAnchorDisablingPropertyChanged();
-  stringStream << diff;
+  diff.SetNeedsPaintInvalidationObject();
+  diff.SetNeedsPositionedMovementLayout();
+  diff.SetNeedsRecomputeOverflow();
+  diff.SetNeedsVisualRectUpdate();
+  diff.SetTransformChanged();
+  diff.SetScrollAnchorDisablingPropertyChanged();
+  string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=PositionedMovement, "
       "paintInvalidationType=PaintInvalidationObject, recomputeOverflow=1, "
       "visualRectUpdate=1, propertySpecificDifferences=TransformChanged, "
       "scrollAnchorDisablingPropertyChanged=1}",
-      stringStream.str());
+      string_stream.str());
 }
 
 TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
-  std::stringstream stringStream;
+  std::stringstream string_stream;
   StyleDifference diff;
-  diff.setTransformChanged();
-  diff.setOpacityChanged();
-  diff.setZIndexChanged();
-  diff.setFilterChanged();
-  diff.setBackdropFilterChanged();
-  diff.setCSSClipChanged();
-  diff.setTextDecorationOrColorChanged();
-  stringStream << diff;
+  diff.SetTransformChanged();
+  diff.SetOpacityChanged();
+  diff.SetZIndexChanged();
+  diff.SetFilterChanged();
+  diff.SetBackdropFilterChanged();
+  diff.SetCSSClipChanged();
+  diff.SetTextDecorationOrColorChanged();
+  string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
@@ -57,7 +57,7 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
       "propertySpecificDifferences=TransformChanged|OpacityChanged|"
       "ZIndexChanged|FilterChanged|BackdropFilterChanged|CSSClipChanged|"
       "TextDecorationOrColorChanged, scrollAnchorDisablingPropertyChanged=0}",
-      stringStream.str());
+      string_stream.str());
 }
 
 }  // namespace blink

@@ -15,105 +15,105 @@ class LayoutBoxModelObject;
 class StickyPositionScrollingConstraints final {
  public:
   enum AnchorEdgeFlags {
-    AnchorEdgeLeft = 1 << 0,
-    AnchorEdgeRight = 1 << 1,
-    AnchorEdgeTop = 1 << 2,
-    AnchorEdgeBottom = 1 << 3
+    kAnchorEdgeLeft = 1 << 0,
+    kAnchorEdgeRight = 1 << 1,
+    kAnchorEdgeTop = 1 << 2,
+    kAnchorEdgeBottom = 1 << 3
   };
   typedef unsigned AnchorEdges;
 
   StickyPositionScrollingConstraints()
-      : m_anchorEdges(0),
-        m_leftOffset(0),
-        m_rightOffset(0),
-        m_topOffset(0),
-        m_bottomOffset(0),
-        m_nearestStickyBoxShiftingStickyBox(nullptr),
-        m_nearestStickyBoxShiftingContainingBlock(nullptr) {}
+      : anchor_edges_(0),
+        left_offset_(0),
+        right_offset_(0),
+        top_offset_(0),
+        bottom_offset_(0),
+        nearest_sticky_box_shifting_sticky_box_(nullptr),
+        nearest_sticky_box_shifting_containing_block_(nullptr) {}
 
   StickyPositionScrollingConstraints(
       const StickyPositionScrollingConstraints& other)
-      : m_anchorEdges(other.m_anchorEdges),
-        m_leftOffset(other.m_leftOffset),
-        m_rightOffset(other.m_rightOffset),
-        m_topOffset(other.m_topOffset),
-        m_bottomOffset(other.m_bottomOffset),
-        m_scrollContainerRelativeContainingBlockRect(
-            other.m_scrollContainerRelativeContainingBlockRect),
-        m_scrollContainerRelativeStickyBoxRect(
-            other.m_scrollContainerRelativeStickyBoxRect),
-        m_nearestStickyBoxShiftingStickyBox(
-            other.m_nearestStickyBoxShiftingStickyBox),
-        m_nearestStickyBoxShiftingContainingBlock(
-            other.m_nearestStickyBoxShiftingContainingBlock),
-        m_totalStickyBoxStickyOffset(other.m_totalStickyBoxStickyOffset),
-        m_totalContainingBlockStickyOffset(
-            other.m_totalContainingBlockStickyOffset) {}
+      : anchor_edges_(other.anchor_edges_),
+        left_offset_(other.left_offset_),
+        right_offset_(other.right_offset_),
+        top_offset_(other.top_offset_),
+        bottom_offset_(other.bottom_offset_),
+        scroll_container_relative_containing_block_rect_(
+            other.scroll_container_relative_containing_block_rect_),
+        scroll_container_relative_sticky_box_rect_(
+            other.scroll_container_relative_sticky_box_rect_),
+        nearest_sticky_box_shifting_sticky_box_(
+            other.nearest_sticky_box_shifting_sticky_box_),
+        nearest_sticky_box_shifting_containing_block_(
+            other.nearest_sticky_box_shifting_containing_block_),
+        total_sticky_box_sticky_offset_(other.total_sticky_box_sticky_offset_),
+        total_containing_block_sticky_offset_(
+            other.total_containing_block_sticky_offset_) {}
 
-  FloatSize computeStickyOffset(
-      const FloatRect& viewportRect,
-      const StickyPositionScrollingConstraints* ancestorStickyBoxConstraints,
+  FloatSize ComputeStickyOffset(
+      const FloatRect& viewport_rect,
+      const StickyPositionScrollingConstraints* ancestor_sticky_box_constraints,
       const StickyPositionScrollingConstraints*
-          ancestorContainingBlockConstraints);
+          ancestor_containing_block_constraints);
 
-  bool hasAncestorStickyElement() const {
-    return m_nearestStickyBoxShiftingStickyBox ||
-           m_nearestStickyBoxShiftingContainingBlock;
-  }
-
-  AnchorEdges anchorEdges() const { return m_anchorEdges; }
-  bool hasAnchorEdge(AnchorEdgeFlags flag) const {
-    return m_anchorEdges & flag;
-  }
-  void addAnchorEdge(AnchorEdgeFlags edgeFlag) { m_anchorEdges |= edgeFlag; }
-  void setAnchorEdges(AnchorEdges edges) { m_anchorEdges = edges; }
-
-  float leftOffset() const { return m_leftOffset; }
-  float rightOffset() const { return m_rightOffset; }
-  float topOffset() const { return m_topOffset; }
-  float bottomOffset() const { return m_bottomOffset; }
-
-  void setLeftOffset(float offset) { m_leftOffset = offset; }
-  void setRightOffset(float offset) { m_rightOffset = offset; }
-  void setTopOffset(float offset) { m_topOffset = offset; }
-  void setBottomOffset(float offset) { m_bottomOffset = offset; }
-
-  void setScrollContainerRelativeContainingBlockRect(const FloatRect& rect) {
-    m_scrollContainerRelativeContainingBlockRect = rect;
-  }
-  const FloatRect& scrollContainerRelativeContainingBlockRect() const {
-    return m_scrollContainerRelativeContainingBlockRect;
+  bool HasAncestorStickyElement() const {
+    return nearest_sticky_box_shifting_sticky_box_ ||
+           nearest_sticky_box_shifting_containing_block_;
   }
 
-  void setScrollContainerRelativeStickyBoxRect(const FloatRect& rect) {
-    m_scrollContainerRelativeStickyBoxRect = rect;
+  AnchorEdges GetAnchorEdges() const { return anchor_edges_; }
+  bool HasAnchorEdge(AnchorEdgeFlags flag) const {
+    return anchor_edges_ & flag;
   }
-  const FloatRect& scrollContainerRelativeStickyBoxRect() const {
-    return m_scrollContainerRelativeStickyBoxRect;
+  void AddAnchorEdge(AnchorEdgeFlags edge_flag) { anchor_edges_ |= edge_flag; }
+  void SetAnchorEdges(AnchorEdges edges) { anchor_edges_ = edges; }
+
+  float LeftOffset() const { return left_offset_; }
+  float RightOffset() const { return right_offset_; }
+  float TopOffset() const { return top_offset_; }
+  float BottomOffset() const { return bottom_offset_; }
+
+  void SetLeftOffset(float offset) { left_offset_ = offset; }
+  void SetRightOffset(float offset) { right_offset_ = offset; }
+  void SetTopOffset(float offset) { top_offset_ = offset; }
+  void SetBottomOffset(float offset) { bottom_offset_ = offset; }
+
+  void SetScrollContainerRelativeContainingBlockRect(const FloatRect& rect) {
+    scroll_container_relative_containing_block_rect_ = rect;
+  }
+  const FloatRect& ScrollContainerRelativeContainingBlockRect() const {
+    return scroll_container_relative_containing_block_rect_;
   }
 
-  void setNearestStickyBoxShiftingStickyBox(LayoutBoxModelObject* layer) {
-    m_nearestStickyBoxShiftingStickyBox = layer;
+  void SetScrollContainerRelativeStickyBoxRect(const FloatRect& rect) {
+    scroll_container_relative_sticky_box_rect_ = rect;
   }
-  LayoutBoxModelObject* nearestStickyBoxShiftingStickyBox() const {
-    return m_nearestStickyBoxShiftingStickyBox;
-  }
-
-  void setNearestStickyBoxShiftingContainingBlock(LayoutBoxModelObject* layer) {
-    m_nearestStickyBoxShiftingContainingBlock = layer;
-  }
-  LayoutBoxModelObject* nearestStickyBoxShiftingContainingBlock() const {
-    return m_nearestStickyBoxShiftingContainingBlock;
+  const FloatRect& ScrollContainerRelativeStickyBoxRect() const {
+    return scroll_container_relative_sticky_box_rect_;
   }
 
-  const FloatSize& getTotalStickyBoxStickyOffset() const {
-    return m_totalStickyBoxStickyOffset;
+  void SetNearestStickyBoxShiftingStickyBox(LayoutBoxModelObject* layer) {
+    nearest_sticky_box_shifting_sticky_box_ = layer;
   }
-  const FloatSize& getTotalContainingBlockStickyOffset() const {
-    return m_totalContainingBlockStickyOffset;
+  LayoutBoxModelObject* NearestStickyBoxShiftingStickyBox() const {
+    return nearest_sticky_box_shifting_sticky_box_;
   }
 
-  const LayoutBoxModelObject* nearestStickyAncestor() const {
+  void SetNearestStickyBoxShiftingContainingBlock(LayoutBoxModelObject* layer) {
+    nearest_sticky_box_shifting_containing_block_ = layer;
+  }
+  LayoutBoxModelObject* NearestStickyBoxShiftingContainingBlock() const {
+    return nearest_sticky_box_shifting_containing_block_;
+  }
+
+  const FloatSize& GetTotalStickyBoxStickyOffset() const {
+    return total_sticky_box_sticky_offset_;
+  }
+  const FloatSize& GetTotalContainingBlockStickyOffset() const {
+    return total_containing_block_sticky_offset_;
+  }
+
+  const LayoutBoxModelObject* NearestStickyAncestor() const {
     // If we have one or more sticky ancestor elements between ourselves and our
     // containing block, |m_nearestStickyBoxShiftingStickyBox| points to the
     // closest. Otherwise, |m_nearestStickyBoxShiftingContainingBlock| points
@@ -123,27 +123,28 @@ class StickyPositionScrollingConstraints final {
     //
     // If both are null, then we have no sticky ancestors before our scroll
     // ancestor, so the correct action is to return null.
-    return m_nearestStickyBoxShiftingStickyBox
-               ? m_nearestStickyBoxShiftingStickyBox
-               : m_nearestStickyBoxShiftingContainingBlock;
+    return nearest_sticky_box_shifting_sticky_box_
+               ? nearest_sticky_box_shifting_sticky_box_
+               : nearest_sticky_box_shifting_containing_block_;
   }
 
   bool operator==(const StickyPositionScrollingConstraints& other) const {
-    return m_leftOffset == other.m_leftOffset &&
-           m_rightOffset == other.m_rightOffset &&
-           m_topOffset == other.m_topOffset &&
-           m_bottomOffset == other.m_bottomOffset &&
-           m_scrollContainerRelativeContainingBlockRect ==
-               other.m_scrollContainerRelativeContainingBlockRect &&
-           m_scrollContainerRelativeStickyBoxRect ==
-               other.m_scrollContainerRelativeStickyBoxRect &&
-           m_nearestStickyBoxShiftingStickyBox ==
-               other.m_nearestStickyBoxShiftingStickyBox &&
-           m_nearestStickyBoxShiftingContainingBlock ==
-               other.m_nearestStickyBoxShiftingContainingBlock &&
-           m_totalStickyBoxStickyOffset == other.m_totalStickyBoxStickyOffset &&
-           m_totalContainingBlockStickyOffset ==
-               other.m_totalContainingBlockStickyOffset;
+    return left_offset_ == other.left_offset_ &&
+           right_offset_ == other.right_offset_ &&
+           top_offset_ == other.top_offset_ &&
+           bottom_offset_ == other.bottom_offset_ &&
+           scroll_container_relative_containing_block_rect_ ==
+               other.scroll_container_relative_containing_block_rect_ &&
+           scroll_container_relative_sticky_box_rect_ ==
+               other.scroll_container_relative_sticky_box_rect_ &&
+           nearest_sticky_box_shifting_sticky_box_ ==
+               other.nearest_sticky_box_shifting_sticky_box_ &&
+           nearest_sticky_box_shifting_containing_block_ ==
+               other.nearest_sticky_box_shifting_containing_block_ &&
+           total_sticky_box_sticky_offset_ ==
+               other.total_sticky_box_sticky_offset_ &&
+           total_containing_block_sticky_offset_ ==
+               other.total_containing_block_sticky_offset_;
   }
 
   bool operator!=(const StickyPositionScrollingConstraints& other) const {
@@ -151,21 +152,21 @@ class StickyPositionScrollingConstraints final {
   }
 
  private:
-  AnchorEdges m_anchorEdges;
-  float m_leftOffset;
-  float m_rightOffset;
-  float m_topOffset;
-  float m_bottomOffset;
-  FloatRect m_scrollContainerRelativeContainingBlockRect;
-  FloatRect m_scrollContainerRelativeStickyBoxRect;
+  AnchorEdges anchor_edges_;
+  float left_offset_;
+  float right_offset_;
+  float top_offset_;
+  float bottom_offset_;
+  FloatRect scroll_container_relative_containing_block_rect_;
+  FloatRect scroll_container_relative_sticky_box_rect_;
 
   // In order to properly compute the stickyOffset, we need to know if we have
   // any sticky ancestors both between ourselves and our containing block and
   // between our containing block and the viewport. These ancestors are needed
   // to properly shift our constraining rects with regards to the containing
   // block and viewport.
-  LayoutBoxModelObject* m_nearestStickyBoxShiftingStickyBox;
-  LayoutBoxModelObject* m_nearestStickyBoxShiftingContainingBlock;
+  LayoutBoxModelObject* nearest_sticky_box_shifting_sticky_box_;
+  LayoutBoxModelObject* nearest_sticky_box_shifting_containing_block_;
 
   // For performance we cache our accumulated sticky offset to allow descendant
   // sticky elements to offset their constraint rects. Because we can either
@@ -176,8 +177,8 @@ class StickyPositionScrollingConstraints final {
   // constraining block constriant rect for different sticky descendants is
   // quite complex. See the StickyPositionComplexTableNesting test in
   // LayoutBoxModelObjectTest.cpp.
-  FloatSize m_totalStickyBoxStickyOffset;
-  FloatSize m_totalContainingBlockStickyOffset;
+  FloatSize total_sticky_box_sticky_offset_;
+  FloatSize total_containing_block_sticky_offset_;
 };
 
 }  // namespace blink

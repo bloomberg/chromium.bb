@@ -68,13 +68,13 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
   // We need to set the isolated world origin and CSP even if it's not a new
   // world since these are stored per frame, and we might not have used this
   // isolated world in this frame before.
-  frame->setIsolatedWorldSecurityOrigin(
-      id, blink::WebSecurityOrigin::create(injection_host->url()));
-  frame->setIsolatedWorldContentSecurityPolicy(
-      id, blink::WebString::fromUTF8(
-          injection_host->GetContentSecurityPolicy()));
-  frame->setIsolatedWorldHumanReadableName(
-      id, blink::WebString::fromUTF8(injection_host->name()));
+  frame->SetIsolatedWorldSecurityOrigin(
+      id, blink::WebSecurityOrigin::Create(injection_host->url()));
+  frame->SetIsolatedWorldContentSecurityPolicy(
+      id,
+      blink::WebString::FromUTF8(injection_host->GetContentSecurityPolicy()));
+  frame->SetIsolatedWorldHumanReadableName(
+      id, blink::WebString::FromUTF8(injection_host->name()));
 
   return id;
 }
@@ -102,7 +102,7 @@ class TimedScriptInjectionCallback : public ScriptInjectionCallback {
     }
   }
 
-  void willExecute() override { start_time_ = base::TimeTicks::Now(); }
+  void WillExecute() override { start_time_ = base::TimeTicks::Now(); }
 
  private:
   base::WeakPtr<ScriptInjection> injection_;
@@ -299,9 +299,8 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
     // We only inject in the main world for javascript: urls.
     DCHECK_EQ(1u, sources.size());
 
-    web_frame->requestExecuteScriptAndReturnValue(sources.front(),
-                                                  is_user_gesture,
-                                                  callback.release());
+    web_frame->RequestExecuteScriptAndReturnValue(
+        sources.front(), is_user_gesture, callback.release());
   } else {
     blink::WebLocalFrame::ScriptExecutionType option;
     if (injector_->script_type() == UserScript::CONTENT_SCRIPT &&
@@ -309,16 +308,16 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
       switch (run_location_) {
         case UserScript::DOCUMENT_END:
         case UserScript::DOCUMENT_IDLE:
-          option = blink::WebLocalFrame::AsynchronousBlockingOnload;
+          option = blink::WebLocalFrame::kAsynchronousBlockingOnload;
           break;
         default:
-          option = blink::WebLocalFrame::Synchronous;
+          option = blink::WebLocalFrame::kSynchronous;
           break;
       }
     } else {
-      option = blink::WebLocalFrame::Synchronous;
+      option = blink::WebLocalFrame::kSynchronous;
     }
-    web_frame->requestExecuteScriptInIsolatedWorld(
+    web_frame->RequestExecuteScriptInIsolatedWorld(
         world_id, &sources.front(), sources.size(), is_user_gesture, option,
         callback.release());
   }
@@ -360,7 +359,7 @@ void ScriptInjection::OnJsInjectionCompleted(
       // context scope, and it switches to v8::Object's creation context
       // when encountered.
       v8::Local<v8::Context> context =
-          render_frame_->GetWebFrame()->mainWorldScriptContext();
+          render_frame_->GetWebFrame()->MainWorldScriptContext();
       execution_result_ = v8_converter->FromV8Value(results[0], context);
     }
     if (!execution_result_.get())
@@ -385,7 +384,7 @@ void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
       run_location_, injected_stylesheets, num_injected_stylesheets);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   for (const blink::WebString& css : css_sources)
-    web_frame->document().insertStyleSheet(css);
+    web_frame->GetDocument().InsertStyleSheet(css);
 }
 
 }  // namespace extensions

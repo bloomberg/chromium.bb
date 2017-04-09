@@ -9,37 +9,37 @@
 
 namespace blink {
 
-void WebPageImportanceSignals::reset() {
-  m_hadFormInteraction = false;
-  m_issuedNonGetFetchFromScript = false;
-  if (m_observer)
-    m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::Reset() {
+  had_form_interaction_ = false;
+  issued_non_get_fetch_from_script_ = false;
+  if (observer_)
+    observer_->PageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::setHadFormInteraction() {
-  m_hadFormInteraction = true;
-  if (m_observer)
-    m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::SetHadFormInteraction() {
+  had_form_interaction_ = true;
+  if (observer_)
+    observer_->PageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::setIssuedNonGetFetchFromScript() {
-  m_issuedNonGetFetchFromScript = true;
-  if (m_observer)
-    m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::SetIssuedNonGetFetchFromScript() {
+  issued_non_get_fetch_from_script_ = true;
+  if (observer_)
+    observer_->PageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::onCommitLoad() {
+void WebPageImportanceSignals::OnCommitLoad() {
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, hadFormInteractionHistogram,
+      EnumerationHistogram, had_form_interaction_histogram,
       ("PageImportanceSignals.HadFormInteraction.OnCommitLoad", 2));
-  hadFormInteractionHistogram.count(m_hadFormInteraction);
+  had_form_interaction_histogram.Count(had_form_interaction_);
 
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, issuedNonGetHistogram,
+      EnumerationHistogram, issued_non_get_histogram,
       ("PageImportanceSignals.IssuedNonGetFetchFromScript.OnCommitLoad", 2));
-  issuedNonGetHistogram.count(m_issuedNonGetFetchFromScript);
+  issued_non_get_histogram.Count(issued_non_get_fetch_from_script_);
 
-  reset();
+  Reset();
 }
 
 }  // namespace blink

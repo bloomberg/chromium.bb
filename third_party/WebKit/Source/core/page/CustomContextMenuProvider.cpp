@@ -20,127 +20,128 @@ using namespace HTMLNames;
 
 CustomContextMenuProvider::CustomContextMenuProvider(HTMLMenuElement& menu,
                                                      HTMLElement& subject)
-    : m_menu(menu), m_subjectElement(subject) {}
+    : menu_(menu), subject_element_(subject) {}
 
 CustomContextMenuProvider::~CustomContextMenuProvider() {}
 
 DEFINE_TRACE(CustomContextMenuProvider) {
-  visitor->trace(m_menu);
-  visitor->trace(m_subjectElement);
-  visitor->trace(m_menuItems);
-  ContextMenuProvider::trace(visitor);
+  visitor->Trace(menu_);
+  visitor->Trace(subject_element_);
+  visitor->Trace(menu_items_);
+  ContextMenuProvider::Trace(visitor);
 }
 
-void CustomContextMenuProvider::populateContextMenu(ContextMenu* menu) {
-  populateContextMenuItems(*m_menu, *menu);
+void CustomContextMenuProvider::PopulateContextMenu(ContextMenu* menu) {
+  PopulateContextMenuItems(*menu_, *menu);
 }
 
-void CustomContextMenuProvider::contextMenuItemSelected(
+void CustomContextMenuProvider::ContextMenuItemSelected(
     const ContextMenuItem* item) {
-  if (HTMLElement* element = menuItemAt(item->action())) {
-    MouseEvent* click = MouseEvent::create(
-        EventTypeNames::click, m_menu->document().domWindow(), Event::create(),
-        SimulatedClickCreationScope::FromUserAgent);
-    click->setRelatedTarget(m_subjectElement.get());
-    element->dispatchEvent(click);
+  if (HTMLElement* element = MenuItemAt(item->Action())) {
+    MouseEvent* click = MouseEvent::Create(
+        EventTypeNames::click, menu_->GetDocument().domWindow(),
+        Event::Create(), SimulatedClickCreationScope::kFromUserAgent);
+    click->SetRelatedTarget(subject_element_.Get());
+    element->DispatchEvent(click);
   }
 }
 
-void CustomContextMenuProvider::contextMenuCleared() {
-  m_menuItems.clear();
-  m_subjectElement = nullptr;
+void CustomContextMenuProvider::ContextMenuCleared() {
+  menu_items_.Clear();
+  subject_element_ = nullptr;
 }
 
-void CustomContextMenuProvider::appendSeparator(ContextMenu& contextMenu) {
+void CustomContextMenuProvider::AppendSeparator(ContextMenu& context_menu) {
   // Avoid separators at the start of any menu and submenu.
-  if (!contextMenu.items().size())
+  if (!context_menu.Items().size())
     return;
 
   // Collapse all sequences of two or more adjacent separators in the menu or
   // any submenus to a single separator.
-  ContextMenuItem lastItem = contextMenu.items().back();
-  if (lastItem.type() == SeparatorType)
+  ContextMenuItem last_item = context_menu.Items().back();
+  if (last_item.GetType() == kSeparatorType)
     return;
 
-  contextMenu.appendItem(ContextMenuItem(
-      SeparatorType, ContextMenuItemCustomTagNoAction, String(), String()));
+  context_menu.AppendItem(ContextMenuItem(
+      kSeparatorType, kContextMenuItemCustomTagNoAction, String(), String()));
 }
 
-void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem,
-                                               ContextMenu& contextMenu) {
+void CustomContextMenuProvider::AppendMenuItem(HTMLMenuItemElement* menu_item,
+                                               ContextMenu& context_menu) {
   // Avoid menuitems with no label.
-  String labelString = menuItem->fastGetAttribute(labelAttr);
-  if (labelString.isEmpty())
+  String label_string = menu_item->FastGetAttribute(labelAttr);
+  if (label_string.IsEmpty())
     return;
 
-  m_menuItems.push_back(menuItem);
+  menu_items_.push_back(menu_item);
 
-  bool enabled = !menuItem->fastHasAttribute(disabledAttr);
-  String icon = menuItem->fastGetAttribute(iconAttr);
-  if (!icon.isEmpty()) {
+  bool enabled = !menu_item->FastHasAttribute(disabledAttr);
+  String icon = menu_item->FastGetAttribute(iconAttr);
+  if (!icon.IsEmpty()) {
     // To obtain the absolute URL of the icon when the attribute's value is not
     // the empty string, the attribute's value must be resolved relative to the
     // element.
-    KURL iconURL = KURL(menuItem->baseURI(), icon);
-    icon = iconURL.getString();
+    KURL icon_url = KURL(menu_item->baseURI(), icon);
+    icon = icon_url.GetString();
   }
   ContextMenuAction action = static_cast<ContextMenuAction>(
-      ContextMenuItemBaseCustomTag + m_menuItems.size() - 1);
-  if (equalIgnoringCase(menuItem->fastGetAttribute(typeAttr), "checkbox") ||
-      equalIgnoringCase(menuItem->fastGetAttribute(typeAttr), "radio"))
-    contextMenu.appendItem(
-        ContextMenuItem(CheckableActionType, action, labelString, icon, enabled,
-                        menuItem->fastHasAttribute(checkedAttr)));
+      kContextMenuItemBaseCustomTag + menu_items_.size() - 1);
+  if (EqualIgnoringCase(menu_item->FastGetAttribute(typeAttr), "checkbox") ||
+      EqualIgnoringCase(menu_item->FastGetAttribute(typeAttr), "radio"))
+    context_menu.AppendItem(
+        ContextMenuItem(kCheckableActionType, action, label_string, icon,
+                        enabled, menu_item->FastHasAttribute(checkedAttr)));
   else
-    contextMenu.appendItem(
-        ContextMenuItem(ActionType, action, labelString, icon, enabled, false));
+    context_menu.AppendItem(ContextMenuItem(kActionType, action, label_string,
+                                            icon, enabled, false));
 }
 
-void CustomContextMenuProvider::populateContextMenuItems(
+void CustomContextMenuProvider::PopulateContextMenuItems(
     const HTMLMenuElement& menu,
-    ContextMenu& contextMenu) {
-  HTMLElement* nextElement = Traversal<HTMLElement>::firstWithin(menu);
-  while (nextElement) {
-    if (isHTMLHRElement(*nextElement)) {
-      appendSeparator(contextMenu);
-      nextElement = Traversal<HTMLElement>::next(*nextElement, &menu);
-    } else if (isHTMLMenuElement(*nextElement)) {
-      ContextMenu subMenu;
-      String labelString = nextElement->fastGetAttribute(labelAttr);
-      if (labelString.isNull()) {
-        appendSeparator(contextMenu);
-        populateContextMenuItems(*toHTMLMenuElement(nextElement), contextMenu);
-        appendSeparator(contextMenu);
-      } else if (!labelString.isEmpty()) {
-        populateContextMenuItems(*toHTMLMenuElement(nextElement), subMenu);
-        contextMenu.appendItem(
-            ContextMenuItem(SubmenuType, ContextMenuItemCustomTagNoAction,
-                            labelString, String(), &subMenu));
+    ContextMenu& context_menu) {
+  HTMLElement* next_element = Traversal<HTMLElement>::FirstWithin(menu);
+  while (next_element) {
+    if (isHTMLHRElement(*next_element)) {
+      AppendSeparator(context_menu);
+      next_element = Traversal<HTMLElement>::Next(*next_element, &menu);
+    } else if (isHTMLMenuElement(*next_element)) {
+      ContextMenu sub_menu;
+      String label_string = next_element->FastGetAttribute(labelAttr);
+      if (label_string.IsNull()) {
+        AppendSeparator(context_menu);
+        PopulateContextMenuItems(*toHTMLMenuElement(next_element),
+                                 context_menu);
+        AppendSeparator(context_menu);
+      } else if (!label_string.IsEmpty()) {
+        PopulateContextMenuItems(*toHTMLMenuElement(next_element), sub_menu);
+        context_menu.AppendItem(
+            ContextMenuItem(kSubmenuType, kContextMenuItemCustomTagNoAction,
+                            label_string, String(), &sub_menu));
       }
-      nextElement = Traversal<HTMLElement>::nextSibling(*nextElement);
-    } else if (isHTMLMenuItemElement(*nextElement)) {
-      appendMenuItem(toHTMLMenuItemElement(nextElement), contextMenu);
-      if (ContextMenuItemBaseCustomTag + m_menuItems.size() >=
-          ContextMenuItemLastCustomTag)
+      next_element = Traversal<HTMLElement>::NextSibling(*next_element);
+    } else if (isHTMLMenuItemElement(*next_element)) {
+      AppendMenuItem(toHTMLMenuItemElement(next_element), context_menu);
+      if (kContextMenuItemBaseCustomTag + menu_items_.size() >=
+          kContextMenuItemLastCustomTag)
         break;
-      nextElement = Traversal<HTMLElement>::next(*nextElement, &menu);
+      next_element = Traversal<HTMLElement>::Next(*next_element, &menu);
     } else {
-      nextElement = Traversal<HTMLElement>::next(*nextElement, &menu);
+      next_element = Traversal<HTMLElement>::Next(*next_element, &menu);
     }
   }
 
   // Remove separators at the end of the menu and any submenus.
-  while (contextMenu.items().size() &&
-         contextMenu.items().back().type() == SeparatorType)
-    contextMenu.removeLastItem();
+  while (context_menu.Items().size() &&
+         context_menu.Items().back().GetType() == kSeparatorType)
+    context_menu.RemoveLastItem();
 }
 
-HTMLElement* CustomContextMenuProvider::menuItemAt(unsigned menuId) {
-  int itemIndex = menuId - ContextMenuItemBaseCustomTag;
-  if (itemIndex < 0 ||
-      static_cast<unsigned long>(itemIndex) >= m_menuItems.size())
+HTMLElement* CustomContextMenuProvider::MenuItemAt(unsigned menu_id) {
+  int item_index = menu_id - kContextMenuItemBaseCustomTag;
+  if (item_index < 0 ||
+      static_cast<unsigned long>(item_index) >= menu_items_.size())
     return nullptr;
-  return m_menuItems[itemIndex].get();
+  return menu_items_[item_index].Get();
 }
 
 }  // namespace blink

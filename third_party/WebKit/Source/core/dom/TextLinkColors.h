@@ -45,27 +45,27 @@ class TextLinkColors {
  public:
   TextLinkColors();
 
-  void setTextColor(const Color& color) { m_textColor = color; }
-  Color textColor() const { return m_textColor; }
+  void SetTextColor(const Color& color) { text_color_ = color; }
+  Color TextColor() const { return text_color_; }
 
-  const Color& linkColor() const { return m_linkColor; }
-  const Color& visitedLinkColor() const { return m_visitedLinkColor; }
-  const Color& activeLinkColor() const { return m_activeLinkColor; }
-  void setLinkColor(const Color& color) { m_linkColor = color; }
-  void setVisitedLinkColor(const Color& color) { m_visitedLinkColor = color; }
-  void setActiveLinkColor(const Color& color) { m_activeLinkColor = color; }
-  void resetLinkColor();
-  void resetVisitedLinkColor();
-  void resetActiveLinkColor();
-  Color colorFromCSSValue(const CSSValue&,
-                          Color currentColor,
-                          bool forVisitedLink = false) const;
+  const Color& LinkColor() const { return link_color_; }
+  const Color& VisitedLinkColor() const { return visited_link_color_; }
+  const Color& ActiveLinkColor() const { return active_link_color_; }
+  void SetLinkColor(const Color& color) { link_color_ = color; }
+  void SetVisitedLinkColor(const Color& color) { visited_link_color_ = color; }
+  void SetActiveLinkColor(const Color& color) { active_link_color_ = color; }
+  void ResetLinkColor();
+  void ResetVisitedLinkColor();
+  void ResetActiveLinkColor();
+  Color ColorFromCSSValue(const CSSValue&,
+                          Color current_color,
+                          bool for_visited_link = false) const;
 
  private:
-  Color m_textColor;
-  Color m_linkColor;
-  Color m_visitedLinkColor;
-  Color m_activeLinkColor;
+  Color text_color_;
+  Color link_color_;
+  Color visited_link_color_;
+  Color active_link_color_;
 };
 
 }  // namespace blink

@@ -20,7 +20,7 @@ class MODULES_EXPORT AppBannerController final
  public:
   explicit AppBannerController(LocalFrame&);
 
-  static void bindMojoRequest(LocalFrame*,
+  static void BindMojoRequest(LocalFrame*,
                               mojom::blink::AppBannerControllerRequest);
 
   void BannerPromptRequest(mojom::blink::AppBannerServicePtr,
@@ -29,7 +29,7 @@ class MODULES_EXPORT AppBannerController final
                            const BannerPromptRequestCallback&) override;
 
  private:
-  WeakPersistent<LocalFrame> m_frame;
+  WeakPersistent<LocalFrame> frame_;
 };
 
 }  // namespace blink

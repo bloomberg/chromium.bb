@@ -12,14 +12,14 @@ namespace blink {
 
 class CSSFontFamilyValue : public CSSValue {
  public:
-  static CSSFontFamilyValue* create(const String& familyName);
+  static CSSFontFamilyValue* Create(const String& family_name);
 
-  String value() const { return m_string; }
+  String Value() const { return string_; }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSFontFamilyValue& other) const {
-    return m_string == other.m_string;
+  bool Equals(const CSSFontFamilyValue& other) const {
+    return string_ == other.string_;
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -30,10 +30,10 @@ class CSSFontFamilyValue : public CSSValue {
   CSSFontFamilyValue(const String&);
 
   // TODO(sashab): Change this to an AtomicString.
-  String m_string;
+  String string_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFamilyValue, isFontFamilyValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFamilyValue, IsFontFamilyValue());
 
 }  // namespace blink
 

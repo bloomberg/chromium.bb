@@ -28,48 +28,48 @@
 
 namespace blink {
 
-TransitionEvent::TransitionEvent() : m_elapsedTime(0) {}
+TransitionEvent::TransitionEvent() : elapsed_time_(0) {}
 
 TransitionEvent::TransitionEvent(const AtomicString& type,
-                                 const String& propertyName,
-                                 double elapsedTime,
-                                 const String& pseudoElement)
+                                 const String& property_name,
+                                 double elapsed_time,
+                                 const String& pseudo_element)
     : Event(type, true, true),
-      m_propertyName(propertyName),
-      m_elapsedTime(elapsedTime),
-      m_pseudoElement(pseudoElement) {}
+      property_name_(property_name),
+      elapsed_time_(elapsed_time),
+      pseudo_element_(pseudo_element) {}
 
 TransitionEvent::TransitionEvent(const AtomicString& type,
                                  const TransitionEventInit& initializer)
-    : Event(type, initializer), m_elapsedTime(0) {
+    : Event(type, initializer), elapsed_time_(0) {
   if (initializer.hasPropertyName())
-    m_propertyName = initializer.propertyName();
+    property_name_ = initializer.propertyName();
   if (initializer.hasElapsedTime())
-    m_elapsedTime = initializer.elapsedTime();
+    elapsed_time_ = initializer.elapsedTime();
   if (initializer.hasPseudoElement())
-    m_pseudoElement = initializer.pseudoElement();
+    pseudo_element_ = initializer.pseudoElement();
 }
 
 TransitionEvent::~TransitionEvent() {}
 
 const String& TransitionEvent::propertyName() const {
-  return m_propertyName;
+  return property_name_;
 }
 
 double TransitionEvent::elapsedTime() const {
-  return m_elapsedTime;
+  return elapsed_time_;
 }
 
 const String& TransitionEvent::pseudoElement() const {
-  return m_pseudoElement;
+  return pseudo_element_;
 }
 
-const AtomicString& TransitionEvent::interfaceName() const {
+const AtomicString& TransitionEvent::InterfaceName() const {
   return EventNames::TransitionEvent;
 }
 
 DEFINE_TRACE(TransitionEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

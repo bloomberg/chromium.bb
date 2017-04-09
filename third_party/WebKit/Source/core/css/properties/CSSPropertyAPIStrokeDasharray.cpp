@@ -12,20 +12,20 @@ namespace blink {
 const CSSValue* CSSPropertyAPIStrokeDasharray::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* dashes = CSSValueList::createCommaSeparated();
+  CSSValueList* dashes = CSSValueList::CreateCommaSeparated();
   do {
-    CSSPrimitiveValue* dash = CSSPropertyParserHelpers::consumeLengthOrPercent(
-        range, SVGAttributeMode, ValueRangeNonNegative);
+    CSSPrimitiveValue* dash = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+        range, kSVGAttributeMode, kValueRangeNonNegative);
     if (!dash ||
-        (CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range) &&
-         range.atEnd()))
+        (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range) &&
+         range.AtEnd()))
       return nullptr;
-    dashes->append(*dash);
-  } while (!range.atEnd());
+    dashes->Append(*dash);
+  } while (!range.AtEnd());
   return dashes;
 }
 

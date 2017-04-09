@@ -9,82 +9,81 @@
 
 namespace blink {
 
-ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
-    : SuspendableObject(scriptState->getExecutionContext()),
-      m_state(Pending),
-      m_scriptState(scriptState),
-      m_timer(TaskRunnerHelper::get(TaskType::Microtask, getExecutionContext()),
-              this,
-              &ScriptPromiseResolver::onTimerFired),
-      m_resolver(scriptState)
-{
-  if (getExecutionContext()->isContextDestroyed()) {
-    m_state = Detached;
-    m_resolver.clear();
+ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
+    : SuspendableObject(script_state->GetExecutionContext()),
+      state_(kPending),
+      script_state_(script_state),
+      timer_(TaskRunnerHelper::Get(TaskType::kMicrotask, GetExecutionContext()),
+             this,
+             &ScriptPromiseResolver::OnTimerFired),
+      resolver_(script_state) {
+  if (GetExecutionContext()->IsContextDestroyed()) {
+    state_ = kDetached;
+    resolver_.Clear();
   }
-  probe::asyncTaskScheduled(getExecutionContext(), "Promise", this);
+  probe::AsyncTaskScheduled(GetExecutionContext(), "Promise", this);
 }
 
-void ScriptPromiseResolver::suspend() {
-  m_timer.stop();
+void ScriptPromiseResolver::Suspend() {
+  timer_.Stop();
 }
 
-void ScriptPromiseResolver::resume() {
-  if (m_state == Resolving || m_state == Rejecting)
-    m_timer.startOneShot(0, BLINK_FROM_HERE);
+void ScriptPromiseResolver::Resume() {
+  if (state_ == kResolving || state_ == kRejecting)
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void ScriptPromiseResolver::detach() {
-  if (m_state == Detached)
+void ScriptPromiseResolver::Detach() {
+  if (state_ == kDetached)
     return;
-  m_timer.stop();
-  m_state = Detached;
-  m_resolver.clear();
-  m_value.clear();
-  m_keepAlive.clear();
-  probe::asyncTaskCanceled(getExecutionContext(), this);
+  timer_.Stop();
+  state_ = kDetached;
+  resolver_.Clear();
+  value_.Clear();
+  keep_alive_.Clear();
+  probe::AsyncTaskCanceled(GetExecutionContext(), this);
 }
 
-void ScriptPromiseResolver::keepAliveWhilePending() {
+void ScriptPromiseResolver::KeepAliveWhilePending() {
   // keepAliveWhilePending() will be called twice if the resolver
   // is created in a suspended execution context and the resolver
   // is then resolved/rejected while in that suspended state.
-  if (m_state == Detached || m_keepAlive)
+  if (state_ == kDetached || keep_alive_)
     return;
 
   // Keep |this| around while the promise is Pending;
   // see detach() for the dual operation.
-  m_keepAlive = this;
+  keep_alive_ = this;
 }
 
-void ScriptPromiseResolver::onTimerFired(TimerBase*) {
-  ASSERT(m_state == Resolving || m_state == Rejecting);
-  if (!getScriptState()->contextIsValid()) {
-    detach();
+void ScriptPromiseResolver::OnTimerFired(TimerBase*) {
+  ASSERT(state_ == kResolving || state_ == kRejecting);
+  if (!GetScriptState()->ContextIsValid()) {
+    Detach();
     return;
   }
 
-  ScriptState::Scope scope(m_scriptState.get());
-  resolveOrRejectImmediately();
+  ScriptState::Scope scope(script_state_.Get());
+  ResolveOrRejectImmediately();
 }
 
-void ScriptPromiseResolver::resolveOrRejectImmediately() {
-  DCHECK(!getExecutionContext()->isContextDestroyed());
-  DCHECK(!getExecutionContext()->isContextSuspended());
+void ScriptPromiseResolver::ResolveOrRejectImmediately() {
+  DCHECK(!GetExecutionContext()->IsContextDestroyed());
+  DCHECK(!GetExecutionContext()->IsContextSuspended());
   {
-    probe::AsyncTask asyncTask(getExecutionContext(), this);
-    if (m_state == Resolving) {
-      m_resolver.resolve(m_value.newLocal(m_scriptState->isolate()));
+    probe::AsyncTask async_task(GetExecutionContext(), this);
+    if (state_ == kResolving) {
+      resolver_.Resolve(value_.NewLocal(script_state_->GetIsolate()));
     } else {
-      ASSERT(m_state == Rejecting);
-      m_resolver.reject(m_value.newLocal(m_scriptState->isolate()));
+      ASSERT(state_ == kRejecting);
+      resolver_.Reject(value_.NewLocal(script_state_->GetIsolate()));
     }
   }
-  detach();
+  Detach();
 }
 
 DEFINE_TRACE(ScriptPromiseResolver) {
-  SuspendableObject::trace(visitor);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

@@ -39,176 +39,181 @@ namespace blink {
 // information.
 typedef FloatSize ScrollOffset;
 
-inline ScrollOffset toScrollOffset(const FloatPoint& p) {
-  return ScrollOffset(p.x(), p.y());
+inline ScrollOffset ToScrollOffset(const FloatPoint& p) {
+  return ScrollOffset(p.X(), p.Y());
 }
 
 // Platform overlay scrollbars are controlled and painted by the operating
 // system (e.g., OSX and Android).  CSS overlay scrollbars are created by
 // setting overflow:overlay, and they are painted by chromium.
 enum OverlayScrollbarClipBehavior {
-  IgnorePlatformOverlayScrollbarSize,
-  IgnorePlatformAndCSSOverlayScrollbarSize,
-  ExcludeOverlayScrollbarSizeForHitTesting
+  kIgnorePlatformOverlayScrollbarSize,
+  kIgnorePlatformAndCSSOverlayScrollbarSize,
+  kExcludeOverlayScrollbarSizeForHitTesting
 };
 
 enum ScrollDirection {
-  ScrollUpIgnoringWritingMode,
-  ScrollDownIgnoringWritingMode,
-  ScrollLeftIgnoringWritingMode,
-  ScrollRightIgnoringWritingMode,
+  kScrollUpIgnoringWritingMode,
+  kScrollDownIgnoringWritingMode,
+  kScrollLeftIgnoringWritingMode,
+  kScrollRightIgnoringWritingMode,
 
-  ScrollBlockDirectionBackward,
-  ScrollBlockDirectionForward,
-  ScrollInlineDirectionBackward,
-  ScrollInlineDirectionForward
+  kScrollBlockDirectionBackward,
+  kScrollBlockDirectionForward,
+  kScrollInlineDirectionBackward,
+  kScrollInlineDirectionForward
 };
 
-enum ScrollDirectionPhysical { ScrollUp, ScrollDown, ScrollLeft, ScrollRight };
+enum ScrollDirectionPhysical {
+  kScrollUp,
+  kScrollDown,
+  kScrollLeft,
+  kScrollRight
+};
 
 enum ScrollType {
-  UserScroll,
-  ProgrammaticScroll,
-  ClampingScroll,
-  CompositorScroll,
-  AnchoringScroll
+  kUserScroll,
+  kProgrammaticScroll,
+  kClampingScroll,
+  kCompositorScroll,
+  kAnchoringScroll
 };
 
-inline bool scrollTypeClearsFragmentAnchor(ScrollType scrollType) {
-  return scrollType == UserScroll || scrollType == ProgrammaticScroll ||
-         scrollType == CompositorScroll;
+inline bool ScrollTypeClearsFragmentAnchor(ScrollType scroll_type) {
+  return scroll_type == kUserScroll || scroll_type == kProgrammaticScroll ||
+         scroll_type == kCompositorScroll;
 }
 
 // Convert logical scroll direction to physical. Physical scroll directions are
 // unaffected.
-inline ScrollDirectionPhysical toPhysicalDirection(ScrollDirection direction,
-                                                   bool isVertical,
-                                                   bool isFlipped) {
+inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
+                                                   bool is_vertical,
+                                                   bool is_flipped) {
   switch (direction) {
-    case ScrollBlockDirectionBackward: {
-      if (isVertical) {
-        if (!isFlipped)
-          return ScrollUp;
-        return ScrollDown;
+    case kScrollBlockDirectionBackward: {
+      if (is_vertical) {
+        if (!is_flipped)
+          return kScrollUp;
+        return kScrollDown;
       }
-      if (!isFlipped)
-        return ScrollLeft;
-      return ScrollRight;
+      if (!is_flipped)
+        return kScrollLeft;
+      return kScrollRight;
     }
-    case ScrollBlockDirectionForward: {
-      if (isVertical) {
-        if (!isFlipped)
-          return ScrollDown;
-        return ScrollUp;
+    case kScrollBlockDirectionForward: {
+      if (is_vertical) {
+        if (!is_flipped)
+          return kScrollDown;
+        return kScrollUp;
       }
-      if (!isFlipped)
-        return ScrollRight;
-      return ScrollLeft;
+      if (!is_flipped)
+        return kScrollRight;
+      return kScrollLeft;
     }
-    case ScrollInlineDirectionBackward: {
-      if (isVertical) {
-        if (!isFlipped)
-          return ScrollLeft;
-        return ScrollRight;
+    case kScrollInlineDirectionBackward: {
+      if (is_vertical) {
+        if (!is_flipped)
+          return kScrollLeft;
+        return kScrollRight;
       }
-      if (!isFlipped)
-        return ScrollUp;
-      return ScrollDown;
+      if (!is_flipped)
+        return kScrollUp;
+      return kScrollDown;
     }
-    case ScrollInlineDirectionForward: {
-      if (isVertical) {
-        if (!isFlipped)
-          return ScrollRight;
-        return ScrollLeft;
+    case kScrollInlineDirectionForward: {
+      if (is_vertical) {
+        if (!is_flipped)
+          return kScrollRight;
+        return kScrollLeft;
       }
-      if (!isFlipped)
-        return ScrollDown;
-      return ScrollUp;
+      if (!is_flipped)
+        return kScrollDown;
+      return kScrollUp;
     }
     // Direction is already physical
-    case ScrollUpIgnoringWritingMode:
-      return ScrollUp;
-    case ScrollDownIgnoringWritingMode:
-      return ScrollDown;
-    case ScrollLeftIgnoringWritingMode:
-      return ScrollLeft;
-    case ScrollRightIgnoringWritingMode:
-      return ScrollRight;
+    case kScrollUpIgnoringWritingMode:
+      return kScrollUp;
+    case kScrollDownIgnoringWritingMode:
+      return kScrollDown;
+    case kScrollLeftIgnoringWritingMode:
+      return kScrollLeft;
+    case kScrollRightIgnoringWritingMode:
+      return kScrollRight;
     default:
       ASSERT_NOT_REACHED();
       break;
   }
-  return ScrollUp;
+  return kScrollUp;
 }
 
-inline ScrollDirection toScrollDirection(ScrollDirectionPhysical direction) {
+inline ScrollDirection ToScrollDirection(ScrollDirectionPhysical direction) {
   switch (direction) {
-    case ScrollUp:
-      return ScrollUpIgnoringWritingMode;
-    case ScrollDown:
-      return ScrollDownIgnoringWritingMode;
-    case ScrollLeft:
-      return ScrollLeftIgnoringWritingMode;
-    case ScrollRight:
-      return ScrollRightIgnoringWritingMode;
+    case kScrollUp:
+      return kScrollUpIgnoringWritingMode;
+    case kScrollDown:
+      return kScrollDownIgnoringWritingMode;
+    case kScrollLeft:
+      return kScrollLeftIgnoringWritingMode;
+    case kScrollRight:
+      return kScrollRightIgnoringWritingMode;
     default:
       ASSERT_NOT_REACHED();
       break;
   }
-  return ScrollUpIgnoringWritingMode;
+  return kScrollUpIgnoringWritingMode;
 }
 
 enum ScrollGranularity {
-  ScrollByLine,
-  ScrollByPage,
-  ScrollByDocument,
-  ScrollByPixel,
-  ScrollByPrecisePixel
+  kScrollByLine,
+  kScrollByPage,
+  kScrollByDocument,
+  kScrollByPixel,
+  kScrollByPrecisePixel
 };
 
 enum ScrollInertialPhase {
-  ScrollInertialPhaseUnknown,
-  ScrollInertialPhaseNonMomentum,
-  ScrollInertialPhaseMomentum
+  kScrollInertialPhaseUnknown,
+  kScrollInertialPhaseNonMomentum,
+  kScrollInertialPhaseMomentum
 };
 
-enum ScrollbarOrientation { HorizontalScrollbar, VerticalScrollbar };
+enum ScrollbarOrientation { kHorizontalScrollbar, kVerticalScrollbar };
 
-enum ScrollbarMode { ScrollbarAuto, ScrollbarAlwaysOff, ScrollbarAlwaysOn };
+enum ScrollbarMode { kScrollbarAuto, kScrollbarAlwaysOff, kScrollbarAlwaysOn };
 
-enum ScrollbarControlSize { RegularScrollbar, SmallScrollbar };
+enum ScrollbarControlSize { kRegularScrollbar, kSmallScrollbar };
 
 typedef unsigned ScrollbarControlState;
 
 enum ScrollbarControlStateMask {
-  ActiveScrollbarState = 1,
-  EnabledScrollbarState = 1 << 1,
-  PressedScrollbarState = 1 << 2
+  kActiveScrollbarState = 1,
+  kEnabledScrollbarState = 1 << 1,
+  kPressedScrollbarState = 1 << 2
 };
 
 enum ScrollbarPart {
-  NoPart = 0,
-  BackButtonStartPart = 1,
-  ForwardButtonStartPart = 1 << 1,
-  BackTrackPart = 1 << 2,
-  ThumbPart = 1 << 3,
-  ForwardTrackPart = 1 << 4,
-  BackButtonEndPart = 1 << 5,
-  ForwardButtonEndPart = 1 << 6,
-  ScrollbarBGPart = 1 << 7,
-  TrackBGPart = 1 << 8,
-  AllParts = 0xffffffff
+  kNoPart = 0,
+  kBackButtonStartPart = 1,
+  kForwardButtonStartPart = 1 << 1,
+  kBackTrackPart = 1 << 2,
+  kThumbPart = 1 << 3,
+  kForwardTrackPart = 1 << 4,
+  kBackButtonEndPart = 1 << 5,
+  kForwardButtonEndPart = 1 << 6,
+  kScrollbarBGPart = 1 << 7,
+  kTrackBGPart = 1 << 8,
+  kAllParts = 0xffffffff
 };
 
 enum ScrollbarOverlayColorTheme {
-  ScrollbarOverlayColorThemeDark,
-  ScrollbarOverlayColorThemeLight
+  kScrollbarOverlayColorThemeDark,
+  kScrollbarOverlayColorThemeLight
 };
 
 enum ScrollBehavior {
-  ScrollBehaviorAuto,
-  ScrollBehaviorInstant,
-  ScrollBehaviorSmooth,
+  kScrollBehaviorAuto,
+  kScrollBehaviorInstant,
+  kScrollBehaviorSmooth,
 };
 
 // The result of an attempt to scroll. If didScroll is true, then
@@ -217,55 +222,55 @@ enum ScrollBehavior {
 struct ScrollResult {
   STACK_ALLOCATED();
   explicit ScrollResult()
-      : didScrollX(false),
-        didScrollY(false),
-        unusedScrollDeltaX(0),
-        unusedScrollDeltaY(0) {}
-  ScrollResult(bool didScrollX,
-               bool didScrollY,
-               float unusedScrollDeltaX,
-               float unusedScrollDeltaY)
-      : didScrollX(didScrollX),
-        didScrollY(didScrollY),
-        unusedScrollDeltaX(unusedScrollDeltaX),
-        unusedScrollDeltaY(unusedScrollDeltaY) {}
+      : did_scroll_x(false),
+        did_scroll_y(false),
+        unused_scroll_delta_x(0),
+        unused_scroll_delta_y(0) {}
+  ScrollResult(bool did_scroll_x,
+               bool did_scroll_y,
+               float unused_scroll_delta_x,
+               float unused_scroll_delta_y)
+      : did_scroll_x(did_scroll_x),
+        did_scroll_y(did_scroll_y),
+        unused_scroll_delta_x(unused_scroll_delta_x),
+        unused_scroll_delta_y(unused_scroll_delta_y) {}
 
-  bool didScroll() { return didScrollX || didScrollY; }
+  bool DidScroll() { return did_scroll_x || did_scroll_y; }
 
-  bool didScrollX;
-  bool didScrollY;
+  bool did_scroll_x;
+  bool did_scroll_y;
 
   // In pixels.
-  float unusedScrollDeltaX;
-  float unusedScrollDeltaY;
+  float unused_scroll_delta_x;
+  float unused_scroll_delta_y;
 };
 
-inline ScrollOffset toScrollDelta(ScrollbarOrientation orientation,
+inline ScrollOffset ToScrollDelta(ScrollbarOrientation orientation,
                                   float delta) {
-  return orientation == HorizontalScrollbar ? ScrollOffset(delta, 0.0f)
-                                            : ScrollOffset(0.0f, delta);
+  return orientation == kHorizontalScrollbar ? ScrollOffset(delta, 0.0f)
+                                             : ScrollOffset(0.0f, delta);
 }
 
-inline ScrollOffset toScrollDelta(ScrollDirectionPhysical dir, float delta) {
-  if (dir == ScrollUp || dir == ScrollLeft)
+inline ScrollOffset ToScrollDelta(ScrollDirectionPhysical dir, float delta) {
+  if (dir == kScrollUp || dir == kScrollLeft)
     delta = -delta;
 
-  return (dir == ScrollLeft || dir == ScrollRight) ? ScrollOffset(delta, 0)
-                                                   : ScrollOffset(0, delta);
+  return (dir == kScrollLeft || dir == kScrollRight) ? ScrollOffset(delta, 0)
+                                                     : ScrollOffset(0, delta);
 }
 
-inline ScrollGranularity toPlatformScrollGranularity(
+inline ScrollGranularity ToPlatformScrollGranularity(
     WebGestureEvent::ScrollUnits units) {
   switch (units) {
-    case WebGestureEvent::ScrollUnits::PrecisePixels:
-      return ScrollGranularity::ScrollByPrecisePixel;
-    case WebGestureEvent::ScrollUnits::Pixels:
-      return ScrollGranularity::ScrollByPixel;
-    case WebGestureEvent::ScrollUnits::Page:
-      return ScrollGranularity::ScrollByPage;
+    case WebGestureEvent::ScrollUnits::kPrecisePixels:
+      return ScrollGranularity::kScrollByPrecisePixel;
+    case WebGestureEvent::ScrollUnits::kPixels:
+      return ScrollGranularity::kScrollByPixel;
+    case WebGestureEvent::ScrollUnits::kPage:
+      return ScrollGranularity::kScrollByPage;
     default:
       NOTREACHED();
-      return ScrollGranularity::ScrollByPrecisePixel;
+      return ScrollGranularity::kScrollByPrecisePixel;
   }
 }
 

@@ -12,35 +12,35 @@ namespace blink {
 NavigatorPresentation::NavigatorPresentation() {}
 
 // static
-const char* NavigatorPresentation::supplementName() {
+const char* NavigatorPresentation::SupplementName() {
   return "NavigatorPresentation";
 }
 
 // static
-NavigatorPresentation& NavigatorPresentation::from(Navigator& navigator) {
+NavigatorPresentation& NavigatorPresentation::From(Navigator& navigator) {
   NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorPresentation();
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 // static
 Presentation* NavigatorPresentation::presentation(Navigator& navigator) {
-  NavigatorPresentation& self = NavigatorPresentation::from(navigator);
-  if (!self.m_presentation) {
-    if (!navigator.frame())
+  NavigatorPresentation& self = NavigatorPresentation::From(navigator);
+  if (!self.presentation_) {
+    if (!navigator.GetFrame())
       return nullptr;
-    self.m_presentation = Presentation::create(navigator.frame());
+    self.presentation_ = Presentation::Create(navigator.GetFrame());
   }
-  return self.m_presentation;
+  return self.presentation_;
 }
 
 DEFINE_TRACE(NavigatorPresentation) {
-  visitor->trace(m_presentation);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(presentation_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -23,7 +23,7 @@ const LayoutUnit kZero{0};
 class NGRelativeUtilsTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    style_ = ComputedStyle::create();
+    style_ = ComputedStyle::Create();
     container_size_ = NGLogicalSize{kInlineSize, kBlockSize};
   }
 
@@ -31,15 +31,16 @@ class NGRelativeUtilsTest : public ::testing::Test {
                LayoutUnit right,
                LayoutUnit bottom,
                LayoutUnit left) {
-    style_->setTop(top == kAuto ? Length(LengthType::Auto)
-                                : Length(top.toInt(), LengthType::Fixed));
-    style_->setRight(right == kAuto ? Length(LengthType::Auto)
-                                    : Length(right.toInt(), LengthType::Fixed));
-    style_->setBottom(bottom == kAuto
-                          ? Length(LengthType::Auto)
-                          : Length(bottom.toInt(), LengthType::Fixed));
-    style_->setLeft(left == kAuto ? Length(LengthType::Auto)
-                                  : Length(left.toInt(), LengthType::Fixed));
+    style_->SetTop(top == kAuto ? Length(LengthType::kAuto)
+                                : Length(top.ToInt(), LengthType::kFixed));
+    style_->SetRight(right == kAuto
+                         ? Length(LengthType::kAuto)
+                         : Length(right.ToInt(), LengthType::kFixed));
+    style_->SetBottom(bottom == kAuto
+                          ? Length(LengthType::kAuto)
+                          : Length(bottom.ToInt(), LengthType::kFixed));
+    style_->SetLeft(left == kAuto ? Length(LengthType::kAuto)
+                                  : Length(left.ToInt(), LengthType::kFixed));
   }
 
   RefPtr<ComputedStyle> style_;

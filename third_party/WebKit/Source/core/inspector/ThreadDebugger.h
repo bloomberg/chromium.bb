@@ -31,47 +31,49 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   explicit ThreadDebugger(v8::Isolate*);
   ~ThreadDebugger() override;
 
-  static ThreadDebugger* from(v8::Isolate*);
-  virtual bool isWorker() = 0;
-  v8_inspector::V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
+  static ThreadDebugger* From(v8::Isolate*);
+  virtual bool IsWorker() = 0;
+  v8_inspector::V8Inspector* GetV8Inspector() const {
+    return v8_inspector_.get();
+  }
 
-  static void idleStarted(v8::Isolate*);
-  static void idleFinished(v8::Isolate*);
+  static void IdleStarted(v8::Isolate*);
+  static void IdleFinished(v8::Isolate*);
 
-  void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
-  void asyncTaskCanceled(void* task);
-  void allAsyncTasksCanceled();
-  void asyncTaskStarted(void* task);
-  void asyncTaskFinished(void* task);
-  unsigned promiseRejected(v8::Local<v8::Context>,
-                           const String& errorMessage,
+  void AsyncTaskScheduled(const String& task_name, void* task, bool recurring);
+  void AsyncTaskCanceled(void* task);
+  void AllAsyncTasksCanceled();
+  void AsyncTaskStarted(void* task);
+  void AsyncTaskFinished(void* task);
+  unsigned PromiseRejected(v8::Local<v8::Context>,
+                           const String& error_message,
                            v8::Local<v8::Value> exception,
                            std::unique_ptr<SourceLocation>);
-  void promiseRejectionRevoked(v8::Local<v8::Context>,
-                               unsigned promiseRejectionId);
+  void PromiseRejectionRevoked(v8::Local<v8::Context>,
+                               unsigned promise_rejection_id);
 
  protected:
-  virtual int contextGroupId(ExecutionContext*) = 0;
-  virtual void reportConsoleMessage(ExecutionContext*,
+  virtual int ContextGroupId(ExecutionContext*) = 0;
+  virtual void ReportConsoleMessage(ExecutionContext*,
                                     MessageSource,
                                     MessageLevel,
                                     const String& message,
                                     SourceLocation*) = 0;
   void installAdditionalCommandLineAPI(v8::Local<v8::Context>,
                                        v8::Local<v8::Object>) override;
-  void createFunctionProperty(v8::Local<v8::Context>,
+  void CreateFunctionProperty(v8::Local<v8::Context>,
                               v8::Local<v8::Object>,
                               const char* name,
                               v8::FunctionCallback,
                               const char* description);
-  static v8::Maybe<bool> createDataPropertyInArray(v8::Local<v8::Context>,
+  static v8::Maybe<bool> CreateDataPropertyInArray(v8::Local<v8::Context>,
                                                    v8::Local<v8::Array>,
                                                    int index,
                                                    v8::Local<v8::Value>);
-  static MessageLevel v8MessageLevelToMessageLevel(
+  static MessageLevel V8MessageLevelToMessageLevel(
       v8::Isolate::MessageErrorLevel);
 
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate_;
 
  private:
   // V8InspectorClient implementation.
@@ -90,24 +92,24 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                            void* data) override;
   void cancelTimer(void* data) override;
 
-  void onTimer(TimerBase*);
+  void OnTimer(TimerBase*);
 
-  static void setMonitorEventsCallback(
+  static void SetMonitorEventsCallback(
       const v8::FunctionCallbackInfo<v8::Value>&,
       bool enabled);
-  static void monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  static void unmonitorEventsCallback(
+  static void MonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void UnmonitorEventsCallback(
       const v8::FunctionCallbackInfo<v8::Value>&);
 
-  static void getEventListenersCallback(
+  static void GetEventListenersCallback(
       const v8::FunctionCallbackInfo<v8::Value>&);
 
-  std::unique_ptr<v8_inspector::V8Inspector> m_v8Inspector;
-  std::unique_ptr<v8::TracingCpuProfiler> m_v8TracingCpuProfiler;
-  Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
-  Vector<v8_inspector::V8InspectorClient::TimerCallback> m_timerCallbacks;
-  Vector<void*> m_timerData;
-  std::unique_ptr<UserGestureIndicator> m_userGestureIndicator;
+  std::unique_ptr<v8_inspector::V8Inspector> v8_inspector_;
+  std::unique_ptr<v8::TracingCpuProfiler> v8_tracing_cpu_profiler_;
+  Vector<std::unique_ptr<Timer<ThreadDebugger>>> timers_;
+  Vector<v8_inspector::V8InspectorClient::TimerCallback> timer_callbacks_;
+  Vector<void*> timer_data_;
+  std::unique_ptr<UserGestureIndicator> user_gesture_indicator_;
 };
 
 }  // namespace blink

@@ -35,7 +35,7 @@ class CONTENT_EXPORT MediaStreamTrack
   virtual void Stop() = 0;
 
   // TODO(hta): Make method pure virtual when all tracks have the method.
-  void getSettings(blink::WebMediaStreamTrack::Settings& settings) override {}
+  void GetSettings(blink::WebMediaStreamTrack::Settings& settings) override {}
 
   bool is_local_track() const { return is_local_track_; }
 

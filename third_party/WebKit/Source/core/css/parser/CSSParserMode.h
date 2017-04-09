@@ -35,34 +35,34 @@ namespace blink {
 
 // Must not grow beyond 3 bits, due to packing in StylePropertySet.
 enum CSSParserMode {
-  HTMLStandardMode,
-  HTMLQuirksMode,
+  kHTMLStandardMode,
+  kHTMLQuirksMode,
   // SVG attributes are parsed in quirks mode but rules differ slightly.
-  SVGAttributeMode,
+  kSVGAttributeMode,
   // @viewport/@font-face rules are specially tagged in StylePropertySet so
   // CSSOM modifications don't treat them as style rules.
-  CSSViewportRuleMode,
-  CSSFontFaceRuleMode,
+  kCSSViewportRuleMode,
+  kCSSFontFaceRuleMode,
   // User agent stylesheets are parsed in standards mode but also allows
   // internal properties and values.
-  UASheetMode
+  kUASheetMode
 };
 
-inline bool isQuirksModeBehavior(CSSParserMode mode) {
-  return mode == HTMLQuirksMode;
+inline bool IsQuirksModeBehavior(CSSParserMode mode) {
+  return mode == kHTMLQuirksMode;
 }
 
-inline bool isUASheetBehavior(CSSParserMode mode) {
-  return mode == UASheetMode;
+inline bool IsUASheetBehavior(CSSParserMode mode) {
+  return mode == kUASheetMode;
 }
 
-inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode) {
-  return mode == CSSViewportRuleMode;
+inline bool IsCSSViewportParsingEnabledForMode(CSSParserMode mode) {
+  return mode == kCSSViewportRuleMode;
 }
 
-inline bool isUseCounterEnabledForMode(CSSParserMode mode) {
+inline bool IsUseCounterEnabledForMode(CSSParserMode mode) {
   // We don't count the UA style sheet in our statistics.
-  return mode != UASheetMode;
+  return mode != kUASheetMode;
 }
 
 }  // namespace blink

@@ -34,62 +34,62 @@
 namespace blink {
 
 DocumentParser::DocumentParser(Document* document)
-    : m_state(ParsingState),
-      m_documentWasLoadedAsPartOfNavigation(false),
-      m_document(document) {
+    : state_(kParsingState),
+      document_was_loaded_as_part_of_navigation_(false),
+      document_(document) {
   DCHECK(document);
 }
 
 DocumentParser::~DocumentParser() {}
 
 DEFINE_TRACE(DocumentParser) {
-  visitor->trace(m_document);
-  visitor->trace(m_clients);
+  visitor->Trace(document_);
+  visitor->Trace(clients_);
 }
 
-void DocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder>) {
+void DocumentParser::SetDecoder(std::unique_ptr<TextResourceDecoder>) {
   NOTREACHED();
 }
 
-TextResourceDecoder* DocumentParser::decoder() {
+TextResourceDecoder* DocumentParser::Decoder() {
   return nullptr;
 }
 
-void DocumentParser::prepareToStopParsing() {
-  DCHECK_EQ(m_state, ParsingState);
-  m_state = StoppingState;
+void DocumentParser::PrepareToStopParsing() {
+  DCHECK_EQ(state_, kParsingState);
+  state_ = kStoppingState;
 }
 
-void DocumentParser::stopParsing() {
-  m_state = StoppedState;
+void DocumentParser::StopParsing() {
+  state_ = kStoppedState;
 
   // Clients may be removed while in the loop. Make a snapshot for iteration.
-  HeapVector<Member<DocumentParserClient>> clientsSnapshot;
-  copyToVector(m_clients, clientsSnapshot);
+  HeapVector<Member<DocumentParserClient>> clients_snapshot;
+  CopyToVector(clients_, clients_snapshot);
 
-  for (DocumentParserClient* client : clientsSnapshot) {
-    if (!m_clients.contains(client))
+  for (DocumentParserClient* client : clients_snapshot) {
+    if (!clients_.Contains(client))
       continue;
 
-    client->notifyParserStopped();
+    client->NotifyParserStopped();
   }
 }
 
-void DocumentParser::detach() {
-  m_state = DetachedState;
-  m_document = nullptr;
+void DocumentParser::Detach() {
+  state_ = kDetachedState;
+  document_ = nullptr;
 }
 
-void DocumentParser::suspendScheduledTasks() {}
+void DocumentParser::SuspendScheduledTasks() {}
 
-void DocumentParser::resumeScheduledTasks() {}
+void DocumentParser::ResumeScheduledTasks() {}
 
-void DocumentParser::addClient(DocumentParserClient* client) {
-  m_clients.insert(client);
+void DocumentParser::AddClient(DocumentParserClient* client) {
+  clients_.insert(client);
 }
 
-void DocumentParser::removeClient(DocumentParserClient* client) {
-  m_clients.erase(client);
+void DocumentParser::RemoveClient(DocumentParserClient* client) {
+  clients_.erase(client);
 }
 
 }  // namespace blink

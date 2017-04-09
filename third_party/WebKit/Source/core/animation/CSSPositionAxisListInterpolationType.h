@@ -15,10 +15,10 @@ class CSSPositionAxisListInterpolationType
   CSSPositionAxisListInterpolationType(PropertyHandle property)
       : CSSLengthListInterpolationType(property) {}
 
-  static InterpolationValue convertPositionAxisCSSValue(const CSSValue&);
+  static InterpolationValue ConvertPositionAxisCSSValue(const CSSValue&);
 
  private:
-  InterpolationValue maybeConvertValue(const CSSValue&,
+  InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
 };

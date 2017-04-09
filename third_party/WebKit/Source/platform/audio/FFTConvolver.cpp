@@ -33,88 +33,93 @@ namespace blink {
 
 using namespace VectorMath;
 
-FFTConvolver::FFTConvolver(size_t fftSize)
-    : m_frame(fftSize),
-      m_readWriteIndex(0),
-      m_inputBuffer(fftSize),  // 2nd half of buffer is always zeroed
-      m_outputBuffer(fftSize),
-      m_lastOverlapBuffer(fftSize / 2) {}
+FFTConvolver::FFTConvolver(size_t fft_size)
+    : frame_(fft_size),
+      read_write_index_(0),
+      input_buffer_(fft_size),  // 2nd half of buffer is always zeroed
+      output_buffer_(fft_size),
+      last_overlap_buffer_(fft_size / 2) {}
 
-void FFTConvolver::process(FFTFrame* fftKernel,
-                           const float* sourceP,
-                           float* destP,
-                           size_t framesToProcess) {
-  size_t halfSize = fftSize() / 2;
+void FFTConvolver::Process(FFTFrame* fft_kernel,
+                           const float* source_p,
+                           float* dest_p,
+                           size_t frames_to_process) {
+  size_t half_size = FftSize() / 2;
 
   // framesToProcess must be an exact multiple of halfSize,
   // or halfSize is a multiple of framesToProcess when halfSize >
   // framesToProcess.
-  bool isGood = !(halfSize % framesToProcess && framesToProcess % halfSize);
-  DCHECK(isGood);
-  if (!isGood)
+  bool is_good =
+      !(half_size % frames_to_process && frames_to_process % half_size);
+  DCHECK(is_good);
+  if (!is_good)
     return;
 
-  size_t numberOfDivisions =
-      halfSize <= framesToProcess ? (framesToProcess / halfSize) : 1;
-  size_t divisionSize = numberOfDivisions == 1 ? framesToProcess : halfSize;
+  size_t number_of_divisions =
+      half_size <= frames_to_process ? (frames_to_process / half_size) : 1;
+  size_t division_size =
+      number_of_divisions == 1 ? frames_to_process : half_size;
 
-  for (size_t i = 0; i < numberOfDivisions;
-       ++i, sourceP += divisionSize, destP += divisionSize) {
+  for (size_t i = 0; i < number_of_divisions;
+       ++i, source_p += division_size, dest_p += division_size) {
     // Copy samples to input buffer (note contraint above!)
-    float* inputP = m_inputBuffer.data();
+    float* input_p = input_buffer_.Data();
 
     // Sanity check
-    bool isCopyGood1 = sourceP && inputP &&
-                       m_readWriteIndex + divisionSize <= m_inputBuffer.size();
-    DCHECK(isCopyGood1);
-    if (!isCopyGood1)
+    bool is_copy_good1 =
+        source_p && input_p &&
+        read_write_index_ + division_size <= input_buffer_.size();
+    DCHECK(is_copy_good1);
+    if (!is_copy_good1)
       return;
 
-    memcpy(inputP + m_readWriteIndex, sourceP, sizeof(float) * divisionSize);
+    memcpy(input_p + read_write_index_, source_p,
+           sizeof(float) * division_size);
 
     // Copy samples from output buffer
-    float* outputP = m_outputBuffer.data();
+    float* output_p = output_buffer_.Data();
 
     // Sanity check
-    bool isCopyGood2 = destP && outputP &&
-                       m_readWriteIndex + divisionSize <= m_outputBuffer.size();
-    DCHECK(isCopyGood2);
-    if (!isCopyGood2)
+    bool is_copy_good2 =
+        dest_p && output_p &&
+        read_write_index_ + division_size <= output_buffer_.size();
+    DCHECK(is_copy_good2);
+    if (!is_copy_good2)
       return;
 
-    memcpy(destP, outputP + m_readWriteIndex, sizeof(float) * divisionSize);
-    m_readWriteIndex += divisionSize;
+    memcpy(dest_p, output_p + read_write_index_, sizeof(float) * division_size);
+    read_write_index_ += division_size;
 
     // Check if it's time to perform the next FFT
-    if (m_readWriteIndex == halfSize) {
+    if (read_write_index_ == half_size) {
       // The input buffer is now filled (get frequency-domain version)
-      m_frame.doFFT(m_inputBuffer.data());
-      m_frame.multiply(*fftKernel);
-      m_frame.doInverseFFT(m_outputBuffer.data());
+      frame_.DoFFT(input_buffer_.Data());
+      frame_.Multiply(*fft_kernel);
+      frame_.DoInverseFFT(output_buffer_.Data());
 
       // Overlap-add 1st half from previous time
-      vadd(m_outputBuffer.data(), 1, m_lastOverlapBuffer.data(), 1,
-           m_outputBuffer.data(), 1, halfSize);
+      Vadd(output_buffer_.Data(), 1, last_overlap_buffer_.Data(), 1,
+           output_buffer_.Data(), 1, half_size);
 
       // Finally, save 2nd half of result
-      bool isCopyGood3 = m_outputBuffer.size() == 2 * halfSize &&
-                         m_lastOverlapBuffer.size() == halfSize;
-      DCHECK(isCopyGood3);
-      if (!isCopyGood3)
+      bool is_copy_good3 = output_buffer_.size() == 2 * half_size &&
+                           last_overlap_buffer_.size() == half_size;
+      DCHECK(is_copy_good3);
+      if (!is_copy_good3)
         return;
 
-      memcpy(m_lastOverlapBuffer.data(), m_outputBuffer.data() + halfSize,
-             sizeof(float) * halfSize);
+      memcpy(last_overlap_buffer_.Data(), output_buffer_.Data() + half_size,
+             sizeof(float) * half_size);
 
       // Reset index back to start for next time
-      m_readWriteIndex = 0;
+      read_write_index_ = 0;
     }
   }
 }
 
-void FFTConvolver::reset() {
-  m_lastOverlapBuffer.zero();
-  m_readWriteIndex = 0;
+void FFTConvolver::Reset() {
+  last_overlap_buffer_.Zero();
+  read_write_index_ = 0;
 }
 
 }  // namespace blink

@@ -43,34 +43,34 @@ TrackEvent::TrackEvent(const AtomicString& type,
 
   const VideoTrackOrAudioTrackOrTextTrack& track = initializer.track();
   if (track.isVideoTrack())
-    m_track = track.getAsVideoTrack();
+    track_ = track.getAsVideoTrack();
   else if (track.isAudioTrack())
-    m_track = track.getAsAudioTrack();
+    track_ = track.getAsAudioTrack();
   else if (track.isTextTrack())
-    m_track = track.getAsTextTrack();
+    track_ = track.getAsTextTrack();
   else
     NOTREACHED();
 }
 
 TrackEvent::~TrackEvent() {}
 
-const AtomicString& TrackEvent::interfaceName() const {
+const AtomicString& TrackEvent::InterfaceName() const {
   return EventNames::TrackEvent;
 }
 
-void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& returnValue) {
-  if (!m_track)
+void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& return_value) {
+  if (!track_)
     return;
 
-  switch (m_track->type()) {
-    case WebMediaPlayer::TextTrack:
-      returnValue.setTextTrack(toTextTrack(m_track.get()));
+  switch (track_->GetType()) {
+    case WebMediaPlayer::kTextTrack:
+      return_value.setTextTrack(ToTextTrack(track_.Get()));
       break;
-    case WebMediaPlayer::AudioTrack:
-      returnValue.setAudioTrack(toAudioTrack(m_track.get()));
+    case WebMediaPlayer::kAudioTrack:
+      return_value.setAudioTrack(ToAudioTrack(track_.Get()));
       break;
-    case WebMediaPlayer::VideoTrack:
-      returnValue.setVideoTrack(toVideoTrack(m_track.get()));
+    case WebMediaPlayer::kVideoTrack:
+      return_value.setVideoTrack(ToVideoTrack(track_.Get()));
       break;
     default:
       NOTREACHED();
@@ -78,8 +78,8 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& returnValue) {
 }
 
 DEFINE_TRACE(TrackEvent) {
-  visitor->trace(m_track);
-  Event::trace(visitor);
+  visitor->Trace(track_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

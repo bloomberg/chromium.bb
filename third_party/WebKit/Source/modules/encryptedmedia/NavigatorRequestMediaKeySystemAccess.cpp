@@ -37,22 +37,22 @@ namespace blink {
 
 namespace {
 
-static WebVector<WebEncryptedMediaInitDataType> convertInitDataTypes(
-    const Vector<String>& initDataTypes) {
-  WebVector<WebEncryptedMediaInitDataType> result(initDataTypes.size());
-  for (size_t i = 0; i < initDataTypes.size(); ++i)
-    result[i] = EncryptedMediaUtils::convertToInitDataType(initDataTypes[i]);
+static WebVector<WebEncryptedMediaInitDataType> ConvertInitDataTypes(
+    const Vector<String>& init_data_types) {
+  WebVector<WebEncryptedMediaInitDataType> result(init_data_types.size());
+  for (size_t i = 0; i < init_data_types.size(); ++i)
+    result[i] = EncryptedMediaUtils::ConvertToInitDataType(init_data_types[i]);
   return result;
 }
 
-static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
+static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
     const HeapVector<MediaKeySystemMediaCapability>& capabilities) {
   WebVector<WebMediaKeySystemMediaCapability> result(capabilities.size());
   for (size_t i = 0; i < capabilities.size(); ++i) {
-    const WebString& contentType = capabilities[i].contentType();
-    result[i].contentType = contentType;
-    ParsedContentType type(contentType, ParsedContentType::Mode::Strict);
-    if (type.isValid()) {
+    const WebString& content_type = capabilities[i].contentType();
+    result[i].content_type = content_type;
+    ParsedContentType type(content_type, ParsedContentType::Mode::kStrict);
+    if (type.IsValid()) {
       // From
       // http://w3c.github.io/encrypted-media/#get-supported-capabilities-for-audio-video-type
       // "If the user agent does not recognize one or more parameters,
@@ -60,34 +60,34 @@ static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
       // parameters, so only look up "codecs" if a single parameter is
       // present. Chromium expects "codecs" to be provided, so this capability
       // will be skipped if codecs is not the only parameter specified.
-      result[i].mimeType = type.mimeType();
-      if (type.parameterCount() == 1u)
-        result[i].codecs = type.parameterValueForName("codecs");
+      result[i].mime_type = type.MimeType();
+      if (type.ParameterCount() == 1u)
+        result[i].codecs = type.ParameterValueForName("codecs");
     }
     result[i].robustness = capabilities[i].robustness();
   }
   return result;
 }
 
-static WebMediaKeySystemConfiguration::Requirement convertMediaKeysRequirement(
+static WebMediaKeySystemConfiguration::Requirement ConvertMediaKeysRequirement(
     const String& requirement) {
   if (requirement == "required")
-    return WebMediaKeySystemConfiguration::Requirement::Required;
+    return WebMediaKeySystemConfiguration::Requirement::kRequired;
   if (requirement == "optional")
-    return WebMediaKeySystemConfiguration::Requirement::Optional;
+    return WebMediaKeySystemConfiguration::Requirement::kOptional;
   if (requirement == "not-allowed")
-    return WebMediaKeySystemConfiguration::Requirement::NotAllowed;
+    return WebMediaKeySystemConfiguration::Requirement::kNotAllowed;
 
   // Everything else gets the default value.
   NOTREACHED();
-  return WebMediaKeySystemConfiguration::Requirement::Optional;
+  return WebMediaKeySystemConfiguration::Requirement::kOptional;
 }
 
-static WebVector<WebEncryptedMediaSessionType> convertSessionTypes(
-    const Vector<String>& sessionTypes) {
-  WebVector<WebEncryptedMediaSessionType> result(sessionTypes.size());
-  for (size_t i = 0; i < sessionTypes.size(); ++i)
-    result[i] = EncryptedMediaUtils::convertToSessionType(sessionTypes[i]);
+static WebVector<WebEncryptedMediaSessionType> ConvertSessionTypes(
+    const Vector<String>& session_types) {
+  WebVector<WebEncryptedMediaSessionType> result(session_types.size());
+  for (size_t i = 0; i < session_types.size(); ++i)
+    result[i] = EncryptedMediaUtils::ConvertToSessionType(session_types[i]);
   return result;
 }
 
@@ -99,158 +99,158 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
  public:
   MediaKeySystemAccessInitializer(
       ScriptState*,
-      const String& keySystem,
-      const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations);
+      const String& key_system,
+      const HeapVector<MediaKeySystemConfiguration>& supported_configurations);
   ~MediaKeySystemAccessInitializer() override {}
 
   // EncryptedMediaRequest implementation.
-  WebString keySystem() const override { return m_keySystem; }
-  const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations()
+  WebString KeySystem() const override { return key_system_; }
+  const WebVector<WebMediaKeySystemConfiguration>& SupportedConfigurations()
       const override {
-    return m_supportedConfigurations;
+    return supported_configurations_;
   }
-  SecurityOrigin* getSecurityOrigin() const override;
-  void requestSucceeded(WebContentDecryptionModuleAccess*) override;
-  void requestNotSupported(const WebString& errorMessage) override;
+  SecurityOrigin* GetSecurityOrigin() const override;
+  void RequestSucceeded(WebContentDecryptionModuleAccess*) override;
+  void RequestNotSupported(const WebString& error_message) override;
 
-  ScriptPromise promise() { return m_resolver->promise(); }
+  ScriptPromise Promise() { return resolver_->Promise(); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_resolver);
-    EncryptedMediaRequest::trace(visitor);
+    visitor->Trace(resolver_);
+    EncryptedMediaRequest::Trace(visitor);
   }
 
  private:
   // Returns true if the ExecutionContext is valid, false otherwise.
-  bool isExecutionContextValid() const;
+  bool IsExecutionContextValid() const;
 
   // For widevine key system, generate warning and report to UMA if
   // |m_supportedConfigurations| contains any video capability with empty
   // robustness string.
-  void checkVideoCapabilityRobustness() const;
+  void CheckVideoCapabilityRobustness() const;
 
-  Member<ScriptPromiseResolver> m_resolver;
-  const String m_keySystem;
-  WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
+  Member<ScriptPromiseResolver> resolver_;
+  const String key_system_;
+  WebVector<WebMediaKeySystemConfiguration> supported_configurations_;
 };
 
 MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
-    ScriptState* scriptState,
-    const String& keySystem,
-    const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations)
-    : m_resolver(ScriptPromiseResolver::create(scriptState)),
-      m_keySystem(keySystem),
-      m_supportedConfigurations(supportedConfigurations.size()) {
-  for (size_t i = 0; i < supportedConfigurations.size(); ++i) {
-    const MediaKeySystemConfiguration& config = supportedConfigurations[i];
-    WebMediaKeySystemConfiguration webConfig;
+    ScriptState* script_state,
+    const String& key_system,
+    const HeapVector<MediaKeySystemConfiguration>& supported_configurations)
+    : resolver_(ScriptPromiseResolver::Create(script_state)),
+      key_system_(key_system),
+      supported_configurations_(supported_configurations.size()) {
+  for (size_t i = 0; i < supported_configurations.size(); ++i) {
+    const MediaKeySystemConfiguration& config = supported_configurations[i];
+    WebMediaKeySystemConfiguration web_config;
 
     DCHECK(config.hasInitDataTypes());
-    webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
+    web_config.init_data_types = ConvertInitDataTypes(config.initDataTypes());
 
     DCHECK(config.hasAudioCapabilities());
-    webConfig.audioCapabilities =
-        convertCapabilities(config.audioCapabilities());
+    web_config.audio_capabilities =
+        ConvertCapabilities(config.audioCapabilities());
 
     DCHECK(config.hasVideoCapabilities());
-    webConfig.videoCapabilities =
-        convertCapabilities(config.videoCapabilities());
+    web_config.video_capabilities =
+        ConvertCapabilities(config.videoCapabilities());
 
     DCHECK(config.hasDistinctiveIdentifier());
-    webConfig.distinctiveIdentifier =
-        convertMediaKeysRequirement(config.distinctiveIdentifier());
+    web_config.distinctive_identifier =
+        ConvertMediaKeysRequirement(config.distinctiveIdentifier());
 
     DCHECK(config.hasPersistentState());
-    webConfig.persistentState =
-        convertMediaKeysRequirement(config.persistentState());
+    web_config.persistent_state =
+        ConvertMediaKeysRequirement(config.persistentState());
 
     if (config.hasSessionTypes()) {
-      webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
+      web_config.session_types = ConvertSessionTypes(config.sessionTypes());
     } else {
       // From the spec
       // (http://w3c.github.io/encrypted-media/#idl-def-mediakeysystemconfiguration):
       // If this member is not present when the dictionary is passed to
       // requestMediaKeySystemAccess(), the dictionary will be treated
       // as if this member is set to [ "temporary" ].
-      WebVector<WebEncryptedMediaSessionType> sessionTypes(
+      WebVector<WebEncryptedMediaSessionType> session_types(
           static_cast<size_t>(1));
-      sessionTypes[0] = WebEncryptedMediaSessionType::Temporary;
-      webConfig.sessionTypes = sessionTypes;
+      session_types[0] = WebEncryptedMediaSessionType::kTemporary;
+      web_config.session_types = session_types;
     }
 
     // If |label| is not present, it will be a null string.
-    webConfig.label = config.label();
-    m_supportedConfigurations[i] = webConfig;
+    web_config.label = config.label();
+    supported_configurations_[i] = web_config;
   }
 
-  checkVideoCapabilityRobustness();
+  CheckVideoCapabilityRobustness();
 }
 
-SecurityOrigin* MediaKeySystemAccessInitializer::getSecurityOrigin() const {
-  return isExecutionContextValid()
-             ? m_resolver->getExecutionContext()->getSecurityOrigin()
+SecurityOrigin* MediaKeySystemAccessInitializer::GetSecurityOrigin() const {
+  return IsExecutionContextValid()
+             ? resolver_->GetExecutionContext()->GetSecurityOrigin()
              : nullptr;
 }
 
-void MediaKeySystemAccessInitializer::requestSucceeded(
+void MediaKeySystemAccessInitializer::RequestSucceeded(
     WebContentDecryptionModuleAccess* access) {
-  if (!isExecutionContextValid())
+  if (!IsExecutionContextValid())
     return;
 
-  m_resolver->resolve(
-      new MediaKeySystemAccess(m_keySystem, WTF::wrapUnique(access)));
-  m_resolver.clear();
+  resolver_->Resolve(
+      new MediaKeySystemAccess(key_system_, WTF::WrapUnique(access)));
+  resolver_.Clear();
 }
 
-void MediaKeySystemAccessInitializer::requestNotSupported(
-    const WebString& errorMessage) {
-  if (!isExecutionContextValid())
+void MediaKeySystemAccessInitializer::RequestNotSupported(
+    const WebString& error_message) {
+  if (!IsExecutionContextValid())
     return;
 
-  m_resolver->reject(DOMException::create(NotSupportedError, errorMessage));
-  m_resolver.clear();
+  resolver_->Reject(DOMException::Create(kNotSupportedError, error_message));
+  resolver_.Clear();
 }
 
-bool MediaKeySystemAccessInitializer::isExecutionContextValid() const {
+bool MediaKeySystemAccessInitializer::IsExecutionContextValid() const {
   // isContextDestroyed() is called to see if the context is in the
   // process of being destroyed. If it is true, assume the context is no
   // longer valid as it is about to be destroyed anyway.
-  ExecutionContext* context = m_resolver->getExecutionContext();
-  return context && !context->isContextDestroyed();
+  ExecutionContext* context = resolver_->GetExecutionContext();
+  return context && !context->IsContextDestroyed();
 }
 
-void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {
+void MediaKeySystemAccessInitializer::CheckVideoCapabilityRobustness() const {
   // Only check for widevine key system.
-  if (keySystem() != "com.widevine.alpha")
+  if (KeySystem() != "com.widevine.alpha")
     return;
 
-  bool hasVideoCapabilities = false;
-  bool hasEmptyRobustness = false;
+  bool has_video_capabilities = false;
+  bool has_empty_robustness = false;
 
-  for (const auto& config : m_supportedConfigurations) {
-    for (const auto& capability : config.videoCapabilities) {
-      hasVideoCapabilities = true;
-      if (capability.robustness.isEmpty()) {
-        hasEmptyRobustness = true;
+  for (const auto& config : supported_configurations_) {
+    for (const auto& capability : config.video_capabilities) {
+      has_video_capabilities = true;
+      if (capability.robustness.IsEmpty()) {
+        has_empty_robustness = true;
         break;
       }
     }
 
-    if (hasEmptyRobustness)
+    if (has_empty_robustness)
       break;
   }
 
-  if (hasVideoCapabilities) {
+  if (has_video_capabilities) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, emptyRobustnessHistogram,
+        EnumerationHistogram, empty_robustness_histogram,
         new EnumerationHistogram(
             "Media.EME.Widevine.VideoCapability.HasEmptyRobustness", 2));
-    emptyRobustnessHistogram.count(hasEmptyRobustness);
+    empty_robustness_histogram.Count(has_empty_robustness);
   }
 
-  if (hasEmptyRobustness) {
-    m_resolver->getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, WarningMessageLevel,
+  if (has_empty_robustness) {
+    resolver_->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
         "It is recommended that a robustness level be specified. Not "
         "specifying the robustness level could result in unexpected behavior, "
         "potentially including failure to play."));
@@ -260,14 +260,14 @@ void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {
 }  // namespace
 
 ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     Navigator& navigator,
-    const String& keySystem,
-    const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations) {
+    const String& key_system,
+    const HeapVector<MediaKeySystemConfiguration>& supported_configurations) {
   DVLOG(3) << __func__;
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  Document* document = toDocument(executionContext);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  Document* document = ToDocument(execution_context);
 
   // From https://w3c.github.io/encrypted-media/#common-key-systems
   // All user agents MUST support the common key systems described in this
@@ -276,13 +276,13 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   //                (unencrypted) key(s) to decrypt the source.
   //
   // Do not check settings for Clear Key.
-  if (keySystem != "org.w3.clearkey") {
+  if (key_system != "org.w3.clearkey") {
     // For other key systems, check settings.
-    if (!document->settings() ||
-        !document->settings()->getEncryptedMediaEnabled()) {
-      return ScriptPromise::rejectWithDOMException(
-          scriptState,
-          DOMException::create(NotSupportedError, "Unsupported keySystem"));
+    if (!document->GetSettings() ||
+        !document->GetSettings()->GetEncryptedMediaEnabled()) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(kNotSupportedError, "Unsupported keySystem"));
     }
   }
 
@@ -290,29 +290,29 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // When this method is invoked, the user agent must run the following steps:
   // 1. If keySystem is the empty string, return a promise rejected with a
   //    newly created TypeError.
-  if (keySystem.isEmpty()) {
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(scriptState->isolate(),
+  if (key_system.IsEmpty()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
                                           "The keySystem parameter is empty."));
   }
 
   // 2. If supportedConfigurations is empty, return a promise rejected with
   //    a newly created TypeError.
-  if (!supportedConfigurations.size()) {
-    return ScriptPromise::reject(
-        scriptState, V8ThrowException::createTypeError(
-                         scriptState->isolate(),
-                         "The supportedConfigurations parameter is empty."));
+  if (!supported_configurations.size()) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The supportedConfigurations parameter is empty."));
   }
 
   // 3. Let document be the calling context's Document.
   //    (Done at the begining of this function.)
-  if (!document->page()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidStateError,
+  if (!document->GetPage()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
             "The context provided is not associated with a page."));
   }
 
@@ -321,16 +321,17 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
 
   // 5. Let promise be a new promise.
   MediaKeySystemAccessInitializer* initializer =
-      new MediaKeySystemAccessInitializer(scriptState, keySystem,
-                                          supportedConfigurations);
-  ScriptPromise promise = initializer->promise();
+      new MediaKeySystemAccessInitializer(script_state, key_system,
+                                          supported_configurations);
+  ScriptPromise promise = initializer->Promise();
 
   // 6. Asynchronously determine support, and if allowed, create and
   //    initialize the MediaKeySystemAccess object.
-  MediaKeysController* controller = MediaKeysController::from(document->page());
-  WebEncryptedMediaClient* mediaClient =
-      controller->encryptedMediaClient(executionContext);
-  mediaClient->requestMediaKeySystemAccess(
+  MediaKeysController* controller =
+      MediaKeysController::From(document->GetPage());
+  WebEncryptedMediaClient* media_client =
+      controller->EncryptedMediaClient(execution_context);
+  media_client->RequestMediaKeySystemAccess(
       WebEncryptedMediaRequest(initializer));
 
   // 7. Return promise.

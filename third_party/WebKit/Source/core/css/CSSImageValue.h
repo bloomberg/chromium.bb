@@ -36,75 +36,75 @@ class LayoutObject;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
-  static CSSImageValue* create(const KURL& url, StyleImage* image = 0) {
-    return create(url.getString(), url, Referrer(), image);
+  static CSSImageValue* Create(const KURL& url, StyleImage* image = 0) {
+    return Create(url.GetString(), url, Referrer(), image);
   }
-  static CSSImageValue* create(const String& rawValue,
+  static CSSImageValue* Create(const String& raw_value,
                                const KURL& url,
                                const Referrer& referrer,
                                StyleImage* image = 0) {
-    return create(AtomicString(rawValue), url, referrer, image);
+    return Create(AtomicString(raw_value), url, referrer, image);
   }
-  static CSSImageValue* create(const AtomicString& rawValue,
+  static CSSImageValue* Create(const AtomicString& raw_value,
                                const KURL& url,
                                const Referrer& referrer,
                                StyleImage* image = 0) {
-    return new CSSImageValue(rawValue, url, referrer, image);
+    return new CSSImageValue(raw_value, url, referrer, image);
   }
-  static CSSImageValue* create(const AtomicString& absoluteURL) {
-    return new CSSImageValue(absoluteURL);
+  static CSSImageValue* Create(const AtomicString& absolute_url) {
+    return new CSSImageValue(absolute_url);
   }
   ~CSSImageValue();
 
-  bool isCachePending() const { return !m_cachedImage; }
-  StyleImage* cachedImage() const {
-    DCHECK(!isCachePending());
-    return m_cachedImage.get();
+  bool IsCachePending() const { return !cached_image_; }
+  StyleImage* CachedImage() const {
+    DCHECK(!IsCachePending());
+    return cached_image_.Get();
   }
-  StyleImage* cacheImage(
+  StyleImage* CacheImage(
       const Document&,
-      CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+      CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
-  const String& url() const { return m_absoluteURL; }
+  const String& Url() const { return absolute_url_; }
 
-  const Referrer& referrer() const { return m_referrer; }
+  const Referrer& GetReferrer() const { return referrer_; }
 
-  void reResolveURL(const Document&) const;
+  void ReResolveURL(const Document&) const;
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool hasFailedOrCanceledSubresources() const;
+  bool HasFailedOrCanceledSubresources() const;
 
-  bool equals(const CSSImageValue&) const;
+  bool Equals(const CSSImageValue&) const;
 
-  bool knownToBeOpaque(const LayoutObject&) const;
+  bool KnownToBeOpaque(const LayoutObject&) const;
 
-  CSSImageValue* valueWithURLMadeAbsolute() const {
-    return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
+  CSSImageValue* ValueWithURLMadeAbsolute() const {
+    return Create(KURL(kParsedURLString, absolute_url_), cached_image_.Get());
   }
 
-  void setInitiator(const AtomicString& name) { m_initiatorName = name; }
+  void SetInitiator(const AtomicString& name) { initiator_name_ = name; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
-  void restoreCachedResourceIfNeeded(const Document&) const;
+  void RestoreCachedResourceIfNeeded(const Document&) const;
 
  private:
-  CSSImageValue(const AtomicString& rawValue,
+  CSSImageValue(const AtomicString& raw_value,
                 const KURL&,
                 const Referrer&,
                 StyleImage*);
-  CSSImageValue(const AtomicString& absoluteURL);
+  CSSImageValue(const AtomicString& absolute_url);
 
-  AtomicString m_relativeURL;
-  Referrer m_referrer;
-  AtomicString m_initiatorName;
+  AtomicString relative_url_;
+  Referrer referrer_;
+  AtomicString initiator_name_;
 
   // Cached image data.
-  mutable AtomicString m_absoluteURL;
-  mutable Member<StyleImage> m_cachedImage;
+  mutable AtomicString absolute_url_;
+  mutable Member<StyleImage> cached_image_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, isImageValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, IsImageValue());
 
 }  // namespace blink
 

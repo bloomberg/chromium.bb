@@ -35,67 +35,67 @@
 namespace blink {
 
 TEST(DOMImplementationTest, TextMIMEType) {
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("text/plain"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("text/javascript"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("TEXT/JavaScript"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/json"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/jSON"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/json;foo=2"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/json  "));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/+json"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType(
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("text/plain"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("text/javascript"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("TEXT/JavaScript"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/jSON"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json;foo=2"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json  "));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/+json"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType(
       "application/x-javascript-like+json;a=2;c=4"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/javascript"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("Application/Javascript"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/javascript"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("Application/Javascript"));
   EXPECT_TRUE(
-      DOMImplementation::isTextMIMEType("application/x-custom+json;b=3"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/x-custom+json"));
+      DOMImplementation::IsTextMIMEType("application/x-custom+json;b=3"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/x-custom+json"));
   // Outside of RFC-2045 grammar, but robustly accept/allow.
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/x-what+json;"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/json;"));
-  EXPECT_TRUE(DOMImplementation::isTextMIMEType("application/json "));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/x-what+json;"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json;"));
+  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json "));
 
   EXPECT_FALSE(
-      DOMImplementation::isTextMIMEType("application/x-custom;a=a+json"));
+      DOMImplementation::IsTextMIMEType("application/x-custom;a=a+json"));
   EXPECT_FALSE(
-      DOMImplementation::isTextMIMEType("application/x-custom;a=a+json ;"));
+      DOMImplementation::IsTextMIMEType("application/x-custom;a=a+json ;"));
   EXPECT_FALSE(
-      DOMImplementation::isTextMIMEType("application/x-custom+jsonsoup"));
+      DOMImplementation::IsTextMIMEType("application/x-custom+jsonsoup"));
   EXPECT_FALSE(
-      DOMImplementation::isTextMIMEType("application/x-custom+jsonsoup  "));
-  EXPECT_FALSE(DOMImplementation::isTextMIMEType("text/html"));
-  EXPECT_FALSE(DOMImplementation::isTextMIMEType("text/xml"));
-  EXPECT_FALSE(DOMImplementation::isTextMIMEType("text/xsl"));
+      DOMImplementation::IsTextMIMEType("application/x-custom+jsonsoup  "));
+  EXPECT_FALSE(DOMImplementation::IsTextMIMEType("text/html"));
+  EXPECT_FALSE(DOMImplementation::IsTextMIMEType("text/xml"));
+  EXPECT_FALSE(DOMImplementation::IsTextMIMEType("text/xsl"));
 }
 
 TEST(DOMImplementationTest, TextXMLType) {
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("text/xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("Text/xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("tEXt/XML"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/XML"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/x-tra+xML"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/xslt+xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/rdf+Xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("image/svg+xml"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("text/xsl"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("text/XSL"));
-  EXPECT_TRUE(DOMImplementation::isXMLMIMEType("application/x+xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("text/xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("Text/xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("tEXt/XML"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/XML"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/x-tra+xML"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/xslt+xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/rdf+Xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("image/svg+xml"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("text/xsl"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("text/XSL"));
+  EXPECT_TRUE(DOMImplementation::IsXMLMIMEType("application/x+xml"));
 
   EXPECT_FALSE(
-      DOMImplementation::isXMLMIMEType("application/x-custom;a=a+xml"));
+      DOMImplementation::IsXMLMIMEType("application/x-custom;a=a+xml"));
   EXPECT_FALSE(
-      DOMImplementation::isXMLMIMEType("application/x-custom;a=a+xml ;"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/x-custom+xml2"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/x-custom+xml2  "));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/x-custom+exml"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("text/html"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/xml;"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/xml "));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/x-what+xml;"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/x-tra+xML;a=2"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/+xML"));
-  EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/+xml"));
+      DOMImplementation::IsXMLMIMEType("application/x-custom;a=a+xml ;"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/x-custom+xml2"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/x-custom+xml2  "));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/x-custom+exml"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("text/html"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/xml;"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/xml "));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/x-what+xml;"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/x-tra+xML;a=2"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/+xML"));
+  EXPECT_FALSE(DOMImplementation::IsXMLMIMEType("application/+xml"));
 }
 
 }  // namespace blink

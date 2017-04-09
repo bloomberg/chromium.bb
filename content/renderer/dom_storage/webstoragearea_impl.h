@@ -27,15 +27,15 @@ class WebStorageAreaImpl : public blink::WebStorageArea {
 
   // See WebStorageArea.h for documentation on these functions.
   unsigned length() override;
-  blink::WebString key(unsigned index) override;
-  blink::WebString getItem(const blink::WebString& key) override;
-  void setItem(const blink::WebString& key,
+  blink::WebString Key(unsigned index) override;
+  blink::WebString GetItem(const blink::WebString& key) override;
+  void SetItem(const blink::WebString& key,
                const blink::WebString& value,
                const blink::WebURL& page_url,
                WebStorageArea::Result& result) override;
-  void removeItem(const blink::WebString& key,
+  void RemoveItem(const blink::WebString& key,
                   const blink::WebURL& page_url) override;
-  void clear(const blink::WebURL& url) override;
+  void Clear(const blink::WebURL& url) override;
 
  private:
   int connection_id_;

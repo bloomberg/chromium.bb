@@ -14,24 +14,24 @@ namespace blink {
 namespace {
 
 static PassRefPtr<ComputedStyle> CreateWhitespaceStyle(EWhiteSpace whitespace) {
-  RefPtr<ComputedStyle> style(ComputedStyle::create());
-  style->setWhiteSpace(whitespace);
-  return style.release();
+  RefPtr<ComputedStyle> style(ComputedStyle::Create());
+  style->SetWhiteSpace(whitespace);
+  return style.Release();
 }
 
 class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
  protected:
-  void SetUp() override { style_ = ComputedStyle::create(); }
+  void SetUp() override { style_ = ComputedStyle::Create(); }
 
   void SetWhiteSpace(EWhiteSpace whitespace) {
-    style_->setWhiteSpace(whitespace);
+    style_->SetWhiteSpace(whitespace);
   }
 
   const String& TestAppend(const String inputs[], int size) {
-    items_.clear();
+    items_.Clear();
     NGLayoutInlineItemsBuilder builder(&items_);
     for (int i = 0; i < size; i++)
-      builder.Append(inputs[i], style_.get());
+      builder.Append(inputs[i], style_.Get());
     text_ = builder.ToString();
     ValidateItems();
     return text_;
@@ -174,8 +174,8 @@ TEST_F(NGLayoutInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
   NGLayoutInlineItemsBuilder builder(&items_);
   RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
-  builder.Append("text ", pre_wrap.get());
-  builder.Append(" text", style_.get());
+  builder.Append("text ", pre_wrap.Get());
+  builder.Append(" text", style_.Get());
   EXPECT_EQ("text  text", builder.ToString())
       << "The whitespace in constructions like '<span style=\"white-space: "
          "pre-wrap\">text <span><span> text</span>' does not collapse.";
@@ -222,21 +222,24 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseEastAsianWidth) {
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  builder.Append("Hello ", style_.get());
-  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
-  builder.Append(" World", style_.get());
+  builder.Append("Hello ", style_.Get());
+  builder.Append(NGLayoutInlineItem::kAtomicInline,
+                 kObjectReplacementCharacter);
+  builder.Append(" World", style_.Get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
-  builder.Append("\n", style_.get());
-  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
+  builder.Append(NGLayoutInlineItem::kAtomicInline,
+                 kObjectReplacementCharacter);
+  builder.Append("\n", style_.Get());
+  builder.Append(NGLayoutInlineItem::kAtomicInline,
+                 kObjectReplacementCharacter);
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
   EXPECT_EQ(nullptr, items_[0].Style());
-  EXPECT_EQ(style_.get(), items_[1].Style());
+  EXPECT_EQ(style_.Get(), items_[1].Style());
   EXPECT_EQ(nullptr, items_[2].Style());
 }
 
@@ -248,8 +251,8 @@ TEST_F(NGLayoutInlineItemsBuilderTest, AppendEmptyString) {
 TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
   Vector<NGLayoutInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
-  RefPtr<ComputedStyle> block_style(ComputedStyle::create());
-  builder.EnterBlock(block_style.get());
+  RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
+  builder.EnterBlock(block_style.Get());
   builder.ExitBlock();
 
   EXPECT_EQ("", builder.ToString());
@@ -258,11 +261,11 @@ TEST_F(NGLayoutInlineItemsBuilderTest, Empty) {
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
   Vector<NGLayoutInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
-  RefPtr<ComputedStyle> block_style(ComputedStyle::create());
-  block_style->setUnicodeBidi(UnicodeBidi::kBidiOverride);
-  block_style->setDirection(TextDirection::kRtl);
-  builder.EnterBlock(block_style.get());
-  builder.Append("Hello", style_.get());
+  RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
+  block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
+  block_style->SetDirection(TextDirection::kRtl);
+  builder.EnterBlock(block_style.Get());
+  builder.Append("Hello", style_.Get());
   builder.ExitBlock();
 
   // Expected control characters as defined in:
@@ -273,28 +276,28 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
             builder.ToString());
 }
 
-static std::unique_ptr<LayoutInline> createLayoutInline(
+static std::unique_ptr<LayoutInline> CreateLayoutInline(
     void (*initialize_style)(ComputedStyle*)) {
-  RefPtr<ComputedStyle> style(ComputedStyle::create());
-  initialize_style(style.get());
-  std::unique_ptr<LayoutInline> node = WTF::makeUnique<LayoutInline>(nullptr);
-  node->setStyleInternal(std::move(style));
+  RefPtr<ComputedStyle> style(ComputedStyle::Create());
+  initialize_style(style.Get());
+  std::unique_ptr<LayoutInline> node = WTF::MakeUnique<LayoutInline>(nullptr);
+  node->SetStyleInternal(std::move(style));
   return node;
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGLayoutInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
-  builder.Append("Hello ", style_.get());
-  std::unique_ptr<LayoutInline> isolateRTL(
-      createLayoutInline([](ComputedStyle* style) {
-        style->setUnicodeBidi(UnicodeBidi::kIsolate);
-        style->setDirection(TextDirection::kRtl);
+  builder.Append("Hello ", style_.Get());
+  std::unique_ptr<LayoutInline> isolate_rtl(
+      CreateLayoutInline([](ComputedStyle* style) {
+        style->SetUnicodeBidi(UnicodeBidi::kIsolate);
+        style->SetDirection(TextDirection::kRtl);
       }));
-  builder.EnterInline(isolateRTL.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
-  builder.ExitInline(isolateRTL.get());
-  builder.Append(" World", style_.get());
+  builder.EnterInline(isolate_rtl.get());
+  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.Get());
+  builder.ExitInline(isolate_rtl.get());
+  builder.Append(" World", style_.Get());
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
@@ -309,16 +312,16 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
 TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGLayoutInlineItem> items;
   NGLayoutInlineItemsBuilder builder(&items);
-  builder.Append("Hello ", style_.get());
-  std::unique_ptr<LayoutInline> isolateOverrideRTL(
-      createLayoutInline([](ComputedStyle* style) {
-        style->setUnicodeBidi(UnicodeBidi::kIsolateOverride);
-        style->setDirection(TextDirection::kRtl);
+  builder.Append("Hello ", style_.Get());
+  std::unique_ptr<LayoutInline> isolate_override_rtl(
+      CreateLayoutInline([](ComputedStyle* style) {
+        style->SetUnicodeBidi(UnicodeBidi::kIsolateOverride);
+        style->SetDirection(TextDirection::kRtl);
       }));
-  builder.EnterInline(isolateOverrideRTL.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
-  builder.ExitInline(isolateOverrideRTL.get());
-  builder.Append(" World", style_.get());
+  builder.EnterInline(isolate_override_rtl.get());
+  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.Get());
+  builder.ExitInline(isolate_override_rtl.get());
+  builder.Append(" World", style_.Get());
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table

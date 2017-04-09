@@ -12,75 +12,75 @@ namespace blink {
 
 namespace {
 
-bool isSelfPositionKeyword(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<
+bool IsSelfPositionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<
       CSSValueStart, CSSValueEnd, CSSValueCenter, CSSValueSelfStart,
       CSSValueSelfEnd, CSSValueFlexStart, CSSValueFlexEnd, CSSValueLeft,
       CSSValueRight>(id);
 }
 
-CSSIdentifierValue* consumeSelfPositionKeyword(CSSParserTokenRange& range) {
-  return isSelfPositionKeyword(range.peek().id())
-             ? CSSPropertyParserHelpers::consumeIdent(range)
+CSSIdentifierValue* ConsumeSelfPositionKeyword(CSSParserTokenRange& range) {
+  return IsSelfPositionKeyword(range.Peek().Id())
+             ? CSSPropertyParserHelpers::ConsumeIdent(range)
              : nullptr;
 }
 
-bool isAutoOrNormalOrStretch(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<CSSValueAuto, CSSValueNormal,
+bool IsAutoOrNormalOrStretch(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<CSSValueAuto, CSSValueNormal,
                                                 CSSValueStretch>(id);
 }
 
-bool isContentDistributionKeyword(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<
+bool IsContentDistributionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<
       CSSValueSpaceBetween, CSSValueSpaceAround, CSSValueSpaceEvenly,
       CSSValueStretch>(id);
 }
 
-bool isContentPositionKeyword(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<
+bool IsContentPositionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<
       CSSValueStart, CSSValueEnd, CSSValueCenter, CSSValueFlexStart,
       CSSValueFlexEnd, CSSValueLeft, CSSValueRight>(id);
 }
 
-bool isOverflowKeyword(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<CSSValueUnsafe, CSSValueSafe>(
+bool IsOverflowKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<CSSValueUnsafe, CSSValueSafe>(
       id);
 }
 
-bool isBaselineKeyword(CSSValueID id) {
-  return CSSPropertyParserHelpers::identMatches<CSSValueFirst, CSSValueLast,
+bool IsBaselineKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<CSSValueFirst, CSSValueLast,
                                                 CSSValueBaseline>(id);
 }
 
-CSSValueID getBaselineKeyword(CSSValue& value) {
-  if (!value.isValuePair()) {
-    DCHECK(toCSSIdentifierValue(value).getValueID() == CSSValueBaseline);
+CSSValueID GetBaselineKeyword(CSSValue& value) {
+  if (!value.IsValuePair()) {
+    DCHECK(ToCSSIdentifierValue(value).GetValueID() == CSSValueBaseline);
     return CSSValueBaseline;
   }
 
-  DCHECK(toCSSIdentifierValue(toCSSValuePair(value).second()).getValueID() ==
+  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).Second()).GetValueID() ==
          CSSValueBaseline);
-  if (toCSSIdentifierValue(toCSSValuePair(value).first()).getValueID() ==
+  if (ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
       CSSValueLast) {
     return CSSValueLastBaseline;
   }
-  DCHECK(toCSSIdentifierValue(toCSSValuePair(value).first()).getValueID() ==
+  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
          CSSValueFirst);
   return CSSValueFirstBaseline;
 }
 
-CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (CSSPropertyParserHelpers::identMatches<CSSValueBaseline>(id))
-    return CSSPropertyParserHelpers::consumeIdent(range);
+CSSValue* ConsumeBaselineKeyword(CSSParserTokenRange& range) {
+  CSSValueID id = range.Peek().Id();
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueBaseline>(id))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   if (CSSIdentifierValue* preference =
-          CSSPropertyParserHelpers::consumeIdent<CSSValueFirst, CSSValueLast>(
+          CSSPropertyParserHelpers::ConsumeIdent<CSSValueFirst, CSSValueLast>(
               range)) {
-    if (range.peek().id() == CSSValueBaseline) {
-      return CSSValuePair::create(preference,
-                                  CSSPropertyParserHelpers::consumeIdent(range),
-                                  CSSValuePair::DropIdenticalValues);
+    if (range.Peek().Id() == CSSValueBaseline) {
+      return CSSValuePair::Create(preference,
+                                  CSSPropertyParserHelpers::ConsumeIdent(range),
+                                  CSSValuePair::kDropIdenticalValues);
     }
   }
   return nullptr;
@@ -88,84 +88,84 @@ CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
 
 }  // namespace
 
-CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
+CSSValue* CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (isAutoOrNormalOrStretch(id))
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  CSSValueID id = range.Peek().Id();
+  if (IsAutoOrNormalOrStretch(id))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  if (isBaselineKeyword(id))
-    return consumeBaselineKeyword(range);
+  if (IsBaselineKeyword(id))
+    return ConsumeBaselineKeyword(range);
 
-  CSSIdentifierValue* overflowPosition =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueUnsafe, CSSValueSafe>(
+  CSSIdentifierValue* overflow_position =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnsafe, CSSValueSafe>(
           range);
-  CSSIdentifierValue* selfPosition = consumeSelfPositionKeyword(range);
-  if (!selfPosition)
+  CSSIdentifierValue* self_position = ConsumeSelfPositionKeyword(range);
+  if (!self_position)
     return nullptr;
-  if (!overflowPosition) {
-    overflowPosition =
-        CSSPropertyParserHelpers::consumeIdent<CSSValueUnsafe, CSSValueSafe>(
+  if (!overflow_position) {
+    overflow_position =
+        CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnsafe, CSSValueSafe>(
             range);
   }
-  if (overflowPosition) {
-    return CSSValuePair::create(selfPosition, overflowPosition,
-                                CSSValuePair::DropIdenticalValues);
+  if (overflow_position) {
+    return CSSValuePair::Create(self_position, overflow_position,
+                                CSSValuePair::kDropIdenticalValues);
   }
-  return selfPosition;
+  return self_position;
 }
 
-CSSValue* CSSPropertyAlignmentUtils::consumeSimplifiedItemPosition(
+CSSValue* CSSPropertyAlignmentUtils::ConsumeSimplifiedItemPosition(
     CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (isAutoOrNormalOrStretch(id))
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  CSSValueID id = range.Peek().Id();
+  if (IsAutoOrNormalOrStretch(id))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  if (isBaselineKeyword(id))
-    return consumeBaselineKeyword(range);
+  if (IsBaselineKeyword(id))
+    return ConsumeBaselineKeyword(range);
 
-  return consumeSelfPositionKeyword(range);
+  return ConsumeSelfPositionKeyword(range);
 }
 
-CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
+CSSValue* CSSPropertyAlignmentUtils::ConsumeContentDistributionOverflowPosition(
     CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (CSSPropertyParserHelpers::identMatches<CSSValueNormal>(id)) {
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
+  CSSValueID id = range.Peek().Id();
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal>(id)) {
+    return CSSContentDistributionValue::Create(
+        CSSValueInvalid, range.ConsumeIncludingWhitespace().Id(),
         CSSValueInvalid);
   }
 
-  if (isBaselineKeyword(id)) {
-    CSSValue* baseline = consumeBaselineKeyword(range);
+  if (IsBaselineKeyword(id)) {
+    CSSValue* baseline = ConsumeBaselineKeyword(range);
     if (!baseline)
       return nullptr;
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, getBaselineKeyword(*baseline), CSSValueInvalid);
+    return CSSContentDistributionValue::Create(
+        CSSValueInvalid, GetBaselineKeyword(*baseline), CSSValueInvalid);
   }
 
   CSSValueID distribution = CSSValueInvalid;
   CSSValueID position = CSSValueInvalid;
   CSSValueID overflow = CSSValueInvalid;
   do {
-    if (isContentDistributionKeyword(id)) {
+    if (IsContentDistributionKeyword(id)) {
       if (distribution != CSSValueInvalid)
         return nullptr;
       distribution = id;
-    } else if (isContentPositionKeyword(id)) {
+    } else if (IsContentPositionKeyword(id)) {
       if (position != CSSValueInvalid)
         return nullptr;
       position = id;
-    } else if (isOverflowKeyword(id)) {
+    } else if (IsOverflowKeyword(id)) {
       if (overflow != CSSValueInvalid)
         return nullptr;
       overflow = id;
     } else {
       return nullptr;
     }
-    range.consumeIncludingWhitespace();
-    id = range.peek().id();
-  } while (!range.atEnd());
+    range.ConsumeIncludingWhitespace();
+    id = range.Peek().Id();
+  } while (!range.AtEnd());
 
   // The grammar states that we should have at least <content-distribution> or
   // <content-position>.
@@ -177,30 +177,30 @@ CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
   if (overflow != CSSValueInvalid && position == CSSValueInvalid)
     return nullptr;
 
-  return CSSContentDistributionValue::create(distribution, position, overflow);
+  return CSSContentDistributionValue::Create(distribution, position, overflow);
 }
 
-CSSValue* CSSPropertyAlignmentUtils::consumeSimplifiedContentPosition(
+CSSValue* CSSPropertyAlignmentUtils::ConsumeSimplifiedContentPosition(
     CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (CSSPropertyParserHelpers::identMatches<CSSValueNormal>(id) ||
-      isContentPositionKeyword(id)) {
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
+  CSSValueID id = range.Peek().Id();
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal>(id) ||
+      IsContentPositionKeyword(id)) {
+    return CSSContentDistributionValue::Create(
+        CSSValueInvalid, range.ConsumeIncludingWhitespace().Id(),
         CSSValueInvalid);
   }
 
-  if (isBaselineKeyword(id)) {
-    CSSValue* baseline = consumeBaselineKeyword(range);
+  if (IsBaselineKeyword(id)) {
+    CSSValue* baseline = ConsumeBaselineKeyword(range);
     if (!baseline)
       return nullptr;
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, getBaselineKeyword(*baseline), CSSValueInvalid);
+    return CSSContentDistributionValue::Create(
+        CSSValueInvalid, GetBaselineKeyword(*baseline), CSSValueInvalid);
   }
 
-  if (isContentDistributionKeyword(id)) {
-    return CSSContentDistributionValue::create(
-        range.consumeIncludingWhitespace().id(), CSSValueInvalid,
+  if (IsContentDistributionKeyword(id)) {
+    return CSSContentDistributionValue::Create(
+        range.ConsumeIncludingWhitespace().Id(), CSSValueInvalid,
         CSSValueInvalid);
   }
   return nullptr;

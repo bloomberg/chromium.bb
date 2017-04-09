@@ -45,199 +45,203 @@
 namespace blink {
 
 DateTimeChooserImpl::DateTimeChooserImpl(
-    ChromeClientImpl* chromeClient,
+    ChromeClientImpl* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters)
-    : m_chromeClient(chromeClient),
-      m_client(client),
-      m_popup(0),
-      m_parameters(parameters),
-      m_locale(Locale::create(parameters.locale)) {
+    : chrome_client_(chrome_client),
+      client_(client),
+      popup_(0),
+      parameters_(parameters),
+      locale_(Locale::Create(parameters.locale)) {
   DCHECK(RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
-  DCHECK(m_chromeClient);
-  DCHECK(m_client);
-  m_popup = m_chromeClient->openPagePopup(this);
+  DCHECK(chrome_client_);
+  DCHECK(client_);
+  popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-DateTimeChooserImpl* DateTimeChooserImpl::create(
-    ChromeClientImpl* chromeClient,
+DateTimeChooserImpl* DateTimeChooserImpl::Create(
+    ChromeClientImpl* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
-  return new DateTimeChooserImpl(chromeClient, client, parameters);
+  return new DateTimeChooserImpl(chrome_client, client, parameters);
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl() {}
 
 DEFINE_TRACE(DateTimeChooserImpl) {
-  visitor->trace(m_chromeClient);
-  visitor->trace(m_client);
-  DateTimeChooser::trace(visitor);
+  visitor->Trace(chrome_client_);
+  visitor->Trace(client_);
+  DateTimeChooser::Trace(visitor);
 }
 
-void DateTimeChooserImpl::endChooser() {
-  if (!m_popup)
+void DateTimeChooserImpl::EndChooser() {
+  if (!popup_)
     return;
-  m_chromeClient->closePagePopup(m_popup);
+  chrome_client_->ClosePagePopup(popup_);
 }
 
-AXObject* DateTimeChooserImpl::rootAXObject() {
-  return m_popup ? m_popup->rootAXObject() : 0;
+AXObject* DateTimeChooserImpl::RootAXObject() {
+  return popup_ ? popup_->RootAXObject() : 0;
 }
 
-static String valueToDateTimeString(double value, AtomicString type) {
+static String ValueToDateTimeString(double value, AtomicString type) {
   DateComponents components;
   if (type == InputTypeNames::date)
-    components.setMillisecondsSinceEpochForDate(value);
+    components.SetMillisecondsSinceEpochForDate(value);
   else if (type == InputTypeNames::datetime_local)
-    components.setMillisecondsSinceEpochForDateTimeLocal(value);
+    components.SetMillisecondsSinceEpochForDateTimeLocal(value);
   else if (type == InputTypeNames::month)
-    components.setMonthsSinceEpoch(value);
+    components.SetMonthsSinceEpoch(value);
   else if (type == InputTypeNames::time)
-    components.setMillisecondsSinceMidnight(value);
+    components.SetMillisecondsSinceMidnight(value);
   else if (type == InputTypeNames::week)
-    components.setMillisecondsSinceEpochForWeek(value);
+    components.SetMillisecondsSinceEpochForWeek(value);
   else
     NOTREACHED();
-  return components.getType() == DateComponents::Invalid
+  return components.GetType() == DateComponents::kInvalid
              ? String()
-             : components.toString();
+             : components.ToString();
 }
 
-void DateTimeChooserImpl::writeDocument(SharedBuffer* data) {
-  String stepString = String::number(m_parameters.step);
-  String stepBaseString = String::number(m_parameters.stepBase, 11);
-  String todayLabelString;
-  String otherDateLabelString;
-  if (m_parameters.type == InputTypeNames::month) {
-    todayLabelString =
-        locale().queryString(WebLocalizedString::ThisMonthButtonLabel);
-    otherDateLabelString =
-        locale().queryString(WebLocalizedString::OtherMonthLabel);
-  } else if (m_parameters.type == InputTypeNames::week) {
-    todayLabelString =
-        locale().queryString(WebLocalizedString::ThisWeekButtonLabel);
-    otherDateLabelString =
-        locale().queryString(WebLocalizedString::OtherWeekLabel);
+void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
+  String step_string = String::Number(parameters_.step);
+  String step_base_string = String::Number(parameters_.step_base, 11);
+  String today_label_string;
+  String other_date_label_string;
+  if (parameters_.type == InputTypeNames::month) {
+    today_label_string =
+        GetLocale().QueryString(WebLocalizedString::kThisMonthButtonLabel);
+    other_date_label_string =
+        GetLocale().QueryString(WebLocalizedString::kOtherMonthLabel);
+  } else if (parameters_.type == InputTypeNames::week) {
+    today_label_string =
+        GetLocale().QueryString(WebLocalizedString::kThisWeekButtonLabel);
+    other_date_label_string =
+        GetLocale().QueryString(WebLocalizedString::kOtherWeekLabel);
   } else {
-    todayLabelString = locale().queryString(WebLocalizedString::CalendarToday);
-    otherDateLabelString =
-        locale().queryString(WebLocalizedString::OtherDateLabel);
+    today_label_string =
+        GetLocale().QueryString(WebLocalizedString::kCalendarToday);
+    other_date_label_string =
+        GetLocale().QueryString(WebLocalizedString::kOtherDateLabel);
   }
 
-  addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->append(Platform::current()->loadResource("pickerCommon.css"));
-  data->append(Platform::current()->loadResource("pickerButton.css"));
-  data->append(Platform::current()->loadResource("suggestionPicker.css"));
-  data->append(Platform::current()->loadResource("calendarPicker.css"));
-  addString(
+  AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+  data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
+  data->Append(Platform::Current()->LoadResource("pickerButton.css"));
+  data->Append(Platform::Current()->LoadResource("suggestionPicker.css"));
+  data->Append(Platform::Current()->LoadResource("calendarPicker.css"));
+  AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
-  addProperty("anchorRectInScreen", m_parameters.anchorRectInScreen, data);
-  float scaleFactor = m_chromeClient->windowToViewportScalar(1.0f);
-  addProperty("zoomFactor", zoomFactor() / scaleFactor, data);
-  addProperty("min",
-              valueToDateTimeString(m_parameters.minimum, m_parameters.type),
+  AddProperty("anchorRectInScreen", parameters_.anchor_rect_in_screen, data);
+  float scale_factor = chrome_client_->WindowToViewportScalar(1.0f);
+  AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
+  AddProperty("min",
+              ValueToDateTimeString(parameters_.minimum, parameters_.type),
               data);
-  addProperty("max",
-              valueToDateTimeString(m_parameters.maximum, m_parameters.type),
+  AddProperty("max",
+              ValueToDateTimeString(parameters_.maximum, parameters_.type),
               data);
-  addProperty("step", stepString, data);
-  addProperty("stepBase", stepBaseString, data);
-  addProperty("required", m_parameters.required, data);
-  addProperty(
-      "currentValue",
-      valueToDateTimeString(m_parameters.doubleValue, m_parameters.type), data);
-  addProperty("locale", m_parameters.locale.getString(), data);
-  addProperty("todayLabel", todayLabelString, data);
-  addProperty("clearLabel",
-              locale().queryString(WebLocalizedString::CalendarClear), data);
-  addProperty("weekLabel",
-              locale().queryString(WebLocalizedString::WeekNumberLabel), data);
-  addProperty(
+  AddProperty("step", step_string, data);
+  AddProperty("stepBase", step_base_string, data);
+  AddProperty("required", parameters_.required, data);
+  AddProperty("currentValue",
+              ValueToDateTimeString(parameters_.double_value, parameters_.type),
+              data);
+  AddProperty("locale", parameters_.locale.GetString(), data);
+  AddProperty("todayLabel", today_label_string, data);
+  AddProperty("clearLabel",
+              GetLocale().QueryString(WebLocalizedString::kCalendarClear),
+              data);
+  AddProperty("weekLabel",
+              GetLocale().QueryString(WebLocalizedString::kWeekNumberLabel),
+              data);
+  AddProperty(
       "axShowMonthSelector",
-      locale().queryString(WebLocalizedString::AXCalendarShowMonthSelector),
+      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowMonthSelector),
       data);
-  addProperty("axShowNextMonth",
-              locale().queryString(WebLocalizedString::AXCalendarShowNextMonth),
-              data);
-  addProperty(
+  AddProperty(
+      "axShowNextMonth",
+      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowNextMonth),
+      data);
+  AddProperty(
       "axShowPreviousMonth",
-      locale().queryString(WebLocalizedString::AXCalendarShowPreviousMonth),
+      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowPreviousMonth),
       data);
-  addProperty("weekStartDay", m_locale->firstDayOfWeek(), data);
-  addProperty("shortMonthLabels", m_locale->shortMonthLabels(), data);
-  addProperty("dayLabels", m_locale->weekDayShortLabels(), data);
-  addProperty("isLocaleRTL", m_locale->isRTL(), data);
-  addProperty("isRTL", m_parameters.isAnchorElementRTL, data);
-  addProperty("mode", m_parameters.type.getString(), data);
-  if (m_parameters.suggestions.size()) {
-    Vector<String> suggestionValues;
-    Vector<String> localizedSuggestionValues;
-    Vector<String> suggestionLabels;
-    for (unsigned i = 0; i < m_parameters.suggestions.size(); i++) {
-      suggestionValues.push_back(valueToDateTimeString(
-          m_parameters.suggestions[i].value, m_parameters.type));
-      localizedSuggestionValues.push_back(
-          m_parameters.suggestions[i].localizedValue);
-      suggestionLabels.push_back(m_parameters.suggestions[i].label);
+  AddProperty("weekStartDay", locale_->FirstDayOfWeek(), data);
+  AddProperty("shortMonthLabels", locale_->ShortMonthLabels(), data);
+  AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
+  AddProperty("isLocaleRTL", locale_->IsRTL(), data);
+  AddProperty("isRTL", parameters_.is_anchor_element_rtl, data);
+  AddProperty("mode", parameters_.type.GetString(), data);
+  if (parameters_.suggestions.size()) {
+    Vector<String> suggestion_values;
+    Vector<String> localized_suggestion_values;
+    Vector<String> suggestion_labels;
+    for (unsigned i = 0; i < parameters_.suggestions.size(); i++) {
+      suggestion_values.push_back(ValueToDateTimeString(
+          parameters_.suggestions[i].value, parameters_.type));
+      localized_suggestion_values.push_back(
+          parameters_.suggestions[i].localized_value);
+      suggestion_labels.push_back(parameters_.suggestions[i].label);
     }
-    addProperty("suggestionValues", suggestionValues, data);
-    addProperty("localizedSuggestionValues", localizedSuggestionValues, data);
-    addProperty("suggestionLabels", suggestionLabels, data);
-    addProperty("inputWidth",
-                static_cast<unsigned>(m_parameters.anchorRectInScreen.width()),
+    AddProperty("suggestionValues", suggestion_values, data);
+    AddProperty("localizedSuggestionValues", localized_suggestion_values, data);
+    AddProperty("suggestionLabels", suggestion_labels, data);
+    AddProperty(
+        "inputWidth",
+        static_cast<unsigned>(parameters_.anchor_rect_in_screen.Width()), data);
+    AddProperty(
+        "showOtherDateEntry",
+        LayoutTheme::GetTheme().SupportsCalendarPicker(parameters_.type), data);
+    AddProperty("otherDateLabel", other_date_label_string, data);
+    AddProperty("suggestionHighlightColor",
+                LayoutTheme::GetTheme()
+                    .ActiveListBoxSelectionBackgroundColor()
+                    .Serialized(),
                 data);
-    addProperty("showOtherDateEntry",
-                LayoutTheme::theme().supportsCalendarPicker(m_parameters.type),
-                data);
-    addProperty("otherDateLabel", otherDateLabelString, data);
-    addProperty("suggestionHighlightColor",
-                LayoutTheme::theme()
-                    .activeListBoxSelectionBackgroundColor()
-                    .serialized(),
-                data);
-    addProperty("suggestionHighlightTextColor",
-                LayoutTheme::theme()
-                    .activeListBoxSelectionForegroundColor()
-                    .serialized(),
+    AddProperty("suggestionHighlightTextColor",
+                LayoutTheme::GetTheme()
+                    .ActiveListBoxSelectionForegroundColor()
+                    .Serialized(),
                 data);
   }
-  addString("}\n", data);
+  AddString("}\n", data);
 
-  data->append(Platform::current()->loadResource("pickerCommon.js"));
-  data->append(Platform::current()->loadResource("suggestionPicker.js"));
-  data->append(Platform::current()->loadResource("calendarPicker.js"));
-  addString("</script></body>\n", data);
+  data->Append(Platform::Current()->LoadResource("pickerCommon.js"));
+  data->Append(Platform::Current()->LoadResource("suggestionPicker.js"));
+  data->Append(Platform::Current()->LoadResource("calendarPicker.js"));
+  AddString("</script></body>\n", data);
 }
 
-Element& DateTimeChooserImpl::ownerElement() {
-  return m_client->ownerElement();
+Element& DateTimeChooserImpl::OwnerElement() {
+  return client_->OwnerElement();
 }
 
-Locale& DateTimeChooserImpl::locale() {
-  return *m_locale;
+Locale& DateTimeChooserImpl::GetLocale() {
+  return *locale_;
 }
 
-void DateTimeChooserImpl::setValueAndClosePopup(int numValue,
-                                                const String& stringValue) {
-  if (numValue >= 0)
-    setValue(stringValue);
-  endChooser();
+void DateTimeChooserImpl::SetValueAndClosePopup(int num_value,
+                                                const String& string_value) {
+  if (num_value >= 0)
+    SetValue(string_value);
+  EndChooser();
 }
 
-void DateTimeChooserImpl::setValue(const String& value) {
-  m_client->didChooseValue(value);
+void DateTimeChooserImpl::SetValue(const String& value) {
+  client_->DidChooseValue(value);
 }
 
-void DateTimeChooserImpl::closePopup() {
-  endChooser();
+void DateTimeChooserImpl::ClosePopup() {
+  EndChooser();
 }
 
-void DateTimeChooserImpl::didClosePopup() {
-  DCHECK(m_client);
-  m_popup = nullptr;
-  m_client->didEndChooser();
+void DateTimeChooserImpl::DidClosePopup() {
+  DCHECK(client_);
+  popup_ = nullptr;
+  client_->DidEndChooser();
 }
 
 }  // namespace blink

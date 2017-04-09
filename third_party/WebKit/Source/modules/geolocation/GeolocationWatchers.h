@@ -18,22 +18,22 @@ class GeolocationWatchers {
   GeolocationWatchers() {}
   DECLARE_TRACE();
 
-  bool add(int id, GeoNotifier*);
-  GeoNotifier* find(int id);
-  void remove(int id);
-  void remove(GeoNotifier*);
-  bool contains(GeoNotifier*) const;
-  void clear();
-  bool isEmpty() const;
+  bool Add(int id, GeoNotifier*);
+  GeoNotifier* Find(int id);
+  void Remove(int id);
+  void Remove(GeoNotifier*);
+  bool Contains(GeoNotifier*) const;
+  void Clear();
+  bool IsEmpty() const;
 
-  void getNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
+  void GetNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
 
  private:
   typedef HeapHashMap<int, Member<GeoNotifier>> IdToNotifierMap;
   typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
 
-  IdToNotifierMap m_idToNotifierMap;
-  NotifierToIdMap m_notifierToIdMap;
+  IdToNotifierMap id_to_notifier_map_;
+  NotifierToIdMap notifier_to_id_map_;
 };
 
 }  // namespace blink

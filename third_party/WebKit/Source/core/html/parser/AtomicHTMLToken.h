@@ -41,199 +41,199 @@ class CORE_EXPORT AtomicHTMLToken {
   WTF_MAKE_NONCOPYABLE(AtomicHTMLToken);
 
  public:
-  bool forceQuirks() const {
-    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
-    return m_doctypeData->m_forceQuirks;
+  bool ForceQuirks() const {
+    DCHECK_EQ(type_, HTMLToken::DOCTYPE);
+    return doctype_data_->force_quirks_;
   }
 
-  HTMLToken::TokenType type() const { return m_type; }
+  HTMLToken::TokenType GetType() const { return type_; }
 
-  const AtomicString& name() const {
-    DCHECK(usesName());
-    return m_name;
+  const AtomicString& GetName() const {
+    DCHECK(UsesName());
+    return name_;
   }
 
-  void setName(const AtomicString& name) {
-    DCHECK(usesName());
-    m_name = name;
+  void SetName(const AtomicString& name) {
+    DCHECK(UsesName());
+    name_ = name;
   }
 
-  bool selfClosing() const {
-    DCHECK(m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag);
-    return m_selfClosing;
+  bool SelfClosing() const {
+    DCHECK(type_ == HTMLToken::kStartTag || type_ == HTMLToken::kEndTag);
+    return self_closing_;
   }
 
-  Attribute* getAttributeItem(const QualifiedName& attributeName) {
-    DCHECK(usesAttributes());
-    return findAttributeInVector(m_attributes, attributeName);
+  Attribute* GetAttributeItem(const QualifiedName& attribute_name) {
+    DCHECK(UsesAttributes());
+    return FindAttributeInVector(attributes_, attribute_name);
   }
 
-  Vector<Attribute>& attributes() {
-    DCHECK(usesAttributes());
-    return m_attributes;
+  Vector<Attribute>& Attributes() {
+    DCHECK(UsesAttributes());
+    return attributes_;
   }
 
-  const Vector<Attribute>& attributes() const {
-    DCHECK(usesAttributes());
-    return m_attributes;
+  const Vector<Attribute>& Attributes() const {
+    DCHECK(UsesAttributes());
+    return attributes_;
   }
 
-  const String& characters() const {
-    DCHECK_EQ(m_type, HTMLToken::Character);
-    return m_data;
+  const String& Characters() const {
+    DCHECK_EQ(type_, HTMLToken::kCharacter);
+    return data_;
   }
 
-  const String& comment() const {
-    DCHECK_EQ(m_type, HTMLToken::Comment);
-    return m_data;
+  const String& Comment() const {
+    DCHECK_EQ(type_, HTMLToken::kComment);
+    return data_;
   }
 
   // FIXME: Distinguish between a missing public identifer and an empty one.
-  Vector<UChar>& publicIdentifier() const {
-    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
-    return m_doctypeData->m_publicIdentifier;
+  Vector<UChar>& PublicIdentifier() const {
+    DCHECK_EQ(type_, HTMLToken::DOCTYPE);
+    return doctype_data_->public_identifier_;
   }
 
   // FIXME: Distinguish between a missing system identifer and an empty one.
-  Vector<UChar>& systemIdentifier() const {
-    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
-    return m_doctypeData->m_systemIdentifier;
+  Vector<UChar>& SystemIdentifier() const {
+    DCHECK_EQ(type_, HTMLToken::DOCTYPE);
+    return doctype_data_->system_identifier_;
   }
 
-  explicit AtomicHTMLToken(HTMLToken& token) : m_type(token.type()) {
-    switch (m_type) {
-      case HTMLToken::Uninitialized:
+  explicit AtomicHTMLToken(HTMLToken& token) : type_(token.GetType()) {
+    switch (type_) {
+      case HTMLToken::kUninitialized:
         NOTREACHED();
         break;
       case HTMLToken::DOCTYPE:
-        m_name = AtomicString(token.name());
-        m_doctypeData = token.releaseDoctypeData();
+        name_ = AtomicString(token.GetName());
+        doctype_data_ = token.ReleaseDoctypeData();
         break;
-      case HTMLToken::EndOfFile:
+      case HTMLToken::kEndOfFile:
         break;
-      case HTMLToken::StartTag:
-      case HTMLToken::EndTag: {
-        m_selfClosing = token.selfClosing();
-        if (StringImpl* tagName =
-                lookupHTMLTag(token.name().data(), token.name().size()))
-          m_name = AtomicString(tagName);
+      case HTMLToken::kStartTag:
+      case HTMLToken::kEndTag: {
+        self_closing_ = token.SelfClosing();
+        if (StringImpl* tag_name =
+                lookupHTMLTag(token.GetName().Data(), token.GetName().size()))
+          name_ = AtomicString(tag_name);
         else
-          m_name = AtomicString(token.name());
-        initializeAttributes(token.attributes());
+          name_ = AtomicString(token.GetName());
+        InitializeAttributes(token.Attributes());
         break;
       }
-      case HTMLToken::Character:
-      case HTMLToken::Comment:
-        if (token.isAll8BitData())
-          m_data = String::make8BitFrom16BitSource(token.data());
+      case HTMLToken::kCharacter:
+      case HTMLToken::kComment:
+        if (token.IsAll8BitData())
+          data_ = String::Make8BitFrom16BitSource(token.Data());
         else
-          m_data = String(token.data());
+          data_ = String(token.Data());
         break;
     }
   }
 
   explicit AtomicHTMLToken(const CompactHTMLToken& token)
-      : m_type(token.type()) {
-    switch (m_type) {
-      case HTMLToken::Uninitialized:
+      : type_(token.GetType()) {
+    switch (type_) {
+      case HTMLToken::kUninitialized:
         NOTREACHED();
         break;
       case HTMLToken::DOCTYPE:
-        m_name = AtomicString(token.data());
-        m_doctypeData = WTF::makeUnique<DoctypeData>();
-        m_doctypeData->m_hasPublicIdentifier = true;
-        token.publicIdentifier().appendTo(m_doctypeData->m_publicIdentifier);
-        m_doctypeData->m_hasSystemIdentifier = true;
-        token.systemIdentifier().appendTo(m_doctypeData->m_systemIdentifier);
-        m_doctypeData->m_forceQuirks = token.doctypeForcesQuirks();
+        name_ = AtomicString(token.Data());
+        doctype_data_ = WTF::MakeUnique<DoctypeData>();
+        doctype_data_->has_public_identifier_ = true;
+        token.PublicIdentifier().AppendTo(doctype_data_->public_identifier_);
+        doctype_data_->has_system_identifier_ = true;
+        token.SystemIdentifier().AppendTo(doctype_data_->system_identifier_);
+        doctype_data_->force_quirks_ = token.DoctypeForcesQuirks();
         break;
-      case HTMLToken::EndOfFile:
+      case HTMLToken::kEndOfFile:
         break;
-      case HTMLToken::StartTag:
-        m_attributes.reserveInitialCapacity(token.attributes().size());
+      case HTMLToken::kStartTag:
+        attributes_.ReserveInitialCapacity(token.Attributes().size());
         for (const CompactHTMLToken::Attribute& attribute :
-             token.attributes()) {
-          QualifiedName name(nullAtom, AtomicString(attribute.name()),
-                             nullAtom);
+             token.Attributes()) {
+          QualifiedName name(g_null_atom, AtomicString(attribute.GetName()),
+                             g_null_atom);
           // FIXME: This is N^2 for the number of attributes.
-          if (!findAttributeInVector(m_attributes, name))
-            m_attributes.push_back(
-                Attribute(name, AtomicString(attribute.value())));
+          if (!FindAttributeInVector(attributes_, name))
+            attributes_.push_back(
+                Attribute(name, AtomicString(attribute.Value())));
         }
       // Fall through!
-      case HTMLToken::EndTag:
-        m_selfClosing = token.selfClosing();
-        m_name = AtomicString(token.data());
+      case HTMLToken::kEndTag:
+        self_closing_ = token.SelfClosing();
+        name_ = AtomicString(token.Data());
         break;
-      case HTMLToken::Character:
-      case HTMLToken::Comment:
-        m_data = token.data();
+      case HTMLToken::kCharacter:
+      case HTMLToken::kComment:
+        data_ = token.Data();
         break;
     }
   }
 
   explicit AtomicHTMLToken(HTMLToken::TokenType type)
-      : m_type(type), m_selfClosing(false) {}
+      : type_(type), self_closing_(false) {}
 
   AtomicHTMLToken(HTMLToken::TokenType type,
                   const AtomicString& name,
                   const Vector<Attribute>& attributes = Vector<Attribute>())
-      : m_type(type),
-        m_name(name),
-        m_selfClosing(false),
-        m_attributes(attributes) {
-    DCHECK(usesName());
+      : type_(type),
+        name_(name),
+        self_closing_(false),
+        attributes_(attributes) {
+    DCHECK(UsesName());
   }
 
 #ifndef NDEBUG
-  void show() const;
+  void Show() const;
 #endif
 
  private:
-  HTMLToken::TokenType m_type;
+  HTMLToken::TokenType type_;
 
-  void initializeAttributes(const HTMLToken::AttributeList& attributes);
-  QualifiedName nameForAttribute(const HTMLToken::Attribute&) const;
+  void InitializeAttributes(const HTMLToken::AttributeList& attributes);
+  QualifiedName NameForAttribute(const HTMLToken::Attribute&) const;
 
-  bool usesName() const;
+  bool UsesName() const;
 
-  bool usesAttributes() const;
+  bool UsesAttributes() const;
 
   // "name" for DOCTYPE, StartTag, and EndTag
-  AtomicString m_name;
+  AtomicString name_;
 
   // "data" for Comment, "characters" for Character
-  String m_data;
+  String data_;
 
   // For DOCTYPE
-  std::unique_ptr<DoctypeData> m_doctypeData;
+  std::unique_ptr<DoctypeData> doctype_data_;
 
   // For StartTag and EndTag
-  bool m_selfClosing;
+  bool self_closing_;
 
-  Vector<Attribute> m_attributes;
+  Vector<Attribute> attributes_;
 };
 
-inline void AtomicHTMLToken::initializeAttributes(
+inline void AtomicHTMLToken::InitializeAttributes(
     const HTMLToken::AttributeList& attributes) {
   size_t size = attributes.size();
   if (!size)
     return;
 
-  m_attributes.clear();
-  m_attributes.reserveInitialCapacity(size);
+  attributes_.Clear();
+  attributes_.ReserveInitialCapacity(size);
   for (const auto& attribute : attributes) {
-    if (attribute.nameAsVector().isEmpty())
+    if (attribute.NameAsVector().IsEmpty())
       continue;
 
-    attribute.nameRange().checkValid();
-    attribute.valueRange().checkValid();
+    attribute.NameRange().CheckValid();
+    attribute.ValueRange().CheckValid();
 
-    AtomicString value(attribute.value8BitIfNecessary());
-    const QualifiedName& name = nameForAttribute(attribute);
+    AtomicString value(attribute.Value8BitIfNecessary());
+    const QualifiedName& name = NameForAttribute(attribute);
     // FIXME: This is N^2 for the number of attributes.
-    if (!findAttributeInVector(m_attributes, name))
-      m_attributes.push_back(Attribute(name, value));
+    if (!FindAttributeInVector(attributes_, name))
+      attributes_.push_back(Attribute(name, value));
   }
 }
 

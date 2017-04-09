@@ -24,26 +24,26 @@ class KURL;
 class CORE_EXPORT SubresourceFilter final
     : public GarbageCollectedFinalized<SubresourceFilter> {
  public:
-  static SubresourceFilter* create(
+  static SubresourceFilter* Create(
       DocumentLoader*,
       std::unique_ptr<WebDocumentSubresourceFilter>);
   ~SubresourceFilter();
 
-  bool allowLoad(const KURL& resourceUrl,
+  bool AllowLoad(const KURL& resource_url,
                  WebURLRequest::RequestContext,
                  SecurityViolationReportingPolicy);
-  bool allowWebSocketConnection(const KURL&);
+  bool AllowWebSocketConnection(const KURL&);
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_documentLoader); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(document_loader_); }
 
  private:
   SubresourceFilter(DocumentLoader*,
                     std::unique_ptr<WebDocumentSubresourceFilter>);
 
-  void reportLoad(WebDocumentSubresourceFilter::LoadPolicy);
+  void ReportLoad(WebDocumentSubresourceFilter::LoadPolicy);
 
-  Member<DocumentLoader> m_documentLoader;
-  std::unique_ptr<WebDocumentSubresourceFilter> m_subresourceFilter;
+  Member<DocumentLoader> document_loader_;
+  std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter_;
 };
 
 }  // namespace blink

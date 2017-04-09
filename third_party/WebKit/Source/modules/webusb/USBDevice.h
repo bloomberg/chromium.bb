@@ -28,10 +28,10 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBDevice* create(device::usb::blink::DeviceInfoPtr deviceInfo,
+  static USBDevice* Create(device::usb::blink::DeviceInfoPtr device_info,
                            device::usb::blink::DevicePtr device,
                            ExecutionContext* context) {
-    return new USBDevice(std::move(deviceInfo), std::move(device), context);
+    return new USBDevice(std::move(device_info), std::move(device), context);
   }
 
   explicit USBDevice(device::usb::blink::DeviceInfoPtr,
@@ -39,40 +39,40 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
                      ExecutionContext*);
   virtual ~USBDevice();
 
-  const device::usb::blink::DeviceInfo& info() const { return *m_deviceInfo; }
-  bool isInterfaceClaimed(size_t configurationIndex,
-                          size_t interfaceIndex) const;
-  size_t selectedAlternateInterface(size_t interfaceIndex) const;
+  const device::usb::blink::DeviceInfo& Info() const { return *device_info_; }
+  bool IsInterfaceClaimed(size_t configuration_index,
+                          size_t interface_index) const;
+  size_t SelectedAlternateInterface(size_t interface_index) const;
 
   // USBDevice.idl
-  uint8_t usbVersionMajor() const { return info().usb_version_major; }
-  uint8_t usbVersionMinor() const { return info().usb_version_minor; }
-  uint8_t usbVersionSubminor() const { return info().usb_version_subminor; }
-  uint8_t deviceClass() const { return info().class_code; }
-  uint8_t deviceSubclass() const { return info().subclass_code; }
-  uint8_t deviceProtocol() const { return info().protocol_code; }
-  uint16_t vendorId() const { return info().vendor_id; }
-  uint16_t productId() const { return info().product_id; }
-  uint8_t deviceVersionMajor() const { return info().device_version_major; }
-  uint8_t deviceVersionMinor() const { return info().device_version_minor; }
+  uint8_t usbVersionMajor() const { return Info().usb_version_major; }
+  uint8_t usbVersionMinor() const { return Info().usb_version_minor; }
+  uint8_t usbVersionSubminor() const { return Info().usb_version_subminor; }
+  uint8_t deviceClass() const { return Info().class_code; }
+  uint8_t deviceSubclass() const { return Info().subclass_code; }
+  uint8_t deviceProtocol() const { return Info().protocol_code; }
+  uint16_t vendorId() const { return Info().vendor_id; }
+  uint16_t productId() const { return Info().product_id; }
+  uint8_t deviceVersionMajor() const { return Info().device_version_major; }
+  uint8_t deviceVersionMinor() const { return Info().device_version_minor; }
   uint8_t deviceVersionSubminor() const {
-    return info().device_version_subminor;
+    return Info().device_version_subminor;
   }
-  String manufacturerName() const { return info().manufacturer_name; }
-  String productName() const { return info().product_name; }
-  String serialNumber() const { return info().serial_number; }
+  String manufacturerName() const { return Info().manufacturer_name; }
+  String productName() const { return Info().product_name; }
+  String serialNumber() const { return Info().serial_number; }
   USBConfiguration* configuration() const;
   HeapVector<Member<USBConfiguration>> configurations() const;
-  bool opened() const { return m_opened; }
+  bool opened() const { return opened_; }
 
   ScriptPromise open(ScriptState*);
   ScriptPromise close(ScriptState*);
-  ScriptPromise selectConfiguration(ScriptState*, uint8_t configurationValue);
-  ScriptPromise claimInterface(ScriptState*, uint8_t interfaceNumber);
-  ScriptPromise releaseInterface(ScriptState*, uint8_t interfaceNumber);
+  ScriptPromise selectConfiguration(ScriptState*, uint8_t configuration_value);
+  ScriptPromise claimInterface(ScriptState*, uint8_t interface_number);
+  ScriptPromise releaseInterface(ScriptState*, uint8_t interface_number);
   ScriptPromise selectAlternateInterface(ScriptState*,
-                                         uint8_t interfaceNumber,
-                                         uint8_t alternateSetting);
+                                         uint8_t interface_number,
+                                         uint8_t alternate_setting);
   ScriptPromise controlTransferIn(ScriptState*,
                                   const USBControlTransferParameters& setup,
                                   unsigned length);
@@ -83,98 +83,99 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
                                    const ArrayBufferOrArrayBufferView& data);
   ScriptPromise clearHalt(ScriptState*,
                           String direction,
-                          uint8_t endpointNumber);
+                          uint8_t endpoint_number);
   ScriptPromise transferIn(ScriptState*,
-                           uint8_t endpointNumber,
+                           uint8_t endpoint_number,
                            unsigned length);
   ScriptPromise transferOut(ScriptState*,
-                            uint8_t endpointNumber,
+                            uint8_t endpoint_number,
                             const ArrayBufferOrArrayBufferView& data);
   ScriptPromise isochronousTransferIn(ScriptState*,
-                                      uint8_t endpointNumber,
-                                      Vector<unsigned> packetLengths);
+                                      uint8_t endpoint_number,
+                                      Vector<unsigned> packet_lengths);
   ScriptPromise isochronousTransferOut(ScriptState*,
-                                       uint8_t endpointNumber,
+                                       uint8_t endpoint_number,
                                        const ArrayBufferOrArrayBufferView& data,
-                                       Vector<unsigned> packetLengths);
+                                       Vector<unsigned> packet_lengths);
   ScriptPromise reset(ScriptState*);
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 
  private:
-  int findConfigurationIndex(uint8_t configurationValue) const;
-  int findInterfaceIndex(uint8_t interfaceNumber) const;
-  int findAlternateIndex(size_t interfaceIndex, uint8_t alternateSetting) const;
-  bool ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
-  bool ensureDeviceConfigured(ScriptPromiseResolver*) const;
-  bool ensureInterfaceClaimed(uint8_t interfaceNumber,
+  int FindConfigurationIndex(uint8_t configuration_value) const;
+  int FindInterfaceIndex(uint8_t interface_number) const;
+  int FindAlternateIndex(size_t interface_index,
+                         uint8_t alternate_setting) const;
+  bool EnsureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
+  bool EnsureDeviceConfigured(ScriptPromiseResolver*) const;
+  bool EnsureInterfaceClaimed(uint8_t interface_number,
                               ScriptPromiseResolver*) const;
-  bool ensureEndpointAvailable(bool inTransfer,
-                               uint8_t endpointNumber,
+  bool EnsureEndpointAvailable(bool in_transfer,
+                               uint8_t endpoint_number,
                                ScriptPromiseResolver*) const;
-  bool anyInterfaceChangeInProgress() const;
-  device::usb::blink::ControlTransferParamsPtr convertControlTransferParameters(
+  bool AnyInterfaceChangeInProgress() const;
+  device::usb::blink::ControlTransferParamsPtr ConvertControlTransferParameters(
       const USBControlTransferParameters&,
       ScriptPromiseResolver*) const;
-  void setEndpointsForInterface(size_t interfaceIndex, bool set);
+  void SetEndpointsForInterface(size_t interface_index, bool set);
 
-  void asyncOpen(ScriptPromiseResolver*, device::usb::blink::OpenDeviceError);
-  void asyncClose(ScriptPromiseResolver*);
-  void onDeviceOpenedOrClosed(bool);
-  void asyncSelectConfiguration(size_t configurationIndex,
+  void AsyncOpen(ScriptPromiseResolver*, device::usb::blink::OpenDeviceError);
+  void AsyncClose(ScriptPromiseResolver*);
+  void OnDeviceOpenedOrClosed(bool);
+  void AsyncSelectConfiguration(size_t configuration_index,
                                 ScriptPromiseResolver*,
                                 bool success);
-  void onConfigurationSelected(bool success, size_t configurationIndex);
-  void asyncClaimInterface(size_t interfaceIndex,
+  void OnConfigurationSelected(bool success, size_t configuration_index);
+  void AsyncClaimInterface(size_t interface_index,
                            ScriptPromiseResolver*,
                            bool success);
-  void asyncReleaseInterface(size_t interfaceIndex,
+  void AsyncReleaseInterface(size_t interface_index,
                              ScriptPromiseResolver*,
                              bool success);
-  void onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex);
-  void asyncSelectAlternateInterface(size_t interfaceIndex,
-                                     size_t alternateIndex,
+  void OnInterfaceClaimedOrUnclaimed(bool claimed, size_t interface_index);
+  void AsyncSelectAlternateInterface(size_t interface_index,
+                                     size_t alternate_index,
                                      ScriptPromiseResolver*,
                                      bool success);
-  void asyncControlTransferIn(ScriptPromiseResolver*,
+  void AsyncControlTransferIn(ScriptPromiseResolver*,
                               device::usb::blink::TransferStatus,
                               const Optional<Vector<uint8_t>>&);
-  void asyncControlTransferOut(unsigned,
+  void AsyncControlTransferOut(unsigned,
                                ScriptPromiseResolver*,
                                device::usb::blink::TransferStatus);
-  void asyncClearHalt(ScriptPromiseResolver*, bool success);
-  void asyncTransferIn(ScriptPromiseResolver*,
+  void AsyncClearHalt(ScriptPromiseResolver*, bool success);
+  void AsyncTransferIn(ScriptPromiseResolver*,
                        device::usb::blink::TransferStatus,
                        const Optional<Vector<uint8_t>>&);
-  void asyncTransferOut(unsigned,
+  void AsyncTransferOut(unsigned,
                         ScriptPromiseResolver*,
                         device::usb::blink::TransferStatus);
-  void asyncIsochronousTransferIn(
+  void AsyncIsochronousTransferIn(
       ScriptPromiseResolver*,
       const Optional<Vector<uint8_t>>&,
       Vector<device::usb::blink::IsochronousPacketPtr>);
-  void asyncIsochronousTransferOut(
+  void AsyncIsochronousTransferOut(
       ScriptPromiseResolver*,
       Vector<device::usb::blink::IsochronousPacketPtr>);
-  void asyncReset(ScriptPromiseResolver*, bool success);
+  void AsyncReset(ScriptPromiseResolver*, bool success);
 
-  void onConnectionError();
-  bool markRequestComplete(ScriptPromiseResolver*);
+  void OnConnectionError();
+  bool MarkRequestComplete(ScriptPromiseResolver*);
 
-  device::usb::blink::DeviceInfoPtr m_deviceInfo;
-  device::usb::blink::DevicePtr m_device;
-  HeapHashSet<Member<ScriptPromiseResolver>> m_deviceRequests;
-  bool m_opened;
-  bool m_deviceStateChangeInProgress;
-  int m_configurationIndex;
-  WTF::BitVector m_claimedInterfaces;
-  WTF::BitVector m_interfaceStateChangeInProgress;
-  WTF::Vector<size_t> m_selectedAlternates;
-  WTF::BitVector m_inEndpoints;
-  WTF::BitVector m_outEndpoints;
+  device::usb::blink::DeviceInfoPtr device_info_;
+  device::usb::blink::DevicePtr device_;
+  HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
+  bool opened_;
+  bool device_state_change_in_progress_;
+  int configuration_index_;
+  WTF::BitVector claimed_interfaces_;
+  WTF::BitVector interface_state_change_in_progress_;
+  WTF::Vector<size_t> selected_alternates_;
+  WTF::BitVector in_endpoints_;
+  WTF::BitVector out_endpoints_;
 };
 
 }  // namespace blink

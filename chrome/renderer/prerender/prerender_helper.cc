@@ -25,7 +25,7 @@ void UpdateVisibilityState(content::RenderFrame* render_frame) {
   // have to do this awkward check.
   content::RenderView* render_view = render_frame->GetRenderView();
   if (render_view->GetMainRenderFrame() == render_frame) {
-    render_view->GetWebView()->setVisibilityState(
+    render_view->GetWebView()->SetVisibilityState(
         render_frame->GetVisibilityState(), false);
   }
 }

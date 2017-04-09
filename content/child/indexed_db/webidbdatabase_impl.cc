@@ -174,7 +174,7 @@ WebIDBDatabaseImpl::~WebIDBDatabaseImpl() {
   io_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
-void WebIDBDatabaseImpl::createObjectStore(long long transaction_id,
+void WebIDBDatabaseImpl::CreateObjectStore(long long transaction_id,
                                            long long object_store_id,
                                            const WebString& name,
                                            const WebIDBKeyPath& key_path,
@@ -182,27 +182,27 @@ void WebIDBDatabaseImpl::createObjectStore(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::CreateObjectStore, base::Unretained(helper_),
-                 transaction_id, object_store_id, name.utf16(),
+                 transaction_id, object_store_id, name.Utf16(),
                  IndexedDBKeyPathBuilder::Build(key_path), auto_increment));
 }
 
-void WebIDBDatabaseImpl::deleteObjectStore(long long transaction_id,
+void WebIDBDatabaseImpl::DeleteObjectStore(long long transaction_id,
                                            long long object_store_id) {
   io_runner_->PostTask(FROM_HERE, base::Bind(&IOThreadHelper::DeleteObjectStore,
                                              base::Unretained(helper_),
                                              transaction_id, object_store_id));
 }
 
-void WebIDBDatabaseImpl::renameObjectStore(long long transaction_id,
+void WebIDBDatabaseImpl::RenameObjectStore(long long transaction_id,
                                            long long object_store_id,
                                            const blink::WebString& new_name) {
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::RenameObjectStore, base::Unretained(helper_),
-                 transaction_id, object_store_id, new_name.utf16()));
+                 transaction_id, object_store_id, new_name.Utf16()));
 }
 
-void WebIDBDatabaseImpl::createTransaction(
+void WebIDBDatabaseImpl::CreateTransaction(
     long long transaction_id,
     const WebVector<long long>& object_store_ids,
     blink::WebIDBTransactionMode mode) {
@@ -214,25 +214,25 @@ void WebIDBDatabaseImpl::createTransaction(
                  mode));
 }
 
-void WebIDBDatabaseImpl::close() {
+void WebIDBDatabaseImpl::Close() {
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Close, base::Unretained(helper_)));
 }
 
-void WebIDBDatabaseImpl::versionChangeIgnored() {
+void WebIDBDatabaseImpl::VersionChangeIgnored() {
   io_runner_->PostTask(FROM_HERE,
                        base::Bind(&IOThreadHelper::VersionChangeIgnored,
                                   base::Unretained(helper_)));
 }
 
-void WebIDBDatabaseImpl::addObserver(
+void WebIDBDatabaseImpl::AddObserver(
     long long transaction_id,
     int32_t observer_id,
     bool include_transaction,
     bool no_records,
     bool values,
-    const std::bitset<blink::WebIDBOperationTypeCount>& operation_types) {
-  static_assert(blink::WebIDBOperationTypeCount < sizeof(uint16_t) * CHAR_BIT,
+    const std::bitset<blink::kWebIDBOperationTypeCount>& operation_types) {
+  static_assert(blink::kWebIDBOperationTypeCount < sizeof(uint16_t) * CHAR_BIT,
                 "WebIDBOperationType Count exceeds size of uint16_t");
   io_runner_->PostTask(
       FROM_HERE,
@@ -241,18 +241,18 @@ void WebIDBDatabaseImpl::addObserver(
                  values, operation_types.to_ulong()));
 }
 
-void WebIDBDatabaseImpl::removeObservers(
+void WebIDBDatabaseImpl::RemoveObservers(
     const WebVector<int32_t>& observer_ids_to_remove) {
   std::vector<int32_t> remove_observer_ids(
-      observer_ids_to_remove.data(),
-      observer_ids_to_remove.data() + observer_ids_to_remove.size());
+      observer_ids_to_remove.Data(),
+      observer_ids_to_remove.Data() + observer_ids_to_remove.size());
 
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::RemoveObservers,
                             base::Unretained(helper_), remove_observer_ids));
 }
 
-void WebIDBDatabaseImpl::get(long long transaction_id,
+void WebIDBDatabaseImpl::Get(long long transaction_id,
                              long long object_store_id,
                              long long index_id,
                              const WebIDBKeyRange& key_range,
@@ -270,7 +270,7 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                             key_only, base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::getAll(long long transaction_id,
+void WebIDBDatabaseImpl::GetAll(long long transaction_id,
                                 long long object_store_id,
                                 long long index_id,
                                 const WebIDBKeyRange& key_range,
@@ -290,7 +290,7 @@ void WebIDBDatabaseImpl::getAll(long long transaction_id,
                  key_only, base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::put(long long transaction_id,
+void WebIDBDatabaseImpl::Put(long long transaction_id,
                              long long object_store_id,
                              const blink::WebData& value,
                              const WebVector<WebBlobInfo>& web_blob_info,
@@ -302,9 +302,9 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
   IndexedDBKey key = IndexedDBKeyBuilder::Build(web_key);
 
   if (value.size() + key.size_estimate() > max_put_value_size_) {
-    callbacks->onError(blink::WebIDBDatabaseError(
-        blink::WebIDBDatabaseExceptionUnknownError,
-        WebString::fromUTF8(base::StringPrintf(
+    callbacks->OnError(blink::WebIDBDatabaseError(
+        blink::kWebIDBDatabaseExceptionUnknownError,
+        WebString::FromUTF8(base::StringPrintf(
             "The serialized value is too large"
             " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
             value.size(), max_put_value_size_))));
@@ -315,21 +315,21 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
       transaction_id, nullptr);
 
   auto mojo_value = indexed_db::mojom::Value::New();
-  mojo_value->bits.assign(value.data(), value.data() + value.size());
+  mojo_value->bits.assign(value.Data(), value.Data() + value.size());
   mojo_value->blob_or_file_info.reserve(web_blob_info.size());
   for (const WebBlobInfo& info : web_blob_info) {
     auto blob_info = indexed_db::mojom::BlobInfo::New();
-    if (info.isFile()) {
+    if (info.IsFile()) {
       blob_info->file = indexed_db::mojom::FileInfo::New();
-      blob_info->file->path = blink::WebStringToFilePath(info.filePath());
-      blob_info->file->name = info.fileName().utf16();
+      blob_info->file->path = blink::WebStringToFilePath(info.FilePath());
+      blob_info->file->name = info.FileName().Utf16();
       blob_info->file->last_modified =
-          base::Time::FromDoubleT(info.lastModified());
+          base::Time::FromDoubleT(info.LastModified());
     }
     blob_info->size = info.size();
-    blob_info->uuid = info.uuid().latin1();
+    blob_info->uuid = info.Uuid().Latin1();
     DCHECK(blob_info->uuid.size());
-    blob_info->mime_type = info.type().utf16();
+    blob_info->mime_type = info.GetType().Utf16();
     mojo_value->blob_or_file_info.push_back(std::move(blob_info));
   }
 
@@ -343,7 +343,7 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
                  ConvertWebIndexKeys(index_ids, index_keys)));
 }
 
-void WebIDBDatabaseImpl::setIndexKeys(
+void WebIDBDatabaseImpl::SetIndexKeys(
     long long transaction_id,
     long long object_store_id,
     const WebIDBKey& primary_key,
@@ -357,19 +357,19 @@ void WebIDBDatabaseImpl::setIndexKeys(
                  ConvertWebIndexKeys(index_ids, index_keys)));
 }
 
-void WebIDBDatabaseImpl::setIndexesReady(
+void WebIDBDatabaseImpl::SetIndexesReady(
     long long transaction_id,
     long long object_store_id,
     const WebVector<long long>& web_index_ids) {
-  std::vector<int64_t> index_ids(web_index_ids.data(),
-                                 web_index_ids.data() + web_index_ids.size());
+  std::vector<int64_t> index_ids(web_index_ids.Data(),
+                                 web_index_ids.Data() + web_index_ids.size());
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::SetIndexesReady, base::Unretained(helper_),
                  transaction_id, object_store_id, base::Passed(&index_ids)));
 }
 
-void WebIDBDatabaseImpl::openCursor(long long transaction_id,
+void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
                                     long long object_store_id,
                                     long long index_id,
                                     const WebIDBKeyRange& key_range,
@@ -390,7 +390,7 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
                  key_only, task_type, base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::count(long long transaction_id,
+void WebIDBDatabaseImpl::Count(long long transaction_id,
                                long long object_store_id,
                                long long index_id,
                                const WebIDBKeyRange& key_range,
@@ -407,7 +407,7 @@ void WebIDBDatabaseImpl::count(long long transaction_id,
                             base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
+void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
                                      long long object_store_id,
                                      const WebIDBKeyRange& key_range,
                                      WebIDBCallbacks* callbacks) {
@@ -424,7 +424,7 @@ void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
                  base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::clear(long long transaction_id,
+void WebIDBDatabaseImpl::Clear(long long transaction_id,
                                long long object_store_id,
                                WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
@@ -438,7 +438,7 @@ void WebIDBDatabaseImpl::clear(long long transaction_id,
                             base::Passed(&callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::createIndex(long long transaction_id,
+void WebIDBDatabaseImpl::CreateIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id,
                                      const WebString& name,
@@ -448,12 +448,12 @@ void WebIDBDatabaseImpl::createIndex(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::CreateIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, name.utf16(),
+                 transaction_id, object_store_id, index_id, name.Utf16(),
                  IndexedDBKeyPathBuilder::Build(key_path), unique,
                  multi_entry));
 }
 
-void WebIDBDatabaseImpl::deleteIndex(long long transaction_id,
+void WebIDBDatabaseImpl::DeleteIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id) {
   io_runner_->PostTask(
@@ -462,33 +462,33 @@ void WebIDBDatabaseImpl::deleteIndex(long long transaction_id,
                  transaction_id, object_store_id, index_id));
 }
 
-void WebIDBDatabaseImpl::renameIndex(long long transaction_id,
+void WebIDBDatabaseImpl::RenameIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id,
                                      const WebString& new_name) {
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::RenameIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, new_name.utf16()));
+                 transaction_id, object_store_id, index_id, new_name.Utf16()));
 }
 
-void WebIDBDatabaseImpl::abort(long long transaction_id) {
+void WebIDBDatabaseImpl::Abort(long long transaction_id) {
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Abort, base::Unretained(helper_),
                             transaction_id));
 }
 
-void WebIDBDatabaseImpl::commit(long long transaction_id) {
+void WebIDBDatabaseImpl::Commit(long long transaction_id) {
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Commit, base::Unretained(helper_),
                             transaction_id));
 }
 
-void WebIDBDatabaseImpl::ackReceivedBlobs(const WebVector<WebString>& uuids) {
+void WebIDBDatabaseImpl::AckReceivedBlobs(const WebVector<WebString>& uuids) {
   DCHECK(uuids.size());
   std::vector<std::string> param(uuids.size());
   for (size_t i = 0; i < uuids.size(); ++i)
-    param[i] = uuids[i].latin1().data();
+    param[i] = uuids[i].Latin1().data();
   io_runner_->PostTask(FROM_HERE,
                        base::Bind(&IOThreadHelper::AckReceivedBlobs,
                                   base::Unretained(helper_), std::move(param)));

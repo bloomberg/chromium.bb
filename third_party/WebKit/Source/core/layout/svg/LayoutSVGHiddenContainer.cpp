@@ -27,23 +27,23 @@ namespace blink {
 LayoutSVGHiddenContainer::LayoutSVGHiddenContainer(SVGElement* element)
     : LayoutSVGContainer(element) {}
 
-void LayoutSVGHiddenContainer::layout() {
-  DCHECK(needsLayout());
+void LayoutSVGHiddenContainer::GetLayout() {
+  DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   // When hasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
-  bool layoutSizeChanged =
-      element()->hasRelativeLengths() &&
-      SVGLayoutSupport::layoutSizeOfNearestViewportChanged(this);
+  bool layout_size_changed =
+      GetElement()->HasRelativeLengths() &&
+      SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
 
-  SVGLayoutSupport::layoutChildren(firstChild(), selfNeedsLayout(), false,
-                                   layoutSizeChanged);
-  updateCachedBoundaries();
-  clearNeedsLayout();
+  SVGLayoutSupport::LayoutChildren(FirstChild(), SelfNeedsLayout(), false,
+                                   layout_size_changed);
+  UpdateCachedBoundaries();
+  ClearNeedsLayout();
 }
 
-bool LayoutSVGHiddenContainer::nodeAtFloatPoint(HitTestResult&,
+bool LayoutSVGHiddenContainer::NodeAtFloatPoint(HitTestResult&,
                                                 const FloatPoint&,
                                                 HitTestAction) {
   return false;

@@ -47,24 +47,24 @@ struct PaintLayerFragment {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  void setRects(const LayoutRect& bounds,
+  void SetRects(const LayoutRect& bounds,
                 const ClipRect& background,
                 const ClipRect& foreground) {
-    layerBounds = bounds;
-    backgroundRect = background;
-    foregroundRect = foreground;
+    layer_bounds = bounds;
+    background_rect = background;
+    foreground_rect = foreground;
   }
 
-  void moveBy(const LayoutPoint& offset) {
-    layerBounds.moveBy(offset);
-    backgroundRect.moveBy(offset);
-    foregroundRect.moveBy(offset);
-    paginationClip.moveBy(offset);
+  void MoveBy(const LayoutPoint& offset) {
+    layer_bounds.MoveBy(offset);
+    background_rect.MoveBy(offset);
+    foreground_rect.MoveBy(offset);
+    pagination_clip.MoveBy(offset);
   }
 
-  void intersect(const LayoutRect& rect) {
-    backgroundRect.intersect(rect);
-    foregroundRect.intersect(rect);
+  void Intersect(const LayoutRect& rect) {
+    background_rect.Intersect(rect);
+    foreground_rect.Intersect(rect);
   }
 
   // Set on all fragments.
@@ -75,7 +75,7 @@ struct PaintLayerFragment {
   //
   // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
   // mix coordinate systems by mistake.
-  LayoutRect layerBounds;
+  LayoutRect layer_bounds;
 
   // Set on all fragments.
   //
@@ -87,7 +87,7 @@ struct PaintLayerFragment {
   // |paginationClip| if it is present.
   //
   // See PaintLayerClipper::calculateRects.
-  ClipRect backgroundRect;
+  ClipRect background_rect;
 
   // Set on all fragments.
   //
@@ -101,13 +101,13 @@ struct PaintLayerFragment {
   // |paginationClip| if it is present.
   //
   // See PaintLayerClipper::calculateRects.
-  ClipRect foregroundRect;
+  ClipRect foreground_rect;
 
   // Only set on paginated fragments.
   //
   // The physical translation to apply to shift the layer when
   // painting/hit-testing.
-  LayoutPoint paginationOffset;
+  LayoutPoint pagination_offset;
 
   // Only set on paginated fragments.
   //
@@ -116,7 +116,7 @@ struct PaintLayerFragment {
   // are intersected with it (see collectFragments).
   //
   // It is in layer-local (physical) coordinates.
-  LayoutRect paginationClip;
+  LayoutRect pagination_clip;
 };
 
 typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;

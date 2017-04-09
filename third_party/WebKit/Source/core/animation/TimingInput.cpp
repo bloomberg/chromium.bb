@@ -10,90 +10,90 @@
 
 namespace blink {
 
-void TimingInput::setStartDelay(Timing& timing, double startDelay) {
-  if (std::isfinite(startDelay))
-    timing.startDelay = startDelay / 1000;
+void TimingInput::SetStartDelay(Timing& timing, double start_delay) {
+  if (std::isfinite(start_delay))
+    timing.start_delay = start_delay / 1000;
   else
-    timing.startDelay = Timing::defaults().startDelay;
+    timing.start_delay = Timing::Defaults().start_delay;
 }
 
-void TimingInput::setEndDelay(Timing& timing, double endDelay) {
-  if (std::isfinite(endDelay))
-    timing.endDelay = endDelay / 1000;
+void TimingInput::SetEndDelay(Timing& timing, double end_delay) {
+  if (std::isfinite(end_delay))
+    timing.end_delay = end_delay / 1000;
   else
-    timing.endDelay = Timing::defaults().endDelay;
+    timing.end_delay = Timing::Defaults().end_delay;
 }
 
-void TimingInput::setFillMode(Timing& timing, const String& fillMode) {
-  if (fillMode == "none") {
-    timing.fillMode = Timing::FillMode::NONE;
-  } else if (fillMode == "backwards") {
-    timing.fillMode = Timing::FillMode::BACKWARDS;
-  } else if (fillMode == "both") {
-    timing.fillMode = Timing::FillMode::BOTH;
-  } else if (fillMode == "forwards") {
-    timing.fillMode = Timing::FillMode::FORWARDS;
+void TimingInput::SetFillMode(Timing& timing, const String& fill_mode) {
+  if (fill_mode == "none") {
+    timing.fill_mode = Timing::FillMode::NONE;
+  } else if (fill_mode == "backwards") {
+    timing.fill_mode = Timing::FillMode::BACKWARDS;
+  } else if (fill_mode == "both") {
+    timing.fill_mode = Timing::FillMode::BOTH;
+  } else if (fill_mode == "forwards") {
+    timing.fill_mode = Timing::FillMode::FORWARDS;
   } else {
-    timing.fillMode = Timing::defaults().fillMode;
+    timing.fill_mode = Timing::Defaults().fill_mode;
   }
 }
 
-bool TimingInput::setIterationStart(Timing& timing,
-                                    double iterationStart,
-                                    ExceptionState& exceptionState) {
-  DCHECK(std::isfinite(iterationStart));
-  if (std::isnan(iterationStart) || iterationStart < 0) {
-    exceptionState.throwTypeError("iterationStart must be non-negative.");
+bool TimingInput::SetIterationStart(Timing& timing,
+                                    double iteration_start,
+                                    ExceptionState& exception_state) {
+  DCHECK(std::isfinite(iteration_start));
+  if (std::isnan(iteration_start) || iteration_start < 0) {
+    exception_state.ThrowTypeError("iterationStart must be non-negative.");
     return false;
   }
-  timing.iterationStart = iterationStart;
+  timing.iteration_start = iteration_start;
   return true;
 }
 
-bool TimingInput::setIterationCount(Timing& timing,
-                                    double iterationCount,
-                                    ExceptionState& exceptionState) {
-  if (std::isnan(iterationCount) || iterationCount < 0) {
-    exceptionState.throwTypeError("iterationCount must be non-negative.");
+bool TimingInput::SetIterationCount(Timing& timing,
+                                    double iteration_count,
+                                    ExceptionState& exception_state) {
+  if (std::isnan(iteration_count) || iteration_count < 0) {
+    exception_state.ThrowTypeError("iterationCount must be non-negative.");
     return false;
   }
-  timing.iterationCount = iterationCount;
+  timing.iteration_count = iteration_count;
   return true;
 }
 
-bool TimingInput::setIterationDuration(
+bool TimingInput::SetIterationDuration(
     Timing& timing,
-    const UnrestrictedDoubleOrString& iterationDuration,
-    ExceptionState& exceptionState) {
-  static const char* errorMessage = "duration must be non-negative or auto.";
+    const UnrestrictedDoubleOrString& iteration_duration,
+    ExceptionState& exception_state) {
+  static const char* error_message = "duration must be non-negative or auto.";
 
-  if (iterationDuration.isUnrestrictedDouble()) {
-    double durationNumber = iterationDuration.getAsUnrestrictedDouble();
-    if (std::isnan(durationNumber) || durationNumber < 0) {
-      exceptionState.throwTypeError(errorMessage);
+  if (iteration_duration.isUnrestrictedDouble()) {
+    double duration_number = iteration_duration.getAsUnrestrictedDouble();
+    if (std::isnan(duration_number) || duration_number < 0) {
+      exception_state.ThrowTypeError(error_message);
       return false;
     }
-    timing.iterationDuration = durationNumber / 1000;
+    timing.iteration_duration = duration_number / 1000;
     return true;
   }
 
-  if (iterationDuration.getAsString() != "auto") {
-    exceptionState.throwTypeError(errorMessage);
+  if (iteration_duration.getAsString() != "auto") {
+    exception_state.ThrowTypeError(error_message);
     return false;
   }
 
-  timing.iterationDuration = Timing::defaults().iterationDuration;
+  timing.iteration_duration = Timing::Defaults().iteration_duration;
   return true;
 }
 
-void TimingInput::setPlaybackRate(Timing& timing, double playbackRate) {
-  if (std::isfinite(playbackRate))
-    timing.playbackRate = playbackRate;
+void TimingInput::SetPlaybackRate(Timing& timing, double playback_rate) {
+  if (std::isfinite(playback_rate))
+    timing.playback_rate = playback_rate;
   else
-    timing.playbackRate = Timing::defaults().playbackRate;
+    timing.playback_rate = Timing::Defaults().playback_rate;
 }
 
-void TimingInput::setPlaybackDirection(Timing& timing,
+void TimingInput::SetPlaybackDirection(Timing& timing,
                                        const String& direction) {
   if (direction == "reverse") {
     timing.direction = Timing::PlaybackDirection::REVERSE;
@@ -102,63 +102,63 @@ void TimingInput::setPlaybackDirection(Timing& timing,
   } else if (direction == "alternate-reverse") {
     timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
   } else {
-    timing.direction = Timing::defaults().direction;
+    timing.direction = Timing::Defaults().direction;
   }
 }
 
-bool TimingInput::setTimingFunction(Timing& timing,
-                                    const String& timingFunctionString,
+bool TimingInput::SetTimingFunction(Timing& timing,
+                                    const String& timing_function_string,
                                     Document* document,
-                                    ExceptionState& exceptionState) {
-  if (RefPtr<TimingFunction> timingFunction =
-          AnimationInputHelpers::parseTimingFunction(
-              timingFunctionString, document, exceptionState)) {
-    timing.timingFunction = timingFunction;
+                                    ExceptionState& exception_state) {
+  if (RefPtr<TimingFunction> timing_function =
+          AnimationInputHelpers::ParseTimingFunction(
+              timing_function_string, document, exception_state)) {
+    timing.timing_function = timing_function;
     return true;
   }
   return false;
 }
 
-bool TimingInput::convert(const KeyframeEffectOptions& timingInput,
-                          Timing& timingOutput,
+bool TimingInput::Convert(const KeyframeEffectOptions& timing_input,
+                          Timing& timing_output,
                           Document* document,
-                          ExceptionState& exceptionState) {
-  setStartDelay(timingOutput, timingInput.delay());
-  setEndDelay(timingOutput, timingInput.endDelay());
-  setFillMode(timingOutput, timingInput.fill());
+                          ExceptionState& exception_state) {
+  SetStartDelay(timing_output, timing_input.delay());
+  SetEndDelay(timing_output, timing_input.endDelay());
+  SetFillMode(timing_output, timing_input.fill());
 
-  if (!setIterationStart(timingOutput, timingInput.iterationStart(),
-                         exceptionState))
+  if (!SetIterationStart(timing_output, timing_input.iterationStart(),
+                         exception_state))
     return false;
 
-  if (!setIterationCount(timingOutput, timingInput.iterations(),
-                         exceptionState))
+  if (!SetIterationCount(timing_output, timing_input.iterations(),
+                         exception_state))
     return false;
 
-  if (!setIterationDuration(timingOutput, timingInput.duration(),
-                            exceptionState))
+  if (!SetIterationDuration(timing_output, timing_input.duration(),
+                            exception_state))
     return false;
 
-  setPlaybackRate(timingOutput, 1.0);
-  setPlaybackDirection(timingOutput, timingInput.direction());
+  SetPlaybackRate(timing_output, 1.0);
+  SetPlaybackDirection(timing_output, timing_input.direction());
 
-  if (!setTimingFunction(timingOutput, timingInput.easing(), document,
-                         exceptionState))
+  if (!SetTimingFunction(timing_output, timing_input.easing(), document,
+                         exception_state))
     return false;
 
-  timingOutput.assertValid();
+  timing_output.AssertValid();
 
   return true;
 }
 
-bool TimingInput::convert(double duration,
-                          Timing& timingOutput,
-                          ExceptionState& exceptionState) {
-  DCHECK(timingOutput == Timing::defaults());
-  return setIterationDuration(
-      timingOutput,
+bool TimingInput::Convert(double duration,
+                          Timing& timing_output,
+                          ExceptionState& exception_state) {
+  DCHECK(timing_output == Timing::Defaults());
+  return SetIterationDuration(
+      timing_output,
       UnrestrictedDoubleOrString::fromUnrestrictedDouble(duration),
-      exceptionState);
+      exception_state);
 }
 
 }  // namespace blink

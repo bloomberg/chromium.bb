@@ -34,38 +34,39 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   LayoutDeprecatedFlexibleBox(Element&);
   ~LayoutDeprecatedFlexibleBox() override;
 
-  const char* name() const override { return "LayoutDeprecatedFlexibleBox"; }
+  const char* GetName() const override { return "LayoutDeprecatedFlexibleBox"; }
 
-  void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+  void StyleWillChange(StyleDifference,
+                       const ComputedStyle& new_style) override;
 
-  void layoutBlock(bool relayoutChildren) override;
-  void layoutHorizontalBox(bool relayoutChildren);
-  void layoutVerticalBox(bool relayoutChildren);
+  void GetLayoutBlock(bool relayout_children) override;
+  void LayoutHorizontalBox(bool relayout_children);
+  void LayoutVerticalBox(bool relayout_children);
 
-  bool isDeprecatedFlexibleBox() const override { return true; }
-  bool isStretchingChildren() const { return m_stretchingChildren; }
+  bool IsDeprecatedFlexibleBox() const override { return true; }
+  bool IsStretchingChildren() const { return stretching_children_; }
 
-  void placeChild(LayoutBox* child, const LayoutPoint& location);
+  void PlaceChild(LayoutBox* child, const LayoutPoint& location);
 
  private:
-  void computeIntrinsicLogicalWidths(
-      LayoutUnit& minLogicalWidth,
-      LayoutUnit& maxLogicalWidth) const override;
+  void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const override;
 
-  LayoutUnit allowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
+  LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
 
-  bool hasMultipleLines() const { return style()->boxLines() == MULTIPLE; }
-  bool isVertical() const { return style()->boxOrient() == VERTICAL; }
-  bool isHorizontal() const { return style()->boxOrient() == HORIZONTAL; }
+  bool HasMultipleLines() const { return Style()->BoxLines() == MULTIPLE; }
+  bool IsVertical() const { return Style()->BoxOrient() == VERTICAL; }
+  bool IsHorizontal() const { return Style()->BoxOrient() == HORIZONTAL; }
 
-  void applyLineClamp(FlexBoxIterator&, bool relayoutChildren);
-  void clearLineClamp();
+  void ApplyLineClamp(FlexBoxIterator&, bool relayout_children);
+  void ClearLineClamp();
 
-  bool m_stretchingChildren;
+  bool stretching_children_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox,
-                                isDeprecatedFlexibleBox());
+                                IsDeprecatedFlexibleBox());
 
 }  // namespace blink
 

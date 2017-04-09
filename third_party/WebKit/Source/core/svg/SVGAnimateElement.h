@@ -34,104 +34,108 @@ namespace blink {
 
 // If we have 'inherit' as animation value, we need to grab the value
 // during the animation since the value can be animated itself.
-enum AnimatedPropertyValueType { RegularPropertyValue, InheritValue };
+enum AnimatedPropertyValueType { kRegularPropertyValue, kInheritValue };
 
 class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimateElement* create(Document&);
+  static SVGAnimateElement* Create(Document&);
   ~SVGAnimateElement() override;
 
   DECLARE_VIRTUAL_TRACE();
 
-  bool isSVGAnimationAttributeSettingJavaScriptURL(
+  bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;
 
-  AnimatedPropertyType animatedPropertyType();
-  bool animatedPropertyTypeSupportsAddition();
+  AnimatedPropertyType GetAnimatedPropertyType();
+  bool AnimatedPropertyTypeSupportsAddition();
 
  protected:
   SVGAnimateElement(const QualifiedName&, Document&);
 
-  bool hasValidTarget() override;
+  bool HasValidTarget() override;
 
-  void willChangeAnimationTarget() final;
-  void didChangeAnimationTarget() final;
+  void WillChangeAnimationTarget() final;
+  void DidChangeAnimationTarget() final;
 
-  void resetAnimatedType() final;
-  void clearAnimatedType() final;
+  void ResetAnimatedType() final;
+  void ClearAnimatedType() final;
 
-  bool calculateToAtEndOfDurationValue(
-      const String& toAtEndOfDurationString) final;
-  bool calculateFromAndToValues(const String& fromString,
-                                const String& toString) final;
-  bool calculateFromAndByValues(const String& fromString,
-                                const String& byString) final;
-  void calculateAnimatedValue(float percentage,
-                              unsigned repeatCount,
-                              SVGSMILElement* resultElement) final;
-  void applyResultsToTarget() final;
-  float calculateDistance(const String& fromString,
-                          const String& toString) final;
-  bool isAdditive() final;
+  bool CalculateToAtEndOfDurationValue(
+      const String& to_at_end_of_duration_string) final;
+  bool CalculateFromAndToValues(const String& from_string,
+                                const String& to_string) final;
+  bool CalculateFromAndByValues(const String& from_string,
+                                const String& by_string) final;
+  void CalculateAnimatedValue(float percentage,
+                              unsigned repeat_count,
+                              SVGSMILElement* result_element) final;
+  void ApplyResultsToTarget() final;
+  float CalculateDistance(const String& from_string,
+                          const String& to_string) final;
+  bool IsAdditive() final;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void setAttributeName(const QualifiedName&);
+  void SetAttributeName(const QualifiedName&);
 
-  enum AttributeType { AttributeTypeCSS, AttributeTypeXML, AttributeTypeAuto };
-  AttributeType getAttributeType() const { return m_attributeType; }
+  enum AttributeType {
+    kAttributeTypeCSS,
+    kAttributeTypeXML,
+    kAttributeTypeAuto
+  };
+  AttributeType GetAttributeType() const { return attribute_type_; }
 
   FRIEND_TEST_ALL_PREFIXES(UnsafeSVGAttributeSanitizationTest,
                            stringsShouldNotSupportAddition);
 
  private:
-  void resetAnimatedPropertyType();
+  void ResetAnimatedPropertyType();
 
-  bool shouldApplyAnimation(const SVGElement& targetElement,
-                            const QualifiedName& attributeName);
+  bool ShouldApplyAnimation(const SVGElement& target_element,
+                            const QualifiedName& attribute_name);
 
-  void setAttributeType(const AtomicString&);
+  void SetAttributeType(const AtomicString&);
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) final;
-  void removedFrom(ContainerNode*) final;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) final;
+  void RemovedFrom(ContainerNode*) final;
 
-  virtual void resolveTargetProperty();
-  void clearTargetProperty();
+  virtual void ResolveTargetProperty();
+  void ClearTargetProperty();
 
-  virtual SVGPropertyBase* createPropertyForAnimation(const String&) const;
-  SVGPropertyBase* createPropertyForAttributeAnimation(const String&) const;
-  SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
+  virtual SVGPropertyBase* CreatePropertyForAnimation(const String&) const;
+  SVGPropertyBase* CreatePropertyForAttributeAnimation(const String&) const;
+  SVGPropertyBase* CreatePropertyForCSSAnimation(const String&) const;
 
-  SVGPropertyBase* adjustForInheritance(SVGPropertyBase*,
+  SVGPropertyBase* AdjustForInheritance(SVGPropertyBase*,
                                         AnimatedPropertyValueType) const;
 
-  Member<SVGPropertyBase> m_fromProperty;
-  Member<SVGPropertyBase> m_toProperty;
-  Member<SVGPropertyBase> m_toAtEndOfDurationProperty;
-  Member<SVGPropertyBase> m_animatedValue;
+  Member<SVGPropertyBase> from_property_;
+  Member<SVGPropertyBase> to_property_;
+  Member<SVGPropertyBase> to_at_end_of_duration_property_;
+  Member<SVGPropertyBase> animated_value_;
 
  protected:
-  Member<SVGAnimatedPropertyBase> m_targetProperty;
-  AnimatedPropertyType m_type;
-  CSSPropertyID m_cssPropertyId;
+  Member<SVGAnimatedPropertyBase> target_property_;
+  AnimatedPropertyType type_;
+  CSSPropertyID css_property_id_;
 
-  bool isAnimatingSVGDom() const { return m_targetProperty; }
-  bool isAnimatingCSSProperty() const {
-    return m_cssPropertyId != CSSPropertyInvalid;
+  bool IsAnimatingSVGDom() const { return target_property_; }
+  bool IsAnimatingCSSProperty() const {
+    return css_property_id_ != CSSPropertyInvalid;
   }
 
  private:
-  AnimatedPropertyValueType m_fromPropertyValueType;
-  AnimatedPropertyValueType m_toPropertyValueType;
-  AttributeType m_attributeType;
+  AnimatedPropertyValueType from_property_value_type_;
+  AnimatedPropertyValueType to_property_value_type_;
+  AttributeType attribute_type_;
 };
 
-inline bool isSVGAnimateElement(const SVGElement& element) {
-  return element.hasTagName(SVGNames::animateTag) ||
-         element.hasTagName(SVGNames::animateTransformTag) ||
-         element.hasTagName(SVGNames::setTag);
+inline bool IsSVGAnimateElement(const SVGElement& element) {
+  return element.HasTagName(SVGNames::animateTag) ||
+         element.HasTagName(SVGNames::animateTransformTag) ||
+         element.HasTagName(SVGNames::setTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);

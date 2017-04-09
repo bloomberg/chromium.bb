@@ -31,49 +31,50 @@
 namespace blink {
 
 InsertNodeBeforeCommand::InsertNodeBeforeCommand(
-    Node* insertChild,
-    Node* refChild,
-    ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
-    : SimpleEditCommand(refChild->document()),
-      m_insertChild(insertChild),
-      m_refChild(refChild),
-      m_shouldAssumeContentIsAlwaysEditable(
-          shouldAssumeContentIsAlwaysEditable) {
-  DCHECK(m_insertChild);
-  DCHECK(!m_insertChild->parentNode()) << m_insertChild;
-  DCHECK(m_refChild);
-  DCHECK(m_refChild->parentNode()) << m_refChild;
+    Node* insert_child,
+    Node* ref_child,
+    ShouldAssumeContentIsAlwaysEditable
+        should_assume_content_is_always_editable)
+    : SimpleEditCommand(ref_child->GetDocument()),
+      insert_child_(insert_child),
+      ref_child_(ref_child),
+      should_assume_content_is_always_editable_(
+          should_assume_content_is_always_editable) {
+  DCHECK(insert_child_);
+  DCHECK(!insert_child_->parentNode()) << insert_child_;
+  DCHECK(ref_child_);
+  DCHECK(ref_child_->parentNode()) << ref_child_;
 
-  DCHECK(hasEditableStyle(*m_refChild->parentNode()) ||
-         !m_refChild->parentNode()->inActiveDocument())
-      << m_refChild->parentNode();
+  DCHECK(HasEditableStyle(*ref_child_->parentNode()) ||
+         !ref_child_->parentNode()->InActiveDocument())
+      << ref_child_->parentNode();
 }
 
-void InsertNodeBeforeCommand::doApply(EditingState*) {
-  ContainerNode* parent = m_refChild->parentNode();
-  document().updateStyleAndLayoutTree();
-  if (!parent || (m_shouldAssumeContentIsAlwaysEditable ==
-                      DoNotAssumeContentIsAlwaysEditable &&
-                  !hasEditableStyle(*parent)))
+void InsertNodeBeforeCommand::DoApply(EditingState*) {
+  ContainerNode* parent = ref_child_->parentNode();
+  GetDocument().UpdateStyleAndLayoutTree();
+  if (!parent || (should_assume_content_is_always_editable_ ==
+                      kDoNotAssumeContentIsAlwaysEditable &&
+                  !HasEditableStyle(*parent)))
     return;
-  DCHECK(hasEditableStyle(*parent)) << parent;
+  DCHECK(HasEditableStyle(*parent)) << parent;
 
-  parent->insertBefore(m_insertChild.get(), m_refChild.get(),
+  parent->InsertBefore(insert_child_.Get(), ref_child_.Get(),
                        IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InsertNodeBeforeCommand::doUnapply() {
-  document().updateStyleAndLayoutTree();
-  if (!hasEditableStyle(*m_insertChild))
+void InsertNodeBeforeCommand::DoUnapply() {
+  GetDocument().UpdateStyleAndLayoutTree();
+  if (!HasEditableStyle(*insert_child_))
     return;
 
-  m_insertChild->remove(IGNORE_EXCEPTION_FOR_TESTING);
+  insert_child_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(InsertNodeBeforeCommand) {
-  visitor->trace(m_insertChild);
-  visitor->trace(m_refChild);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(insert_child_);
+  visitor->Trace(ref_child_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

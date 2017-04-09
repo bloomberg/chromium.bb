@@ -6,24 +6,24 @@
 
 namespace blink {
 
-FuzzedDataProvider::FuzzedDataProvider(const uint8_t* bytes, size_t numBytes)
-    : m_provider(bytes, numBytes) {}
+FuzzedDataProvider::FuzzedDataProvider(const uint8_t* bytes, size_t num_bytes)
+    : provider_(bytes, num_bytes) {}
 
-CString FuzzedDataProvider::ConsumeBytesInRange(uint32_t minBytes,
-                                                uint32_t maxBytes) {
-  size_t numBytes =
-      static_cast<size_t>(m_provider.ConsumeUint32InRange(minBytes, maxBytes));
-  std::string bytes = m_provider.ConsumeBytes(numBytes);
+CString FuzzedDataProvider::ConsumeBytesInRange(uint32_t min_bytes,
+                                                uint32_t max_bytes) {
+  size_t num_bytes =
+      static_cast<size_t>(provider_.ConsumeUint32InRange(min_bytes, max_bytes));
+  std::string bytes = provider_.ConsumeBytes(num_bytes);
   return CString(bytes.data(), bytes.size());
 }
 
 CString FuzzedDataProvider::ConsumeRemainingBytes() {
-  std::string bytes = m_provider.ConsumeRemainingBytes();
+  std::string bytes = provider_.ConsumeRemainingBytes();
   return CString(bytes.data(), bytes.size());
 }
 
 bool FuzzedDataProvider::ConsumeBool() {
-  return m_provider.ConsumeBool();
+  return provider_.ConsumeBool();
 }
 
 }  // namespace blink

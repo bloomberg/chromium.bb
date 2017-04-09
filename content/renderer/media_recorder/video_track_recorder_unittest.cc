@@ -63,29 +63,29 @@ class VideoTrackRecorderTest
   VideoTrackRecorderTest()
       : mock_source_(new MockMediaStreamVideoSource(false)) {
     const blink::WebString webkit_track_id(
-        blink::WebString::fromASCII("dummy"));
-    blink_source_.initialize(webkit_track_id,
-                             blink::WebMediaStreamSource::TypeVideo,
+        blink::WebString::FromASCII("dummy"));
+    blink_source_.Initialize(webkit_track_id,
+                             blink::WebMediaStreamSource::kTypeVideo,
                              webkit_track_id);
-    blink_source_.setExtraData(mock_source_);
-    blink_track_.initialize(blink_source_);
+    blink_source_.SetExtraData(mock_source_);
+    blink_track_.Initialize(blink_source_);
 
     track_ = new MediaStreamVideoTrack(mock_source_,
                                        MediaStreamSource::ConstraintsCallback(),
                                        true /* enabled */);
-    blink_track_.setTrackData(track_);
+    blink_track_.SetTrackData(track_);
 
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.source().getExtraData(),
-              blink_source_.getExtraData());
+    EXPECT_EQ(blink_track_.Source().GetExtraData(),
+              blink_source_.GetExtraData());
     EXPECT_TRUE(message_loop_.IsCurrent());
   }
 
   ~VideoTrackRecorderTest() {
-    blink_track_.reset();
-    blink_source_.reset();
+    blink_track_.Reset();
+    blink_source_.Reset();
     video_track_recorder_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {

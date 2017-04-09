@@ -46,14 +46,14 @@ class SQLiteFileSystem {
 
  public:
   // Registers a user-defined SQLite VFS.
-  static void registerSQLiteVFS();
+  static void RegisterSQLiteVFS();
 
   // Opens a database file.
   //
   // filemame - The name of the database file.
   // database - The SQLite structure that represents the database stored
   //            in the given file.
-  static int openDatabase(const String& filename, sqlite3** database);
+  static int OpenDatabase(const String& filename, sqlite3** database);
 
  private:
   // do not instantiate this class

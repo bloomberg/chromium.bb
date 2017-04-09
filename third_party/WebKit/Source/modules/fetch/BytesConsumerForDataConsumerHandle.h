@@ -29,38 +29,38 @@ class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
                                      std::unique_ptr<WebDataConsumerHandle>);
   ~BytesConsumerForDataConsumerHandle() override;
 
-  Result beginRead(const char** buffer, size_t* available) override;
-  Result endRead(size_t readSize) override;
-  void setClient(BytesConsumer::Client*) override;
-  void clearClient() override;
+  Result BeginRead(const char** buffer, size_t* available) override;
+  Result EndRead(size_t read_size) override;
+  void SetClient(BytesConsumer::Client*) override;
+  void ClearClient() override;
 
-  void cancel() override;
-  PublicState getPublicState() const override;
-  Error getError() const override {
-    DCHECK(m_state == InternalState::Errored);
-    return m_error;
+  void Cancel() override;
+  PublicState GetPublicState() const override;
+  Error GetError() const override {
+    DCHECK(state_ == InternalState::kErrored);
+    return error_;
   }
-  String debugName() const override {
+  String DebugName() const override {
     return "BytesConsumerForDataConsumerHandle";
   }
 
   // WebDataConsumerHandle::Client
-  void didGetReadable() override;
+  void DidGetReadable() override;
 
   DECLARE_TRACE();
 
  private:
-  void close();
-  void error();
-  void notify();
+  void Close();
+  void GetError();
+  void Notify();
 
-  Member<ExecutionContext> m_executionContext;
-  std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
-  Member<BytesConsumer::Client> m_client;
-  InternalState m_state = InternalState::Waiting;
-  Error m_error;
-  bool m_isInTwoPhaseRead = false;
-  bool m_hasPendingNotification = false;
+  Member<ExecutionContext> execution_context_;
+  std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
+  Member<BytesConsumer::Client> client_;
+  InternalState state_ = InternalState::kWaiting;
+  Error error_;
+  bool is_in_two_phase_read_ = false;
+  bool has_pending_notification_ = false;
 };
 
 }  // namespace blink

@@ -24,13 +24,13 @@ class MODULES_EXPORT DOMWindowStorageController final
  public:
   DECLARE_VIRTUAL_TRACE();
 
-  static const char* supplementName();
-  static DOMWindowStorageController& from(Document&);
+  static const char* SupplementName();
+  static DOMWindowStorageController& From(Document&);
 
   // Inherited from LocalDOMWindow::EventListenerObserver
-  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override {}
-  void didRemoveAllEventListeners(LocalDOMWindow*) override {}
+  void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override {}
+  void DidRemoveAllEventListeners(LocalDOMWindow*) override {}
 
  private:
   explicit DOMWindowStorageController(Document&);

@@ -19,14 +19,14 @@ struct BoxDecorationData {
  public:
   BoxDecorationData(const LayoutBox&);
 
-  Color backgroundColor;
-  BackgroundBleedAvoidance bleedAvoidance;
-  bool hasBackground;
-  bool hasBorderDecoration;
-  bool hasAppearance;
+  Color background_color;
+  BackgroundBleedAvoidance bleed_avoidance;
+  bool has_background;
+  bool has_border_decoration;
+  bool has_appearance;
 
  private:
-  BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const LayoutBox&);
+  BackgroundBleedAvoidance DetermineBackgroundBleedAvoidance(const LayoutBox&);
 };
 
 }  // namespace blink

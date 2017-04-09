@@ -44,10 +44,11 @@ inline HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoEmbedElement)
 
-bool HTMLNoEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  if (document().frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
+bool HTMLNoEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+  if (GetDocument().GetFrame()->Loader().AllowPlugins(
+          kNotAboutToInstantiatePlugin))
     return false;
-  return Element::layoutObjectIsNeeded(style);
+  return Element::LayoutObjectIsNeeded(style);
 }
 
 }  // namespace blink

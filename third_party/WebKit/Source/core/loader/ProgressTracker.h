@@ -51,40 +51,40 @@ class CORE_EXPORT ProgressTracker final
   WTF_MAKE_NONCOPYABLE(ProgressTracker);
 
  public:
-  static ProgressTracker* create(LocalFrame*);
+  static ProgressTracker* Create(LocalFrame*);
 
   ~ProgressTracker();
   DECLARE_TRACE();
-  void dispose();
+  void Dispose();
 
-  double estimatedProgress() const;
+  double EstimatedProgress() const;
 
-  void progressStarted(FrameLoadType);
-  void progressCompleted();
+  void ProgressStarted(FrameLoadType);
+  void ProgressCompleted();
 
-  void finishedParsing();
+  void FinishedParsing();
 
-  void willStartLoading(unsigned long identifier, ResourceLoadPriority);
-  void incrementProgress(unsigned long identifier, const ResourceResponse&);
-  void incrementProgress(unsigned long identifier, int);
-  void completeProgress(unsigned long identifier);
+  void WillStartLoading(unsigned long identifier, ResourceLoadPriority);
+  void IncrementProgress(unsigned long identifier, const ResourceResponse&);
+  void IncrementProgress(unsigned long identifier, int);
+  void CompleteProgress(unsigned long identifier);
 
  private:
   explicit ProgressTracker(LocalFrame*);
 
-  LocalFrameClient* localFrameClient() const;
+  LocalFrameClient* GetLocalFrameClient() const;
 
-  void maybeSendProgress();
-  void sendFinalProgress();
-  void reset();
+  void MaybeSendProgress();
+  void SendFinalProgress();
+  void Reset();
 
-  Member<LocalFrame> m_frame;
-  double m_lastNotifiedProgressValue;
-  double m_lastNotifiedProgressTime;
-  bool m_finishedParsing;
-  double m_progressValue;
+  Member<LocalFrame> frame_;
+  double last_notified_progress_value_;
+  double last_notified_progress_time_;
+  bool finished_parsing_;
+  double progress_value_;
 
-  HashMap<unsigned long, std::unique_ptr<ProgressItem>> m_progressItems;
+  HashMap<unsigned long, std::unique_ptr<ProgressItem>> progress_items_;
 };
 
 }  // namespace blink

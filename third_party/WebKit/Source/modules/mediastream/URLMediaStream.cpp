@@ -37,17 +37,17 @@
 
 namespace blink {
 
-String URLMediaStream::createObjectURL(ScriptState* scriptState,
+String URLMediaStream::createObjectURL(ScriptState* script_state,
                                        MediaStream* stream) {
   // Since WebWorkers cannot obtain Stream objects, we should be on the main
   // thread.
-  DCHECK(isMainThread());
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DCHECK(executionContext);
+  DCHECK(IsMainThread());
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DCHECK(execution_context);
   DCHECK(stream);
 
-  UseCounter::count(executionContext, UseCounter::CreateObjectURLMediaStream);
-  return DOMURL::createPublicURL(executionContext, stream);
+  UseCounter::Count(execution_context, UseCounter::kCreateObjectURLMediaStream);
+  return DOMURL::CreatePublicURL(execution_context, stream);
 }
 
 }  // namespace blink

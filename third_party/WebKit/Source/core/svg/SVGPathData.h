@@ -27,72 +27,72 @@
 namespace blink {
 
 enum SVGPathSegType {
-  PathSegUnknown = 0,
-  PathSegClosePath = 1,
-  PathSegMoveToAbs = 2,
-  PathSegMoveToRel = 3,
-  PathSegLineToAbs = 4,
-  PathSegLineToRel = 5,
-  PathSegCurveToCubicAbs = 6,
-  PathSegCurveToCubicRel = 7,
-  PathSegCurveToQuadraticAbs = 8,
-  PathSegCurveToQuadraticRel = 9,
-  PathSegArcAbs = 10,
-  PathSegArcRel = 11,
-  PathSegLineToHorizontalAbs = 12,
-  PathSegLineToHorizontalRel = 13,
-  PathSegLineToVerticalAbs = 14,
-  PathSegLineToVerticalRel = 15,
-  PathSegCurveToCubicSmoothAbs = 16,
-  PathSegCurveToCubicSmoothRel = 17,
-  PathSegCurveToQuadraticSmoothAbs = 18,
-  PathSegCurveToQuadraticSmoothRel = 19
+  kPathSegUnknown = 0,
+  kPathSegClosePath = 1,
+  kPathSegMoveToAbs = 2,
+  kPathSegMoveToRel = 3,
+  kPathSegLineToAbs = 4,
+  kPathSegLineToRel = 5,
+  kPathSegCurveToCubicAbs = 6,
+  kPathSegCurveToCubicRel = 7,
+  kPathSegCurveToQuadraticAbs = 8,
+  kPathSegCurveToQuadraticRel = 9,
+  kPathSegArcAbs = 10,
+  kPathSegArcRel = 11,
+  kPathSegLineToHorizontalAbs = 12,
+  kPathSegLineToHorizontalRel = 13,
+  kPathSegLineToVerticalAbs = 14,
+  kPathSegLineToVerticalRel = 15,
+  kPathSegCurveToCubicSmoothAbs = 16,
+  kPathSegCurveToCubicSmoothRel = 17,
+  kPathSegCurveToQuadraticSmoothAbs = 18,
+  kPathSegCurveToQuadraticSmoothRel = 19
 };
 
-static inline SVGPathSegType toAbsolutePathSegType(const SVGPathSegType type) {
+static inline SVGPathSegType ToAbsolutePathSegType(const SVGPathSegType type) {
   // Clear the LSB to get the absolute command.
-  return type >= PathSegMoveToAbs ? static_cast<SVGPathSegType>(type & ~1u)
-                                  : type;
+  return type >= kPathSegMoveToAbs ? static_cast<SVGPathSegType>(type & ~1u)
+                                   : type;
 }
 
-static inline bool isAbsolutePathSegType(const SVGPathSegType type) {
+static inline bool IsAbsolutePathSegType(const SVGPathSegType type) {
   // For commands with an ordinal >= PathSegMoveToAbs, and odd number =>
   // relative command.
-  return type < PathSegMoveToAbs || type % 2 == 0;
+  return type < kPathSegMoveToAbs || type % 2 == 0;
 }
 
 struct PathSegmentData {
   STACK_ALLOCATED();
   PathSegmentData()
-      : command(PathSegUnknown), arcSweep(false), arcLarge(false) {}
+      : command(kPathSegUnknown), arc_sweep(false), arc_large(false) {}
 
-  const FloatPoint& arcRadii() const { return point1; }
-  FloatPoint& arcRadii() { return point1; }
+  const FloatPoint& ArcRadii() const { return point1; }
+  FloatPoint& ArcRadii() { return point1; }
 
-  float arcAngle() const { return point2.x(); }
-  void setArcAngle(float angle) { point2.setX(angle); }
+  float ArcAngle() const { return point2.X(); }
+  void SetArcAngle(float angle) { point2.SetX(angle); }
 
-  float r1() const { return arcRadii().x(); }
-  float r2() const { return arcRadii().y(); }
+  float R1() const { return ArcRadii().X(); }
+  float R2() const { return ArcRadii().Y(); }
 
-  bool largeArcFlag() const { return arcLarge; }
-  bool sweepFlag() const { return arcSweep; }
+  bool LargeArcFlag() const { return arc_large; }
+  bool SweepFlag() const { return arc_sweep; }
 
-  float x() const { return targetPoint.x(); }
-  float y() const { return targetPoint.y(); }
+  float X() const { return target_point.X(); }
+  float Y() const { return target_point.Y(); }
 
-  float x1() const { return point1.x(); }
-  float y1() const { return point1.y(); }
+  float X1() const { return point1.X(); }
+  float Y1() const { return point1.Y(); }
 
-  float x2() const { return point2.x(); }
-  float y2() const { return point2.y(); }
+  float X2() const { return point2.X(); }
+  float Y2() const { return point2.Y(); }
 
   SVGPathSegType command;
-  FloatPoint targetPoint;
+  FloatPoint target_point;
   FloatPoint point1;
   FloatPoint point2;
-  bool arcSweep;
-  bool arcLarge;
+  bool arc_sweep;
+  bool arc_large;
 };
 
 }  // namespace blink

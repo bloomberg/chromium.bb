@@ -23,17 +23,17 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   ~WebThreadBase() override;
 
   // WebThread implementation.
-  bool isCurrentThread() const override;
-  PlatformThreadId threadId() const override = 0;
+  bool IsCurrentThread() const override;
+  PlatformThreadId ThreadId() const override = 0;
 
-  virtual void postIdleTask(const WebTraceLocation& location,
+  virtual void PostIdleTask(const WebTraceLocation& location,
                             IdleTask* idle_task);
 
-  void addTaskObserver(TaskObserver* observer) override;
-  void removeTaskObserver(TaskObserver* observer) override;
+  void AddTaskObserver(TaskObserver* observer) override;
+  void RemoveTaskObserver(TaskObserver* observer) override;
 
-  void addTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
-  void removeTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
+  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
+  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
 
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.

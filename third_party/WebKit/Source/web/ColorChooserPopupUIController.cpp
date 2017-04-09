@@ -39,124 +39,123 @@ namespace blink {
 
 // Keep in sync with Actions in colorSuggestionPicker.js.
 enum ColorPickerPopupAction {
-  ColorPickerPopupActionChooseOtherColor = -2,
-  ColorPickerPopupActionCancel = -1,
-  ColorPickerPopupActionSetValue = 0
+  kColorPickerPopupActionChooseOtherColor = -2,
+  kColorPickerPopupActionCancel = -1,
+  kColorPickerPopupActionSetValue = 0
 };
 
 ColorChooserPopupUIController::ColorChooserPopupUIController(
     LocalFrame* frame,
-    ChromeClientImpl* chromeClient,
+    ChromeClientImpl* chrome_client,
     ColorChooserClient* client)
     : ColorChooserUIController(frame, client),
-      m_chromeClient(chromeClient),
-      m_popup(nullptr),
-      m_locale(Locale::defaultLocale()) {
-}
+      chrome_client_(chrome_client),
+      popup_(nullptr),
+      locale_(Locale::DefaultLocale()) {}
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController() {}
 
-void ColorChooserPopupUIController::dispose() {
+void ColorChooserPopupUIController::Dispose() {
   // Finalized earlier so as to access m_chromeClient while alive.
-  closePopup();
+  ClosePopup();
   // ~ColorChooserUIController calls endChooser().
 }
 
 DEFINE_TRACE(ColorChooserPopupUIController) {
-  visitor->trace(m_chromeClient);
-  ColorChooserUIController::trace(visitor);
+  visitor->Trace(chrome_client_);
+  ColorChooserUIController::Trace(visitor);
 }
 
-void ColorChooserPopupUIController::openUI() {
-  if (m_client->shouldShowSuggestions())
-    openPopup();
+void ColorChooserPopupUIController::OpenUI() {
+  if (client_->ShouldShowSuggestions())
+    OpenPopup();
   else
-    openColorChooser();
+    OpenColorChooser();
 }
 
-void ColorChooserPopupUIController::endChooser() {
-  if (m_chooser)
-    m_chooser->endChooser();
+void ColorChooserPopupUIController::EndChooser() {
+  if (chooser_)
+    chooser_->EndChooser();
 
-  closePopup();
+  ClosePopup();
 }
 
-AXObject* ColorChooserPopupUIController::rootAXObject() {
-  return m_popup ? m_popup->rootAXObject() : nullptr;
+AXObject* ColorChooserPopupUIController::RootAXObject() {
+  return popup_ ? popup_->RootAXObject() : nullptr;
 }
 
-void ColorChooserPopupUIController::writeDocument(SharedBuffer* data) {
-  Vector<ColorSuggestion> suggestions = m_client->suggestions();
-  Vector<String> suggestionValues;
+void ColorChooserPopupUIController::WriteDocument(SharedBuffer* data) {
+  Vector<ColorSuggestion> suggestions = client_->Suggestions();
+  Vector<String> suggestion_values;
   for (unsigned i = 0; i < suggestions.size(); i++)
-    suggestionValues.push_back(suggestions[i].color.serialized());
-  IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(
-      m_client->elementRectRelativeToViewport(), m_frame->view());
+    suggestion_values.push_back(suggestions[i].color.Serialized());
+  IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
+      client_->ElementRectRelativeToViewport(), frame_->View());
 
-  PagePopupClient::addString(
+  PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->append(Platform::current()->loadResource("pickerCommon.css"));
-  data->append(Platform::current()->loadResource("colorSuggestionPicker.css"));
-  PagePopupClient::addString(
+  data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
+  data->Append(Platform::Current()->LoadResource("colorSuggestionPicker.css"));
+  PagePopupClient::AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
-  PagePopupClient::addProperty("values", suggestionValues, data);
-  PagePopupClient::addProperty(
+  PagePopupClient::AddProperty("values", suggestion_values, data);
+  PagePopupClient::AddProperty(
       "otherColorLabel",
-      locale().queryString(WebLocalizedString::OtherColorLabel), data);
-  addProperty("anchorRectInScreen", anchorRectInScreen, data);
-  addProperty("zoomFactor", zoomFactor(), data);
-  PagePopupClient::addString("};\n", data);
-  data->append(Platform::current()->loadResource("pickerCommon.js"));
-  data->append(Platform::current()->loadResource("colorSuggestionPicker.js"));
-  PagePopupClient::addString("</script></body>\n", data);
+      GetLocale().QueryString(WebLocalizedString::kOtherColorLabel), data);
+  AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
+  AddProperty("zoomFactor", ZoomFactor(), data);
+  PagePopupClient::AddString("};\n", data);
+  data->Append(Platform::Current()->LoadResource("pickerCommon.js"));
+  data->Append(Platform::Current()->LoadResource("colorSuggestionPicker.js"));
+  PagePopupClient::AddString("</script></body>\n", data);
 }
 
-Locale& ColorChooserPopupUIController::locale() {
-  return m_locale;
+Locale& ColorChooserPopupUIController::GetLocale() {
+  return locale_;
 }
 
-void ColorChooserPopupUIController::setValueAndClosePopup(
-    int numValue,
-    const String& stringValue) {
-  DCHECK(m_popup);
-  DCHECK(m_client);
-  if (numValue == ColorPickerPopupActionSetValue)
-    setValue(stringValue);
-  if (numValue == ColorPickerPopupActionChooseOtherColor)
-    openColorChooser();
-  closePopup();
+void ColorChooserPopupUIController::SetValueAndClosePopup(
+    int num_value,
+    const String& string_value) {
+  DCHECK(popup_);
+  DCHECK(client_);
+  if (num_value == kColorPickerPopupActionSetValue)
+    SetValue(string_value);
+  if (num_value == kColorPickerPopupActionChooseOtherColor)
+    OpenColorChooser();
+  ClosePopup();
 }
 
-void ColorChooserPopupUIController::setValue(const String& value) {
-  DCHECK(m_client);
+void ColorChooserPopupUIController::SetValue(const String& value) {
+  DCHECK(client_);
   Color color;
-  bool success = color.setFromString(value);
+  bool success = color.SetFromString(value);
   DCHECK(success);
-  m_client->didChooseColor(color);
+  client_->DidChooseColor(color);
 }
 
-void ColorChooserPopupUIController::didClosePopup() {
-  m_popup = nullptr;
+void ColorChooserPopupUIController::DidClosePopup() {
+  popup_ = nullptr;
 
-  if (!m_chooser)
-    didEndChooser();
+  if (!chooser_)
+    DidEndChooser();
 }
 
-Element& ColorChooserPopupUIController::ownerElement() {
-  return m_client->ownerElement();
+Element& ColorChooserPopupUIController::OwnerElement() {
+  return client_->OwnerElement();
 }
 
-void ColorChooserPopupUIController::openPopup() {
-  DCHECK(!m_popup);
-  m_popup = m_chromeClient->openPagePopup(this);
+void ColorChooserPopupUIController::OpenPopup() {
+  DCHECK(!popup_);
+  popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-void ColorChooserPopupUIController::closePopup() {
-  if (!m_popup)
+void ColorChooserPopupUIController::ClosePopup() {
+  if (!popup_)
     return;
-  m_chromeClient->closePagePopup(m_popup);
+  chrome_client_->ClosePagePopup(popup_);
 }
 
 }  // namespace blink

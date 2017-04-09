@@ -56,20 +56,20 @@ enum ErrorCode {
   kPathExistsErr = 12,
 };
 
-CORE_EXPORT extern const char abortErrorMessage[];
-CORE_EXPORT extern const char encodingErrorMessage[];
-CORE_EXPORT extern const char invalidStateErrorMessage[];
-CORE_EXPORT extern const char noModificationAllowedErrorMessage[];
-CORE_EXPORT extern const char notFoundErrorMessage[];
-CORE_EXPORT extern const char notReadableErrorMessage[];
-CORE_EXPORT extern const char pathExistsErrorMessage[];
-CORE_EXPORT extern const char quotaExceededErrorMessage[];
-CORE_EXPORT extern const char securityErrorMessage[];
-CORE_EXPORT extern const char syntaxErrorMessage[];
-CORE_EXPORT extern const char typeMismatchErrorMessage[];
+CORE_EXPORT extern const char kAbortErrorMessage[];
+CORE_EXPORT extern const char kEncodingErrorMessage[];
+CORE_EXPORT extern const char kInvalidStateErrorMessage[];
+CORE_EXPORT extern const char kNoModificationAllowedErrorMessage[];
+CORE_EXPORT extern const char kNotFoundErrorMessage[];
+CORE_EXPORT extern const char kNotReadableErrorMessage[];
+CORE_EXPORT extern const char kPathExistsErrorMessage[];
+CORE_EXPORT extern const char kQuotaExceededErrorMessage[];
+CORE_EXPORT extern const char kSecurityErrorMessage[];
+CORE_EXPORT extern const char kSyntaxErrorMessage[];
+CORE_EXPORT extern const char kTypeMismatchErrorMessage[];
 
-CORE_EXPORT void throwDOMException(ExceptionState&, ErrorCode);
-CORE_EXPORT DOMException* createDOMException(ErrorCode);
+CORE_EXPORT void ThrowDOMException(ExceptionState&, ErrorCode);
+CORE_EXPORT DOMException* CreateDOMException(ErrorCode);
 
 }  // namespace FileError
 

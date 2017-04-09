@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
   // When the prompt is auto-accepted, the page will be reloaded.
   PageReloadWaiter reload_waiter(GetWebContents());
   content::SimulateMouseClickAt(GetWebContents(), 0 /* modifiers */,
-                                blink::WebMouseEvent::Button::Left,
+                                blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(50, 50));
   EXPECT_TRUE(reload_waiter.Wait());
 

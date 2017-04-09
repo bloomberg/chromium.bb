@@ -155,9 +155,9 @@ void CdmSessionAdapter::OnCdmCreated(
                          error_message);
 
   if (!cdm) {
-    cdm_created_result_->completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        blink::WebString::fromUTF8(error_message));
+    cdm_created_result_->CompleteWithError(
+        blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
+        blink::WebString::FromUTF8(error_message));
     cdm_created_result_.reset();
     return;
   }
@@ -172,7 +172,7 @@ void CdmSessionAdapter::OnCdmCreated(
 
   cdm_ = cdm;
 
-  cdm_created_result_->completeWithContentDecryptionModule(
+  cdm_created_result_->CompleteWithContentDecryptionModule(
       new WebContentDecryptionModuleImpl(this));
   cdm_created_result_.reset();
 }

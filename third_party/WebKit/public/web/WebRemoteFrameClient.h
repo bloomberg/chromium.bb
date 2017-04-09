@@ -18,40 +18,40 @@ struct WebRect;
 class WebRemoteFrameClient {
  public:
   // Specifies the reason for the detachment.
-  enum class DetachType { Remove, Swap };
+  enum class DetachType { kRemove, kSwap };
 
   // Notify the embedder that it should remove this frame from the frame tree
   // and release any resources associated with it.
-  virtual void frameDetached(DetachType) {}
+  virtual void FrameDetached(DetachType) {}
 
   // Notifies the embedder that a postMessage was issued to a remote frame.
-  virtual void forwardPostMessage(WebLocalFrame* sourceFrame,
-                                  WebRemoteFrame* targetFrame,
-                                  WebSecurityOrigin targetOrigin,
+  virtual void ForwardPostMessage(WebLocalFrame* source_frame,
+                                  WebRemoteFrame* target_frame,
+                                  WebSecurityOrigin target_origin,
                                   WebDOMMessageEvent) {}
 
   // A remote frame was asked to start a navigation.
-  virtual void navigate(const WebURLRequest& request,
-                        bool shouldReplaceCurrentEntry) {}
-  virtual void reload(WebFrameLoadType, WebClientRedirectPolicy) {}
+  virtual void Navigate(const WebURLRequest& request,
+                        bool should_replace_current_entry) {}
+  virtual void Reload(WebFrameLoadType, WebClientRedirectPolicy) {}
 
-  virtual void frameRectsChanged(const WebRect&) {}
+  virtual void FrameRectsChanged(const WebRect&) {}
 
-  virtual void updateRemoteViewportIntersection(
-      const WebRect& viewportIntersection) {}
+  virtual void UpdateRemoteViewportIntersection(
+      const WebRect& viewport_intersection) {}
 
-  virtual void visibilityChanged(bool visible) {}
+  virtual void VisibilityChanged(bool visible) {}
 
   // This frame updated its opener to another frame.
-  virtual void didChangeOpener(WebFrame* opener) {}
+  virtual void DidChangeOpener(WebFrame* opener) {}
 
   // Continue sequential focus navigation in this frame.  This is called when
   // the |source| frame is searching for the next focusable element (e.g., in
   // response to <tab>) and encounters a remote frame.
-  virtual void advanceFocus(WebFocusType type, WebLocalFrame* source) {}
+  virtual void AdvanceFocus(WebFocusType type, WebLocalFrame* source) {}
 
   // This frame was focused by another frame.
-  virtual void frameFocused() {}
+  virtual void FrameFocused() {}
 };
 
 }  // namespace blink

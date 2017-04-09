@@ -37,50 +37,50 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
   WTF_MAKE_NONCOPYABLE(Filter);
 
  public:
-  enum UnitScaling { UserSpace, BoundingBox };
+  enum UnitScaling { kUserSpace, kBoundingBox };
 
-  static Filter* create(const FloatRect& referenceBox,
-                        const FloatRect& filterRegion,
+  static Filter* Create(const FloatRect& reference_box,
+                        const FloatRect& filter_region,
                         float scale,
                         UnitScaling);
-  static Filter* create(float scale);
+  static Filter* Create(float scale);
 
   DECLARE_TRACE();
 
-  float scale() const { return m_scale; }
-  FloatRect mapLocalRectToAbsoluteRect(const FloatRect&) const;
-  FloatRect mapAbsoluteRectToLocalRect(const FloatRect&) const;
+  float Scale() const { return scale_; }
+  FloatRect MapLocalRectToAbsoluteRect(const FloatRect&) const;
+  FloatRect MapAbsoluteRectToLocalRect(const FloatRect&) const;
 
-  float applyHorizontalScale(float value) const;
-  float applyVerticalScale(float value) const;
+  float ApplyHorizontalScale(float value) const;
+  float ApplyVerticalScale(float value) const;
 
-  FloatPoint3D resolve3dPoint(const FloatPoint3D&) const;
+  FloatPoint3D Resolve3dPoint(const FloatPoint3D&) const;
 
-  FloatRect absoluteFilterRegion() const {
-    return mapLocalRectToAbsoluteRect(m_filterRegion);
+  FloatRect AbsoluteFilterRegion() const {
+    return MapLocalRectToAbsoluteRect(filter_region_);
   }
 
-  const FloatRect& filterRegion() const { return m_filterRegion; }
-  const FloatRect& referenceBox() const { return m_referenceBox; }
+  const FloatRect& FilterRegion() const { return filter_region_; }
+  const FloatRect& ReferenceBox() const { return reference_box_; }
 
-  void setLastEffect(FilterEffect*);
-  FilterEffect* lastEffect() const { return m_lastEffect.get(); }
+  void SetLastEffect(FilterEffect*);
+  FilterEffect* LastEffect() const { return last_effect_.Get(); }
 
-  SourceGraphic* getSourceGraphic() const { return m_sourceGraphic.get(); }
+  SourceGraphic* GetSourceGraphic() const { return source_graphic_.Get(); }
 
  private:
-  Filter(const FloatRect& referenceBox,
-         const FloatRect& filterRegion,
+  Filter(const FloatRect& reference_box,
+         const FloatRect& filter_region,
          float scale,
          UnitScaling);
 
-  FloatRect m_referenceBox;
-  FloatRect m_filterRegion;
-  float m_scale;
-  UnitScaling m_unitScaling;
+  FloatRect reference_box_;
+  FloatRect filter_region_;
+  float scale_;
+  UnitScaling unit_scaling_;
 
-  Member<SourceGraphic> m_sourceGraphic;
-  Member<FilterEffect> m_lastEffect;
+  Member<SourceGraphic> source_graphic_;
+  Member<FilterEffect> last_effect_;
 };
 
 }  // namespace blink

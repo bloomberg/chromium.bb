@@ -107,16 +107,16 @@ namespace WTF {
   void* operator new[](size_t, void* p) { return p; }                 \
                                                                       \
   void* operator new(size_t size) {                                   \
-    return ::WTF::Partitions::fastMalloc(size, typeName);             \
+    return ::WTF::Partitions::FastMalloc(size, typeName);             \
   }                                                                   \
                                                                       \
-  void operator delete(void* p) { ::WTF::Partitions::fastFree(p); }   \
+  void operator delete(void* p) { ::WTF::Partitions::FastFree(p); }   \
                                                                       \
   void* operator new[](size_t size) {                                 \
-    return ::WTF::Partitions::fastMalloc(size, typeName);             \
+    return ::WTF::Partitions::FastMalloc(size, typeName);             \
   }                                                                   \
                                                                       \
-  void operator delete[](void* p) { ::WTF::Partitions::fastFree(p); } \
+  void operator delete[](void* p) { ::WTF::Partitions::FastFree(p); } \
   void* operator new(size_t, NotNullTag, void* location) {            \
     DCHECK(location);                                                 \
     return location;                                                  \
@@ -130,7 +130,7 @@ namespace WTF {
 #if defined(OFFICIAL_BUILD)
 #define WTF_HEAP_PROFILER_TYPE_NAME(T) nullptr
 #else
-#define WTF_HEAP_PROFILER_TYPE_NAME(T) ::WTF::getStringWithTypeName<T>()
+#define WTF_HEAP_PROFILER_TYPE_NAME(T) ::WTF::GetStringWithTypeName<T>()
 #endif
 
 // Both of these macros enable fast malloc and provide type info to the heap

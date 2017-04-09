@@ -14,8 +14,8 @@ namespace blink {
 // messages due to the navigation do not lose the source location information.
 struct WebSourceLocation {
   WebString url;
-  unsigned lineNumber = 0;
-  unsigned columnNumber = 0;
+  unsigned line_number = 0;
+  unsigned column_number = 0;
 };
 
 }  // namespace blink

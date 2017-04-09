@@ -14,17 +14,17 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
  public:
   WebGraphicsContext3DProviderWrapper(
       std::unique_ptr<WebGraphicsContext3DProvider> provider)
-      : m_contextProvider(std::move(provider)), m_weakPtrFactory(this) {}
-  WeakPtr<WebGraphicsContext3DProviderWrapper> createWeakPtr() {
-    return m_weakPtrFactory.createWeakPtr();
+      : context_provider_(std::move(provider)), weak_ptr_factory_(this) {}
+  WeakPtr<WebGraphicsContext3DProviderWrapper> CreateWeakPtr() {
+    return weak_ptr_factory_.CreateWeakPtr();
   }
-  WebGraphicsContext3DProvider* contextProvider() {
-    return m_contextProvider.get();
+  WebGraphicsContext3DProvider* ContextProvider() {
+    return context_provider_.get();
   }
 
  private:
-  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-  WeakPtrFactory<WebGraphicsContext3DProviderWrapper> m_weakPtrFactory;
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_;
 };
 
 }  // namespace blink

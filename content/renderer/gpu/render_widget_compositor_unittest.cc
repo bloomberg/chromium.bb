@@ -248,7 +248,7 @@ class RenderWidgetCompositorFrameSinkTest : public testing::Test {
         num_failures_before_success);
     render_widget_compositor_.SetUp(expected_successes,
                                     expected_fallback_succeses);
-    render_widget_compositor_.setVisible(true);
+    render_widget_compositor_.SetVisible(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RenderWidgetCompositorFrameSink::SynchronousComposite,

@@ -16,96 +16,96 @@
 
 namespace blink {
 
-CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(
+CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::Create(
     CompositorWorkerThread* thread,
-    std::unique_ptr<WorkerThreadStartupData> startupData,
-    double timeOrigin) {
+    std::unique_ptr<WorkerThreadStartupData> startup_data,
+    double time_origin) {
   // Note: startupData is finalized on return. After the relevant parts has been
   // passed along to the created 'context'.
   CompositorWorkerGlobalScope* context = new CompositorWorkerGlobalScope(
-      startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin,
-      std::move(startupData->m_starterOriginPrivilegeData),
-      startupData->m_workerClients);
-  context->applyContentSecurityPolicyFromVector(
-      *startupData->m_contentSecurityPolicyHeaders);
-  if (!startupData->m_referrerPolicy.isNull())
-    context->parseAndSetReferrerPolicy(startupData->m_referrerPolicy);
-  context->setAddressSpace(startupData->m_addressSpace);
+      startup_data->script_url_, startup_data->user_agent_, thread, time_origin,
+      std::move(startup_data->starter_origin_privilege_data_),
+      startup_data->worker_clients_);
+  context->ApplyContentSecurityPolicyFromVector(
+      *startup_data->content_security_policy_headers_);
+  if (!startup_data->referrer_policy_.IsNull())
+    context->ParseAndSetReferrerPolicy(startup_data->referrer_policy_);
+  context->SetAddressSpace(startup_data->address_space_);
   return context;
 }
 
 CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(
     const KURL& url,
-    const String& userAgent,
+    const String& user_agent,
     CompositorWorkerThread* thread,
-    double timeOrigin,
-    std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData,
-    WorkerClients* workerClients)
+    double time_origin,
+    std::unique_ptr<SecurityOrigin::PrivilegeData>
+        starter_origin_privilege_data,
+    WorkerClients* worker_clients)
     : WorkerGlobalScope(url,
-                        userAgent,
+                        user_agent,
                         thread,
-                        timeOrigin,
-                        std::move(starterOriginPrivilegeData),
-                        workerClients),
-      m_executingAnimationFrameCallbacks(false),
-      m_callbackCollection(this) {
-  CompositorWorkerProxyClient::from(clients())->setGlobalScope(this);
+                        time_origin,
+                        std::move(starter_origin_privilege_data),
+                        worker_clients),
+      executing_animation_frame_callbacks_(false),
+      callback_collection_(this) {
+  CompositorWorkerProxyClient::From(Clients())->SetGlobalScope(this);
 }
 
 CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope() {}
 
-void CompositorWorkerGlobalScope::dispose() {
-  WorkerGlobalScope::dispose();
-  CompositorWorkerProxyClient::from(clients())->dispose();
+void CompositorWorkerGlobalScope::Dispose() {
+  WorkerGlobalScope::Dispose();
+  CompositorWorkerProxyClient::From(Clients())->Dispose();
 }
 
 DEFINE_TRACE(CompositorWorkerGlobalScope) {
-  visitor->trace(m_callbackCollection);
-  WorkerGlobalScope::trace(visitor);
+  visitor->Trace(callback_collection_);
+  WorkerGlobalScope::Trace(visitor);
 }
 
-const AtomicString& CompositorWorkerGlobalScope::interfaceName() const {
+const AtomicString& CompositorWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::CompositorWorkerGlobalScope;
 }
 
 void CompositorWorkerGlobalScope::postMessage(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     PassRefPtr<SerializedScriptValue> message,
     const MessagePortArray& ports,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   // Disentangle the port in preparation for sending it to the remote context.
-  MessagePortChannelArray channels =
-      MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
-                                    exceptionState);
-  if (exceptionState.hadException())
+  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
+      script_state->GetExecutionContext(), ports, exception_state);
+  if (exception_state.HadException())
     return;
-  workerObjectProxy().postMessageToWorkerObject(std::move(message),
+  WorkerObjectProxy().PostMessageToWorkerObject(std::move(message),
                                                 std::move(channels));
 }
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(
     FrameRequestCallback* callback) {
-  const bool shouldSignal =
-      !m_executingAnimationFrameCallbacks && m_callbackCollection.isEmpty();
-  if (shouldSignal)
-    CompositorWorkerProxyClient::from(clients())->requestAnimationFrame();
-  return m_callbackCollection.registerCallback(callback);
+  const bool should_signal =
+      !executing_animation_frame_callbacks_ && callback_collection_.IsEmpty();
+  if (should_signal)
+    CompositorWorkerProxyClient::From(Clients())->RequestAnimationFrame();
+  return callback_collection_.RegisterCallback(callback);
 }
 
 void CompositorWorkerGlobalScope::cancelAnimationFrame(int id) {
-  m_callbackCollection.cancelCallback(id);
+  callback_collection_.CancelCallback(id);
 }
 
-bool CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(
-    double highResTimeMs) {
-  AutoReset<bool> temporaryChange(&m_executingAnimationFrameCallbacks, true);
-  m_callbackCollection.executeCallbacks(highResTimeMs, highResTimeMs);
-  return !m_callbackCollection.isEmpty();
+bool CompositorWorkerGlobalScope::ExecuteAnimationFrameCallbacks(
+    double high_res_time_ms) {
+  AutoReset<bool> temporary_change(&executing_animation_frame_callbacks_, true);
+  callback_collection_.ExecuteCallbacks(high_res_time_ms, high_res_time_ms);
+  return !callback_collection_.IsEmpty();
 }
 
-InProcessWorkerObjectProxy& CompositorWorkerGlobalScope::workerObjectProxy()
+InProcessWorkerObjectProxy& CompositorWorkerGlobalScope::WorkerObjectProxy()
     const {
-  return static_cast<CompositorWorkerThread*>(thread())->workerObjectProxy();
+  return static_cast<CompositorWorkerThread*>(GetThread())->WorkerObjectProxy();
 }
 
 }  // namespace blink

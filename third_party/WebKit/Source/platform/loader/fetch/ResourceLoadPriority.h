@@ -33,14 +33,14 @@ namespace blink {
 enum ResourceLoadPriority : int {
   // The unresolved priority is here for the convenience of the clients. It
   // should not be passed to the ResourceLoadScheduler.
-  ResourceLoadPriorityUnresolved = -1,
-  ResourceLoadPriorityVeryLow = 0,
-  ResourceLoadPriorityLow,
-  ResourceLoadPriorityMedium,
-  ResourceLoadPriorityHigh,
-  ResourceLoadPriorityVeryHigh,
-  ResourceLoadPriorityLowest = ResourceLoadPriorityVeryLow,
-  ResourceLoadPriorityHighest = ResourceLoadPriorityVeryHigh,
+  kResourceLoadPriorityUnresolved = -1,
+  kResourceLoadPriorityVeryLow = 0,
+  kResourceLoadPriorityLow,
+  kResourceLoadPriorityMedium,
+  kResourceLoadPriorityHigh,
+  kResourceLoadPriorityVeryHigh,
+  kResourceLoadPriorityLowest = kResourceLoadPriorityVeryLow,
+  kResourceLoadPriorityHighest = kResourceLoadPriorityVeryHigh,
 };
 
 struct ResourcePriority final {
@@ -48,16 +48,16 @@ struct ResourcePriority final {
 
  public:
   enum VisibilityStatus {
-    NotVisible,
-    Visible,
+    kNotVisible,
+    kVisible,
   };
 
-  ResourcePriority() : ResourcePriority(NotVisible, 0) {}
-  ResourcePriority(VisibilityStatus status, int intraValue)
-      : visibility(status), intraPriorityValue(intraValue) {}
+  ResourcePriority() : ResourcePriority(kNotVisible, 0) {}
+  ResourcePriority(VisibilityStatus status, int intra_value)
+      : visibility(status), intra_priority_value(intra_value) {}
 
   VisibilityStatus visibility;
-  int intraPriorityValue;
+  int intra_priority_value;
 };
 
 }  // namespace blink

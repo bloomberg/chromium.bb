@@ -18,7 +18,7 @@ class ApplicationCacheErrorEvent final : public Event {
  public:
   ~ApplicationCacheErrorEvent() override;
 
-  static ApplicationCacheErrorEvent* create(
+  static ApplicationCacheErrorEvent* Create(
       WebApplicationCacheHost::ErrorReason reason,
       const String& url,
       int status,
@@ -26,18 +26,18 @@ class ApplicationCacheErrorEvent final : public Event {
     return new ApplicationCacheErrorEvent(reason, url, status, message);
   }
 
-  static ApplicationCacheErrorEvent* create(
-      const AtomicString& eventType,
+  static ApplicationCacheErrorEvent* Create(
+      const AtomicString& event_type,
       const ApplicationCacheErrorEventInit& initializer) {
-    return new ApplicationCacheErrorEvent(eventType, initializer);
+    return new ApplicationCacheErrorEvent(event_type, initializer);
   }
 
-  const String& reason() const { return m_reason; }
-  const String& url() const { return m_url; }
-  int status() const { return m_status; }
-  const String& message() const { return m_message; }
+  const String& reason() const { return reason_; }
+  const String& url() const { return url_; }
+  int status() const { return status_; }
+  const String& message() const { return message_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::ApplicationCacheErrorEvent;
   }
 
@@ -48,13 +48,13 @@ class ApplicationCacheErrorEvent final : public Event {
                              const String& url,
                              int status,
                              const String& message);
-  ApplicationCacheErrorEvent(const AtomicString& eventType,
+  ApplicationCacheErrorEvent(const AtomicString& event_type,
                              const ApplicationCacheErrorEventInit& initializer);
 
-  String m_reason;
-  String m_url;
-  int m_status;
-  String m_message;
+  String reason_;
+  String url_;
+  int status_;
+  String message_;
 };
 
 }  // namespace blink

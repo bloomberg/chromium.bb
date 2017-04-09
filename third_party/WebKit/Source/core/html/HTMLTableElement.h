@@ -65,11 +65,11 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   HTMLTableRowsCollection* rows();
   HTMLCollection* tBodies();
 
-  const AtomicString& rules() const;
-  const AtomicString& summary() const;
+  const AtomicString& Rules() const;
+  const AtomicString& Summary() const;
 
-  const StylePropertySet* additionalCellStyle();
-  const StylePropertySet* additionalGroupStyle(bool rows);
+  const StylePropertySet* AdditionalCellStyle();
+  const StylePropertySet* AdditionalGroupStyle(bool rows);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -77,59 +77,59 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   explicit HTMLTableElement(Document&);
   ~HTMLTableElement();
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  bool isURLAttribute(const Attribute&) const override;
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
 
   // Used to obtain either a solid or outset border decl and to deal with the
   // frame and rules attributes.
-  const StylePropertySet* additionalPresentationAttributeStyle() override;
+  const StylePropertySet* AdditionalPresentationAttributeStyle() override;
 
   enum TableRules {
-    UnsetRules,
-    NoneRules,
-    GroupsRules,
-    RowsRules,
-    ColsRules,
-    AllRules
+    kUnsetRules,
+    kNoneRules,
+    kGroupsRules,
+    kRowsRules,
+    kColsRules,
+    kAllRules
   };
   enum CellBorders {
-    NoBorders,
-    SolidBorders,
-    InsetBorders,
-    SolidBordersColsOnly,
-    SolidBordersRowsOnly
+    kNoBorders,
+    kSolidBorders,
+    kInsetBorders,
+    kSolidBordersColsOnly,
+    kSolidBordersRowsOnly
   };
 
-  CellBorders getCellBorders() const;
+  CellBorders GetCellBorders() const;
 
-  StylePropertySet* createSharedCellStyle();
+  StylePropertySet* CreateSharedCellStyle();
 
-  HTMLTableSectionElement* lastBody() const;
+  HTMLTableSectionElement* LastBody() const;
 
-  void setNeedsTableStyleRecalc() const;
+  void SetNeedsTableStyleRecalc() const;
 
   // Sets a precise border width and creates an outset border for the table and
   // for its cells.
-  bool m_borderAttr;
+  bool border_attr_;
   // Overrides the outset border and makes it solid for the table and cells
   // instead.
-  bool m_borderColorAttr;
+  bool border_color_attr_;
   // Implies a thin border width if no border is set and then a certain set of
   // solid/hidden borders based off the value.
-  bool m_frameAttr;
+  bool frame_attr_;
   // Implies a thin border width, a collapsing border model, and all borders on
   // the table becoming set to hidden (if frame/border are present, to none
   // otherwise).
-  TableRules m_rulesAttr;
+  TableRules rules_attr_;
 
-  unsigned short m_padding;
-  Member<StylePropertySet> m_sharedCellStyle;
+  unsigned short padding_;
+  Member<StylePropertySet> shared_cell_style_;
 };
 
 }  // namespace blink

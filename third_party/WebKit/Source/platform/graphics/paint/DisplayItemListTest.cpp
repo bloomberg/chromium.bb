@@ -15,44 +15,44 @@
 namespace blink {
 namespace {
 
-#define EXPECT_RECT_EQ(expected, actual)               \
-  do {                                                 \
-    const IntRect& actualRect = actual;                \
-    EXPECT_EQ(expected.x(), actualRect.x());           \
-    EXPECT_EQ(expected.y(), actualRect.y());           \
-    EXPECT_EQ(expected.width(), actualRect.width());   \
-    EXPECT_EQ(expected.height(), actualRect.height()); \
+#define EXPECT_RECT_EQ(expected, actual)                \
+  do {                                                  \
+    const IntRect& actual_rect = actual;                \
+    EXPECT_EQ(expected.X(), actual_rect.X());           \
+    EXPECT_EQ(expected.Y(), actual_rect.Y());           \
+    EXPECT_EQ(expected.Width(), actual_rect.Width());   \
+    EXPECT_EQ(expected.Height(), actual_rect.Height()); \
   } while (false)
 
 static const size_t kDefaultListBytes = 10 * 1024;
 
 class DisplayItemListTest : public ::testing::Test {
  public:
-  DisplayItemListTest() : m_list(kDefaultListBytes) {}
+  DisplayItemListTest() : list_(kDefaultListBytes) {}
 
-  DisplayItemList m_list;
-  FakeDisplayItemClient m_client;
+  DisplayItemList list_;
+  FakeDisplayItemClient client_;
 };
 
-static sk_sp<PaintRecord> createRectRecord(const IntRect& bounds) {
+static sk_sp<PaintRecord> CreateRectRecord(const IntRect& bounds) {
   PaintRecorder recorder;
   PaintCanvas* canvas =
-      recorder.beginRecording(bounds.width(), bounds.height());
+      recorder.beginRecording(bounds.Width(), bounds.Height());
   canvas->drawRect(
-      SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
+      SkRect::MakeXYWH(bounds.X(), bounds.Y(), bounds.Width(), bounds.Height()),
       PaintFlags());
   return recorder.finishRecordingAsPicture();
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRect_Simple) {
-  IntRect drawingBounds(5, 6, 7, 8);
-  m_list.allocateAndConstruct<DrawingDisplayItem>(
-      m_client, DisplayItem::Type::kDocumentBackground,
-      createRectRecord(drawingBounds), true);
-  m_list.appendVisualRect(drawingBounds);
+  IntRect drawing_bounds(5, 6, 7, 8);
+  list_.AllocateAndConstruct<DrawingDisplayItem>(
+      client_, DisplayItem::Type::kDocumentBackground,
+      CreateRectRecord(drawing_bounds), true);
+  list_.AppendVisualRect(drawing_bounds);
 
-  EXPECT_EQ(static_cast<size_t>(1), m_list.size());
-  EXPECT_RECT_EQ(drawingBounds, m_list.visualRect(0));
+  EXPECT_EQ(static_cast<size_t>(1), list_.size());
+  EXPECT_RECT_EQ(drawing_bounds, list_.VisualRect(0));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRect_BlockContainingDrawing) {
@@ -61,14 +61,14 @@ TEST_F(DisplayItemListTest, AppendVisualRect_BlockContainingDrawing) {
   // represent the union of all drawing display item visual rects between the
   // pair. We should consider revising Blink's display item list in some form
   // so as to only store visual rects for drawing display items.
-  IntRect drawingBounds(5, 6, 1, 1);
-  m_list.allocateAndConstruct<DrawingDisplayItem>(
-      m_client, DisplayItem::Type::kDocumentBackground,
-      createRectRecord(drawingBounds), true);
-  m_list.appendVisualRect(drawingBounds);
+  IntRect drawing_bounds(5, 6, 1, 1);
+  list_.AllocateAndConstruct<DrawingDisplayItem>(
+      client_, DisplayItem::Type::kDocumentBackground,
+      CreateRectRecord(drawing_bounds), true);
+  list_.AppendVisualRect(drawing_bounds);
 
-  EXPECT_EQ(static_cast<size_t>(1), m_list.size());
-  EXPECT_RECT_EQ(drawingBounds, m_list.visualRect(0));
+  EXPECT_EQ(static_cast<size_t>(1), list_.size());
+  EXPECT_RECT_EQ(drawing_bounds, list_.VisualRect(0));
 }
 }  // namespace
 }  // namespace blink

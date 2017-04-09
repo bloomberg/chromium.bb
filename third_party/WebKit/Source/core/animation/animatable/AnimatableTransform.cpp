@@ -34,23 +34,23 @@
 
 namespace blink {
 
-PassRefPtr<AnimatableTransform> AnimatableTransform::create(
+PassRefPtr<AnimatableTransform> AnimatableTransform::Create(
     const TransformOperations& transform,
     double zoom) {
-  return adoptRef(new AnimatableTransform(transform, zoom));
+  return AdoptRef(new AnimatableTransform(transform, zoom));
 }
 
-PassRefPtr<AnimatableValue> AnimatableTransform::interpolateTo(
+PassRefPtr<AnimatableValue> AnimatableTransform::InterpolateTo(
     const AnimatableValue* value,
     double fraction) const {
-  const AnimatableTransform& transform = toAnimatableTransform(*value);
-  return AnimatableTransform::create(
-      transform.m_transform.blend(m_transform, fraction),
-      blend(m_zoom, transform.m_zoom, fraction));
+  const AnimatableTransform& transform = ToAnimatableTransform(*value);
+  return AnimatableTransform::Create(
+      transform.transform_.Blend(transform_, fraction),
+      Blend(zoom_, transform.zoom_, fraction));
 }
 
-bool AnimatableTransform::equalTo(const AnimatableValue* value) const {
-  return m_transform == toAnimatableTransform(value)->m_transform;
+bool AnimatableTransform::EqualTo(const AnimatableValue* value) const {
+  return transform_ == ToAnimatableTransform(value)->transform_;
 }
 
 }  // namespace blink

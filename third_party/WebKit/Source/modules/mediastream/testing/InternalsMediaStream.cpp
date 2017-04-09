@@ -10,14 +10,14 @@
 namespace blink {
 
 ScriptPromise InternalsMediaStream::addFakeDevice(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     Internals&,
-    const MediaDeviceInfo* deviceInfo,
+    const MediaDeviceInfo* device_info,
     const MediaTrackConstraints& capabilities,
-    const MediaStreamTrack* dataSource) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  resolver->reject();
+    const MediaStreamTrack* data_source) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  resolver->Reject();
   return promise;
 }
 

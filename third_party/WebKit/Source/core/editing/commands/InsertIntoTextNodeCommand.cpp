@@ -37,44 +37,45 @@ namespace blink {
 InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(Text* node,
                                                      unsigned offset,
                                                      const String& text)
-    : SimpleEditCommand(node->document()),
-      m_node(node),
-      m_offset(offset),
-      m_text(text) {
-  DCHECK(m_node);
-  DCHECK_LE(m_offset, m_node->length());
-  DCHECK(!m_text.isEmpty());
+    : SimpleEditCommand(node->GetDocument()),
+      node_(node),
+      offset_(offset),
+      text_(text) {
+  DCHECK(node_);
+  DCHECK_LE(offset_, node_->length());
+  DCHECK(!text_.IsEmpty());
 }
 
-void InsertIntoTextNodeCommand::doApply(EditingState*) {
-  bool passwordEchoEnabled =
-      document().settings() && document().settings()->getPasswordEchoEnabled();
-  if (passwordEchoEnabled)
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+void InsertIntoTextNodeCommand::DoApply(EditingState*) {
+  bool password_echo_enabled =
+      GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetPasswordEchoEnabled();
+  if (password_echo_enabled)
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (!hasEditableStyle(*m_node))
+  if (!HasEditableStyle(*node_))
     return;
 
-  if (passwordEchoEnabled) {
-    LayoutText* layoutText = m_node->layoutObject();
-    if (layoutText && layoutText->isSecure())
-      layoutText->momentarilyRevealLastTypedCharacter(m_offset +
-                                                      m_text.length() - 1);
+  if (password_echo_enabled) {
+    LayoutText* layout_text = node_->GetLayoutObject();
+    if (layout_text && layout_text->IsSecure())
+      layout_text->MomentarilyRevealLastTypedCharacter(offset_ +
+                                                       text_.length() - 1);
   }
 
-  m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_FOR_TESTING);
+  node_->insertData(offset_, text_, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InsertIntoTextNodeCommand::doUnapply() {
-  if (!hasEditableStyle(*m_node))
+void InsertIntoTextNodeCommand::DoUnapply() {
+  if (!HasEditableStyle(*node_))
     return;
 
-  m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION_FOR_TESTING);
+  node_->deleteData(offset_, text_.length(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(InsertIntoTextNodeCommand) {
-  visitor->trace(m_node);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(node_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

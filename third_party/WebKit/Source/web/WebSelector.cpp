@@ -36,19 +36,19 @@
 
 namespace blink {
 
-WebString canonicalizeSelector(WebString webSelector,
+WebString CanonicalizeSelector(WebString web_selector,
                                WebSelectorType restriction) {
-  CSSSelectorList selectorList =
-      CSSParser::parseSelector(strictCSSParserContext(), nullptr, webSelector);
+  CSSSelectorList selector_list =
+      CSSParser::ParseSelector(StrictCSSParserContext(), nullptr, web_selector);
 
-  if (restriction == WebSelectorTypeCompound) {
-    for (const CSSSelector* selector = selectorList.first(); selector;
-         selector = selectorList.next(*selector)) {
-      if (!selector->isCompound())
+  if (restriction == kWebSelectorTypeCompound) {
+    for (const CSSSelector* selector = selector_list.First(); selector;
+         selector = selector_list.Next(*selector)) {
+      if (!selector->IsCompound())
         return WebString();
     }
   }
-  return selectorList.selectorsText();
+  return selector_list.SelectorsText();
 }
 
 }  // namespace blink

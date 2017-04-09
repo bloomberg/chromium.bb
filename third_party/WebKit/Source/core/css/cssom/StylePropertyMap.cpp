@@ -12,40 +12,40 @@
 
 namespace blink {
 
-void StylePropertyMap::set(const String& propertyName,
+void StylePropertyMap::set(const String& property_name,
                            CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-                           ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
-    set(propertyID, item, exceptionState);
+                           ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable) {
+    set(property_id, item, exception_state);
     return;
   }
   // TODO(meade): Handle custom properties here.
-  exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
 }
 
 void StylePropertyMap::append(
-    const String& propertyName,
+    const String& property_name,
     CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-    ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
-    append(propertyID, item, exceptionState);
+    ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable) {
+    append(property_id, item, exception_state);
     return;
   }
   // TODO(meade): Handle custom properties here.
-  exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
 }
 
-void StylePropertyMap::remove(const String& propertyName,
-                              ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
-    remove(propertyID, exceptionState);
+void StylePropertyMap::remove(const String& property_name,
+                              ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable) {
+    remove(property_id, exception_state);
     return;
   }
   // TODO(meade): Handle custom properties here.
-  exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
 }
 
 }  // namespace blink

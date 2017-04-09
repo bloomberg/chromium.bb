@@ -39,27 +39,27 @@ class RTCLegacyStatsReport final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RTCLegacyStatsReport* create(const String& id,
+  static RTCLegacyStatsReport* Create(const String& id,
                                       const String& type,
                                       double timestamp);
 
-  double timestamp() const { return m_timestamp; }
-  String id() { return m_id; }
-  String type() { return m_type; }
-  String stat(const String& name) { return m_stats.at(name); }
+  double timestamp() const { return timestamp_; }
+  String id() { return id_; }
+  String type() { return type_; }
+  String stat(const String& name) { return stats_.at(name); }
   Vector<String> names() const;
 
-  void addStatistic(const String& name, const String& value);
+  void AddStatistic(const String& name, const String& value);
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   RTCLegacyStatsReport(const String& id, const String& type, double timestamp);
 
-  String m_id;
-  String m_type;
-  double m_timestamp;
-  HashMap<String, String> m_stats;
+  String id_;
+  String type_;
+  double timestamp_;
+  HashMap<String, String> stats_;
 };
 
 }  // namespace blink

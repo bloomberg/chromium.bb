@@ -49,7 +49,7 @@ struct WebRect {
   int width;
   int height;
 
-  bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool IsEmpty() const { return width <= 0 || height <= 0; }
 
   WebRect() : x(0), y(0), width(0), height(0) {}
 
@@ -58,13 +58,13 @@ struct WebRect {
 
 #if INSIDE_BLINK
   WebRect(const IntRect& r)
-      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
+      : x(r.X()), y(r.Y()), width(r.Width()), height(r.Height()) {}
 
   WebRect& operator=(const IntRect& r) {
-    x = r.x();
-    y = r.y();
-    width = r.width();
-    height = r.height();
+    x = r.X();
+    y = r.Y();
+    width = r.Width();
+    height = r.Height();
     return *this;
   }
 

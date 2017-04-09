@@ -94,68 +94,68 @@ class WebFrame {
   // TextGranularity enum could be moved somewhere to public/, and we could
   // just use it here directly without introducing a new enum.
   enum TextGranularity {
-    CharacterGranularity = 0,
-    WordGranularity,
-    TextGranularityLast = WordGranularity,
+    kCharacterGranularity = 0,
+    kWordGranularity,
+    kTextGranularityLast = kWordGranularity,
   };
 
   // Returns the number of live WebFrame objects, used for leak checking.
-  BLINK_EXPORT static int instanceCount();
+  BLINK_EXPORT static int InstanceCount();
 
-  virtual bool isWebLocalFrame() const = 0;
-  virtual WebLocalFrame* toWebLocalFrame() = 0;
-  virtual bool isWebRemoteFrame() const = 0;
-  virtual WebRemoteFrame* toWebRemoteFrame() = 0;
+  virtual bool IsWebLocalFrame() const = 0;
+  virtual WebLocalFrame* ToWebLocalFrame() = 0;
+  virtual bool IsWebRemoteFrame() const = 0;
+  virtual WebRemoteFrame* ToWebRemoteFrame() = 0;
 
-  BLINK_EXPORT bool swap(WebFrame*);
+  BLINK_EXPORT bool Swap(WebFrame*);
 
   // This method closes and deletes the WebFrame. This is typically called by
   // the embedder in response to a frame detached callback to the WebFrame
   // client.
-  virtual void close();
+  virtual void Close();
 
   // Called by the embedder when it needs to detach the subtree rooted at this
   // frame.
-  BLINK_EXPORT void detach();
+  BLINK_EXPORT void Detach();
 
   // Basic properties ---------------------------------------------------
 
   // The name of this frame. If no name is given, empty string is returned.
-  virtual WebString assignedName() const = 0;
+  virtual WebString AssignedName() const = 0;
 
   // Sets the name of this frame. For child frames (frames that are not a
   // top-most frame) the actual name may have a suffix appended to make the
   // frame name unique within the hierarchy.
-  virtual void setName(const WebString&) = 0;
+  virtual void SetName(const WebString&) = 0;
 
   // The urls of the given combination types of favicon (if any) specified by
   // the document loaded in this frame. The iconTypesMask is a bit-mask of
   // WebIconURL::Type values, used to select from the available set of icon
   // URLs
-  virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const = 0;
+  virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
 
   // Initializes the various client interfaces.
-  virtual void setSharedWorkerRepositoryClient(
+  virtual void SetSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) = 0;
 
   // The security origin of this frame.
-  BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
+  BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
 
   // Updates the sandbox flags in the frame's FrameOwner.  This is used when
   // this frame's parent is in another process and it dynamically updates
   // this frame's sandbox flags.  The flags won't take effect until the next
   // navigation.
-  BLINK_EXPORT void setFrameOwnerSandboxFlags(WebSandboxFlags);
+  BLINK_EXPORT void SetFrameOwnerSandboxFlags(WebSandboxFlags);
 
   // The frame's insecure request policy.
-  BLINK_EXPORT WebInsecureRequestPolicy getInsecureRequestPolicy() const;
+  BLINK_EXPORT WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
 
   // Updates this frame's FrameOwner properties, such as scrolling, margin,
   // or allowfullscreen.  This is used when this frame's parent is in
   // another process and it dynamically updates these properties.
   // TODO(dcheng): Currently, the update only takes effect on next frame
   // navigation.  This matches the in-process frame behavior.
-  BLINK_EXPORT void setFrameOwnerProperties(const WebFrameOwnerProperties&);
+  BLINK_EXPORT void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
 
   // Geometry -----------------------------------------------------------
 
@@ -163,79 +163,79 @@ class WebFrame {
   // not be accurate if the page layout is out-of-date.
 
   // If set to false, do not draw scrollbars on this frame's view.
-  virtual void setCanHaveScrollbars(bool) = 0;
+  virtual void SetCanHaveScrollbars(bool) = 0;
 
   // The scroll offset from the top-left corner of the frame in pixels.
-  virtual WebSize getScrollOffset() const = 0;
-  virtual void setScrollOffset(const WebSize&) = 0;
+  virtual WebSize GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const WebSize&) = 0;
 
   // The size of the contents area.
-  virtual WebSize contentsSize() const = 0;
+  virtual WebSize ContentsSize() const = 0;
 
   // Returns true if the contents (minus scrollbars) has non-zero area.
-  virtual bool hasVisibleContent() const = 0;
+  virtual bool HasVisibleContent() const = 0;
 
   // Returns the visible content rect (minus scrollbars, in absolute coordinate)
-  virtual WebRect visibleContentRect() const = 0;
+  virtual WebRect VisibleContentRect() const = 0;
 
-  virtual bool hasHorizontalScrollbar() const = 0;
-  virtual bool hasVerticalScrollbar() const = 0;
+  virtual bool HasHorizontalScrollbar() const = 0;
+  virtual bool HasVerticalScrollbar() const = 0;
 
   // Hierarchy ----------------------------------------------------------
 
   // Returns the containing view.
-  virtual WebView* view() const = 0;
+  virtual WebView* View() const = 0;
 
   // Returns the frame that opened this frame or 0 if there is none.
-  BLINK_EXPORT WebFrame* opener() const;
+  BLINK_EXPORT WebFrame* Opener() const;
 
   // Sets the frame that opened this one or 0 if there is none.
-  BLINK_EXPORT void setOpener(WebFrame*);
+  BLINK_EXPORT void SetOpener(WebFrame*);
 
   // Reset the frame that opened this frame to 0.
   // This is executed between layout tests runs
-  void clearOpener() { setOpener(0); }
+  void ClearOpener() { SetOpener(0); }
 
   // Inserts the given frame as a child of this frame, so that it is the next
   // child after |previousSibling|, or first child if |previousSibling| is null.
-  BLINK_EXPORT void insertAfter(WebFrame* child, WebFrame* previousSibling);
+  BLINK_EXPORT void InsertAfter(WebFrame* child, WebFrame* previous_sibling);
 
   // Adds the given frame as a child of this frame.
-  BLINK_EXPORT void appendChild(WebFrame*);
+  BLINK_EXPORT void AppendChild(WebFrame*);
 
   // Removes the given child from this frame.
-  BLINK_EXPORT void removeChild(WebFrame*);
+  BLINK_EXPORT void RemoveChild(WebFrame*);
 
   // Returns the parent frame or 0 if this is a top-most frame.
-  BLINK_EXPORT WebFrame* parent() const;
+  BLINK_EXPORT WebFrame* Parent() const;
 
   // Returns the top-most frame in the hierarchy containing this frame.
-  BLINK_EXPORT WebFrame* top() const;
+  BLINK_EXPORT WebFrame* Top() const;
 
   // Returns the first child frame.
-  BLINK_EXPORT WebFrame* firstChild() const;
+  BLINK_EXPORT WebFrame* FirstChild() const;
 
   // Returns the next sibling frame.
-  BLINK_EXPORT WebFrame* nextSibling() const;
+  BLINK_EXPORT WebFrame* NextSibling() const;
 
   // Returns the next frame in "frame traversal order".
-  BLINK_EXPORT WebFrame* traverseNext() const;
+  BLINK_EXPORT WebFrame* TraverseNext() const;
 
   // Content ------------------------------------------------------------
 
-  virtual WebDocument document() const = 0;
+  virtual WebDocument GetDocument() const = 0;
 
-  virtual WebPerformance performance() const = 0;
+  virtual WebPerformance Performance() const = 0;
 
   // Closing -------------------------------------------------------------
 
   // Runs unload handlers for this frame.
-  virtual void dispatchUnloadEvent() = 0;
+  virtual void DispatchUnloadEvent() = 0;
 
   // Scripting ----------------------------------------------------------
 
   // Executes script in the context of the current page.
-  virtual void executeScript(const WebScriptSource&) = 0;
+  virtual void ExecuteScript(const WebScriptSource&) = 0;
 
   // Executes JavaScript in a new world associated with the web frame.
   // The script gets its own global scope and its own prototypes for
@@ -244,14 +244,14 @@ class WebFrame {
   //
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
-  virtual void executeScriptInIsolatedWorld(int worldID,
+  virtual void ExecuteScriptInIsolatedWorld(int world_id,
                                             const WebScriptSource* sources,
-                                            unsigned numSources) = 0;
+                                            unsigned num_sources) = 0;
 
   // Associates an isolated world (see above for description) with a security
   // origin. XMLHttpRequest instances used in that world will be considered
   // to come from that origin, not the frame's.
-  virtual void setIsolatedWorldSecurityOrigin(int worldID,
+  virtual void SetIsolatedWorldSecurityOrigin(int world_id,
                                               const WebSecurityOrigin&) = 0;
 
   // Associates a content security policy with an isolated world. This policy
@@ -261,30 +261,30 @@ class WebFrame {
   //
   // FIXME: Setting this simply bypasses the protected resource's CSP. It
   //     doesn't yet restrict the isolated world to the provided policy.
-  virtual void setIsolatedWorldContentSecurityPolicy(int worldID,
+  virtual void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                                      const WebString&) = 0;
 
   // Calls window.gc() if it is defined.
-  virtual void collectGarbage() = 0;
+  virtual void CollectGarbage() = 0;
 
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.
-  virtual v8::Local<v8::Value> executeScriptAndReturnValue(
+  virtual v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       const WebScriptSource&) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
-  virtual void executeScriptInIsolatedWorld(
-      int worldID,
-      const WebScriptSource* sourcesIn,
-      unsigned numSources,
+  virtual void ExecuteScriptInIsolatedWorld(
+      int world_id,
+      const WebScriptSource* sources_in,
+      unsigned num_sources,
       WebVector<v8::Local<v8::Value>>* results) = 0;
 
   // Call the function with the given receiver and arguments, bypassing
   // canExecute().
-  virtual v8::Local<v8::Value> callFunctionEvenIfScriptDisabled(
+  virtual v8::Local<v8::Value> CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>,
       v8::Local<v8::Value>,
       int argc,
@@ -295,11 +295,11 @@ class WebFrame {
   // each isolated world and one for the main world. If you don't know what
   // the "main world" or an "isolated world" is, then you probably shouldn't
   // be calling this API.
-  virtual v8::Local<v8::Context> mainWorldScriptContext() const = 0;
+  virtual v8::Local<v8::Context> MainWorldScriptContext() const = 0;
 
   // Returns true if the WebFrame currently executing JavaScript has access
   // to the given WebFrame, or false otherwise.
-  BLINK_EXPORT static bool scriptCanAccess(WebFrame*);
+  BLINK_EXPORT static bool ScriptCanAccess(WebFrame*);
 
   // Navigation ----------------------------------------------------------
   // TODO(clamy): Remove the reload, reloadWithOverrideURL, and loadRequest
@@ -308,58 +308,58 @@ class WebFrame {
   // Reload the current document.
   // Note: reload() and reloadWithOverrideURL() will be deprecated.
   // Do not use these APIs any more, but use loadRequest() instead.
-  virtual void reload(WebFrameLoadType) = 0;
+  virtual void Reload(WebFrameLoadType) = 0;
 
   // This is used for situations where we want to reload a different URL because
   // of a redirect.
-  virtual void reloadWithOverrideURL(const WebURL& overrideUrl,
+  virtual void ReloadWithOverrideURL(const WebURL& override_url,
                                      WebFrameLoadType) = 0;
 
   // Load the given URL.
-  virtual void loadRequest(const WebURLRequest&) = 0;
+  virtual void LoadRequest(const WebURLRequest&) = 0;
 
   // This method is short-hand for calling LoadData, where mime_type is
   // "text/html" and text_encoding is "UTF-8".
-  virtual void loadHTMLString(const WebData& html,
-                              const WebURL& baseURL,
-                              const WebURL& unreachableURL = WebURL(),
+  virtual void LoadHTMLString(const WebData& html,
+                              const WebURL& base_url,
+                              const WebURL& unreachable_url = WebURL(),
                               bool replace = false) = 0;
 
   // Stops any pending loads on the frame and its children.
-  virtual void stopLoading() = 0;
+  virtual void StopLoading() = 0;
 
   // Returns the data source that is currently loading.  May be null.
-  virtual WebDataSource* provisionalDataSource() const = 0;
+  virtual WebDataSource* ProvisionalDataSource() const = 0;
 
   // Returns the data source that is currently loaded.
-  virtual WebDataSource* dataSource() const = 0;
+  virtual WebDataSource* DataSource() const = 0;
 
   // View-source rendering mode.  Set this before loading an URL to cause
   // it to be rendered in view-source mode.
-  virtual void enableViewSourceMode(bool) = 0;
-  virtual bool isViewSourceModeEnabled() const = 0;
+  virtual void EnableViewSourceMode(bool) = 0;
+  virtual bool IsViewSourceModeEnabled() const = 0;
 
   // Sets the referrer for the given request to be the specified URL or
   // if that is null, then it sets the referrer to the referrer that the
   // frame would use for subresources.  NOTE: This method also filters
   // out invalid referrers (e.g., it is invalid to send a HTTPS URL as
   // the referrer for a HTTP request).
-  virtual void setReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
+  virtual void SetReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
 
   // Returns an AssociatedURLLoader that is associated with this frame.  The
   // loader will, for example, be cancelled when WebFrame::stopLoading is
   // called.
   //
   // FIXME: stopLoading does not yet cancel an associated loader!!
-  virtual WebAssociatedURLLoader* createAssociatedURLLoader(
+  virtual WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) = 0;
 
   // Returns the number of registered unload listeners.
-  virtual unsigned unloadListenerCount() const = 0;
+  virtual unsigned UnloadListenerCount() const = 0;
 
   // Will return true if between didStartLoading and didStopLoading
   // notifications.
-  virtual bool isLoading() const;
+  virtual bool IsLoading() const;
 
   // Printing ------------------------------------------------------------
 
@@ -370,66 +370,66 @@ class WebFrame {
   // frame.
   // Returns the number of pages that can be printed at the given
   // page size.
-  virtual int printBegin(const WebPrintParams&,
-                         const WebNode& constrainToNode = WebNode()) = 0;
+  virtual int PrintBegin(const WebPrintParams&,
+                         const WebNode& constrain_to_node = WebNode()) = 0;
 
   // Returns the page shrinking factor calculated by webkit (usually
   // between 1/1.33 and 1/2). Returns 0 if the page number is invalid or
   // not in printing mode.
-  virtual float getPrintPageShrink(int page) = 0;
+  virtual float GetPrintPageShrink(int page) = 0;
 
   // Prints one page, and returns the calculated page shrinking factor
   // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
   // invalid or not in printing mode.
-  virtual float printPage(int pageToPrint, WebCanvas*) = 0;
+  virtual float PrintPage(int page_to_print, WebCanvas*) = 0;
 
   // Reformats the WebFrame for screen display.
-  virtual void printEnd() = 0;
+  virtual void PrintEnd() = 0;
 
   // If the frame contains a full-frame plugin or the given node refers to a
   // plugin whose content indicates that printed output should not be scaled,
   // return true, otherwise return false.
-  virtual bool isPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
+  virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
 
   // Events --------------------------------------------------------------
 
   // Dispatches a message event on the current DOMWindow in this WebFrame.
-  virtual void dispatchMessageEventWithOriginCheck(
-      const WebSecurityOrigin& intendedTargetOrigin,
+  virtual void DispatchMessageEventWithOriginCheck(
+      const WebSecurityOrigin& intended_target_origin,
       const WebDOMEvent&) = 0;
 
   // Utility -------------------------------------------------------------
 
   // Prints all of the pages into the canvas, with page boundaries drawn as
   // one pixel wide blue lines. This method exists to support layout tests.
-  virtual void printPagesWithBoundaries(WebCanvas*, const WebSize&) = 0;
+  virtual void PrintPagesWithBoundaries(WebCanvas*, const WebSize&) = 0;
 
   // Returns the bounds rect for current selection. If selection is performed
   // on transformed text, the rect will still bound the selection but will
   // not be transformed itself. If no selection is present, the rect will be
   // empty ((0,0), (0,0)).
-  virtual WebRect selectionBoundsRect() const = 0;
+  virtual WebRect SelectionBoundsRect() const = 0;
 
   // Dumps the layer tree, used by the accelerated compositor, in
   // text form. This is used only by layout tests.
-  virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
+  virtual WebString LayerTreeAsText(bool show_debug_info = false) const = 0;
 
-  virtual WebFrameImplBase* toImplBase() = 0;
+  virtual WebFrameImplBase* ToImplBase() = 0;
   // TODO(dcheng): Fix const-correctness issues and remove this overload.
-  virtual const WebFrameImplBase* toImplBase() const {
-    return const_cast<WebFrame*>(this)->toImplBase();
+  virtual const WebFrameImplBase* ToImplBase() const {
+    return const_cast<WebFrame*>(this)->ToImplBase();
   }
 
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given element is not a frame, iframe or if the frame is empty.
-  BLINK_EXPORT static WebFrame* fromFrameOwnerElement(const WebElement&);
+  BLINK_EXPORT static WebFrame* FromFrameOwnerElement(const WebElement&);
 
 #if BLINK_IMPLEMENTATION
-  static WebFrame* fromFrame(Frame*);
+  static WebFrame* FromFrame(Frame*);
 
-  bool inShadowTree() const { return m_scope == WebTreeScopeType::Shadow; }
+  bool InShadowTree() const { return scope_ == WebTreeScopeType::kShadow; }
 
-  static void traceFrames(Visitor*, WebFrame*);
+  static void TraceFrames(Visitor*, WebFrame*);
 #endif
 
  protected:
@@ -440,26 +440,26 @@ class WebFrame {
   // Used to lie to a local frame that is replacing a remote frame,
   // so it can properly start a navigation but wait to swap until
   // commit-time.
-  void setParent(WebFrame*);
+  void SetParent(WebFrame*);
 
  private:
 #if BLINK_IMPLEMENTATION
   friend class OpenedFrameTracker;
   friend class WebFrameTest;
 
-  static void traceFrame(Visitor*, WebFrame*);
+  static void TraceFrame(Visitor*, WebFrame*);
 #endif
 
-  const WebTreeScopeType m_scope;
+  const WebTreeScopeType scope_;
 
-  WebFrame* m_parent;
-  WebFrame* m_previousSibling;
-  WebFrame* m_nextSibling;
-  WebFrame* m_firstChild;
-  WebFrame* m_lastChild;
+  WebFrame* parent_;
+  WebFrame* previous_sibling_;
+  WebFrame* next_sibling_;
+  WebFrame* first_child_;
+  WebFrame* last_child_;
 
-  WebFrame* m_opener;
-  std::unique_ptr<OpenedFrameTracker> m_openedFrameTracker;
+  WebFrame* opener_;
+  std::unique_ptr<OpenedFrameTracker> opened_frame_tracker_;
 };
 
 }  // namespace blink

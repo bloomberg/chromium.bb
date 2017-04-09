@@ -45,30 +45,30 @@ class V0CustomElementUpgradeCandidateMap final
   WTF_MAKE_NONCOPYABLE(V0CustomElementUpgradeCandidateMap);
 
  public:
-  static V0CustomElementUpgradeCandidateMap* create();
+  static V0CustomElementUpgradeCandidateMap* Create();
   ~V0CustomElementUpgradeCandidateMap() override;
 
   // API for V0CustomElementRegistrationContext to save and take candidates
 
   typedef HeapLinkedHashSet<WeakMember<Element>> ElementSet;
 
-  void add(const V0CustomElementDescriptor&, Element*);
-  ElementSet* takeUpgradeCandidatesFor(const V0CustomElementDescriptor&);
+  void Add(const V0CustomElementDescriptor&, Element*);
+  ElementSet* TakeUpgradeCandidatesFor(const V0CustomElementDescriptor&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   V0CustomElementUpgradeCandidateMap() {}
 
-  void elementWasDestroyed(Element*) override;
+  void ElementWasDestroyed(Element*) override;
 
   typedef HeapHashMap<WeakMember<Element>, V0CustomElementDescriptor>
       UpgradeCandidateMap;
-  UpgradeCandidateMap m_upgradeCandidates;
+  UpgradeCandidateMap upgrade_candidates_;
 
   typedef HeapHashMap<V0CustomElementDescriptor, Member<ElementSet>>
       UnresolvedDefinitionMap;
-  UnresolvedDefinitionMap m_unresolvedDefinitions;
+  UnresolvedDefinitionMap unresolved_definitions_;
 };
 
 }  // namespace blink

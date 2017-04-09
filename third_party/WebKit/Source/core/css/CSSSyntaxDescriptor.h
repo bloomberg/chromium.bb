@@ -13,50 +13,50 @@ class CSSParserContext;
 class CSSValue;
 
 enum class CSSSyntaxType {
-  TokenStream,
-  Ident,
-  Length,
-  Number,
-  Percentage,
-  LengthPercentage,
-  Color,
-  Image,
-  Url,
-  Integer,
-  Angle,
-  Time,
-  Resolution,
-  TransformFunction,
-  CustomIdent,
+  kTokenStream,
+  kIdent,
+  kLength,
+  kNumber,
+  kPercentage,
+  kLengthPercentage,
+  kColor,
+  kImage,
+  kUrl,
+  kInteger,
+  kAngle,
+  kTime,
+  kResolution,
+  kTransformFunction,
+  kCustomIdent,
 };
 
 struct CSSSyntaxComponent {
   CSSSyntaxComponent(CSSSyntaxType type, const String& string, bool repeatable)
-      : m_type(type), m_string(string), m_repeatable(repeatable) {}
+      : type_(type), string_(string), repeatable_(repeatable) {}
 
-  CSSSyntaxType m_type;
-  String m_string;  // Only used when m_type is CSSSyntaxType::Ident
-  bool m_repeatable;
+  CSSSyntaxType type_;
+  String string_;  // Only used when m_type is CSSSyntaxType::Ident
+  bool repeatable_;
 };
 
 class CORE_EXPORT CSSSyntaxDescriptor {
  public:
   CSSSyntaxDescriptor(String syntax);
 
-  const CSSValue* parse(CSSParserTokenRange,
+  const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
-                        bool isAnimationTainted) const;
-  bool isValid() const { return !m_syntaxComponents.isEmpty(); }
-  bool isTokenStream() const {
-    return m_syntaxComponents.size() == 1 &&
-           m_syntaxComponents[0].m_type == CSSSyntaxType::TokenStream;
+                        bool is_animation_tainted) const;
+  bool IsValid() const { return !syntax_components_.IsEmpty(); }
+  bool IsTokenStream() const {
+    return syntax_components_.size() == 1 &&
+           syntax_components_[0].type_ == CSSSyntaxType::kTokenStream;
   }
-  const Vector<CSSSyntaxComponent>& components() const {
-    return m_syntaxComponents;
+  const Vector<CSSSyntaxComponent>& Components() const {
+    return syntax_components_;
   }
 
  private:
-  Vector<CSSSyntaxComponent> m_syntaxComponents;
+  Vector<CSSSyntaxComponent> syntax_components_;
 };
 
 }  // namespace blink

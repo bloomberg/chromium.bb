@@ -36,40 +36,40 @@
 namespace blink {
 
 SVGPointTearOff::SVGPointTearOff(SVGPoint* target,
-                                 SVGElement* contextElement,
-                                 PropertyIsAnimValType propertyIsAnimVal,
-                                 const QualifiedName& attributeName)
+                                 SVGElement* context_element,
+                                 PropertyIsAnimValType property_is_anim_val,
+                                 const QualifiedName& attribute_name)
     : SVGPropertyTearOff<SVGPoint>(target,
-                                   contextElement,
-                                   propertyIsAnimVal,
-                                   attributeName) {}
+                                   context_element,
+                                   property_is_anim_val,
+                                   attribute_name) {}
 
-void SVGPointTearOff::setX(float f, ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGPointTearOff::setX(float f, ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  target()->setX(f);
-  commitChange();
+  Target()->SetX(f);
+  CommitChange();
 }
 
-void SVGPointTearOff::setY(float f, ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGPointTearOff::setY(float f, ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  target()->setY(f);
-  commitChange();
+  Target()->SetY(f);
+  CommitChange();
 }
 
 SVGPointTearOff* SVGPointTearOff::matrixTransform(SVGMatrixTearOff* matrix) {
-  FloatPoint point = target()->matrixTransform(matrix->value());
-  return SVGPointTearOff::create(SVGPoint::create(point), 0,
-                                 PropertyIsNotAnimVal);
+  FloatPoint point = Target()->MatrixTransform(matrix->Value());
+  return SVGPointTearOff::Create(SVGPoint::Create(point), 0,
+                                 kPropertyIsNotAnimVal);
 }
 
 DEFINE_TRACE_WRAPPERS(SVGPointTearOff) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

@@ -41,9 +41,9 @@ class PLATFORM_EXPORT StringTruncator {
   STATIC_ONLY(StringTruncator);
 
  public:
-  static String centerTruncate(const String&, float maxWidth, const Font&);
-  static String rightTruncate(const String&, float maxWidth, const Font&);
-  static float width(const String&, const Font&);
+  static String CenterTruncate(const String&, float max_width, const Font&);
+  static String RightTruncate(const String&, float max_width, const Font&);
+  static float Width(const String&, const Font&);
 };
 
 }  // namespace blink

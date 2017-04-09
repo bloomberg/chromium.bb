@@ -45,76 +45,76 @@ enum class WebRemotePlaybackAvailability;
 class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
  public:
   enum VideoTrackKind {
-    VideoTrackKindNone,
-    VideoTrackKindAlternative,
-    VideoTrackKindCaptions,
-    VideoTrackKindMain,
-    VideoTrackKindSign,
-    VideoTrackKindSubtitles,
-    VideoTrackKindCommentary
+    kVideoTrackKindNone,
+    kVideoTrackKindAlternative,
+    kVideoTrackKindCaptions,
+    kVideoTrackKindMain,
+    kVideoTrackKindSign,
+    kVideoTrackKindSubtitles,
+    kVideoTrackKindCommentary
   };
 
   enum AudioTrackKind {
-    AudioTrackKindNone,
-    AudioTrackKindAlternative,
-    AudioTrackKindDescriptions,
-    AudioTrackKindMain,
-    AudioTrackKindMainDescriptions,
-    AudioTrackKindTranslation,
-    AudioTrackKindCommentary
+    kAudioTrackKindNone,
+    kAudioTrackKindAlternative,
+    kAudioTrackKindDescriptions,
+    kAudioTrackKindMain,
+    kAudioTrackKindMainDescriptions,
+    kAudioTrackKindTranslation,
+    kAudioTrackKindCommentary
   };
 
-  virtual void networkStateChanged() = 0;
-  virtual void readyStateChanged() = 0;
-  virtual void timeChanged() = 0;
-  virtual void repaint() = 0;
-  virtual void durationChanged() = 0;
-  virtual void sizeChanged() = 0;
-  virtual void playbackStateChanged() = 0;
-  virtual void setWebLayer(WebLayer*) = 0;
-  virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id,
+  virtual void NetworkStateChanged() = 0;
+  virtual void ReadyStateChanged() = 0;
+  virtual void TimeChanged() = 0;
+  virtual void Repaint() = 0;
+  virtual void DurationChanged() = 0;
+  virtual void SizeChanged() = 0;
+  virtual void PlaybackStateChanged() = 0;
+  virtual void SetWebLayer(WebLayer*) = 0;
+  virtual WebMediaPlayer::TrackId AddAudioTrack(const WebString& id,
                                                 AudioTrackKind,
                                                 const WebString& label,
                                                 const WebString& language,
                                                 bool enabled) = 0;
-  virtual void removeAudioTrack(WebMediaPlayer::TrackId) = 0;
-  virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id,
+  virtual void RemoveAudioTrack(WebMediaPlayer::TrackId) = 0;
+  virtual WebMediaPlayer::TrackId AddVideoTrack(const WebString& id,
                                                 VideoTrackKind,
                                                 const WebString& label,
                                                 const WebString& language,
                                                 bool selected) = 0;
-  virtual void removeVideoTrack(WebMediaPlayer::TrackId) = 0;
-  virtual void addTextTrack(WebInbandTextTrack*) = 0;
-  virtual void removeTextTrack(WebInbandTextTrack*) = 0;
-  virtual void mediaSourceOpened(WebMediaSource*) = 0;
-  virtual void requestSeek(double) = 0;
-  virtual void remoteRouteAvailabilityChanged(
+  virtual void RemoveVideoTrack(WebMediaPlayer::TrackId) = 0;
+  virtual void AddTextTrack(WebInbandTextTrack*) = 0;
+  virtual void RemoveTextTrack(WebInbandTextTrack*) = 0;
+  virtual void MediaSourceOpened(WebMediaSource*) = 0;
+  virtual void RequestSeek(double) = 0;
+  virtual void RemoteRouteAvailabilityChanged(
       WebRemotePlaybackAvailability) = 0;
-  virtual void connectedToRemoteDevice() = 0;
-  virtual void disconnectedFromRemoteDevice() = 0;
-  virtual void cancelledRemotePlaybackRequest() = 0;
-  virtual void remotePlaybackStarted() = 0;
+  virtual void ConnectedToRemoteDevice() = 0;
+  virtual void DisconnectedFromRemoteDevice() = 0;
+  virtual void CancelledRemotePlaybackRequest() = 0;
+  virtual void RemotePlaybackStarted() = 0;
 
   // Set the player as the persistent video. Persistent video should hide its
   // controls and go fullscreen.
-  virtual void onBecamePersistentVideo(bool) = 0;
+  virtual void OnBecamePersistentVideo(bool) = 0;
 
   // After the monitoring is activated, the client will inform WebMediaPlayer
   // when the element becomes/stops being the dominant visible content by
   // calling WebMediaPlayer::becameDominantVisibleContent(bool).
-  virtual void activateViewportIntersectionMonitoring(bool) {}
+  virtual void ActivateViewportIntersectionMonitoring(bool) {}
 
   // Returns whether the media element is in an autoplay muted state.
-  virtual bool isAutoplayingMuted() = 0;
+  virtual bool IsAutoplayingMuted() = 0;
 
   // Warning: This method will destruct the caller.
-  virtual void requestReload(const WebURL& newUrl) = 0;
+  virtual void RequestReload(const WebURL& new_url) = 0;
 
   // Returns if there's a selected video track.
-  virtual bool hasSelectedVideoTrack() = 0;
+  virtual bool HasSelectedVideoTrack() = 0;
 
   // Returns the selected video track id (or an empty id if there's none).
-  virtual WebMediaPlayer::TrackId getSelectedVideoTrackId() = 0;
+  virtual WebMediaPlayer::TrackId GetSelectedVideoTrackId() = 0;
 
  protected:
   ~WebMediaPlayerClient() {}

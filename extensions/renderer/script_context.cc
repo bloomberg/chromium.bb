@@ -198,7 +198,7 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   if (!web_frame_)
     return handle_scope.Escape(function->Call(global, argc, argv));
   return handle_scope.Escape(
-      v8::Local<v8::Value>(web_frame_->callFunctionEvenIfScriptDisabled(
+      v8::Local<v8::Value>(web_frame_->CallFunctionEvenIfScriptDisabled(
           function, global, argc, argv)));
 }
 
@@ -226,7 +226,7 @@ void ScriptContext::SafeCallFunction(
       // ScriptInjectionCallback manages its own lifetime.
       wrapper_callback = new ScriptInjectionCallback(callback);
     }
-    web_frame_->requestExecuteV8Function(v8_context(), function, global, argc,
+    web_frame_->RequestExecuteV8Function(v8_context(), function, global, argc,
                                          argv, wrapper_callback);
   } else {
     // TODO(devlin): This probably isn't safe.
@@ -299,23 +299,23 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  blink::WebDataSource* data_source = frame->provisionalDataSource()
-                                          ? frame->provisionalDataSource()
-                                          : frame->dataSource();
-  return data_source ? GURL(data_source->getRequest().url()) : GURL();
+  blink::WebDataSource* data_source = frame->ProvisionalDataSource()
+                                          ? frame->ProvisionalDataSource()
+                                          : frame->DataSource();
+  return data_source ? GURL(data_source->GetRequest().Url()) : GURL();
 }
 
 // static
 GURL ScriptContext::GetAccessCheckedFrameURL(const blink::WebFrame* frame) {
-  const blink::WebURL& weburl = frame->document().url();
-  if (weburl.isEmpty()) {
-    blink::WebDataSource* data_source = frame->provisionalDataSource()
-                                            ? frame->provisionalDataSource()
-                                            : frame->dataSource();
+  const blink::WebURL& weburl = frame->GetDocument().Url();
+  if (weburl.IsEmpty()) {
+    blink::WebDataSource* data_source = frame->ProvisionalDataSource()
+                                            ? frame->ProvisionalDataSource()
+                                            : frame->DataSource();
     if (data_source &&
-        frame->getSecurityOrigin().canAccess(blink::WebSecurityOrigin::create(
-            data_source->getRequest().url()))) {
-      return GURL(data_source->getRequest().url());
+        frame->GetSecurityOrigin().CanAccess(blink::WebSecurityOrigin::Create(
+            data_source->GetRequest().Url()))) {
+      return GURL(data_source->GetRequest().Url());
     }
   }
   return GURL(weburl);
@@ -336,21 +336,21 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   // hierarchy to find the closest non-about:-page and return its URL.
   const blink::WebFrame* parent = frame;
   do {
-    if (parent->parent())
-      parent = parent->parent();
-    else if (parent->opener() != parent)
-      parent = parent->opener();
+    if (parent->Parent())
+      parent = parent->Parent();
+    else if (parent->Opener() != parent)
+      parent = parent->Opener();
     else
       parent = nullptr;
-  } while (parent && !parent->document().isNull() &&
-           GURL(parent->document().url()).SchemeIs(url::kAboutScheme));
+  } while (parent && !parent->GetDocument().IsNull() &&
+           GURL(parent->GetDocument().Url()).SchemeIs(url::kAboutScheme));
 
-  if (parent && !parent->document().isNull()) {
+  if (parent && !parent->GetDocument().IsNull()) {
     // Only return the parent URL if the frame can access it.
-    const blink::WebDocument& parent_document = parent->document();
-    if (frame->document().getSecurityOrigin().canAccess(
-            parent_document.getSecurityOrigin())) {
-      return parent_document.url();
+    const blink::WebDocument& parent_document = parent->GetDocument();
+    if (frame->GetDocument().GetSecurityOrigin().CanAccess(
+            parent_document.GetSecurityOrigin())) {
+      return parent_document.Url();
     }
   }
   return document_url;

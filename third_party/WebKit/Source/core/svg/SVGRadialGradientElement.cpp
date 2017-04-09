@@ -30,144 +30,143 @@ namespace blink {
 
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document),
-      m_cx(SVGAnimatedLength::create(this,
-                                     SVGNames::cxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_cy(SVGAnimatedLength::create(this,
-                                     SVGNames::cyAttr,
-                                     SVGLength::create(SVGLengthMode::Height))),
-      m_r(SVGAnimatedLength::create(this,
-                                    SVGNames::rAttr,
-                                    SVGLength::create(SVGLengthMode::Other))),
-      m_fx(SVGAnimatedLength::create(this,
-                                     SVGNames::fxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_fy(SVGAnimatedLength::create(this,
-                                     SVGNames::fyAttr,
-                                     SVGLength::create(SVGLengthMode::Height))),
-      m_fr(SVGAnimatedLength::create(this,
-                                     SVGNames::frAttr,
-                                     SVGLength::create(SVGLengthMode::Other))) {
+      cx_(SVGAnimatedLength::Create(this,
+                                    SVGNames::cxAttr,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      cy_(SVGAnimatedLength::Create(this,
+                                    SVGNames::cyAttr,
+                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      r_(SVGAnimatedLength::Create(this,
+                                   SVGNames::rAttr,
+                                   SVGLength::Create(SVGLengthMode::kOther))),
+      fx_(SVGAnimatedLength::Create(this,
+                                    SVGNames::fxAttr,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      fy_(SVGAnimatedLength::Create(this,
+                                    SVGNames::fyAttr,
+                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      fr_(SVGAnimatedLength::Create(this,
+                                    SVGNames::frAttr,
+                                    SVGLength::Create(SVGLengthMode::kOther))) {
   // Spec: If the cx/cy/r attribute is not specified, the effect is as if a
   // value of "50%" were specified.
-  m_cx->setDefaultValueAsString("50%");
-  m_cy->setDefaultValueAsString("50%");
-  m_r->setDefaultValueAsString("50%");
+  cx_->SetDefaultValueAsString("50%");
+  cy_->SetDefaultValueAsString("50%");
+  r_->SetDefaultValueAsString("50%");
 
   // SVG2-Draft Spec: If the fr attributed is not specified, the effect is as if
   // a value of "0%" were specified.
-  m_fr->setDefaultValueAsString("0%");
+  fr_->SetDefaultValueAsString("0%");
 
-  addToPropertyMap(m_cx);
-  addToPropertyMap(m_cy);
-  addToPropertyMap(m_r);
-  addToPropertyMap(m_fx);
-  addToPropertyMap(m_fy);
-  addToPropertyMap(m_fr);
+  AddToPropertyMap(cx_);
+  AddToPropertyMap(cy_);
+  AddToPropertyMap(r_);
+  AddToPropertyMap(fx_);
+  AddToPropertyMap(fy_);
+  AddToPropertyMap(fr_);
 }
 
 DEFINE_TRACE(SVGRadialGradientElement) {
-  visitor->trace(m_cx);
-  visitor->trace(m_cy);
-  visitor->trace(m_r);
-  visitor->trace(m_fx);
-  visitor->trace(m_fy);
-  visitor->trace(m_fr);
-  SVGGradientElement::trace(visitor);
+  visitor->Trace(cx_);
+  visitor->Trace(cy_);
+  visitor->Trace(r_);
+  visitor->Trace(fx_);
+  visitor->Trace(fy_);
+  visitor->Trace(fr_);
+  SVGGradientElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGRadialGradientElement)
 
-void SVGRadialGradientElement::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
-      attrName == SVGNames::fxAttr || attrName == SVGNames::fyAttr ||
-      attrName == SVGNames::rAttr || attrName == SVGNames::frAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGRadialGradientElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::cxAttr || attr_name == SVGNames::cyAttr ||
+      attr_name == SVGNames::fxAttr || attr_name == SVGNames::fyAttr ||
+      attr_name == SVGNames::rAttr || attr_name == SVGNames::frAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    updateRelativeLengthsInformation();
+    UpdateRelativeLengthsInformation();
 
-    LayoutSVGResourceContainer* layoutObject =
-        toLayoutSVGResourceContainer(this->layoutObject());
-    if (layoutObject)
-      layoutObject->invalidateCacheAndMarkForLayout();
+    LayoutSVGResourceContainer* layout_object =
+        ToLayoutSVGResourceContainer(this->GetLayoutObject());
+    if (layout_object)
+      layout_object->InvalidateCacheAndMarkForLayout();
 
     return;
   }
 
-  SVGGradientElement::svgAttributeChanged(attrName);
+  SVGGradientElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGRadialGradientElement::createLayoutObject(
+LayoutObject* SVGRadialGradientElement::CreateLayoutObject(
     const ComputedStyle&) {
   return new LayoutSVGResourceRadialGradient(this);
 }
 
-static void setGradientAttributes(const SVGGradientElement& element,
+static void SetGradientAttributes(const SVGGradientElement& element,
                                   RadialGradientAttributes& attributes,
-                                  bool isRadial) {
-  element.synchronizeAnimatedSVGAttribute(anyQName());
-  element.collectCommonAttributes(attributes);
+                                  bool is_radial) {
+  element.SynchronizeAnimatedSVGAttribute(AnyQName());
+  element.CollectCommonAttributes(attributes);
 
-  if (!isRadial)
+  if (!is_radial)
     return;
   const SVGRadialGradientElement& radial = toSVGRadialGradientElement(element);
 
-  if (!attributes.hasCx() && radial.cx()->isSpecified())
-    attributes.setCx(radial.cx()->currentValue());
+  if (!attributes.HasCx() && radial.cx()->IsSpecified())
+    attributes.SetCx(radial.cx()->CurrentValue());
 
-  if (!attributes.hasCy() && radial.cy()->isSpecified())
-    attributes.setCy(radial.cy()->currentValue());
+  if (!attributes.HasCy() && radial.cy()->IsSpecified())
+    attributes.SetCy(radial.cy()->CurrentValue());
 
-  if (!attributes.hasR() && radial.r()->isSpecified())
-    attributes.setR(radial.r()->currentValue());
+  if (!attributes.HasR() && radial.r()->IsSpecified())
+    attributes.SetR(radial.r()->CurrentValue());
 
-  if (!attributes.hasFx() && radial.fx()->isSpecified())
-    attributes.setFx(radial.fx()->currentValue());
+  if (!attributes.HasFx() && radial.fx()->IsSpecified())
+    attributes.SetFx(radial.fx()->CurrentValue());
 
-  if (!attributes.hasFy() && radial.fy()->isSpecified())
-    attributes.setFy(radial.fy()->currentValue());
+  if (!attributes.HasFy() && radial.fy()->IsSpecified())
+    attributes.SetFy(radial.fy()->CurrentValue());
 
-  if (!attributes.hasFr() && radial.fr()->isSpecified())
-    attributes.setFr(radial.fr()->currentValue());
+  if (!attributes.HasFr() && radial.fr()->IsSpecified())
+    attributes.SetFr(radial.fr()->CurrentValue());
 }
 
-bool SVGRadialGradientElement::collectGradientAttributes(
+bool SVGRadialGradientElement::CollectGradientAttributes(
     RadialGradientAttributes& attributes) {
-  DCHECK(layoutObject());
+  DCHECK(GetLayoutObject());
 
   VisitedSet visited;
   const SVGGradientElement* current = this;
 
   while (true) {
-    setGradientAttributes(*current, attributes,
+    SetGradientAttributes(*current, attributes,
                           isSVGRadialGradientElement(*current));
     visited.insert(current);
 
-    current = current->referencedElement();
-    if (!current || visited.contains(current))
+    current = current->ReferencedElement();
+    if (!current || visited.Contains(current))
       break;
-    if (!current->layoutObject())
+    if (!current->GetLayoutObject())
       return false;
   }
 
   // Handle default values for fx/fy
-  if (!attributes.hasFx())
-    attributes.setFx(attributes.cx());
+  if (!attributes.HasFx())
+    attributes.SetFx(attributes.Cx());
 
-  if (!attributes.hasFy())
-    attributes.setFy(attributes.cy());
+  if (!attributes.HasFy())
+    attributes.SetFy(attributes.Cy());
 
   return true;
 }
 
-bool SVGRadialGradientElement::selfHasRelativeLengths() const {
-  return m_cx->currentValue()->isRelative() ||
-         m_cy->currentValue()->isRelative() ||
-         m_r->currentValue()->isRelative() ||
-         m_fx->currentValue()->isRelative() ||
-         m_fy->currentValue()->isRelative() ||
-         m_fr->currentValue()->isRelative();
+bool SVGRadialGradientElement::SelfHasRelativeLengths() const {
+  return cx_->CurrentValue()->IsRelative() ||
+         cy_->CurrentValue()->IsRelative() ||
+         r_->CurrentValue()->IsRelative() ||
+         fx_->CurrentValue()->IsRelative() ||
+         fy_->CurrentValue()->IsRelative() || fr_->CurrentValue()->IsRelative();
 }
 
 }  // namespace blink

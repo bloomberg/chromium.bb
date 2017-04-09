@@ -32,62 +32,66 @@
 
 namespace WTF {
 
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, nullAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, emptyAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, starAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlnsAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, xlinkAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, httpAtom);
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, httpsAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_null_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_empty_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_star_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xml_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xmlns_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xlink_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_http_atom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_https_atom);
 
 // This is not an AtomicString because it is unlikely to be used as an
 // event/element/attribute name, so it shouldn't pollute the AtomicString hash
 // table.
-WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon);
+WTF_EXPORT DEFINE_GLOBAL(String, g_xmlns_with_colon);
 
-WTF_EXPORT DEFINE_GLOBAL(String, emptyString);
-WTF_EXPORT DEFINE_GLOBAL(String, emptyString16Bit);
+WTF_EXPORT DEFINE_GLOBAL(String, g_empty_string);
+WTF_EXPORT DEFINE_GLOBAL(String, g_empty_string16_bit);
 
-NEVER_INLINE unsigned StringImpl::hashSlowCase() const {
-  if (is8Bit())
-    setHash(StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length));
+NEVER_INLINE unsigned StringImpl::HashSlowCase() const {
+  if (Is8Bit())
+    SetHash(StringHasher::ComputeHashAndMaskTop8Bits(Characters8(), length_));
   else
-    setHash(StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length));
-  return existingHash();
+    SetHash(StringHasher::ComputeHashAndMaskTop8Bits(Characters16(), length_));
+  return ExistingHash();
 }
 
-void AtomicString::init() {
-  DCHECK(isMainThread());
+void AtomicString::Init() {
+  DCHECK(IsMainThread());
 
-  new (NotNull, (void*)&nullAtom) AtomicString;
-  new (NotNull, (void*)&emptyAtom) AtomicString("");
+  new (NotNull, (void*)&g_null_atom) AtomicString;
+  new (NotNull, (void*)&g_empty_atom) AtomicString("");
 }
 
 template <unsigned charactersCount>
-PassRefPtr<StringImpl> addStaticASCIILiteral(
+PassRefPtr<StringImpl> AddStaticASCIILiteral(
     const char (&characters)[charactersCount]) {
   unsigned length = charactersCount - 1;
-  unsigned hash = StringHasher::computeHashAndMaskTop8Bits(
+  unsigned hash = StringHasher::ComputeHashAndMaskTop8Bits(
       reinterpret_cast<const LChar*>(characters), length);
-  return adoptRef(StringImpl::createStatic(characters, length, hash));
+  return AdoptRef(StringImpl::CreateStatic(characters, length, hash));
 }
 
-void StringStatics::init() {
-  DCHECK(isMainThread());
+void StringStatics::Init() {
+  DCHECK(IsMainThread());
 
-  StringImpl::initStatics();
-  new (NotNull, (void*)&emptyString) String(StringImpl::empty);
-  new (NotNull, (void*)&emptyString16Bit) String(StringImpl::empty16Bit);
+  StringImpl::InitStatics();
+  new (NotNull, (void*)&g_empty_string) String(StringImpl::empty_);
+  new (NotNull, (void*)&g_empty_string16_bit) String(StringImpl::empty16_bit_);
 
   // FIXME: These should be allocated at compile time.
-  new (NotNull, (void*)&starAtom) AtomicString("*");
-  new (NotNull, (void*)&xmlAtom) AtomicString(addStaticASCIILiteral("xml"));
-  new (NotNull, (void*)&xmlnsAtom) AtomicString(addStaticASCIILiteral("xmlns"));
-  new (NotNull, (void*)&xlinkAtom) AtomicString(addStaticASCIILiteral("xlink"));
-  new (NotNull, (void*)&xmlnsWithColon) String("xmlns:");
-  new (NotNull, (void*)&httpAtom) AtomicString(addStaticASCIILiteral("http"));
-  new (NotNull, (void*)&httpsAtom) AtomicString(addStaticASCIILiteral("https"));
+  new (NotNull, (void*)&g_star_atom) AtomicString("*");
+  new (NotNull, (void*)&g_xml_atom) AtomicString(AddStaticASCIILiteral("xml"));
+  new (NotNull, (void*)&g_xmlns_atom)
+      AtomicString(AddStaticASCIILiteral("xmlns"));
+  new (NotNull, (void*)&g_xlink_atom)
+      AtomicString(AddStaticASCIILiteral("xlink"));
+  new (NotNull, (void*)&g_xmlns_with_colon) String("xmlns:");
+  new (NotNull, (void*)&g_http_atom)
+      AtomicString(AddStaticASCIILiteral("http"));
+  new (NotNull, (void*)&g_https_atom)
+      AtomicString(AddStaticASCIILiteral("https"));
 }
 
 }  // namespace WTF

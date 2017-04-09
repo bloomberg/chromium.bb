@@ -72,14 +72,14 @@ void PluginPreroller::OnThrottleStateChange() {
   placeholder->AllowLoading();
 
   blink::WebPluginContainer* container =
-      throttler_->GetWebPlugin()->container();
-  container->setPlugin(placeholder->plugin());
+      throttler_->GetWebPlugin()->Container();
+  container->SetPlugin(placeholder->plugin());
 
-  bool success = placeholder->plugin()->initialize(container);
+  bool success = placeholder->plugin()->Initialize(container);
   DCHECK(success);
 
-  container->invalidate();
-  container->reportGeometry();
+  container->Invalidate();
+  container->ReportGeometry();
 
   delete this;
 }

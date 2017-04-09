@@ -43,86 +43,86 @@
 
 namespace blink {
 
-WorkerInspectorController* WorkerInspectorController::create(
+WorkerInspectorController* WorkerInspectorController::Create(
     WorkerThread* thread) {
   WorkerThreadDebugger* debugger =
-      WorkerThreadDebugger::from(thread->isolate());
+      WorkerThreadDebugger::From(thread->GetIsolate());
   return debugger ? new WorkerInspectorController(thread, debugger) : nullptr;
 }
 
 WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
     WorkerThreadDebugger* debugger)
-    : m_debugger(debugger),
-      m_thread(thread),
-      m_instrumentingAgents(new CoreProbeSink()) {
-  m_instrumentingAgents->addInspectorTraceEvents(new InspectorTraceEvents());
+    : debugger_(debugger),
+      thread_(thread),
+      instrumenting_agents_(new CoreProbeSink()) {
+  instrumenting_agents_->addInspectorTraceEvents(new InspectorTraceEvents());
 }
 
 WorkerInspectorController::~WorkerInspectorController() {
-  DCHECK(!m_thread);
+  DCHECK(!thread_);
 }
 
-void WorkerInspectorController::connectFrontend() {
-  if (m_session)
+void WorkerInspectorController::ConnectFrontend() {
+  if (session_)
     return;
 
   // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification
   // call.
-  m_session = new InspectorSession(
-      this, m_instrumentingAgents.get(), 0, m_debugger->v8Inspector(),
-      m_debugger->contextGroupId(m_thread), nullptr);
-  m_session->append(
-      new InspectorLogAgent(m_thread->consoleMessageStorage(), nullptr));
-  m_thread->workerBackingThread().backingThread().addTaskObserver(this);
+  session_ = new InspectorSession(this, instrumenting_agents_.Get(), 0,
+                                  debugger_->GetV8Inspector(),
+                                  debugger_->ContextGroupId(thread_), nullptr);
+  session_->Append(
+      new InspectorLogAgent(thread_->GetConsoleMessageStorage(), nullptr));
+  thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 }
 
-void WorkerInspectorController::disconnectFrontend() {
-  if (!m_session)
+void WorkerInspectorController::DisconnectFrontend() {
+  if (!session_)
     return;
-  m_session->dispose();
-  m_session.clear();
-  m_thread->workerBackingThread().backingThread().removeTaskObserver(this);
+  session_->Dispose();
+  session_.Clear();
+  thread_->GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
 
-void WorkerInspectorController::dispatchMessageFromFrontend(
+void WorkerInspectorController::DispatchMessageFromFrontend(
     const String& message) {
-  if (!m_session)
+  if (!session_)
     return;
   String method;
   if (!protocol::DispatcherBase::getCommandName(message, &method))
     return;
-  m_session->dispatchProtocolMessage(method, message);
+  session_->DispatchProtocolMessage(method, message);
 }
 
-void WorkerInspectorController::dispose() {
-  disconnectFrontend();
-  m_thread = nullptr;
+void WorkerInspectorController::Dispose() {
+  DisconnectFrontend();
+  thread_ = nullptr;
 }
 
-void WorkerInspectorController::flushProtocolNotifications() {
-  if (m_session)
-    m_session->flushProtocolNotifications();
+void WorkerInspectorController::FlushProtocolNotifications() {
+  if (session_)
+    session_->flushProtocolNotifications();
 }
 
-void WorkerInspectorController::sendProtocolMessage(int sessionId,
-                                                    int callId,
+void WorkerInspectorController::SendProtocolMessage(int session_id,
+                                                    int call_id,
                                                     const String& response,
                                                     const String& state) {
   // Worker messages are wrapped, no need to handle callId or state.
-  m_thread->workerReportingProxy().postMessageToPageInspector(response);
+  thread_->GetWorkerReportingProxy().PostMessageToPageInspector(response);
 }
 
-void WorkerInspectorController::willProcessTask() {}
+void WorkerInspectorController::WillProcessTask() {}
 
-void WorkerInspectorController::didProcessTask() {
-  if (m_session)
-    m_session->flushProtocolNotifications();
+void WorkerInspectorController::DidProcessTask() {
+  if (session_)
+    session_->flushProtocolNotifications();
 }
 
 DEFINE_TRACE(WorkerInspectorController) {
-  visitor->trace(m_instrumentingAgents);
-  visitor->trace(m_session);
+  visitor->Trace(instrumenting_agents_);
+  visitor->Trace(session_);
 }
 
 }  // namespace blink

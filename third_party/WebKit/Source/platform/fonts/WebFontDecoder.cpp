@@ -53,10 +53,10 @@ class BlinkOTSContext final : public ots::OTSContext {
  public:
   void Message(int level, const char* format, ...) override;
   ots::TableAction GetTableAction(uint32_t tag) override;
-  const String& getErrorString() { return m_errorString; }
+  const String& GetErrorString() { return error_string_; }
 
  private:
-  String m_errorString;
+  String error_string_;
 };
 
 void BlinkOTSContext::Message(int level, const char* format, ...) {
@@ -72,17 +72,17 @@ void BlinkOTSContext::Message(int level, const char* format, ...) {
   va_end(args);
 
   if (result <= 0) {
-    m_errorString = String("OTS Error");
+    error_string_ = String("OTS Error");
   } else {
     Vector<char, 256> buffer;
     unsigned len = result;
-    buffer.grow(len + 1);
+    buffer.Grow(len + 1);
 
     va_start(args, format);
-    vsnprintf(buffer.data(), buffer.size(), format, args);
+    vsnprintf(buffer.Data(), buffer.size(), format, args);
     va_end(args);
-    m_errorString =
-        StringImpl::create(reinterpret_cast<const LChar*>(buffer.data()), len);
+    error_string_ =
+        StringImpl::Create(reinterpret_cast<const LChar*>(buffer.Data()), len);
   }
 }
 
@@ -91,46 +91,46 @@ void BlinkOTSContext::Message(int level, const char* format, ...) {
 #endif
 
 ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
-  const uint32_t cbdtTag = OTS_TAG('C', 'B', 'D', 'T');
-  const uint32_t cblcTag = OTS_TAG('C', 'B', 'L', 'C');
-  const uint32_t colrTag = OTS_TAG('C', 'O', 'L', 'R');
-  const uint32_t cpalTag = OTS_TAG('C', 'P', 'A', 'L');
+  const uint32_t kCbdtTag = OTS_TAG('C', 'B', 'D', 'T');
+  const uint32_t kCblcTag = OTS_TAG('C', 'B', 'L', 'C');
+  const uint32_t kColrTag = OTS_TAG('C', 'O', 'L', 'R');
+  const uint32_t kCpalTag = OTS_TAG('C', 'P', 'A', 'L');
 #if HB_VERSION_ATLEAST(1, 0, 0)
-  const uint32_t gdefTag = OTS_TAG('G', 'D', 'E', 'F');
-  const uint32_t gposTag = OTS_TAG('G', 'P', 'O', 'S');
-  const uint32_t gsubTag = OTS_TAG('G', 'S', 'U', 'B');
+  const uint32_t kGdefTag = OTS_TAG('G', 'D', 'E', 'F');
+  const uint32_t kGposTag = OTS_TAG('G', 'P', 'O', 'S');
+  const uint32_t kGsubTag = OTS_TAG('G', 'S', 'U', 'B');
 
   // Font Variations related tables
   // See "Variation Tables" in Terminology section of
   // https://www.microsoft.com/typography/otspec/otvaroverview.htm
-  const uint32_t avarTag = OTS_TAG('a', 'v', 'a', 'r');
-  const uint32_t cvarTag = OTS_TAG('c', 'v', 'a', 'r');
-  const uint32_t fvarTag = OTS_TAG('f', 'v', 'a', 'r');
-  const uint32_t gvarTag = OTS_TAG('g', 'v', 'a', 'r');
-  const uint32_t hvarTag = OTS_TAG('H', 'V', 'A', 'R');
-  const uint32_t mvarTag = OTS_TAG('M', 'V', 'A', 'R');
-  const uint32_t vvarTag = OTS_TAG('V', 'V', 'A', 'R');
+  const uint32_t kAvarTag = OTS_TAG('a', 'v', 'a', 'r');
+  const uint32_t kCvarTag = OTS_TAG('c', 'v', 'a', 'r');
+  const uint32_t kFvarTag = OTS_TAG('f', 'v', 'a', 'r');
+  const uint32_t kGvarTag = OTS_TAG('g', 'v', 'a', 'r');
+  const uint32_t kHvarTag = OTS_TAG('H', 'V', 'A', 'R');
+  const uint32_t kMvarTag = OTS_TAG('M', 'V', 'A', 'R');
+  const uint32_t kVvarTag = OTS_TAG('V', 'V', 'A', 'R');
 #endif
 
   switch (tag) {
     // Google Color Emoji Tables
-    case cbdtTag:
-    case cblcTag:
+    case kCbdtTag:
+    case kCblcTag:
     // Windows Color Emoji Tables
-    case colrTag:
-    case cpalTag:
+    case kColrTag:
+    case kCpalTag:
 #if HB_VERSION_ATLEAST(1, 0, 0)
     // Let HarfBuzz handle how to deal with broken tables.
-    case avarTag:
-    case cvarTag:
-    case fvarTag:
-    case gvarTag:
-    case hvarTag:
-    case mvarTag:
-    case vvarTag:
-    case gdefTag:
-    case gposTag:
-    case gsubTag:
+    case kAvarTag:
+    case kCvarTag:
+    case kFvarTag:
+    case kGvarTag:
+    case kHvarTag:
+    case kMvarTag:
+    case kVvarTag:
+    case kGdefTag:
+    case kGposTag:
+    case kGsubTag:
 #endif
       return ots::TABLE_ACTION_PASSTHRU;
     default:
@@ -138,97 +138,97 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
   }
 }
 
-void recordDecodeSpeedHistogram(const char* data,
+void RecordDecodeSpeedHistogram(const char* data,
                                 size_t length,
-                                double decodeTime,
-                                size_t decodedSize) {
-  if (decodeTime <= 0)
+                                double decode_time,
+                                size_t decoded_size) {
+  if (decode_time <= 0)
     return;
 
-  double kbPerSecond = decodedSize / (1000 * decodeTime);
+  double kb_per_second = decoded_size / (1000 * decode_time);
   if (length >= 4) {
     if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, woffHistogram,
+          CustomCountHistogram, woff_histogram,
           new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000,
                                    50));
-      woffHistogram.count(kbPerSecond);
+      woff_histogram.Count(kb_per_second);
       return;
     }
 
     if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, woff2Histogram,
+          CustomCountHistogram, woff2_histogram,
           new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000,
                                    50));
-      woff2Histogram.count(kbPerSecond);
+      woff2_histogram.Count(kb_per_second);
       return;
     }
   }
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, sfntHistogram,
+      CustomCountHistogram, sfnt_histogram,
       new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
-  sfntHistogram.count(kbPerSecond);
+  sfnt_histogram.Count(kb_per_second);
 }
 
 }  // namespace
 
 // static
-bool WebFontDecoder::supportsFormat(const String& format) {
-  return equalIgnoringCase(format, "woff") ||
-         equalIgnoringCase(format, "woff2");
+bool WebFontDecoder::SupportsFormat(const String& format) {
+  return EqualIgnoringCase(format, "woff") ||
+         EqualIgnoringCase(format, "woff2");
 }
 
-sk_sp<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer) {
+sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   if (!buffer) {
-    setErrorString("Empty Buffer");
+    SetErrorString("Empty Buffer");
     return nullptr;
   }
 
   // This is the largest web font size which we'll try to transcode.
   // TODO(bashi): 30MB seems low. Update the limit if necessary.
-  static const size_t maxWebFontSize = 30 * 1024 * 1024;  // 30 MB
-  if (buffer->size() > maxWebFontSize) {
-    setErrorString("Web font size more than 30MB");
+  static const size_t kMaxWebFontSize = 30 * 1024 * 1024;  // 30 MB
+  if (buffer->size() > kMaxWebFontSize) {
+    SetErrorString("Web font size more than 30MB");
     return nullptr;
   }
 
   // Most web fonts are compressed, so the result can be much larger than
   // the original.
-  ots::ExpandingMemoryStream output(buffer->size(), maxWebFontSize);
-  double start = currentTime();
-  BlinkOTSContext otsContext;
-  const char* data = buffer->data();
+  ots::ExpandingMemoryStream output(buffer->size(), kMaxWebFontSize);
+  double start = CurrentTime();
+  BlinkOTSContext ots_context;
+  const char* data = buffer->Data();
 
   TRACE_EVENT_BEGIN0("blink", "DecodeFont");
-  bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(data),
-                               buffer->size());
+  bool ok = ots_context.Process(&output, reinterpret_cast<const uint8_t*>(data),
+                                buffer->size());
   TRACE_EVENT_END0("blink", "DecodeFont");
 
   if (!ok) {
-    setErrorString(otsContext.getErrorString());
+    SetErrorString(ots_context.GetErrorString());
     return nullptr;
   }
 
-  const size_t decodedLength = output.Tell();
-  recordDecodeSpeedHistogram(data, buffer->size(), currentTime() - start,
-                             decodedLength);
+  const size_t decoded_length = output.Tell();
+  RecordDecodeSpeedHistogram(data, buffer->size(), CurrentTime() - start,
+                             decoded_length);
 
-  sk_sp<SkData> skData = SkData::MakeWithCopy(output.get(), decodedLength);
-  SkMemoryStream* stream = new SkMemoryStream(skData);
+  sk_sp<SkData> sk_data = SkData::MakeWithCopy(output.get(), decoded_length);
+  SkMemoryStream* stream = new SkMemoryStream(sk_data);
 #if OS(WIN)
   sk_sp<SkTypeface> typeface(
-      FontCache::fontCache()->fontManager()->createFromStream(stream));
+      FontCache::GetFontCache()->FontManager()->createFromStream(stream));
 #else
   sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(stream);
 #endif
   if (!typeface) {
-    setErrorString("Not a valid font data");
+    SetErrorString("Not a valid font data");
     return nullptr;
   }
 
-  m_decodedSize = decodedLength;
+  decoded_size_ = decoded_length;
   return typeface;
 }
 

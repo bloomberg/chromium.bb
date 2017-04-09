@@ -75,30 +75,30 @@ class StylePropertyMap;
 class V0CustomElementDefinition;
 
 enum SpellcheckAttributeState {
-  SpellcheckAttributeTrue,
-  SpellcheckAttributeFalse,
-  SpellcheckAttributeDefault
+  kSpellcheckAttributeTrue,
+  kSpellcheckAttributeFalse,
+  kSpellcheckAttributeDefault
 };
 
 enum ElementFlags {
-  TabIndexWasSetExplicitly = 1 << 0,
-  StyleAffectedByEmpty = 1 << 1,
-  IsInCanvasSubtree = 1 << 2,
-  ContainsFullScreenElement = 1 << 3,
-  IsInTopLayer = 1 << 4,
-  HasPendingResources = 1 << 5,
-  AlreadySpellChecked = 1 << 6,
-  ContainsPersistentVideo = 1 << 7,
+  kTabIndexWasSetExplicitly = 1 << 0,
+  kStyleAffectedByEmpty = 1 << 1,
+  kIsInCanvasSubtree = 1 << 2,
+  kContainsFullScreenElement = 1 << 3,
+  kIsInTopLayer = 1 << 4,
+  kHasPendingResources = 1 << 5,
+  kAlreadySpellChecked = 1 << 6,
+  kContainsPersistentVideo = 1 << 7,
 
-  NumberOfElementFlags = 8,  // Size of bitfield used to store the flags.
+  kNumberOfElementFlags = 8,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
 
 enum class SelectionBehaviorOnFocus {
-  Reset,
-  Restore,
-  None,
+  kReset,
+  kRestore,
+  kNone,
 };
 
 struct FocusParams {
@@ -106,16 +106,16 @@ struct FocusParams {
 
   FocusParams() {}
   FocusParams(SelectionBehaviorOnFocus selection,
-              WebFocusType focusType,
+              WebFocusType focus_type,
               InputDeviceCapabilities* capabilities)
-      : selectionBehavior(selection),
-        type(focusType),
-        sourceCapabilities(capabilities) {}
+      : selection_behavior(selection),
+        type(focus_type),
+        source_capabilities(capabilities) {}
 
-  SelectionBehaviorOnFocus selectionBehavior =
-      SelectionBehaviorOnFocus::Restore;
-  WebFocusType type = WebFocusTypeNone;
-  Member<InputDeviceCapabilities> sourceCapabilities = nullptr;
+  SelectionBehaviorOnFocus selection_behavior =
+      SelectionBehaviorOnFocus::kRestore;
+  WebFocusType type = kWebFocusTypeNone;
+  Member<InputDeviceCapabilities> source_capabilities = nullptr;
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -124,7 +124,7 @@ class CORE_EXPORT Element : public ContainerNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Element* create(const QualifiedName&, Document*);
+  static Element* Create(const QualifiedName&, Document*);
   ~Element() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
@@ -145,87 +145,87 @@ class CORE_EXPORT Element : public ContainerNode {
   // Passing nullAtom as the second parameter removes the attribute when calling
   // either of these set methods.
   void setAttribute(const QualifiedName&, const AtomicString& value);
-  void setSynchronizedLazyAttribute(const QualifiedName&,
+  void SetSynchronizedLazyAttribute(const QualifiedName&,
                                     const AtomicString& value);
 
   void removeAttribute(const QualifiedName&);
 
   // Typed getters and setters for language bindings.
-  int getIntegralAttribute(const QualifiedName& attributeName) const;
-  void setIntegralAttribute(const QualifiedName& attributeName, int value);
-  void setUnsignedIntegralAttribute(const QualifiedName& attributeName,
+  int GetIntegralAttribute(const QualifiedName& attribute_name) const;
+  void SetIntegralAttribute(const QualifiedName& attribute_name, int value);
+  void SetUnsignedIntegralAttribute(const QualifiedName& attribute_name,
                                     unsigned value);
-  double getFloatingPointAttribute(
-      const QualifiedName& attributeName,
-      double fallbackValue = std::numeric_limits<double>::quiet_NaN()) const;
-  void setFloatingPointAttribute(const QualifiedName& attributeName,
+  double GetFloatingPointAttribute(
+      const QualifiedName& attribute_name,
+      double fallback_value = std::numeric_limits<double>::quiet_NaN()) const;
+  void SetFloatingPointAttribute(const QualifiedName& attribute_name,
                                  double value);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
-  bool fastHasAttribute(const QualifiedName&) const;
-  const AtomicString& fastGetAttribute(const QualifiedName&) const;
+  bool FastHasAttribute(const QualifiedName&) const;
+  const AtomicString& FastGetAttribute(const QualifiedName&) const;
 #if DCHECK_IS_ON()
-  bool fastAttributeLookupAllowed(const QualifiedName&) const;
+  bool FastAttributeLookupAllowed(const QualifiedName&) const;
 #endif
 
 #ifdef DUMP_NODE_STATISTICS
-  bool hasNamedNodeMap() const;
+  bool HasNamedNodeMap() const;
 #endif
   bool hasAttributes() const;
 
   bool hasAttribute(const AtomicString& name) const;
-  bool hasAttributeNS(const AtomicString& namespaceURI,
-                      const AtomicString& localName) const;
+  bool hasAttributeNS(const AtomicString& namespace_uri,
+                      const AtomicString& local_name) const;
 
   const AtomicString& getAttribute(const AtomicString& name) const;
-  const AtomicString& getAttributeNS(const AtomicString& namespaceURI,
-                                     const AtomicString& localName) const;
+  const AtomicString& getAttributeNS(const AtomicString& namespace_uri,
+                                     const AtomicString& local_name) const;
 
   void setAttribute(const AtomicString& name,
                     const AtomicString& value,
                     ExceptionState& = ASSERT_NO_EXCEPTION);
-  static bool parseAttributeName(QualifiedName&,
-                                 const AtomicString& namespaceURI,
-                                 const AtomicString& qualifiedName,
+  static bool ParseAttributeName(QualifiedName&,
+                                 const AtomicString& namespace_uri,
+                                 const AtomicString& qualified_name,
                                  ExceptionState&);
-  void setAttributeNS(const AtomicString& namespaceURI,
-                      const AtomicString& qualifiedName,
+  void setAttributeNS(const AtomicString& namespace_uri,
+                      const AtomicString& qualified_name,
                       const AtomicString& value,
                       ExceptionState&);
 
-  const AtomicString& getIdAttribute() const;
-  void setIdAttribute(const AtomicString&);
+  const AtomicString& GetIdAttribute() const;
+  void SetIdAttribute(const AtomicString&);
 
-  const AtomicString& getNameAttribute() const;
-  const AtomicString& getClassAttribute() const;
+  const AtomicString& GetNameAttribute() const;
+  const AtomicString& GetClassAttribute() const;
 
-  bool shouldIgnoreAttributeCase() const;
+  bool ShouldIgnoreAttributeCase() const;
 
   // Call this to get the value of the id attribute for style resolution
   // purposes.  The value will already be lowercased if the document is in
   // compatibility mode, so this function is not suitable for non-style uses.
-  const AtomicString& idForStyleResolution() const;
+  const AtomicString& IdForStyleResolution() const;
 
   // This getter takes care of synchronizing all attributes before returning the
   // AttributeCollection. If the Element has no attributes, an empty
   // AttributeCollection will be returned. This is not a trivial getter and its
   // return value should be cached for performance.
-  AttributeCollection attributes() const;
+  AttributeCollection Attributes() const;
   // This variant will not update the potentially invalid attributes. To be used
   // when not interested in style attribute or one of the SVG animation
   // attributes.
-  AttributeCollection attributesWithoutUpdate() const;
+  AttributeCollection AttributesWithoutUpdate() const;
 
-  void scrollIntoView(bool alignToTop = true);
-  void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
+  void scrollIntoView(bool align_to_top = true);
+  void scrollIntoViewIfNeeded(bool center_if_needed = true);
 
-  int offsetLeft();
-  int offsetTop();
-  int offsetWidth();
-  int offsetHeight();
+  int OffsetLeft();
+  int OffsetTop();
+  int OffsetWidth();
+  int OffsetHeight();
 
-  Element* offsetParent();
+  Element* OffsetParent();
   int clientLeft();
   int clientTop();
   int clientWidth();
@@ -242,117 +242,117 @@ class CORE_EXPORT Element : public ContainerNode {
   void scrollTo(double x, double y);
   virtual void scrollTo(const ScrollToOptions&);
 
-  IntRect boundsInViewport() const;
+  IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the
   // viewport rectangle, in the visual viewport coordinate. This function is
   // used to show popups beside this element.
-  IntRect visibleBoundsInVisualViewport() const;
+  IntRect VisibleBoundsInVisualViewport() const;
 
   ClientRectList* getClientRects();
   ClientRect* getBoundingClientRect();
 
-  bool hasNonEmptyLayoutSize() const;
+  bool HasNonEmptyLayoutSize() const;
 
   const AtomicString& computedRole();
   String computedName();
 
-  AccessibleNode* existingAccessibleNode() const;
+  AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
-  void didMoveToNewDocument(Document&) override;
+  void DidMoveToNewDocument(Document&) override;
 
   void removeAttribute(const AtomicString& name);
-  void removeAttributeNS(const AtomicString& namespaceURI,
-                         const AtomicString& localName);
+  void removeAttributeNS(const AtomicString& namespace_uri,
+                         const AtomicString& local_name);
 
-  Attr* detachAttribute(size_t index);
+  Attr* DetachAttribute(size_t index);
 
   Attr* getAttributeNode(const AtomicString& name);
-  Attr* getAttributeNodeNS(const AtomicString& namespaceURI,
-                           const AtomicString& localName);
+  Attr* getAttributeNodeNS(const AtomicString& namespace_uri,
+                           const AtomicString& local_name);
   Attr* setAttributeNode(Attr*, ExceptionState&);
   Attr* setAttributeNodeNS(Attr*, ExceptionState&);
   Attr* removeAttributeNode(Attr*, ExceptionState&);
 
-  Attr* attrIfExists(const QualifiedName&);
-  Attr* ensureAttr(const QualifiedName&);
+  Attr* AttrIfExists(const QualifiedName&);
+  Attr* EnsureAttr(const QualifiedName&);
 
-  AttrNodeList* attrNodeList();
+  AttrNodeList* GetAttrNodeList();
 
   CSSStyleDeclaration* style();
   StylePropertyMap* styleMap();
 
-  const QualifiedName& tagQName() const { return m_tagName; }
+  const QualifiedName& TagQName() const { return tag_name_; }
   String tagName() const { return nodeName(); }
 
-  bool hasTagName(const QualifiedName& tagName) const {
-    return m_tagName.matches(tagName);
+  bool HasTagName(const QualifiedName& tag_name) const {
+    return tag_name_.Matches(tag_name);
   }
-  bool hasTagName(const HTMLQualifiedName& tagName) const {
-    return ContainerNode::hasTagName(tagName);
+  bool HasTagName(const HTMLQualifiedName& tag_name) const {
+    return ContainerNode::HasTagName(tag_name);
   }
-  bool hasTagName(const SVGQualifiedName& tagName) const {
-    return ContainerNode::hasTagName(tagName);
+  bool HasTagName(const SVGQualifiedName& tag_name) const {
+    return ContainerNode::HasTagName(tag_name);
   }
 
   // Should be called only by Document::createElementNS to fix up m_tagName
   // immediately after construction.
-  void setTagNameForCreateElementNS(const QualifiedName&);
+  void SetTagNameForCreateElementNS(const QualifiedName&);
 
   // A fast function for checking the local name against another atomic string.
-  bool hasLocalName(const AtomicString& other) const {
-    return m_tagName.localName() == other;
+  bool HasLocalName(const AtomicString& other) const {
+    return tag_name_.LocalName() == other;
   }
 
-  const AtomicString& localName() const { return m_tagName.localName(); }
-  AtomicString localNameForSelectorMatching() const;
-  const AtomicString& prefix() const { return m_tagName.prefix(); }
-  const AtomicString& namespaceURI() const { return m_tagName.namespaceURI(); }
+  const AtomicString& localName() const { return tag_name_.LocalName(); }
+  AtomicString LocalNameForSelectorMatching() const;
+  const AtomicString& prefix() const { return tag_name_.Prefix(); }
+  const AtomicString& namespaceURI() const { return tag_name_.NamespaceURI(); }
 
-  const AtomicString& locateNamespacePrefix(
-      const AtomicString& namespaceURI) const;
+  const AtomicString& LocateNamespacePrefix(
+      const AtomicString& namespace_uri) const;
 
   String nodeName() const override;
 
-  Element* cloneElementWithChildren();
-  Element* cloneElementWithoutChildren();
+  Element* CloneElementWithChildren();
+  Element* CloneElementWithoutChildren();
 
-  void setBooleanAttribute(const QualifiedName&, bool);
+  void SetBooleanAttribute(const QualifiedName&, bool);
 
-  virtual const StylePropertySet* additionalPresentationAttributeStyle() {
+  virtual const StylePropertySet* AdditionalPresentationAttributeStyle() {
     return nullptr;
   }
-  void invalidateStyleAttribute();
+  void InvalidateStyleAttribute();
 
-  const StylePropertySet* inlineStyle() const {
-    return elementData() ? elementData()->m_inlineStyle.get() : nullptr;
+  const StylePropertySet* InlineStyle() const {
+    return GetElementData() ? GetElementData()->inline_style_.Get() : nullptr;
   }
 
-  void setInlineStyleProperty(CSSPropertyID,
+  void SetInlineStyleProperty(CSSPropertyID,
                               CSSValueID identifier,
                               bool important = false);
-  void setInlineStyleProperty(CSSPropertyID,
+  void SetInlineStyleProperty(CSSPropertyID,
                               double value,
                               CSSPrimitiveValue::UnitType,
                               bool important = false);
   // TODO(sashab): Make this take a const CSSValue&.
-  void setInlineStyleProperty(CSSPropertyID,
+  void SetInlineStyleProperty(CSSPropertyID,
                               const CSSValue*,
                               bool important = false);
-  bool setInlineStyleProperty(CSSPropertyID,
+  bool SetInlineStyleProperty(CSSPropertyID,
                               const String& value,
                               bool important = false);
 
-  bool removeInlineStyleProperty(CSSPropertyID);
-  void removeAllInlineStyleProperties();
+  bool RemoveInlineStyleProperty(CSSPropertyID);
+  void RemoveAllInlineStyleProperties();
 
-  void synchronizeStyleAttributeInternal() const;
+  void SynchronizeStyleAttributeInternal() const;
 
-  const StylePropertySet* presentationAttributeStyle();
-  virtual bool isPresentationAttribute(const QualifiedName&) const {
+  const StylePropertySet* PresentationAttributeStyle();
+  virtual bool IsPresentationAttribute(const QualifiedName&) const {
     return false;
   }
-  virtual void collectStyleForPresentationAttribute(const QualifiedName&,
+  virtual void CollectStyleForPresentationAttribute(const QualifiedName&,
                                                     const AtomicString&,
                                                     MutableStylePropertySet*) {}
 
@@ -363,14 +363,17 @@ class CORE_EXPORT Element : public ContainerNode {
   struct AttributeModificationParams {
     STACK_ALLOCATED();
     AttributeModificationParams(const QualifiedName& qname,
-                                const AtomicString& oldValue,
-                                const AtomicString& newValue,
+                                const AtomicString& old_value,
+                                const AtomicString& new_value,
                                 AttributeModificationReason reason)
-        : name(qname), oldValue(oldValue), newValue(newValue), reason(reason) {}
+        : name(qname),
+          old_value(old_value),
+          new_value(new_value),
+          reason(reason) {}
 
     const QualifiedName& name;
-    const AtomicString& oldValue;
-    const AtomicString& newValue;
+    const AtomicString& old_value;
+    const AtomicString& new_value;
     const AttributeModificationReason reason;
   };
 
@@ -380,58 +383,58 @@ class CORE_EXPORT Element : public ContainerNode {
   //
   // While the owner document is parsed, this function is called after all
   // attributes in a start tag were added to the element.
-  virtual void attributeChanged(const AttributeModificationParams&);
+  virtual void AttributeChanged(const AttributeModificationParams&);
 
   // |parseAttribute| is called by |attributeChanged|. If an element
   // implementation needs to check an attribute update, override this function.
   //
   // While the owner document is parsed, this function is called after all
   // attributes in a start tag were added to the element.
-  virtual void parseAttribute(const AttributeModificationParams&);
+  virtual void ParseAttribute(const AttributeModificationParams&);
 
-  virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
-  virtual const QualifiedName& subResourceAttributeName() const;
+  virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
+  virtual const QualifiedName& SubResourceAttributeName() const;
 
   // Only called by the parser immediately after element construction.
-  void parserSetAttributes(const Vector<Attribute>&);
+  void ParserSetAttributes(const Vector<Attribute>&);
 
   // Remove attributes that might introduce scripting from the vector leaving
   // the element unchanged.
-  void stripScriptingAttributes(Vector<Attribute>&) const;
+  void StripScriptingAttributes(Vector<Attribute>&) const;
 
-  bool sharesSameElementData(const Element& other) const {
-    return elementData() == other.elementData();
+  bool SharesSameElementData(const Element& other) const {
+    return GetElementData() == other.GetElementData();
   }
 
   // Clones attributes only.
-  void cloneAttributesFromElement(const Element&);
+  void CloneAttributesFromElement(const Element&);
 
   // Clones all attribute-derived data, including subclass specifics (through
   // copyNonAttributeProperties.)
-  void cloneDataFromElement(const Element&);
+  void CloneDataFromElement(const Element&);
 
-  bool hasEquivalentAttributes(const Element* other) const;
+  bool HasEquivalentAttributes(const Element* other) const;
 
-  virtual void copyNonAttributePropertiesFromElement(const Element&) {}
+  virtual void CopyNonAttributePropertiesFromElement(const Element&) {}
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  virtual LayoutObject* createLayoutObject(const ComputedStyle&);
-  virtual bool layoutObjectIsNeeded(const ComputedStyle&);
-  void recalcStyle(StyleRecalcChange);
-  void rebuildLayoutTree(Text* nextTextSibling = nullptr);
-  void pseudoStateChanged(CSSSelector::PseudoType);
-  void setAnimationStyleChange(bool);
-  void clearAnimationStyleChange();
-  void setNeedsAnimationStyleRecalc();
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
+  virtual bool LayoutObjectIsNeeded(const ComputedStyle&);
+  void RecalcStyle(StyleRecalcChange);
+  void RebuildLayoutTree(Text* next_text_sibling = nullptr);
+  void PseudoStateChanged(CSSSelector::PseudoType);
+  void SetAnimationStyleChange(bool);
+  void ClearAnimationStyleChange();
+  void SetNeedsAnimationStyleRecalc();
 
-  void setNeedsCompositingUpdate();
+  void SetNeedsCompositingUpdate();
 
-  bool supportsStyleSharing() const;
+  bool SupportsStyleSharing() const;
 
-  ElementShadow* shadow() const;
-  ElementShadow& ensureShadow();
+  ElementShadow* Shadow() const;
+  ElementShadow& EnsureShadow();
   // If type of ShadowRoot (either closed or open) is explicitly specified,
   // creation of multiple shadow roots is prohibited in any combination and
   // throws an exception.  Multiple shadow roots are allowed only when
@@ -445,131 +448,131 @@ class CORE_EXPORT Element : public ContainerNode {
   ShadowRoot* attachShadow(const ScriptState*,
                            const ShadowRootInit&,
                            ExceptionState&);
-  ShadowRoot* createShadowRootInternal(ShadowRootType, ExceptionState&);
+  ShadowRoot* CreateShadowRootInternal(ShadowRootType, ExceptionState&);
 
   ShadowRoot* openShadowRoot() const;
-  ShadowRoot* closedShadowRoot() const;
-  ShadowRoot* authorShadowRoot() const;
-  ShadowRoot* userAgentShadowRoot() const;
+  ShadowRoot* ClosedShadowRoot() const;
+  ShadowRoot* AuthorShadowRoot() const;
+  ShadowRoot* UserAgentShadowRoot() const;
 
-  ShadowRoot* youngestShadowRoot() const;
+  ShadowRoot* YoungestShadowRoot() const;
 
-  ShadowRoot* shadowRootIfV1() const;
+  ShadowRoot* ShadowRootIfV1() const;
 
-  ShadowRoot& ensureUserAgentShadowRoot();
+  ShadowRoot& EnsureUserAgentShadowRoot();
 
-  bool isInDescendantTreeOf(const Element* shadowHost) const;
+  bool IsInDescendantTreeOf(const Element* shadow_host) const;
 
   // Returns the Element’s ComputedStyle. If the ComputedStyle is not already
   // stored on the Element, computes the ComputedStyle and stores it on the
   // Element’s ElementRareData.  Used for getComputedStyle when Element is
   // display none.
-  const ComputedStyle* ensureComputedStyle(PseudoId = PseudoIdNone);
+  const ComputedStyle* EnsureComputedStyle(PseudoId = kPseudoIdNone);
 
-  const ComputedStyle* nonLayoutObjectComputedStyle() const;
+  const ComputedStyle* NonLayoutObjectComputedStyle() const;
 
-  bool hasDisplayContentsStyle() const;
+  bool HasDisplayContentsStyle() const;
 
-  ComputedStyle* mutableNonLayoutObjectComputedStyle() const {
-    return const_cast<ComputedStyle*>(nonLayoutObjectComputedStyle());
+  ComputedStyle* MutableNonLayoutObjectComputedStyle() const {
+    return const_cast<ComputedStyle*>(NonLayoutObjectComputedStyle());
   }
 
-  bool shouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
-  void storeNonLayoutObjectComputedStyle(PassRefPtr<ComputedStyle>);
+  bool ShouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
+  void StoreNonLayoutObjectComputedStyle(PassRefPtr<ComputedStyle>);
 
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
-  bool styleAffectedByEmpty() const {
-    return hasElementFlag(StyleAffectedByEmpty);
+  bool StyleAffectedByEmpty() const {
+    return HasElementFlag(kStyleAffectedByEmpty);
   }
-  void setStyleAffectedByEmpty() { setElementFlag(StyleAffectedByEmpty); }
+  void SetStyleAffectedByEmpty() { SetElementFlag(kStyleAffectedByEmpty); }
 
-  void setIsInCanvasSubtree(bool value) {
-    setElementFlag(IsInCanvasSubtree, value);
+  void SetIsInCanvasSubtree(bool value) {
+    SetElementFlag(kIsInCanvasSubtree, value);
   }
-  bool isInCanvasSubtree() const { return hasElementFlag(IsInCanvasSubtree); }
+  bool IsInCanvasSubtree() const { return HasElementFlag(kIsInCanvasSubtree); }
 
-  bool isDefined() const {
-    return !(static_cast<int>(getCustomElementState()) &
-             static_cast<int>(CustomElementState::NotDefinedFlag));
+  bool IsDefined() const {
+    return !(static_cast<int>(GetCustomElementState()) &
+             static_cast<int>(CustomElementState::kNotDefinedFlag));
   }
-  bool isUpgradedV0CustomElement() {
-    return getV0CustomElementState() == V0Upgraded;
+  bool IsUpgradedV0CustomElement() {
+    return GetV0CustomElementState() == kV0Upgraded;
   }
-  bool isUnresolvedV0CustomElement() {
-    return getV0CustomElementState() == V0WaitingForUpgrade;
+  bool IsUnresolvedV0CustomElement() {
+    return GetV0CustomElementState() == kV0WaitingForUpgrade;
   }
 
-  AtomicString computeInheritedLanguage() const;
-  Locale& locale() const;
+  AtomicString ComputeInheritedLanguage() const;
+  Locale& GetLocale() const;
 
-  virtual void accessKeyAction(bool /*sendToAnyEvent*/) {}
+  virtual void AccessKeyAction(bool /*sendToAnyEvent*/) {}
 
-  virtual bool isURLAttribute(const Attribute&) const { return false; }
-  virtual bool isHTMLContentAttribute(const Attribute&) const { return false; }
-  bool isJavaScriptURLAttribute(const Attribute&) const;
-  virtual bool isSVGAnimationAttributeSettingJavaScriptURL(
+  virtual bool IsURLAttribute(const Attribute&) const { return false; }
+  virtual bool IsHTMLContentAttribute(const Attribute&) const { return false; }
+  bool IsJavaScriptURLAttribute(const Attribute&) const;
+  virtual bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const {
     return false;
   }
-  bool isScriptingAttribute(const Attribute&) const;
+  bool IsScriptingAttribute(const Attribute&) const;
 
-  virtual bool isLiveLink() const { return false; }
-  KURL hrefURL() const;
+  virtual bool IsLiveLink() const { return false; }
+  KURL HrefURL() const;
 
-  KURL getURLAttribute(const QualifiedName&) const;
-  KURL getNonEmptyURLAttribute(const QualifiedName&) const;
+  KURL GetURLAttribute(const QualifiedName&) const;
+  KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
-  virtual const AtomicString imageSourceURL() const;
-  virtual Image* imageContents() { return nullptr; }
+  virtual const AtomicString ImageSourceURL() const;
+  virtual Image* ImageContents() { return nullptr; }
 
   virtual void focus(const FocusParams& = FocusParams());
-  virtual void updateFocusAppearance(SelectionBehaviorOnFocus);
+  virtual void UpdateFocusAppearance(SelectionBehaviorOnFocus);
   virtual void blur();
 
-  void setDistributeScroll(ScrollStateCallback*, String nativeScrollBehavior);
-  void nativeDistributeScroll(ScrollState&);
-  void setApplyScroll(ScrollStateCallback*, String nativeScrollBehavior);
-  void removeApplyScroll();
-  void nativeApplyScroll(ScrollState&);
+  void setDistributeScroll(ScrollStateCallback*, String native_scroll_behavior);
+  void NativeDistributeScroll(ScrollState&);
+  void setApplyScroll(ScrollStateCallback*, String native_scroll_behavior);
+  void RemoveApplyScroll();
+  void NativeApplyScroll(ScrollState&);
 
-  void callDistributeScroll(ScrollState&);
-  void callApplyScroll(ScrollState&);
+  void CallDistributeScroll(ScrollState&);
+  void CallApplyScroll(ScrollState&);
 
-  ScrollStateCallback* getApplyScroll();
+  ScrollStateCallback* GetApplyScroll();
 
   // Whether this element can receive focus at all. Most elements are not
   // focusable but some elements, such as form controls and links, are. Unlike
   // layoutObjectIsFocusable(), this method may be called when layout is not up
   // to date, so it must not use the layoutObject to determine focusability.
-  virtual bool supportsFocus() const;
+  virtual bool SupportsFocus() const;
   // isFocusable(), isKeyboardFocusable(), and isMouseFocusable() check
   // whether the element can actually be focused. Callers should ensure
   // ComputedStyle is up to date;
   // e.g. by calling Document::updateLayoutTreeIgnorePendingStylesheets().
-  bool isFocusable() const;
-  virtual bool isKeyboardFocusable() const;
-  virtual bool isMouseFocusable() const;
-  bool isFocusedElementInDocument() const;
-  Element* adjustedFocusedElementInTreeScope() const;
+  bool IsFocusable() const;
+  virtual bool IsKeyboardFocusable() const;
+  virtual bool IsMouseFocusable() const;
+  bool IsFocusedElementInDocument() const;
+  Element* AdjustedFocusedElementInTreeScope() const;
 
-  virtual void dispatchFocusEvent(
-      Element* oldFocusedElement,
+  virtual void DispatchFocusEvent(
+      Element* old_focused_element,
       WebFocusType,
-      InputDeviceCapabilities* sourceCapabilities = nullptr);
-  virtual void dispatchBlurEvent(
-      Element* newFocusedElement,
+      InputDeviceCapabilities* source_capabilities = nullptr);
+  virtual void DispatchBlurEvent(
+      Element* new_focused_element,
       WebFocusType,
-      InputDeviceCapabilities* sourceCapabilities = nullptr);
-  virtual void dispatchFocusInEvent(
-      const AtomicString& eventType,
-      Element* oldFocusedElement,
+      InputDeviceCapabilities* source_capabilities = nullptr);
+  virtual void DispatchFocusInEvent(
+      const AtomicString& event_type,
+      Element* old_focused_element,
       WebFocusType,
-      InputDeviceCapabilities* sourceCapabilities = nullptr);
-  void dispatchFocusOutEvent(
-      const AtomicString& eventType,
-      Element* newFocusedElement,
-      InputDeviceCapabilities* sourceCapabilities = nullptr);
+      InputDeviceCapabilities* source_capabilities = nullptr);
+  void DispatchFocusOutEvent(
+      const AtomicString& event_type,
+      Element* new_focused_element,
+      InputDeviceCapabilities* source_capabilities = nullptr);
 
   virtual String innerText();
   String outerText();
@@ -579,7 +582,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void setOuterHTML(const String&, ExceptionState&);
 
   Element* insertAdjacentElement(const String& where,
-                                 Element* newChild,
+                                 Element* new_child,
                                  ExceptionState&);
   void insertAdjacentText(const String& where,
                           const String& text,
@@ -588,35 +591,35 @@ class CORE_EXPORT Element : public ContainerNode {
                           const String& html,
                           ExceptionState&);
 
-  void setPointerCapture(int pointerId, ExceptionState&);
-  void releasePointerCapture(int pointerId, ExceptionState&);
+  void setPointerCapture(int pointer_id, ExceptionState&);
+  void releasePointerCapture(int pointer_id, ExceptionState&);
 
   // Returns true iff the element would capture the next pointer event. This
   // is true between a setPointerCapture call and a releasePointerCapture (or
   // implicit release) call:
   // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
-  bool hasPointerCapture(int pointerId) const;
+  bool hasPointerCapture(int pointer_id) const;
 
   // Returns true iff the element has received a gotpointercapture event for
   // the |pointerId| but hasn't yet received a lostpointercapture event for
   // the same id. The time window during which this is true is "delayed" from
   // (but overlapping with) the time window for hasPointerCapture():
   // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
-  bool hasProcessedPointerCapture(int pointerId) const;
+  bool HasProcessedPointerCapture(int pointer_id) const;
 
-  String textFromChildren();
+  String TextFromChildren();
 
   virtual String title() const { return String(); }
-  virtual String defaultToolTip() const { return String(); }
+  virtual String DefaultToolTip() const { return String(); }
 
-  virtual const AtomicString& shadowPseudoId() const;
+  virtual const AtomicString& ShadowPseudoId() const;
   // The specified string must start with "-webkit-" or "-internal-". The
   // former can be used as a selector in any places, and the latter can be
   // used only in UA stylesheet.
-  void setShadowPseudoId(const AtomicString&);
+  void SetShadowPseudoId(const AtomicString&);
 
-  LayoutSize minimumSizeForResizing() const;
-  void setMinimumSizeForResizing(const LayoutSize&);
+  LayoutSize MinimumSizeForResizing() const;
+  void SetMinimumSizeForResizing(const LayoutSize&);
 
   // Called by the parser when this element's close tag is reached, signaling
   // that all child tags have been parsed and added.  This is needed for
@@ -624,25 +627,25 @@ class CORE_EXPORT Element : public ContainerNode {
   // know all of their nested <param>s. [Radar 3603191, 4040848].  Also used for
   // script elements and some SVG elements for similar purposes, but making
   // parsing a special case in this respect should be avoided if possible.
-  virtual void finishParsingChildren();
+  virtual void FinishParsingChildren();
 
-  void beginParsingChildren() { setIsFinishedParsingChildren(false); }
+  void BeginParsingChildren() { SetIsFinishedParsingChildren(false); }
 
-  PseudoElement* pseudoElement(PseudoId) const;
-  LayoutObject* pseudoElementLayoutObject(PseudoId) const;
+  PseudoElement* GetPseudoElement(PseudoId) const;
+  LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
-  ComputedStyle* pseudoStyle(const PseudoStyleRequest&,
-                             const ComputedStyle* parentStyle = nullptr);
-  PassRefPtr<ComputedStyle> getUncachedPseudoStyle(
+  ComputedStyle* PseudoStyle(const PseudoStyleRequest&,
+                             const ComputedStyle* parent_style = nullptr);
+  PassRefPtr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest&,
-      const ComputedStyle* parentStyle = nullptr);
-  bool canGeneratePseudoElement(PseudoId) const;
+      const ComputedStyle* parent_style = nullptr);
+  bool CanGeneratePseudoElement(PseudoId) const;
 
-  virtual bool matchesDefaultPseudoClass() const { return false; }
-  virtual bool matchesEnabledPseudoClass() const { return false; }
-  virtual bool matchesReadOnlyPseudoClass() const { return false; }
-  virtual bool matchesReadWritePseudoClass() const { return false; }
-  virtual bool matchesValidityPseudoClasses() const { return false; }
+  virtual bool MatchesDefaultPseudoClass() const { return false; }
+  virtual bool MatchesEnabledPseudoClass() const { return false; }
+  virtual bool MatchesReadOnlyPseudoClass() const { return false; }
+  virtual bool MatchesReadWritePseudoClass() const { return false; }
+  virtual bool MatchesValidityPseudoClasses() const { return false; }
 
   // https://dom.spec.whatwg.org/#dom-element-matches
   bool matches(const AtomicString& selectors,
@@ -652,91 +655,91 @@ class CORE_EXPORT Element : public ContainerNode {
   Element* closest(const AtomicString& selectors,
                    ExceptionState& = ASSERT_NO_EXCEPTION);
 
-  virtual bool shouldAppearIndeterminate() const { return false; }
+  virtual bool ShouldAppearIndeterminate() const { return false; }
 
   DOMTokenList& classList();
 
   DOMStringMap& dataset();
 
-  virtual bool isDateTimeEditElement() const { return false; }
-  virtual bool isDateTimeFieldElement() const { return false; }
-  virtual bool isPickerIndicatorElement() const { return false; }
+  virtual bool IsDateTimeEditElement() const { return false; }
+  virtual bool IsDateTimeFieldElement() const { return false; }
+  virtual bool IsPickerIndicatorElement() const { return false; }
 
-  virtual bool isFormControlElement() const { return false; }
-  virtual bool isSpinButtonElement() const { return false; }
-  virtual bool isTextControl() const { return false; }
-  virtual bool isOptionalFormControl() const { return false; }
-  virtual bool isRequiredFormControl() const { return false; }
+  virtual bool IsFormControlElement() const { return false; }
+  virtual bool IsSpinButtonElement() const { return false; }
+  virtual bool IsTextControl() const { return false; }
+  virtual bool IsOptionalFormControl() const { return false; }
+  virtual bool IsRequiredFormControl() const { return false; }
   virtual bool willValidate() const { return false; }
-  virtual bool isValidElement() { return false; }
-  virtual bool isInRange() const { return false; }
-  virtual bool isOutOfRange() const { return false; }
-  virtual bool isClearButtonElement() const { return false; }
-  virtual bool isScriptElement() const { return false; }
+  virtual bool IsValidElement() { return false; }
+  virtual bool IsInRange() const { return false; }
+  virtual bool IsOutOfRange() const { return false; }
+  virtual bool IsClearButtonElement() const { return false; }
+  virtual bool IsScriptElement() const { return false; }
 
-  bool canContainRangeEndPoint() const override { return true; }
+  bool CanContainRangeEndPoint() const override { return true; }
 
   // Used for disabled form elements; if true, prevents mouse events from being
   // dispatched to event listeners, and prevents DOMActivate events from being
   // sent at all.
-  virtual bool isDisabledFormControl() const { return false; }
+  virtual bool IsDisabledFormControl() const { return false; }
 
-  bool hasPendingResources() const {
-    return hasElementFlag(HasPendingResources);
+  bool HasPendingResources() const {
+    return HasElementFlag(kHasPendingResources);
   }
-  void setHasPendingResources() { setElementFlag(HasPendingResources); }
-  void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
-  virtual void buildPendingResource() {}
+  void SetHasPendingResources() { SetElementFlag(kHasPendingResources); }
+  void ClearHasPendingResources() { ClearElementFlag(kHasPendingResources); }
+  virtual void BuildPendingResource() {}
 
-  bool isAlreadySpellChecked() const {
-    return hasElementFlag(AlreadySpellChecked);
+  bool IsAlreadySpellChecked() const {
+    return HasElementFlag(kAlreadySpellChecked);
   }
-  void setAlreadySpellChecked(bool value) {
-    setElementFlag(AlreadySpellChecked, value);
+  void SetAlreadySpellChecked(bool value) {
+    SetElementFlag(kAlreadySpellChecked, value);
   }
 
-  void v0SetCustomElementDefinition(V0CustomElementDefinition*);
-  V0CustomElementDefinition* v0CustomElementDefinition() const;
+  void V0SetCustomElementDefinition(V0CustomElementDefinition*);
+  V0CustomElementDefinition* GetV0CustomElementDefinition() const;
 
-  void setCustomElementDefinition(CustomElementDefinition*);
-  CustomElementDefinition* customElementDefinition() const;
+  void SetCustomElementDefinition(CustomElementDefinition*);
+  CustomElementDefinition* GetCustomElementDefinition() const;
 
-  bool containsFullScreenElement() const {
-    return hasElementFlag(ContainsFullScreenElement);
+  bool ContainsFullScreenElement() const {
+    return HasElementFlag(kContainsFullScreenElement);
   }
-  void setContainsFullScreenElement(bool);
-  void setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
+  void SetContainsFullScreenElement(bool);
+  void SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
 
-  bool containsPersistentVideo() const {
-    return hasElementFlag(ContainsPersistentVideo);
+  bool ContainsPersistentVideo() const {
+    return HasElementFlag(kContainsPersistentVideo);
   }
-  void setContainsPersistentVideo(bool);
+  void SetContainsPersistentVideo(bool);
 
-  bool isInTopLayer() const { return hasElementFlag(IsInTopLayer); }
-  void setIsInTopLayer(bool);
+  bool IsInTopLayer() const { return HasElementFlag(kIsInTopLayer); }
+  void SetIsInTopLayer(bool);
 
   void requestPointerLock();
 
-  bool isSpellCheckingEnabled() const;
+  bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  PassRefPtr<ComputedStyle> styleForLayoutObject();
+  PassRefPtr<ComputedStyle> StyleForLayoutObject();
 
-  bool hasID() const;
-  bool hasClass() const;
-  const SpaceSplitString& classNames() const;
+  bool HasID() const;
+  bool HasClass() const;
+  const SpaceSplitString& ClassNames() const;
 
-  ScrollOffset savedLayerScrollOffset() const;
-  void setSavedLayerScrollOffset(const ScrollOffset&);
+  ScrollOffset SavedLayerScrollOffset() const;
+  void SetSavedLayerScrollOffset(const ScrollOffset&);
 
-  ElementAnimations* elementAnimations() const;
-  ElementAnimations& ensureElementAnimations();
-  bool hasAnimations() const;
+  ElementAnimations* GetElementAnimations() const;
+  ElementAnimations& EnsureElementAnimations();
+  bool HasAnimations() const;
 
-  void synchronizeAttribute(const AtomicString& localName) const;
+  void SynchronizeAttribute(const AtomicString& local_name) const;
 
-  MutableStylePropertySet& ensureMutableInlineStyle();
-  void clearMutableInlineStyleIfEmpty();
+  MutableStylePropertySet& EnsureMutableInlineStyle();
+  void ClearMutableInlineStyleIfEmpty();
 
   void setTabIndex(int);
   int tabIndex() const override;
@@ -746,24 +749,24 @@ class CORE_EXPORT Element : public ContainerNode {
   // created. In order to know which properties are actually proxied, we
   // maintain a count of the number of compositor proxies associated with each
   // property.
-  bool hasCompositorProxy() const;
-  void incrementCompositorProxiedProperties(uint32_t mutableProperties);
-  void decrementCompositorProxiedProperties(uint32_t mutableProperties);
-  uint32_t compositorMutableProperties() const;
-  void updateFromCompositorMutation(const CompositorMutation&);
+  bool HasCompositorProxy() const;
+  void IncrementCompositorProxiedProperties(uint32_t mutable_properties);
+  void DecrementCompositorProxiedProperties(uint32_t mutable_properties);
+  uint32_t CompositorMutableProperties() const;
+  void UpdateFromCompositorMutation(const CompositorMutation&);
 
   // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
   // the element is isConnected() and the context is an isolated world.
-  void logAddElementIfIsolatedWorldAndInDocument(const char element[],
+  void LogAddElementIfIsolatedWorldAndInDocument(const char element[],
                                                  const QualifiedName& attr1);
-  void logAddElementIfIsolatedWorldAndInDocument(const char element[],
+  void LogAddElementIfIsolatedWorldAndInDocument(const char element[],
                                                  const QualifiedName& attr1,
                                                  const QualifiedName& attr2);
-  void logAddElementIfIsolatedWorldAndInDocument(const char element[],
+  void LogAddElementIfIsolatedWorldAndInDocument(const char element[],
                                                  const QualifiedName& attr1,
                                                  const QualifiedName& attr2,
                                                  const QualifiedName& attr3);
-  void logUpdateAttributeIfIsolatedWorldAndInDocument(
+  void LogUpdateAttributeIfIsolatedWorldAndInDocument(
       const char element[],
       const AttributeModificationParams&);
 
@@ -771,53 +774,53 @@ class CORE_EXPORT Element : public ContainerNode {
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-  SpellcheckAttributeState spellcheckAttributeState() const;
+  SpellcheckAttributeState GetSpellcheckAttributeState() const;
 
-  ElementIntersectionObserverData* intersectionObserverData() const;
-  ElementIntersectionObserverData& ensureIntersectionObserverData();
+  ElementIntersectionObserverData* IntersectionObserverData() const;
+  ElementIntersectionObserverData& EnsureIntersectionObserverData();
 
   HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*
-  resizeObserverData() const;
+  ResizeObserverData() const;
   HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>&
-  ensureResizeObserverData();
-  void setNeedsResizeObserverUpdate();
+  EnsureResizeObserverData();
+  void SetNeedsResizeObserverUpdate();
 
  protected:
-  Element(const QualifiedName& tagName, Document*, ConstructionType);
+  Element(const QualifiedName& tag_name, Document*, ConstructionType);
 
-  const ElementData* elementData() const { return m_elementData.get(); }
-  UniqueElementData& ensureUniqueElementData();
+  const ElementData* GetElementData() const { return element_data_.Get(); }
+  UniqueElementData& EnsureUniqueElementData();
 
-  void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
                                                CSSPropertyID,
                                                CSSValueID identifier);
-  void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
                                                CSSPropertyID,
                                                double value,
                                                CSSPrimitiveValue::UnitType);
-  void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
                                                CSSPropertyID,
                                                const String& value);
   // TODO(sashab): Make this take a const CSSValue&.
-  void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
                                                CSSPropertyID,
                                                const CSSValue*);
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  void childrenChanged(const ChildrenChange&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  virtual void willRecalcStyle(StyleRecalcChange);
-  virtual void didRecalcStyle();
-  virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject();
+  virtual void WillRecalcStyle(StyleRecalcChange);
+  virtual void DidRecalcStyle();
+  virtual PassRefPtr<ComputedStyle> CustomStyleForLayoutObject();
 
-  virtual bool shouldRegisterAsNamedItem() const { return false; }
-  virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
+  virtual bool ShouldRegisterAsNamedItem() const { return false; }
+  virtual bool ShouldRegisterAsExtraNamedItem() const { return false; }
 
-  bool supportsSpatialNavigationFocus() const;
+  bool SupportsSpatialNavigationFocus() const;
 
-  void clearTabIndexExplicitlyIfNeeded();
-  void setTabIndexExplicitly();
+  void ClearTabIndexExplicitlyIfNeeded();
+  void SetTabIndexExplicitly();
   // Subclasses may override this method to affect focusability. This method
   // must be called on an up-to-date ComputedStyle, so it may use existence of
   // layoutObject and the LayoutObject::style() to reason about focusability.
@@ -825,385 +828,385 @@ class CORE_EXPORT Element : public ContainerNode {
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
   // TODO(tkent): Rename this to isFocusableStyle.
-  virtual bool layoutObjectIsFocusable() const;
+  virtual bool LayoutObjectIsFocusable() const;
 
   // classAttributeChanged() exists to share code between
   // parseAttribute (called via setAttribute()) and
   // svgAttributeChanged (called when element.className.baseValue is set)
-  void classAttributeChanged(const AtomicString& newClassString);
+  void ClassAttributeChanged(const AtomicString& new_class_string);
 
-  static bool attributeValueIsJavaScriptURL(const Attribute&);
+  static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
-  PassRefPtr<ComputedStyle> originalStyleForLayoutObject();
+  PassRefPtr<ComputedStyle> OriginalStyleForLayoutObject();
 
-  Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
+  Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
 
-  virtual void parserDidSetAttributes() {}
+  virtual void ParserDidSetAttributes() {}
 
  private:
-  void scrollLayoutBoxBy(const ScrollToOptions&);
-  void scrollLayoutBoxTo(const ScrollToOptions&);
-  void scrollFrameBy(const ScrollToOptions&);
-  void scrollFrameTo(const ScrollToOptions&);
+  void ScrollLayoutBoxBy(const ScrollToOptions&);
+  void ScrollLayoutBoxTo(const ScrollToOptions&);
+  void ScrollFrameBy(const ScrollToOptions&);
+  void ScrollFrameTo(const ScrollToOptions&);
 
-  bool hasElementFlag(ElementFlags mask) const {
-    return hasRareData() && hasElementFlagInternal(mask);
+  bool HasElementFlag(ElementFlags mask) const {
+    return HasRareData() && HasElementFlagInternal(mask);
   }
-  void setElementFlag(ElementFlags, bool value = true);
-  void clearElementFlag(ElementFlags);
-  bool hasElementFlagInternal(ElementFlags) const;
+  void SetElementFlag(ElementFlags, bool value = true);
+  void ClearElementFlag(ElementFlags);
+  bool HasElementFlagInternal(ElementFlags) const;
 
-  bool isElementNode() const =
+  bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
-  bool isDocumentFragment() const =
+  bool IsDocumentFragment() const =
       delete;  // This will catch anyone doing an unnecessary check.
-  bool isDocumentNode() const =
+  bool IsDocumentNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  void styleAttributeChanged(const AtomicString& newStyleString,
+  void StyleAttributeChanged(const AtomicString& new_style_string,
                              AttributeModificationReason);
 
-  void updatePresentationAttributeStyle();
+  void UpdatePresentationAttributeStyle();
 
-  void inlineStyleChanged();
-  void setInlineStyleFromString(const AtomicString&);
+  void InlineStyleChanged();
+  void SetInlineStyleFromString(const AtomicString&);
 
   // If the only inherited changes in the parent element are independent,
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  PassRefPtr<ComputedStyle> propagateInheritedProperties(StyleRecalcChange);
+  PassRefPtr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
-  StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
-  void rebuildPseudoElementLayoutTree(PseudoId,
-                                      Text* nextTextSibling = nullptr);
-  void rebuildShadowRootLayoutTree(Text*& nextTextSibling);
-  inline void checkForEmptyStyleChange();
+  StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
+  void RebuildPseudoElementLayoutTree(PseudoId,
+                                      Text* next_text_sibling = nullptr);
+  void RebuildShadowRootLayoutTree(Text*& next_text_sibling);
+  inline void CheckForEmptyStyleChange();
 
-  void updatePseudoElement(PseudoId, StyleRecalcChange);
-  bool updateFirstLetter(Element*);
+  void UpdatePseudoElement(PseudoId, StyleRecalcChange);
+  bool UpdateFirstLetter(Element*);
 
-  inline void createPseudoElementIfNeeded(PseudoId);
+  inline void CreatePseudoElementIfNeeded(PseudoId);
 
-  ShadowRoot* shadowRoot() const;
+  ShadowRoot* GetShadowRoot() const;
 
   // FIXME: Everyone should allow author shadows.
-  virtual bool areAuthorShadowsAllowed() const { return true; }
-  virtual void didAddUserAgentShadowRoot(ShadowRoot&) {}
-  virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }
+  virtual bool AreAuthorShadowsAllowed() const { return true; }
+  virtual void DidAddUserAgentShadowRoot(ShadowRoot&) {}
+  virtual bool AlwaysCreateUserAgentShadowRoot() const { return false; }
 
   enum SynchronizationOfLazyAttribute {
-    NotInSynchronizationOfLazyAttribute = 0,
-    InSynchronizationOfLazyAttribute
+    kNotInSynchronizationOfLazyAttribute = 0,
+    kInSynchronizationOfLazyAttribute
   };
 
-  void didAddAttribute(const QualifiedName&, const AtomicString&);
-  void willModifyAttribute(const QualifiedName&,
-                           const AtomicString& oldValue,
-                           const AtomicString& newValue);
-  void didModifyAttribute(const QualifiedName&,
-                          const AtomicString& oldValue,
-                          const AtomicString& newValue);
-  void didRemoveAttribute(const QualifiedName&, const AtomicString& oldValue);
+  void DidAddAttribute(const QualifiedName&, const AtomicString&);
+  void WillModifyAttribute(const QualifiedName&,
+                           const AtomicString& old_value,
+                           const AtomicString& new_value);
+  void DidModifyAttribute(const QualifiedName&,
+                          const AtomicString& old_value,
+                          const AtomicString& new_value);
+  void DidRemoveAttribute(const QualifiedName&, const AtomicString& old_value);
 
-  void synchronizeAllAttributes() const;
-  void synchronizeAttribute(const QualifiedName&) const;
+  void SynchronizeAllAttributes() const;
+  void SynchronizeAttribute(const QualifiedName&) const;
 
-  void updateId(const AtomicString& oldId, const AtomicString& newId);
-  void updateId(TreeScope&,
-                const AtomicString& oldId,
-                const AtomicString& newId);
-  void updateName(const AtomicString& oldName, const AtomicString& newName);
+  void UpdateId(const AtomicString& old_id, const AtomicString& new_id);
+  void UpdateId(TreeScope&,
+                const AtomicString& old_id,
+                const AtomicString& new_id);
+  void UpdateName(const AtomicString& old_name, const AtomicString& new_name);
 
-  void clientQuads(Vector<FloatQuad>& quads);
+  void ClientQuads(Vector<FloatQuad>& quads);
 
   NodeType getNodeType() const final;
-  bool childTypeAllowed(NodeType) const final;
+  bool ChildTypeAllowed(NodeType) const final;
 
-  void setAttributeInternal(size_t index,
+  void SetAttributeInternal(size_t index,
                             const QualifiedName&,
                             const AtomicString& value,
                             SynchronizationOfLazyAttribute);
-  void appendAttributeInternal(const QualifiedName&,
+  void AppendAttributeInternal(const QualifiedName&,
                                const AtomicString& value,
                                SynchronizationOfLazyAttribute);
-  void removeAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
-  void attributeChangedFromParserOrByCloning(const QualifiedName&,
+  void RemoveAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
+  void AttributeChangedFromParserOrByCloning(const QualifiedName&,
                                              const AtomicString&,
                                              AttributeModificationReason);
 
-  void cancelFocusAppearanceUpdate();
+  void CancelFocusAppearanceUpdate();
 
-  const ComputedStyle* virtualEnsureComputedStyle(
-      PseudoId pseudoElementSpecifier = PseudoIdNone) override {
-    return ensureComputedStyle(pseudoElementSpecifier);
+  const ComputedStyle* VirtualEnsureComputedStyle(
+      PseudoId pseudo_element_specifier = kPseudoIdNone) override {
+    return EnsureComputedStyle(pseudo_element_specifier);
   }
 
-  inline void updateCallbackSelectors(const ComputedStyle* oldStyle,
-                                      const ComputedStyle* newStyle);
-  inline void removeCallbackSelectors();
-  inline void addCallbackSelectors();
+  inline void UpdateCallbackSelectors(const ComputedStyle* old_style,
+                                      const ComputedStyle* new_style);
+  inline void RemoveCallbackSelectors();
+  inline void AddCallbackSelectors();
 
   // cloneNode is private so that non-virtual cloneElementWithChildren and
   // cloneElementWithoutChildren are used instead.
   Node* cloneNode(bool deep, ExceptionState&) override;
-  virtual Element* cloneElementWithoutAttributesAndChildren();
+  virtual Element* CloneElementWithoutAttributesAndChildren();
 
-  QualifiedName m_tagName;
+  QualifiedName tag_name_;
 
-  void updateNamedItemRegistration(const AtomicString& oldName,
-                                   const AtomicString& newName);
-  void updateExtraNamedItemRegistration(const AtomicString& oldName,
-                                        const AtomicString& newName);
+  void UpdateNamedItemRegistration(const AtomicString& old_name,
+                                   const AtomicString& new_name);
+  void UpdateExtraNamedItemRegistration(const AtomicString& old_name,
+                                        const AtomicString& new_name);
 
-  void createUniqueElementData();
+  void CreateUniqueElementData();
 
-  bool shouldInvalidateDistributionWhenAttributeChanged(ElementShadow*,
+  bool ShouldInvalidateDistributionWhenAttributeChanged(ElementShadow*,
                                                         const QualifiedName&,
                                                         const AtomicString&);
 
-  ElementRareData* elementRareData() const;
-  ElementRareData& ensureElementRareData();
+  ElementRareData* GetElementRareData() const;
+  ElementRareData& EnsureElementRareData();
 
-  void removeAttrNodeList();
-  void detachAllAttrNodesFromElement();
-  void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
-  void detachAttrNodeAtIndex(Attr*, size_t index);
+  void RemoveAttrNodeList();
+  void DetachAllAttrNodesFromElement();
+  void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
+  void DetachAttrNodeAtIndex(Attr*, size_t index);
 
-  Member<ElementData> m_elementData;
+  Member<ElementData> element_data_;
 };
 
-DEFINE_NODE_TYPE_CASTS(Element, isElementNode());
+DEFINE_NODE_TYPE_CASTS(Element, IsElementNode());
 template <typename T>
-bool isElementOfType(const Node&);
+bool IsElementOfType(const Node&);
 template <>
-inline bool isElementOfType<const Element>(const Node& node) {
-  return node.isElementNode();
+inline bool IsElementOfType<const Element>(const Node& node) {
+  return node.IsElementNode();
 }
 template <typename T>
-inline bool isElementOfType(const Element& element) {
-  return isElementOfType<T>(static_cast<const Node&>(element));
+inline bool IsElementOfType(const Element& element) {
+  return IsElementOfType<T>(static_cast<const Node&>(element));
 }
 template <>
-inline bool isElementOfType<const Element>(const Element&) {
+inline bool IsElementOfType<const Element>(const Element&) {
   return true;
 }
 
 // Type casting.
 template <typename T>
-inline T& toElement(Node& node) {
-  SECURITY_DCHECK(isElementOfType<const T>(node));
+inline T& ToElement(Node& node) {
+  SECURITY_DCHECK(IsElementOfType<const T>(node));
   return static_cast<T&>(node);
 }
 template <typename T>
-inline T* toElement(Node* node) {
-  SECURITY_DCHECK(!node || isElementOfType<const T>(*node));
+inline T* ToElement(Node* node) {
+  SECURITY_DCHECK(!node || IsElementOfType<const T>(*node));
   return static_cast<T*>(node);
 }
 template <typename T>
-inline const T& toElement(const Node& node) {
-  SECURITY_DCHECK(isElementOfType<const T>(node));
+inline const T& ToElement(const Node& node) {
+  SECURITY_DCHECK(IsElementOfType<const T>(node));
   return static_cast<const T&>(node);
 }
 template <typename T>
-inline const T* toElement(const Node* node) {
-  SECURITY_DCHECK(!node || isElementOfType<const T>(*node));
+inline const T* ToElement(const Node* node) {
+  SECURITY_DCHECK(!node || IsElementOfType<const T>(*node));
   return static_cast<const T*>(node);
 }
 
 template <typename T>
-inline T& toElementOrDie(Node& node) {
-  CHECK(isElementOfType<const T>(node));
+inline T& ToElementOrDie(Node& node) {
+  CHECK(IsElementOfType<const T>(node));
   return static_cast<T&>(node);
 }
 template <typename T>
-inline T* toElementOrDie(Node* node) {
-  CHECK(!node || isElementOfType<const T>(*node));
+inline T* ToElementOrDie(Node* node) {
+  CHECK(!node || IsElementOfType<const T>(*node));
   return static_cast<T*>(node);
 }
 template <typename T>
-inline const T& toElementOrDie(const Node& node) {
-  CHECK(isElementOfType<const T>(node));
+inline const T& ToElementOrDie(const Node& node) {
+  CHECK(IsElementOfType<const T>(node));
   return static_cast<const T&>(node);
 }
 template <typename T>
-inline const T* toElementOrDie(const Node* node) {
-  CHECK(!node || isElementOfType<const T>(*node));
+inline const T* ToElementOrDie(const Node* node) {
+  CHECK(!node || IsElementOfType<const T>(*node));
   return static_cast<const T*>(node);
 }
 
-inline bool isDisabledFormControl(const Node* node) {
-  return node->isElementNode() && toElement(node)->isDisabledFormControl();
+inline bool IsDisabledFormControl(const Node* node) {
+  return node->IsElementNode() && ToElement(node)->IsDisabledFormControl();
 }
 
 inline Element* Node::parentElement() const {
   ContainerNode* parent = parentNode();
-  return parent && parent->isElementNode() ? toElement(parent) : nullptr;
+  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
 }
 
-inline bool Element::fastHasAttribute(const QualifiedName& name) const {
+inline bool Element::FastHasAttribute(const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(fastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name));
 #endif
-  return elementData() &&
-         elementData()->attributes().findIndex(name) != kNotFound;
+  return GetElementData() &&
+         GetElementData()->Attributes().FindIndex(name) != kNotFound;
 }
 
-inline const AtomicString& Element::fastGetAttribute(
+inline const AtomicString& Element::FastGetAttribute(
     const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(fastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name));
 #endif
-  if (elementData()) {
-    if (const Attribute* attribute = elementData()->attributes().find(name))
-      return attribute->value();
+  if (GetElementData()) {
+    if (const Attribute* attribute = GetElementData()->Attributes().Find(name))
+      return attribute->Value();
   }
-  return nullAtom;
+  return g_null_atom;
 }
 
-inline AttributeCollection Element::attributes() const {
-  if (!elementData())
+inline AttributeCollection Element::Attributes() const {
+  if (!GetElementData())
     return AttributeCollection();
-  synchronizeAllAttributes();
-  return elementData()->attributes();
+  SynchronizeAllAttributes();
+  return GetElementData()->Attributes();
 }
 
-inline AttributeCollection Element::attributesWithoutUpdate() const {
-  if (!elementData())
+inline AttributeCollection Element::AttributesWithoutUpdate() const {
+  if (!GetElementData())
     return AttributeCollection();
-  return elementData()->attributes();
+  return GetElementData()->Attributes();
 }
 
 inline bool Element::hasAttributes() const {
-  return !attributes().isEmpty();
+  return !Attributes().IsEmpty();
 }
 
-inline const AtomicString& Element::idForStyleResolution() const {
-  DCHECK(hasID());
-  return elementData()->idForStyleResolution();
+inline const AtomicString& Element::IdForStyleResolution() const {
+  DCHECK(HasID());
+  return GetElementData()->IdForStyleResolution();
 }
 
-inline const AtomicString& Element::getIdAttribute() const {
-  return hasID() ? fastGetAttribute(HTMLNames::idAttr) : nullAtom;
+inline const AtomicString& Element::GetIdAttribute() const {
+  return HasID() ? FastGetAttribute(HTMLNames::idAttr) : g_null_atom;
 }
 
-inline const AtomicString& Element::getNameAttribute() const {
-  return hasName() ? fastGetAttribute(HTMLNames::nameAttr) : nullAtom;
+inline const AtomicString& Element::GetNameAttribute() const {
+  return HasName() ? FastGetAttribute(HTMLNames::nameAttr) : g_null_atom;
 }
 
-inline const AtomicString& Element::getClassAttribute() const {
-  if (!hasClass())
-    return nullAtom;
-  if (isSVGElement())
+inline const AtomicString& Element::GetClassAttribute() const {
+  if (!HasClass())
+    return g_null_atom;
+  if (IsSVGElement())
     return getAttribute(HTMLNames::classAttr);
-  return fastGetAttribute(HTMLNames::classAttr);
+  return FastGetAttribute(HTMLNames::classAttr);
 }
 
-inline void Element::setIdAttribute(const AtomicString& value) {
+inline void Element::SetIdAttribute(const AtomicString& value) {
   setAttribute(HTMLNames::idAttr, value);
 }
 
-inline const SpaceSplitString& Element::classNames() const {
-  DCHECK(hasClass());
-  DCHECK(elementData());
-  return elementData()->classNames();
+inline const SpaceSplitString& Element::ClassNames() const {
+  DCHECK(HasClass());
+  DCHECK(GetElementData());
+  return GetElementData()->ClassNames();
 }
 
-inline bool Element::hasID() const {
-  return elementData() && elementData()->hasID();
+inline bool Element::HasID() const {
+  return GetElementData() && GetElementData()->HasID();
 }
 
-inline bool Element::hasClass() const {
-  return elementData() && elementData()->hasClass();
+inline bool Element::HasClass() const {
+  return GetElementData() && GetElementData()->HasClass();
 }
 
-inline UniqueElementData& Element::ensureUniqueElementData() {
-  if (!elementData() || !elementData()->isUnique())
-    createUniqueElementData();
-  return toUniqueElementData(*m_elementData);
+inline UniqueElementData& Element::EnsureUniqueElementData() {
+  if (!GetElementData() || !GetElementData()->IsUnique())
+    CreateUniqueElementData();
+  return ToUniqueElementData(*element_data_);
 }
 
-inline Node::InsertionNotificationRequest Node::insertedInto(
-    ContainerNode* insertionPoint) {
-  DCHECK(!childNeedsStyleInvalidation());
-  DCHECK(!needsStyleInvalidation());
-  DCHECK(insertionPoint->isConnected() || insertionPoint->isInShadowTree() ||
-         isContainerNode());
-  if (insertionPoint->isConnected()) {
-    setFlag(IsConnectedFlag);
-    insertionPoint->document().incrementNodeCount();
+inline Node::InsertionNotificationRequest Node::InsertedInto(
+    ContainerNode* insertion_point) {
+  DCHECK(!ChildNeedsStyleInvalidation());
+  DCHECK(!NeedsStyleInvalidation());
+  DCHECK(insertion_point->isConnected() || insertion_point->IsInShadowTree() ||
+         IsContainerNode());
+  if (insertion_point->isConnected()) {
+    SetFlag(kIsConnectedFlag);
+    insertion_point->GetDocument().IncrementNodeCount();
   }
-  if (parentOrShadowHostNode()->isInShadowTree())
-    setFlag(IsInShadowTreeFlag);
-  if (childNeedsDistributionRecalc() &&
-      !insertionPoint->childNeedsDistributionRecalc())
-    insertionPoint->markAncestorsWithChildNeedsDistributionRecalc();
-  return InsertionDone;
+  if (ParentOrShadowHostNode()->IsInShadowTree())
+    SetFlag(kIsInShadowTreeFlag);
+  if (ChildNeedsDistributionRecalc() &&
+      !insertion_point->ChildNeedsDistributionRecalc())
+    insertion_point->MarkAncestorsWithChildNeedsDistributionRecalc();
+  return kInsertionDone;
 }
 
-inline void Node::removedFrom(ContainerNode* insertionPoint) {
-  DCHECK(insertionPoint->isConnected() || isContainerNode() ||
-         isInShadowTree());
-  if (insertionPoint->isConnected()) {
-    clearFlag(IsConnectedFlag);
-    insertionPoint->document().decrementNodeCount();
+inline void Node::RemovedFrom(ContainerNode* insertion_point) {
+  DCHECK(insertion_point->isConnected() || IsContainerNode() ||
+         IsInShadowTree());
+  if (insertion_point->isConnected()) {
+    ClearFlag(kIsConnectedFlag);
+    insertion_point->GetDocument().DecrementNodeCount();
   }
-  if (isInShadowTree() && !containingTreeScope().rootNode().isShadowRoot())
-    clearFlag(IsInShadowTreeFlag);
-  if (AXObjectCache* cache = document().existingAXObjectCache())
-    cache->remove(this);
+  if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
+    ClearFlag(kIsInShadowTreeFlag);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->Remove(this);
 }
 
-inline void Element::invalidateStyleAttribute() {
-  DCHECK(elementData());
-  elementData()->m_styleAttributeIsDirty = true;
+inline void Element::InvalidateStyleAttribute() {
+  DCHECK(GetElementData());
+  GetElementData()->style_attribute_is_dirty_ = true;
 }
 
-inline const StylePropertySet* Element::presentationAttributeStyle() {
-  if (!elementData())
+inline const StylePropertySet* Element::PresentationAttributeStyle() {
+  if (!GetElementData())
     return nullptr;
-  if (elementData()->m_presentationAttributeStyleIsDirty)
-    updatePresentationAttributeStyle();
+  if (GetElementData()->presentation_attribute_style_is_dirty_)
+    UpdatePresentationAttributeStyle();
   // Need to call elementData() again since updatePresentationAttributeStyle()
   // might swap it with a UniqueElementData.
-  return elementData()->presentationAttributeStyle();
+  return GetElementData()->PresentationAttributeStyle();
 }
 
-inline void Element::setTagNameForCreateElementNS(
-    const QualifiedName& tagName) {
+inline void Element::SetTagNameForCreateElementNS(
+    const QualifiedName& tag_name) {
   // We expect this method to be called only to reset the prefix.
-  DCHECK_EQ(tagName.localName(), m_tagName.localName());
-  DCHECK_EQ(tagName.namespaceURI(), m_tagName.namespaceURI());
-  m_tagName = tagName;
+  DCHECK_EQ(tag_name.LocalName(), tag_name_.LocalName());
+  DCHECK_EQ(tag_name.NamespaceURI(), tag_name_.NamespaceURI());
+  tag_name_ = tag_name;
 }
 
-inline AtomicString Element::localNameForSelectorMatching() const {
-  if (isHTMLElement() || !document().isHTMLDocument())
+inline AtomicString Element::LocalNameForSelectorMatching() const {
+  if (IsHTMLElement() || !GetDocument().IsHTMLDocument())
     return localName();
-  return localName().lower();
+  return localName().Lower();
 }
 
-inline bool isShadowHost(const Node* node) {
-  return node && node->isElementNode() && toElement(node)->shadow();
+inline bool IsShadowHost(const Node* node) {
+  return node && node->IsElementNode() && ToElement(node)->Shadow();
 }
 
-inline bool isShadowHost(const Node& node) {
-  return node.isElementNode() && toElement(node).shadow();
+inline bool IsShadowHost(const Node& node) {
+  return node.IsElementNode() && ToElement(node).Shadow();
 }
 
-inline bool isShadowHost(const Element* element) {
-  return element && element->shadow();
+inline bool IsShadowHost(const Element* element) {
+  return element && element->Shadow();
 }
 
-inline bool isShadowHost(const Element& element) {
-  return element.shadow();
+inline bool IsShadowHost(const Element& element) {
+  return element.Shadow();
 }
 
-inline bool isAtShadowBoundary(const Element* element) {
+inline bool IsAtShadowBoundary(const Element* element) {
   if (!element)
     return false;
-  ContainerNode* parentNode = element->parentNode();
-  return parentNode && parentNode->isShadowRoot();
+  ContainerNode* parent_node = element->parentNode();
+  return parent_node && parent_node->IsShadowRoot();
 }
 
 // These macros do the same as their NODE equivalents but additionally provide a
@@ -1211,22 +1214,22 @@ inline bool isAtShadowBoundary(const Element* element) {
 // works for these Element types.
 #define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate)            \
   template <>                                                     \
-  inline bool isElementOfType<const thisType>(const Node& node) { \
+  inline bool IsElementOfType<const thisType>(const Node& node) { \
     return node.predicate;                                        \
   }                                                               \
   DEFINE_NODE_TYPE_CASTS(thisType, predicate)
 
 #define DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)         \
   template <>                                                     \
-  inline bool isElementOfType<const thisType>(const Node& node) { \
-    return is##thisType(node);                                    \
+  inline bool IsElementOfType<const thisType>(const Node& node) { \
+    return Is##thisType(node);                                    \
   }                                                               \
   DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
 #define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
-  static T* create(const QualifiedName&, Document&)
+  static T* Create(const QualifiedName&, Document&)
 #define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T)                     \
-  T* T::create(const QualifiedName& tagName, Document& document) { \
+  T* T::Create(const QualifiedName& tagName, Document& document) { \
     return new T(tagName, document);                               \
   }
 

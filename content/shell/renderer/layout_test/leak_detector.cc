@@ -42,100 +42,104 @@ const int kInitialNumberOfV8PerContextData = 2;
 
 LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
     : test_runner_(test_runner),
-      web_leak_detector_(blink::WebLeakDetector::create(this)) {
-  previous_result_.numberOfLiveAudioNodes = kInitialNumberOfLiveAudioNodes;
-  previous_result_.numberOfLiveDocuments = kInitialNumberOfLiveDocuments;
-  previous_result_.numberOfLiveNodes = kInitialNumberOfLiveNodes;
-  previous_result_.numberOfLiveLayoutObjects =
+      web_leak_detector_(blink::WebLeakDetector::Create(this)) {
+  previous_result_.number_of_live_audio_nodes = kInitialNumberOfLiveAudioNodes;
+  previous_result_.number_of_live_documents = kInitialNumberOfLiveDocuments;
+  previous_result_.number_of_live_nodes = kInitialNumberOfLiveNodes;
+  previous_result_.number_of_live_layout_objects =
       kInitialNumberOfLiveLayoutObjects;
-  previous_result_.numberOfLiveResources = kInitialNumberOfLiveResources;
-  previous_result_.numberOfLiveSuspendableObjects =
-    kInitialNumberOfLiveSuspendableObject;
-  previous_result_.numberOfLiveScriptPromises = kInitialNumberOfScriptPromises;
-  previous_result_.numberOfLiveFrames = kInitialNumberOfLiveFrames;
-  previous_result_.numberOfLiveV8PerContextData =
-    kInitialNumberOfV8PerContextData;
-  previous_result_.numberOfWorkerGlobalScopes =
-    kInitialNumberOfWorkerGlobalScopes;
+  previous_result_.number_of_live_resources = kInitialNumberOfLiveResources;
+  previous_result_.number_of_live_suspendable_objects =
+      kInitialNumberOfLiveSuspendableObject;
+  previous_result_.number_of_live_script_promises =
+      kInitialNumberOfScriptPromises;
+  previous_result_.number_of_live_frames = kInitialNumberOfLiveFrames;
+  previous_result_.number_of_live_v8_per_context_data =
+      kInitialNumberOfV8PerContextData;
+  previous_result_.number_of_worker_global_scopes =
+      kInitialNumberOfWorkerGlobalScopes;
 }
 
 LeakDetector::~LeakDetector() {
 }
 
 void LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
-  web_leak_detector_->prepareForLeakDetection(frame);
-  web_leak_detector_->collectGarbageAndReport();
+  web_leak_detector_->PrepareForLeakDetection(frame);
+  web_leak_detector_->CollectGarbageAndReport();
 }
 
-void LeakDetector::onLeakDetectionComplete(
+void LeakDetector::OnLeakDetectionComplete(
     const WebLeakDetectorClient::Result& result) {
   LeakDetectionResult report;
   report.leaked = false;
   base::DictionaryValue detail;
 
-  if (previous_result_.numberOfLiveAudioNodes < result.numberOfLiveAudioNodes) {
+  if (previous_result_.number_of_live_audio_nodes <
+      result.number_of_live_audio_nodes) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveAudioNodes);
-    list->AppendInteger(result.numberOfLiveAudioNodes);
+    list->AppendInteger(previous_result_.number_of_live_audio_nodes);
+    list->AppendInteger(result.number_of_live_audio_nodes);
     detail.Set("numberOfLiveAudioNodes", list);
   }
-  if (previous_result_.numberOfLiveDocuments < result.numberOfLiveDocuments) {
+  if (previous_result_.number_of_live_documents <
+      result.number_of_live_documents) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveDocuments);
-    list->AppendInteger(result.numberOfLiveDocuments);
+    list->AppendInteger(previous_result_.number_of_live_documents);
+    list->AppendInteger(result.number_of_live_documents);
     detail.Set("numberOfLiveDocuments", list);
   }
-  if (previous_result_.numberOfLiveNodes < result.numberOfLiveNodes) {
+  if (previous_result_.number_of_live_nodes < result.number_of_live_nodes) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveNodes);
-    list->AppendInteger(result.numberOfLiveNodes);
+    list->AppendInteger(previous_result_.number_of_live_nodes);
+    list->AppendInteger(result.number_of_live_nodes);
     detail.Set("numberOfLiveNodes", list);
   }
-  if (previous_result_.numberOfLiveLayoutObjects <
-      result.numberOfLiveLayoutObjects) {
+  if (previous_result_.number_of_live_layout_objects <
+      result.number_of_live_layout_objects) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveLayoutObjects);
-    list->AppendInteger(result.numberOfLiveLayoutObjects);
+    list->AppendInteger(previous_result_.number_of_live_layout_objects);
+    list->AppendInteger(result.number_of_live_layout_objects);
     detail.Set("numberOfLiveLayoutObjects", list);
   }
-  if (previous_result_.numberOfLiveResources < result.numberOfLiveResources) {
+  if (previous_result_.number_of_live_resources <
+      result.number_of_live_resources) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveResources);
-    list->AppendInteger(result.numberOfLiveResources);
+    list->AppendInteger(previous_result_.number_of_live_resources);
+    list->AppendInteger(result.number_of_live_resources);
     detail.Set("numberOfLiveResources", list);
   }
-  if (previous_result_.numberOfLiveSuspendableObjects <
-      result.numberOfLiveSuspendableObjects) {
+  if (previous_result_.number_of_live_suspendable_objects <
+      result.number_of_live_suspendable_objects) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveSuspendableObjects);
-    list->AppendInteger(result.numberOfLiveSuspendableObjects);
+    list->AppendInteger(previous_result_.number_of_live_suspendable_objects);
+    list->AppendInteger(result.number_of_live_suspendable_objects);
     detail.Set("numberOfLiveSuspendableObjects", list);
   }
-  if (previous_result_.numberOfLiveScriptPromises <
-      result.numberOfLiveScriptPromises) {
+  if (previous_result_.number_of_live_script_promises <
+      result.number_of_live_script_promises) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveScriptPromises);
-    list->AppendInteger(result.numberOfLiveScriptPromises);
+    list->AppendInteger(previous_result_.number_of_live_script_promises);
+    list->AppendInteger(result.number_of_live_script_promises);
     detail.Set("numberOfLiveScriptPromises", list);
   }
-  if (previous_result_.numberOfLiveFrames < result.numberOfLiveFrames) {
+  if (previous_result_.number_of_live_frames < result.number_of_live_frames) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveFrames);
-    list->AppendInteger(result.numberOfLiveFrames);
+    list->AppendInteger(previous_result_.number_of_live_frames);
+    list->AppendInteger(result.number_of_live_frames);
     detail.Set("numberOfLiveFrames", list);
   }
-  if (previous_result_.numberOfLiveV8PerContextData <
-      result.numberOfLiveV8PerContextData) {
+  if (previous_result_.number_of_live_v8_per_context_data <
+      result.number_of_live_v8_per_context_data) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveV8PerContextData);
-    list->AppendInteger(result.numberOfLiveV8PerContextData);
+    list->AppendInteger(previous_result_.number_of_live_v8_per_context_data);
+    list->AppendInteger(result.number_of_live_v8_per_context_data);
     detail.Set("numberOfLiveV8PerContextData", list);
   }
-  if (previous_result_.numberOfWorkerGlobalScopes <
-      result.numberOfWorkerGlobalScopes) {
+  if (previous_result_.number_of_worker_global_scopes <
+      result.number_of_worker_global_scopes) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfWorkerGlobalScopes);
-    list->AppendInteger(result.numberOfWorkerGlobalScopes);
+    list->AppendInteger(previous_result_.number_of_worker_global_scopes);
+    list->AppendInteger(result.number_of_worker_global_scopes);
     detail.Set("numberOfWorkerGlobalScopes", list);
   }
 

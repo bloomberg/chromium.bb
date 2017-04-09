@@ -12,29 +12,29 @@ namespace blink {
 
 namespace {
 
-bool parsePath(const char* input, String& output) {
-  String inputString(input);
-  SVGPathStringSource source(inputString);
+bool ParsePath(const char* input, String& output) {
+  String input_string(input);
+  SVGPathStringSource source(input_string);
   SVGPathStringBuilder builder;
-  bool hadError = SVGPathParser::parsePath(source, builder);
-  output = builder.result();
+  bool had_error = SVGPathParser::ParsePath(source, builder);
+  output = builder.Result();
   // Coerce a null result to empty.
-  if (output.isNull())
-    output = emptyString;
-  return hadError;
+  if (output.IsNull())
+    output = g_empty_string;
+  return had_error;
 }
 
 #define VALID(input, expected)             \
   {                                        \
     String output;                         \
-    EXPECT_TRUE(parsePath(input, output)); \
+    EXPECT_TRUE(ParsePath(input, output)); \
     EXPECT_EQ(expected, output);           \
   }
 
 #define MALFORMED(input, expected)          \
   {                                         \
     String output;                          \
-    EXPECT_FALSE(parsePath(input, output)); \
+    EXPECT_FALSE(ParsePath(input, output)); \
     EXPECT_EQ(expected, output);            \
   }
 
@@ -143,42 +143,45 @@ TEST(SVGPathParserTest, Simple) {
 #undef MALFORMED
 #undef VALID
 
-SVGParsingError parsePathWithError(const char* input) {
-  String inputString(input);
-  SVGPathStringSource source(inputString);
+SVGParsingError ParsePathWithError(const char* input) {
+  String input_string(input);
+  SVGPathStringSource source(input_string);
   SVGPathStringBuilder builder;
-  SVGPathParser::parsePath(source, builder);
-  return source.parseError();
+  SVGPathParser::ParsePath(source, builder);
+  return source.ParseError();
 }
 
 #define EXPECT_ERROR(input, expectedLocus, expectedError) \
   {                                                       \
-    SVGParsingError error = parsePathWithError(input);    \
-    EXPECT_EQ(expectedError, error.status());             \
-    EXPECT_TRUE(error.hasLocus());                        \
-    EXPECT_EQ(expectedLocus, error.locus());              \
+    SVGParsingError error = ParsePathWithError(input);    \
+    EXPECT_EQ(expectedError, error.Status());             \
+    EXPECT_TRUE(error.HasLocus());                        \
+    EXPECT_EQ(expectedLocus, error.Locus());              \
   }
 
 TEST(SVGPathParserTest, ErrorReporting) {
   // Missing initial moveto.
-  EXPECT_ERROR(" 10 10", 1u, SVGParseStatus::ExpectedMoveToCommand);
-  EXPECT_ERROR("L 10 10", 0u, SVGParseStatus::ExpectedMoveToCommand);
+  EXPECT_ERROR(" 10 10", 1u, SVGParseStatus::kExpectedMoveToCommand);
+  EXPECT_ERROR("L 10 10", 0u, SVGParseStatus::kExpectedMoveToCommand);
   // Invalid command letter.
-  EXPECT_ERROR("M 10 10 #", 8u, SVGParseStatus::ExpectedPathCommand);
-  EXPECT_ERROR("M 10 10 E 100 100", 8u, SVGParseStatus::ExpectedPathCommand);
+  EXPECT_ERROR("M 10 10 #", 8u, SVGParseStatus::kExpectedPathCommand);
+  EXPECT_ERROR("M 10 10 E 100 100", 8u, SVGParseStatus::kExpectedPathCommand);
   // Invalid number.
-  EXPECT_ERROR("M 10 10 L100 ", 13u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M 10 10 L100 #", 13u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M 10 10 L100#100", 12u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M0,0 A#,10 0 0,0 20,20", 6u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M0,0 A10,# 0 0,0 20,20", 9u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M0,0 A10,10 # 0,0 20,20", 12u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M0,0 A10,10 0 0,0 #,20", 18u, SVGParseStatus::ExpectedNumber);
-  EXPECT_ERROR("M0,0 A10,10 0 0,0 20,#", 21u, SVGParseStatus::ExpectedNumber);
+  EXPECT_ERROR("M 10 10 L100 ", 13u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M 10 10 L100 #", 13u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M 10 10 L100#100", 12u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M0,0 A#,10 0 0,0 20,20", 6u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M0,0 A10,# 0 0,0 20,20", 9u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M0,0 A10,10 # 0,0 20,20", 12u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M0,0 A10,10 0 0,0 #,20", 18u, SVGParseStatus::kExpectedNumber);
+  EXPECT_ERROR("M0,0 A10,10 0 0,0 20,#", 21u, SVGParseStatus::kExpectedNumber);
   // Invalid arc-flag.
-  EXPECT_ERROR("M0,0 A10,10 0 #,0 20,20", 14u, SVGParseStatus::ExpectedArcFlag);
-  EXPECT_ERROR("M0,0 A10,10 0 0,# 20,20", 16u, SVGParseStatus::ExpectedArcFlag);
-  EXPECT_ERROR("M0,0 A10,10 0 0,2 20,20", 16u, SVGParseStatus::ExpectedArcFlag);
+  EXPECT_ERROR("M0,0 A10,10 0 #,0 20,20", 14u,
+               SVGParseStatus::kExpectedArcFlag);
+  EXPECT_ERROR("M0,0 A10,10 0 0,# 20,20", 16u,
+               SVGParseStatus::kExpectedArcFlag);
+  EXPECT_ERROR("M0,0 A10,10 0 0,2 20,20", 16u,
+               SVGParseStatus::kExpectedArcFlag);
 }
 
 #undef EXPECT_ERROR

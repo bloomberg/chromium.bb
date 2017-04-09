@@ -13,89 +13,91 @@
 
 namespace blink {
 
-void DetailsMarkerPainter::paint(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset) {
-  if (paintInfo.phase != PaintPhaseForeground ||
-      m_layoutDetailsMarker.style()->visibility() != EVisibility::kVisible) {
-    BlockPainter(m_layoutDetailsMarker).paint(paintInfo, paintOffset);
+void DetailsMarkerPainter::Paint(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset) {
+  if (paint_info.phase != kPaintPhaseForeground ||
+      layout_details_marker_.Style()->Visibility() != EVisibility::kVisible) {
+    BlockPainter(layout_details_marker_).Paint(paint_info, paint_offset);
     return;
   }
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutDetailsMarker, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_details_marker_, paint_info.phase))
     return;
 
-  LayoutPoint boxOrigin(paintOffset + m_layoutDetailsMarker.location());
-  LayoutRect overflowRect(m_layoutDetailsMarker.visualOverflowRect());
-  overflowRect.moveBy(boxOrigin);
+  LayoutPoint box_origin(paint_offset + layout_details_marker_.Location());
+  LayoutRect overflow_rect(layout_details_marker_.VisualOverflowRect());
+  overflow_rect.MoveBy(box_origin);
 
-  if (!paintInfo.cullRect().intersectsCullRect(overflowRect))
+  if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
 
-  LayoutObjectDrawingRecorder layoutDrawingRecorder(
-      paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
-  const Color color(m_layoutDetailsMarker.resolveColor(CSSPropertyColor));
-  paintInfo.context.setFillColor(color);
+  LayoutObjectDrawingRecorder layout_drawing_recorder(
+      paint_info.context, layout_details_marker_, paint_info.phase,
+      overflow_rect);
+  const Color color(layout_details_marker_.ResolveColor(CSSPropertyColor));
+  paint_info.context.SetFillColor(color);
 
-  boxOrigin.move(
-      m_layoutDetailsMarker.borderLeft() + m_layoutDetailsMarker.paddingLeft(),
-      m_layoutDetailsMarker.borderTop() + m_layoutDetailsMarker.paddingTop());
-  paintInfo.context.fillPath(getPath(boxOrigin));
+  box_origin.Move(
+      layout_details_marker_.BorderLeft() +
+          layout_details_marker_.PaddingLeft(),
+      layout_details_marker_.BorderTop() + layout_details_marker_.PaddingTop());
+  paint_info.context.FillPath(GetPath(box_origin));
 }
 
-static Path createPath(const FloatPoint* path) {
+static Path CreatePath(const FloatPoint* path) {
   Path result;
-  result.moveTo(FloatPoint(path[0].x(), path[0].y()));
+  result.MoveTo(FloatPoint(path[0].X(), path[0].Y()));
   for (int i = 1; i < 4; ++i)
-    result.addLineTo(FloatPoint(path[i].x(), path[i].y()));
+    result.AddLineTo(FloatPoint(path[i].X(), path[i].Y()));
   return result;
 }
 
-static Path createDownArrowPath() {
+static Path CreateDownArrowPath() {
   FloatPoint points[4] = {FloatPoint(0.0f, 0.07f), FloatPoint(0.5f, 0.93f),
                           FloatPoint(1.0f, 0.07f), FloatPoint(0.0f, 0.07f)};
-  return createPath(points);
+  return CreatePath(points);
 }
 
-static Path createUpArrowPath() {
+static Path CreateUpArrowPath() {
   FloatPoint points[4] = {FloatPoint(0.0f, 0.93f), FloatPoint(0.5f, 0.07f),
                           FloatPoint(1.0f, 0.93f), FloatPoint(0.0f, 0.93f)};
-  return createPath(points);
+  return CreatePath(points);
 }
 
-static Path createLeftArrowPath() {
+static Path CreateLeftArrowPath() {
   FloatPoint points[4] = {FloatPoint(1.0f, 0.0f), FloatPoint(0.14f, 0.5f),
                           FloatPoint(1.0f, 1.0f), FloatPoint(1.0f, 0.0f)};
-  return createPath(points);
+  return CreatePath(points);
 }
 
-static Path createRightArrowPath() {
+static Path CreateRightArrowPath() {
   FloatPoint points[4] = {FloatPoint(0.0f, 0.0f), FloatPoint(0.86f, 0.5f),
                           FloatPoint(0.0f, 1.0f), FloatPoint(0.0f, 0.0f)};
-  return createPath(points);
+  return CreatePath(points);
 }
 
-Path DetailsMarkerPainter::getCanonicalPath() const {
-  switch (m_layoutDetailsMarker.getOrientation()) {
-    case LayoutDetailsMarker::Left:
-      return createLeftArrowPath();
-    case LayoutDetailsMarker::Right:
-      return createRightArrowPath();
-    case LayoutDetailsMarker::Up:
-      return createUpArrowPath();
-    case LayoutDetailsMarker::Down:
-      return createDownArrowPath();
+Path DetailsMarkerPainter::GetCanonicalPath() const {
+  switch (layout_details_marker_.GetOrientation()) {
+    case LayoutDetailsMarker::kLeft:
+      return CreateLeftArrowPath();
+    case LayoutDetailsMarker::kRight:
+      return CreateRightArrowPath();
+    case LayoutDetailsMarker::kUp:
+      return CreateUpArrowPath();
+    case LayoutDetailsMarker::kDown:
+      return CreateDownArrowPath();
   }
 
   return Path();
 }
 
-Path DetailsMarkerPainter::getPath(const LayoutPoint& origin) const {
-  Path result = getCanonicalPath();
-  result.transform(
-      AffineTransform().scale(m_layoutDetailsMarker.contentWidth().toFloat(),
-                              m_layoutDetailsMarker.contentHeight().toFloat()));
-  result.translate(FloatSize(origin.x().toFloat(), origin.y().toFloat()));
+Path DetailsMarkerPainter::GetPath(const LayoutPoint& origin) const {
+  Path result = GetCanonicalPath();
+  result.Transform(AffineTransform().Scale(
+      layout_details_marker_.ContentWidth().ToFloat(),
+      layout_details_marker_.ContentHeight().ToFloat()));
+  result.Translate(FloatSize(origin.X().ToFloat(), origin.Y().ToFloat()));
   return result;
 }
 

@@ -36,164 +36,165 @@
 
 namespace blink {
 
-CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector,
+CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* font_selector,
                                            FontTraits traits)
-    : m_fontSelector(fontSelector),
-      m_traits(traits),
-      m_firstNonCssConnectedFace(m_fontFaces.end()),
-      m_approximateCharacterCount(0) {}
+    : font_selector_(font_selector),
+      traits_(traits),
+      first_non_css_connected_face_(font_faces_.end()),
+      approximate_character_count_(0) {}
 
 CSSSegmentedFontFace::~CSSSegmentedFontFace() {}
 
-void CSSSegmentedFontFace::pruneTable() {
+void CSSSegmentedFontFace::PruneTable() {
   // Make sure the glyph page tree prunes out all uses of this custom font.
-  if (m_fontDataTable.isEmpty())
+  if (font_data_table_.IsEmpty())
     return;
 
-  m_fontDataTable.clear();
+  font_data_table_.Clear();
 }
 
-bool CSSSegmentedFontFace::isValid() const {
+bool CSSSegmentedFontFace::IsValid() const {
   // Valid if at least one font face is valid.
-  for (const auto& fontFace : m_fontFaces) {
-    if (fontFace->cssFontFace()->isValid())
+  for (const auto& font_face : font_faces_) {
+    if (font_face->CssFontFace()->IsValid())
       return true;
   }
   return false;
 }
 
-void CSSSegmentedFontFace::fontFaceInvalidated() {
-  pruneTable();
+void CSSSegmentedFontFace::FontFaceInvalidated() {
+  PruneTable();
 }
 
-void CSSSegmentedFontFace::addFontFace(FontFace* fontFace, bool cssConnected) {
-  pruneTable();
-  fontFace->cssFontFace()->setSegmentedFontFace(this);
-  if (cssConnected) {
-    m_fontFaces.insertBefore(m_firstNonCssConnectedFace, fontFace);
+void CSSSegmentedFontFace::AddFontFace(FontFace* font_face,
+                                       bool css_connected) {
+  PruneTable();
+  font_face->CssFontFace()->SetSegmentedFontFace(this);
+  if (css_connected) {
+    font_faces_.InsertBefore(first_non_css_connected_face_, font_face);
   } else {
     // This is the only place in Blink that is using addReturnIterator.
-    FontFaceList::iterator iterator = m_fontFaces.addReturnIterator(fontFace);
-    if (m_firstNonCssConnectedFace == m_fontFaces.end())
-      m_firstNonCssConnectedFace = iterator;
+    FontFaceList::iterator iterator = font_faces_.AddReturnIterator(font_face);
+    if (first_non_css_connected_face_ == font_faces_.end())
+      first_non_css_connected_face_ = iterator;
   }
 }
 
-void CSSSegmentedFontFace::removeFontFace(FontFace* fontFace) {
-  FontFaceList::iterator it = m_fontFaces.find(fontFace);
-  if (it == m_fontFaces.end())
+void CSSSegmentedFontFace::RemoveFontFace(FontFace* font_face) {
+  FontFaceList::iterator it = font_faces_.Find(font_face);
+  if (it == font_faces_.end())
     return;
 
-  if (it == m_firstNonCssConnectedFace)
-    ++m_firstNonCssConnectedFace;
-  m_fontFaces.erase(it);
+  if (it == first_non_css_connected_face_)
+    ++first_non_css_connected_face_;
+  font_faces_.erase(it);
 
-  pruneTable();
-  fontFace->cssFontFace()->clearSegmentedFontFace();
+  PruneTable();
+  font_face->CssFontFace()->ClearSegmentedFontFace();
 }
 
-PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(
-    const FontDescription& fontDescription) {
-  if (!isValid())
+PassRefPtr<FontData> CSSSegmentedFontFace::GetFontData(
+    const FontDescription& font_description) {
+  if (!IsValid())
     return nullptr;
 
-  FontTraits desiredTraits = fontDescription.traits();
+  FontTraits desired_traits = font_description.Traits();
   FontCacheKey key =
-      fontDescription.cacheKey(FontFaceCreationParams(), desiredTraits);
+      font_description.CacheKey(FontFaceCreationParams(), desired_traits);
 
-  RefPtr<SegmentedFontData>& fontData =
-      m_fontDataTable.insert(key, nullptr).storedValue->value;
-  if (fontData && fontData->numFaces()) {
+  RefPtr<SegmentedFontData>& font_data =
+      font_data_table_.insert(key, nullptr).stored_value->value;
+  if (font_data && font_data->NumFaces()) {
     // No release, we have a reference to an object in the cache which should
     // retain the ref count it has.
-    return fontData;
+    return font_data;
   }
 
-  if (!fontData)
-    fontData = SegmentedFontData::create();
+  if (!font_data)
+    font_data = SegmentedFontData::Create();
 
-  FontDescription requestedFontDescription(fontDescription);
-  requestedFontDescription.setTraits(m_traits);
-  requestedFontDescription.setSyntheticBold(m_traits.weight() < FontWeight600 &&
-                                            desiredTraits.weight() >=
-                                                FontWeight600);
-  requestedFontDescription.setSyntheticItalic(
-      m_traits.style() == FontStyleNormal &&
-      desiredTraits.style() == FontStyleItalic);
+  FontDescription requested_font_description(font_description);
+  requested_font_description.SetTraits(traits_);
+  requested_font_description.SetSyntheticBold(
+      traits_.Weight() < kFontWeight600 &&
+      desired_traits.Weight() >= kFontWeight600);
+  requested_font_description.SetSyntheticItalic(
+      traits_.Style() == kFontStyleNormal &&
+      desired_traits.Style() == kFontStyleItalic);
 
-  for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin();
-       it != m_fontFaces.rend(); ++it) {
-    if (!(*it)->cssFontFace()->isValid())
+  for (FontFaceList::reverse_iterator it = font_faces_.rbegin();
+       it != font_faces_.rend(); ++it) {
+    if (!(*it)->CssFontFace()->IsValid())
       continue;
-    if (RefPtr<SimpleFontData> faceFontData =
-            (*it)->cssFontFace()->getFontData(requestedFontDescription)) {
-      DCHECK(!faceFontData->isSegmented());
-      if (faceFontData->isCustomFont()) {
-        fontData->appendFace(adoptRef(new FontDataForRangeSet(
-            std::move(faceFontData), (*it)->cssFontFace()->ranges())));
+    if (RefPtr<SimpleFontData> face_font_data =
+            (*it)->CssFontFace()->GetFontData(requested_font_description)) {
+      DCHECK(!face_font_data->IsSegmented());
+      if (face_font_data->IsCustomFont()) {
+        font_data->AppendFace(AdoptRef(new FontDataForRangeSet(
+            std::move(face_font_data), (*it)->CssFontFace()->Ranges())));
       } else {
-        fontData->appendFace(adoptRef(new FontDataForRangeSetFromCache(
-            std::move(faceFontData), (*it)->cssFontFace()->ranges())));
+        font_data->AppendFace(AdoptRef(new FontDataForRangeSetFromCache(
+            std::move(face_font_data), (*it)->CssFontFace()->Ranges())));
       }
     }
   }
-  if (fontData->numFaces()) {
+  if (font_data->NumFaces()) {
     // No release, we have a reference to an object in the cache which should
     // retain the ref count it has.
-    return fontData;
+    return font_data;
   }
 
   return nullptr;
 }
 
-void CSSSegmentedFontFace::willUseFontData(
-    const FontDescription& fontDescription,
+void CSSSegmentedFontFace::WillUseFontData(
+    const FontDescription& font_description,
     const String& text) {
-  m_approximateCharacterCount += text.length();
-  for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin();
-       it != m_fontFaces.rend(); ++it) {
-    if ((*it)->loadStatus() != FontFace::Unloaded)
+  approximate_character_count_ += text.length();
+  for (FontFaceList::reverse_iterator it = font_faces_.rbegin();
+       it != font_faces_.rend(); ++it) {
+    if ((*it)->LoadStatus() != FontFace::kUnloaded)
       break;
-    if ((*it)->cssFontFace()->maybeLoadFont(fontDescription, text))
+    if ((*it)->CssFontFace()->MaybeLoadFont(font_description, text))
       break;
   }
 }
 
-void CSSSegmentedFontFace::willUseRange(
-    const blink::FontDescription& fontDescription,
-    const blink::FontDataForRangeSet& rangeSet) {
+void CSSSegmentedFontFace::WillUseRange(
+    const blink::FontDescription& font_description,
+    const blink::FontDataForRangeSet& range_set) {
   // Iterating backwards since later defined unicode-range faces override
   // previously defined ones, according to the CSS3 fonts module.
   // https://drafts.csswg.org/css-fonts/#composite-fonts
-  for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin();
-       it != m_fontFaces.rend(); ++it) {
-    CSSFontFace* cssFontFace = (*it)->cssFontFace();
-    if (cssFontFace->maybeLoadFont(fontDescription, rangeSet))
+  for (FontFaceList::reverse_iterator it = font_faces_.rbegin();
+       it != font_faces_.rend(); ++it) {
+    CSSFontFace* css_font_face = (*it)->CssFontFace();
+    if (css_font_face->MaybeLoadFont(font_description, range_set))
       break;
   }
 }
 
-bool CSSSegmentedFontFace::checkFont(const String& text) const {
-  for (const auto& fontFace : m_fontFaces) {
-    if (fontFace->loadStatus() != FontFace::Loaded &&
-        fontFace->cssFontFace()->ranges()->intersectsWith(text))
+bool CSSSegmentedFontFace::CheckFont(const String& text) const {
+  for (const auto& font_face : font_faces_) {
+    if (font_face->LoadStatus() != FontFace::kLoaded &&
+        font_face->CssFontFace()->Ranges()->IntersectsWith(text))
       return false;
   }
   return true;
 }
 
-void CSSSegmentedFontFace::match(const String& text,
+void CSSSegmentedFontFace::Match(const String& text,
                                  HeapVector<Member<FontFace>>& faces) const {
-  for (const auto& fontFace : m_fontFaces) {
-    if (fontFace->cssFontFace()->ranges()->intersectsWith(text))
-      faces.push_back(fontFace);
+  for (const auto& font_face : font_faces_) {
+    if (font_face->CssFontFace()->Ranges()->IntersectsWith(text))
+      faces.push_back(font_face);
   }
 }
 
 DEFINE_TRACE(CSSSegmentedFontFace) {
-  visitor->trace(m_fontSelector);
-  visitor->trace(m_firstNonCssConnectedFace);
-  visitor->trace(m_fontFaces);
+  visitor->Trace(font_selector_);
+  visitor->Trace(first_non_css_connected_face_);
+  visitor->Trace(font_faces_);
 }
 
 }  // namespace blink

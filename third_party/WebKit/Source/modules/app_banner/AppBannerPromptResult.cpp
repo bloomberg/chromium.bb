@@ -9,11 +9,11 @@ namespace blink {
 AppBannerPromptResult::~AppBannerPromptResult() {}
 
 String AppBannerPromptResult::outcome() const {
-  switch (m_outcome) {
-    case Outcome::Accepted:
+  switch (outcome_) {
+    case Outcome::kAccepted:
       return "accepted";
 
-    case Outcome::Dismissed:
+    case Outcome::kDismissed:
       return "dismissed";
   }
 
@@ -23,6 +23,6 @@ String AppBannerPromptResult::outcome() const {
 
 AppBannerPromptResult::AppBannerPromptResult(const String& platform,
                                              Outcome outcome)
-    : m_platform(platform), m_outcome(outcome) {}
+    : platform_(platform), outcome_(outcome) {}
 
 }  // namespace blink

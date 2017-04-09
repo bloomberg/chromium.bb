@@ -18,14 +18,14 @@ namespace blink {
 PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
-    double timeOrigin)
-    : PerformanceResourceTiming(info ? info->initialURL().getString() : "",
+    double time_origin)
+    : PerformanceResourceTiming(info ? info->InitialURL().GetString() : "",
                                 "navigation",
                                 0.0,
                                 0.0),
       ContextClient(frame),
-      m_timeOrigin(timeOrigin),
-      m_resourceTimingInfo(info) {
+      time_origin_(time_origin),
+      resource_timing_info_(info) {
   DCHECK(frame);
   DCHECK(info);
 }
@@ -33,74 +33,74 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
 PerformanceNavigationTiming::~PerformanceNavigationTiming() {}
 
 DEFINE_TRACE(PerformanceNavigationTiming) {
-  ContextClient::trace(visitor);
-  PerformanceEntry::trace(visitor);
+  ContextClient::Trace(visitor);
+  PerformanceEntry::Trace(visitor);
 }
 
-DocumentLoadTiming* PerformanceNavigationTiming::documentLoadTiming() const {
-  DocumentLoader* loader = documentLoader();
+DocumentLoadTiming* PerformanceNavigationTiming::GetDocumentLoadTiming() const {
+  DocumentLoader* loader = GetDocumentLoader();
   if (!loader)
     return nullptr;
 
-  return &loader->timing();
+  return &loader->GetTiming();
 }
 
-DocumentLoader* PerformanceNavigationTiming::documentLoader() const {
-  if (!frame())
+DocumentLoader* PerformanceNavigationTiming::GetDocumentLoader() const {
+  if (!GetFrame())
     return nullptr;
-  return frame()->loader().documentLoader();
+  return GetFrame()->Loader().GetDocumentLoader();
 }
 
-const DocumentTiming* PerformanceNavigationTiming::documentTiming() const {
-  if (!frame())
+const DocumentTiming* PerformanceNavigationTiming::GetDocumentTiming() const {
+  if (!GetFrame())
     return nullptr;
-  Document* document = frame()->document();
+  Document* document = GetFrame()->GetDocument();
   if (!document)
     return nullptr;
 
-  return &document->timing();
+  return &document->GetTiming();
 }
 
-ResourceLoadTiming* PerformanceNavigationTiming::resourceLoadTiming() const {
-  return m_resourceTimingInfo->finalResponse().resourceLoadTiming();
+ResourceLoadTiming* PerformanceNavigationTiming::GetResourceLoadTiming() const {
+  return resource_timing_info_->FinalResponse().GetResourceLoadTiming();
 }
 
-bool PerformanceNavigationTiming::allowTimingDetails() const {
+bool PerformanceNavigationTiming::AllowTimingDetails() const {
   return true;
 }
 
-bool PerformanceNavigationTiming::didReuseConnection() const {
-  return m_resourceTimingInfo->finalResponse().connectionReused();
+bool PerformanceNavigationTiming::DidReuseConnection() const {
+  return resource_timing_info_->FinalResponse().ConnectionReused();
 }
 
-unsigned long long PerformanceNavigationTiming::getTransferSize() const {
-  return m_resourceTimingInfo->transferSize();
+unsigned long long PerformanceNavigationTiming::GetTransferSize() const {
+  return resource_timing_info_->TransferSize();
 }
 
-unsigned long long PerformanceNavigationTiming::getEncodedBodySize() const {
-  return m_resourceTimingInfo->finalResponse().encodedBodyLength();
+unsigned long long PerformanceNavigationTiming::GetEncodedBodySize() const {
+  return resource_timing_info_->FinalResponse().EncodedBodyLength();
 }
 
-unsigned long long PerformanceNavigationTiming::getDecodedBodySize() const {
-  return m_resourceTimingInfo->finalResponse().decodedBodyLength();
+unsigned long long PerformanceNavigationTiming::GetDecodedBodySize() const {
+  return resource_timing_info_->FinalResponse().DecodedBodyLength();
 }
 
-AtomicString PerformanceNavigationTiming::getNavigationType(
+AtomicString PerformanceNavigationTiming::GetNavigationType(
     NavigationType type,
     const Document* document) {
   if (document &&
-      document->pageVisibilityState() == PageVisibilityStatePrerender) {
+      document->GetPageVisibilityState() == kPageVisibilityStatePrerender) {
     return "prerender";
   }
   switch (type) {
-    case NavigationTypeReload:
+    case kNavigationTypeReload:
       return "reload";
-    case NavigationTypeBackForward:
+    case kNavigationTypeBackForward:
       return "back_forward";
-    case NavigationTypeLinkClicked:
-    case NavigationTypeFormSubmitted:
-    case NavigationTypeFormResubmitted:
-    case NavigationTypeOther:
+    case kNavigationTypeLinkClicked:
+    case kNavigationTypeFormSubmitted:
+    case kNavigationTypeFormResubmitted:
+    case kNavigationTypeOther:
       return "navigate";
   }
   NOTREACHED();
@@ -111,139 +111,140 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
   return "navigation";
 }
 
-bool PerformanceNavigationTiming::getAllowRedirectDetails() const {
-  ExecutionContext* context = frame() ? frame()->document() : nullptr;
-  SecurityOrigin* securityOrigin = nullptr;
+bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
+  ExecutionContext* context = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  SecurityOrigin* security_origin = nullptr;
   if (context)
-    securityOrigin = context->getSecurityOrigin();
-  if (!securityOrigin)
+    security_origin = context->GetSecurityOrigin();
+  if (!security_origin)
     return false;
   // TODO(sunjian): Think about how to make this flag deterministic.
   // crbug/693183.
-  return PerformanceBase::allowsTimingRedirect(
-      m_resourceTimingInfo->redirectChain(),
-      m_resourceTimingInfo->finalResponse(), *securityOrigin, context);
+  return PerformanceBase::AllowsTimingRedirect(
+      resource_timing_info_->RedirectChain(),
+      resource_timing_info_->FinalResponse(), *security_origin, context);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventStart() const {
-  bool allowRedirectDetails = getAllowRedirectDetails();
-  DocumentLoadTiming* timing = documentLoadTiming();
+  bool allow_redirect_details = GetAllowRedirectDetails();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
 
-  if (!allowRedirectDetails || !timing ||
-      !timing->hasSameOriginAsPreviousDocument())
+  if (!allow_redirect_details || !timing ||
+      !timing->HasSameOriginAsPreviousDocument())
     return 0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->unloadEventStart());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->UnloadEventStart());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventEnd() const {
-  bool allowRedirectDetails = getAllowRedirectDetails();
-  DocumentLoadTiming* timing = documentLoadTiming();
+  bool allow_redirect_details = GetAllowRedirectDetails();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
 
-  if (!allowRedirectDetails || !timing ||
-      !timing->hasSameOriginAsPreviousDocument())
+  if (!allow_redirect_details || !timing ||
+      !timing->HasSameOriginAsPreviousDocument())
     return 0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->unloadEventEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->UnloadEventEnd());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domInteractive() const {
-  const DocumentTiming* timing = documentTiming();
+  const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->domInteractive());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->DomInteractive());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventStart()
     const {
-  const DocumentTiming* timing = documentTiming();
+  const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->domContentLoadedEventStart());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->DomContentLoadedEventStart());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventEnd()
     const {
-  const DocumentTiming* timing = documentTiming();
+  const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->domContentLoadedEventEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->DomContentLoadedEventEnd());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domComplete() const {
-  const DocumentTiming* timing = documentTiming();
+  const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->domComplete());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->DomComplete());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::loadEventStart() const {
-  DocumentLoadTiming* timing = documentLoadTiming();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->loadEventStart());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->LoadEventStart());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
-  DocumentLoadTiming* timing = documentLoadTiming();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->loadEventEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->LoadEventEnd());
 }
 
 AtomicString PerformanceNavigationTiming::type() const {
-  DocumentLoader* loader = documentLoader();
-  if (frame() && loader)
-    return getNavigationType(loader->getNavigationType(), frame()->document());
+  DocumentLoader* loader = GetDocumentLoader();
+  if (GetFrame() && loader)
+    return GetNavigationType(loader->GetNavigationType(),
+                             GetFrame()->GetDocument());
   return "navigate";
 }
 
 unsigned short PerformanceNavigationTiming::redirectCount() const {
-  bool allowRedirectDetails = getAllowRedirectDetails();
-  DocumentLoadTiming* timing = documentLoadTiming();
-  if (!allowRedirectDetails || !timing)
+  bool allow_redirect_details = GetAllowRedirectDetails();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!allow_redirect_details || !timing)
     return 0;
-  return timing->redirectCount();
+  return timing->RedirectCount();
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::redirectStart() const {
-  bool allowRedirectDetails = getAllowRedirectDetails();
-  DocumentLoadTiming* timing = documentLoadTiming();
-  if (!allowRedirectDetails || !timing)
+  bool allow_redirect_details = GetAllowRedirectDetails();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!allow_redirect_details || !timing)
     return 0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->redirectStart());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->RedirectStart());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::redirectEnd() const {
-  bool allowRedirectDetails = getAllowRedirectDetails();
-  DocumentLoadTiming* timing = documentLoadTiming();
-  if (!allowRedirectDetails || !timing)
+  bool allow_redirect_details = GetAllowRedirectDetails();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!allow_redirect_details || !timing)
     return 0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->redirectEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->RedirectEnd());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::fetchStart() const {
-  DocumentLoadTiming* timing = documentLoadTiming();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->fetchStart());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->FetchStart());
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::responseEnd() const {
-  DocumentLoadTiming* timing = documentLoadTiming();
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, timing->responseEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->ResponseEnd());
 }
 
 // Overriding PerformanceEntry's attributes.
@@ -251,18 +252,18 @@ DOMHighResTimeStamp PerformanceNavigationTiming::duration() const {
   return loadEventEnd();
 }
 
-void PerformanceNavigationTiming::buildJSONValue(
+void PerformanceNavigationTiming::BuildJSONValue(
     V8ObjectBuilder& builder) const {
-  PerformanceResourceTiming::buildJSONValue(builder);
-  builder.addNumber("unloadEventStart", unloadEventStart());
-  builder.addNumber("unloadEventEnd", unloadEventEnd());
-  builder.addNumber("domInteractive", domInteractive());
-  builder.addNumber("domContentLoadedEventStart", domContentLoadedEventStart());
-  builder.addNumber("domContentLoadedEventEnd", domContentLoadedEventEnd());
-  builder.addNumber("domComplete", domComplete());
-  builder.addNumber("loadEventStart", loadEventStart());
-  builder.addNumber("loadEventEnd", loadEventEnd());
-  builder.addString("type", type());
-  builder.addNumber("redirectCount", redirectCount());
+  PerformanceResourceTiming::BuildJSONValue(builder);
+  builder.AddNumber("unloadEventStart", unloadEventStart());
+  builder.AddNumber("unloadEventEnd", unloadEventEnd());
+  builder.AddNumber("domInteractive", domInteractive());
+  builder.AddNumber("domContentLoadedEventStart", domContentLoadedEventStart());
+  builder.AddNumber("domContentLoadedEventEnd", domContentLoadedEventEnd());
+  builder.AddNumber("domComplete", domComplete());
+  builder.AddNumber("loadEventStart", loadEventStart());
+  builder.AddNumber("loadEventEnd", loadEventEnd());
+  builder.AddString("type", type());
+  builder.AddNumber("redirectCount", redirectCount());
 }
 }

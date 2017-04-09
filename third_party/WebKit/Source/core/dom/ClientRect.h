@@ -41,20 +41,20 @@ class CORE_EXPORT ClientRect final : public GarbageCollected<ClientRect>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ClientRect* create() { return new ClientRect; }
-  static ClientRect* create(const IntRect& rect) {
+  static ClientRect* Create() { return new ClientRect; }
+  static ClientRect* Create(const IntRect& rect) {
     return new ClientRect(rect);
   }
-  static ClientRect* create(const FloatRect& rect) {
+  static ClientRect* Create(const FloatRect& rect) {
     return new ClientRect(rect);
   }
 
-  float top() const { return m_rect.y(); }
-  float right() const { return m_rect.maxX(); }
-  float bottom() const { return m_rect.maxY(); }
-  float left() const { return m_rect.x(); }
-  float width() const { return m_rect.width(); }
-  float height() const { return m_rect.height(); }
+  float top() const { return rect_.Y(); }
+  float right() const { return rect_.MaxX(); }
+  float bottom() const { return rect_.MaxY(); }
+  float left() const { return rect_.X(); }
+  float width() const { return rect_.Width(); }
+  float height() const { return rect_.Height(); }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -63,7 +63,7 @@ class CORE_EXPORT ClientRect final : public GarbageCollected<ClientRect>,
   explicit ClientRect(const IntRect&);
   explicit ClientRect(const FloatRect&);
 
-  FloatRect m_rect;
+  FloatRect rect_;
 };
 
 }  // namespace blink

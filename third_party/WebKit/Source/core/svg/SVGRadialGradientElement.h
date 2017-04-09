@@ -36,32 +36,32 @@ class SVGRadialGradientElement final : public SVGGradientElement {
  public:
   DECLARE_NODE_FACTORY(SVGRadialGradientElement);
 
-  bool collectGradientAttributes(RadialGradientAttributes&);
+  bool CollectGradientAttributes(RadialGradientAttributes&);
 
-  SVGAnimatedLength* cx() const { return m_cx.get(); }
-  SVGAnimatedLength* cy() const { return m_cy.get(); }
-  SVGAnimatedLength* r() const { return m_r.get(); }
-  SVGAnimatedLength* fx() const { return m_fx.get(); }
-  SVGAnimatedLength* fy() const { return m_fy.get(); }
-  SVGAnimatedLength* fr() const { return m_fr.get(); }
+  SVGAnimatedLength* cx() const { return cx_.Get(); }
+  SVGAnimatedLength* cy() const { return cy_.Get(); }
+  SVGAnimatedLength* r() const { return r_.Get(); }
+  SVGAnimatedLength* fx() const { return fx_.Get(); }
+  SVGAnimatedLength* fy() const { return fy_.Get(); }
+  SVGAnimatedLength* fr() const { return fr_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGRadialGradientElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  Member<SVGAnimatedLength> m_cx;
-  Member<SVGAnimatedLength> m_cy;
-  Member<SVGAnimatedLength> m_r;
-  Member<SVGAnimatedLength> m_fx;
-  Member<SVGAnimatedLength> m_fy;
-  Member<SVGAnimatedLength> m_fr;
+  Member<SVGAnimatedLength> cx_;
+  Member<SVGAnimatedLength> cy_;
+  Member<SVGAnimatedLength> r_;
+  Member<SVGAnimatedLength> fx_;
+  Member<SVGAnimatedLength> fy_;
+  Member<SVGAnimatedLength> fr_;
 };
 
 }  // namespace blink

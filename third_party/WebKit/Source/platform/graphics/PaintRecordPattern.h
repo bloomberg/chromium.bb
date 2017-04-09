@@ -13,17 +13,17 @@ namespace blink {
 // TODO(enne): rename this
 class PLATFORM_EXPORT PaintRecordPattern final : public Pattern {
  public:
-  static PassRefPtr<PaintRecordPattern> create(sk_sp<PaintRecord>, RepeatMode);
+  static PassRefPtr<PaintRecordPattern> Create(sk_sp<PaintRecord>, RepeatMode);
 
   ~PaintRecordPattern() override;
 
  protected:
-  sk_sp<PaintShader> createShader(const SkMatrix&) override;
+  sk_sp<PaintShader> CreateShader(const SkMatrix&) override;
 
  private:
   PaintRecordPattern(sk_sp<PaintRecord>, RepeatMode);
 
-  sk_sp<PaintRecord> m_tileRecord;
+  sk_sp<PaintRecord> tile_record_;
 };
 
 }  // namespace blink

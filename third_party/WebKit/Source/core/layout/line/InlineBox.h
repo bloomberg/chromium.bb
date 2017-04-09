@@ -37,7 +37,7 @@ class InlineFlowBox;
 class LayoutObject;
 class RootInlineBox;
 
-enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
+enum MarkLineBoxes { kMarkLineBoxesDirty, kDontMarkLineBoxes };
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some LayoutObject (i.e., it represents a portion of that LayoutObject).
@@ -46,82 +46,78 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
  public:
   InlineBox(LineLayoutItem obj)
-      : m_next(nullptr),
-        m_prev(nullptr),
-        m_parent(nullptr),
-        m_lineLayoutItem(obj),
-        m_logicalWidth()
-  {
-  }
+      : next_(nullptr),
+        prev_(nullptr),
+        parent_(nullptr),
+        line_layout_item_(obj),
+        logical_width_() {}
 
   InlineBox(LineLayoutItem item,
-            LayoutPoint topLeft,
-            LayoutUnit logicalWidth,
-            bool firstLine,
+            LayoutPoint top_left,
+            LayoutUnit logical_width,
+            bool first_line,
             bool constructed,
             bool dirty,
             bool extracted,
-            bool isHorizontal,
+            bool is_horizontal,
             InlineBox* next,
             InlineBox* prev,
             InlineFlowBox* parent)
-      : m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal),
-        m_next(next),
-        m_prev(prev),
-        m_parent(parent),
-        m_lineLayoutItem(item),
-        m_location(topLeft),
-        m_logicalWidth(logicalWidth)
-  {
-  }
+      : bitfields_(first_line, constructed, dirty, extracted, is_horizontal),
+        next_(next),
+        prev_(prev),
+        parent_(parent),
+        line_layout_item_(item),
+        location_(top_left),
+        logical_width_(logical_width) {}
 
   virtual ~InlineBox();
 
-  virtual void destroy();
+  virtual void Destroy();
 
-  virtual void deleteLine();
-  virtual void extractLine();
-  virtual void attachLine();
+  virtual void DeleteLine();
+  virtual void ExtractLine();
+  virtual void AttachLine();
 
-  virtual bool isLineBreak() const { return false; }
+  virtual bool IsLineBreak() const { return false; }
 
   // These methods are called when the caller wants to move the position of
   // InlineBox without full layout of it. The implementation should update the
   // position of the whole subtree (e.g. position of descendants and overflow
   // etc. should also be moved accordingly).
-  virtual void move(const LayoutSize& delta);
-  DISABLE_CFI_PERF void moveInLogicalDirection(
-      const LayoutSize& deltaInLogicalDirection) {
-    move(isHorizontal() ? deltaInLogicalDirection
-                        : deltaInLogicalDirection.transposedSize());
+  virtual void Move(const LayoutSize& delta);
+  DISABLE_CFI_PERF void MoveInLogicalDirection(
+      const LayoutSize& delta_in_logical_direction) {
+    Move(IsHorizontal() ? delta_in_logical_direction
+                        : delta_in_logical_direction.TransposedSize());
   }
-  void moveInInlineDirection(LayoutUnit delta) {
-    moveInLogicalDirection(LayoutSize(delta, LayoutUnit()));
+  void MoveInInlineDirection(LayoutUnit delta) {
+    MoveInLogicalDirection(LayoutSize(delta, LayoutUnit()));
   }
-  void moveInBlockDirection(LayoutUnit delta) {
-    moveInLogicalDirection(LayoutSize(LayoutUnit(), delta));
+  void MoveInBlockDirection(LayoutUnit delta) {
+    MoveInLogicalDirection(LayoutSize(LayoutUnit(), delta));
   }
 
-  virtual void paint(const PaintInfo&,
+  virtual void Paint(const PaintInfo&,
                      const LayoutPoint&,
-                     LayoutUnit lineTop,
-                     LayoutUnit lineBottom) const;
-  virtual bool nodeAtPoint(HitTestResult&,
-                           const HitTestLocation& locationInContainer,
-                           const LayoutPoint& accumulatedOffset,
-                           LayoutUnit lineTop,
-                           LayoutUnit lineBottom);
+                     LayoutUnit line_top,
+                     LayoutUnit line_bottom) const;
+  virtual bool NodeAtPoint(HitTestResult&,
+                           const HitTestLocation& location_in_container,
+                           const LayoutPoint& accumulated_offset,
+                           LayoutUnit line_top,
+                           LayoutUnit line_bottom);
 
   // InlineBoxes are allocated out of the rendering partition.
   void* operator new(size_t);
   void operator delete(void*);
 
 #ifndef NDEBUG
-  void showTreeForThis() const;
-  void showLineTreeForThis() const;
+  void ShowTreeForThis() const;
+  void ShowLineTreeForThis() const;
 
-  virtual void showBox(int = 0) const;
-  virtual void showLineTreeAndMark(const InlineBox* = nullptr,
+  virtual void ShowBox(int = 0) const;
+  virtual void ShowLineTreeAndMark(const InlineBox* = nullptr,
                                    const char* = nullptr,
                                    const InlineBox* = nullptr,
                                    const char* = nullptr,
@@ -129,266 +125,266 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                                    int = 0) const;
 #endif
 
-  virtual const char* boxName() const;
+  virtual const char* BoxName() const;
 
   // DisplayItemClient methods
-  String debugName() const override;
-  LayoutRect visualRect() const override;
+  String DebugName() const override;
+  LayoutRect VisualRect() const override;
 
-  bool isText() const { return m_bitfields.isText(); }
-  void setIsText(bool isText) { m_bitfields.setIsText(isText); }
+  bool IsText() const { return bitfields_.IsText(); }
+  void SetIsText(bool is_text) { bitfields_.SetIsText(is_text); }
 
-  virtual bool isInlineFlowBox() const { return false; }
-  virtual bool isInlineTextBox() const { return false; }
-  virtual bool isRootInlineBox() const { return false; }
+  virtual bool IsInlineFlowBox() const { return false; }
+  virtual bool IsInlineTextBox() const { return false; }
+  virtual bool IsRootInlineBox() const { return false; }
 
-  virtual bool isSVGInlineTextBox() const { return false; }
-  virtual bool isSVGInlineFlowBox() const { return false; }
-  virtual bool isSVGRootInlineBox() const { return false; }
+  virtual bool IsSVGInlineTextBox() const { return false; }
+  virtual bool IsSVGInlineFlowBox() const { return false; }
+  virtual bool IsSVGRootInlineBox() const { return false; }
 
-  bool hasVirtualLogicalHeight() const {
-    return m_bitfields.hasVirtualLogicalHeight();
+  bool HasVirtualLogicalHeight() const {
+    return bitfields_.HasVirtualLogicalHeight();
   }
-  void setHasVirtualLogicalHeight() {
-    m_bitfields.setHasVirtualLogicalHeight(true);
+  void SetHasVirtualLogicalHeight() {
+    bitfields_.SetHasVirtualLogicalHeight(true);
   }
-  virtual LayoutUnit virtualLogicalHeight() const {
+  virtual LayoutUnit VirtualLogicalHeight() const {
     NOTREACHED();
     return LayoutUnit();
   }
 
-  bool isHorizontal() const { return m_bitfields.isHorizontal(); }
-  void setIsHorizontal(bool isHorizontal) {
-    m_bitfields.setIsHorizontal(isHorizontal);
+  bool IsHorizontal() const { return bitfields_.IsHorizontal(); }
+  void SetIsHorizontal(bool is_horizontal) {
+    bitfields_.SetIsHorizontal(is_horizontal);
   }
 
-  bool isConstructed() { return m_bitfields.constructed(); }
-  virtual void setConstructed() { m_bitfields.setConstructed(true); }
+  bool IsConstructed() { return bitfields_.Constructed(); }
+  virtual void SetConstructed() { bitfields_.SetConstructed(true); }
 
-  void setExtracted(bool extracted = true) {
-    m_bitfields.setExtracted(extracted);
+  void SetExtracted(bool extracted = true) {
+    bitfields_.SetExtracted(extracted);
   }
 
-  void setFirstLineStyleBit(bool firstLine) {
-    m_bitfields.setFirstLine(firstLine);
+  void SetFirstLineStyleBit(bool first_line) {
+    bitfields_.SetFirstLine(first_line);
   }
-  bool isFirstLineStyle() const { return m_bitfields.firstLine(); }
-  const ComputedStyle& lineStyleRef() const {
-    return getLineLayoutItem().styleRef(isFirstLineStyle());
-  }
-
-  void remove(MarkLineBoxes = MarkLineBoxesDirty);
-
-  InlineBox* nextOnLine() const { return m_next; }
-  InlineBox* prevOnLine() const { return m_prev; }
-  void setNextOnLine(InlineBox* next) {
-    DCHECK(m_parent || !next);
-    m_next = next;
-  }
-  void setPrevOnLine(InlineBox* prev) {
-    DCHECK(m_parent || !prev);
-    m_prev = prev;
+  bool IsFirstLineStyle() const { return bitfields_.FirstLine(); }
+  const ComputedStyle& LineStyleRef() const {
+    return GetLineLayoutItem().StyleRef(IsFirstLineStyle());
   }
 
-  virtual bool isLeaf() const { return true; }
+  void Remove(MarkLineBoxes = kMarkLineBoxesDirty);
 
-  InlineBox* nextLeafChild() const;
-  InlineBox* prevLeafChild() const;
+  InlineBox* NextOnLine() const { return next_; }
+  InlineBox* PrevOnLine() const { return prev_; }
+  void SetNextOnLine(InlineBox* next) {
+    DCHECK(parent_ || !next);
+    next_ = next;
+  }
+  void SetPrevOnLine(InlineBox* prev) {
+    DCHECK(parent_ || !prev);
+    prev_ = prev;
+  }
+
+  virtual bool IsLeaf() const { return true; }
+
+  InlineBox* NextLeafChild() const;
+  InlineBox* PrevLeafChild() const;
 
   // Helper functions for editing and hit-testing code.
   // FIXME: These two functions should be moved to RenderedPosition once the
   // code to convert between Position and inline box, offset pair is moved to
   // RenderedPosition.
-  InlineBox* nextLeafChildIgnoringLineBreak() const;
-  InlineBox* prevLeafChildIgnoringLineBreak() const;
+  InlineBox* NextLeafChildIgnoringLineBreak() const;
+  InlineBox* PrevLeafChildIgnoringLineBreak() const;
 
-  LineLayoutItem getLineLayoutItem() const { return m_lineLayoutItem; }
+  LineLayoutItem GetLineLayoutItem() const { return line_layout_item_; }
 
-  InlineFlowBox* parent() const {
+  InlineFlowBox* Parent() const {
 #if DCHECK_IS_ON()
-    DCHECK(!m_hasBadParent);
+    DCHECK(!has_bad_parent_);
 #endif
-    return m_parent;
+    return parent_;
   }
 
-  void setParent(InlineFlowBox* par) { m_parent = par; }
+  void SetParent(InlineFlowBox* par) { parent_ = par; }
 
-  const RootInlineBox& root() const;
-  RootInlineBox& root();
+  const RootInlineBox& Root() const;
+  RootInlineBox& Root();
 
   // x() is the location of the box in the containing block's "physical
   // coordinates with flipped block-flow direction".
   // See ../README.md#Coordinate-Spaces for the definition.
-  void setX(LayoutUnit x) { m_location.setX(x); }
-  LayoutUnit x() const { return m_location.x(); }
+  void SetX(LayoutUnit x) { location_.SetX(x); }
+  LayoutUnit X() const { return location_.X(); }
 
   // y() is the top side of the box in the containing block's physical
   // coordinates. It's actually in the same coordinate space as x() but for y()
   // physical coordinates and "physical coordinates with flipped block-flow
   // direction" are the same.
-  void setY(LayoutUnit y) { m_location.setY(y); }
-  LayoutUnit y() const { return m_location.y(); }
+  void SetY(LayoutUnit y) { location_.SetY(y); }
+  LayoutUnit Y() const { return location_.Y(); }
 
   // x() and y() in one LayoutPoint, in the containing block's "physical
   // coordinates with flipped block-flow direction".
-  const LayoutPoint& location() const { return m_location; }
+  const LayoutPoint& Location() const { return location_; }
 
-  LayoutUnit width() const {
-    return isHorizontal() ? logicalWidth() : logicalHeight();
+  LayoutUnit Width() const {
+    return IsHorizontal() ? LogicalWidth() : LogicalHeight();
   }
-  LayoutUnit height() const {
-    return isHorizontal() ? logicalHeight() : logicalWidth();
+  LayoutUnit Height() const {
+    return IsHorizontal() ? LogicalHeight() : LogicalWidth();
   }
-  LayoutSize size() const { return LayoutSize(width(), height()); }
+  LayoutSize size() const { return LayoutSize(Width(), Height()); }
 
   // The logicalLeft position is the left edge of the line box in a horizontal
   // line and the top edge in a vertical line.
-  LayoutUnit logicalLeft() const {
-    return isHorizontal() ? m_location.x() : m_location.y();
+  LayoutUnit LogicalLeft() const {
+    return IsHorizontal() ? location_.X() : location_.Y();
   }
-  LayoutUnit logicalRight() const { return logicalLeft() + logicalWidth(); }
-  void setLogicalLeft(LayoutUnit left) {
-    if (isHorizontal())
-      setX(left);
+  LayoutUnit LogicalRight() const { return LogicalLeft() + LogicalWidth(); }
+  void SetLogicalLeft(LayoutUnit left) {
+    if (IsHorizontal())
+      SetX(left);
     else
-      setY(left);
+      SetY(left);
   }
-  int pixelSnappedLogicalLeft() const { return logicalLeft().toInt(); }
-  int pixelSnappedLogicalRight() const { return logicalRight().ceil(); }
-  int pixelSnappedLogicalTop() const { return logicalTop().toInt(); }
-  int pixelSnappedLogicalBottom() const { return logicalBottom().ceil(); }
+  int PixelSnappedLogicalLeft() const { return LogicalLeft().ToInt(); }
+  int PixelSnappedLogicalRight() const { return LogicalRight().Ceil(); }
+  int PixelSnappedLogicalTop() const { return LogicalTop().ToInt(); }
+  int PixelSnappedLogicalBottom() const { return LogicalBottom().Ceil(); }
 
   // The logicalTop[ position is the top edge of the line box in a horizontal
   // line and the left edge in a vertical line.
-  LayoutUnit logicalTop() const {
-    return isHorizontal() ? m_location.y() : m_location.x();
+  LayoutUnit LogicalTop() const {
+    return IsHorizontal() ? location_.Y() : location_.X();
   }
-  LayoutUnit logicalBottom() const { return logicalTop() + logicalHeight(); }
-  void setLogicalTop(LayoutUnit top) {
-    if (isHorizontal())
-      setY(top);
+  LayoutUnit LogicalBottom() const { return LogicalTop() + LogicalHeight(); }
+  void SetLogicalTop(LayoutUnit top) {
+    if (IsHorizontal())
+      SetY(top);
     else
-      setX(top);
+      SetX(top);
   }
 
   // The logical width is our extent in the line's overall inline direction,
   // i.e., width for horizontal text and height for vertical text.
-  void setLogicalWidth(LayoutUnit w) { m_logicalWidth = w; }
-  LayoutUnit logicalWidth() const { return m_logicalWidth; }
+  void SetLogicalWidth(LayoutUnit w) { logical_width_ = w; }
+  LayoutUnit LogicalWidth() const { return logical_width_; }
 
   // The logical height is our extent in the block flow direction, i.e., height
   // for horizontal text and width for vertical text.
-  LayoutUnit logicalHeight() const;
+  LayoutUnit LogicalHeight() const;
 
-  LayoutRect logicalFrameRect() const {
-    return isHorizontal() ? LayoutRect(m_location.x(), m_location.y(),
-                                       m_logicalWidth, logicalHeight())
-                          : LayoutRect(m_location.y(), m_location.x(),
-                                       m_logicalWidth, logicalHeight());
+  LayoutRect LogicalFrameRect() const {
+    return IsHorizontal() ? LayoutRect(location_.X(), location_.Y(),
+                                       logical_width_, LogicalHeight())
+                          : LayoutRect(location_.Y(), location_.X(),
+                                       logical_width_, LogicalHeight());
   }
 
-  virtual int baselinePosition(FontBaseline baselineType) const;
-  virtual LayoutUnit lineHeight() const;
+  virtual int BaselinePosition(FontBaseline baseline_type) const;
+  virtual LayoutUnit LineHeight() const;
 
-  virtual int caretMinOffset() const;
-  virtual int caretMaxOffset() const;
+  virtual int CaretMinOffset() const;
+  virtual int CaretMaxOffset() const;
 
-  unsigned char bidiLevel() const { return m_bitfields.bidiEmbeddingLevel(); }
-  void setBidiLevel(unsigned char level) {
-    m_bitfields.setBidiEmbeddingLevel(level);
+  unsigned char BidiLevel() const { return bitfields_.BidiEmbeddingLevel(); }
+  void SetBidiLevel(unsigned char level) {
+    bitfields_.SetBidiEmbeddingLevel(level);
   }
-  TextDirection direction() const {
-    return bidiLevel() % 2 ? TextDirection::kRtl : TextDirection::kLtr;
+  TextDirection Direction() const {
+    return BidiLevel() % 2 ? TextDirection::kRtl : TextDirection::kLtr;
   }
-  bool isLeftToRightDirection() const {
-    return direction() == TextDirection::kLtr;
+  bool IsLeftToRightDirection() const {
+    return Direction() == TextDirection::kLtr;
   }
-  int caretLeftmostOffset() const {
-    return isLeftToRightDirection() ? caretMinOffset() : caretMaxOffset();
+  int CaretLeftmostOffset() const {
+    return IsLeftToRightDirection() ? CaretMinOffset() : CaretMaxOffset();
   }
-  int caretRightmostOffset() const {
-    return isLeftToRightDirection() ? caretMaxOffset() : caretMinOffset();
+  int CaretRightmostOffset() const {
+    return IsLeftToRightDirection() ? CaretMaxOffset() : CaretMinOffset();
   }
 
-  virtual void clearTruncation() {}
+  virtual void ClearTruncation() {}
 
-  bool isDirty() const { return m_bitfields.dirty(); }
-  virtual void markDirty() { m_bitfields.setDirty(true); }
+  bool IsDirty() const { return bitfields_.Dirty(); }
+  virtual void MarkDirty() { bitfields_.SetDirty(true); }
 
-  virtual void dirtyLineBoxes();
+  virtual void DirtyLineBoxes();
 
-  virtual SelectionState getSelectionState() const;
+  virtual SelectionState GetSelectionState() const;
 
-  virtual bool canAccommodateEllipsis(bool ltr,
-                                      LayoutUnit blockEdge,
-                                      LayoutUnit ellipsisWidth) const;
+  virtual bool CanAccommodateEllipsis(bool ltr,
+                                      LayoutUnit block_edge,
+                                      LayoutUnit ellipsis_width) const;
   // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
-  virtual LayoutUnit placeEllipsisBox(bool ltr,
-                                      LayoutUnit visibleLeftEdge,
-                                      LayoutUnit visibleRightEdge,
-                                      LayoutUnit ellipsisWidth,
-                                      LayoutUnit& truncatedWidth,
+  virtual LayoutUnit PlaceEllipsisBox(bool ltr,
+                                      LayoutUnit visible_left_edge,
+                                      LayoutUnit visible_right_edge,
+                                      LayoutUnit ellipsis_width,
+                                      LayoutUnit& truncated_width,
                                       bool&,
-                                      LayoutUnit logicalLeftOffset);
+                                      LayoutUnit logical_left_offset);
 
 #if DCHECK_IS_ON()
-  void setHasBadParent();
+  void SetHasBadParent();
 #endif
 
-  int expansion() const { return m_bitfields.expansion(); }
+  int Expansion() const { return bitfields_.Expansion(); }
 
-  bool visibleToHitTestRequest(const HitTestRequest& request) const {
-    return getLineLayoutItem().visibleToHitTestRequest(request);
+  bool VisibleToHitTestRequest(const HitTestRequest& request) const {
+    return GetLineLayoutItem().VisibleToHitTestRequest(request);
   }
 
   // Anonymous inline: https://drafts.csswg.org/css2/visuren.html#anonymous
-  bool isAnonymousInline() const {
-    return getLineLayoutItem().isText() && getLineLayoutItem().parent() &&
-           getLineLayoutItem().parent().isBox();
+  bool IsAnonymousInline() const {
+    return GetLineLayoutItem().IsText() && GetLineLayoutItem().Parent() &&
+           GetLineLayoutItem().Parent().IsBox();
   }
-  EVerticalAlign verticalAlign() const {
-    return isAnonymousInline() ? ComputedStyle::initialVerticalAlign()
-                               : getLineLayoutItem()
-                                     .style(m_bitfields.firstLine())
-                                     ->verticalAlign();
+  EVerticalAlign VerticalAlign() const {
+    return IsAnonymousInline() ? ComputedStyle::InitialVerticalAlign()
+                               : GetLineLayoutItem()
+                                     .Style(bitfields_.FirstLine())
+                                     ->VerticalAlign();
   }
 
   // Use with caution! The type is not checked!
-  LineLayoutBoxModel boxModelObject() const {
-    if (!getLineLayoutItem().isText())
-      return LineLayoutBoxModel(m_lineLayoutItem);
+  LineLayoutBoxModel BoxModelObject() const {
+    if (!GetLineLayoutItem().IsText())
+      return LineLayoutBoxModel(line_layout_item_);
     return LineLayoutBoxModel(nullptr);
   }
 
   // Physical location of the top-left corner of the box in the containing
   // block.
-  LayoutPoint physicalLocation() const;
+  LayoutPoint PhysicalLocation() const;
 
   // Converts from a rect in the logical space of the InlineBox to one in the
   // physical space of the containing block. The logical space of an InlineBox
   // may be transposed for vertical text and flipped for right-to-left text.
-  void logicalRectToPhysicalRect(LayoutRect&) const;
+  void LogicalRectToPhysicalRect(LayoutRect&) const;
 
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.
-  void flipForWritingMode(FloatRect&) const;
-  FloatPoint flipForWritingMode(const FloatPoint&) const;
-  void flipForWritingMode(LayoutRect&) const;
-  LayoutPoint flipForWritingMode(const LayoutPoint&) const;
+  void FlipForWritingMode(FloatRect&) const;
+  FloatPoint FlipForWritingMode(const FloatPoint&) const;
+  void FlipForWritingMode(LayoutRect&) const;
+  LayoutPoint FlipForWritingMode(const LayoutPoint&) const;
 
-  bool knownToHaveNoOverflow() const {
-    return m_bitfields.knownToHaveNoOverflow();
+  bool KnownToHaveNoOverflow() const {
+    return bitfields_.KnownToHaveNoOverflow();
   }
-  void clearKnownToHaveNoOverflow();
+  void ClearKnownToHaveNoOverflow();
 
-  bool dirOverride() const { return m_bitfields.dirOverride(); }
-  void setDirOverride(bool dirOverride) {
-    m_bitfields.setDirOverride(dirOverride);
+  bool DirOverride() const { return bitfields_.DirOverride(); }
+  void SetDirOverride(bool dir_override) {
+    bitfields_.SetDirOverride(dir_override);
   }
 
   // Set all LineLayoutItems in the inline box subtree should do full paint
   // invalidation.
-  void setShouldDoFullPaintInvalidationRecursively();
+  void SetShouldDoFullPaintInvalidationRecursively();
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
  private:                                \
@@ -396,58 +392,58 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                                          \
  public:                                 \
   bool name() const { return m_##name; } \
-  void set##Name(bool name) { m_##name = name; }
+  void Set##Name(bool name) { m_##name = name; }
 
   class InlineBoxBitfields {
     DISALLOW_NEW();
 
    public:
-    InlineBoxBitfields(bool firstLine = false,
+    InlineBoxBitfields(bool first_line = false,
                        bool constructed = false,
                        bool dirty = false,
                        bool extracted = false,
-                       bool isHorizontal = true)
-        : m_firstLine(firstLine),
-          m_constructed(constructed),
-          m_bidiEmbeddingLevel(0),
-          m_dirty(dirty),
-          m_extracted(extracted),
-          m_hasVirtualLogicalHeight(false),
-          m_isHorizontal(isHorizontal),
-          m_endsWithBreak(false),
-          m_hasSelectedChildrenOrCanHaveLeadingExpansion(false),
-          m_knownToHaveNoOverflow(true),
-          m_hasEllipsisBoxOrHyphen(false),
-          m_dirOverride(false),
-          m_isText(false),
-          m_expansion(0) {}
+                       bool is_horizontal = true)
+        : m_FirstLine(first_line),
+          m_Constructed(constructed),
+          bidi_embedding_level_(0),
+          m_Dirty(dirty),
+          m_Extracted(extracted),
+          m_HasVirtualLogicalHeight(false),
+          m_IsHorizontal(is_horizontal),
+          m_EndsWithBreak(false),
+          m_HasSelectedChildrenOrCanHaveLeadingExpansion(false),
+          m_KnownToHaveNoOverflow(true),
+          m_HasEllipsisBoxOrHyphen(false),
+          m_DirOverride(false),
+          m_IsText(false),
+          expansion_(0) {}
 
     // Some of these bits are actually for subclasses and moved here to compact
     // the structures.
     // for this class
-    ADD_BOOLEAN_BITFIELD(firstLine, FirstLine);
-    ADD_BOOLEAN_BITFIELD(constructed, Constructed);
+    ADD_BOOLEAN_BITFIELD(FirstLine, FirstLine);
+    ADD_BOOLEAN_BITFIELD(Constructed, Constructed);
 
    private:
     // The maximium bidi level is 62:
     // http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
-    unsigned m_bidiEmbeddingLevel : 6;
+    unsigned bidi_embedding_level_ : 6;
 
    public:
-    unsigned char bidiEmbeddingLevel() const { return m_bidiEmbeddingLevel; }
-    void setBidiEmbeddingLevel(unsigned char bidiEmbeddingLevel) {
-      m_bidiEmbeddingLevel = bidiEmbeddingLevel;
+    unsigned char BidiEmbeddingLevel() const { return bidi_embedding_level_; }
+    void SetBidiEmbeddingLevel(unsigned char bidi_embedding_level) {
+      bidi_embedding_level_ = bidi_embedding_level;
     }
 
-    ADD_BOOLEAN_BITFIELD(dirty, Dirty);
-    ADD_BOOLEAN_BITFIELD(extracted, Extracted);
-    ADD_BOOLEAN_BITFIELD(hasVirtualLogicalHeight, HasVirtualLogicalHeight);
-    ADD_BOOLEAN_BITFIELD(isHorizontal, IsHorizontal);
+    ADD_BOOLEAN_BITFIELD(Dirty, Dirty);
+    ADD_BOOLEAN_BITFIELD(Extracted, Extracted);
+    ADD_BOOLEAN_BITFIELD(HasVirtualLogicalHeight, HasVirtualLogicalHeight);
+    ADD_BOOLEAN_BITFIELD(IsHorizontal, IsHorizontal);
     // for RootInlineBox
-    ADD_BOOLEAN_BITFIELD(endsWithBreak,
+    ADD_BOOLEAN_BITFIELD(EndsWithBreak,
                          EndsWithBreak);  // Whether the line ends with a <br>.
     // shared between RootInlineBox and InlineTextBox
-    ADD_BOOLEAN_BITFIELD(hasSelectedChildrenOrCanHaveLeadingExpansion,
+    ADD_BOOLEAN_BITFIELD(HasSelectedChildrenOrCanHaveLeadingExpansion,
                          HasSelectedChildrenOrCanHaveLeadingExpansion);
 
     // This boolean will never be set if there is potential for overflow, but it
@@ -456,76 +452,76 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     //
     // For whether we have overflow, callers should use m_overflow on
     // InlineFlowBox.
-    ADD_BOOLEAN_BITFIELD(knownToHaveNoOverflow, KnownToHaveNoOverflow);
-    ADD_BOOLEAN_BITFIELD(hasEllipsisBoxOrHyphen, HasEllipsisBoxOrHyphen);
+    ADD_BOOLEAN_BITFIELD(KnownToHaveNoOverflow, KnownToHaveNoOverflow);
+    ADD_BOOLEAN_BITFIELD(HasEllipsisBoxOrHyphen, HasEllipsisBoxOrHyphen);
     // for InlineTextBox
-    ADD_BOOLEAN_BITFIELD(dirOverride, DirOverride);
+    ADD_BOOLEAN_BITFIELD(DirOverride, DirOverride);
     // Whether or not this object represents text with a non-zero height.
     // Includes non-image list markers, text boxes.
-    ADD_BOOLEAN_BITFIELD(isText, IsText);
+    ADD_BOOLEAN_BITFIELD(IsText, IsText);
 
    private:
-    unsigned m_expansion : 12;  // for justified text
+    unsigned expansion_ : 12;  // for justified text
 
    public:
-    signed expansion() const { return m_expansion; }
-    void setExpansion(signed expansion) { m_expansion = expansion; }
+    signed Expansion() const { return expansion_; }
+    void SetExpansion(signed expansion) { expansion_ = expansion; }
   };
 #undef ADD_BOOLEAN_BITFIELD
 
  private:
-  void setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
+  void SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
-  InlineBoxBitfields m_bitfields;
+  InlineBoxBitfields bitfields_;
 
-  InlineBox* m_next;  // The next element on the same line as us.
-  InlineBox* m_prev;  // The previous element on the same line as us.
+  InlineBox* next_;  // The next element on the same line as us.
+  InlineBox* prev_;  // The previous element on the same line as us.
 
-  InlineFlowBox* m_parent;  // The box that contains us.
-  LineLayoutItem m_lineLayoutItem;
+  InlineFlowBox* parent_;  // The box that contains us.
+  LineLayoutItem line_layout_item_;
 
  protected:
   // For RootInlineBox
-  bool endsWithBreak() const { return m_bitfields.endsWithBreak(); }
-  void setEndsWithBreak(bool endsWithBreak) {
-    m_bitfields.setEndsWithBreak(endsWithBreak);
+  bool EndsWithBreak() const { return bitfields_.EndsWithBreak(); }
+  void SetEndsWithBreak(bool ends_with_break) {
+    bitfields_.SetEndsWithBreak(ends_with_break);
   }
-  bool hasEllipsisBox() const { return m_bitfields.hasEllipsisBoxOrHyphen(); }
-  bool hasSelectedChildren() const {
-    return m_bitfields.hasSelectedChildrenOrCanHaveLeadingExpansion();
+  bool HasEllipsisBox() const { return bitfields_.HasEllipsisBoxOrHyphen(); }
+  bool HasSelectedChildren() const {
+    return bitfields_.HasSelectedChildrenOrCanHaveLeadingExpansion();
   }
-  void setHasSelectedChildren(bool hasSelectedChildren) {
-    m_bitfields.setHasSelectedChildrenOrCanHaveLeadingExpansion(
-        hasSelectedChildren);
+  void SetHasSelectedChildren(bool has_selected_children) {
+    bitfields_.SetHasSelectedChildrenOrCanHaveLeadingExpansion(
+        has_selected_children);
   }
-  void setHasEllipsisBox(bool hasEllipsisBox) {
-    m_bitfields.setHasEllipsisBoxOrHyphen(hasEllipsisBox);
+  void SetHasEllipsisBox(bool has_ellipsis_box) {
+    bitfields_.SetHasEllipsisBoxOrHyphen(has_ellipsis_box);
   }
 
   // For InlineTextBox
-  bool hasHyphen() const { return m_bitfields.hasEllipsisBoxOrHyphen(); }
-  void setHasHyphen(bool hasHyphen) {
-    m_bitfields.setHasEllipsisBoxOrHyphen(hasHyphen);
+  bool HasHyphen() const { return bitfields_.HasEllipsisBoxOrHyphen(); }
+  void SetHasHyphen(bool has_hyphen) {
+    bitfields_.SetHasEllipsisBoxOrHyphen(has_hyphen);
   }
-  bool canHaveLeadingExpansion() const {
-    return m_bitfields.hasSelectedChildrenOrCanHaveLeadingExpansion();
+  bool CanHaveLeadingExpansion() const {
+    return bitfields_.HasSelectedChildrenOrCanHaveLeadingExpansion();
   }
-  void setCanHaveLeadingExpansion(bool canHaveLeadingExpansion) {
-    m_bitfields.setHasSelectedChildrenOrCanHaveLeadingExpansion(
-        canHaveLeadingExpansion);
+  void SetCanHaveLeadingExpansion(bool can_have_leading_expansion) {
+    bitfields_.SetHasSelectedChildrenOrCanHaveLeadingExpansion(
+        can_have_leading_expansion);
   }
-  signed expansion() { return m_bitfields.expansion(); }
-  void setExpansion(signed expansion) { m_bitfields.setExpansion(expansion); }
+  signed Expansion() { return bitfields_.Expansion(); }
+  void SetExpansion(signed expansion) { bitfields_.SetExpansion(expansion); }
 
   // For InlineFlowBox and InlineTextBox
-  bool extracted() const { return m_bitfields.extracted(); }
+  bool Extracted() const { return bitfields_.Extracted(); }
 
-  LayoutPoint m_location;
-  LayoutUnit m_logicalWidth;
+  LayoutPoint location_;
+  LayoutUnit logical_width_;
 
  private:
 #if DCHECK_IS_ON()
-  bool m_hasBadParent = false;
+  bool has_bad_parent_ = false;
 #endif
 };
 
@@ -534,14 +530,14 @@ inline InlineBox::~InlineBox() {}
 #endif
 
 #if DCHECK_IS_ON()
-inline void InlineBox::setHasBadParent() {
-  m_hasBadParent = true;
+inline void InlineBox::SetHasBadParent() {
+  has_bad_parent_ = true;
 }
 #endif
 
 #define DEFINE_INLINE_BOX_TYPE_CASTS(typeName)                     \
-  DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->is##typeName(), \
-                    box.is##typeName())
+  DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->Is##typeName(), \
+                    box.Is##typeName())
 
 // Allow equality comparisons of InlineBox's by reference or pointer,
 // interchangeably.

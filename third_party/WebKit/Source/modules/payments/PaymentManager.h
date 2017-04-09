@@ -26,7 +26,7 @@ class MODULES_EXPORT PaymentManager final
   WTF_MAKE_NONCOPYABLE(PaymentManager);
 
  public:
-  static PaymentManager* create(ServiceWorkerRegistration*);
+  static PaymentManager* Create(ServiceWorkerRegistration*);
 
   ScriptPromise setManifest(ScriptState*, const PaymentAppManifest&);
   ScriptPromise getManifest(ScriptState*);
@@ -38,16 +38,16 @@ class MODULES_EXPORT PaymentManager final
  private:
   explicit PaymentManager(ServiceWorkerRegistration*);
 
-  void onSetManifest(ScriptPromiseResolver*,
+  void OnSetManifest(ScriptPromiseResolver*,
                      payments::mojom::blink::PaymentAppManifestError);
-  void onGetManifest(ScriptPromiseResolver*,
+  void OnGetManifest(ScriptPromiseResolver*,
                      payments::mojom::blink::PaymentAppManifestPtr,
                      payments::mojom::blink::PaymentAppManifestError);
-  void onServiceConnectionError();
+  void OnServiceConnectionError();
 
-  Member<ServiceWorkerRegistration> m_registration;
-  Member<PaymentInstruments> m_instruments;
-  payments::mojom::blink::PaymentManagerPtr m_manager;
+  Member<ServiceWorkerRegistration> registration_;
+  Member<PaymentInstruments> instruments_;
+  payments::mojom::blink::PaymentManagerPtr manager_;
 };
 
 }  // namespace blink

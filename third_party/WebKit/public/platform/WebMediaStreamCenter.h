@@ -44,27 +44,27 @@ class WebMediaStreamCenter {
   virtual ~WebMediaStreamCenter() {}
 
   // Stream functionality.
-  virtual void didCreateMediaStream(WebMediaStream&) = 0;
-  virtual bool didAddMediaStreamTrack(const WebMediaStream&,
+  virtual void DidCreateMediaStream(WebMediaStream&) = 0;
+  virtual bool DidAddMediaStreamTrack(const WebMediaStream&,
                                       const WebMediaStreamTrack&) = 0;
-  virtual bool didRemoveMediaStreamTrack(const WebMediaStream&,
+  virtual bool DidRemoveMediaStreamTrack(const WebMediaStream&,
                                          const WebMediaStreamTrack&) = 0;
-  virtual void didStopLocalMediaStream(const WebMediaStream&) = 0;
+  virtual void DidStopLocalMediaStream(const WebMediaStream&) = 0;
 
   // Track functionality.
-  virtual void didCreateMediaStreamTrack(const WebMediaStreamTrack&) {}
-  virtual void didCloneMediaStreamTrack(const WebMediaStreamTrack& original,
+  virtual void DidCreateMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
                                         const WebMediaStreamTrack& clone) {}
-  virtual void didSetContentHint(const WebMediaStreamTrack&) {}
-  virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
-  virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
-  virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) {
+  virtual void DidSetContentHint(const WebMediaStreamTrack&) {}
+  virtual void DidEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual void DidDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual bool DidStopMediaStreamTrack(const WebMediaStreamTrack&) {
     return false;
   }
 
   // Caller must take the ownership of the returned |WebAudioSourceProvider|
   // object.
-  virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
+  virtual WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
       const WebMediaStreamTrack&) {
     return nullptr;
   }

@@ -23,7 +23,7 @@ class WorkerNavigatorBudget final
   WTF_MAKE_NONCOPYABLE(WorkerNavigatorBudget);
 
  public:
-  static WorkerNavigatorBudget& from(WorkerNavigator&);
+  static WorkerNavigatorBudget& From(WorkerNavigator&);
 
   static BudgetService* budget(WorkerNavigator&);
   BudgetService* budget();
@@ -32,9 +32,9 @@ class WorkerNavigatorBudget final
 
  private:
   explicit WorkerNavigatorBudget(WorkerNavigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<BudgetService> m_budget;
+  Member<BudgetService> budget_;
 };
 
 }  // namespace blink

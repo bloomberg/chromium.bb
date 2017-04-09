@@ -56,60 +56,60 @@ class DenormalDisabler {
   DISALLOW_NEW();
 
  public:
-  DenormalDisabler() : m_savedCSR(0) { disableDenormals(); }
+  DenormalDisabler() : saved_csr_(0) { DisableDenormals(); }
 
-  ~DenormalDisabler() { restoreState(); }
+  ~DenormalDisabler() { RestoreState(); }
 
   // This is a nop if we can flush denormals to zero in hardware.
-  static inline float flushDenormalFloatToZero(float f) { return f; }
+  static inline float FlushDenormalFloatToZero(float f) { return f; }
 
  private:
-  unsigned m_savedCSR;
+  unsigned saved_csr_;
 
 #if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
-  inline void disableDenormals() {
-    m_savedCSR = getCSR();
-    setCSR(m_savedCSR | 0x8040);
+  inline void DisableDenormals() {
+    saved_csr_ = GetCSR();
+    SetCSR(saved_csr_ | 0x8040);
   }
 
-  inline void restoreState() { setCSR(m_savedCSR); }
+  inline void RestoreState() { SetCSR(saved_csr_); }
 
-  inline int getCSR() {
+  inline int GetCSR() {
     int result;
     asm volatile("stmxcsr %0" : "=m"(result));
     return result;
   }
 
-  inline void setCSR(int a) {
+  inline void SetCSR(int a) {
     int temp = a;
     asm volatile("ldmxcsr %0" : : "m"(temp));
   }
 
 #elif OS(WIN) && COMPILER(MSVC)
-  inline void disableDenormals() {
+  inline void DisableDenormals() {
     // Save the current state, and set mode to flush denormals.
     //
     // http://stackoverflow.com/questions/637175/possible-bug-in-controlfp-s-may-not-restore-control-word-correctly
-    _controlfp_s(&m_savedCSR, 0, 0);
+    _controlfp_s(&saved_csr_, 0, 0);
     unsigned unused;
     _controlfp_s(&unused, _DN_FLUSH, _MCW_DN);
   }
 
-  inline void restoreState() {
+  inline void RestoreState() {
     unsigned unused;
-    _controlfp_s(&unused, m_savedCSR, _MCW_DN);
+    _controlfp_s(&unused, saved_csr_, _MCW_DN);
   }
 #elif CPU(ARM) || CPU(ARM64)
-  inline void disableDenormals() {
-    m_savedCSR = getStatusWord();
+  inline void DisableDenormals() {
+    saved_csr_ = GetStatusWord();
     // Bit 24 is the flush-to-zero mode control bit. Setting it to 1 flushes
     // denormals to 0.
-    setStatusWord(m_savedCSR | (1 << 24));
+    SetStatusWord(saved_csr_ | (1 << 24));
   }
 
-  inline void restoreState() { setStatusWord(m_savedCSR); }
+  inline void RestoreState() { SetStatusWord(saved_csr_); }
 
-  inline int getStatusWord() {
+  inline int GetStatusWord() {
     int result;
 #if CPU(ARM64)
     asm volatile("mrs %x[result], FPCR" : [result] "=r"(result));
@@ -119,7 +119,7 @@ class DenormalDisabler {
     return result;
   }
 
-  inline void setStatusWord(int a) {
+  inline void SetStatusWord(int a) {
 #if CPU(ARM64)
     asm volatile("msr FPCR, %x[src]" : : [src] "r"(a));
 #else

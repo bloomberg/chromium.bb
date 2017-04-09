@@ -48,87 +48,87 @@ class WTF_EXPORT Partitions {
   // memory snapshots.
   static const char* const kAllocatedObjectPoolName;
 
-  static void initialize(ReportPartitionAllocSizeFunction);
-  ALWAYS_INLINE static base::PartitionRootGeneric* arrayBufferPartition() {
-    DCHECK(s_initialized);
-    return m_arrayBufferAllocator.root();
+  static void Initialize(ReportPartitionAllocSizeFunction);
+  ALWAYS_INLINE static base::PartitionRootGeneric* ArrayBufferPartition() {
+    DCHECK(initialized_);
+    return array_buffer_allocator_.root();
   }
 
-  ALWAYS_INLINE static base::PartitionRootGeneric* bufferPartition() {
-    DCHECK(s_initialized);
-    return m_bufferAllocator.root();
+  ALWAYS_INLINE static base::PartitionRootGeneric* BufferPartition() {
+    DCHECK(initialized_);
+    return buffer_allocator_.root();
   }
 
-  ALWAYS_INLINE static base::PartitionRootGeneric* fastMallocPartition() {
-    DCHECK(s_initialized);
-    return m_fastMallocAllocator.root();
+  ALWAYS_INLINE static base::PartitionRootGeneric* FastMallocPartition() {
+    DCHECK(initialized_);
+    return fast_malloc_allocator_.root();
   }
 
-  ALWAYS_INLINE static base::PartitionRoot* nodePartition() {
+  ALWAYS_INLINE static base::PartitionRoot* NodePartition() {
     NOTREACHED();
     return nullptr;
   }
-  ALWAYS_INLINE static base::PartitionRoot* layoutPartition() {
-    DCHECK(s_initialized);
-    return m_layoutAllocator.root();
+  ALWAYS_INLINE static base::PartitionRoot* LayoutPartition() {
+    DCHECK(initialized_);
+    return layout_allocator_.root();
   }
 
-  static size_t currentDOMMemoryUsage() {
+  static size_t CurrentDOMMemoryUsage() {
     NOTREACHED();
     return 0;
   }
 
-  static size_t totalSizeOfCommittedPages() {
-    size_t totalSize = 0;
-    totalSize += m_fastMallocAllocator.root()->total_size_of_committed_pages;
-    totalSize += m_arrayBufferAllocator.root()->total_size_of_committed_pages;
-    totalSize += m_bufferAllocator.root()->total_size_of_committed_pages;
-    totalSize += m_layoutAllocator.root()->total_size_of_committed_pages;
-    return totalSize;
+  static size_t TotalSizeOfCommittedPages() {
+    size_t total_size = 0;
+    total_size += fast_malloc_allocator_.root()->total_size_of_committed_pages;
+    total_size += array_buffer_allocator_.root()->total_size_of_committed_pages;
+    total_size += buffer_allocator_.root()->total_size_of_committed_pages;
+    total_size += layout_allocator_.root()->total_size_of_committed_pages;
+    return total_size;
   }
 
-  static void decommitFreeableMemory();
+  static void DecommitFreeableMemory();
 
-  static void reportMemoryUsageHistogram();
+  static void ReportMemoryUsageHistogram();
 
-  static void dumpMemoryStats(bool isLightDump, base::PartitionStatsDumper*);
+  static void DumpMemoryStats(bool is_light_dump, base::PartitionStatsDumper*);
 
-  ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName) {
-    return PartitionAllocGeneric(bufferPartition(), n, typeName);
+  ALWAYS_INLINE static void* BufferMalloc(size_t n, const char* type_name) {
+    return PartitionAllocGeneric(BufferPartition(), n, type_name);
   }
-  ALWAYS_INLINE static void* bufferRealloc(void* p,
+  ALWAYS_INLINE static void* BufferRealloc(void* p,
                                            size_t n,
-                                           const char* typeName) {
-    return PartitionReallocGeneric(bufferPartition(), p, n, typeName);
+                                           const char* type_name) {
+    return PartitionReallocGeneric(BufferPartition(), p, n, type_name);
   }
-  ALWAYS_INLINE static void bufferFree(void* p) {
-    PartitionFreeGeneric(bufferPartition(), p);
+  ALWAYS_INLINE static void BufferFree(void* p) {
+    PartitionFreeGeneric(BufferPartition(), p);
   }
-  ALWAYS_INLINE static size_t bufferActualSize(size_t n) {
-    return PartitionAllocActualSize(bufferPartition(), n);
+  ALWAYS_INLINE static size_t BufferActualSize(size_t n) {
+    return PartitionAllocActualSize(BufferPartition(), n);
   }
-  static void* fastMalloc(size_t n, const char* typeName) {
-    return PartitionAllocGeneric(Partitions::fastMallocPartition(), n,
-                                 typeName);
+  static void* FastMalloc(size_t n, const char* type_name) {
+    return PartitionAllocGeneric(Partitions::FastMallocPartition(), n,
+                                 type_name);
   }
-  static void* fastZeroedMalloc(size_t n, const char* typeName) {
-    void* result = fastMalloc(n, typeName);
+  static void* FastZeroedMalloc(size_t n, const char* type_name) {
+    void* result = FastMalloc(n, type_name);
     memset(result, 0, n);
     return result;
   }
-  static void* fastRealloc(void* p, size_t n, const char* typeName) {
-    return PartitionReallocGeneric(Partitions::fastMallocPartition(), p, n,
-                                   typeName);
+  static void* FastRealloc(void* p, size_t n, const char* type_name) {
+    return PartitionReallocGeneric(Partitions::FastMallocPartition(), p, n,
+                                   type_name);
   }
-  static void fastFree(void* p) {
-    PartitionFreeGeneric(Partitions::fastMallocPartition(), p);
+  static void FastFree(void* p) {
+    PartitionFreeGeneric(Partitions::FastMallocPartition(), p);
   }
 
-  static void handleOutOfMemory();
+  static void HandleOutOfMemory();
 
  private:
-  static base::subtle::SpinLock s_initializationLock;
-  static bool s_initialized;
+  static base::subtle::SpinLock initialization_lock_;
+  static bool initialized_;
 
   // We have the following four partitions.
   //   - LayoutObject partition: A partition to allocate LayoutObjects.
@@ -143,11 +143,11 @@ class WTF_EXPORT Partitions {
   //     user scripts. Vectors, HashTables and Strings are allocated in the
   //      buffer partition.
   //   - Fast malloc partition: A partition to allocate all other objects.
-  static base::PartitionAllocatorGeneric m_fastMallocAllocator;
-  static base::PartitionAllocatorGeneric m_arrayBufferAllocator;
-  static base::PartitionAllocatorGeneric m_bufferAllocator;
-  static base::SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
-  static ReportPartitionAllocSizeFunction m_reportSizeFunction;
+  static base::PartitionAllocatorGeneric fast_malloc_allocator_;
+  static base::PartitionAllocatorGeneric array_buffer_allocator_;
+  static base::PartitionAllocatorGeneric buffer_allocator_;
+  static base::SizeSpecificPartitionAllocator<1024> layout_allocator_;
+  static ReportPartitionAllocSizeFunction report_size_function_;
 };
 
 using base::kGenericMaxDirectMapped;

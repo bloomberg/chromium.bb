@@ -8,21 +8,21 @@
 
 namespace blink {
 
-WebNativeScrollBehavior ScrollStateCallback::toNativeScrollBehavior(
-    String nativeScrollBehavior) {
-  static const char disable[] = "disable-native-scroll";
-  static const char before[] = "perform-before-native-scroll";
-  static const char after[] = "perform-after-native-scroll";
+WebNativeScrollBehavior ScrollStateCallback::ToNativeScrollBehavior(
+    String native_scroll_behavior) {
+  static const char kDisable[] = "disable-native-scroll";
+  static const char kBefore[] = "perform-before-native-scroll";
+  static const char kAfter[] = "perform-after-native-scroll";
 
-  if (nativeScrollBehavior == disable)
-    return WebNativeScrollBehavior::DisableNativeScroll;
-  if (nativeScrollBehavior == before)
-    return WebNativeScrollBehavior::PerformBeforeNativeScroll;
-  if (nativeScrollBehavior == after)
-    return WebNativeScrollBehavior::PerformAfterNativeScroll;
+  if (native_scroll_behavior == kDisable)
+    return WebNativeScrollBehavior::kDisableNativeScroll;
+  if (native_scroll_behavior == kBefore)
+    return WebNativeScrollBehavior::kPerformBeforeNativeScroll;
+  if (native_scroll_behavior == kAfter)
+    return WebNativeScrollBehavior::kPerformAfterNativeScroll;
 
   ASSERT_NOT_REACHED();
-  return WebNativeScrollBehavior::DisableNativeScroll;
+  return WebNativeScrollBehavior::kDisableNativeScroll;
 }
 
 }  // namespace blink

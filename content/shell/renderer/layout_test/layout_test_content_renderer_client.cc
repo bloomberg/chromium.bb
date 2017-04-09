@@ -90,11 +90,11 @@ void WebViewTestProxyCreated(RenderView* render_view,
 
 void WebWidgetTestProxyCreated(blink::WebWidget* web_widget,
                                test_runner::WebWidgetTestProxyBase* proxy) {
-  CHECK(web_widget->isWebFrameWidget());
+  CHECK(web_widget->IsWebFrameWidget());
   proxy->set_web_widget(web_widget);
   blink::WebFrameWidget* web_frame_widget =
       static_cast<blink::WebFrameWidget*>(web_widget);
-  blink::WebView* web_view = web_frame_widget->localRoot()->view();
+  blink::WebView* web_view = web_frame_widget->LocalRoot()->View();
   RenderView* render_view = RenderView::FromWebView(web_view);
   test_runner::WebViewTestProxyBase* view_proxy =
       GetWebViewTestProxyBase(render_view);
@@ -150,7 +150,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
   // local root in WebFrameTestProxy instead of having only the WebWidget for
   // the main frame in WebViewTestProxy.
-  proxy->set_web_widget(render_view->GetWebView()->widget());
+  proxy->set_web_widget(render_view->GetWebView()->GetWidget());
   proxy->Reset();
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
@@ -239,15 +239,15 @@ LayoutTestContentRendererClient::GetImageDecodeColorProfile() {
 
 void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
-  blink::WebTestingSupport::injectInternalsObject(context);
+  blink::WebTestingSupport::InjectInternalsObject(context);
 }
 
 void LayoutTestContentRendererClient::RunScriptsAtDocumentEnd(
     RenderFrame* render_frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   v8::Context::Scope context_scope(context);
 
   gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
@@ -276,11 +276,11 @@ void LayoutTestContentRendererClient::
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStableReleaseMode)) {
-    blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
+    blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing)) {
-    blink::setFontAntialiasingEnabledForTest(true);
+    blink::SetFontAntialiasingEnabledForTest(true);
   }
 }
 

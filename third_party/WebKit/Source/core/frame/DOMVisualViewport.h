@@ -46,7 +46,7 @@ class DOMVisualViewport final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMVisualViewport* create(LocalDOMWindow* window) {
+  static DOMVisualViewport* Create(LocalDOMWindow* window) {
     return new DOMVisualViewport(window);
   }
 
@@ -55,8 +55,8 @@ class DOMVisualViewport final : public EventTargetWithInlineData {
   DECLARE_VIRTUAL_TRACE();
 
   // EventTarget overrides:
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   float scrollLeft();
   float scrollTop();
@@ -69,7 +69,7 @@ class DOMVisualViewport final : public EventTargetWithInlineData {
  private:
   explicit DOMVisualViewport(LocalDOMWindow*);
 
-  Member<LocalDOMWindow> m_window;
+  Member<LocalDOMWindow> window_;
 };
 
 }  // namespace blink

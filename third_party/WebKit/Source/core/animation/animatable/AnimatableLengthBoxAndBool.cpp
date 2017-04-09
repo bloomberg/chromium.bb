@@ -34,10 +34,10 @@
 
 namespace blink {
 
-bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const {
-  const AnimatableLengthBoxAndBool* lengthBox =
-      toAnimatableLengthBoxAndBool(value);
-  return m_box->equals(lengthBox->m_box.get()) && m_flag == lengthBox->m_flag;
+bool AnimatableLengthBoxAndBool::EqualTo(const AnimatableValue* value) const {
+  const AnimatableLengthBoxAndBool* length_box =
+      ToAnimatableLengthBoxAndBool(value);
+  return box_->Equals(length_box->box_.Get()) && flag_ == length_box->flag_;
 }
 
 }  // namespace blink

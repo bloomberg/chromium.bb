@@ -17,18 +17,18 @@ class ReplacedPainter {
   STACK_ALLOCATED();
 
  public:
-  ReplacedPainter(const LayoutReplaced& layoutReplaced)
-      : m_layoutReplaced(layoutReplaced) {}
+  ReplacedPainter(const LayoutReplaced& layout_replaced)
+      : layout_replaced_(layout_replaced) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
   // The adjustedPaintOffset should include the location (offset) of the object
   // itself.
-  bool shouldPaint(const PaintInfo&,
-                   const LayoutPoint& adjustedPaintOffset) const;
+  bool ShouldPaint(const PaintInfo&,
+                   const LayoutPoint& adjusted_paint_offset) const;
 
  private:
-  const LayoutReplaced& m_layoutReplaced;
+  const LayoutReplaced& layout_replaced_;
 };
 
 }  // namespace blink

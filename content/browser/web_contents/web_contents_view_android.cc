@@ -347,8 +347,8 @@ void WebContentsViewAndroid::OnDragEntered(
     const gfx::Point& location,
     const gfx::Point& screen_location) {
   blink::WebDragOperationsMask allowed_ops =
-      static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
-                                                blink::WebDragOperationMove);
+      static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
+                                                blink::kWebDragOperationMove);
   web_contents_->GetRenderViewHost()->GetWidget()->
       DragTargetDragEnterWithMetaData(metadata, location, screen_location,
                                       allowed_ops, 0);
@@ -357,8 +357,8 @@ void WebContentsViewAndroid::OnDragEntered(
 void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
                                            const gfx::Point& screen_location) {
   blink::WebDragOperationsMask allowed_ops =
-      static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
-                                                blink::WebDragOperationMove);
+      static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
+                                                blink::kWebDragOperationMove);
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragOver(
       location, screen_location, allowed_ops, 0);
 }

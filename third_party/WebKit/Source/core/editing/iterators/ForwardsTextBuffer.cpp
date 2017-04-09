@@ -6,13 +6,13 @@
 
 namespace blink {
 
-const UChar* ForwardsTextBuffer::data() const {
-  return bufferBegin();
+const UChar* ForwardsTextBuffer::Data() const {
+  return BufferBegin();
 }
 
-UChar* ForwardsTextBuffer::calcDestination(size_t length) {
-  DCHECK_LE(size() + length, capacity());
-  return bufferBegin() + size();
+UChar* ForwardsTextBuffer::CalcDestination(size_t length) {
+  DCHECK_LE(size() + length, Capacity());
+  return BufferBegin() + size();
 }
 
 }  // namespace blink

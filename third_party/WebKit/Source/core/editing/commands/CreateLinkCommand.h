@@ -32,16 +32,16 @@ namespace blink {
 
 class CreateLinkCommand final : public CompositeEditCommand {
  public:
-  static CreateLinkCommand* create(Document& document, const String& linkURL) {
-    return new CreateLinkCommand(document, linkURL);
+  static CreateLinkCommand* Create(Document& document, const String& link_url) {
+    return new CreateLinkCommand(document, link_url);
   }
 
  private:
-  CreateLinkCommand(Document&, const String& linkURL);
+  CreateLinkCommand(Document&, const String& link_url);
 
-  void doApply(EditingState*) override;
+  void DoApply(EditingState*) override;
 
-  String m_url;
+  String url_;
 };
 
 }  // namespace blink

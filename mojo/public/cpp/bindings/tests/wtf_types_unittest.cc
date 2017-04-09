@@ -68,7 +68,7 @@ WTF::Vector<WTF::String> ConstructStringArray() {
   // strs[1] is empty.
   strs[1] = "";
   strs[2] = kHelloWorld;
-  strs[3] = WTF::String::fromUTF8(kUTF8HelloWorld);
+  strs[3] = WTF::String::FromUTF8(kUTF8HelloWorld);
 
   return strs;
 }
@@ -78,7 +78,7 @@ WTF::HashMap<WTF::String, WTF::String> ConstructStringMap() {
   // A null string as value.
   str_map.insert("0", WTF::String());
   str_map.insert("1", kHelloWorld);
-  str_map.insert("2", WTF::String::fromUTF8(kUTF8HelloWorld));
+  str_map.insert("2", WTF::String::FromUTF8(kUTF8HelloWorld));
 
   return str_map;
 }

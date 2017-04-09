@@ -33,55 +33,55 @@ namespace blink {
 
 WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance(
     PlatformSpeechSynthesisUtterance* utterance)
-    : m_private(utterance) {}
+    : private_(utterance) {}
 
 WebSpeechSynthesisUtterance& WebSpeechSynthesisUtterance::operator=(
     PlatformSpeechSynthesisUtterance* utterance) {
-  m_private = utterance;
+  private_ = utterance;
   return *this;
 }
 
-void WebSpeechSynthesisUtterance::assign(
+void WebSpeechSynthesisUtterance::Assign(
     const WebSpeechSynthesisUtterance& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-void WebSpeechSynthesisUtterance::reset() {
-  m_private.reset();
+void WebSpeechSynthesisUtterance::Reset() {
+  private_.Reset();
 }
 
 WebSpeechSynthesisUtterance::operator PlatformSpeechSynthesisUtterance*()
     const {
-  return m_private.get();
+  return private_.Get();
 }
 
-WebString WebSpeechSynthesisUtterance::text() const {
-  return m_private->text();
+WebString WebSpeechSynthesisUtterance::GetText() const {
+  return private_->GetText();
 }
 
-WebString WebSpeechSynthesisUtterance::lang() const {
-  return m_private->lang();
+WebString WebSpeechSynthesisUtterance::Lang() const {
+  return private_->Lang();
 }
 
-WebString WebSpeechSynthesisUtterance::voice() const {
-  return m_private->voice() ? WebString(m_private->voice()->name())
-                            : WebString();
+WebString WebSpeechSynthesisUtterance::Voice() const {
+  return private_->Voice() ? WebString(private_->Voice()->GetName())
+                           : WebString();
 }
 
-float WebSpeechSynthesisUtterance::volume() const {
-  return m_private->volume();
+float WebSpeechSynthesisUtterance::Volume() const {
+  return private_->Volume();
 }
 
-float WebSpeechSynthesisUtterance::rate() const {
-  return m_private->rate();
+float WebSpeechSynthesisUtterance::Rate() const {
+  return private_->Rate();
 }
 
-float WebSpeechSynthesisUtterance::pitch() const {
-  return m_private->pitch();
+float WebSpeechSynthesisUtterance::Pitch() const {
+  return private_->Pitch();
 }
 
-double WebSpeechSynthesisUtterance::startTime() const {
-  return m_private->startTime();
+double WebSpeechSynthesisUtterance::StartTime() const {
+  return private_->StartTime();
 }
 
 }  // namespace blink

@@ -28,47 +28,47 @@ namespace blink {
 
 inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feOffsetTag, document),
-      m_dx(SVGAnimatedNumber::create(this,
-                                     SVGNames::dxAttr,
-                                     SVGNumber::create())),
-      m_dy(SVGAnimatedNumber::create(this,
-                                     SVGNames::dyAttr,
-                                     SVGNumber::create())),
-      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
-  addToPropertyMap(m_dx);
-  addToPropertyMap(m_dy);
-  addToPropertyMap(m_in1);
+      dx_(SVGAnimatedNumber::Create(this,
+                                    SVGNames::dxAttr,
+                                    SVGNumber::Create())),
+      dy_(SVGAnimatedNumber::Create(this,
+                                    SVGNames::dyAttr,
+                                    SVGNumber::Create())),
+      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
+  AddToPropertyMap(dx_);
+  AddToPropertyMap(dy_);
+  AddToPropertyMap(in1_);
 }
 
 DEFINE_TRACE(SVGFEOffsetElement) {
-  visitor->trace(m_dx);
-  visitor->trace(m_dy);
-  visitor->trace(m_in1);
-  SVGFilterPrimitiveStandardAttributes::trace(visitor);
+  visitor->Trace(dx_);
+  visitor->Trace(dy_);
+  visitor->Trace(in1_);
+  SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEOffsetElement)
 
-void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::inAttr || attrName == SVGNames::dxAttr ||
-      attrName == SVGNames::dyAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+void SVGFEOffsetElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::dxAttr ||
+      attr_name == SVGNames::dyAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
 }
 
-FilterEffect* SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFEOffsetElement::Build(SVGFilterBuilder* filter_builder,
                                         Filter* filter) {
-  FilterEffect* input1 = filterBuilder->getEffectById(
-      AtomicString(m_in1->currentValue()->value()));
+  FilterEffect* input1 = filter_builder->GetEffectById(
+      AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  FilterEffect* effect = FEOffset::create(filter, m_dx->currentValue()->value(),
-                                          m_dy->currentValue()->value());
-  effect->inputEffects().push_back(input1);
+  FilterEffect* effect = FEOffset::Create(filter, dx_->CurrentValue()->Value(),
+                                          dy_->CurrentValue()->Value());
+  effect->InputEffects().push_back(input1);
   return effect;
 }
 

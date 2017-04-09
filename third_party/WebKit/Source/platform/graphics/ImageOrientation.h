@@ -39,62 +39,62 @@ class FloatSize;
 enum ImageOrientationEnum {
   // "TopLeft" means that the 0 row starts at the Top, the 0 column starts at
   // the Left.
-  OriginTopLeft = 1,      // default
-  OriginTopRight = 2,     // mirror along y-axis
-  OriginBottomRight = 3,  // 180 degree rotation
-  OriginBottomLeft = 4,   // mirror along the x-axis
-  OriginLeftTop = 5,      // mirror along x-axis + 270 degree CW rotation
-  OriginRightTop = 6,     // 90 degree CW rotation
-  OriginRightBottom = 7,  // mirror along x-axis + 90 degree CW rotation
-  OriginLeftBottom = 8,   // 270 degree CW rotation
+  kOriginTopLeft = 1,      // default
+  kOriginTopRight = 2,     // mirror along y-axis
+  kOriginBottomRight = 3,  // 180 degree rotation
+  kOriginBottomLeft = 4,   // mirror along the x-axis
+  kOriginLeftTop = 5,      // mirror along x-axis + 270 degree CW rotation
+  kOriginRightTop = 6,     // 90 degree CW rotation
+  kOriginRightBottom = 7,  // mirror along x-axis + 90 degree CW rotation
+  kOriginLeftBottom = 8,   // 270 degree CW rotation
   // All other values are "reserved" as of EXIF 2.2
-  DefaultImageOrientation = OriginTopLeft,
-  ImageOrientationEnumEnd = OriginLeftBottom + 1,
+  kDefaultImageOrientation = kOriginTopLeft,
+  kImageOrientationEnumEnd = kOriginLeftBottom + 1,
 };
 
 enum RespectImageOrientationEnum {
-  DoNotRespectImageOrientation = 0,
-  RespectImageOrientation = 1
+  kDoNotRespectImageOrientation = 0,
+  kRespectImageOrientation = 1
 };
 
 class PLATFORM_EXPORT ImageOrientation final {
   DISALLOW_NEW();
 
  public:
-  ImageOrientation(ImageOrientationEnum orientation = DefaultImageOrientation)
-      : m_orientation(orientation) {}
+  ImageOrientation(ImageOrientationEnum orientation = kDefaultImageOrientation)
+      : orientation_(orientation) {}
 
-  bool usesWidthAsHeight() const {
+  bool UsesWidthAsHeight() const {
     // Values 5 through 8 all flip the width/height.
-    return m_orientation >= OriginLeftTop;
+    return orientation_ >= kOriginLeftTop;
   }
 
   // ImageOrientationEnum currently matches EXIF values, however code outside
   // this function should never assume that.
-  static ImageOrientation fromEXIFValue(int exifValue) {
+  static ImageOrientation FromEXIFValue(int exif_value) {
     // Values direct from images may be invalid, in which case we use the
     // default.
-    if (exifValue < OriginTopLeft || exifValue > OriginLeftBottom)
-      return DefaultImageOrientation;
-    return static_cast<ImageOrientationEnum>(exifValue);
+    if (exif_value < kOriginTopLeft || exif_value > kOriginLeftBottom)
+      return kDefaultImageOrientation;
+    return static_cast<ImageOrientationEnum>(exif_value);
   }
 
   // This transform can be used for drawing an image according to the
   // orientation. It should be used in a right-handed coordinate system.
-  AffineTransform transformFromDefault(const FloatSize& drawnSize) const;
+  AffineTransform TransformFromDefault(const FloatSize& drawn_size) const;
 
   inline bool operator==(const ImageOrientation& other) const {
-    return other.m_orientation == m_orientation;
+    return other.orientation_ == orientation_;
   }
   inline bool operator!=(const ImageOrientation& other) const {
     return !(*this == other);
   }
 
-  ImageOrientationEnum orientation() const { return m_orientation; }
+  ImageOrientationEnum Orientation() const { return orientation_; }
 
  private:
   // FIXME: This only needs to be one byte.
-  ImageOrientationEnum m_orientation;
+  ImageOrientationEnum orientation_;
 };
 
 }  // namespace blink

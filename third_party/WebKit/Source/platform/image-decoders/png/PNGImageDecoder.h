@@ -38,44 +38,44 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
  public:
   PNGImageDecoder(AlphaOption,
                   const ColorBehavior&,
-                  size_t maxDecodedBytes,
+                  size_t max_decoded_bytes,
                   size_t offset = 0);
   ~PNGImageDecoder() override;
 
   // ImageDecoder:
-  String filenameExtension() const override { return "png"; }
-  bool setSize(unsigned, unsigned) override;
-  int repetitionCount() const override;
-  bool frameIsCompleteAtIndex(size_t) const override;
-  float frameDurationAtIndex(size_t) const override;
-  bool setFailed() override;
+  String FilenameExtension() const override { return "png"; }
+  bool SetSize(unsigned, unsigned) override;
+  int RepetitionCount() const override;
+  bool FrameIsCompleteAtIndex(size_t) const override;
+  float FrameDurationAtIndex(size_t) const override;
+  bool SetFailed() override;
 
   // Callbacks from libpng
-  void headerAvailable();
-  void rowAvailable(unsigned char* row, unsigned rowIndex, int);
-  void frameComplete();
+  void HeaderAvailable();
+  void RowAvailable(unsigned char* row, unsigned row_index, int);
+  void FrameComplete();
 
-  void setColorSpace();
-  void setRepetitionCount(int);
+  void SetColorSpace();
+  void SetRepetitionCount(int);
 
  private:
   using ParseQuery = PNGImageReader::ParseQuery;
 
   // ImageDecoder:
-  void decodeSize() override { parse(ParseQuery::Size); }
-  void decode(size_t) override;
-  void parse(ParseQuery);
-  size_t decodeFrameCount() override;
-  void initializeNewFrame(size_t) override;
-  void clearFrameBuffer(size_t) override;
-  bool canReusePreviousFrameBuffer(size_t) const override;
+  void DecodeSize() override { Parse(ParseQuery::kSize); }
+  void Decode(size_t) override;
+  void Parse(ParseQuery);
+  size_t DecodeFrameCount() override;
+  void InitializeNewFrame(size_t) override;
+  void ClearFrameBuffer(size_t) override;
+  bool CanReusePreviousFrameBuffer(size_t) const override;
 
-  std::unique_ptr<PNGImageReader> m_reader;
-  const unsigned m_offset;
-  size_t m_currentFrame;
-  int m_repetitionCount;
-  bool m_hasAlphaChannel;
-  bool m_currentBufferSawAlpha;
+  std::unique_ptr<PNGImageReader> reader_;
+  const unsigned offset_;
+  size_t current_frame_;
+  int repetition_count_;
+  bool has_alpha_channel_;
+  bool current_buffer_saw_alpha_;
 };
 
 }  // namespace blink

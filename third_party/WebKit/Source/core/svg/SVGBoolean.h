@@ -42,34 +42,34 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
   typedef void TearOffType;
   typedef bool PrimitiveType;
 
-  static SVGBoolean* create(bool value = false) {
+  static SVGBoolean* Create(bool value = false) {
     return new SVGBoolean(value);
   }
 
-  SVGBoolean* clone() const { return create(m_value); }
+  SVGBoolean* Clone() const { return Create(value_); }
 
-  String valueAsString() const override;
-  SVGParsingError setValueAsString(const String&);
+  String ValueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  bool value() const { return m_value; }
-  void setValue(bool value) { m_value = value; }
+  bool Value() const { return value_; }
+  void SetValue(bool value) { value_ = value; }
 
-  static AnimatedPropertyType classType() { return AnimatedBoolean; }
+  static AnimatedPropertyType ClassType() { return kAnimatedBoolean; }
 
  private:
-  SVGBoolean(bool value) : m_value(value) {}
+  SVGBoolean(bool value) : value_(value) {}
 
-  bool m_value;
+  bool value_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGBoolean);

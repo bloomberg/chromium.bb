@@ -39,161 +39,163 @@
 namespace blink {
 
 DEFINE_TRACE(ChromeClient) {
-  visitor->trace(m_lastMouseOverNode);
-  HostWindow::trace(visitor);
+  visitor->Trace(last_mouse_over_node_);
+  HostWindow::Trace(visitor);
 }
 
-void ChromeClient::setWindowRectWithAdjustment(const IntRect& pendingRect,
+void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
                                                LocalFrame& frame) {
-  IntRect screen = screenInfo().availableRect;
-  IntRect window = pendingRect;
+  IntRect screen = GetScreenInfo().available_rect;
+  IntRect window = pending_rect;
 
-  IntSize minimumSize = minimumWindowSize();
+  IntSize minimum_size = MinimumWindowSize();
   // Let size 0 pass through, since that indicates default size, not minimum
   // size.
-  if (window.width())
-    window.setWidth(std::min(std::max(minimumSize.width(), window.width()),
-                             screen.width()));
-  if (window.height())
-    window.setHeight(std::min(std::max(minimumSize.height(), window.height()),
-                              screen.height()));
+  if (window.Width())
+    window.SetWidth(std::min(std::max(minimum_size.Width(), window.Width()),
+                             screen.Width()));
+  if (window.Height())
+    window.SetHeight(std::min(std::max(minimum_size.Height(), window.Height()),
+                              screen.Height()));
 
   // Constrain the window position within the valid screen area.
-  window.setX(std::max(screen.x(),
-                       std::min(window.x(), screen.maxX() - window.width())));
-  window.setY(std::max(screen.y(),
-                       std::min(window.y(), screen.maxY() - window.height())));
-  setWindowRect(window, frame);
+  window.SetX(std::max(screen.X(),
+                       std::min(window.X(), screen.MaxX() - window.Width())));
+  window.SetY(std::max(screen.Y(),
+                       std::min(window.Y(), screen.MaxY() - window.Height())));
+  SetWindowRect(window, frame);
 }
 
-bool ChromeClient::canOpenModalIfDuringPageDismissal(
-    Frame* mainFrame,
+bool ChromeClient::CanOpenModalIfDuringPageDismissal(
+    Frame* main_frame,
     ChromeClient::DialogType dialog,
     const String& message) {
-  for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
-    if (!frame->isLocalFrame())
+  for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
+    if (!frame->IsLocalFrame())
       continue;
-    LocalFrame& localFrame = toLocalFrame(*frame);
+    LocalFrame& local_frame = ToLocalFrame(*frame);
     Document::PageDismissalType dismissal =
-        localFrame.document()->pageDismissalEventBeingDispatched();
-    if (dismissal != Document::NoDismissal) {
-      return shouldOpenModalDialogDuringPageDismissal(localFrame, dialog,
+        local_frame.GetDocument()->PageDismissalEventBeingDispatched();
+    if (dismissal != Document::kNoDismissal) {
+      return ShouldOpenModalDialogDuringPageDismissal(local_frame, dialog,
                                                       message, dismissal);
     }
   }
   return true;
 }
 
-void ChromeClient::setWindowFeatures(const WindowFeatures& features) {
-  setToolbarsVisible(features.toolBarVisible || features.locationBarVisible);
-  setStatusbarVisible(features.statusBarVisible);
-  setScrollbarsVisible(features.scrollbarsVisible);
-  setMenubarVisible(features.menuBarVisible);
-  setResizable(features.resizable);
+void ChromeClient::SetWindowFeatures(const WindowFeatures& features) {
+  SetToolbarsVisible(features.tool_bar_visible ||
+                     features.location_bar_visible);
+  SetStatusbarVisible(features.status_bar_visible);
+  SetScrollbarsVisible(features.scrollbars_visible);
+  SetMenubarVisible(features.menu_bar_visible);
+  SetResizable(features.resizable);
 }
 
 template <typename Delegate>
-static bool openJavaScriptDialog(LocalFrame* frame,
+static bool OpenJavaScriptDialog(LocalFrame* frame,
                                  const String& message,
-                                 ChromeClient::DialogType dialogType,
+                                 ChromeClient::DialogType dialog_type,
                                  const Delegate& delegate) {
   // Suspend pages in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
   ScopedPageSuspender suspender;
-  probe::willRunJavaScriptDialog(frame, message, dialogType);
+  probe::willRunJavaScriptDialog(frame, message, dialog_type);
   bool result = delegate();
   probe::didRunJavaScriptDialog(frame, result);
   return result;
 }
 
-bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message,
+bool ChromeClient::OpenBeforeUnloadConfirmPanel(const String& message,
                                                 LocalFrame* frame,
-                                                bool isReload) {
+                                                bool is_reload) {
   ASSERT(frame);
-  return openJavaScriptDialog(
-      frame, message, ChromeClient::HTMLDialog, [this, frame, isReload]() {
-        return openBeforeUnloadConfirmPanelDelegate(frame, isReload);
+  return OpenJavaScriptDialog(
+      frame, message, ChromeClient::kHTMLDialog, [this, frame, is_reload]() {
+        return OpenBeforeUnloadConfirmPanelDelegate(frame, is_reload);
       });
 }
 
-bool ChromeClient::openJavaScriptAlert(LocalFrame* frame,
+bool ChromeClient::OpenJavaScriptAlert(LocalFrame* frame,
                                        const String& message) {
   ASSERT(frame);
-  if (!canOpenModalIfDuringPageDismissal(frame->tree().top(),
-                                         ChromeClient::AlertDialog, message))
+  if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
+                                         ChromeClient::kAlertDialog, message))
     return false;
-  return openJavaScriptDialog(
-      frame, message, ChromeClient::AlertDialog, [this, frame, &message]() {
-        return openJavaScriptAlertDelegate(frame, message);
+  return OpenJavaScriptDialog(
+      frame, message, ChromeClient::kAlertDialog, [this, frame, &message]() {
+        return OpenJavaScriptAlertDelegate(frame, message);
       });
 }
 
-bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame,
+bool ChromeClient::OpenJavaScriptConfirm(LocalFrame* frame,
                                          const String& message) {
   ASSERT(frame);
-  if (!canOpenModalIfDuringPageDismissal(frame->tree().top(),
-                                         ChromeClient::ConfirmDialog, message))
+  if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
+                                         ChromeClient::kConfirmDialog, message))
     return false;
-  return openJavaScriptDialog(
-      frame, message, ChromeClient::ConfirmDialog, [this, frame, &message]() {
-        return openJavaScriptConfirmDelegate(frame, message);
+  return OpenJavaScriptDialog(
+      frame, message, ChromeClient::kConfirmDialog, [this, frame, &message]() {
+        return OpenJavaScriptConfirmDelegate(frame, message);
       });
 }
 
-bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame,
+bool ChromeClient::OpenJavaScriptPrompt(LocalFrame* frame,
                                         const String& prompt,
-                                        const String& defaultValue,
+                                        const String& default_value,
                                         String& result) {
   ASSERT(frame);
-  if (!canOpenModalIfDuringPageDismissal(frame->tree().top(),
-                                         ChromeClient::PromptDialog, prompt))
+  if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
+                                         ChromeClient::kPromptDialog, prompt))
     return false;
-  return openJavaScriptDialog(frame, prompt, ChromeClient::PromptDialog,
-                              [this, frame, &prompt, &defaultValue, &result]() {
-                                return openJavaScriptPromptDelegate(
-                                    frame, prompt, defaultValue, result);
-                              });
+  return OpenJavaScriptDialog(
+      frame, prompt, ChromeClient::kPromptDialog,
+      [this, frame, &prompt, &default_value, &result]() {
+        return OpenJavaScriptPromptDelegate(frame, prompt, default_value,
+                                            result);
+      });
 }
 
-void ChromeClient::mouseDidMoveOverElement(LocalFrame& frame,
+void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestResult& result) {
-  if (!result.scrollbar() && result.innerNode() &&
-      result.innerNode()->document().isDNSPrefetchEnabled())
-    prefetchDNS(result.absoluteLinkURL().host());
+  if (!result.GetScrollbar() && result.InnerNode() &&
+      result.InnerNode()->GetDocument().IsDNSPrefetchEnabled())
+    PrefetchDNS(result.AbsoluteLinkURL().Host());
 
-  showMouseOverURL(result);
+  ShowMouseOverURL(result);
 
-  if (result.scrollbar())
-    clearToolTip(frame);
+  if (result.GetScrollbar())
+    ClearToolTip(frame);
   else
-    setToolTip(frame, result);
+    SetToolTip(frame, result);
 }
 
-void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result) {
+void ChromeClient::SetToolTip(LocalFrame& frame, const HitTestResult& result) {
   // First priority is a tooltip for element with "title" attribute.
-  TextDirection toolTipDirection;
-  String toolTip = result.title(toolTipDirection);
+  TextDirection tool_tip_direction;
+  String tool_tip = result.Title(tool_tip_direction);
 
   // Lastly, some elements provide default tooltip strings.  e.g. <input
   // type="file" multiple> shows a tooltip for the selected filenames.
-  if (toolTip.isEmpty()) {
-    if (Node* node = result.innerNode()) {
-      if (node->isElementNode()) {
-        toolTip = toElement(node)->defaultToolTip();
+  if (tool_tip.IsEmpty()) {
+    if (Node* node = result.InnerNode()) {
+      if (node->IsElementNode()) {
+        tool_tip = ToElement(node)->DefaultToolTip();
 
         // FIXME: We should obtain text direction of tooltip from
         // ChromeClient or platform. As of October 2011, all client
         // implementations don't use text direction information for
         // ChromeClient::setToolTip. We'll work on tooltip text
         // direction during bidi cleanup in form inputs.
-        toolTipDirection = TextDirection::kLtr;
+        tool_tip_direction = TextDirection::kLtr;
       }
     }
   }
 
-  if (m_lastToolTipPoint == result.hitTestLocation().point() &&
-      m_lastToolTipText == toolTip)
+  if (last_tool_tip_point_ == result.GetHitTestLocation().Point() &&
+      last_tool_tip_text_ == tool_tip)
     return;
 
   // If a tooltip was displayed earlier, and mouse cursor moves over
@@ -202,27 +204,27 @@ void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result) {
   // to the previous node).
   // The ::setToolTip overload, which is be called down the road,
   // ensures a new tooltip to be displayed with the new context.
-  if (result.innerNodeOrImageMapImage() != m_lastMouseOverNode &&
-      !m_lastToolTipText.isEmpty() && toolTip == m_lastToolTipText)
-    clearToolTip(frame);
+  if (result.InnerNodeOrImageMapImage() != last_mouse_over_node_ &&
+      !last_tool_tip_text_.IsEmpty() && tool_tip == last_tool_tip_text_)
+    ClearToolTip(frame);
 
-  m_lastToolTipPoint = result.hitTestLocation().point();
-  m_lastToolTipText = toolTip;
-  m_lastMouseOverNode = result.innerNodeOrImageMapImage();
-  setToolTip(frame, toolTip, toolTipDirection);
+  last_tool_tip_point_ = result.GetHitTestLocation().Point();
+  last_tool_tip_text_ = tool_tip;
+  last_mouse_over_node_ = result.InnerNodeOrImageMapImage();
+  SetToolTip(frame, tool_tip, tool_tip_direction);
 }
 
-void ChromeClient::clearToolTip(LocalFrame& frame) {
+void ChromeClient::ClearToolTip(LocalFrame& frame) {
   // Do not check m_lastToolTip* and do not update them intentionally.
   // We don't want to show tooltips with same content after clearToolTip().
-  setToolTip(frame, String(), TextDirection::kLtr);
+  SetToolTip(frame, String(), TextDirection::kLtr);
 }
 
-bool ChromeClient::print(LocalFrame* frame) {
-  if (frame->document()->isSandboxed(SandboxModals)) {
-    UseCounter::count(frame, UseCounter::DialogInSandboxedContext);
-    frame->console().addMessage(ConsoleMessage::create(
-        SecurityMessageSource, ErrorMessageLevel,
+bool ChromeClient::Print(LocalFrame* frame) {
+  if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
+    UseCounter::Count(frame, UseCounter::kDialogInSandboxedContext);
+    frame->Console().AddMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
@@ -233,7 +235,7 @@ bool ChromeClient::print(LocalFrame* frame) {
   // executing JavaScript.
   ScopedPageSuspender suspender;
 
-  printDelegate(frame);
+  PrintDelegate(frame);
   return true;
 }
 

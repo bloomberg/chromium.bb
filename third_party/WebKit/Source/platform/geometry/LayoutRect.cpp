@@ -40,127 +40,128 @@
 namespace blink {
 
 LayoutRect::LayoutRect(const FloatRect& r)
-    : m_location(LayoutPoint(r.location())), m_size(LayoutSize(r.size())) {}
+    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.size())) {}
 
 LayoutRect::LayoutRect(const DoubleRect& r)
-    : m_location(LayoutPoint(r.location())), m_size(LayoutSize(r.size())) {}
+    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.size())) {}
 
-bool LayoutRect::intersects(const LayoutRect& other) const {
+bool LayoutRect::Intersects(const LayoutRect& other) const {
   // Checking emptiness handles negative widths as well as zero.
-  return !isEmpty() && !other.isEmpty() && x() < other.maxX() &&
-         other.x() < maxX() && y() < other.maxY() && other.y() < maxY();
+  return !IsEmpty() && !other.IsEmpty() && X() < other.MaxX() &&
+         other.X() < MaxX() && Y() < other.MaxY() && other.Y() < MaxY();
 }
 
-bool LayoutRect::contains(const LayoutRect& other) const {
-  return x() <= other.x() && maxX() >= other.maxX() && y() <= other.y() &&
-         maxY() >= other.maxY();
+bool LayoutRect::Contains(const LayoutRect& other) const {
+  return X() <= other.X() && MaxX() >= other.MaxX() && Y() <= other.Y() &&
+         MaxY() >= other.MaxY();
 }
 
-void LayoutRect::intersect(const LayoutRect& other) {
-  LayoutPoint newLocation(std::max(x(), other.x()), std::max(y(), other.y()));
-  LayoutPoint newMaxPoint(std::min(maxX(), other.maxX()),
-                          std::min(maxY(), other.maxY()));
+void LayoutRect::Intersect(const LayoutRect& other) {
+  LayoutPoint new_location(std::max(X(), other.X()), std::max(Y(), other.Y()));
+  LayoutPoint new_max_point(std::min(MaxX(), other.MaxX()),
+                            std::min(MaxY(), other.MaxY()));
 
   // Return a clean empty rectangle for non-intersecting cases.
-  if (newLocation.x() >= newMaxPoint.x() ||
-      newLocation.y() >= newMaxPoint.y()) {
-    newLocation = LayoutPoint();
-    newMaxPoint = LayoutPoint();
+  if (new_location.X() >= new_max_point.X() ||
+      new_location.Y() >= new_max_point.Y()) {
+    new_location = LayoutPoint();
+    new_max_point = LayoutPoint();
   }
 
-  m_location = newLocation;
-  m_size = newMaxPoint - newLocation;
+  location_ = new_location;
+  size_ = new_max_point - new_location;
 }
 
-bool LayoutRect::inclusiveIntersect(const LayoutRect& other) {
-  LayoutPoint newLocation(std::max(x(), other.x()), std::max(y(), other.y()));
-  LayoutPoint newMaxPoint(std::min(maxX(), other.maxX()),
-                          std::min(maxY(), other.maxY()));
+bool LayoutRect::InclusiveIntersect(const LayoutRect& other) {
+  LayoutPoint new_location(std::max(X(), other.X()), std::max(Y(), other.Y()));
+  LayoutPoint new_max_point(std::min(MaxX(), other.MaxX()),
+                            std::min(MaxY(), other.MaxY()));
 
-  if (newLocation.x() > newMaxPoint.x() || newLocation.y() > newMaxPoint.y()) {
+  if (new_location.X() > new_max_point.X() ||
+      new_location.Y() > new_max_point.Y()) {
     *this = LayoutRect();
     return false;
   }
 
-  m_location = newLocation;
-  m_size = newMaxPoint - newLocation;
+  location_ = new_location;
+  size_ = new_max_point - new_location;
   return true;
 }
 
-void LayoutRect::unite(const LayoutRect& other) {
+void LayoutRect::Unite(const LayoutRect& other) {
   // Handle empty special cases first.
-  if (other.isEmpty())
+  if (other.IsEmpty())
     return;
-  if (isEmpty()) {
+  if (IsEmpty()) {
     *this = other;
     return;
   }
 
-  uniteEvenIfEmpty(other);
+  UniteEvenIfEmpty(other);
 }
 
-void LayoutRect::uniteIfNonZero(const LayoutRect& other) {
+void LayoutRect::UniteIfNonZero(const LayoutRect& other) {
   // Handle empty special cases first.
-  if (!other.width() && !other.height())
+  if (!other.Width() && !other.Height())
     return;
-  if (!width() && !height()) {
+  if (!Width() && !Height()) {
     *this = other;
     return;
   }
 
-  uniteEvenIfEmpty(other);
+  UniteEvenIfEmpty(other);
 }
 
-void LayoutRect::uniteEvenIfEmpty(const LayoutRect& other) {
-  LayoutPoint newLocation(std::min(x(), other.x()), std::min(y(), other.y()));
-  LayoutPoint newMaxPoint(std::max(maxX(), other.maxX()),
-                          std::max(maxY(), other.maxY()));
+void LayoutRect::UniteEvenIfEmpty(const LayoutRect& other) {
+  LayoutPoint new_location(std::min(X(), other.X()), std::min(Y(), other.Y()));
+  LayoutPoint new_max_point(std::max(MaxX(), other.MaxX()),
+                            std::max(MaxY(), other.MaxY()));
 
-  m_location = newLocation;
-  m_size = newMaxPoint - newLocation;
+  location_ = new_location;
+  size_ = new_max_point - new_location;
 }
 
-void LayoutRect::scale(float s) {
-  m_location.scale(s, s);
-  m_size.scale(s);
+void LayoutRect::Scale(float s) {
+  location_.Scale(s, s);
+  size_.Scale(s);
 }
 
-void LayoutRect::scale(float xAxisScale, float yAxisScale) {
-  m_location.scale(xAxisScale, yAxisScale);
-  m_size.scale(xAxisScale, yAxisScale);
+void LayoutRect::Scale(float x_axis_scale, float y_axis_scale) {
+  location_.Scale(x_axis_scale, y_axis_scale);
+  size_.Scale(x_axis_scale, y_axis_scale);
 }
 
-LayoutRect unionRect(const Vector<LayoutRect>& rects) {
+LayoutRect UnionRect(const Vector<LayoutRect>& rects) {
   LayoutRect result;
 
   size_t count = rects.size();
   for (size_t i = 0; i < count; ++i)
-    result.unite(rects[i]);
+    result.Unite(rects[i]);
 
   return result;
 }
 
-LayoutRect unionRectEvenIfEmpty(const Vector<LayoutRect>& rects) {
+LayoutRect UnionRectEvenIfEmpty(const Vector<LayoutRect>& rects) {
   size_t count = rects.size();
   if (!count)
     return LayoutRect();
 
   LayoutRect result = rects[0];
   for (size_t i = 1; i < count; ++i)
-    result.uniteEvenIfEmpty(rects[i]);
+    result.UniteEvenIfEmpty(rects[i]);
 
   return result;
 }
 
-LayoutRect enclosingLayoutRect(const FloatRect& rect) {
-  LayoutPoint location = flooredLayoutPoint(rect.minXMinYCorner());
-  LayoutPoint maxPoint = ceiledLayoutPoint(rect.maxXMaxYCorner());
-  return LayoutRect(location, maxPoint - location);
+LayoutRect EnclosingLayoutRect(const FloatRect& rect) {
+  LayoutPoint location = FlooredLayoutPoint(rect.MinXMinYCorner());
+  LayoutPoint max_point = CeiledLayoutPoint(rect.MaxXMaxYCorner());
+  return LayoutRect(location, max_point - location);
 }
 
-String LayoutRect::toString() const {
-  return String::format("%s %s", location().toString().ascii().data(),
-                        size().toString().ascii().data());
+String LayoutRect::ToString() const {
+  return String::Format("%s %s", Location().ToString().Ascii().Data(),
+                        size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

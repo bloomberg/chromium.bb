@@ -11,12 +11,12 @@
 
 namespace WTF {
 
-static bool isCharacterAllowedInBase(UChar c, int base) {
+static bool IsCharacterAllowedInBase(UChar c, int base) {
   if (c > 0x7F)
     return false;
-  if (isASCIIDigit(c))
+  if (IsASCIIDigit(c))
     return c - '0' < base;
-  if (isASCIIAlpha(c)) {
+  if (IsASCIIAlpha(c)) {
     if (base > 36)
       base = 36;
     return (c >= 'a' && c < 'a' + base - 10) ||
@@ -26,101 +26,102 @@ static bool isCharacterAllowedInBase(UChar c, int base) {
 }
 
 template <typename IntegralType, typename CharType>
-static inline IntegralType toIntegralType(const CharType* data,
+static inline IntegralType ToIntegralType(const CharType* data,
                                           size_t length,
                                           bool* ok,
                                           int base) {
   static_assert(std::is_integral<IntegralType>::value,
                 "IntegralType must be an integral type.");
-  static constexpr IntegralType integralMax =
+  static constexpr IntegralType kIntegralMax =
       std::numeric_limits<IntegralType>::max();
-  static constexpr IntegralType integralMin =
+  static constexpr IntegralType kIntegralMin =
       std::numeric_limits<IntegralType>::min();
-  static constexpr bool isSigned = std::numeric_limits<IntegralType>::is_signed;
+  static constexpr bool kIsSigned =
+      std::numeric_limits<IntegralType>::is_signed;
 
   IntegralType value = 0;
-  bool isOk = false;
-  bool isNegative = false;
+  bool is_ok = false;
+  bool is_negative = false;
 
   if (!data)
     goto bye;
 
   // skip leading whitespace
-  while (length && isSpaceOrNewline(*data)) {
+  while (length && IsSpaceOrNewline(*data)) {
     --length;
     ++data;
   }
 
-  if (isSigned && length && *data == '-') {
+  if (kIsSigned && length && *data == '-') {
     --length;
     ++data;
-    isNegative = true;
+    is_negative = true;
   } else if (length && *data == '+') {
     --length;
     ++data;
   }
 
-  if (!length || !isCharacterAllowedInBase(*data, base))
+  if (!length || !IsCharacterAllowedInBase(*data, base))
     goto bye;
 
-  while (length && isCharacterAllowedInBase(*data, base)) {
+  while (length && IsCharacterAllowedInBase(*data, base)) {
     --length;
-    IntegralType digitValue;
+    IntegralType digit_value;
     CharType c = *data;
-    if (isASCIIDigit(c))
-      digitValue = c - '0';
+    if (IsASCIIDigit(c))
+      digit_value = c - '0';
     else if (c >= 'a')
-      digitValue = c - 'a' + 10;
+      digit_value = c - 'a' + 10;
     else
-      digitValue = c - 'A' + 10;
+      digit_value = c - 'A' + 10;
 
     bool overflow;
-    if (isNegative) {
+    if (is_negative) {
       // Overflow condition:
       //       value * base - digitValue < integralMin
       //   <=> value < (integralMin + digitValue) / base
       // We must be careful of rounding errors here, but the default rounding
       // mode (round to zero) works well, so we can use this formula as-is.
-      overflow = value < (integralMin + digitValue) / base;
+      overflow = value < (kIntegralMin + digit_value) / base;
     } else {
       // Overflow condition:
       //       value * base + digitValue > integralMax
       //   <=> value > (integralMax + digitValue) / base
       // Ditto regarding rounding errors.
-      overflow = value > (integralMax - digitValue) / base;
+      overflow = value > (kIntegralMax - digit_value) / base;
     }
     if (overflow)
       goto bye;
 
-    if (isNegative)
-      value = base * value - digitValue;
+    if (is_negative)
+      value = base * value - digit_value;
     else
-      value = base * value + digitValue;
+      value = base * value + digit_value;
     ++data;
   }
 
   // skip trailing space
-  while (length && isSpaceOrNewline(*data)) {
+  while (length && IsSpaceOrNewline(*data)) {
     --length;
     ++data;
   }
 
   if (!length)
-    isOk = true;
+    is_ok = true;
 bye:
   if (ok)
-    *ok = isOk;
-  return isOk ? value : 0;
+    *ok = is_ok;
+  return is_ok ? value : 0;
 }
 
 template <typename CharType>
-static unsigned lengthOfCharactersAsInteger(const CharType* data,
+static unsigned LengthOfCharactersAsInteger(const CharType* data,
                                             size_t length) {
   size_t i = 0;
 
   // Allow leading spaces.
   for (; i != length; ++i) {
-    if (!isSpaceOrNewline(data[i]))
+    if (!IsSpaceOrNewline(data[i]))
       break;
   }
 
@@ -130,193 +131,193 @@ static unsigned lengthOfCharactersAsInteger(const CharType* data,
 
   // Allow digits.
   for (; i != length; ++i) {
-    if (!isASCIIDigit(data[i]))
+    if (!IsASCIIDigit(data[i]))
       break;
   }
 
   return i;
 }
 
-int charactersToIntStrict(const LChar* data,
+int CharactersToIntStrict(const LChar* data,
                           size_t length,
                           bool* ok,
                           int base) {
-  return toIntegralType<int, LChar>(data, length, ok, base);
+  return ToIntegralType<int, LChar>(data, length, ok, base);
 }
 
-int charactersToIntStrict(const UChar* data,
+int CharactersToIntStrict(const UChar* data,
                           size_t length,
                           bool* ok,
                           int base) {
-  return toIntegralType<int, UChar>(data, length, ok, base);
+  return ToIntegralType<int, UChar>(data, length, ok, base);
 }
 
-unsigned charactersToUIntStrict(const LChar* data,
+unsigned CharactersToUIntStrict(const LChar* data,
                                 size_t length,
                                 bool* ok,
                                 int base) {
-  return toIntegralType<unsigned, LChar>(data, length, ok, base);
+  return ToIntegralType<unsigned, LChar>(data, length, ok, base);
 }
 
-unsigned charactersToUIntStrict(const UChar* data,
+unsigned CharactersToUIntStrict(const UChar* data,
                                 size_t length,
                                 bool* ok,
                                 int base) {
-  return toIntegralType<unsigned, UChar>(data, length, ok, base);
+  return ToIntegralType<unsigned, UChar>(data, length, ok, base);
 }
 
-int64_t charactersToInt64Strict(const LChar* data,
+int64_t CharactersToInt64Strict(const LChar* data,
                                 size_t length,
                                 bool* ok,
                                 int base) {
-  return toIntegralType<int64_t, LChar>(data, length, ok, base);
+  return ToIntegralType<int64_t, LChar>(data, length, ok, base);
 }
 
-int64_t charactersToInt64Strict(const UChar* data,
+int64_t CharactersToInt64Strict(const UChar* data,
                                 size_t length,
                                 bool* ok,
                                 int base) {
-  return toIntegralType<int64_t, UChar>(data, length, ok, base);
+  return ToIntegralType<int64_t, UChar>(data, length, ok, base);
 }
 
-uint64_t charactersToUInt64Strict(const LChar* data,
+uint64_t CharactersToUInt64Strict(const LChar* data,
                                   size_t length,
                                   bool* ok,
                                   int base) {
-  return toIntegralType<uint64_t, LChar>(data, length, ok, base);
+  return ToIntegralType<uint64_t, LChar>(data, length, ok, base);
 }
 
-uint64_t charactersToUInt64Strict(const UChar* data,
+uint64_t CharactersToUInt64Strict(const UChar* data,
                                   size_t length,
                                   bool* ok,
                                   int base) {
-  return toIntegralType<uint64_t, UChar>(data, length, ok, base);
+  return ToIntegralType<uint64_t, UChar>(data, length, ok, base);
 }
 
-int charactersToInt(const LChar* data, size_t length, bool* ok) {
-  return toIntegralType<int, LChar>(
-      data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
+int CharactersToInt(const LChar* data, size_t length, bool* ok) {
+  return ToIntegralType<int, LChar>(
+      data, LengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
 }
 
-int charactersToInt(const UChar* data, size_t length, bool* ok) {
-  return toIntegralType<int, UChar>(
-      data, lengthOfCharactersAsInteger(data, length), ok, 10);
+int CharactersToInt(const UChar* data, size_t length, bool* ok) {
+  return ToIntegralType<int, UChar>(
+      data, LengthOfCharactersAsInteger(data, length), ok, 10);
 }
 
-unsigned charactersToUInt(const LChar* data, size_t length, bool* ok) {
-  return toIntegralType<unsigned, LChar>(
-      data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
+unsigned CharactersToUInt(const LChar* data, size_t length, bool* ok) {
+  return ToIntegralType<unsigned, LChar>(
+      data, LengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
 }
 
-unsigned charactersToUInt(const UChar* data, size_t length, bool* ok) {
-  return toIntegralType<unsigned, UChar>(
-      data, lengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
+unsigned CharactersToUInt(const UChar* data, size_t length, bool* ok) {
+  return ToIntegralType<unsigned, UChar>(
+      data, LengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
 }
 
-int64_t charactersToInt64(const LChar* data, size_t length, bool* ok) {
-  return toIntegralType<int64_t, LChar>(
-      data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
+int64_t CharactersToInt64(const LChar* data, size_t length, bool* ok) {
+  return ToIntegralType<int64_t, LChar>(
+      data, LengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
 }
 
-int64_t charactersToInt64(const UChar* data, size_t length, bool* ok) {
-  return toIntegralType<int64_t, UChar>(
-      data, lengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
+int64_t CharactersToInt64(const UChar* data, size_t length, bool* ok) {
+  return ToIntegralType<int64_t, UChar>(
+      data, LengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
 }
 
-uint64_t charactersToUInt64(const LChar* data, size_t length, bool* ok) {
-  return toIntegralType<uint64_t, LChar>(
-      data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
+uint64_t CharactersToUInt64(const LChar* data, size_t length, bool* ok) {
+  return ToIntegralType<uint64_t, LChar>(
+      data, LengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
 }
 
-uint64_t charactersToUInt64(const UChar* data, size_t length, bool* ok) {
-  return toIntegralType<uint64_t, UChar>(
-      data, lengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
+uint64_t CharactersToUInt64(const UChar* data, size_t length, bool* ok) {
+  return ToIntegralType<uint64_t, UChar>(
+      data, LengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
 }
 
-enum TrailingJunkPolicy { DisallowTrailingJunk, AllowTrailingJunk };
+enum TrailingJunkPolicy { kDisallowTrailingJunk, kAllowTrailingJunk };
 
 template <typename CharType, TrailingJunkPolicy policy>
-static inline double toDoubleType(const CharType* data,
+static inline double ToDoubleType(const CharType* data,
                                   size_t length,
                                   bool* ok,
-                                  size_t& parsedLength) {
-  size_t leadingSpacesLength = 0;
-  while (leadingSpacesLength < length &&
-         isASCIISpace(data[leadingSpacesLength]))
-    ++leadingSpacesLength;
+                                  size_t& parsed_length) {
+  size_t leading_spaces_length = 0;
+  while (leading_spaces_length < length &&
+         IsASCIISpace(data[leading_spaces_length]))
+    ++leading_spaces_length;
 
-  double number = parseDouble(data + leadingSpacesLength,
-                              length - leadingSpacesLength, parsedLength);
-  if (!parsedLength) {
+  double number = ParseDouble(data + leading_spaces_length,
+                              length - leading_spaces_length, parsed_length);
+  if (!parsed_length) {
     if (ok)
       *ok = false;
     return 0.0;
   }
 
-  parsedLength += leadingSpacesLength;
+  parsed_length += leading_spaces_length;
   if (ok)
-    *ok = policy == AllowTrailingJunk || parsedLength == length;
+    *ok = policy == kAllowTrailingJunk || parsed_length == length;
   return number;
 }
 
-double charactersToDouble(const LChar* data, size_t length, bool* ok) {
-  size_t parsedLength;
-  return toDoubleType<LChar, DisallowTrailingJunk>(data, length, ok,
-                                                   parsedLength);
+double CharactersToDouble(const LChar* data, size_t length, bool* ok) {
+  size_t parsed_length;
+  return ToDoubleType<LChar, kDisallowTrailingJunk>(data, length, ok,
+                                                    parsed_length);
 }
 
-double charactersToDouble(const UChar* data, size_t length, bool* ok) {
-  size_t parsedLength;
-  return toDoubleType<UChar, DisallowTrailingJunk>(data, length, ok,
-                                                   parsedLength);
+double CharactersToDouble(const UChar* data, size_t length, bool* ok) {
+  size_t parsed_length;
+  return ToDoubleType<UChar, kDisallowTrailingJunk>(data, length, ok,
+                                                    parsed_length);
 }
 
-double charactersToDouble(const LChar* data,
+double CharactersToDouble(const LChar* data,
                           size_t length,
-                          size_t& parsedLength) {
-  return toDoubleType<LChar, AllowTrailingJunk>(data, length, nullptr,
-                                                parsedLength);
+                          size_t& parsed_length) {
+  return ToDoubleType<LChar, kAllowTrailingJunk>(data, length, nullptr,
+                                                 parsed_length);
 }
 
-double charactersToDouble(const UChar* data,
+double CharactersToDouble(const UChar* data,
                           size_t length,
-                          size_t& parsedLength) {
-  return toDoubleType<UChar, AllowTrailingJunk>(data, length, nullptr,
-                                                parsedLength);
+                          size_t& parsed_length) {
+  return ToDoubleType<UChar, kAllowTrailingJunk>(data, length, nullptr,
+                                                 parsed_length);
 }
 
-float charactersToFloat(const LChar* data, size_t length, bool* ok) {
+float CharactersToFloat(const LChar* data, size_t length, bool* ok) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
-  size_t parsedLength;
-  return static_cast<float>(toDoubleType<LChar, DisallowTrailingJunk>(
-      data, length, ok, parsedLength));
+  size_t parsed_length;
+  return static_cast<float>(ToDoubleType<LChar, kDisallowTrailingJunk>(
+      data, length, ok, parsed_length));
 }
 
-float charactersToFloat(const UChar* data, size_t length, bool* ok) {
+float CharactersToFloat(const UChar* data, size_t length, bool* ok) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
-  size_t parsedLength;
-  return static_cast<float>(toDoubleType<UChar, DisallowTrailingJunk>(
-      data, length, ok, parsedLength));
+  size_t parsed_length;
+  return static_cast<float>(ToDoubleType<UChar, kDisallowTrailingJunk>(
+      data, length, ok, parsed_length));
 }
 
-float charactersToFloat(const LChar* data,
+float CharactersToFloat(const LChar* data,
                         size_t length,
-                        size_t& parsedLength) {
+                        size_t& parsed_length) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
   return static_cast<float>(
-      toDoubleType<LChar, AllowTrailingJunk>(data, length, 0, parsedLength));
+      ToDoubleType<LChar, kAllowTrailingJunk>(data, length, 0, parsed_length));
 }
 
-float charactersToFloat(const UChar* data,
+float CharactersToFloat(const UChar* data,
                         size_t length,
-                        size_t& parsedLength) {
+                        size_t& parsed_length) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
   return static_cast<float>(
-      toDoubleType<UChar, AllowTrailingJunk>(data, length, 0, parsedLength));
+      ToDoubleType<UChar, kAllowTrailingJunk>(data, length, 0, parsed_length));
 }
 
 }  // namespace WTF

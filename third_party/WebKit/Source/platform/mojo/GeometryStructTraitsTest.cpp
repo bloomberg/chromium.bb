@@ -19,7 +19,7 @@ class GeometryStructTraitsTest
 
  protected:
   gfx::mojom::blink::GeometryTraitsTestServicePtr GetTraitsTestProxy() {
-    return m_TraitsTestBindings.CreateInterfacePtrAndBind(this);
+    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
   }
 
  private:
@@ -76,9 +76,9 @@ class GeometryStructTraitsTest
   }
 
   mojo::BindingSet<gfx::mojom::blink::GeometryTraitsTestService>
-      m_TraitsTestBindings;
+      traits_test_bindings_;
 
-  base::MessageLoop m_messageLoop;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);
 };
@@ -86,9 +86,9 @@ class GeometryStructTraitsTest
 }  // namespace
 
 TEST_F(GeometryStructTraitsTest, Size) {
-  const int32_t width = 1234;
-  const int32_t height = 5678;
-  WebSize input(width, height);
+  const int32_t kWidth = 1234;
+  const int32_t kHeight = 5678;
+  WebSize input(kWidth, kHeight);
   gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
   WebSize output;
   proxy->EchoSize(input, &output);

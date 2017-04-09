@@ -35,25 +35,25 @@
 namespace blink {
 
 SVGNumberTearOff::SVGNumberTearOff(SVGNumber* target,
-                                   SVGElement* contextElement,
-                                   PropertyIsAnimValType propertyIsAnimVal,
-                                   const QualifiedName& attributeName)
+                                   SVGElement* context_element,
+                                   PropertyIsAnimValType property_is_anim_val,
+                                   const QualifiedName& attribute_name)
     : SVGPropertyTearOff<SVGNumber>(target,
-                                    contextElement,
-                                    propertyIsAnimVal,
-                                    attributeName) {}
+                                    context_element,
+                                    property_is_anim_val,
+                                    attribute_name) {}
 
-void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGNumberTearOff::setValue(float f, ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  target()->setValue(f);
-  commitChange();
+  Target()->SetValue(f);
+  CommitChange();
 }
 
 DEFINE_TRACE_WRAPPERS(SVGNumberTearOff) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

@@ -23,29 +23,29 @@ class WebClipboardImpl : public blink::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // WebClipboard methods:
-  uint64_t sequenceNumber(Buffer buffer) override;
-  bool isFormatAvailable(Format format, Buffer buffer) override;
-  blink::WebVector<blink::WebString> readAvailableTypes(
+  uint64_t SequenceNumber(Buffer buffer) override;
+  bool IsFormatAvailable(Format format, Buffer buffer) override;
+  blink::WebVector<blink::WebString> ReadAvailableTypes(
       Buffer buffer,
       bool* contains_filenames) override;
-  blink::WebString readPlainText(Buffer buffer) override;
-  blink::WebString readHTML(Buffer buffer,
+  blink::WebString ReadPlainText(Buffer buffer) override;
+  blink::WebString ReadHTML(Buffer buffer,
                             blink::WebURL* source_url,
                             unsigned* fragment_start,
                             unsigned* fragment_end) override;
-  blink::WebString readRTF(Buffer buffer) override;
-  blink::WebBlobInfo readImage(Buffer buffer) override;
-  blink::WebString readCustomData(Buffer buffer,
+  blink::WebString ReadRTF(Buffer buffer) override;
+  blink::WebBlobInfo ReadImage(Buffer buffer) override;
+  blink::WebString ReadCustomData(Buffer buffer,
                                   const blink::WebString& type) override;
-  void writePlainText(const blink::WebString& plain_text) override;
-  void writeHTML(const blink::WebString& html_text,
+  void WritePlainText(const blink::WebString& plain_text) override;
+  void WriteHTML(const blink::WebString& html_text,
                  const blink::WebURL& source_url,
                  const blink::WebString& plain_text,
                  bool write_smart_paste) override;
-  void writeImage(const blink::WebImage& image,
+  void WriteImage(const blink::WebImage& image,
                   const blink::WebURL& source_url,
                   const blink::WebString& title) override;
-  void writeDataObject(const blink::WebDragData& data) override;
+  void WriteDataObject(const blink::WebDragData& data) override;
 
  private:
   bool ConvertBufferType(Buffer, ui::ClipboardType*);

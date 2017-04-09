@@ -44,57 +44,57 @@ class XSLTProcessor final : public GarbageCollectedFinalized<XSLTProcessor>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XSLTProcessor* create(Document& document) {
+  static XSLTProcessor* Create(Document& document) {
     DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     return new XSLTProcessor(document);
   }
   ~XSLTProcessor();
 
-  void setXSLStyleSheet(XSLStyleSheet* styleSheet) {
-    m_stylesheet = styleSheet;
+  void SetXSLStyleSheet(XSLStyleSheet* style_sheet) {
+    stylesheet_ = style_sheet;
   }
-  bool transformToString(Node* source,
-                         String& resultMIMEType,
-                         String& resultString,
-                         String& resultEncoding);
-  Document* createDocumentFromSource(const String& source,
-                                     const String& sourceEncoding,
-                                     const String& sourceMIMEType,
-                                     Node* sourceNode,
+  bool TransformToString(Node* source,
+                         String& result_mime_type,
+                         String& result_string,
+                         String& result_encoding);
+  Document* CreateDocumentFromSource(const String& source,
+                                     const String& source_encoding,
+                                     const String& source_mime_type,
+                                     Node* source_node,
                                      LocalFrame*);
 
   // DOM methods
-  void importStylesheet(Node* style) { m_stylesheetRootNode = style; }
-  DocumentFragment* transformToFragment(Node* source, Document* ouputDoc);
+  void importStylesheet(Node* style) { stylesheet_root_node_ = style; }
+  DocumentFragment* transformToFragment(Node* source, Document* ouput_doc);
   Document* transformToDocument(Node* source);
 
-  void setParameter(const String& namespaceURI,
-                    const String& localName,
+  void setParameter(const String& namespace_uri,
+                    const String& local_name,
                     const String& value);
-  String getParameter(const String& namespaceURI,
-                      const String& localName) const;
-  void removeParameter(const String& namespaceURI, const String& localName);
-  void clearParameters() { m_parameters.clear(); }
+  String getParameter(const String& namespace_uri,
+                      const String& local_name) const;
+  void removeParameter(const String& namespace_uri, const String& local_name);
+  void clearParameters() { parameters_.Clear(); }
 
   void reset();
 
-  static void parseErrorFunc(void* userData, xmlError*);
-  static void genericErrorFunc(void* userData, const char* msg, ...);
+  static void ParseErrorFunc(void* user_data, xmlError*);
+  static void GenericErrorFunc(void* user_data, const char* msg, ...);
 
   // Only for libXSLT callbacks
-  XSLStyleSheet* xslStylesheet() const { return m_stylesheet.get(); }
+  XSLStyleSheet* XslStylesheet() const { return stylesheet_.Get(); }
 
   typedef HashMap<String, String> ParameterMap;
 
   DECLARE_TRACE();
 
  private:
-  XSLTProcessor(Document& document) : m_document(&document) {}
+  XSLTProcessor(Document& document) : document_(&document) {}
 
-  Member<XSLStyleSheet> m_stylesheet;
-  Member<Node> m_stylesheetRootNode;
-  Member<Document> m_document;
-  ParameterMap m_parameters;
+  Member<XSLStyleSheet> stylesheet_;
+  Member<Node> stylesheet_root_node_;
+  Member<Document> document_;
+  ParameterMap parameters_;
 };
 
 }  // namespace blink

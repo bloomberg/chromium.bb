@@ -42,7 +42,7 @@ class HTMLContentSelectFilter
     : public GarbageCollectedFinalized<HTMLContentSelectFilter> {
  public:
   virtual ~HTMLContentSelectFilter() {}
-  virtual bool canSelectNode(const HeapVector<Member<Node>, 32>& siblings,
+  virtual bool CanSelectNode(const HeapVector<Member<Node>, 32>& siblings,
                              int nth) const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -52,61 +52,61 @@ class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLContentElement* create(Document&,
+  static HTMLContentElement* Create(Document&,
                                     HTMLContentSelectFilter* = nullptr);
   ~HTMLContentElement() override;
 
-  bool canAffectSelector() const override { return true; }
+  bool CanAffectSelector() const override { return true; }
 
-  bool canSelectNode(const HeapVector<Member<Node>, 32>& siblings,
+  bool CanSelectNode(const HeapVector<Member<Node>, 32>& siblings,
                      int nth) const;
 
-  const CSSSelectorList& selectorList() const;
-  bool isSelectValid() const;
+  const CSSSelectorList& SelectorList() const;
+  bool IsSelectValid() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   HTMLContentElement(Document&, HTMLContentSelectFilter*);
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  bool validateSelect() const;
-  void parseSelect();
+  bool ValidateSelect() const;
+  void ParseSelect();
 
-  bool matchSelector(Element&) const;
+  bool MatchSelector(Element&) const;
 
-  bool m_shouldParseSelect;
-  bool m_isValidSelector;
-  AtomicString m_select;
-  CSSSelectorList m_selectorList;
-  Member<HTMLContentSelectFilter> m_filter;
+  bool should_parse_select_;
+  bool is_valid_selector_;
+  AtomicString select_;
+  CSSSelectorList selector_list_;
+  Member<HTMLContentSelectFilter> filter_;
 };
 
-inline const CSSSelectorList& HTMLContentElement::selectorList() const {
-  if (m_shouldParseSelect)
-    const_cast<HTMLContentElement*>(this)->parseSelect();
-  return m_selectorList;
+inline const CSSSelectorList& HTMLContentElement::SelectorList() const {
+  if (should_parse_select_)
+    const_cast<HTMLContentElement*>(this)->ParseSelect();
+  return selector_list_;
 }
 
-inline bool HTMLContentElement::isSelectValid() const {
-  if (m_shouldParseSelect)
-    const_cast<HTMLContentElement*>(this)->parseSelect();
-  return m_isValidSelector;
+inline bool HTMLContentElement::IsSelectValid() const {
+  if (should_parse_select_)
+    const_cast<HTMLContentElement*>(this)->ParseSelect();
+  return is_valid_selector_;
 }
 
-inline bool HTMLContentElement::canSelectNode(
+inline bool HTMLContentElement::CanSelectNode(
     const HeapVector<Member<Node>, 32>& siblings,
     int nth) const {
-  if (m_filter)
-    return m_filter->canSelectNode(siblings, nth);
-  if (m_select.isNull() || m_select.isEmpty())
+  if (filter_)
+    return filter_->CanSelectNode(siblings, nth);
+  if (select_.IsNull() || select_.IsEmpty())
     return true;
-  if (!isSelectValid())
+  if (!IsSelectValid())
     return false;
-  if (!siblings[nth]->isElementNode())
+  if (!siblings[nth]->IsElementNode())
     return false;
-  return matchSelector(*toElement(siblings[nth]));
+  return MatchSelector(*ToElement(siblings[nth]));
 }
 
 }  // namespace blink

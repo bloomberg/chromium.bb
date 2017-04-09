@@ -49,8 +49,8 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
     int call_id,
     const blink::WebString& msg,
     const blink::WebString& state) {
-  std::string message = msg.utf8();
-  std::string post_state = state.utf8();
+  std::string message = msg.Utf8();
+  std::string post_state = state.Utf8();
   DevToolsMessageChunk chunk;
   chunk.message_size = message.size();
   chunk.is_first = true;
@@ -81,18 +81,18 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
 
 void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
                                          int session_id) {
-  webworker_->attachDevTools(WebString::fromUTF8(host_id), session_id);
+  webworker_->AttachDevTools(WebString::FromUTF8(host_id), session_id);
 }
 
 void SharedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
                                            int session_id,
                                            const std::string& state) {
-  webworker_->reattachDevTools(WebString::fromUTF8(host_id), session_id,
-                               WebString::fromUTF8(state));
+  webworker_->ReattachDevTools(WebString::FromUTF8(host_id), session_id,
+                               WebString::FromUTF8(state));
 }
 
 void SharedWorkerDevToolsAgent::OnDetach() {
-  webworker_->detachDevTools();
+  webworker_->DetachDevTools();
 }
 
 void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
@@ -100,9 +100,9 @@ void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
     int call_id,
     const std::string& method,
     const std::string& message) {
-  webworker_->dispatchDevToolsMessage(session_id, call_id,
-                                      WebString::fromUTF8(method),
-                                      WebString::fromUTF8(message));
+  webworker_->DispatchDevToolsMessage(session_id, call_id,
+                                      WebString::FromUTF8(method),
+                                      WebString::FromUTF8(message));
 }
 
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {

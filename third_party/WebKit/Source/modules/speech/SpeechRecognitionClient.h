@@ -39,20 +39,20 @@ class MediaStreamTrack;
 
 class SpeechRecognitionClient {
  public:
-  virtual void start(SpeechRecognition*,
+  virtual void Start(SpeechRecognition*,
                      const SpeechGrammarList*,
                      const String& lang,
                      bool continuous,
-                     bool interimResults,
-                     unsigned long maxAlternatives,
-                     MediaStreamTrack* audioTrack) = 0;
-  virtual void stop(SpeechRecognition*) = 0;
-  virtual void abort(SpeechRecognition*) = 0;
+                     bool interim_results,
+                     unsigned long max_alternatives,
+                     MediaStreamTrack* audio_track) = 0;
+  virtual void Stop(SpeechRecognition*) = 0;
+  virtual void Abort(SpeechRecognition*) = 0;
 
   virtual ~SpeechRecognitionClient() {}
 };
 
-MODULES_EXPORT void provideSpeechRecognitionTo(
+MODULES_EXPORT void ProvideSpeechRecognitionTo(
     Page&,
     std::unique_ptr<SpeechRecognitionClient>);
 

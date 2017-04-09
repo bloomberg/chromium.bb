@@ -14,26 +14,26 @@ namespace blink {
 template <typename KeyType, typename ValueType>
 class Maplike : public PairIterable<KeyType, ValueType> {
  public:
-  bool hasForBinding(ScriptState* scriptState,
+  bool hasForBinding(ScriptState* script_state,
                      const KeyType& key,
-                     ExceptionState& exceptionState) {
+                     ExceptionState& exception_state) {
     ValueType value;
-    return getMapEntry(scriptState, key, value, exceptionState);
+    return GetMapEntry(script_state, key, value, exception_state);
   }
 
-  ScriptValue getForBinding(ScriptState* scriptState,
+  ScriptValue getForBinding(ScriptState* script_state,
                             const KeyType& key,
-                            ExceptionState& exceptionState) {
+                            ExceptionState& exception_state) {
     ValueType value;
-    if (getMapEntry(scriptState, key, value, exceptionState))
-      return ScriptValue(scriptState,
-                         ToV8(value, scriptState->context()->Global(),
-                              scriptState->isolate()));
-    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
+    if (GetMapEntry(script_state, key, value, exception_state))
+      return ScriptValue(script_state,
+                         ToV8(value, script_state->GetContext()->Global(),
+                              script_state->GetIsolate()));
+    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
   }
 
  private:
-  virtual bool getMapEntry(ScriptState*,
+  virtual bool GetMapEntry(ScriptState*,
                            const KeyType&,
                            ValueType&,
                            ExceptionState&) = 0;

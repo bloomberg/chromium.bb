@@ -47,10 +47,10 @@ class TrackBase;
 class CORE_EXPORT HTMLMediaSource : public URLRegistrable,
                                     public GarbageCollectedMixin {
  public:
-  static void setRegistry(URLRegistry*);
-  static HTMLMediaSource* lookup(const String& url) {
-    return s_registry ? static_cast<HTMLMediaSource*>(s_registry->lookup(url))
-                      : 0;
+  static void SetRegistry(URLRegistry*);
+  static HTMLMediaSource* Lookup(const String& url) {
+    return registry_ ? static_cast<HTMLMediaSource*>(registry_->Lookup(url))
+                     : 0;
   }
 
   // Called when an HTMLMediaElement is attempting to attach to this object,
@@ -61,20 +61,20 @@ class CORE_EXPORT HTMLMediaSource : public URLRegistrable,
   // 'closed').
   // Once attached, the source uses the element to synchronously service some
   // API operations like duration change that may need to initiate seek.
-  virtual bool attachToElement(HTMLMediaElement*) = 0;
-  virtual void setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) = 0;
-  virtual void close() = 0;
-  virtual bool isClosed() const = 0;
+  virtual bool AttachToElement(HTMLMediaElement*) = 0;
+  virtual void SetWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) = 0;
+  virtual void Close() = 0;
+  virtual bool IsClosed() const = 0;
   virtual double duration() const = 0;
-  virtual TimeRanges* buffered() const = 0;
-  virtual TimeRanges* seekable() const = 0;
-  virtual void onTrackChanged(TrackBase*) = 0;
+  virtual TimeRanges* Buffered() const = 0;
+  virtual TimeRanges* Seekable() const = 0;
+  virtual void OnTrackChanged(TrackBase*) = 0;
 
   // URLRegistrable
-  URLRegistry& registry() const override { return *s_registry; }
+  URLRegistry& Registry() const override { return *registry_; }
 
  private:
-  static URLRegistry* s_registry;
+  static URLRegistry* registry_;
 };
 
 }  // namespace blink

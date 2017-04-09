@@ -23,19 +23,18 @@ class MockWebRTCPeerConnectionHandlerClient
   virtual ~MockWebRTCPeerConnectionHandlerClient();
 
   // WebRTCPeerConnectionHandlerClient implementation.
-  MOCK_METHOD0(negotiationNeeded, void());
-  MOCK_METHOD1(didGenerateICECandidate,
+  MOCK_METHOD0(NegotiationNeeded, void());
+  MOCK_METHOD1(DidGenerateICECandidate,
                void(const blink::WebRTCICECandidate& candidate));
-  MOCK_METHOD1(didChangeSignalingState, void(SignalingState state));
-  MOCK_METHOD1(didChangeICEGatheringState, void(ICEGatheringState state));
-  MOCK_METHOD1(didChangeICEConnectionState, void(ICEConnectionState state));
-  MOCK_METHOD1(didAddRemoteStream,
+  MOCK_METHOD1(DidChangeSignalingState, void(SignalingState state));
+  MOCK_METHOD1(DidChangeICEGatheringState, void(ICEGatheringState state));
+  MOCK_METHOD1(DidChangeICEConnectionState, void(ICEConnectionState state));
+  MOCK_METHOD1(DidAddRemoteStream,
                void(const blink::WebMediaStream& stream_descriptor));
-  MOCK_METHOD1(didRemoveRemoteStream,
+  MOCK_METHOD1(DidRemoveRemoteStream,
                void(const blink::WebMediaStream& stream_descriptor));
-  MOCK_METHOD1(didAddRemoteDataChannel,
-               void(blink::WebRTCDataChannelHandler*));
-  MOCK_METHOD0(releasePeerConnectionHandler, void());
+  MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
+  MOCK_METHOD0(ReleasePeerConnectionHandler, void());
 
   void didGenerateICECandidateWorker(
       const blink::WebRTCICECandidate& candidate);

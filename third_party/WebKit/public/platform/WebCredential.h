@@ -20,32 +20,32 @@ class WebCredential {
  public:
   BLINK_PLATFORM_EXPORT WebCredential(const WebString& id,
                                       const WebString& name,
-                                      const WebURL& iconURL);
+                                      const WebURL& icon_url);
   BLINK_PLATFORM_EXPORT WebCredential(const WebCredential&);
-  virtual ~WebCredential() { reset(); }
+  virtual ~WebCredential() { Reset(); }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebCredential&);
-  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebCredential&);
+  BLINK_PLATFORM_EXPORT void Reset();
 
-  BLINK_PLATFORM_EXPORT WebString id() const;
-  BLINK_PLATFORM_EXPORT WebString name() const;
-  BLINK_PLATFORM_EXPORT WebURL iconURL() const;
-  BLINK_PLATFORM_EXPORT WebString type() const;
+  BLINK_PLATFORM_EXPORT WebString Id() const;
+  BLINK_PLATFORM_EXPORT WebString GetName() const;
+  BLINK_PLATFORM_EXPORT WebURL GetIconURL() const;
+  BLINK_PLATFORM_EXPORT WebString GetType() const;
 
-  BLINK_PLATFORM_EXPORT bool isPasswordCredential() const;
-  BLINK_PLATFORM_EXPORT bool isFederatedCredential() const;
+  BLINK_PLATFORM_EXPORT bool IsPasswordCredential() const;
+  BLINK_PLATFORM_EXPORT bool IsFederatedCredential() const;
 
   // TODO(mkwst): Drop this once Chromium is updated. https://crbug.com/494880
-  BLINK_PLATFORM_EXPORT bool isLocalCredential() const {
-    return isPasswordCredential();
+  BLINK_PLATFORM_EXPORT bool IsLocalCredential() const {
+    return IsPasswordCredential();
   }
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT static std::unique_ptr<WebCredential> create(
+  BLINK_PLATFORM_EXPORT static std::unique_ptr<WebCredential> Create(
       PlatformCredential*);
   BLINK_PLATFORM_EXPORT WebCredential& operator=(PlatformCredential*);
-  BLINK_PLATFORM_EXPORT PlatformCredential* getPlatformCredential() const {
-    return m_platformCredential.get();
+  BLINK_PLATFORM_EXPORT PlatformCredential* GetPlatformCredential() const {
+    return platform_credential_.Get();
   }
 #endif
 
@@ -54,7 +54,7 @@ class WebCredential {
   BLINK_PLATFORM_EXPORT WebCredential(PlatformCredential*);
 #endif
 
-  WebPrivatePtr<PlatformCredential> m_platformCredential;
+  WebPrivatePtr<PlatformCredential> platform_credential_;
 };
 
 }  // namespace blink

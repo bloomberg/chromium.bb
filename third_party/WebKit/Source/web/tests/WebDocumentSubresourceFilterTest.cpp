@@ -24,134 +24,134 @@ namespace {
 
 class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
  public:
-  explicit TestDocumentSubresourceFilter(bool allowLoads)
-      : m_allowLoads(allowLoads) {}
+  explicit TestDocumentSubresourceFilter(bool allow_loads)
+      : allow_loads_(allow_loads) {}
 
-  LoadPolicy getLoadPolicy(const WebURL& resourceUrl,
+  LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                            WebURLRequest::RequestContext) override {
-    std::string resourcePath = WebString(KURL(resourceUrl).path()).utf8();
-    if (std::find(m_queriedSubresourcePaths.begin(),
-                  m_queriedSubresourcePaths.end(),
-                  resourcePath) == m_queriedSubresourcePaths.end())
-      m_queriedSubresourcePaths.push_back(resourcePath);
-    return m_allowLoads ? kAllow : kDisallow;
+    std::string resource_path = WebString(KURL(resource_url).GetPath()).Utf8();
+    if (std::find(queried_subresource_paths_.begin(),
+                  queried_subresource_paths_.end(),
+                  resource_path) == queried_subresource_paths_.end())
+      queried_subresource_paths_.push_back(resource_path);
+    return allow_loads_ ? kAllow : kDisallow;
   }
 
-  LoadPolicy getLoadPolicyForWebSocketConnect(const WebURL& url) override {
+  LoadPolicy GetLoadPolicyForWebSocketConnect(const WebURL& url) override {
     return kAllow;
   }
 
-  void reportDisallowedLoad() override {}
+  void ReportDisallowedLoad() override {}
 
-  const std::vector<std::string>& queriedSubresourcePaths() const {
-    return m_queriedSubresourcePaths;
+  const std::vector<std::string>& QueriedSubresourcePaths() const {
+    return queried_subresource_paths_;
   }
 
  private:
-  std::vector<std::string> m_queriedSubresourcePaths;
-  bool m_allowLoads;
+  std::vector<std::string> queried_subresource_paths_;
+  bool allow_loads_;
 };
 
 class SubresourceFilteringWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void didStartProvisionalLoad(WebDataSource* dataSource,
+  void DidStartProvisionalLoad(WebDataSource* data_source,
                                WebURLRequest& request) override {
     // Normally, the filter should be set when the load is committed. For
     // the sake of this test, however, inject it earlier to verify that it
     // is not consulted for the main resource load.
-    m_subresourceFilter =
-        new TestDocumentSubresourceFilter(m_allowSubresourcesFromNextLoad);
-    dataSource->setSubresourceFilter(m_subresourceFilter);
+    subresource_filter_ =
+        new TestDocumentSubresourceFilter(allow_subresources_from_next_load_);
+    data_source->SetSubresourceFilter(subresource_filter_);
   }
 
-  void setAllowSubresourcesFromNextLoad(bool allow) {
-    m_allowSubresourcesFromNextLoad = allow;
+  void SetAllowSubresourcesFromNextLoad(bool allow) {
+    allow_subresources_from_next_load_ = allow;
   }
-  const TestDocumentSubresourceFilter* subresourceFilter() const {
-    return m_subresourceFilter;
+  const TestDocumentSubresourceFilter* SubresourceFilter() const {
+    return subresource_filter_;
   }
 
  private:
   // Weak, owned by WebDataSource.
-  TestDocumentSubresourceFilter* m_subresourceFilter = nullptr;
-  bool m_allowSubresourcesFromNextLoad = false;
+  TestDocumentSubresourceFilter* subresource_filter_ = nullptr;
+  bool allow_subresources_from_next_load_ = false;
 };
 
 }  // namespace
 
 class WebDocumentSubresourceFilterTest : public ::testing::Test {
  protected:
-  WebDocumentSubresourceFilterTest() : m_baseURL("http://internal.test/") {
-    registerMockedHttpURLLoad("white-1x1.png");
-    registerMockedHttpURLLoad("foo_with_image.html");
-    m_webViewHelper.initialize(false /* enableJavascript */, &m_client);
+  WebDocumentSubresourceFilterTest() : base_url_("http://internal.test/") {
+    RegisterMockedHttpURLLoad("white-1x1.png");
+    RegisterMockedHttpURLLoad("foo_with_image.html");
+    web_view_helper_.Initialize(false /* enableJavascript */, &client_);
   }
 
-  void loadDocument(bool allowSubresources) {
-    m_client.setAllowSubresourcesFromNextLoad(allowSubresources);
-    FrameTestHelpers::loadFrame(mainFrame(), baseURL() + "foo_with_image.html");
+  void LoadDocument(bool allow_subresources) {
+    client_.SetAllowSubresourcesFromNextLoad(allow_subresources);
+    FrameTestHelpers::LoadFrame(MainFrame(), BaseURL() + "foo_with_image.html");
   }
 
-  void expectSubresourceWasLoaded(bool loaded) {
-    WebElement webElement = mainFrame()->document().querySelector("img");
-    ASSERT_TRUE(isHTMLImageElement(webElement));
-    HTMLImageElement* imageElement = toHTMLImageElement(webElement);
-    EXPECT_EQ(loaded, !!imageElement->naturalWidth());
+  void ExpectSubresourceWasLoaded(bool loaded) {
+    WebElement web_element = MainFrame()->GetDocument().QuerySelector("img");
+    ASSERT_TRUE(isHTMLImageElement(web_element));
+    HTMLImageElement* image_element = toHTMLImageElement(web_element);
+    EXPECT_EQ(loaded, !!image_element->naturalWidth());
   }
 
-  const std::string& baseURL() const { return m_baseURL; }
-  WebFrame* mainFrame() { return m_webViewHelper.webView()->mainFrame(); }
-  const std::vector<std::string>& queriedSubresourcePaths() const {
-    return m_client.subresourceFilter()->queriedSubresourcePaths();
+  const std::string& BaseURL() const { return base_url_; }
+  WebFrame* MainFrame() { return web_view_helper_.WebView()->MainFrame(); }
+  const std::vector<std::string>& QueriedSubresourcePaths() const {
+    return client_.SubresourceFilter()->QueriedSubresourcePaths();
   }
 
  private:
-  void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLLoadFromBase(
-        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
-        WebString::fromUTF8(fileName));
+  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+    URLTestHelpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8(base_url_), testing::WebTestDataPath(),
+        WebString::FromUTF8(file_name));
   }
 
   // ::testing::Test:
   void TearDown() override {
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  SubresourceFilteringWebFrameClient m_client;
-  FrameTestHelpers::WebViewHelper m_webViewHelper;
-  std::string m_baseURL;
+  SubresourceFilteringWebFrameClient client_;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
+  std::string base_url_;
 };
 
 TEST_F(WebDocumentSubresourceFilterTest, AllowedSubresource) {
-  loadDocument(true /* allowSubresources */);
-  expectSubresourceWasLoaded(true);
+  LoadDocument(true /* allowSubresources */);
+  ExpectSubresourceWasLoaded(true);
   // The filter should not be consulted for the main document resource.
-  EXPECT_THAT(queriedSubresourcePaths(),
+  EXPECT_THAT(QueriedSubresourcePaths(),
               ::testing::ElementsAre("/white-1x1.png"));
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
-  loadDocument(false /* allowSubresources */);
-  expectSubresourceWasLoaded(false);
+  LoadDocument(false /* allowSubresources */);
+  ExpectSubresourceWasLoaded(false);
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
-  for (const bool allowSubresources : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "First load allows subresources = "
-                                      << allowSubresources);
+  for (const bool allow_subresources : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "First load allows subresources = " << allow_subresources);
 
-    loadDocument(allowSubresources);
-    expectSubresourceWasLoaded(allowSubresources);
+    LoadDocument(allow_subresources);
+    ExpectSubresourceWasLoaded(allow_subresources);
 
-    loadDocument(!allowSubresources);
-    expectSubresourceWasLoaded(!allowSubresources);
-    EXPECT_THAT(queriedSubresourcePaths(),
+    LoadDocument(!allow_subresources);
+    ExpectSubresourceWasLoaded(!allow_subresources);
+    EXPECT_THAT(QueriedSubresourcePaths(),
                 ::testing::ElementsAre("/white-1x1.png"));
 
-    WebCache::clear();
+    WebCache::Clear();
   }
 }
 

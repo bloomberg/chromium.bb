@@ -13,27 +13,27 @@
 namespace blink {
 
 WebDataConsumerHandle::WebDataConsumerHandle() {
-  ASSERT(ThreadState::current());
+  ASSERT(ThreadState::Current());
 }
 
 WebDataConsumerHandle::~WebDataConsumerHandle() {
-  ASSERT(ThreadState::current());
+  ASSERT(ThreadState::Current());
 }
 
-WebDataConsumerHandle::Result WebDataConsumerHandle::Reader::read(
+WebDataConsumerHandle::Result WebDataConsumerHandle::Reader::Read(
     void* data,
     size_t size,
     Flags flags,
-    size_t* readSize) {
-  *readSize = 0;
+    size_t* read_size) {
+  *read_size = 0;
   const void* src = nullptr;
   size_t available;
-  Result r = beginRead(&src, flags, &available);
-  if (r != WebDataConsumerHandle::Ok)
+  Result r = BeginRead(&src, flags, &available);
+  if (r != WebDataConsumerHandle::kOk)
     return r;
-  *readSize = std::min(available, size);
-  memcpy(data, src, *readSize);
-  return endRead(*readSize);
+  *read_size = std::min(available, size);
+  memcpy(data, src, *read_size);
+  return EndRead(*read_size);
 }
 
 }  // namespace blink

@@ -37,19 +37,19 @@ class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
  public:
-  static CSSReflectValue* create(CSSIdentifierValue* direction,
+  static CSSReflectValue* Create(CSSIdentifierValue* direction,
                                  CSSPrimitiveValue* offset,
                                  CSSValue* mask) {
     return new CSSReflectValue(direction, offset, mask);
   }
 
-  CSSIdentifierValue* direction() const { return m_direction.get(); }
-  CSSPrimitiveValue* offset() const { return m_offset.get(); }
-  CSSValue* mask() const { return m_mask.get(); }
+  CSSIdentifierValue* Direction() const { return direction_.Get(); }
+  CSSPrimitiveValue* Offset() const { return offset_.Get(); }
+  CSSValue* Mask() const { return mask_.Get(); }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSReflectValue&) const;
+  bool Equals(const CSSReflectValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -57,17 +57,17 @@ class CSSReflectValue : public CSSValue {
   CSSReflectValue(CSSIdentifierValue* direction,
                   CSSPrimitiveValue* offset,
                   CSSValue* mask)
-      : CSSValue(ReflectClass),
-        m_direction(direction),
-        m_offset(offset),
-        m_mask(mask) {}
+      : CSSValue(kReflectClass),
+        direction_(direction),
+        offset_(offset),
+        mask_(mask) {}
 
-  Member<CSSIdentifierValue> m_direction;
-  Member<CSSPrimitiveValue> m_offset;
-  Member<CSSValue> m_mask;
+  Member<CSSIdentifierValue> direction_;
+  Member<CSSPrimitiveValue> offset_;
+  Member<CSSValue> mask_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, isReflectValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, IsReflectValue());
 
 }  // namespace blink
 

@@ -39,17 +39,17 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OfflineAudioContext* create(ExecutionContext*,
-                                     unsigned numberOfChannels,
-                                     unsigned numberOfFrames,
-                                     float sampleRate,
+  static OfflineAudioContext* Create(ExecutionContext*,
+                                     unsigned number_of_channels,
+                                     unsigned number_of_frames,
+                                     float sample_rate,
                                      ExceptionState&);
 
   ~OfflineAudioContext() override;
 
   DECLARE_VIRTUAL_TRACE();
 
-  size_t length() const { return m_totalRenderFrames; }
+  size_t length() const { return total_render_frames_; }
 
   ScriptPromise startOfflineRendering(ScriptState*);
 
@@ -60,25 +60,25 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   // CANNOT be called from an OfflineAudioContext.
   ScriptPromise suspendContext(ScriptState*) final;
 
-  void rejectPendingResolvers() override;
+  void RejectPendingResolvers() override;
 
-  bool hasRealtimeConstraint() final { return false; }
+  bool HasRealtimeConstraint() final { return false; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 
   // Fire completion event when the rendering is finished.
-  void fireCompletionEvent();
+  void FireCompletionEvent();
 
   // This is same with the online version in BaseAudioContext class except
   // for returning a boolean value after checking the scheduled suspends.
-  bool handlePreOfflineRenderTasks();
+  bool HandlePreOfflineRenderTasks();
 
-  void handlePostOfflineRenderTasks();
+  void HandlePostOfflineRenderTasks();
 
   // Resolve a suspend scheduled at the specified frame. With this specified
   // frame as a unique key, the associated promise resolver can be retrieved
   // from the map (m_scheduledSuspends) and resolved.
-  void resolveSuspendOnMainThread(size_t);
+  void ResolveSuspendOnMainThread(size_t);
 
   // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
   // zero.
@@ -91,20 +91,20 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
  private:
   OfflineAudioContext(Document*,
-                      unsigned numberOfChannels,
-                      size_t numberOfFrames,
-                      float sampleRate,
+                      unsigned number_of_channels,
+                      size_t number_of_frames,
+                      float sample_rate,
                       ExceptionState&);
 
   // Fetch directly the destination handler.
-  OfflineAudioDestinationHandler& destinationHandler();
+  OfflineAudioDestinationHandler& DestinationHandler();
 
-  AudioBuffer* renderTarget() const { return m_renderTarget.get(); }
+  AudioBuffer* RenderTarget() const { return render_target_.Get(); }
 
   // Check if the rendering needs to be suspended.
-  bool shouldSuspend();
+  bool ShouldSuspend();
 
-  Member<AudioBuffer> m_renderTarget;
+  Member<AudioBuffer> render_target_;
 
   // This map is to store the timing of scheduled suspends (frame) and the
   // associated promise resolver. This storage can only be modified by the
@@ -116,17 +116,17 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   // Note that |quantizedFrame| is a unique key, since you can have only one
   // suspend scheduled for a certain frame. Accessing to this must be
   // protected by the offline context lock.
-  SuspendMap m_scheduledSuspends;
+  SuspendMap scheduled_suspends_;
 
-  Member<ScriptPromiseResolver> m_completeResolver;
+  Member<ScriptPromiseResolver> complete_resolver_;
 
   // This flag is necessary to indicate the rendering has actually started.
   // Note that initial state of context is 'Suspended', which is the same
   // state when the context is suspended.
-  bool m_isRenderingStarted;
+  bool is_rendering_started_;
 
   // Total render sample length.
-  size_t m_totalRenderFrames;
+  size_t total_render_frames_;
 };
 
 }  // namespace blink

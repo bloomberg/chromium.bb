@@ -20,10 +20,10 @@ class WebFrameContentDumper {
  public:
   // Control of layoutTreeAsText output
   enum LayoutAsTextControl {
-    LayoutAsTextNormal = 0,
-    LayoutAsTextDebug = 1 << 0,
-    LayoutAsTextPrinting = 1 << 1,
-    LayoutAsTextWithLineTrees = 1 << 2
+    kLayoutAsTextNormal = 0,
+    kLayoutAsTextDebug = 1 << 0,
+    kLayoutAsTextPrinting = 1 << 1,
+    kLayoutAsTextWithLineTrees = 1 << 2
   };
   typedef unsigned LayoutAsTextControls;
 
@@ -36,23 +36,23 @@ class WebFrameContentDumper {
   // testing purposes and this function is being deprecated.
   // Don't add new callsites, please.
   // See http://crbug.com/585164 for details.
-  BLINK_EXPORT static WebString deprecatedDumpFrameTreeAsText(WebLocalFrame*,
-                                                              size_t maxChars);
+  BLINK_EXPORT static WebString DeprecatedDumpFrameTreeAsText(WebLocalFrame*,
+                                                              size_t max_chars);
 
   // Dumps the contents of of a WebView as text, starting from the main
   // frame and recursively appending every subframe, separated by an
   // empty line.
-  BLINK_EXPORT static WebString dumpWebViewAsText(WebView*, size_t maxChars);
+  BLINK_EXPORT static WebString DumpWebViewAsText(WebView*, size_t max_chars);
 
   // Returns HTML text for the contents of this frame, generated
   // from the DOM.
-  BLINK_EXPORT static WebString dumpAsMarkup(WebLocalFrame*);
+  BLINK_EXPORT static WebString DumpAsMarkup(WebLocalFrame*);
 
   // Returns a text representation of the render tree.  This method is used
   // to support layout tests.
-  BLINK_EXPORT static WebString dumpLayoutTreeAsText(
+  BLINK_EXPORT static WebString DumpLayoutTreeAsText(
       WebLocalFrame*,
-      LayoutAsTextControls toShow = LayoutAsTextNormal);
+      LayoutAsTextControls to_show = kLayoutAsTextNormal);
 };
 
 }  // namespace blink

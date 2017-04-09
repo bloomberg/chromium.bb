@@ -22,28 +22,28 @@ MockWebRTCDTMFSenderHandler::MockWebRTCDTMFSenderHandler(
 
 MockWebRTCDTMFSenderHandler::~MockWebRTCDTMFSenderHandler() {}
 
-void MockWebRTCDTMFSenderHandler::setClient(
+void MockWebRTCDTMFSenderHandler::SetClient(
     WebRTCDTMFSenderHandlerClient* client) {
   client_ = client;
 }
 
-WebString MockWebRTCDTMFSenderHandler::currentToneBuffer() {
+WebString MockWebRTCDTMFSenderHandler::CurrentToneBuffer() {
   return tone_buffer_;
 }
 
-bool MockWebRTCDTMFSenderHandler::canInsertDTMF() {
-  DCHECK(client_ && !track_.isNull());
-  return track_.source().getType() == WebMediaStreamSource::TypeAudio &&
-         track_.isEnabled() &&
-         track_.source().getReadyState() ==
-             WebMediaStreamSource::ReadyStateLive;
+bool MockWebRTCDTMFSenderHandler::CanInsertDTMF() {
+  DCHECK(client_ && !track_.IsNull());
+  return track_.Source().GetType() == WebMediaStreamSource::kTypeAudio &&
+         track_.IsEnabled() &&
+         track_.Source().GetReadyState() ==
+             WebMediaStreamSource::kReadyStateLive;
 }
 
-bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,
+bool MockWebRTCDTMFSenderHandler::InsertDTMF(const WebString& tones,
                                              long duration,
                                              long inter_tone_gap) {
   DCHECK(client_);
-  if (!canInsertDTMF())
+  if (!CanInsertDTMF())
     return false;
 
   tone_buffer_ = tones;
@@ -55,9 +55,9 @@ bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,
 }
 
 void MockWebRTCDTMFSenderHandler::PlayTone() {
-  WebString tones = currentToneBuffer();
+  WebString tones = CurrentToneBuffer();
   ClearToneBuffer();
-  client_->didPlayTone(tones);
+  client_->DidPlayTone(tones);
 }
 
 }  // namespace test_runner

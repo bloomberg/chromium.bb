@@ -17,144 +17,142 @@
 
 namespace blink {
 
-ImageLayerBridge::ImageLayerBridge(OpacityMode opacityMode)
-    : m_weakPtrFactory(this), m_opacityMode(opacityMode) {
-  m_layer =
-      Platform::current()->compositorSupport()->createExternalTextureLayer(
-          this);
-  GraphicsLayer::registerContentsLayer(m_layer->layer());
-  m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
-  if (m_opacityMode == Opaque) {
-    m_layer->setOpaque(true);
-    m_layer->setBlendBackgroundColor(false);
+ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
+    : weak_ptr_factory_(this), opacity_mode_(opacity_mode) {
+  layer_ = Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
+      this);
+  GraphicsLayer::RegisterContentsLayer(layer_->Layer());
+  layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
+  if (opacity_mode_ == kOpaque) {
+    layer_->SetOpaque(true);
+    layer_->SetBlendBackgroundColor(false);
   }
 }
 
 ImageLayerBridge::~ImageLayerBridge() {
-  if (!m_disposed)
-    dispose();
+  if (!disposed_)
+    Dispose();
 }
 
-void ImageLayerBridge::setImage(PassRefPtr<StaticBitmapImage> image) {
-  m_image = std::move(image);
-  if (m_image) {
-    if (m_opacityMode == NonOpaque) {
-      m_layer->setOpaque(m_image->currentFrameKnownToBeOpaque());
-      m_layer->setBlendBackgroundColor(!m_image->currentFrameKnownToBeOpaque());
+void ImageLayerBridge::SetImage(PassRefPtr<StaticBitmapImage> image) {
+  image_ = std::move(image);
+  if (image_) {
+    if (opacity_mode_ == kNonOpaque) {
+      layer_->SetOpaque(image_->CurrentFrameKnownToBeOpaque());
+      layer_->SetBlendBackgroundColor(!image_->CurrentFrameKnownToBeOpaque());
     }
   }
-  if (!m_hasPresentedSinceLastSetImage && m_image &&
-      m_image->isTextureBacked()) {
+  if (!has_presented_since_last_set_image_ && image_ &&
+      image_->IsTextureBacked()) {
     // If the layer bridge is not presenting, the GrContext may not be getting
     // flushed regularly.  The flush is normally triggered inside the
     // m_image->ensureMailbox() call of
     // ImageLayerBridge::PrepareTextureMailbox. To prevent a potential memory
     // leak we must flush the GrContext here.
-    m_image->imageForCurrentFrame()->getTextureHandle(
-        true);  // GrContext flush.
+    image_->ImageForCurrentFrame()->getTextureHandle(true);  // GrContext flush.
   }
-  m_hasPresentedSinceLastSetImage = false;
+  has_presented_since_last_set_image_ = false;
 }
 
-void ImageLayerBridge::dispose() {
-  if (m_layer) {
-    GraphicsLayer::unregisterContentsLayer(m_layer->layer());
-    m_layer->clearTexture();
-    m_layer.reset();
+void ImageLayerBridge::Dispose() {
+  if (layer_) {
+    GraphicsLayer::UnregisterContentsLayer(layer_->Layer());
+    layer_->ClearTexture();
+    layer_.reset();
   }
-  m_image = nullptr;
-  m_disposed = true;
+  image_ = nullptr;
+  disposed_ = true;
 }
 
 bool ImageLayerBridge::PrepareTextureMailbox(
-    cc::TextureMailbox* outMailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) {
-  if (m_disposed)
+    cc::TextureMailbox* out_mailbox,
+    std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
+  if (disposed_)
     return false;
 
-  if (!m_image)
+  if (!image_)
     return false;
 
-  if (m_hasPresentedSinceLastSetImage)
+  if (has_presented_since_last_set_image_)
     return false;
 
-  m_hasPresentedSinceLastSetImage = true;
+  has_presented_since_last_set_image_ = true;
 
-  if (m_image->isTextureBacked()) {
-    m_image->ensureMailbox();
-    *outMailbox = cc::TextureMailbox(m_image->mailbox(), m_image->syncToken(),
-                                     GL_TEXTURE_2D);
-    auto func = WTF::bind(&ImageLayerBridge::mailboxReleasedGpu,
-                          m_weakPtrFactory.createWeakPtr(), m_image);
-    *outReleaseCallback = cc::SingleReleaseCallback::Create(
-        convertToBaseCallback(std::move(func)));
+  if (image_->IsTextureBacked()) {
+    image_->EnsureMailbox();
+    *out_mailbox = cc::TextureMailbox(image_->GetMailbox(),
+                                      image_->GetSyncToken(), GL_TEXTURE_2D);
+    auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedGpu,
+                          weak_ptr_factory_.CreateWeakPtr(), image_);
+    *out_release_callback = cc::SingleReleaseCallback::Create(
+        ConvertToBaseCallback(std::move(func)));
   } else {
-    std::unique_ptr<cc::SharedBitmap> bitmap = createOrRecycleBitmap();
+    std::unique_ptr<cc::SharedBitmap> bitmap = CreateOrRecycleBitmap();
     if (!bitmap)
       return false;
 
-    sk_sp<SkImage> skImage = m_image->imageForCurrentFrame();
-    if (!skImage)
+    sk_sp<SkImage> sk_image = image_->ImageForCurrentFrame();
+    if (!sk_image)
       return false;
 
-    SkImageInfo dstInfo = SkImageInfo::MakeN32Premul(m_image->width(), 1);
-    size_t rowBytes = m_image->width() * 4;
+    SkImageInfo dst_info = SkImageInfo::MakeN32Premul(image_->width(), 1);
+    size_t row_bytes = image_->width() * 4;
 
     // loop to flip Y
-    for (int row = 0; row < m_image->height(); row++) {
-      if (!skImage->readPixels(
-              dstInfo,
-              bitmap->pixels() + rowBytes * (m_image->height() - 1 - row),
-              rowBytes, 0, row))
+    for (int row = 0; row < image_->height(); row++) {
+      if (!sk_image->readPixels(
+              dst_info,
+              bitmap->pixels() + row_bytes * (image_->height() - 1 - row),
+              row_bytes, 0, row))
         return false;
     }
 
-    *outMailbox = cc::TextureMailbox(
-        bitmap.get(), gfx::Size(m_image->width(), m_image->height()));
-    auto func = WTF::bind(&ImageLayerBridge::mailboxReleasedSoftware,
-                          m_weakPtrFactory.createWeakPtr(),
-                          base::Passed(&bitmap), m_image->size());
-    *outReleaseCallback = cc::SingleReleaseCallback::Create(
-        convertToBaseCallback(std::move(func)));
+    *out_mailbox = cc::TextureMailbox(
+        bitmap.get(), gfx::Size(image_->width(), image_->height()));
+    auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedSoftware,
+                          weak_ptr_factory_.CreateWeakPtr(),
+                          base::Passed(&bitmap), image_->size());
+    *out_release_callback = cc::SingleReleaseCallback::Create(
+        ConvertToBaseCallback(std::move(func)));
   }
 
-  outMailbox->set_nearest_neighbor(m_filterQuality == kNone_SkFilterQuality);
+  out_mailbox->set_nearest_neighbor(filter_quality_ == kNone_SkFilterQuality);
   // TODO(junov): Figure out how to get the color space info.
   // outMailbox->set_color_space();
 
   return true;
 }
 
-std::unique_ptr<cc::SharedBitmap> ImageLayerBridge::createOrRecycleBitmap() {
-  auto it = std::remove_if(m_recycledBitmaps.begin(), m_recycledBitmaps.end(),
+std::unique_ptr<cc::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
+  auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
                            [this](const RecycledBitmap& bitmap) {
-                             return bitmap.size != m_image->size();
+                             return bitmap.size != image_->size();
                            });
-  m_recycledBitmaps.shrink(it - m_recycledBitmaps.begin());
+  recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
-  if (!m_recycledBitmaps.isEmpty()) {
-    RecycledBitmap recycled = std::move(m_recycledBitmaps.back());
-    m_recycledBitmaps.pop_back();
-    DCHECK(recycled.size == m_image->size());
+  if (!recycled_bitmaps_.IsEmpty()) {
+    RecycledBitmap recycled = std::move(recycled_bitmaps_.back());
+    recycled_bitmaps_.pop_back();
+    DCHECK(recycled.size == image_->size());
     return std::move(recycled.bitmap);
   }
-  return Platform::current()->allocateSharedBitmap(m_image->size());
+  return Platform::Current()->AllocateSharedBitmap(image_->size());
 }
 
-void ImageLayerBridge::mailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
+void ImageLayerBridge::MailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
                                           const gpu::SyncToken& token,
-                                          bool lostResource) {
+                                          bool lost_resource) {
   if (image) {
-    DCHECK(image->isTextureBacked());
+    DCHECK(image->IsTextureBacked());
     if (token.HasData()) {
-      if (image->hasMailbox()) {
-        image->updateSyncToken(token);
+      if (image->HasMailbox()) {
+        image->UpdateSyncToken(token);
       } else {
         // Wait on sync token now because SkiaTextureHolder does not know
         // about sync tokens.
-        gpu::gles2::GLES2Interface* sharedGL = SharedGpuContext::gl();
-        if (sharedGL)
-          sharedGL->WaitSyncTokenCHROMIUM(token.GetConstData());
+        gpu::gles2::GLES2Interface* shared_gl = SharedGpuContext::Gl();
+        if (shared_gl)
+          shared_gl->WaitSyncTokenCHROMIUM(token.GetConstData());
       }
     }
   }
@@ -162,20 +160,20 @@ void ImageLayerBridge::mailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
   // destructor will wait on sync token before deleting resource.
 }
 
-void ImageLayerBridge::mailboxReleasedSoftware(
+void ImageLayerBridge::MailboxReleasedSoftware(
     std::unique_ptr<cc::SharedBitmap> bitmap,
     const IntSize& size,
-    const gpu::SyncToken& syncToken,
-    bool lostResource) {
-  DCHECK(!syncToken.HasData());  // No sync tokens for software resources.
-  if (!m_disposed && !lostResource) {
+    const gpu::SyncToken& sync_token,
+    bool lost_resource) {
+  DCHECK(!sync_token.HasData());  // No sync tokens for software resources.
+  if (!disposed_ && !lost_resource) {
     RecycledBitmap recycled = {std::move(bitmap), size};
-    m_recycledBitmaps.push_back(std::move(recycled));
+    recycled_bitmaps_.push_back(std::move(recycled));
   }
 }
 
-WebLayer* ImageLayerBridge::platformLayer() const {
-  return m_layer->layer();
+WebLayer* ImageLayerBridge::PlatformLayer() const {
+  return layer_->Layer();
 }
 
 }  // namespace blink

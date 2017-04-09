@@ -6,66 +6,66 @@
 
 namespace blink {
 
-BorderEdge::BorderEdge(float edgeWidth,
-                       const Color& edgeColor,
-                       EBorderStyle edgeStyle,
-                       bool edgeIsPresent)
-    : color(edgeColor),
-      isPresent(edgeIsPresent),
-      style(edgeStyle),
-      m_width(edgeWidth) {
-  if (style == BorderStyleDouble && edgeWidth < 3)
-    style = BorderStyleSolid;
+BorderEdge::BorderEdge(float edge_width,
+                       const Color& edge_color,
+                       EBorderStyle edge_style,
+                       bool edge_is_present)
+    : color(edge_color),
+      is_present(edge_is_present),
+      style(edge_style),
+      width_(edge_width) {
+  if (style == kBorderStyleDouble && edge_width < 3)
+    style = kBorderStyleSolid;
 }
 
-BorderEdge::BorderEdge() : isPresent(false), style(BorderStyleHidden) {}
+BorderEdge::BorderEdge() : is_present(false), style(kBorderStyleHidden) {}
 
-bool BorderEdge::hasVisibleColorAndStyle() const {
-  return style > BorderStyleHidden && color.alpha() > 0;
+bool BorderEdge::HasVisibleColorAndStyle() const {
+  return style > kBorderStyleHidden && color.Alpha() > 0;
 }
 
-bool BorderEdge::shouldRender() const {
-  return isPresent && m_width && hasVisibleColorAndStyle();
+bool BorderEdge::ShouldRender() const {
+  return is_present && width_ && HasVisibleColorAndStyle();
 }
 
-bool BorderEdge::presentButInvisible() const {
-  return usedWidth() && !hasVisibleColorAndStyle();
+bool BorderEdge::PresentButInvisible() const {
+  return UsedWidth() && !HasVisibleColorAndStyle();
 }
 
-bool BorderEdge::obscuresBackgroundEdge() const {
-  if (!isPresent || color.hasAlpha() || style == BorderStyleHidden)
+bool BorderEdge::ObscuresBackgroundEdge() const {
+  if (!is_present || color.HasAlpha() || style == kBorderStyleHidden)
     return false;
 
-  if (style == BorderStyleDotted || style == BorderStyleDashed)
-    return false;
-
-  return true;
-}
-
-bool BorderEdge::obscuresBackground() const {
-  if (!isPresent || color.hasAlpha() || style == BorderStyleHidden)
-    return false;
-
-  if (style == BorderStyleDotted || style == BorderStyleDashed ||
-      style == BorderStyleDouble)
+  if (style == kBorderStyleDotted || style == kBorderStyleDashed)
     return false;
 
   return true;
 }
 
-float BorderEdge::usedWidth() const {
-  return isPresent ? m_width : 0;
+bool BorderEdge::ObscuresBackground() const {
+  if (!is_present || color.HasAlpha() || style == kBorderStyleHidden)
+    return false;
+
+  if (style == kBorderStyleDotted || style == kBorderStyleDashed ||
+      style == kBorderStyleDouble)
+    return false;
+
+  return true;
 }
 
-float BorderEdge::getDoubleBorderStripeWidth(DoubleBorderStripe stripe) const {
-  DCHECK(stripe == DoubleBorderStripeOuter ||
-         stripe == DoubleBorderStripeInner);
-
-  return roundf(stripe == DoubleBorderStripeOuter ? usedWidth() / 3
-                                                  : (usedWidth() * 2) / 3);
+float BorderEdge::UsedWidth() const {
+  return is_present ? width_ : 0;
 }
 
-bool BorderEdge::sharesColorWith(const BorderEdge& other) const {
+float BorderEdge::GetDoubleBorderStripeWidth(DoubleBorderStripe stripe) const {
+  DCHECK(stripe == kDoubleBorderStripeOuter ||
+         stripe == kDoubleBorderStripeInner);
+
+  return roundf(stripe == kDoubleBorderStripeOuter ? UsedWidth() / 3
+                                                   : (UsedWidth() * 2) / 3);
+}
+
+bool BorderEdge::SharesColorWith(const BorderEdge& other) const {
   return color == other.color;
 }
 

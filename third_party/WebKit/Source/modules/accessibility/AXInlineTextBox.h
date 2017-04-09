@@ -43,29 +43,29 @@ class AXInlineTextBox final : public AXObject {
   AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
  public:
-  static AXInlineTextBox* create(PassRefPtr<AbstractInlineTextBox>,
+  static AXInlineTextBox* Create(PassRefPtr<AbstractInlineTextBox>,
                                  AXObjectCacheImpl&);
 
-  void init() override;
-  void detach() override;
+  void Init() override;
+  void Detach() override;
 
-  AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
-  String name(AXNameFrom&,
-              AXObject::AXObjectVector* nameObjects) const override;
-  void textCharacterOffsets(Vector<int>&) const override;
-  void wordBoundaries(Vector<AXRange>&) const override;
-  void getRelativeBounds(AXObject** outContainer,
-                         FloatRect& outBoundsInContainer,
-                         SkMatrix44& outContainerTransform) const override;
-  AXObject* computeParent() const override;
-  AccessibilityTextDirection textDirection() const override;
-  AXObject* nextOnLine() const override;
-  AXObject* previousOnLine() const override;
+  AccessibilityRole RoleValue() const override { return kInlineTextBoxRole; }
+  String GetName(AXNameFrom&,
+                 AXObject::AXObjectVector* name_objects) const override;
+  void TextCharacterOffsets(Vector<int>&) const override;
+  void GetWordBoundaries(Vector<AXRange>&) const override;
+  void GetRelativeBounds(AXObject** out_container,
+                         FloatRect& out_bounds_in_container,
+                         SkMatrix44& out_container_transform) const override;
+  AXObject* ComputeParent() const override;
+  AccessibilityTextDirection GetTextDirection() const override;
+  AXObject* NextOnLine() const override;
+  AXObject* PreviousOnLine() const override;
 
  private:
-  RefPtr<AbstractInlineTextBox> m_inlineTextBox;
+  RefPtr<AbstractInlineTextBox> inline_text_box_;
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 }  // namespace blink

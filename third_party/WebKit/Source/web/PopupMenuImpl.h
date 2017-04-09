@@ -20,44 +20,44 @@ class HTMLSelectElement;
 
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
  public:
-  static PopupMenuImpl* create(ChromeClientImpl*, HTMLSelectElement&);
+  static PopupMenuImpl* Create(ChromeClientImpl*, HTMLSelectElement&);
   ~PopupMenuImpl() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void update();
+  void Update();
 
-  void dispose();
+  void Dispose();
 
  private:
   PopupMenuImpl(ChromeClientImpl*, HTMLSelectElement&);
 
   class ItemIterationContext;
-  void addOption(ItemIterationContext&, HTMLOptionElement&);
-  void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
-  void addSeparator(ItemIterationContext&, HTMLHRElement&);
-  void addElementStyle(ItemIterationContext&, HTMLElement&);
+  void AddOption(ItemIterationContext&, HTMLOptionElement&);
+  void AddOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
+  void AddSeparator(ItemIterationContext&, HTMLHRElement&);
+  void AddElementStyle(ItemIterationContext&, HTMLElement&);
 
   // PopupMenu functions:
-  void show() override;
-  void hide() override;
-  void disconnectClient() override;
-  void updateFromElement(UpdateReason) override;
+  void Show() override;
+  void Hide() override;
+  void DisconnectClient() override;
+  void UpdateFromElement(UpdateReason) override;
 
   // PagePopupClient functions:
-  void writeDocument(SharedBuffer*) override;
-  void selectFontsFromOwnerDocument(Document&) override;
-  void setValueAndClosePopup(int, const String&) override;
-  void setValue(const String&) override;
-  void closePopup() override;
-  Element& ownerElement() override;
-  float zoomFactor() override { return 1.0; }
-  Locale& locale() override;
-  void didClosePopup() override;
+  void WriteDocument(SharedBuffer*) override;
+  void SelectFontsFromOwnerDocument(Document&) override;
+  void SetValueAndClosePopup(int, const String&) override;
+  void SetValue(const String&) override;
+  void ClosePopup() override;
+  Element& OwnerElement() override;
+  float ZoomFactor() override { return 1.0; }
+  Locale& GetLocale() override;
+  void DidClosePopup() override;
 
-  Member<ChromeClientImpl> m_chromeClient;
-  Member<HTMLSelectElement> m_ownerElement;
-  PagePopup* m_popup;
-  bool m_needsUpdate;
+  Member<ChromeClientImpl> chrome_client_;
+  Member<HTMLSelectElement> owner_element_;
+  PagePopup* popup_;
+  bool needs_update_;
 };
 
 }  // namespace blink

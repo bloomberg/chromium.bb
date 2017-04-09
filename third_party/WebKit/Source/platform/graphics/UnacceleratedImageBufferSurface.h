@@ -45,20 +45,20 @@ class PLATFORM_EXPORT UnacceleratedImageBufferSurface
  public:
   UnacceleratedImageBufferSurface(
       const IntSize&,
-      OpacityMode = NonOpaque,
-      ImageInitializationMode = InitializeImagePixels,
+      OpacityMode = kNonOpaque,
+      ImageInitializationMode = kInitializeImagePixels,
       sk_sp<SkColorSpace> = nullptr,
       SkColorType = kN32_SkColorType);
   ~UnacceleratedImageBufferSurface() override;
 
-  PaintCanvas* canvas() override;
-  bool isValid() const override;
+  PaintCanvas* Canvas() override;
+  bool IsValid() const override;
 
-  sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+  sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason) override;
 
  private:
-  sk_sp<SkSurface> m_surface;
-  std::unique_ptr<PaintCanvas> m_canvas;
+  sk_sp<SkSurface> surface_;
+  std::unique_ptr<PaintCanvas> canvas_;
 };
 
 }  // namespace blink

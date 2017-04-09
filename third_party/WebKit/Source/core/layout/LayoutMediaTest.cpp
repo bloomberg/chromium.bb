@@ -11,43 +11,43 @@ namespace blink {
 using LayoutMediaTest = RenderingTest;
 
 TEST_F(LayoutMediaTest, DisallowInlineChild) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  ::-webkit-media-controls { display: inline; }"
       "</style>"
       "<video id='video'></video>");
 
-  EXPECT_FALSE(getLayoutObjectByElementId("video")->slowFirstChild());
+  EXPECT_FALSE(GetLayoutObjectByElementId("video")->SlowFirstChild());
 }
 
 TEST_F(LayoutMediaTest, DisallowBlockChild) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  ::-webkit-media-controls { display: block; }"
       "</style>"
       "<video id='video'></video>");
 
-  EXPECT_FALSE(getLayoutObjectByElementId("video")->slowFirstChild());
+  EXPECT_FALSE(GetLayoutObjectByElementId("video")->SlowFirstChild());
 }
 
 TEST_F(LayoutMediaTest, DisallowOutOfFlowPositionedChild) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  ::-webkit-media-controls { position: absolute; }"
       "</style>"
       "<video id='video'></video>");
 
-  EXPECT_FALSE(getLayoutObjectByElementId("video")->slowFirstChild());
+  EXPECT_FALSE(GetLayoutObjectByElementId("video")->SlowFirstChild());
 }
 
 TEST_F(LayoutMediaTest, DisallowFloatingChild) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  ::-webkit-media-controls { float: left; }"
       "</style>"
       "<video id='video'></video>");
 
-  EXPECT_FALSE(getLayoutObjectByElementId("video")->slowFirstChild());
+  EXPECT_FALSE(GetLayoutObjectByElementId("video")->SlowFirstChild());
 }
 
 }  // namespace blink

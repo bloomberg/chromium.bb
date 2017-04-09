@@ -54,20 +54,20 @@ class WebFrameSerializer {
    public:
     // Tells whether to skip serialization of a subresource with a given URI.
     // Used to deduplicate resources across multiple frames.
-    virtual bool shouldSkipResource(const WebURL&) = 0;
+    virtual bool ShouldSkipResource(const WebURL&) = 0;
 
     // Returns a Content-ID to be used for the given frame.
     // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
     // Format note - the returned string should be of the form "<foo@bar.com>"
     // (i.e. the strings should include the angle brackets).  The method
     // should return null WebString if the frame doesn't have a content-id.
-    virtual WebString getContentID(WebFrame*) = 0;
+    virtual WebString GetContentID(WebFrame*) = 0;
 
-    virtual WebFrameSerializerCacheControlPolicy cacheControlPolicy() = 0;
+    virtual WebFrameSerializerCacheControlPolicy CacheControlPolicy() = 0;
 
-    virtual bool useBinaryEncoding() = 0;
+    virtual bool UseBinaryEncoding() = 0;
 
-    virtual bool removePopupOverlay() = 0;
+    virtual bool RemovePopupOverlay() = 0;
   };
 
   // Generates and returns an MHTML header.
@@ -79,7 +79,7 @@ class WebFrameSerializer {
   // Same |boundary| needs to used for all generateMHTMLHeader and
   // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  BLINK_EXPORT static WebThreadSafeData generateMHTMLHeader(
+  BLINK_EXPORT static WebThreadSafeData GenerateMHTMLHeader(
       const WebString& boundary,
       WebLocalFrame*,
       MHTMLPartsGenerationDelegate*);
@@ -90,7 +90,7 @@ class WebFrameSerializer {
   // Same |boundary| needs to used for all generateMHTMLHeader and
   // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  BLINK_EXPORT static WebThreadSafeData generateMHTMLParts(
+  BLINK_EXPORT static WebThreadSafeData GenerateMHTMLParts(
       const WebString& boundary,
       WebLocalFrame*,
       MHTMLPartsGenerationDelegate*);
@@ -110,7 +110,7 @@ class WebFrameSerializer {
     // in place of the original iframe.src or object.data attribute value).
     //
     // If no link rewriting is desired, this method should return false.
-    virtual bool rewriteFrameSource(WebFrame*, WebString* rewrittenLink) = 0;
+    virtual bool RewriteFrameSource(WebFrame*, WebString* rewritten_link) = 0;
 
     // Method allowing the delegate control which URLs are written into the
     // generated html document.
@@ -121,7 +121,7 @@ class WebFrameSerializer {
     // in place of the original img.src or blockquote.cite attribute value).
     //
     // If no link rewriting is desired, this method should return false.
-    virtual bool rewriteLink(const WebURL&, WebString* rewrittenLink) = 0;
+    virtual bool RewriteLink(const WebURL&, WebString* rewritten_link) = 0;
   };
 
   // This function will serialize the specified frame to HTML data.
@@ -130,7 +130,7 @@ class WebFrameSerializer {
   //
   // False is returned if no data has been serialized (i.e. because
   // the target frame didn't have a valid url).
-  BLINK_EXPORT static bool serialize(WebLocalFrame*,
+  BLINK_EXPORT static bool Serialize(WebLocalFrame*,
                                      WebFrameSerializerClient*,
                                      LinkRewritingDelegate*);
 
@@ -138,13 +138,13 @@ class WebFrameSerializer {
   // changing the unit tests instead.
 
   // Generate the META for charset declaration.
-  BLINK_EXPORT static WebString generateMetaCharsetDeclaration(
+  BLINK_EXPORT static WebString GenerateMetaCharsetDeclaration(
       const WebString& charset);
   // Generate the MOTW declaration.
-  BLINK_EXPORT static WebString generateMarkOfTheWebDeclaration(const WebURL&);
+  BLINK_EXPORT static WebString GenerateMarkOfTheWebDeclaration(const WebURL&);
   // Generate the default base tag declaration.
-  BLINK_EXPORT static WebString generateBaseTagDeclaration(
-      const WebString& baseTarget);
+  BLINK_EXPORT static WebString GenerateBaseTagDeclaration(
+      const WebString& base_target);
 };
 
 }  // namespace blink

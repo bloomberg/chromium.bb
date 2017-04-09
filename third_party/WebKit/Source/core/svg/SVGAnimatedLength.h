@@ -42,33 +42,33 @@ class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedLength* create(
-      SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      SVGLength* initialValue,
-      CSSPropertyID cssPropertyId = CSSPropertyInvalid) {
-    return new SVGAnimatedLength(contextElement, attributeName, initialValue,
-                                 cssPropertyId);
+  static SVGAnimatedLength* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      SVGLength* initial_value,
+      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+    return new SVGAnimatedLength(context_element, attribute_name, initial_value,
+                                 css_property_id);
   }
 
-  void setDefaultValueAsString(const String&);
-  SVGParsingError setBaseValueAsString(const String&) override;
+  void SetDefaultValueAsString(const String&);
+  SVGParsingError SetBaseValueAsString(const String&) override;
 
-  const CSSValue* cssValue() const {
-    return &currentValue()->asCSSPrimitiveValue();
+  const CSSValue* CssValue() const {
+    return &CurrentValue()->AsCSSPrimitiveValue();
   }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  SVGAnimatedLength(SVGElement* contextElement,
-                    const QualifiedName& attributeName,
-                    SVGLength* initialValue,
-                    CSSPropertyID cssPropertyId = CSSPropertyInvalid)
-      : SVGAnimatedProperty<SVGLength>(contextElement,
-                                       attributeName,
-                                       initialValue,
-                                       cssPropertyId) {}
+  SVGAnimatedLength(SVGElement* context_element,
+                    const QualifiedName& attribute_name,
+                    SVGLength* initial_value,
+                    CSSPropertyID css_property_id = CSSPropertyInvalid)
+      : SVGAnimatedProperty<SVGLength>(context_element,
+                                       attribute_name,
+                                       initial_value,
+                                       css_property_id) {}
 };
 
 }  // namespace blink

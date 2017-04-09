@@ -156,7 +156,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   NGFragmentBuilder container_builder_;
-  FontBaseline baseline_type_ = FontBaseline::AlphabeticBaseline;
+  FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
   NGLogicalOffset bfc_offset_;
   NGLogicalRect current_opportunity_;

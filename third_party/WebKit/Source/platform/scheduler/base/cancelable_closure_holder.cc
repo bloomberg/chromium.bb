@@ -21,7 +21,7 @@ void CancelableClosureHolder::Cancel() {
   cancelable_callback_.Reset(callback_);
 }
 
-const base::Closure& CancelableClosureHolder::callback() const {
+const base::Closure& CancelableClosureHolder::GetCallback() const {
   DCHECK(!callback_.is_null());
   return cancelable_callback_.callback();
 }

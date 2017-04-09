@@ -37,15 +37,15 @@ enum class UnicodeBidi : unsigned {
   kIsolateOverride,
 };
 
-inline bool isIsolated(const UnicodeBidi& unicodeBidi) {
-  return unicodeBidi == UnicodeBidi::kIsolate ||
-         unicodeBidi == UnicodeBidi::kIsolateOverride ||
-         unicodeBidi == UnicodeBidi::kPlaintext;
+inline bool IsIsolated(const UnicodeBidi& unicode_bidi) {
+  return unicode_bidi == UnicodeBidi::kIsolate ||
+         unicode_bidi == UnicodeBidi::kIsolateOverride ||
+         unicode_bidi == UnicodeBidi::kPlaintext;
 }
 
-inline bool isOverride(UnicodeBidi unicodeBidi) {
-  return unicodeBidi == UnicodeBidi::kBidiOverride ||
-         unicodeBidi == UnicodeBidi::kIsolateOverride;
+inline bool IsOverride(UnicodeBidi unicode_bidi) {
+  return unicode_bidi == UnicodeBidi::kBidiOverride ||
+         unicode_bidi == UnicodeBidi::kIsolateOverride;
 }
 
 }  // namespace blink

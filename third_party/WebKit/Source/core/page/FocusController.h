@@ -54,81 +54,82 @@ class CORE_EXPORT FocusController final
   WTF_MAKE_NONCOPYABLE(FocusController);
 
  public:
-  static FocusController* create(Page*);
+  static FocusController* Create(Page*);
 
-  void setFocusedFrame(Frame*, bool notifyEmbedder = true);
-  void focusDocumentView(Frame*, bool notifyEmbedder = true);
-  LocalFrame* focusedFrame() const;
-  Frame* focusedOrMainFrame() const;
+  void SetFocusedFrame(Frame*, bool notify_embedder = true);
+  void FocusDocumentView(Frame*, bool notify_embedder = true);
+  LocalFrame* FocusedFrame() const;
+  Frame* FocusedOrMainFrame() const;
 
   // Finds the focused HTMLFrameOwnerElement, if any, in the provided frame.
   // An HTMLFrameOwnerElement is considered focused if the frame it owns, or
   // one of its descendant frames, is currently focused.
-  HTMLFrameOwnerElement* focusedFrameOwnerElement(
-      LocalFrame& currentFrame) const;
+  HTMLFrameOwnerElement* FocusedFrameOwnerElement(
+      LocalFrame& current_frame) const;
 
   // Determines whether the provided Document has focus according to
   // http://www.w3.org/TR/html5/editing.html#dom-document-hasfocus
-  bool isDocumentFocused(const Document&) const;
+  bool IsDocumentFocused(const Document&) const;
 
-  bool setInitialFocus(WebFocusType);
-  bool advanceFocus(WebFocusType type,
-                    InputDeviceCapabilities* sourceCapabilities = nullptr) {
-    return advanceFocus(type, false, sourceCapabilities);
+  bool SetInitialFocus(WebFocusType);
+  bool AdvanceFocus(WebFocusType type,
+                    InputDeviceCapabilities* source_capabilities = nullptr) {
+    return AdvanceFocus(type, false, source_capabilities);
   }
-  bool advanceFocusAcrossFrames(
+  bool AdvanceFocusAcrossFrames(
       WebFocusType,
       RemoteFrame* from,
       LocalFrame* to,
-      InputDeviceCapabilities* sourceCapabilities = nullptr);
-  Element* findFocusableElementInShadowHost(const Element& shadowHost);
+      InputDeviceCapabilities* source_capabilities = nullptr);
+  Element* FindFocusableElementInShadowHost(const Element& shadow_host);
 
-  bool setFocusedElement(Element*, Frame*, const FocusParams&);
+  bool SetFocusedElement(Element*, Frame*, const FocusParams&);
   // |setFocusedElement| variant with SelectionBehaviorOnFocus::None,
   // |WebFocusTypeNone, and null InputDeviceCapabilities.
-  bool setFocusedElement(Element*, Frame*);
+  bool SetFocusedElement(Element*, Frame*);
 
-  void setActive(bool);
-  bool isActive() const { return m_isActive; }
+  void SetActive(bool);
+  bool IsActive() const { return is_active_; }
 
-  void setFocused(bool);
-  bool isFocused() const { return m_isFocused; }
+  void SetFocused(bool);
+  bool IsFocused() const { return is_focused_; }
 
-  void registerFocusChangedObserver(FocusChangedObserver*);
+  void RegisterFocusChangedObserver(FocusChangedObserver*);
 
   DECLARE_TRACE();
 
  private:
   explicit FocusController(Page*);
 
-  Element* findFocusableElement(WebFocusType, Element&);
+  Element* FindFocusableElement(WebFocusType, Element&);
 
-  bool advanceFocus(WebFocusType,
-                    bool initialFocus,
-                    InputDeviceCapabilities* sourceCapabilities = nullptr);
-  bool advanceFocusDirectionally(WebFocusType);
-  bool advanceFocusInDocumentOrder(LocalFrame*,
-                                   Element* start,
-                                   WebFocusType,
-                                   bool initialFocus,
-                                   InputDeviceCapabilities* sourceCapabilities);
+  bool AdvanceFocus(WebFocusType,
+                    bool initial_focus,
+                    InputDeviceCapabilities* source_capabilities = nullptr);
+  bool AdvanceFocusDirectionally(WebFocusType);
+  bool AdvanceFocusInDocumentOrder(
+      LocalFrame*,
+      Element* start,
+      WebFocusType,
+      bool initial_focus,
+      InputDeviceCapabilities* source_capabilities);
 
-  bool advanceFocusDirectionallyInContainer(Node* container,
-                                            const LayoutRect& startingRect,
+  bool AdvanceFocusDirectionallyInContainer(Node* container,
+                                            const LayoutRect& starting_rect,
                                             WebFocusType);
-  void findFocusCandidateInContainer(Node& container,
-                                     const LayoutRect& startingRect,
+  void FindFocusCandidateInContainer(Node& container,
+                                     const LayoutRect& starting_rect,
                                      WebFocusType,
                                      FocusCandidate& closest);
 
-  void notifyFocusChangedObservers() const;
+  void NotifyFocusChangedObservers() const;
 
-  Member<Page> m_page;
-  Member<Frame> m_focusedFrame;
-  bool m_isActive;
-  bool m_isFocused;
-  bool m_isChangingFocusedFrame;
-  HeapHashSet<WeakMember<FocusChangedObserver>> m_focusChangedObservers;
+  Member<Page> page_;
+  Member<Frame> focused_frame_;
+  bool is_active_;
+  bool is_focused_;
+  bool is_changing_focused_frame_;
+  HeapHashSet<WeakMember<FocusChangedObserver>> focus_changed_observers_;
 };
 
 }  // namespace blink

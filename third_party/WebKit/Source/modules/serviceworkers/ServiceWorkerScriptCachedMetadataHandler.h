@@ -18,31 +18,32 @@ class CachedMetadata;
 
 class ServiceWorkerScriptCachedMetadataHandler : public CachedMetadataHandler {
  public:
-  static ServiceWorkerScriptCachedMetadataHandler* create(
-      WorkerGlobalScope* workerGlobalScope,
-      const KURL& scriptURL,
-      const Vector<char>* metaData) {
-    return new ServiceWorkerScriptCachedMetadataHandler(workerGlobalScope,
-                                                        scriptURL, metaData);
+  static ServiceWorkerScriptCachedMetadataHandler* Create(
+      WorkerGlobalScope* worker_global_scope,
+      const KURL& script_url,
+      const Vector<char>* meta_data) {
+    return new ServiceWorkerScriptCachedMetadataHandler(worker_global_scope,
+                                                        script_url, meta_data);
   }
   ~ServiceWorkerScriptCachedMetadataHandler() override;
   DECLARE_VIRTUAL_TRACE();
-  void setCachedMetadata(uint32_t dataTypeID,
+  void SetCachedMetadata(uint32_t data_type_id,
                          const char*,
                          size_t,
                          CacheType) override;
-  void clearCachedMetadata(CacheType) override;
-  PassRefPtr<CachedMetadata> cachedMetadata(uint32_t dataTypeID) const override;
-  String encoding() const override;
+  void ClearCachedMetadata(CacheType) override;
+  PassRefPtr<CachedMetadata> GetCachedMetadata(
+      uint32_t data_type_id) const override;
+  String Encoding() const override;
 
  private:
   ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,
-                                           const KURL& scriptURL,
-                                           const Vector<char>* metaData);
+                                           const KURL& script_url,
+                                           const Vector<char>* meta_data);
 
-  Member<WorkerGlobalScope> m_workerGlobalScope;
-  KURL m_scriptURL;
-  RefPtr<CachedMetadata> m_cachedMetadata;
+  Member<WorkerGlobalScope> worker_global_scope_;
+  KURL script_url_;
+  RefPtr<CachedMetadata> cached_metadata_;
 };
 
 }  // namespace blink

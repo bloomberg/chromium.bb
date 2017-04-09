@@ -32,8 +32,8 @@
 
 namespace blink {
 
-bool AnimatableVisibility::equalTo(const AnimatableValue* value) const {
-  return m_visibility == toAnimatableVisibility(value)->m_visibility;
+bool AnimatableVisibility::EqualTo(const AnimatableValue* value) const {
+  return visibility_ == ToAnimatableVisibility(value)->visibility_;
 }
 
 }  // namespace blink

@@ -34,48 +34,48 @@
 
 namespace blink {
 
-V0CustomElementCallbackQueue* V0CustomElementCallbackQueue::create(
+V0CustomElementCallbackQueue* V0CustomElementCallbackQueue::Create(
     Element* element) {
   return new V0CustomElementCallbackQueue(element);
 }
 
 V0CustomElementCallbackQueue::V0CustomElementCallbackQueue(Element* element)
-    : m_element(element), m_owner(-1), m_index(0), m_inCreatedCallback(false) {}
+    : element_(element), owner_(-1), index_(0), in_created_callback_(false) {}
 
-bool V0CustomElementCallbackQueue::processInElementQueue(
+bool V0CustomElementCallbackQueue::ProcessInElementQueue(
     ElementQueueId caller) {
-  DCHECK(!m_inCreatedCallback);
-  bool didWork = false;
+  DCHECK(!in_created_callback_);
+  bool did_work = false;
 
   // Never run custom element callbacks in UA shadow roots since that would
   // leak the UA root and it's elements into the page.
-  ShadowRoot* shadowRoot = m_element->containingShadowRoot();
-  if (!shadowRoot || shadowRoot->type() != ShadowRootType::UserAgent) {
-    while (m_index < m_queue.size() && owner() == caller) {
-      m_inCreatedCallback = m_queue[m_index]->isCreatedCallback();
+  ShadowRoot* shadow_root = element_->ContainingShadowRoot();
+  if (!shadow_root || shadow_root->GetType() != ShadowRootType::kUserAgent) {
+    while (index_ < queue_.size() && Owner() == caller) {
+      in_created_callback_ = queue_[index_]->IsCreatedCallback();
 
       // dispatch() may cause recursion which steals this callback
       // queue and reenters processInQueue. owner() == caller
       // detects this recursion and cedes processing.
-      m_queue[m_index++]->dispatch(m_element.get());
-      m_inCreatedCallback = false;
-      didWork = true;
+      queue_[index_++]->Dispatch(element_.Get());
+      in_created_callback_ = false;
+      did_work = true;
     }
   }
 
-  if (owner() == caller && m_index == m_queue.size()) {
+  if (Owner() == caller && index_ == queue_.size()) {
     // This processInQueue exhausted the queue; shrink it.
-    m_index = 0;
-    m_queue.resize(0);
-    m_owner = -1;
+    index_ = 0;
+    queue_.Resize(0);
+    owner_ = -1;
   }
 
-  return didWork;
+  return did_work;
 }
 
 DEFINE_TRACE(V0CustomElementCallbackQueue) {
-  visitor->trace(m_element);
-  visitor->trace(m_queue);
+  visitor->Trace(element_);
+  visitor->Trace(queue_);
 }
 
 }  // namespace blink

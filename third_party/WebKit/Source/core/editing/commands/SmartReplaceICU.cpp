@@ -36,77 +36,78 @@
 
 namespace blink {
 
-static void addAllCodePoints(USet* smartSet, const String& string) {
+static void AddAllCodePoints(USet* smart_set, const String& string) {
   for (size_t i = 0; i < string.length(); i++)
-    uset_add(smartSet, string[i]);
+    uset_add(smart_set, string[i]);
 }
 
 // This is mostly a port of the code in WebCore/editing/SmartReplaceCF.cpp
 // except we use icu in place of CoreFoundations character classes.
-static USet* getSmartSet(bool isPreviousCharacter) {
-  static USet* preSmartSet = nullptr;
-  static USet* postSmartSet = nullptr;
-  USet* smartSet = isPreviousCharacter ? preSmartSet : postSmartSet;
-  if (!smartSet) {
+static USet* GetSmartSet(bool is_previous_character) {
+  static USet* pre_smart_set = nullptr;
+  static USet* post_smart_set = nullptr;
+  USet* smart_set = is_previous_character ? pre_smart_set : post_smart_set;
+  if (!smart_set) {
     // Whitespace and newline (kCFCharacterSetWhitespaceAndNewline)
-    static const UChar* kWhitespaceAndNewLine = reinterpret_cast<const UChar*>(
-        u"[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
+    static const UChar* k_whitespace_and_new_line =
+        reinterpret_cast<const UChar*>(
+            u"[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
     UErrorCode ec = U_ZERO_ERROR;
-    smartSet = uset_openPattern(
-        kWhitespaceAndNewLine,
-        lengthOfNullTerminatedString(kWhitespaceAndNewLine), &ec);
+    smart_set = uset_openPattern(
+        k_whitespace_and_new_line,
+        LengthOfNullTerminatedString(k_whitespace_and_new_line), &ec);
     DCHECK(U_SUCCESS(ec)) << ec;
 
     // CJK ranges
-    uset_addRange(smartSet, 0x1100,
+    uset_addRange(smart_set, 0x1100,
                   0x1100 + 256);  // Hangul Jamo (0x1100 - 0x11FF)
-    uset_addRange(smartSet, 0x2E80,
+    uset_addRange(smart_set, 0x2E80,
                   0x2E80 + 352);  // CJK & Kangxi Radicals (0x2E80 - 0x2FDF)
     // Ideograph Descriptions, CJK Symbols, Hiragana, Katakana, Bopomofo, Hangul
     // Compatibility Jamo, Kanbun, & Bopomofo Ext (0x2FF0 - 0x31BF)
-    uset_addRange(smartSet, 0x2FF0, 0x2FF0 + 464);
+    uset_addRange(smart_set, 0x2FF0, 0x2FF0 + 464);
     // Enclosed CJK, CJK Ideographs (Uni Han & Ext A), & Yi (0x3200 - 0xA4CF)
-    uset_addRange(smartSet, 0x3200, 0x3200 + 29392);
-    uset_addRange(smartSet, 0xAC00,
+    uset_addRange(smart_set, 0x3200, 0x3200 + 29392);
+    uset_addRange(smart_set, 0xAC00,
                   0xAC00 + 11183);  // Hangul Syllables (0xAC00 - 0xD7AF)
     uset_addRange(
-        smartSet, 0xF900,
+        smart_set, 0xF900,
         0xF900 + 352);  // CJK Compatibility Ideographs (0xF900 - 0xFA5F)
-    uset_addRange(smartSet, 0xFE30,
+    uset_addRange(smart_set, 0xFE30,
                   0xFE30 + 32);  // CJK Compatibility From (0xFE30 - 0xFE4F)
-    uset_addRange(smartSet, 0xFF00,
+    uset_addRange(smart_set, 0xFF00,
                   0xFF00 + 240);  // Half/Full Width Form (0xFF00 - 0xFFEF)
-    uset_addRange(smartSet, 0x20000,
+    uset_addRange(smart_set, 0x20000,
                   0x20000 + 0xA6D7);  // CJK Ideograph Exntension B
     uset_addRange(
-        smartSet, 0x2F800,
+        smart_set, 0x2F800,
         0x2F800 + 0x021E);  // CJK Compatibility Ideographs (0x2F800 - 0x2FA1D)
 
-    if (isPreviousCharacter) {
-      addAllCodePoints(smartSet, "([\"\'#$/-`{");
-      preSmartSet = smartSet;
+    if (is_previous_character) {
+      AddAllCodePoints(smart_set, "([\"\'#$/-`{");
+      pre_smart_set = smart_set;
     } else {
-      addAllCodePoints(smartSet, ")].,;:?\'!\"%*-/}");
+      AddAllCodePoints(smart_set, ")].,;:?\'!\"%*-/}");
 
       // Punctuation (kCFCharacterSetPunctuation)
-      static const UChar* kPunctuationClass =
+      static const UChar* k_punctuation_class =
           reinterpret_cast<const UChar*>(u"[:P:]");
       UErrorCode ec = U_ZERO_ERROR;
-      USet* icuPunct = uset_openPattern(
-          kPunctuationClass, lengthOfNullTerminatedString(kPunctuationClass),
-          &ec);
+      USet* icu_punct = uset_openPattern(
+          k_punctuation_class,
+          LengthOfNullTerminatedString(k_punctuation_class), &ec);
       DCHECK(U_SUCCESS(ec)) << ec;
-      uset_addAll(smartSet, icuPunct);
-      uset_close(icuPunct);
+      uset_addAll(smart_set, icu_punct);
+      uset_close(icu_punct);
 
-      postSmartSet = smartSet;
+      post_smart_set = smart_set;
     }
   }
-  return smartSet;
+  return smart_set;
 }
 
-bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter) {
-  return uset_contains(getSmartSet(isPreviousCharacter), c);
+bool IsCharacterSmartReplaceExempt(UChar32 c, bool is_previous_character) {
+  return uset_contains(GetSmartSet(is_previous_character), c);
 }
 }
 

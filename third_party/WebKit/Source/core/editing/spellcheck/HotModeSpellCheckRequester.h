@@ -18,11 +18,11 @@ class HotModeSpellCheckRequester {
 
  public:
   explicit HotModeSpellCheckRequester(SpellCheckRequester&);
-  void checkSpellingAt(const Position&);
+  void CheckSpellingAt(const Position&);
 
  private:
-  HeapVector<Member<const Element>> m_processedRootEditables;
-  Member<SpellCheckRequester> m_requester;
+  HeapVector<Member<const Element>> processed_root_editables_;
+  Member<SpellCheckRequester> requester_;
 
   DISALLOW_COPY_AND_ASSIGN(HotModeSpellCheckRequester);
 };

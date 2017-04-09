@@ -40,12 +40,12 @@ namespace {
 
 class TestExtraData : public WebURLResponse::ExtraData {
  public:
-  explicit TestExtraData(bool* alive) : m_alive(alive) { *alive = true; }
+  explicit TestExtraData(bool* alive) : alive_(alive) { *alive = true; }
 
-  ~TestExtraData() override { *m_alive = false; }
+  ~TestExtraData() override { *alive_ = false; }
 
  private:
-  bool* m_alive;
+  bool* alive_;
 };
 
 }  // anonymous namespace
@@ -53,33 +53,33 @@ class TestExtraData : public WebURLResponse::ExtraData {
 TEST(WebURLResponseTest, ExtraData) {
   bool alive = false;
   {
-    WebURLResponse urlResponse;
-    TestExtraData* extraData = new TestExtraData(&alive);
+    WebURLResponse url_response;
+    TestExtraData* extra_data = new TestExtraData(&alive);
     EXPECT_TRUE(alive);
 
-    urlResponse.setExtraData(extraData);
-    EXPECT_EQ(extraData, urlResponse.getExtraData());
+    url_response.SetExtraData(extra_data);
+    EXPECT_EQ(extra_data, url_response.GetExtraData());
     {
-      WebURLResponse otherUrlResponse = urlResponse;
+      WebURLResponse other_url_response = url_response;
       EXPECT_TRUE(alive);
-      EXPECT_EQ(extraData, otherUrlResponse.getExtraData());
-      EXPECT_EQ(extraData, urlResponse.getExtraData());
+      EXPECT_EQ(extra_data, other_url_response.GetExtraData());
+      EXPECT_EQ(extra_data, url_response.GetExtraData());
     }
     EXPECT_TRUE(alive);
-    EXPECT_EQ(extraData, urlResponse.getExtraData());
+    EXPECT_EQ(extra_data, url_response.GetExtraData());
   }
   EXPECT_FALSE(alive);
 }
 
 TEST(WebURLResponseTest, NewInstanceIsNull) {
   WebURLResponse instance;
-  EXPECT_TRUE(instance.isNull());
+  EXPECT_TRUE(instance.IsNull());
 }
 
 TEST(WebURLResponseTest, NotNullAfterSetURL) {
   WebURLResponse instance;
-  instance.setURL(KURL(ParsedURLString, "http://localhost/"));
-  EXPECT_FALSE(instance.isNull());
+  instance.SetURL(KURL(kParsedURLString, "http://localhost/"));
+  EXPECT_FALSE(instance.IsNull());
 }
 
 }  // namespace blink

@@ -132,7 +132,7 @@ public class WebappActivity extends FullScreenActivity {
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 mWebappInfo.displayMode());
-        if (mWebappInfo.displayMode() == WebDisplayMode.Fullscreen) {
+        if (mWebappInfo.displayMode() == WebDisplayMode.kFullscreen) {
             enterImmersiveMode();
         }
     }
@@ -473,13 +473,13 @@ public class WebappActivity extends FullScreenActivity {
         return new ChromeFullscreenManager(this, false) {
             @Override
             public void setPersistentFullscreenMode(boolean enabled) {
-                if (mWebappInfo.displayMode() == WebDisplayMode.Fullscreen) return;
+                if (mWebappInfo.displayMode() == WebDisplayMode.kFullscreen) return;
                 super.setPersistentFullscreenMode(enabled);
             }
 
             @Override
             public boolean getPersistentFullscreenMode() {
-                if (mWebappInfo.displayMode() == WebDisplayMode.Fullscreen) return false;
+                if (mWebappInfo.displayMode() == WebDisplayMode.kFullscreen) return false;
                 return super.getPersistentFullscreenMode();
             }
         };

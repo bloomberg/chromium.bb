@@ -21,47 +21,47 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool operator==(const TextIteratorBehavior& other) const;
   bool operator!=(const TextIteratorBehavior& other) const;
 
-  bool collapseTrailingSpace() const { return m_collapseTrailingSpace; }
-  bool doesNotBreakAtReplacedElement() const {
-    return m_doesNotBreakAtReplacedElement;
+  bool CollapseTrailingSpace() const { return collapse_trailing_space_; }
+  bool DoesNotBreakAtReplacedElement() const {
+    return does_not_break_at_replaced_element_;
   }
-  bool emitsCharactersBetweenAllVisiblePositions() const {
-    return m_emitsCharactersBetweenAllVisiblePositions;
+  bool EmitsCharactersBetweenAllVisiblePositions() const {
+    return emits_characters_between_all_visible_positions_;
   }
-  bool emitsImageAltText() const { return m_emitsImageAltText; }
-  bool emitsSpaceForNbsp() const { return m_emitsSpaceForNbsp; }
-  bool emitsObjectReplacementCharacter() const {
-    return m_emitsObjectReplacementCharacter;
+  bool EmitsImageAltText() const { return emits_image_alt_text_; }
+  bool EmitsSpaceForNbsp() const { return emits_space_for_nbsp_; }
+  bool EmitsObjectReplacementCharacter() const {
+    return emits_object_replacement_character_;
   }
-  bool emitsOriginalText() const { return m_emitsOriginalText; }
-  bool entersOpenShadowRoots() const { return m_entersOpenShadowRoots; }
-  bool entersTextControls() const { return m_entersTextControls; }
-  bool excludeAutofilledValue() const { return m_excludeAutofilledValue; }
-  bool forInnerText() const { return m_forInnerText; }
-  bool forSelectionToString() const { return m_forSelectionToString; }
-  bool forWindowFind() const { return m_forWindowFind; }
-  bool ignoresStyleVisibility() const { return m_ignoresStyleVisibility; }
-  bool stopsOnFormControls() const { return m_stopsOnFormControls; }
+  bool EmitsOriginalText() const { return emits_original_text_; }
+  bool EntersOpenShadowRoots() const { return enters_open_shadow_roots_; }
+  bool EntersTextControls() const { return enters_text_controls_; }
+  bool ExcludeAutofilledValue() const { return exclude_autofilled_value_; }
+  bool ForInnerText() const { return for_inner_text_; }
+  bool ForSelectionToString() const { return for_selection_to_string_; }
+  bool ForWindowFind() const { return for_window_find_; }
+  bool IgnoresStyleVisibility() const { return ignores_style_visibility_; }
+  bool StopsOnFormControls() const { return stops_on_form_controls_; }
 
-  static TextIteratorBehavior emitsObjectReplacementCharacterBehavior();
-  static TextIteratorBehavior ignoresStyleVisibilityBehavior();
+  static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
+  static TextIteratorBehavior IgnoresStyleVisibilityBehavior();
 
  private:
-  bool m_collapseTrailingSpace : 1;
-  bool m_doesNotBreakAtReplacedElement : 1;
-  bool m_emitsCharactersBetweenAllVisiblePositions : 1;
-  bool m_emitsImageAltText : 1;
-  bool m_emitsSpaceForNbsp : 1;
-  bool m_emitsObjectReplacementCharacter : 1;
-  bool m_emitsOriginalText : 1;
-  bool m_entersOpenShadowRoots : 1;
-  bool m_entersTextControls : 1;
-  bool m_excludeAutofilledValue : 1;
-  bool m_forInnerText : 1;
-  bool m_forSelectionToString : 1;
-  bool m_forWindowFind : 1;
-  bool m_ignoresStyleVisibility : 1;
-  bool m_stopsOnFormControls : 1;
+  bool collapse_trailing_space_ : 1;
+  bool does_not_break_at_replaced_element_ : 1;
+  bool emits_characters_between_all_visible_positions_ : 1;
+  bool emits_image_alt_text_ : 1;
+  bool emits_space_for_nbsp_ : 1;
+  bool emits_object_replacement_character_ : 1;
+  bool emits_original_text_ : 1;
+  bool enters_open_shadow_roots_ : 1;
+  bool enters_text_controls_ : 1;
+  bool exclude_autofilled_value_ : 1;
+  bool for_inner_text_ : 1;
+  bool for_selection_to_string_ : 1;
+  bool for_window_find_ : 1;
+  bool ignores_style_visibility_ : 1;
+  bool stops_on_form_controls_ : 1;
 };
 
 class CORE_EXPORT TextIteratorBehavior::Builder final {
@@ -70,26 +70,26 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder();
   ~Builder();
 
-  TextIteratorBehavior build();
+  TextIteratorBehavior Build();
 
-  Builder& setCollapseTrailingSpace(bool);
-  Builder& setDoesNotBreakAtReplacedElement(bool);
-  Builder& setEmitsCharactersBetweenAllVisiblePositions(bool);
-  Builder& setEmitsImageAltText(bool);
-  Builder& setEmitsSpaceForNbsp(bool);
-  Builder& setEmitsObjectReplacementCharacter(bool);
-  Builder& setEmitsOriginalText(bool);
-  Builder& setEntersOpenShadowRoots(bool);
-  Builder& setEntersTextControls(bool);
-  Builder& setExcludeAutofilledValue(bool);
-  Builder& setForInnerText(bool);
-  Builder& setForSelectionToString(bool);
-  Builder& setForWindowFind(bool);
-  Builder& setIgnoresStyleVisibility(bool);
-  Builder& setStopsOnFormControls(bool);
+  Builder& SetCollapseTrailingSpace(bool);
+  Builder& SetDoesNotBreakAtReplacedElement(bool);
+  Builder& SetEmitsCharactersBetweenAllVisiblePositions(bool);
+  Builder& SetEmitsImageAltText(bool);
+  Builder& SetEmitsSpaceForNbsp(bool);
+  Builder& SetEmitsObjectReplacementCharacter(bool);
+  Builder& SetEmitsOriginalText(bool);
+  Builder& SetEntersOpenShadowRoots(bool);
+  Builder& SetEntersTextControls(bool);
+  Builder& SetExcludeAutofilledValue(bool);
+  Builder& SetForInnerText(bool);
+  Builder& SetForSelectionToString(bool);
+  Builder& SetForWindowFind(bool);
+  Builder& SetIgnoresStyleVisibility(bool);
+  Builder& SetStopsOnFormControls(bool);
 
  private:
-  TextIteratorBehavior m_behavior;
+  TextIteratorBehavior behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };

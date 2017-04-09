@@ -11,20 +11,20 @@ namespace blink {
 
 class MediaListDirectiveTest : public ::testing::Test {
  public:
-  MediaListDirectiveTest() : csp(ContentSecurityPolicy::create()) {}
+  MediaListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
 
  protected:
   Persistent<ContentSecurityPolicy> csp;
 };
 
 TEST_F(MediaListDirectiveTest, GetIntersect) {
-  MediaListDirective A(
+  MediaListDirective a(
       "plugin-types",
-      "application/x-shockwave-flash application/pdf text/plain", csp.get());
-  MediaListDirective emptyA("plugin-types", "", csp.get());
+      "application/x-shockwave-flash application/pdf text/plain", csp.Get());
+  MediaListDirective empty_a("plugin-types", "", csp.Get());
 
   struct TestCase {
-    const char* policyB;
+    const char* policy_b;
     const std::vector<const char*> expected;
   } cases[] = {
       {"", std::vector<const char*>()},
@@ -44,37 +44,37 @@ TEST_F(MediaListDirectiveTest, GetIntersect) {
   };
 
   for (const auto& test : cases) {
-    MediaListDirective B("plugin-types", test.policyB, csp.get());
+    MediaListDirective b("plugin-types", test.policy_b, csp.Get());
 
-    HashSet<String> result = A.getIntersect(B.m_pluginTypes);
+    HashSet<String> result = a.GetIntersect(b.plugin_types_);
     EXPECT_EQ(result.size(), test.expected.size());
 
     for (const auto& type : test.expected)
-      EXPECT_TRUE(result.contains(type));
+      EXPECT_TRUE(result.Contains(type));
 
     // If we change the order of `A` and `B`, intersection should not change.
-    result = B.getIntersect(A.m_pluginTypes);
+    result = b.GetIntersect(a.plugin_types_);
     EXPECT_EQ(result.size(), test.expected.size());
 
     for (const auto& type : test.expected)
-      EXPECT_TRUE(result.contains(type));
+      EXPECT_TRUE(result.Contains(type));
 
     // When `A` is empty, there should not be any intersection.
-    result = emptyA.getIntersect(B.m_pluginTypes);
+    result = empty_a.GetIntersect(b.plugin_types_);
     EXPECT_FALSE(result.size());
   }
 }
 
 TEST_F(MediaListDirectiveTest, Subsumes) {
-  MediaListDirective A(
+  MediaListDirective a(
       "plugin-types",
       "application/x-shockwave-flash application/pdf text/plain text/*",
-      csp.get());
+      csp.Get());
 
   struct TestCase {
-    const std::vector<const char*> policiesB;
+    const std::vector<const char*> policies_b;
     bool subsumed;
-    bool subsumedByEmptyA;
+    bool subsumed_by_empty_a;
   } cases[] = {
       // `A` subsumes `policiesB`.
       {{""}, true, true},
@@ -134,17 +134,17 @@ TEST_F(MediaListDirectiveTest, Subsumes) {
        false},
   };
 
-  MediaListDirective emptyA("plugin-types", "", csp.get());
+  MediaListDirective empty_a("plugin-types", "", csp.Get());
 
   for (const auto& test : cases) {
-    HeapVector<Member<MediaListDirective>> policiesB;
-    for (const auto& policy : test.policiesB) {
-      policiesB.push_back(
-          new MediaListDirective("plugin-types", policy, csp.get()));
+    HeapVector<Member<MediaListDirective>> policies_b;
+    for (const auto& policy : test.policies_b) {
+      policies_b.push_back(
+          new MediaListDirective("plugin-types", policy, csp.Get()));
     }
 
-    EXPECT_EQ(A.subsumes(policiesB), test.subsumed);
-    EXPECT_EQ(emptyA.subsumes(policiesB), test.subsumedByEmptyA);
+    EXPECT_EQ(a.Subsumes(policies_b), test.subsumed);
+    EXPECT_EQ(empty_a.Subsumes(policies_b), test.subsumed_by_empty_a);
   }
 }
 

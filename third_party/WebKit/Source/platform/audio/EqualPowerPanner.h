@@ -34,31 +34,31 @@ namespace blink {
 
 class PLATFORM_EXPORT EqualPowerPanner final : public Panner {
  public:
-  EqualPowerPanner(float sampleRate);
+  EqualPowerPanner(float sample_rate);
 
-  void pan(double azimuth,
+  void Pan(double azimuth,
            double elevation,
-           const AudioBus* inputBus,
-           AudioBus* outputBuf,
-           size_t framesToProcess,
+           const AudioBus* input_bus,
+           AudioBus* output_buf,
+           size_t frames_to_process,
            AudioBus::ChannelInterpretation) override;
-  void panWithSampleAccurateValues(double* azimuth,
+  void PanWithSampleAccurateValues(double* azimuth,
                                    double* elevation,
-                                   const AudioBus* inputBus,
-                                   AudioBus* outputBus,
-                                   size_t framesToProcess,
+                                   const AudioBus* input_bus,
+                                   AudioBus* output_bus,
+                                   size_t frames_to_process,
                                    AudioBus::ChannelInterpretation) override;
 
-  void reset() override {}
+  void Reset() override {}
 
-  double tailTime() const override { return 0; }
-  double latencyTime() const override { return 0; }
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
 
  private:
-  void calculateDesiredGain(double& desiredGainL,
-                            double& desiredGainR,
+  void CalculateDesiredGain(double& desired_gain_l,
+                            double& desired_gain_r,
                             double azimuth,
-                            int numberOfChannels);
+                            int number_of_channels);
 };
 
 }  // namespace blink

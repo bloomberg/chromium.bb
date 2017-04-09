@@ -37,11 +37,11 @@
 
 namespace blink {
 
-static inline void transformTextStringToXHTMLDocumentString(String& text) {
+static inline void TransformTextStringToXHTMLDocumentString(String& text) {
   // Modify the output so that it is a well-formed XHTML document with a <pre>
   // tag enclosing the text.
-  text.replace('&', "&amp;");
-  text.replace('<', "&lt;");
+  text.Replace('&', "&amp;");
+  text.Replace('<', "&lt;");
   text =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
@@ -58,117 +58,119 @@ static inline void transformTextStringToXHTMLDocumentString(String& text) {
 
 XSLTProcessor::~XSLTProcessor() {}
 
-Document* XSLTProcessor::createDocumentFromSource(const String& sourceString,
-                                                  const String& sourceEncoding,
-                                                  const String& sourceMIMEType,
-                                                  Node* sourceNode,
-                                                  LocalFrame* frame) {
-  Document* ownerDocument = &sourceNode->document();
-  bool sourceIsDocument = (sourceNode == ownerDocument);
-  String documentSource = sourceString;
+Document* XSLTProcessor::CreateDocumentFromSource(
+    const String& source_string,
+    const String& source_encoding,
+    const String& source_mime_type,
+    Node* source_node,
+    LocalFrame* frame) {
+  Document* owner_document = &source_node->GetDocument();
+  bool source_is_document = (source_node == owner_document);
+  String document_source = source_string;
 
   Document* result = nullptr;
-  DocumentInit init(sourceIsDocument ? ownerDocument->url() : KURL(), frame);
+  DocumentInit init(source_is_document ? owner_document->Url() : KURL(), frame);
 
-  bool forceXHTML = sourceMIMEType == "text/plain";
-  if (forceXHTML)
-    transformTextStringToXHTMLDocumentString(documentSource);
+  bool force_xhtml = source_mime_type == "text/plain";
+  if (force_xhtml)
+    TransformTextStringToXHTMLDocumentString(document_source);
 
   if (frame) {
-    Document* oldDocument = frame->document();
+    Document* old_document = frame->GetDocument();
     // Before parsing, we need to save & detach the old document and get the new
     // document in place. Document::shutdown() tears down the FrameView, so
     // remember whether or not there was one.
-    bool hasView = frame->view();
-    oldDocument->shutdown();
+    bool has_view = frame->View();
+    old_document->Shutdown();
     // Re-create the FrameView if needed.
-    if (hasView)
-      frame->loader().client()->transitionToCommittedForNewPage();
-    result = frame->domWindow()->installNewDocument(sourceMIMEType, init,
-                                                    forceXHTML);
+    if (has_view)
+      frame->Loader().Client()->TransitionToCommittedForNewPage();
+    result = frame->DomWindow()->InstallNewDocument(source_mime_type, init,
+                                                    force_xhtml);
 
-    if (oldDocument) {
-      DocumentXSLT::from(*result).setTransformSourceDocument(oldDocument);
-      result->updateSecurityOrigin(oldDocument->getSecurityOrigin());
-      result->setCookieURL(oldDocument->cookieURL());
+    if (old_document) {
+      DocumentXSLT::From(*result).SetTransformSourceDocument(old_document);
+      result->UpdateSecurityOrigin(old_document->GetSecurityOrigin());
+      result->SetCookieURL(old_document->CookieURL());
 
-      ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
-      csp->copyStateFrom(oldDocument->contentSecurityPolicy());
-      result->initContentSecurityPolicy(csp);
+      ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+      csp->CopyStateFrom(old_document->GetContentSecurityPolicy());
+      result->InitContentSecurityPolicy(csp);
     }
   } else {
-    result = LocalDOMWindow::createDocument(sourceMIMEType, init, forceXHTML);
+    result =
+        LocalDOMWindow::CreateDocument(source_mime_type, init, force_xhtml);
   }
 
   DocumentEncodingData data;
-  data.setEncoding(sourceEncoding.isEmpty()
+  data.SetEncoding(source_encoding.IsEmpty()
                        ? UTF8Encoding()
-                       : WTF::TextEncoding(sourceEncoding));
-  result->setEncodingData(data);
-  result->setContent(documentSource);
+                       : WTF::TextEncoding(source_encoding));
+  result->SetEncodingData(data);
+  result->SetContent(document_source);
 
   return result;
 }
 
-Document* XSLTProcessor::transformToDocument(Node* sourceNode) {
-  String resultMIMEType;
-  String resultString;
-  String resultEncoding;
-  if (!transformToString(sourceNode, resultMIMEType, resultString,
-                         resultEncoding))
+Document* XSLTProcessor::transformToDocument(Node* source_node) {
+  String result_mime_type;
+  String result_string;
+  String result_encoding;
+  if (!TransformToString(source_node, result_mime_type, result_string,
+                         result_encoding))
     return nullptr;
-  return createDocumentFromSource(resultString, resultEncoding, resultMIMEType,
-                                  sourceNode, 0);
+  return CreateDocumentFromSource(result_string, result_encoding,
+                                  result_mime_type, source_node, 0);
 }
 
-DocumentFragment* XSLTProcessor::transformToFragment(Node* sourceNode,
-                                                     Document* outputDoc) {
-  String resultMIMEType;
-  String resultString;
-  String resultEncoding;
+DocumentFragment* XSLTProcessor::transformToFragment(Node* source_node,
+                                                     Document* output_doc) {
+  String result_mime_type;
+  String result_string;
+  String result_encoding;
 
   // If the output document is HTML, default to HTML method.
-  if (outputDoc->isHTMLDocument())
-    resultMIMEType = "text/html";
+  if (output_doc->IsHTMLDocument())
+    result_mime_type = "text/html";
 
-  if (!transformToString(sourceNode, resultMIMEType, resultString,
-                         resultEncoding))
+  if (!TransformToString(source_node, result_mime_type, result_string,
+                         result_encoding))
     return nullptr;
-  return createFragmentForTransformToFragment(resultString, resultMIMEType,
-                                              *outputDoc);
+  return CreateFragmentForTransformToFragment(result_string, result_mime_type,
+                                              *output_doc);
 }
 
 void XSLTProcessor::setParameter(const String& /*namespaceURI*/,
-                                 const String& localName,
+                                 const String& local_name,
                                  const String& value) {
   // FIXME: namespace support?
   // should make a QualifiedName here but we'd have to expose the impl
-  m_parameters.set(localName, value);
+  parameters_.Set(local_name, value);
 }
 
 String XSLTProcessor::getParameter(const String& /*namespaceURI*/,
-                                   const String& localName) const {
+                                   const String& local_name) const {
   // FIXME: namespace support?
   // should make a QualifiedName here but we'd have to expose the impl
-  return m_parameters.at(localName);
+  return parameters_.at(local_name);
 }
 
 void XSLTProcessor::removeParameter(const String& /*namespaceURI*/,
-                                    const String& localName) {
+                                    const String& local_name) {
   // FIXME: namespace support?
-  m_parameters.erase(localName);
+  parameters_.erase(local_name);
 }
 
 void XSLTProcessor::reset() {
-  m_stylesheet.clear();
-  m_stylesheetRootNode.clear();
-  m_parameters.clear();
+  stylesheet_.Clear();
+  stylesheet_root_node_.Clear();
+  parameters_.Clear();
 }
 
 DEFINE_TRACE(XSLTProcessor) {
-  visitor->trace(m_stylesheet);
-  visitor->trace(m_stylesheetRootNode);
-  visitor->trace(m_document);
+  visitor->Trace(stylesheet_);
+  visitor->Trace(stylesheet_root_node_);
+  visitor->Trace(document_);
 }
 
 }  // namespace blink

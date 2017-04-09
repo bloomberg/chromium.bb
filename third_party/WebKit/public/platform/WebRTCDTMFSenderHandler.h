@@ -37,14 +37,14 @@ class WebRTCDTMFSenderHandler {
  public:
   virtual ~WebRTCDTMFSenderHandler() {}
 
-  virtual void setClient(WebRTCDTMFSenderHandlerClient*) = 0;
+  virtual void SetClient(WebRTCDTMFSenderHandlerClient*) = 0;
 
-  virtual WebString currentToneBuffer() = 0;
+  virtual WebString CurrentToneBuffer() = 0;
 
-  virtual bool canInsertDTMF() = 0;
-  virtual bool insertDTMF(const WebString& tones,
+  virtual bool CanInsertDTMF() = 0;
+  virtual bool InsertDTMF(const WebString& tones,
                           long duration,
-                          long interToneGap) = 0;
+                          long inter_tone_gap) = 0;
 };
 
 }  // namespace blink

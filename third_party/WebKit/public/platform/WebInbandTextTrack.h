@@ -40,23 +40,23 @@ class WebInbandTextTrackClient;
 class WebInbandTextTrack {
  public:
   enum Kind {
-    KindSubtitles,
-    KindCaptions,
-    KindDescriptions,
-    KindChapters,
-    KindMetadata,
-    KindNone
+    kKindSubtitles,
+    kKindCaptions,
+    kKindDescriptions,
+    kKindChapters,
+    kKindMetadata,
+    kKindNone
   };
 
   virtual ~WebInbandTextTrack() {}
 
-  virtual void setClient(WebInbandTextTrackClient*) = 0;
-  virtual WebInbandTextTrackClient* client() = 0;
+  virtual void SetClient(WebInbandTextTrackClient*) = 0;
+  virtual WebInbandTextTrackClient* Client() = 0;
 
-  virtual Kind kind() const = 0;
-  virtual WebString label() const = 0;
-  virtual WebString language() const = 0;
-  virtual WebString id() const { return WebString(); }
+  virtual Kind GetKind() const = 0;
+  virtual WebString Label() const = 0;
+  virtual WebString Language() const = 0;
+  virtual WebString Id() const { return WebString(); }
 };
 
 }  // namespace blink

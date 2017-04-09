@@ -33,36 +33,36 @@
 
 namespace blink {
 
-DownSampler::DownSampler(size_t inputBlockSize)
-    : m_inputBlockSize(inputBlockSize),
-      m_reducedKernel(DefaultKernelSize / 2),
-      m_convolver(inputBlockSize / 2),  // runs at 1/2 source sample-rate
-      m_tempBuffer(inputBlockSize / 2),
-      m_inputBuffer(inputBlockSize * 2) {
-  initializeKernel();
+DownSampler::DownSampler(size_t input_block_size)
+    : input_block_size_(input_block_size),
+      reduced_kernel_(kDefaultKernelSize / 2),
+      convolver_(input_block_size / 2),  // runs at 1/2 source sample-rate
+      temp_buffer_(input_block_size / 2),
+      input_buffer_(input_block_size * 2) {
+  InitializeKernel();
 }
 
-void DownSampler::initializeKernel() {
+void DownSampler::InitializeKernel() {
   // Blackman window parameters.
   double alpha = 0.16;
   double a0 = 0.5 * (1.0 - alpha);
   double a1 = 0.5;
   double a2 = 0.5 * alpha;
 
-  int n = DefaultKernelSize;
-  int halfSize = n / 2;
+  int n = kDefaultKernelSize;
+  int half_size = n / 2;
 
   // Half-band filter.
-  double sincScaleFactor = 0.5;
+  double sinc_scale_factor = 0.5;
 
   // Compute only the odd terms because the even ones are zero, except right in
   // the middle at halfSize, which is 0.5 and we'll handle specially during
   // processing after doing the main convolution using m_reducedKernel.
   for (int i = 1; i < n; i += 2) {
     // Compute the sinc() with offset.
-    double s = sincScaleFactor * piDouble * (i - halfSize);
+    double s = sinc_scale_factor * piDouble * (i - half_size);
     double sinc = !s ? 1.0 : sin(s) / s;
-    sinc *= sincScaleFactor;
+    sinc *= sinc_scale_factor;
 
     // Compute Blackman window, matching the offset of the sinc().
     double x = static_cast<double>(i) / n;
@@ -73,76 +73,79 @@ void DownSampler::initializeKernel() {
     // Then store only the odd terms in the kernel.
     // In a sense, this is shifting forward in time by one sample-frame at the
     // destination sample-rate.
-    m_reducedKernel[(i - 1) / 2] = sinc * window;
+    reduced_kernel_[(i - 1) / 2] = sinc * window;
   }
 }
 
-void DownSampler::process(const float* sourceP,
-                          float* destP,
-                          size_t sourceFramesToProcess) {
-  bool isInputBlockSizeGood = sourceFramesToProcess == m_inputBlockSize;
-  DCHECK(isInputBlockSizeGood);
-  if (!isInputBlockSizeGood)
+void DownSampler::Process(const float* source_p,
+                          float* dest_p,
+                          size_t source_frames_to_process) {
+  bool is_input_block_size_good = source_frames_to_process == input_block_size_;
+  DCHECK(is_input_block_size_good);
+  if (!is_input_block_size_good)
     return;
 
-  size_t destFramesToProcess = sourceFramesToProcess / 2;
+  size_t dest_frames_to_process = source_frames_to_process / 2;
 
-  bool isTempBufferGood = destFramesToProcess == m_tempBuffer.size();
-  DCHECK(isTempBufferGood);
-  if (!isTempBufferGood)
+  bool is_temp_buffer_good = dest_frames_to_process == temp_buffer_.size();
+  DCHECK(is_temp_buffer_good);
+  if (!is_temp_buffer_good)
     return;
 
-  bool isReducedKernelGood = m_reducedKernel.size() == DefaultKernelSize / 2;
-  DCHECK(isReducedKernelGood);
-  if (!isReducedKernelGood)
+  bool is_reduced_kernel_good =
+      reduced_kernel_.size() == kDefaultKernelSize / 2;
+  DCHECK(is_reduced_kernel_good);
+  if (!is_reduced_kernel_good)
     return;
 
-  size_t halfSize = DefaultKernelSize / 2;
+  size_t half_size = kDefaultKernelSize / 2;
 
   // Copy source samples to 2nd half of input buffer.
-  bool isInputBufferGood = m_inputBuffer.size() == sourceFramesToProcess * 2 &&
-                           halfSize <= sourceFramesToProcess;
-  DCHECK(isInputBufferGood);
-  if (!isInputBufferGood)
+  bool is_input_buffer_good =
+      input_buffer_.size() == source_frames_to_process * 2 &&
+      half_size <= source_frames_to_process;
+  DCHECK(is_input_buffer_good);
+  if (!is_input_buffer_good)
     return;
 
-  float* inputP = m_inputBuffer.data() + sourceFramesToProcess;
-  memcpy(inputP, sourceP, sizeof(float) * sourceFramesToProcess);
+  float* input_p = input_buffer_.Data() + source_frames_to_process;
+  memcpy(input_p, source_p, sizeof(float) * source_frames_to_process);
 
   // Copy the odd sample-frames from sourceP, delayed by one sample-frame
   // (destination sample-rate) to match shifting forward in time in
   // m_reducedKernel.
-  float* oddSamplesP = m_tempBuffer.data();
-  for (unsigned i = 0; i < destFramesToProcess; ++i)
-    oddSamplesP[i] = *((inputP - 1) + i * 2);
+  float* odd_samples_p = temp_buffer_.Data();
+  for (unsigned i = 0; i < dest_frames_to_process; ++i)
+    odd_samples_p[i] = *((input_p - 1) + i * 2);
 
   // Actually process oddSamplesP with m_reducedKernel for efficiency.
   // The theoretical kernel is double this size with 0 values for even terms
   // (except center).
-  m_convolver.process(&m_reducedKernel, oddSamplesP, destP,
-                      destFramesToProcess);
+  convolver_.Process(&reduced_kernel_, odd_samples_p, dest_p,
+                     dest_frames_to_process);
 
   // Now, account for the 0.5 term right in the middle of the kernel.
   // This amounts to a delay-line of length halfSize (at the source
   // sample-rate), scaled by 0.5.
 
   // Sum into the destination.
-  for (unsigned i = 0; i < destFramesToProcess; ++i)
-    destP[i] += 0.5 * *((inputP - halfSize) + i * 2);
+  for (unsigned i = 0; i < dest_frames_to_process; ++i)
+    dest_p[i] += 0.5 * *((input_p - half_size) + i * 2);
 
   // Copy 2nd half of input buffer to 1st half.
-  memcpy(m_inputBuffer.data(), inputP, sizeof(float) * sourceFramesToProcess);
+  memcpy(input_buffer_.Data(), input_p,
+         sizeof(float) * source_frames_to_process);
 }
 
-void DownSampler::reset() {
-  m_convolver.reset();
-  m_inputBuffer.zero();
+void DownSampler::Reset() {
+  convolver_.Reset();
+  input_buffer_.Zero();
 }
 
-size_t DownSampler::latencyFrames() const {
+size_t DownSampler::LatencyFrames() const {
   // Divide by two since this is a linear phase kernel and the delay is at the
   // center of the kernel.
-  return m_reducedKernel.size() / 2;
+  return reduced_kernel_.size() / 2;
 }
 
 }  // namespace blink

@@ -18,31 +18,32 @@ class SVGLengthInterpolationType : public SVGInterpolationType {
  public:
   SVGLengthInterpolationType(const QualifiedName& attribute)
       : SVGInterpolationType(attribute),
-        m_unitMode(SVGLength::lengthModeForAnimatedLengthAttribute(attribute)),
-        m_negativeValuesForbidden(
-            SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(
+        unit_mode_(SVGLength::LengthModeForAnimatedLengthAttribute(attribute)),
+        negative_values_forbidden_(
+            SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
                 attribute)) {}
 
-  static std::unique_ptr<InterpolableValue> neutralInterpolableValue();
-  static InterpolationValue convertSVGLength(const SVGLength&);
-  static SVGLength* resolveInterpolableSVGLength(const InterpolableValue&,
-                                                 const SVGLengthContext&,
-                                                 SVGLengthMode,
-                                                 bool negativeValuesForbidden);
+  static std::unique_ptr<InterpolableValue> NeutralInterpolableValue();
+  static InterpolationValue ConvertSVGLength(const SVGLength&);
+  static SVGLength* ResolveInterpolableSVGLength(
+      const InterpolableValue&,
+      const SVGLengthContext&,
+      SVGLengthMode,
+      bool negative_values_forbidden);
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertSVGValue(
-      const SVGPropertyBase& svgValue) const final;
-  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+  InterpolationValue MaybeConvertSVGValue(
+      const SVGPropertyBase& svg_value) const final;
+  SVGPropertyBase* AppliedSVGValue(const InterpolableValue&,
                                    const NonInterpolableValue*) const final;
-  void apply(const InterpolableValue&,
+  void Apply(const InterpolableValue&,
              const NonInterpolableValue*,
              InterpolationEnvironment&) const final;
 
-  const SVGLengthMode m_unitMode;
-  const bool m_negativeValuesForbidden;
+  const SVGLengthMode unit_mode_;
+  const bool negative_values_forbidden_;
 };
 
 }  // namespace blink

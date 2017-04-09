@@ -25,7 +25,7 @@ const {{namespace}}QualifiedName& {{tag|symbol}}Tag = reinterpret_cast<{{namespa
 
 
 std::unique_ptr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags() {
-  std::unique_ptr<const {{namespace}}QualifiedName*[]> tags = wrapArrayUnique(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
+  std::unique_ptr<const {{namespace}}QualifiedName*[]> tags = WrapArrayUnique(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
   for (size_t i = 0; i < {{namespace}}TagsCount; i++)
     tags[i] = reinterpret_cast<{{namespace}}QualifiedName*>(&{{suffix}}TagStorage) + i;
   return tags;
@@ -42,7 +42,7 @@ const QualifiedName& {{attr|symbol}}Attr = reinterpret_cast<QualifiedName*>(&{{s
 
 {% if namespace != 'HTML' %}
 std::unique_ptr<const QualifiedName*[]> get{{namespace}}Attrs() {
-  std::unique_ptr<const QualifiedName*[]> attrs = wrapArrayUnique(new const QualifiedName*[{{namespace}}AttrsCount]);
+  std::unique_ptr<const QualifiedName*[]> attrs = WrapArrayUnique(new const QualifiedName*[{{namespace}}AttrsCount]);
   for (size_t i = 0; i < {{namespace}}AttrsCount; i++)
     attrs[i] = reinterpret_cast<QualifiedName*>(&{{suffix}}AttrStorage) + i;
   return attrs;
@@ -77,11 +77,11 @@ void init() {
   {% endif %}
   size_t attr_i = 0;
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNames); i++) {
-    StringImpl* stringImpl = StringImpl::createStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
+    StringImpl* stringImpl = StringImpl::CreateStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
     {% if tags %}
     if (kNames[i].isTag) {
       void* address = reinterpret_cast<{{namespace}}QualifiedName*>(&{{suffix}}TagStorage) + tag_i;
-      QualifiedName::createStatic(address, stringImpl, {{namespace_prefix}}NS);
+      QualifiedName::CreateStatic(address, stringImpl, {{namespace_prefix}}NS);
       tag_i++;
     }
 
@@ -90,9 +90,9 @@ void init() {
     {% endif %}
     void* address = reinterpret_cast<QualifiedName*>(&{{suffix}}AttrStorage) + attr_i;
     {% if use_namespace_for_attrs %}
-    QualifiedName::createStatic(address, stringImpl, {{namespace_prefix}}NS);
+    QualifiedName::CreateStatic(address, stringImpl, {{namespace_prefix}}NS);
     {% else %}
-    QualifiedName::createStatic(address, stringImpl);
+    QualifiedName::CreateStatic(address, stringImpl);
     {% endif %}
     attr_i++;
   }

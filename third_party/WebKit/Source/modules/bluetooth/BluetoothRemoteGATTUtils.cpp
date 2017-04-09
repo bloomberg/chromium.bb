@@ -8,12 +8,12 @@ namespace blink {
 
 // static
 DOMDataView* BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(
-    const WTF::Vector<uint8_t>& wtfVector) {
-  static_assert(sizeof(*wtfVector.data()) == 1,
+    const WTF::Vector<uint8_t>& wtf_vector) {
+  static_assert(sizeof(*wtf_vector.Data()) == 1,
                 "uint8_t should be a single byte");
-  DOMArrayBuffer* domBuffer =
-      DOMArrayBuffer::create(wtfVector.data(), wtfVector.size());
-  return DOMDataView::create(domBuffer, 0, wtfVector.size());
+  DOMArrayBuffer* dom_buffer =
+      DOMArrayBuffer::Create(wtf_vector.Data(), wtf_vector.size());
+  return DOMDataView::Create(dom_buffer, 0, wtf_vector.size());
 }
 
 }  // namespace blink

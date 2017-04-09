@@ -39,12 +39,12 @@ class PLATFORM_EXPORT ContentType {
  public:
   explicit ContentType(const String& type);
 
-  String parameter(const String& parameterName) const;
-  String type() const;
-  const String& raw() const { return m_type; }
+  String Parameter(const String& parameter_name) const;
+  String GetType() const;
+  const String& Raw() const { return type_; }
 
  private:
-  String m_type;
+  String type_;
 };
 
 }  // namespace blink

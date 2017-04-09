@@ -43,11 +43,11 @@ class WebFileChooserCompletionImpl final : public WebFileChooserCompletion {
  public:
   explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
   ~WebFileChooserCompletionImpl() override;
-  void didChooseFile(const WebVector<WebString>& fileNames) override;
-  void didChooseFile(const WebVector<SelectedFileInfo>& files) override;
+  void DidChooseFile(const WebVector<WebString>& file_names) override;
+  void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;
 
  private:
-  RefPtr<FileChooser> m_fileChooser;
+  RefPtr<FileChooser> file_chooser_;
 };
 
 }  // namespace blink

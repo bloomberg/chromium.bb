@@ -25,11 +25,11 @@
 
 namespace blink {
 
-CSSInitialValue* CSSInitialValue::create() {
-  return cssValuePool().initialValue();
+CSSInitialValue* CSSInitialValue::Create() {
+  return CssValuePool().InitialValue();
 }
 
-String CSSInitialValue::customCSSText() const {
+String CSSInitialValue::CustomCSSText() const {
   return "initial";
 }
 

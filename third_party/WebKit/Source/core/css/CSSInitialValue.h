@@ -28,23 +28,23 @@ namespace blink {
 
 class CSSInitialValue : public CSSValue {
  public:
-  static CSSInitialValue* create();
+  static CSSInitialValue* Create();
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSInitialValue&) const { return true; }
+  bool Equals(const CSSInitialValue&) const { return true; }
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
   friend class CSSValuePool;
 
-  CSSInitialValue() : CSSValue(InitialClass) {}
+  CSSInitialValue() : CSSValue(kInitialClass) {}
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, isInitialValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, IsInitialValue());
 
 }  // namespace blink
 

@@ -43,17 +43,17 @@ class UserGestureToken;
 class WebUserGestureToken {
  public:
   WebUserGestureToken() {}
-  WebUserGestureToken(const WebUserGestureToken& other) { assign(other); }
+  WebUserGestureToken(const WebUserGestureToken& other) { Assign(other); }
   WebUserGestureToken& operator=(const WebUserGestureToken& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
-  ~WebUserGestureToken() { reset(); }
+  ~WebUserGestureToken() { Reset(); }
 
-  BLINK_EXPORT bool hasGestures() const;
-  BLINK_EXPORT void setOutOfProcess();
-  BLINK_EXPORT void setJavascriptPrompt();
-  bool isNull() const { return m_token.isNull(); }
+  BLINK_EXPORT bool HasGestures() const;
+  BLINK_EXPORT void SetOutOfProcess();
+  BLINK_EXPORT void SetJavascriptPrompt();
+  bool IsNull() const { return token_.IsNull(); }
 
 #if BLINK_IMPLEMENTATION
   explicit WebUserGestureToken(PassRefPtr<UserGestureToken>);
@@ -61,10 +61,10 @@ class WebUserGestureToken {
 #endif
 
  private:
-  BLINK_EXPORT void assign(const WebUserGestureToken&);
-  BLINK_EXPORT void reset();
+  BLINK_EXPORT void Assign(const WebUserGestureToken&);
+  BLINK_EXPORT void Reset();
 
-  WebPrivatePtr<UserGestureToken> m_token;
+  WebPrivatePtr<UserGestureToken> token_;
 };
 
 }  // namespace blink

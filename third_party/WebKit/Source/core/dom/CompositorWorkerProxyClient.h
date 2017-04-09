@@ -22,16 +22,16 @@ class CORE_EXPORT CompositorWorkerProxyClient
  public:
   CompositorWorkerProxyClient() {}
 
-  static CompositorWorkerProxyClient* from(WorkerClients*);
-  static const char* supplementName();
+  static CompositorWorkerProxyClient* From(WorkerClients*);
+  static const char* SupplementName();
 
-  virtual void dispose() = 0;
-  virtual void setGlobalScope(WorkerGlobalScope*) = 0;
-  virtual void requestAnimationFrame() = 0;
-  virtual CompositorProxyClient* compositorProxyClient() = 0;
+  virtual void Dispose() = 0;
+  virtual void SetGlobalScope(WorkerGlobalScope*) = 0;
+  virtual void RequestAnimationFrame() = 0;
+  virtual CompositorProxyClient* GetCompositorProxyClient() = 0;
 };
 
-CORE_EXPORT void provideCompositorWorkerProxyClientTo(
+CORE_EXPORT void ProvideCompositorWorkerProxyClientTo(
     WorkerClients*,
     CompositorWorkerProxyClient*);
 

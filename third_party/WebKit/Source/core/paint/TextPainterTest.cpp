@@ -23,142 +23,145 @@ namespace {
 class TextPainterTest : public RenderingTest {
  public:
   TextPainterTest()
-      : m_layoutText(nullptr),
-        m_paintController(PaintController::create()),
-        m_context(*m_paintController) {}
+      : layout_text_(nullptr),
+        paint_controller_(PaintController::Create()),
+        context_(*paint_controller_) {}
 
  protected:
-  LineLayoutText getLineLayoutText() { return LineLayoutText(m_layoutText); }
+  LineLayoutText GetLineLayoutText() { return LineLayoutText(layout_text_); }
 
-  PaintInfo createPaintInfo(bool usesTextAsClip, bool isPrinting) {
+  PaintInfo CreatePaintInfo(bool uses_text_as_clip, bool is_printing) {
     return PaintInfo(
-        m_context, IntRect(),
-        usesTextAsClip ? PaintPhaseTextClip : PaintPhaseSelfBlockBackgroundOnly,
-        isPrinting ? GlobalPaintPrinting : GlobalPaintNormalPhase, 0);
+        context_, IntRect(),
+        uses_text_as_clip ? kPaintPhaseTextClip
+                          : kPaintPhaseSelfBlockBackgroundOnly,
+        is_printing ? kGlobalPaintPrinting : kGlobalPaintNormalPhase, 0);
   }
 
  private:
   void SetUp() override {
     RenderingTest::SetUp();
-    setBodyInnerHTML("Hello world");
-    m_layoutText =
-        toLayoutText(document().body()->firstChild()->layoutObject());
-    ASSERT_TRUE(m_layoutText);
-    ASSERT_EQ("Hello world", m_layoutText->text());
+    SetBodyInnerHTML("Hello world");
+    layout_text_ =
+        ToLayoutText(GetDocument().body()->FirstChild()->GetLayoutObject());
+    ASSERT_TRUE(layout_text_);
+    ASSERT_EQ("Hello world", layout_text_->GetText());
   }
 
-  LayoutText* m_layoutText;
-  std::unique_ptr<PaintController> m_paintController;
-  GraphicsContext m_context;
+  LayoutText* layout_text_;
+  std::unique_ptr<PaintController> paint_controller_;
+  GraphicsContext context_;
 };
 
 TEST_F(TextPainterTest, TextPaintingStyle_Simple) {
-  document().body()->setInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-      getLineLayoutText(), getLineLayoutText().styleRef(),
-      createPaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
-  EXPECT_EQ(Color(0, 0, 255), textStyle.fillColor);
-  EXPECT_EQ(Color(0, 0, 255), textStyle.strokeColor);
-  EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
-  EXPECT_EQ(0, textStyle.strokeWidth);
-  EXPECT_EQ(nullptr, textStyle.shadow);
+  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
+  EXPECT_EQ(Color(0, 0, 255), text_style.fill_color);
+  EXPECT_EQ(Color(0, 0, 255), text_style.stroke_color);
+  EXPECT_EQ(Color(0, 0, 255), text_style.emphasis_mark_color);
+  EXPECT_EQ(0, text_style.stroke_width);
+  EXPECT_EQ(nullptr, text_style.shadow);
 }
 
 TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor,
-                                            CSSValueRed);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
-                                            CSSValueLime);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor,
-                                            CSSValueBlue);
-  document().body()->setInlineStyleProperty(
-      CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::UnitType::Pixels);
-  document().body()->setInlineStyleProperty(CSSPropertyTextShadow,
-                                            "1px 2px 3px yellow");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextFillColor,
+                                               CSSValueRed);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
+                                               CSSValueLime);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextStrokeWidth, 4,
+      CSSPrimitiveValue::UnitType::kPixels);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
+                                               "1px 2px 3px yellow");
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-      getLineLayoutText(), getLineLayoutText().styleRef(),
-      createPaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
-  EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
-  EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
-  EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
-  EXPECT_EQ(4, textStyle.strokeWidth);
-  ASSERT_NE(nullptr, textStyle.shadow);
-  EXPECT_EQ(1u, textStyle.shadow->shadows().size());
-  EXPECT_EQ(1, textStyle.shadow->shadows()[0].x());
-  EXPECT_EQ(2, textStyle.shadow->shadows()[0].y());
-  EXPECT_EQ(3, textStyle.shadow->shadows()[0].blur());
+  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
+  EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
+  EXPECT_EQ(Color(0, 255, 0), text_style.stroke_color);
+  EXPECT_EQ(Color(0, 0, 255), text_style.emphasis_mark_color);
+  EXPECT_EQ(4, text_style.stroke_width);
+  ASSERT_NE(nullptr, text_style.shadow);
+  EXPECT_EQ(1u, text_style.shadow->Shadows().size());
+  EXPECT_EQ(1, text_style.shadow->Shadows()[0].X());
+  EXPECT_EQ(2, text_style.shadow->Shadows()[0].Y());
+  EXPECT_EQ(3, text_style.shadow->Shadows()[0].Blur());
   EXPECT_EQ(Color(255, 255, 0),
-            textStyle.shadow->shadows()[0].color().getColor());
+            text_style.shadow->Shadows()[0].GetColor().GetColor());
 }
 
 TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor,
-                                            CSSValueRed);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
-                                            CSSValueLime);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor,
-                                            CSSValueBlue);
-  document().body()->setInlineStyleProperty(
-      CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::UnitType::Pixels);
-  document().body()->setInlineStyleProperty(CSSPropertyTextShadow,
-                                            "1px 2px 3px yellow");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextFillColor,
+                                               CSSValueRed);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
+                                               CSSValueLime);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextStrokeWidth, 4,
+      CSSPrimitiveValue::UnitType::kPixels);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
+                                               "1px 2px 3px yellow");
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-      getLineLayoutText(), getLineLayoutText().styleRef(),
-      createPaintInfo(true /* usesTextAsClip */, false /* isPrinting */));
-  EXPECT_EQ(Color::black, textStyle.fillColor);
-  EXPECT_EQ(Color::black, textStyle.strokeColor);
-  EXPECT_EQ(Color::black, textStyle.emphasisMarkColor);
-  EXPECT_EQ(4, textStyle.strokeWidth);
-  EXPECT_EQ(nullptr, textStyle.shadow);
+  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      CreatePaintInfo(true /* usesTextAsClip */, false /* isPrinting */));
+  EXPECT_EQ(Color::kBlack, text_style.fill_color);
+  EXPECT_EQ(Color::kBlack, text_style.stroke_color);
+  EXPECT_EQ(Color::kBlack, text_style.emphasis_mark_color);
+  EXPECT_EQ(4, text_style.stroke_width);
+  EXPECT_EQ(nullptr, text_style.shadow);
 }
 
 TEST_F(TextPainterTest,
        TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNeeded) {
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor,
-                                            CSSValueRed);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
-                                            CSSValueLime);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor,
-                                            CSSValueBlue);
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust,
-                                            CSSValueEconomy);
-  document().settings()->setShouldPrintBackgrounds(false);
-  document().setPrinting(Document::Printing);
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextFillColor,
+                                               CSSValueRed);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
+                                               CSSValueLime);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
+  GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
+  GetDocument().SetPrinting(Document::kPrinting);
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-      getLineLayoutText(), getLineLayoutText().styleRef(),
-      createPaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
-  EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
-  EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
-  EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
+  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
+  EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
+  EXPECT_EQ(Color(0, 255, 0), text_style.stroke_color);
+  EXPECT_EQ(Color(0, 0, 255), text_style.emphasis_mark_color);
 }
 
 TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor,
-                                            "rgb(255, 220, 220)");
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
-                                            "rgb(220, 255, 220)");
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor,
-                                            "rgb(220, 220, 255)");
-  document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust,
-                                            CSSValueEconomy);
-  document().settings()->setShouldPrintBackgrounds(false);
-  document().setPrinting(Document::Printing);
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextFillColor,
+                                               "rgb(255, 220, 220)");
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyWebkitTextStrokeColor,
+                                               "rgb(220, 255, 220)");
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitTextEmphasisColor, "rgb(220, 220, 255)");
+  GetDocument().body()->SetInlineStyleProperty(
+      CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
+  GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
+  GetDocument().SetPrinting(Document::kPrinting);
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-      getLineLayoutText(), getLineLayoutText().styleRef(),
-      createPaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
-  EXPECT_EQ(Color(255, 220, 220).dark(), textStyle.fillColor);
-  EXPECT_EQ(Color(220, 255, 220).dark(), textStyle.strokeColor);
-  EXPECT_EQ(Color(220, 220, 255).dark(), textStyle.emphasisMarkColor);
+  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
+  EXPECT_EQ(Color(255, 220, 220).Dark(), text_style.fill_color);
+  EXPECT_EQ(Color(220, 255, 220).Dark(), text_style.stroke_color);
+  EXPECT_EQ(Color(220, 220, 255).Dark(), text_style.emphasis_mark_color);
 }
 
 }  // namespace

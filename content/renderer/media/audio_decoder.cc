@@ -62,7 +62,7 @@ bool DecodeAudioFileData(
 
   // Allocate and configure the output audio channel data and then
   // copy the decoded data to the destination.
-  destination_bus->initialize(number_of_channels, number_of_frames,
+  destination_bus->Initialize(number_of_channels, number_of_frames,
                               file_sample_rate);
 
   int dest_frame_offset = 0;
@@ -70,7 +70,7 @@ bool DecodeAudioFileData(
     AudioBus* packet = decoded_audio_packets[k].get();
     int packet_length = packet->frames();
     for (size_t ch = 0; ch < number_of_channels; ++ch) {
-      float* dst = destination_bus->channelData(ch);
+      float* dst = destination_bus->ChannelData(ch);
       float* src = packet->channel(ch);
       DCHECK_LE(dest_frame_offset + packet_length, number_of_frames);
       memcpy(dst + dest_frame_offset, src, packet_length * sizeof(*dst));

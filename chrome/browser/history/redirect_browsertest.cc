@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
   // as client redirect and the redirect will be recoreded, which can cause
   // this test failed.
   content::SimulateMouseClick(web_contents, 0,
-      blink::WebMouseEvent::Button::Left);
+                              blink::WebMouseEvent::Button::kLeft);
   navigation_observer.Wait();
 
   std::vector<GURL> redirects = GetRedirects(first_url);

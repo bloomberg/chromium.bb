@@ -44,33 +44,33 @@ class AXImageMapLink final : public AXNodeObject {
   explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
 
  public:
-  static AXImageMapLink* create(HTMLAreaElement*, AXObjectCacheImpl&);
+  static AXImageMapLink* Create(HTMLAreaElement*, AXObjectCacheImpl&);
   ~AXImageMapLink() override;
   DECLARE_VIRTUAL_TRACE();
 
-  HTMLAreaElement* areaElement() const { return toHTMLAreaElement(getNode()); }
+  HTMLAreaElement* AreaElement() const { return toHTMLAreaElement(GetNode()); }
 
-  HTMLMapElement* mapElement() const;
+  HTMLMapElement* MapElement() const;
 
-  AccessibilityRole roleValue() const override;
-  bool isEnabled() const override { return true; }
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  AccessibilityRole RoleValue() const override;
+  bool IsEnabled() const override { return true; }
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-  Element* anchorElement() const override;
-  Element* actionElement() const override;
-  KURL url() const override;
-  bool isLink() const override { return true; }
-  bool isLinked() const override { return true; }
-  AXObject* computeParent() const override;
-  void getRelativeBounds(AXObject** outContainer,
-                         FloatRect& outBoundsInContainer,
-                         SkMatrix44& outContainerTransform) const override;
+  Element* AnchorElement() const override;
+  Element* ActionElement() const override;
+  KURL Url() const override;
+  bool IsLink() const override { return true; }
+  bool IsLinked() const override { return true; }
+  AXObject* ComputeParent() const override;
+  void GetRelativeBounds(AXObject** out_container,
+                         FloatRect& out_bounds_in_container,
+                         SkMatrix44& out_container_transform) const override;
 
  private:
-  bool isImageMapLink() const override { return true; }
+  bool IsImageMapLink() const override { return true; }
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, IsImageMapLink());
 
 }  // namespace blink
 

@@ -33,145 +33,146 @@ namespace blink {
 
 LayoutTextFragment::LayoutTextFragment(Node* node,
                                        StringImpl* str,
-                                       int startOffset,
+                                       int start_offset,
                                        int length)
     : LayoutText(node,
-                 str ? str->substring(startOffset, length)
+                 str ? str->Substring(start_offset, length)
                      : PassRefPtr<StringImpl>(nullptr)),
-      m_start(startOffset),
-      m_fragmentLength(length),
-      m_isRemainingTextLayoutObject(false),
-      m_contentString(str),
-      m_firstLetterPseudoElement(nullptr) {}
+      start_(start_offset),
+      fragment_length_(length),
+      is_remaining_text_layout_object_(false),
+      content_string_(str),
+      first_letter_pseudo_element_(nullptr) {}
 
 LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
     : LayoutTextFragment(node, str, 0, str ? str->length() : 0) {}
 
 LayoutTextFragment::~LayoutTextFragment() {
-  DCHECK(!m_firstLetterPseudoElement);
+  DCHECK(!first_letter_pseudo_element_);
 }
 
-LayoutTextFragment* LayoutTextFragment::createAnonymous(PseudoElement& pseudo,
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
                                                         StringImpl* text,
                                                         unsigned start,
                                                         unsigned length) {
   LayoutTextFragment* fragment =
       new LayoutTextFragment(nullptr, text, start, length);
-  fragment->setDocumentForAnonymous(&pseudo.document());
+  fragment->SetDocumentForAnonymous(&pseudo.GetDocument());
   if (length)
-    pseudo.document().view()->incrementVisuallyNonEmptyCharacterCount(length);
+    pseudo.GetDocument().View()->IncrementVisuallyNonEmptyCharacterCount(
+        length);
   return fragment;
 }
 
-LayoutTextFragment* LayoutTextFragment::createAnonymous(PseudoElement& pseudo,
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
                                                         StringImpl* text) {
-  return createAnonymous(pseudo, text, 0, text ? text->length() : 0);
+  return CreateAnonymous(pseudo, text, 0, text ? text->length() : 0);
 }
 
-void LayoutTextFragment::willBeDestroyed() {
-  if (m_isRemainingTextLayoutObject && m_firstLetterPseudoElement)
-    m_firstLetterPseudoElement->setRemainingTextLayoutObject(nullptr);
-  m_firstLetterPseudoElement = nullptr;
-  LayoutText::willBeDestroyed();
+void LayoutTextFragment::WillBeDestroyed() {
+  if (is_remaining_text_layout_object_ && first_letter_pseudo_element_)
+    first_letter_pseudo_element_->SetRemainingTextLayoutObject(nullptr);
+  first_letter_pseudo_element_ = nullptr;
+  LayoutText::WillBeDestroyed();
 }
 
-PassRefPtr<StringImpl> LayoutTextFragment::completeText() const {
-  Text* text = associatedTextNode();
-  return text ? text->dataImpl() : contentString();
+PassRefPtr<StringImpl> LayoutTextFragment::CompleteText() const {
+  Text* text = AssociatedTextNode();
+  return text ? text->DataImpl() : ContentString();
 }
 
-void LayoutTextFragment::setContentString(StringImpl* str) {
-  m_contentString = str;
-  setText(str);
+void LayoutTextFragment::SetContentString(StringImpl* str) {
+  content_string_ = str;
+  SetText(str);
 }
 
-PassRefPtr<StringImpl> LayoutTextFragment::originalText() const {
-  RefPtr<StringImpl> result = completeText();
+PassRefPtr<StringImpl> LayoutTextFragment::OriginalText() const {
+  RefPtr<StringImpl> result = CompleteText();
   if (!result)
     return nullptr;
-  return result->substring(start(), fragmentLength());
+  return result->Substring(Start(), FragmentLength());
 }
 
-void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force) {
-  LayoutText::setText(std::move(text), force);
+void LayoutTextFragment::SetText(PassRefPtr<StringImpl> text, bool force) {
+  LayoutText::SetText(std::move(text), force);
 
-  m_start = 0;
-  m_fragmentLength = textLength();
+  start_ = 0;
+  fragment_length_ = TextLength();
 
   // If we're the remaining text from a first letter then we have to tell the
   // first letter pseudo element to reattach itself so it can re-calculate the
   // correct first-letter settings.
-  if (isRemainingTextLayoutObject()) {
-    DCHECK(firstLetterPseudoElement());
-    firstLetterPseudoElement()->updateTextFragments();
+  if (IsRemainingTextLayoutObject()) {
+    DCHECK(GetFirstLetterPseudoElement());
+    GetFirstLetterPseudoElement()->UpdateTextFragments();
   }
 }
 
-void LayoutTextFragment::setTextFragment(PassRefPtr<StringImpl> text,
+void LayoutTextFragment::SetTextFragment(PassRefPtr<StringImpl> text,
                                          unsigned start,
                                          unsigned length) {
-  LayoutText::setText(std::move(text), false);
+  LayoutText::SetText(std::move(text), false);
 
-  m_start = start;
-  m_fragmentLength = length;
+  start_ = start;
+  fragment_length_ = length;
 }
 
-void LayoutTextFragment::transformText() {
+void LayoutTextFragment::TransformText() {
   // Note, we have to call LayoutText::setText here because, if we use our
   // version we will, potentially, screw up the first-letter settings where
   // we only use portions of the string.
-  if (RefPtr<StringImpl> textToTransform = originalText())
-    LayoutText::setText(std::move(textToTransform), true);
+  if (RefPtr<StringImpl> text_to_transform = OriginalText())
+    LayoutText::SetText(std::move(text_to_transform), true);
 }
 
-UChar LayoutTextFragment::previousCharacter() const {
-  if (start()) {
-    StringImpl* original = completeText().get();
-    if (original && start() <= original->length())
-      return (*original)[start() - 1];
+UChar LayoutTextFragment::PreviousCharacter() const {
+  if (Start()) {
+    StringImpl* original = CompleteText().Get();
+    if (original && Start() <= original->length())
+      return (*original)[Start() - 1];
   }
 
-  return LayoutText::previousCharacter();
+  return LayoutText::PreviousCharacter();
 }
 
 // If this is the layoutObject for a first-letter pseudoNode then we have to
 // look at the node for the remaining text to find our content.
-Text* LayoutTextFragment::associatedTextNode() const {
-  Node* node = this->firstLetterPseudoElement();
-  if (m_isRemainingTextLayoutObject || !node) {
+Text* LayoutTextFragment::AssociatedTextNode() const {
+  Node* node = this->GetFirstLetterPseudoElement();
+  if (is_remaining_text_layout_object_ || !node) {
     // If we don't have a node, then we aren't part of a first-letter pseudo
     // element, so use the actual node. Likewise, if we have a node, but
     // we're the remainingTextLayoutObject for a pseudo element use the real
     // text node.
-    node = this->node();
+    node = this->GetNode();
   }
 
   if (!node)
     return nullptr;
 
-  if (node->isFirstLetterPseudoElement()) {
-    FirstLetterPseudoElement* pseudo = toFirstLetterPseudoElement(node);
-    LayoutObject* nextLayoutObject =
-        FirstLetterPseudoElement::firstLetterTextLayoutObject(*pseudo);
-    if (!nextLayoutObject)
+  if (node->IsFirstLetterPseudoElement()) {
+    FirstLetterPseudoElement* pseudo = ToFirstLetterPseudoElement(node);
+    LayoutObject* next_layout_object =
+        FirstLetterPseudoElement::FirstLetterTextLayoutObject(*pseudo);
+    if (!next_layout_object)
       return nullptr;
-    node = nextLayoutObject->node();
+    node = next_layout_object->GetNode();
   }
-  return (node && node->isTextNode()) ? toText(node) : nullptr;
+  return (node && node->IsTextNode()) ? ToText(node) : nullptr;
 }
 
-void LayoutTextFragment::updateHitTestResult(HitTestResult& result,
+void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
                                              const LayoutPoint& point) {
-  if (result.innerNode())
+  if (result.InnerNode())
     return;
 
-  LayoutObject::updateHitTestResult(result, point);
+  LayoutObject::UpdateHitTestResult(result, point);
 
   // If we aren't part of a first-letter element, or if we
   // are part of first-letter but we're the remaining text then return.
-  if (m_isRemainingTextLayoutObject || !firstLetterPseudoElement())
+  if (is_remaining_text_layout_object_ || !GetFirstLetterPseudoElement())
     return;
-  result.setInnerNode(firstLetterPseudoElement());
+  result.SetInnerNode(GetFirstLetterPseudoElement());
 }
 
 }  // namespace blink

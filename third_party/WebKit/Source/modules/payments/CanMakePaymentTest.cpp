@@ -18,14 +18,14 @@ using payments::mojom::blink::PaymentRequestClient;
 
 TEST(CanMakePaymentTest, RejectPromiseOnUserCancel) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
       PaymentErrorReason::USER_CANCEL);
@@ -33,14 +33,14 @@ TEST(CanMakePaymentTest, RejectPromiseOnUserCancel) {
 
 TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
       PaymentErrorReason::UNKNOWN);
@@ -48,27 +48,27 @@ TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
 
 TEST(CanMakePaymentTest, RejectDuplicateRequest) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
-  request->canMakePayment(scope.getScriptState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+  request->canMakePayment(scope.GetScriptState());
 
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 }
 
 TEST(CanMakePaymentTest, RejectQueryQuotaExceeded) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
       CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
@@ -76,37 +76,37 @@ TEST(CanMakePaymentTest, RejectQueryQuotaExceeded) {
 
 TEST(CanMakePaymentTest, ReturnCannotMakeCanMakePayment) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
   String captor;
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectCall(&captor), funcs.expectNoCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
       CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("false", captor);
 }
 
 TEST(CanMakePaymentTest, ReturnCanMakePayment) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
   String captor;
-  request->canMakePayment(scope.getScriptState())
-      .then(funcs.expectCall(&captor), funcs.expectNoCall());
+  request->canMakePayment(scope.GetScriptState())
+      .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
       CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("true", captor);
 }
 

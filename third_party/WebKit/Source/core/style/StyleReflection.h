@@ -34,32 +34,32 @@ namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
  public:
-  static PassRefPtr<StyleReflection> create() {
-    return adoptRef(new StyleReflection);
+  static PassRefPtr<StyleReflection> Create() {
+    return AdoptRef(new StyleReflection);
   }
 
   bool operator==(const StyleReflection& o) const {
-    return m_direction == o.m_direction && m_offset == o.m_offset &&
-           m_mask == o.m_mask;
+    return direction_ == o.direction_ && offset_ == o.offset_ &&
+           mask_ == o.mask_;
   }
   bool operator!=(const StyleReflection& o) const { return !(*this == o); }
 
-  CSSReflectionDirection direction() const { return m_direction; }
-  Length offset() const { return m_offset; }
-  const NinePieceImage& mask() const { return m_mask; }
+  CSSReflectionDirection Direction() const { return direction_; }
+  Length Offset() const { return offset_; }
+  const NinePieceImage& Mask() const { return mask_; }
 
-  void setDirection(CSSReflectionDirection dir) { m_direction = dir; }
-  void setOffset(const Length& length) { m_offset = length; }
-  void setMask(const NinePieceImage& image) { m_mask = image; }
+  void SetDirection(CSSReflectionDirection dir) { direction_ = dir; }
+  void SetOffset(const Length& length) { offset_ = length; }
+  void SetMask(const NinePieceImage& image) { mask_ = image; }
 
  private:
-  StyleReflection() : m_direction(ReflectionBelow), m_offset(0, Fixed) {
-    m_mask.setMaskDefaults();
+  StyleReflection() : direction_(kReflectionBelow), offset_(0, kFixed) {
+    mask_.SetMaskDefaults();
   }
 
-  CSSReflectionDirection m_direction;
-  Length m_offset;
-  NinePieceImage m_mask;
+  CSSReflectionDirection direction_;
+  Length offset_;
+  NinePieceImage mask_;
 };
 
 }  // namespace blink

@@ -38,20 +38,20 @@ class HTMLUnknownElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLUnknownElement* create(const QualifiedName& tagName,
+  static HTMLUnknownElement* Create(const QualifiedName& tag_name,
                                     Document& document) {
-    return new HTMLUnknownElement(tagName, document);
+    return new HTMLUnknownElement(tag_name, document);
   }
 
  private:
   HTMLUnknownElement(const QualifiedName&, Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isHTMLUnknownElement() const override { return true; }
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsHTMLUnknownElement() const override { return true; }
 };
 
-inline bool isHTMLUnknownElement(const HTMLElement& element) {
-  return element.isHTMLUnknownElement();
+inline bool IsHTMLUnknownElement(const HTMLElement& element) {
+  return element.IsHTMLUnknownElement();
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);

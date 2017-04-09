@@ -37,48 +37,48 @@
 
 namespace blink {
 
-WorkerContentSettingsClient* WorkerContentSettingsClient::create(
+WorkerContentSettingsClient* WorkerContentSettingsClient::Create(
     std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy) {
   return new WorkerContentSettingsClient(std::move(proxy));
 }
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
 
-bool WorkerContentSettingsClient::requestFileSystemAccessSync() {
-  if (!m_proxy)
+bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
+  if (!proxy_)
     return true;
-  return m_proxy->requestFileSystemAccessSync();
+  return proxy_->RequestFileSystemAccessSync();
 }
 
-bool WorkerContentSettingsClient::allowIndexedDB(const WebString& name) {
-  if (!m_proxy)
+bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
+  if (!proxy_)
     return true;
-  return m_proxy->allowIndexedDB(name);
+  return proxy_->AllowIndexedDB(name);
 }
 
-const char* WorkerContentSettingsClient::supplementName() {
+const char* WorkerContentSettingsClient::SupplementName() {
   return "WorkerContentSettingsClient";
 }
 
-WorkerContentSettingsClient* WorkerContentSettingsClient::from(
+WorkerContentSettingsClient* WorkerContentSettingsClient::From(
     ExecutionContext& context) {
-  WorkerClients* clients = toWorkerGlobalScope(context).clients();
+  WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
   DCHECK(clients);
   return static_cast<WorkerContentSettingsClient*>(
-      Supplement<WorkerClients>::from(*clients, supplementName()));
+      Supplement<WorkerClients>::From(*clients, SupplementName()));
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
     std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy)
-    : m_proxy(std::move(proxy)) {}
+    : proxy_(std::move(proxy)) {}
 
-void provideContentSettingsClientToWorker(
+void ProvideContentSettingsClientToWorker(
     WorkerClients* clients,
     std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy) {
   DCHECK(clients);
-  WorkerContentSettingsClient::provideTo(
-      *clients, WorkerContentSettingsClient::supplementName(),
-      WorkerContentSettingsClient::create(std::move(proxy)));
+  WorkerContentSettingsClient::ProvideTo(
+      *clients, WorkerContentSettingsClient::SupplementName(),
+      WorkerContentSettingsClient::Create(std::move(proxy)));
 }
 
 }  // namespace blink

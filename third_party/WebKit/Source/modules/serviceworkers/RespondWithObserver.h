@@ -32,47 +32,47 @@ class MODULES_EXPORT RespondWithObserver
  public:
   virtual ~RespondWithObserver() = default;
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  void willDispatchEvent();
-  void didDispatchEvent(DispatchEventResult dispatchResult);
+  void WillDispatchEvent();
+  void DidDispatchEvent(DispatchEventResult dispatch_result);
 
   // The respondWith() observes the promise until the given promise is resolved
   // or rejected and then delays calling ServiceWorkerGlobalScopeClient::
   // didHandle*Event() in order to notify the result to the client.
-  void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
+  void RespondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   // Called when the respondWith() promise was rejected.
-  virtual void onResponseRejected(WebServiceWorkerResponseError) = 0;
+  virtual void OnResponseRejected(WebServiceWorkerResponseError) = 0;
 
   // Called when the respondWith() promise was fulfilled.
-  virtual void onResponseFulfilled(const ScriptValue&) = 0;
+  virtual void OnResponseFulfilled(const ScriptValue&) = 0;
 
   // Called when the event handler finished without calling respondWith().
-  virtual void onNoResponse() = 0;
+  virtual void OnNoResponse() = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  RespondWithObserver(ExecutionContext*, int eventID, WaitUntilObserver*);
-  const int m_eventID;
-  double m_eventDispatchTime = 0;
+  RespondWithObserver(ExecutionContext*, int event_id, WaitUntilObserver*);
+  const int event_id_;
+  double event_dispatch_time_ = 0;
 
  private:
   class ThenFunction;
 
-  void responseWasRejected(WebServiceWorkerResponseError);
-  void responseWasFulfilled(const ScriptValue&);
+  void ResponseWasRejected(WebServiceWorkerResponseError);
+  void ResponseWasFulfilled(const ScriptValue&);
 
-  enum State { Initial, Pending, Done };
-  State m_state;
+  enum State { kInitial, kPending, kDone };
+  State state_;
 
   // RespondWith should ensure the ExtendableEvent is alive until the promise
   // passed to RespondWith is resolved. The lifecycle of the ExtendableEvent
   // is controlled by WaitUntilObserver, so not only
   // WaitUntilObserver::ThenFunction but RespondWith needs to have a strong
   // reference to the WaitUntilObserver.
-  Member<WaitUntilObserver> m_observer;
+  Member<WaitUntilObserver> observer_;
 };
 
 }  // namespace blink

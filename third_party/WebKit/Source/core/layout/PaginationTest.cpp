@@ -12,105 +12,105 @@ namespace blink {
 
 class PaginationStrutTest : public RenderingTest {
  public:
-  int strutForBox(const char* blockId) {
-    LayoutObject* layoutObject = getLayoutObjectByElementId(blockId);
-    if (!layoutObject || !layoutObject->isBox())
+  int StrutForBox(const char* block_id) {
+    LayoutObject* layout_object = GetLayoutObjectByElementId(block_id);
+    if (!layout_object || !layout_object->IsBox())
       return std::numeric_limits<int>::min();
-    LayoutBox* box = toLayoutBox(layoutObject);
-    return box->paginationStrut().toInt();
+    LayoutBox* box = ToLayoutBox(layout_object);
+    return box->PaginationStrut().ToInt();
   }
 
-  int strutForLine(const char* containerId, int lineIndex) {
-    LayoutObject* layoutObject = getLayoutObjectByElementId(containerId);
-    if (!layoutObject || !layoutObject->isLayoutBlockFlow())
+  int StrutForLine(const char* container_id, int line_index) {
+    LayoutObject* layout_object = GetLayoutObjectByElementId(container_id);
+    if (!layout_object || !layout_object->IsLayoutBlockFlow())
       return std::numeric_limits<int>::min();
-    LayoutBlockFlow* block = toLayoutBlockFlow(layoutObject);
-    if (block->multiColumnFlowThread())
-      block = block->multiColumnFlowThread();
-    for (RootInlineBox *line = block->firstRootBox(); line;
-         line = line->nextRootBox(), lineIndex--) {
-      if (lineIndex)
+    LayoutBlockFlow* block = ToLayoutBlockFlow(layout_object);
+    if (block->MultiColumnFlowThread())
+      block = block->MultiColumnFlowThread();
+    for (RootInlineBox *line = block->FirstRootBox(); line;
+         line = line->NextRootBox(), line_index--) {
+      if (line_index)
         continue;
-      return line->paginationStrut().toInt();
+      return line->PaginationStrut().ToInt();
     }
     return std::numeric_limits<int>::min();
   }
 };
 
 TEST_F(PaginationStrutTest, LineWithStrut) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='paged' style='overflow:-webkit-paged-y; height:200px; "
       "line-height:150px;'>"
       "    line1<br>"
       "    line2<br>"
       "</div>");
-  EXPECT_EQ(0, strutForLine("paged", 0));
-  EXPECT_EQ(50, strutForLine("paged", 1));
+  EXPECT_EQ(0, StrutForLine("paged", 0));
+  EXPECT_EQ(50, StrutForLine("paged", 1));
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrut) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
       "    <div id='block1'>line1</div>"
       "    <div id='block2'>line2</div>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("block1"));
-  EXPECT_EQ(0, strutForLine("block1", 0));
-  EXPECT_EQ(50, strutForBox("block2"));
-  EXPECT_EQ(0, strutForLine("block2", 0));
+  EXPECT_EQ(0, StrutForBox("block1"));
+  EXPECT_EQ(0, StrutForLine("block1", 0));
+  EXPECT_EQ(50, StrutForBox("block2"));
+  EXPECT_EQ(0, StrutForLine("block2", 0));
 }
 
 TEST_F(PaginationStrutTest, FloatWithStrut) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
       "    <div style='height:120px;'></div>"
       "    <div id='float' style='float:left;'>line</div>"
       "</div>");
-  EXPECT_EQ(80, strutForBox("float"));
-  EXPECT_EQ(0, strutForLine("float", 0));
+  EXPECT_EQ(80, StrutForBox("float"));
+  EXPECT_EQ(0, StrutForLine("float", 0));
 }
 
 TEST_F(PaginationStrutTest, UnbreakableBlockWithStrut) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>img { display:block; width:100px; height:150px; outline:4px "
       "solid blue; padding:0; border:none; margin:0; }</style>"
       "<div style='overflow:-webkit-paged-y; height:200px;'>"
       "    <img id='img1'>"
       "    <img id='img2'>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("img1"));
-  EXPECT_EQ(50, strutForBox("img2"));
+  EXPECT_EQ(0, StrutForBox("img1"));
+  EXPECT_EQ(50, StrutForBox("img2"));
 }
 
 TEST_F(PaginationStrutTest, BreakBefore) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:400px; line-height:50px;'>"
       "    <div id='block1'>line1</div>"
       "    <div id='block2' style='break-before:page;'>line2</div>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("block1"));
-  EXPECT_EQ(0, strutForLine("block1", 0));
-  EXPECT_EQ(350, strutForBox("block2"));
-  EXPECT_EQ(0, strutForLine("block2", 0));
+  EXPECT_EQ(0, StrutForBox("block1"));
+  EXPECT_EQ(0, StrutForLine("block1", 0));
+  EXPECT_EQ(350, StrutForBox("block2"));
+  EXPECT_EQ(0, StrutForLine("block2", 0));
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromInnerBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
       "    <div id='block1'>line1</div>"
       "    <div id='block2' style='padding-top:2px;'>"
       "        <div id='innerBlock' style='padding-top:2px;'>line2</div>"
       "    </div>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("block1"));
-  EXPECT_EQ(0, strutForLine("block1", 0));
-  EXPECT_EQ(50, strutForBox("block2"));
-  EXPECT_EQ(0, strutForBox("innerBlock"));
-  EXPECT_EQ(0, strutForLine("innerBlock", 0));
+  EXPECT_EQ(0, StrutForBox("block1"));
+  EXPECT_EQ(0, StrutForLine("block1", 0));
+  EXPECT_EQ(50, StrutForBox("block2"));
+  EXPECT_EQ(0, StrutForBox("innerBlock"));
+  EXPECT_EQ(0, StrutForLine("innerBlock", 0));
 }
 
 TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromUnbreakableInnerBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:400px; line-height:150px;'>"
       "    <div id='block1'>line1</div>"
       "    <div id='block2' style='padding-top:2px;'>"
@@ -121,16 +121,16 @@ TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromUnbreakableInnerBlock) {
       "        </div>"
       "    </div>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("block1"));
-  EXPECT_EQ(0, strutForLine("block1", 0));
-  EXPECT_EQ(250, strutForBox("block2"));
-  EXPECT_EQ(0, strutForBox("innerBlock"));
-  EXPECT_EQ(0, strutForLine("innerBlock", 0));
-  EXPECT_EQ(0, strutForLine("innerBlock", 1));
+  EXPECT_EQ(0, StrutForBox("block1"));
+  EXPECT_EQ(0, StrutForLine("block1", 0));
+  EXPECT_EQ(250, StrutForBox("block2"));
+  EXPECT_EQ(0, StrutForBox("innerBlock"));
+  EXPECT_EQ(0, StrutForLine("innerBlock", 0));
+  EXPECT_EQ(0, StrutForLine("innerBlock", 1));
 }
 
 TEST_F(PaginationStrutTest, InnerBlockWithBreakBefore) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
       "    <div id='block1'>line1</div>"
       "    <div id='block2' style='padding-top:2px;'>"
@@ -138,13 +138,13 @@ TEST_F(PaginationStrutTest, InnerBlockWithBreakBefore) {
       "break-before:page;'>line2</div>"
       "    </div>"
       "</div>");
-  EXPECT_EQ(0, strutForBox("block1"));
-  EXPECT_EQ(0, strutForLine("block1", 0));
+  EXPECT_EQ(0, StrutForBox("block1"));
+  EXPECT_EQ(0, StrutForLine("block1", 0));
   // There's no class A break point before #innerBlock (they only exist
   // *between* siblings), so the break is propagated and applied before #block2.
-  EXPECT_EQ(50, strutForBox("block2"));
-  EXPECT_EQ(0, strutForBox("innerBlock"));
-  EXPECT_EQ(0, strutForLine("innerBlock", 0));
+  EXPECT_EQ(50, StrutForBox("block2"));
+  EXPECT_EQ(0, StrutForBox("innerBlock"));
+  EXPECT_EQ(0, StrutForLine("innerBlock", 0));
 }
 
 }  // namespace blink

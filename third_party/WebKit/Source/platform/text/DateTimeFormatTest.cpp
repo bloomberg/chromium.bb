@@ -38,36 +38,36 @@ class DateTimeFormatTest : public ::testing::Test {
   struct Token {
     String string;
     int count;
-    FieldType fieldType;
+    FieldType field_type;
 
-    Token(FieldType fieldType, int count = 1)
-        : count(count), fieldType(fieldType) {
-      ASSERT(fieldType != DateTimeFormat::FieldTypeLiteral);
+    Token(FieldType field_type, int count = 1)
+        : count(count), field_type(field_type) {
+      ASSERT(field_type != DateTimeFormat::kFieldTypeLiteral);
     }
 
     Token(const String& string)
         : string(string),
           count(0),
-          fieldType(DateTimeFormat::FieldTypeLiteral) {}
+          field_type(DateTimeFormat::kFieldTypeLiteral) {}
 
     bool operator==(const Token& other) const {
-      return fieldType == other.fieldType && count == other.count &&
+      return field_type == other.field_type && count == other.count &&
              string == other.string;
     }
 
-    String toString() const {
-      switch (fieldType) {
-        case DateTimeFormat::FieldTypeInvalid:
+    String ToString() const {
+      switch (field_type) {
+        case DateTimeFormat::kFieldTypeInvalid:
           return "*invalid*";
-        case DateTimeFormat::FieldTypeLiteral: {
+        case DateTimeFormat::kFieldTypeLiteral: {
           StringBuilder builder;
-          builder.append('"');
-          builder.append(string);
-          builder.append('"');
-          return builder.toString();
+          builder.Append('"');
+          builder.Append(string);
+          builder.Append('"');
+          return builder.ToString();
         }
         default:
-          return String::format("Token(%d, %d)", fieldType, count);
+          return String::Format("Token(%d, %d)", field_type, count);
       }
     }
   };
@@ -76,28 +76,28 @@ class DateTimeFormatTest : public ::testing::Test {
    public:
     Tokens() {}
 
-    explicit Tokens(const Vector<Token> tokens) : m_tokens(tokens) {}
+    explicit Tokens(const Vector<Token> tokens) : tokens_(tokens) {}
 
-    explicit Tokens(const String& string) { m_tokens.push_back(Token(string)); }
+    explicit Tokens(const String& string) { tokens_.push_back(Token(string)); }
 
-    explicit Tokens(Token token1) { m_tokens.push_back(token1); }
+    explicit Tokens(Token token1) { tokens_.push_back(token1); }
 
     Tokens(Token token1, Token token2) {
-      m_tokens.push_back(token1);
-      m_tokens.push_back(token2);
+      tokens_.push_back(token1);
+      tokens_.push_back(token2);
     }
 
     Tokens(Token token1, Token token2, Token token3) {
-      m_tokens.push_back(token1);
-      m_tokens.push_back(token2);
-      m_tokens.push_back(token3);
+      tokens_.push_back(token1);
+      tokens_.push_back(token2);
+      tokens_.push_back(token3);
     }
 
     Tokens(Token token1, Token token2, Token token3, Token token4) {
-      m_tokens.push_back(token1);
-      m_tokens.push_back(token2);
-      m_tokens.push_back(token3);
-      m_tokens.push_back(token4);
+      tokens_.push_back(token1);
+      tokens_.push_back(token2);
+      tokens_.push_back(token3);
+      tokens_.push_back(token4);
     }
 
     Tokens(Token token1,
@@ -105,11 +105,11 @@ class DateTimeFormatTest : public ::testing::Test {
            Token token3,
            Token token4,
            Token token5) {
-      m_tokens.push_back(token1);
-      m_tokens.push_back(token2);
-      m_tokens.push_back(token3);
-      m_tokens.push_back(token4);
-      m_tokens.push_back(token5);
+      tokens_.push_back(token1);
+      tokens_.push_back(token2);
+      tokens_.push_back(token3);
+      tokens_.push_back(token4);
+      tokens_.push_back(token5);
     }
 
     Tokens(Token token1,
@@ -118,50 +118,50 @@ class DateTimeFormatTest : public ::testing::Test {
            Token token4,
            Token token5,
            Token token6) {
-      m_tokens.push_back(token1);
-      m_tokens.push_back(token2);
-      m_tokens.push_back(token3);
-      m_tokens.push_back(token4);
-      m_tokens.push_back(token5);
-      m_tokens.push_back(token6);
+      tokens_.push_back(token1);
+      tokens_.push_back(token2);
+      tokens_.push_back(token3);
+      tokens_.push_back(token4);
+      tokens_.push_back(token5);
+      tokens_.push_back(token6);
     }
 
     bool operator==(const Tokens& other) const {
-      return m_tokens == other.m_tokens;
+      return tokens_ == other.tokens_;
     }
 
-    String toString() const {
+    String ToString() const {
       StringBuilder builder;
-      builder.append("Tokens(");
-      for (unsigned index = 0; index < m_tokens.size(); ++index) {
+      builder.Append("Tokens(");
+      for (unsigned index = 0; index < tokens_.size(); ++index) {
         if (index)
-          builder.append(',');
-        builder.append(m_tokens[index].toString());
+          builder.Append(',');
+        builder.Append(tokens_[index].ToString());
       }
-      builder.append(')');
-      return builder.toString();
+      builder.Append(')');
+      return builder.ToString();
     }
 
    private:
-    Vector<Token> m_tokens;
+    Vector<Token> tokens_;
   };
 
  protected:
-  Tokens parse(const String& formatString) {
+  Tokens Parse(const String& format_string) {
     TokenHandler handler;
-    if (!DateTimeFormat::parse(formatString, handler))
+    if (!DateTimeFormat::Parse(format_string, handler))
       return Tokens(Token("*failed*"));
-    return handler.getTokens();
+    return handler.GetTokens();
   }
 
-  FieldType single(const char ch) {
-    char formatString[2];
-    formatString[0] = ch;
-    formatString[1] = 0;
+  FieldType Single(const char ch) {
+    char format_string[2];
+    format_string[0] = ch;
+    format_string[1] = 0;
     TokenHandler handler;
-    if (!DateTimeFormat::parse(formatString, handler))
-      return DateTimeFormat::FieldTypeInvalid;
-    return handler.getFieldType(0);
+    if (!DateTimeFormat::Parse(format_string, handler))
+      return DateTimeFormat::kFieldTypeInvalid;
+    return handler.GetFieldType(0);
   }
 
  private:
@@ -169,136 +169,136 @@ class DateTimeFormatTest : public ::testing::Test {
    public:
     ~TokenHandler() override {}
 
-    FieldType getFieldType(int index) const {
-      return index >= 0 && index < static_cast<int>(m_tokens.size())
-                 ? m_tokens[index].fieldType
-                 : DateTimeFormat::FieldTypeInvalid;
+    FieldType GetFieldType(int index) const {
+      return index >= 0 && index < static_cast<int>(tokens_.size())
+                 ? tokens_[index].field_type
+                 : DateTimeFormat::kFieldTypeInvalid;
     }
 
-    Tokens getTokens() const { return Tokens(m_tokens); }
+    Tokens GetTokens() const { return Tokens(tokens_); }
 
    private:
-    void visitField(FieldType fieldType, int count) override {
-      m_tokens.push_back(Token(fieldType, count));
+    void VisitField(FieldType field_type, int count) override {
+      tokens_.push_back(Token(field_type, count));
     }
 
-    void visitLiteral(const String& string) override {
-      m_tokens.push_back(Token(string));
+    void VisitLiteral(const String& string) override {
+      tokens_.push_back(Token(string));
     }
 
-    Vector<Token> m_tokens;
+    Vector<Token> tokens_;
   };
 };
 
 std::ostream& operator<<(std::ostream& os,
                          const DateTimeFormatTest::Tokens& tokens) {
-  return os << tokens.toString().ascii().data();
+  return os << tokens.ToString().Ascii().Data();
 }
 
 TEST_F(DateTimeFormatTest, CommonPattern) {
-  EXPECT_EQ(Tokens(), parse(""));
+  EXPECT_EQ(Tokens(), Parse(""));
 
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeYear, 4), Token("-"),
-                   Token(DateTimeFormat::FieldTypeMonth, 2), Token("-"),
-                   Token(DateTimeFormat::FieldTypeDayOfMonth, 2)),
-            parse("yyyy-MM-dd"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeYear, 4), Token("-"),
+                   Token(DateTimeFormat::kFieldTypeMonth, 2), Token("-"),
+                   Token(DateTimeFormat::kFieldTypeDayOfMonth, 2)),
+            Parse("yyyy-MM-dd"));
 
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeHour24, 2), Token(":"),
-                   Token(DateTimeFormat::FieldTypeMinute, 2), Token(":"),
-                   Token(DateTimeFormat::FieldTypeSecond, 2)),
-            parse("kk:mm:ss"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeHour24, 2), Token(":"),
+                   Token(DateTimeFormat::kFieldTypeMinute, 2), Token(":"),
+                   Token(DateTimeFormat::kFieldTypeSecond, 2)),
+            Parse("kk:mm:ss"));
 
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeHour12), Token(":"),
-                   Token(DateTimeFormat::FieldTypeMinute), Token(" "),
-                   Token(DateTimeFormat::FieldTypePeriod)),
-            parse("h:m a"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeHour12), Token(":"),
+                   Token(DateTimeFormat::kFieldTypeMinute), Token(" "),
+                   Token(DateTimeFormat::kFieldTypePeriod)),
+            Parse("h:m a"));
 
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeYear), Token("Nen "),
-                   Token(DateTimeFormat::FieldTypeMonth), Token("Getsu "),
-                   Token(DateTimeFormat::FieldTypeDayOfMonth), Token("Nichi")),
-            parse("y'Nen' M'Getsu' d'Nichi'"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeYear), Token("Nen "),
+                   Token(DateTimeFormat::kFieldTypeMonth), Token("Getsu "),
+                   Token(DateTimeFormat::kFieldTypeDayOfMonth), Token("Nichi")),
+            Parse("y'Nen' M'Getsu' d'Nichi'"));
 }
 
 TEST_F(DateTimeFormatTest, MissingClosingQuote) {
-  EXPECT_EQ(Tokens("*failed*"), parse("'foo"));
-  EXPECT_EQ(Tokens("*failed*"), parse("fo'o"));
-  EXPECT_EQ(Tokens("*failed*"), parse("foo'"));
+  EXPECT_EQ(Tokens("*failed*"), Parse("'foo"));
+  EXPECT_EQ(Tokens("*failed*"), Parse("fo'o"));
+  EXPECT_EQ(Tokens("*failed*"), Parse("foo'"));
 }
 
 TEST_F(DateTimeFormatTest, Quote) {
-  EXPECT_EQ(Tokens("FooBar"), parse("'FooBar'"));
-  EXPECT_EQ(Tokens("'"), parse("''"));
-  EXPECT_EQ(Tokens("'-'"), parse("''-''"));
-  EXPECT_EQ(Tokens("Foo'Bar"), parse("'Foo''Bar'"));
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeEra), Token("'s")),
-            parse("G'''s'"));
-  EXPECT_EQ(Tokens(Token(DateTimeFormat::FieldTypeEra), Token("'"),
-                   Token(DateTimeFormat::FieldTypeSecond)),
-            parse("G''s"));
+  EXPECT_EQ(Tokens("FooBar"), Parse("'FooBar'"));
+  EXPECT_EQ(Tokens("'"), Parse("''"));
+  EXPECT_EQ(Tokens("'-'"), Parse("''-''"));
+  EXPECT_EQ(Tokens("Foo'Bar"), Parse("'Foo''Bar'"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeEra), Token("'s")),
+            Parse("G'''s'"));
+  EXPECT_EQ(Tokens(Token(DateTimeFormat::kFieldTypeEra), Token("'"),
+                   Token(DateTimeFormat::kFieldTypeSecond)),
+            Parse("G''s"));
 }
 
 TEST_F(DateTimeFormatTest, SingleLowerCaseCharacter) {
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('b'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeLocalDayOfWeekStandAlon, single('c'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeDayOfMonth, single('d'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeLocalDayOfWeek, single('e'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeModifiedJulianDay, single('g'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeHour12, single('h'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeHour24, single('k'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeMinute, single('m'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeQuaterStandAlone, single('q'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeSecond, single('s'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeExtendedYear, single('u'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeNonLocationZone, single('v'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeWeekOfMonth, single('W'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeYear, single('y'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeZone, single('z'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('b'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeLocalDayOfWeekStandAlon, Single('c'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeDayOfMonth, Single('d'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeLocalDayOfWeek, Single('e'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeModifiedJulianDay, Single('g'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeHour12, Single('h'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeHour24, Single('k'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeMinute, Single('m'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeQuaterStandAlone, Single('q'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeSecond, Single('s'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeExtendedYear, Single('u'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeNonLocationZone, Single('v'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeWeekOfMonth, Single('W'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeYear, Single('y'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeZone, Single('z'));
 }
 
 TEST_F(DateTimeFormatTest, SingleLowerCaseInvalid) {
-  EXPECT_EQ(DateTimeFormat::FieldTypePeriod, single('a'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('f'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('i'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('j'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('l'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('n'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('o'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('p'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('r'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('t'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('x'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypePeriod, Single('a'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('f'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('i'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('j'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('l'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('n'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('o'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('p'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('r'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('t'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('x'));
 }
 
 TEST_F(DateTimeFormatTest, SingleUpperCaseCharacter) {
-  EXPECT_EQ(DateTimeFormat::FieldTypeMillisecondsInDay, single('A'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeDayOfYear, single('D'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeDayOfWeek, single('E'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeDayOfWeekInMonth, single('F'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeEra, single('G'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeHour23, single('H'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeHour11, single('K'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeMonthStandAlone, single('L'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeMonth, single('M'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeQuater, single('Q'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeFractionalSecond, single('S'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeWeekOfYear, single('w'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeYearOfWeekOfYear, single('Y'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeRFC822Zone, single('Z'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeMillisecondsInDay, Single('A'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeDayOfYear, Single('D'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeDayOfWeek, Single('E'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeDayOfWeekInMonth, Single('F'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeEra, Single('G'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeHour23, Single('H'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeHour11, Single('K'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeMonthStandAlone, Single('L'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeMonth, Single('M'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeQuater, Single('Q'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeFractionalSecond, Single('S'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeWeekOfYear, Single('w'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeYearOfWeekOfYear, Single('Y'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeRFC822Zone, Single('Z'));
 }
 
 TEST_F(DateTimeFormatTest, SingleUpperCaseInvalid) {
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('B'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('C'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('I'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('J'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('N'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('O'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('P'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('R'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('T'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('U'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('V'));
-  EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('X'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('B'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('C'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('I'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('J'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('N'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('O'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('P'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('R'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('T'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('U'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('V'));
+  EXPECT_EQ(DateTimeFormat::kFieldTypeInvalid, Single('X'));
 }
 
 }  // namespace blink

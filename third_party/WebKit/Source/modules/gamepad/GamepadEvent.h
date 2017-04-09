@@ -15,32 +15,32 @@ class GamepadEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadEvent* create(const AtomicString& type,
-                              bool canBubble,
+  static GamepadEvent* Create(const AtomicString& type,
+                              bool can_bubble,
                               bool cancelable,
                               Gamepad* gamepad) {
-    return new GamepadEvent(type, canBubble, cancelable, gamepad);
+    return new GamepadEvent(type, can_bubble, cancelable, gamepad);
   }
-  static GamepadEvent* create(const AtomicString& type,
+  static GamepadEvent* Create(const AtomicString& type,
                               const GamepadEventInit& initializer) {
     return new GamepadEvent(type, initializer);
   }
   ~GamepadEvent() override;
 
-  Gamepad* getGamepad() const { return m_gamepad.get(); }
+  Gamepad* getGamepad() const { return gamepad_.Get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   GamepadEvent(const AtomicString& type,
-               bool canBubble,
+               bool can_bubble,
                bool cancelable,
                Gamepad*);
   GamepadEvent(const AtomicString&, const GamepadEventInit&);
 
-  Member<Gamepad> m_gamepad;
+  Member<Gamepad> gamepad_;
 };
 
 }  // namespace blink

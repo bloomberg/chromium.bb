@@ -25,40 +25,40 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
                            public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VRController);
   WTF_MAKE_NONCOPYABLE(VRController);
-  USING_PRE_FINALIZER(VRController, dispose);
+  USING_PRE_FINALIZER(VRController, Dispose);
 
  public:
   VRController(NavigatorVR*);
   virtual ~VRController();
 
-  void getDisplays(ScriptPromiseResolver*);
-  void setListeningForActivate(bool);
+  void GetDisplays(ScriptPromiseResolver*);
+  void SetListeningForActivate(bool);
 
   void OnDisplayConnected(device::mojom::blink::VRDisplayPtr,
                           device::mojom::blink::VRDisplayClientRequest,
                           device::mojom::blink::VRDisplayInfoPtr) override;
 
-  void focusChanged();
+  void FocusChanged();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void onDisplaysSynced(unsigned);
-  void onGetDisplays();
+  void OnDisplaysSynced(unsigned);
+  void OnGetDisplays();
 
   // ContextLifecycleObserver.
-  void contextDestroyed(ExecutionContext*) override;
-  void dispose();
+  void ContextDestroyed(ExecutionContext*) override;
+  void Dispose();
 
-  Member<NavigatorVR> m_navigatorVR;
-  VRDisplayVector m_displays;
+  Member<NavigatorVR> navigator_vr_;
+  VRDisplayVector displays_;
 
-  bool m_displaySynced;
-  unsigned m_numberOfSyncedDisplays;
+  bool display_synced_;
+  unsigned number_of_synced_displays_;
 
-  Deque<std::unique_ptr<VRGetDevicesCallback>> m_pendingGetDevicesCallbacks;
-  device::mojom::blink::VRServicePtr m_service;
-  mojo::Binding<device::mojom::blink::VRServiceClient> m_binding;
+  Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
+  device::mojom::blink::VRServicePtr service_;
+  mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
 };
 
 }  // namespace blink

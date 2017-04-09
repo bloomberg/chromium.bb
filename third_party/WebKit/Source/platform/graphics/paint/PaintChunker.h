@@ -26,52 +26,52 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunker();
   ~PaintChunker();
 
-  bool isInInitialState() const {
-    return m_chunks.isEmpty() && m_currentProperties == PaintChunkProperties();
+  bool IsInInitialState() const {
+    return chunks_.IsEmpty() && current_properties_ == PaintChunkProperties();
   }
 
-  const PaintChunkProperties& currentPaintChunkProperties() const {
-    return m_currentProperties;
+  const PaintChunkProperties& CurrentPaintChunkProperties() const {
+    return current_properties_;
   }
-  void updateCurrentPaintChunkProperties(const PaintChunk::Id*,
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
                                          const PaintChunkProperties&);
 
   // Returns true if a new chunk is created.
-  bool incrementDisplayItemIndex(const DisplayItem&);
+  bool IncrementDisplayItemIndex(const DisplayItem&);
 
-  void decrementDisplayItemIndex();
+  void DecrementDisplayItemIndex();
 
-  PaintChunk& paintChunkAt(size_t i) { return m_chunks[i]; }
-  size_t lastChunkIndex() const {
-    return m_chunks.isEmpty() ? kNotFound : m_chunks.size() - 1;
+  PaintChunk& PaintChunkAt(size_t i) { return chunks_[i]; }
+  size_t LastChunkIndex() const {
+    return chunks_.IsEmpty() ? kNotFound : chunks_.size() - 1;
   }
-  PaintChunk& lastChunk() { return m_chunks.back(); }
+  PaintChunk& LastChunk() { return chunks_.back(); }
 
-  PaintChunk& findChunkByDisplayItemIndex(size_t index) {
-    auto chunk = findChunkInVectorByDisplayItemIndex(m_chunks, index);
-    DCHECK(chunk != m_chunks.end());
+  PaintChunk& FindChunkByDisplayItemIndex(size_t index) {
+    auto chunk = FindChunkInVectorByDisplayItemIndex(chunks_, index);
+    DCHECK(chunk != chunks_.end());
     return *chunk;
   }
 
-  void clear();
+  void Clear();
 
   // Releases the generated paint chunk list and resets the state of this
   // object.
-  Vector<PaintChunk> releasePaintChunks();
+  Vector<PaintChunk> ReleasePaintChunks();
 
  private:
   enum ItemBehavior {
     // Can be combined with adjacent items when building chunks.
-    DefaultBehavior = 0,
+    kDefaultBehavior = 0,
 
     // Item requires its own paint chunk.
-    RequiresSeparateChunk,
+    kRequiresSeparateChunk,
   };
 
-  Vector<PaintChunk> m_chunks;
-  Vector<ItemBehavior> m_chunkBehavior;
-  Optional<PaintChunk::Id> m_currentChunkId;
-  PaintChunkProperties m_currentProperties;
+  Vector<PaintChunk> chunks_;
+  Vector<ItemBehavior> chunk_behavior_;
+  Optional<PaintChunk::Id> current_chunk_id_;
+  PaintChunkProperties current_properties_;
 };
 
 }  // namespace blink

@@ -35,7 +35,7 @@ class RTCStatsResponseBase
  public:
   virtual ~RTCStatsResponseBase() {}
 
-  virtual void addStats(const WebRTCLegacyStats&) = 0;
+  virtual void AddStats(const WebRTCLegacyStats&) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

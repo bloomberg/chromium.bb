@@ -16,45 +16,45 @@ namespace {
 const int kMaxStackLimit = 1000;
 
 enum Token {
-  ObjectBegin,
-  ObjectEnd,
-  ArrayBegin,
-  ArrayEnd,
-  StringLiteral,
-  Number,
-  BoolTrue,
-  BoolFalse,
-  NullToken,
-  ListSeparator,
-  ObjectPairSeparator,
-  InvalidToken,
+  kObjectBegin,
+  kObjectEnd,
+  kArrayBegin,
+  kArrayEnd,
+  kStringLiteral,
+  kNumber,
+  kBoolTrue,
+  kBoolFalse,
+  kNullToken,
+  kListSeparator,
+  kObjectPairSeparator,
+  kInvalidToken,
 };
 
-const char* const nullString = "null";
-const char* const trueString = "true";
-const char* const falseString = "false";
+const char* const kNullString = "null";
+const char* const kTrueString = "true";
+const char* const kFalseString = "false";
 
 template <typename CharType>
-bool parseConstToken(const CharType* start,
+bool ParseConstToken(const CharType* start,
                      const CharType* end,
-                     const CharType** tokenEnd,
+                     const CharType** token_end,
                      const char* token) {
   while (start < end && *token != '\0' && *start++ == *token++) {
   }
   if (*token != '\0')
     return false;
-  *tokenEnd = start;
+  *token_end = start;
   return true;
 }
 
 template <typename CharType>
-bool readInt(const CharType* start,
+bool ReadInt(const CharType* start,
              const CharType* end,
-             const CharType** tokenEnd,
-             bool canHaveLeadingZeros) {
+             const CharType** token_end,
+             bool can_have_leading_zeros) {
   if (start == end)
     return false;
-  bool haveLeadingZero = '0' == *start;
+  bool have_leading_zero = '0' == *start;
   int length = 0;
   while (start < end && '0' <= *start && *start <= '9') {
     ++start;
@@ -62,16 +62,16 @@ bool readInt(const CharType* start,
   }
   if (!length)
     return false;
-  if (!canHaveLeadingZeros && length > 1 && haveLeadingZero)
+  if (!can_have_leading_zeros && length > 1 && have_leading_zero)
     return false;
-  *tokenEnd = start;
+  *token_end = start;
   return true;
 }
 
 template <typename CharType>
-bool parseNumberToken(const CharType* start,
+bool ParseNumberToken(const CharType* start,
                       const CharType* end,
-                      const CharType** tokenEnd) {
+                      const CharType** token_end) {
   // We just grab the number here. We validate the size in DecodeNumber.
   // According to RFC4627, a valid number is: [minus] int [frac] [exp]
   if (start == end)
@@ -80,10 +80,10 @@ bool parseNumberToken(const CharType* start,
   if ('-' == c)
     ++start;
 
-  if (!readInt(start, end, &start, false))
+  if (!ReadInt(start, end, &start, false))
     return false;
   if (start == end) {
-    *tokenEnd = start;
+    *token_end = start;
     return true;
   }
 
@@ -91,10 +91,10 @@ bool parseNumberToken(const CharType* start,
   c = *start;
   if ('.' == c) {
     ++start;
-    if (!readInt(start, end, &start, true))
+    if (!ReadInt(start, end, &start, true))
       return false;
     if (start == end) {
-      *tokenEnd = start;
+      *token_end = start;
       return true;
     }
     c = *start;
@@ -111,18 +111,18 @@ bool parseNumberToken(const CharType* start,
       if (start == end)
         return false;
     }
-    if (!readInt(start, end, &start, true))
+    if (!ReadInt(start, end, &start, true))
       return false;
   }
 
-  *tokenEnd = start;
+  *token_end = start;
   return true;
 }
 
 template <typename CharType>
-bool readHexDigits(const CharType* start,
+bool ReadHexDigits(const CharType* start,
                    const CharType* end,
-                   const CharType** tokenEnd,
+                   const CharType** token_end,
                    int digits) {
   if (end - start < digits)
     return false;
@@ -132,14 +132,14 @@ bool readHexDigits(const CharType* start,
           ('A' <= c && c <= 'F')))
       return false;
   }
-  *tokenEnd = start;
+  *token_end = start;
   return true;
 }
 
 template <typename CharType>
-bool parseStringToken(const CharType* start,
+bool ParseStringToken(const CharType* start,
                       const CharType* end,
-                      const CharType** tokenEnd) {
+                      const CharType** token_end) {
   while (start < end) {
     CharType c = *start++;
     if ('\\' == c) {
@@ -149,11 +149,11 @@ bool parseStringToken(const CharType* start,
       // Make sure the escaped char is valid.
       switch (c) {
         case 'x':
-          if (!readHexDigits(start, end, &start, 2))
+          if (!ReadHexDigits(start, end, &start, 2))
             return false;
           break;
         case 'u':
-          if (!readHexDigits(start, end, &start, 4))
+          if (!ReadHexDigits(start, end, &start, 4))
             return false;
           break;
         case '\\':
@@ -170,7 +170,7 @@ bool parseStringToken(const CharType* start,
           return false;
       }
     } else if ('"' == c) {
-      *tokenEnd = start;
+      *token_end = start;
       return true;
     }
   }
@@ -178,9 +178,9 @@ bool parseStringToken(const CharType* start,
 }
 
 template <typename CharType>
-bool skipComment(const CharType* start,
+bool SkipComment(const CharType* start,
                  const CharType* end,
-                 const CharType** commentEnd) {
+                 const CharType** comment_end) {
   if (start == end)
     return false;
 
@@ -192,11 +192,11 @@ bool skipComment(const CharType* start,
     // Single line comment, read to newline.
     for (++start; start < end; ++start) {
       if (*start == '\n' || *start == '\r') {
-        *commentEnd = start + 1;
+        *comment_end = start + 1;
         return true;
       }
     }
-    *commentEnd = end;
+    *comment_end = end;
     // Comment reaches end-of-input, which is fine.
     return true;
   }
@@ -206,7 +206,7 @@ bool skipComment(const CharType* start,
     // Block comment, read until end marker.
     for (++start; start < end; previous = *start++) {
       if (previous == '*' && *start == '/') {
-        *commentEnd = start + 1;
+        *comment_end = start + 1;
         return true;
       }
     }
@@ -218,66 +218,66 @@ bool skipComment(const CharType* start,
 }
 
 template <typename CharType>
-void skipWhitespaceAndComments(const CharType* start,
+void SkipWhitespaceAndComments(const CharType* start,
                                const CharType* end,
-                               const CharType** whitespaceEnd) {
+                               const CharType** whitespace_end) {
   while (start < end) {
-    if (isSpaceOrNewline(*start)) {
+    if (IsSpaceOrNewline(*start)) {
       ++start;
     } else if (*start == '/') {
-      const CharType* commentEnd;
-      if (!skipComment(start, end, &commentEnd))
+      const CharType* comment_end;
+      if (!SkipComment(start, end, &comment_end))
         break;
-      start = commentEnd;
+      start = comment_end;
     } else {
       break;
     }
   }
-  *whitespaceEnd = start;
+  *whitespace_end = start;
 }
 
 template <typename CharType>
-Token parseToken(const CharType* start,
+Token ParseToken(const CharType* start,
                  const CharType* end,
-                 const CharType** tokenStart,
-                 const CharType** tokenEnd) {
-  skipWhitespaceAndComments(start, end, tokenStart);
-  start = *tokenStart;
+                 const CharType** token_start,
+                 const CharType** token_end) {
+  SkipWhitespaceAndComments(start, end, token_start);
+  start = *token_start;
 
   if (start == end)
-    return InvalidToken;
+    return kInvalidToken;
 
   switch (*start) {
     case 'n':
-      if (parseConstToken(start, end, tokenEnd, nullString))
-        return NullToken;
+      if (ParseConstToken(start, end, token_end, kNullString))
+        return kNullToken;
       break;
     case 't':
-      if (parseConstToken(start, end, tokenEnd, trueString))
-        return BoolTrue;
+      if (ParseConstToken(start, end, token_end, kTrueString))
+        return kBoolTrue;
       break;
     case 'f':
-      if (parseConstToken(start, end, tokenEnd, falseString))
-        return BoolFalse;
+      if (ParseConstToken(start, end, token_end, kFalseString))
+        return kBoolFalse;
       break;
     case '[':
-      *tokenEnd = start + 1;
-      return ArrayBegin;
+      *token_end = start + 1;
+      return kArrayBegin;
     case ']':
-      *tokenEnd = start + 1;
-      return ArrayEnd;
+      *token_end = start + 1;
+      return kArrayEnd;
     case ',':
-      *tokenEnd = start + 1;
-      return ListSeparator;
+      *token_end = start + 1;
+      return kListSeparator;
     case '{':
-      *tokenEnd = start + 1;
-      return ObjectBegin;
+      *token_end = start + 1;
+      return kObjectBegin;
     case '}':
-      *tokenEnd = start + 1;
-      return ObjectEnd;
+      *token_end = start + 1;
+      return kObjectEnd;
     case ':':
-      *tokenEnd = start + 1;
-      return ObjectPairSeparator;
+      *token_end = start + 1;
+      return kObjectPairSeparator;
     case '0':
     case '1':
     case '2':
@@ -289,19 +289,19 @@ Token parseToken(const CharType* start,
     case '8':
     case '9':
     case '-':
-      if (parseNumberToken(start, end, tokenEnd))
-        return Number;
+      if (ParseNumberToken(start, end, token_end))
+        return kNumber;
       break;
     case '"':
-      if (parseStringToken(start + 1, end, tokenEnd))
-        return StringLiteral;
+      if (ParseStringToken(start + 1, end, token_end))
+        return kStringLiteral;
       break;
   }
-  return InvalidToken;
+  return kInvalidToken;
 }
 
 template <typename CharType>
-inline int hexToInt(CharType c) {
+inline int HexToInt(CharType c) {
   if ('0' <= c && c <= '9')
     return c - '0';
   if ('A' <= c && c <= 'F')
@@ -313,13 +313,13 @@ inline int hexToInt(CharType c) {
 }
 
 template <typename CharType>
-bool decodeString(const CharType* start,
+bool DecodeString(const CharType* start,
                   const CharType* end,
                   StringBuilder* output) {
   while (start < end) {
     UChar c = *start++;
     if ('\\' != c) {
-      output->append(c);
+      output->Append(c);
       continue;
     }
     if (start == end)
@@ -355,20 +355,20 @@ bool decodeString(const CharType* start,
         c = '\v';
         break;
       case 'u':
-        c = (hexToInt(*start) << 12) + (hexToInt(*(start + 1)) << 8) +
-            (hexToInt(*(start + 2)) << 4) + hexToInt(*(start + 3));
+        c = (HexToInt(*start) << 12) + (HexToInt(*(start + 1)) << 8) +
+            (HexToInt(*(start + 2)) << 4) + HexToInt(*(start + 3));
         start += 4;
         break;
       default:
         return false;
     }
-    output->append(c);
+    output->Append(c);
   }
   return true;
 }
 
 template <typename CharType>
-bool decodeString(const CharType* start, const CharType* end, String* output) {
+bool DecodeString(const CharType* start, const CharType* end, String* output) {
   if (start == end) {
     *output = "";
     return true;
@@ -376,129 +376,130 @@ bool decodeString(const CharType* start, const CharType* end, String* output) {
   if (start > end)
     return false;
   StringBuilder buffer;
-  buffer.reserveCapacity(end - start);
-  if (!decodeString(start, end, &buffer))
+  buffer.ReserveCapacity(end - start);
+  if (!DecodeString(start, end, &buffer))
     return false;
-  *output = buffer.toString();
+  *output = buffer.ToString();
   // Validate constructed utf16 string.
-  if (output->utf8(StrictUTF8Conversion).isNull())
+  if (output->Utf8(kStrictUTF8Conversion).IsNull())
     return false;
   return true;
 }
 
 template <typename CharType>
-std::unique_ptr<JSONValue> buildValue(const CharType* start,
+std::unique_ptr<JSONValue> BuildValue(const CharType* start,
                                       const CharType* end,
-                                      const CharType** valueTokenEnd,
-                                      int maxDepth) {
-  if (maxDepth == 0)
+                                      const CharType** value_token_end,
+                                      int max_depth) {
+  if (max_depth == 0)
     return nullptr;
 
   std::unique_ptr<JSONValue> result;
-  const CharType* tokenStart;
-  const CharType* tokenEnd;
-  Token token = parseToken(start, end, &tokenStart, &tokenEnd);
+  const CharType* token_start;
+  const CharType* token_end;
+  Token token = ParseToken(start, end, &token_start, &token_end);
   switch (token) {
-    case InvalidToken:
+    case kInvalidToken:
       return nullptr;
-    case NullToken:
-      result = JSONValue::null();
+    case kNullToken:
+      result = JSONValue::Null();
       break;
-    case BoolTrue:
-      result = JSONBasicValue::create(true);
+    case kBoolTrue:
+      result = JSONBasicValue::Create(true);
       break;
-    case BoolFalse:
-      result = JSONBasicValue::create(false);
+    case kBoolFalse:
+      result = JSONBasicValue::Create(false);
       break;
-    case Number: {
+    case kNumber: {
       bool ok;
-      double value = charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
-      if (Decimal::fromDouble(value).isInfinity())
+      double value =
+          CharactersToDouble(token_start, token_end - token_start, &ok);
+      if (Decimal::FromDouble(value).IsInfinity())
         ok = false;
       if (!ok)
         return nullptr;
       int number = static_cast<int>(value);
       if (number == value)
-        result = JSONBasicValue::create(number);
+        result = JSONBasicValue::Create(number);
       else
-        result = JSONBasicValue::create(value);
+        result = JSONBasicValue::Create(value);
       break;
     }
-    case StringLiteral: {
+    case kStringLiteral: {
       String value;
-      bool ok = decodeString(tokenStart + 1, tokenEnd - 1, &value);
+      bool ok = DecodeString(token_start + 1, token_end - 1, &value);
       if (!ok)
         return nullptr;
-      result = JSONString::create(value);
+      result = JSONString::Create(value);
       break;
     }
-    case ArrayBegin: {
-      std::unique_ptr<JSONArray> array = JSONArray::create();
-      start = tokenEnd;
-      token = parseToken(start, end, &tokenStart, &tokenEnd);
-      while (token != ArrayEnd) {
-        std::unique_ptr<JSONValue> arrayNode =
-            buildValue(start, end, &tokenEnd, maxDepth - 1);
-        if (!arrayNode)
+    case kArrayBegin: {
+      std::unique_ptr<JSONArray> array = JSONArray::Create();
+      start = token_end;
+      token = ParseToken(start, end, &token_start, &token_end);
+      while (token != kArrayEnd) {
+        std::unique_ptr<JSONValue> array_node =
+            BuildValue(start, end, &token_end, max_depth - 1);
+        if (!array_node)
           return nullptr;
-        array->pushValue(std::move(arrayNode));
+        array->PushValue(std::move(array_node));
 
         // After a list value, we expect a comma or the end of the list.
-        start = tokenEnd;
-        token = parseToken(start, end, &tokenStart, &tokenEnd);
-        if (token == ListSeparator) {
-          start = tokenEnd;
-          token = parseToken(start, end, &tokenStart, &tokenEnd);
-          if (token == ArrayEnd)
+        start = token_end;
+        token = ParseToken(start, end, &token_start, &token_end);
+        if (token == kListSeparator) {
+          start = token_end;
+          token = ParseToken(start, end, &token_start, &token_end);
+          if (token == kArrayEnd)
             return nullptr;
-        } else if (token != ArrayEnd) {
+        } else if (token != kArrayEnd) {
           // Unexpected value after list value. Bail out.
           return nullptr;
         }
       }
-      if (token != ArrayEnd)
+      if (token != kArrayEnd)
         return nullptr;
       result = std::move(array);
       break;
     }
-    case ObjectBegin: {
-      std::unique_ptr<JSONObject> object = JSONObject::create();
-      start = tokenEnd;
-      token = parseToken(start, end, &tokenStart, &tokenEnd);
-      while (token != ObjectEnd) {
-        if (token != StringLiteral)
+    case kObjectBegin: {
+      std::unique_ptr<JSONObject> object = JSONObject::Create();
+      start = token_end;
+      token = ParseToken(start, end, &token_start, &token_end);
+      while (token != kObjectEnd) {
+        if (token != kStringLiteral)
           return nullptr;
         String key;
-        if (!decodeString(tokenStart + 1, tokenEnd - 1, &key))
+        if (!DecodeString(token_start + 1, token_end - 1, &key))
           return nullptr;
-        start = tokenEnd;
+        start = token_end;
 
-        token = parseToken(start, end, &tokenStart, &tokenEnd);
-        if (token != ObjectPairSeparator)
+        token = ParseToken(start, end, &token_start, &token_end);
+        if (token != kObjectPairSeparator)
           return nullptr;
-        start = tokenEnd;
+        start = token_end;
 
         std::unique_ptr<JSONValue> value =
-            buildValue(start, end, &tokenEnd, maxDepth - 1);
+            BuildValue(start, end, &token_end, max_depth - 1);
         if (!value)
           return nullptr;
-        object->setValue(key, std::move(value));
-        start = tokenEnd;
+        object->SetValue(key, std::move(value));
+        start = token_end;
 
         // After a key/value pair, we expect a comma or the end of the
         // object.
-        token = parseToken(start, end, &tokenStart, &tokenEnd);
-        if (token == ListSeparator) {
-          start = tokenEnd;
-          token = parseToken(start, end, &tokenStart, &tokenEnd);
-          if (token == ObjectEnd)
+        token = ParseToken(start, end, &token_start, &token_end);
+        if (token == kListSeparator) {
+          start = token_end;
+          token = ParseToken(start, end, &token_start, &token_end);
+          if (token == kObjectEnd)
             return nullptr;
-        } else if (token != ObjectEnd) {
+        } else if (token != kObjectEnd) {
           // Unexpected value after last object value. Bail out.
           return nullptr;
         }
       }
-      if (token != ObjectEnd)
+      if (token != kObjectEnd)
         return nullptr;
       result = std::move(object);
       break;
@@ -509,39 +510,39 @@ std::unique_ptr<JSONValue> buildValue(const CharType* start,
       return nullptr;
   }
 
-  skipWhitespaceAndComments(tokenEnd, end, valueTokenEnd);
+  SkipWhitespaceAndComments(token_end, end, value_token_end);
   return result;
 }
 
 template <typename CharType>
-std::unique_ptr<JSONValue> parseJSONInternal(const CharType* start,
+std::unique_ptr<JSONValue> ParseJSONInternal(const CharType* start,
                                              unsigned length,
-                                             int maxDepth) {
+                                             int max_depth) {
   const CharType* end = start + length;
-  const CharType* tokenEnd;
+  const CharType* token_end;
   std::unique_ptr<JSONValue> value =
-      buildValue(start, end, &tokenEnd, maxDepth);
-  if (!value || tokenEnd != end)
+      BuildValue(start, end, &token_end, max_depth);
+  if (!value || token_end != end)
     return nullptr;
   return value;
 }
 
 }  // anonymous namespace
 
-std::unique_ptr<JSONValue> parseJSON(const String& json) {
-  return parseJSON(json, kMaxStackLimit);
+std::unique_ptr<JSONValue> ParseJSON(const String& json) {
+  return ParseJSON(json, kMaxStackLimit);
 }
 
-std::unique_ptr<JSONValue> parseJSON(const String& json, int maxDepth) {
-  if (json.isEmpty())
+std::unique_ptr<JSONValue> ParseJSON(const String& json, int max_depth) {
+  if (json.IsEmpty())
     return nullptr;
-  if (maxDepth < 0)
-    maxDepth = 0;
-  if (maxDepth > kMaxStackLimit)
-    maxDepth = kMaxStackLimit;
-  if (json.is8Bit())
-    return parseJSONInternal(json.characters8(), json.length(), maxDepth);
-  return parseJSONInternal(json.characters16(), json.length(), maxDepth);
+  if (max_depth < 0)
+    max_depth = 0;
+  if (max_depth > kMaxStackLimit)
+    max_depth = kMaxStackLimit;
+  if (json.Is8Bit())
+    return ParseJSONInternal(json.Characters8(), json.length(), max_depth);
+  return ParseJSONInternal(json.Characters16(), json.length(), max_depth);
 }
 
 }  // namespace blink

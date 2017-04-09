@@ -12,56 +12,56 @@ namespace blink {
 
 ServiceWorkerScriptCachedMetadataHandler::
     ServiceWorkerScriptCachedMetadataHandler(
-        WorkerGlobalScope* workerGlobalScope,
-        const KURL& scriptURL,
-        const Vector<char>* metaData)
-    : m_workerGlobalScope(workerGlobalScope), m_scriptURL(scriptURL) {
-  if (metaData)
-    m_cachedMetadata = CachedMetadata::createFromSerializedData(
-        metaData->data(), metaData->size());
+        WorkerGlobalScope* worker_global_scope,
+        const KURL& script_url,
+        const Vector<char>* meta_data)
+    : worker_global_scope_(worker_global_scope), script_url_(script_url) {
+  if (meta_data)
+    cached_metadata_ = CachedMetadata::CreateFromSerializedData(
+        meta_data->Data(), meta_data->size());
 }
 
 ServiceWorkerScriptCachedMetadataHandler::
     ~ServiceWorkerScriptCachedMetadataHandler() {}
 
 DEFINE_TRACE(ServiceWorkerScriptCachedMetadataHandler) {
-  visitor->trace(m_workerGlobalScope);
-  CachedMetadataHandler::trace(visitor);
+  visitor->Trace(worker_global_scope_);
+  CachedMetadataHandler::Trace(visitor);
 }
 
-void ServiceWorkerScriptCachedMetadataHandler::setCachedMetadata(
-    uint32_t dataTypeID,
+void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
+    uint32_t data_type_id,
     const char* data,
     size_t size,
     CacheType type) {
-  if (type != SendToPlatform)
+  if (type != kSendToPlatform)
     return;
-  m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
-  const Vector<char>& serializedData = m_cachedMetadata->serializedData();
-  ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)
-      ->setCachedMetadata(m_scriptURL, serializedData.data(),
-                          serializedData.size());
+  cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
+  const Vector<char>& serialized_data = cached_metadata_->SerializedData();
+  ServiceWorkerGlobalScopeClient::From(worker_global_scope_)
+      ->SetCachedMetadata(script_url_, serialized_data.Data(),
+                          serialized_data.size());
 }
 
-void ServiceWorkerScriptCachedMetadataHandler::clearCachedMetadata(
+void ServiceWorkerScriptCachedMetadataHandler::ClearCachedMetadata(
     CacheType type) {
-  if (type != SendToPlatform)
+  if (type != kSendToPlatform)
     return;
-  m_cachedMetadata = nullptr;
-  ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)
-      ->clearCachedMetadata(m_scriptURL);
+  cached_metadata_ = nullptr;
+  ServiceWorkerGlobalScopeClient::From(worker_global_scope_)
+      ->ClearCachedMetadata(script_url_);
 }
 
 PassRefPtr<CachedMetadata>
-ServiceWorkerScriptCachedMetadataHandler::cachedMetadata(
-    uint32_t dataTypeID) const {
-  if (!m_cachedMetadata || m_cachedMetadata->dataTypeID() != dataTypeID)
+ServiceWorkerScriptCachedMetadataHandler::GetCachedMetadata(
+    uint32_t data_type_id) const {
+  if (!cached_metadata_ || cached_metadata_->DataTypeID() != data_type_id)
     return nullptr;
-  return m_cachedMetadata.get();
+  return cached_metadata_.Get();
 }
 
-String ServiceWorkerScriptCachedMetadataHandler::encoding() const {
-  return emptyString;
+String ServiceWorkerScriptCachedMetadataHandler::Encoding() const {
+  return g_empty_string;
 }
 
 }  // namespace blink

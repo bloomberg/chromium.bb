@@ -10,24 +10,24 @@ namespace blink {
 
 namespace {
 
-void checkNullURLImageValue(CSSURLImageValue* urlImageValue) {
-  EXPECT_EQ(urlImageValue->state(), "unloaded");
-  bool isNull;
-  EXPECT_EQ(urlImageValue->intrinsicWidth(isNull), 0);
-  EXPECT_EQ(urlImageValue->intrinsicHeight(isNull), 0);
-  EXPECT_EQ(urlImageValue->intrinsicRatio(isNull), 0);
-  EXPECT_TRUE(isNull);
+void CheckNullURLImageValue(CSSURLImageValue* url_image_value) {
+  EXPECT_EQ(url_image_value->state(), "unloaded");
+  bool is_null;
+  EXPECT_EQ(url_image_value->intrinsicWidth(is_null), 0);
+  EXPECT_EQ(url_image_value->intrinsicHeight(is_null), 0);
+  EXPECT_EQ(url_image_value->intrinsicRatio(is_null), 0);
+  EXPECT_TRUE(is_null);
 }
 
 }  // namespace
 
 TEST(CSSURLImageValueTest, CreateURLImageValueFromURL) {
-  checkNullURLImageValue(CSSURLImageValue::create("http://localhost"));
+  CheckNullURLImageValue(CSSURLImageValue::Create("http://localhost"));
 }
 
 TEST(CSSURLImageValueTest, CreateURLImageValueFromImageValue) {
-  checkNullURLImageValue(
-      CSSURLImageValue::create(CSSImageValue::create("http://localhost")));
+  CheckNullURLImageValue(
+      CSSURLImageValue::Create(CSSImageValue::Create("http://localhost")));
 }
 
 }  // namespace blink

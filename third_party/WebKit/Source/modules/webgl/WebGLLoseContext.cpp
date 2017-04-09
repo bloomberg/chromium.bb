@@ -32,39 +32,39 @@ namespace blink {
 WebGLLoseContext::WebGLLoseContext(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {}
 
-void WebGLLoseContext::lose(bool force) {
+void WebGLLoseContext::Lose(bool force) {
   if (force)
-    WebGLExtension::lose(true);
+    WebGLExtension::Lose(true);
 }
 
-WebGLExtensionName WebGLLoseContext::name() const {
-  return WebGLLoseContextName;
+WebGLExtensionName WebGLLoseContext::GetName() const {
+  return kWebGLLoseContextName;
 }
 
-WebGLLoseContext* WebGLLoseContext::create(WebGLRenderingContextBase* context) {
+WebGLLoseContext* WebGLLoseContext::Create(WebGLRenderingContextBase* context) {
   return new WebGLLoseContext(context);
 }
 
 void WebGLLoseContext::loseContext() {
   WebGLExtensionScopedContext scoped(this);
-  if (!scoped.isLost()) {
-    scoped.context()->forceLostContext(
-        WebGLRenderingContextBase::WebGLLoseContextLostContext,
-        WebGLRenderingContextBase::Manual);
+  if (!scoped.IsLost()) {
+    scoped.Context()->ForceLostContext(
+        WebGLRenderingContextBase::kWebGLLoseContextLostContext,
+        WebGLRenderingContextBase::kManual);
   }
 }
 
 void WebGLLoseContext::restoreContext() {
   WebGLExtensionScopedContext scoped(this);
-  if (!scoped.isLost())
-    scoped.context()->forceRestoreContext();
+  if (!scoped.IsLost())
+    scoped.Context()->ForceRestoreContext();
 }
 
-bool WebGLLoseContext::supported(WebGLRenderingContextBase*) {
+bool WebGLLoseContext::Supported(WebGLRenderingContextBase*) {
   return true;
 }
 
-const char* WebGLLoseContext::extensionName() {
+const char* WebGLLoseContext::ExtensionName() {
   return "WEBGL_lose_context";
 }
 

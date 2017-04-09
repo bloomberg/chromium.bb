@@ -176,8 +176,8 @@ void RenderViewContextMenuViews::ExecuteCommand(int command_id,
       content::RenderViewHost* view_host = GetRenderViewHost();
       view_host->GetWidget()->UpdateTextDirection(
           (command_id == IDC_WRITING_DIRECTION_RTL)
-              ? blink::WebTextDirectionRightToLeft
-              : blink::WebTextDirectionLeftToRight);
+              ? blink::kWebTextDirectionRightToLeft
+              : blink::kWebTextDirectionLeftToRight);
       view_host->GetWidget()->NotifyTextDirection();
       RenderViewContextMenu::RecordUsedItem(command_id);
       break;
@@ -193,13 +193,13 @@ bool RenderViewContextMenuViews::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case IDC_WRITING_DIRECTION_DEFAULT:
       return (params_.writing_direction_default &
-          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
     case IDC_WRITING_DIRECTION_RTL:
       return (params_.writing_direction_right_to_left &
-          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
     case IDC_WRITING_DIRECTION_LTR:
       return (params_.writing_direction_left_to_right &
-          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
 
     default:
       return RenderViewContextMenu::IsCommandIdChecked(command_id);
@@ -212,13 +212,13 @@ bool RenderViewContextMenuViews::IsCommandIdEnabled(int command_id) const {
       return true;
     case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
       return params_.writing_direction_default &
-          blink::WebContextMenuData::CheckableMenuItemEnabled;
+             blink::WebContextMenuData::kCheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_RTL:
       return params_.writing_direction_right_to_left &
-          blink::WebContextMenuData::CheckableMenuItemEnabled;
+             blink::WebContextMenuData::kCheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_LTR:
       return params_.writing_direction_left_to_right &
-          blink::WebContextMenuData::CheckableMenuItemEnabled;
+             blink::WebContextMenuData::kCheckableMenuItemEnabled;
 
     default:
       return RenderViewContextMenu::IsCommandIdEnabled(command_id);

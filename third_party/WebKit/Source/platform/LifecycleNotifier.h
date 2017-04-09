@@ -38,8 +38,8 @@ class LifecycleNotifier : public virtual GarbageCollectedMixin {
  public:
   virtual ~LifecycleNotifier();
 
-  void addObserver(Observer*);
-  void removeObserver(Observer*);
+  void AddObserver(Observer*);
+  void RemoveObserver(Observer*);
 
   // notifyContextDestroyed() should be explicitly dispatched from an
   // observed context to detach its observers, and if the observer kind
@@ -48,33 +48,33 @@ class LifecycleNotifier : public virtual GarbageCollectedMixin {
   // When contextDestroyed() is called, it is supplied the context as
   // an argument, but the observer's lifecycleContext() is still valid
   // and safe to use while handling the notification.
-  virtual void notifyContextDestroyed();
+  virtual void NotifyContextDestroyed();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_observers); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(observers_); }
 
-  bool isIteratingOverObservers() const {
-    return m_iterationState != NotIterating;
+  bool IsIteratingOverObservers() const {
+    return iteration_state_ != kNotIterating;
   }
 
  protected:
-  LifecycleNotifier() : m_iterationState(NotIterating) {}
+  LifecycleNotifier() : iteration_state_(kNotIterating) {}
 
-  T* context() { return static_cast<T*>(this); }
+  T* Context() { return static_cast<T*>(this); }
 
   using ObserverSet = HeapHashSet<WeakMember<Observer>>;
 
   enum IterationState {
-    AllowingNone = 0,
-    AllowingAddition = 1,
-    AllowingRemoval = 2,
-    NotIterating = AllowingAddition | AllowingRemoval,
-    AllowPendingRemoval = 4,
+    kAllowingNone = 0,
+    kAllowingAddition = 1,
+    kAllowingRemoval = 2,
+    kNotIterating = kAllowingAddition | kAllowingRemoval,
+    kAllowPendingRemoval = 4,
   };
 
   // Iteration state is recorded while iterating the observer set,
   // optionally barring add or remove mutations.
-  IterationState m_iterationState;
-  ObserverSet m_observers;
+  IterationState iteration_state_;
+  ObserverSet observers_;
 };
 
 template <typename T, typename Observer>
@@ -92,20 +92,20 @@ class HasContextDestroyed {
   using NoType = int;
 
   template <typename V>
-  static YesType checkHasContextDestroyedMethod(
+  static YesType CheckHasContextDestroyedMethod(
       V* observer,
       T* context = nullptr,
       typename std::enable_if<
-          std::is_same<decltype(observer->contextDestroyed(context)),
+          std::is_same<decltype(observer->ContextDestroyed(context)),
                        void>::value>::type* g = nullptr);
   template <typename V>
-  static NoType checkHasContextDestroyedMethod(...);
+  static NoType CheckHasContextDestroyedMethod(...);
 
  public:
   static_assert(sizeof(Observer), "Observer's class declaration not in scope");
   static const bool value =
       sizeof(YesType) ==
-      sizeof(checkHasContextDestroyedMethod<Observer>(nullptr));
+      sizeof(CheckHasContextDestroyedMethod<Observer>(nullptr));
 };
 
 // If |Observer::contextDestroyed()| is present, invoke it.
@@ -116,8 +116,8 @@ class ContextDestroyedNotifier {
   STATIC_ONLY(ContextDestroyedNotifier);
 
  public:
-  static void call(Observer* observer, T* context) {
-    observer->contextDestroyed(context);
+  static void Call(Observer* observer, T* context) {
+    observer->ContextDestroyed(context);
   }
 };
 
@@ -126,38 +126,38 @@ class ContextDestroyedNotifier<Observer, T, false> {
   STATIC_ONLY(ContextDestroyedNotifier);
 
  public:
-  static void call(Observer*, T*) {}
+  static void Call(Observer*, T*) {}
 };
 
 template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed() {
+inline void LifecycleNotifier<T, Observer>::NotifyContextDestroyed() {
   // Observer unregistration is allowed, but effectively a no-op.
-  AutoReset<IterationState> scope(&m_iterationState, AllowingRemoval);
+  AutoReset<IterationState> scope(&iteration_state_, kAllowingRemoval);
   ObserverSet observers;
-  m_observers.swap(observers);
+  observers_.Swap(observers);
   for (Observer* observer : observers) {
-    DCHECK(observer->lifecycleContext() == context());
-    ContextDestroyedNotifier<Observer, T>::call(observer, context());
-    observer->clearContext();
+    DCHECK(observer->LifecycleContext() == Context());
+    ContextDestroyedNotifier<Observer, T>::Call(observer, Context());
+    observer->ClearContext();
   }
 }
 
 template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::addObserver(Observer* observer) {
-  RELEASE_ASSERT(m_iterationState & AllowingAddition);
-  m_observers.insert(observer);
+inline void LifecycleNotifier<T, Observer>::AddObserver(Observer* observer) {
+  RELEASE_ASSERT(iteration_state_ & kAllowingAddition);
+  observers_.insert(observer);
 }
 
 template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer) {
+inline void LifecycleNotifier<T, Observer>::RemoveObserver(Observer* observer) {
   // If immediate removal isn't currently allowed,
   // |observer| is recorded for pending removal.
-  if (m_iterationState & AllowPendingRemoval) {
-    m_observers.insert(observer);
+  if (iteration_state_ & kAllowPendingRemoval) {
+    observers_.insert(observer);
     return;
   }
-  RELEASE_ASSERT(m_iterationState & AllowingRemoval);
-  m_observers.erase(observer);
+  RELEASE_ASSERT(iteration_state_ & kAllowingRemoval);
+  observers_.erase(observer);
 }
 
 }  // namespace blink

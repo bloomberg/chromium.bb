@@ -86,43 +86,43 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
  public:
   explicit MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&);
-  bool shouldIgnoreElement(const Element&) override;
-  bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
-  bool rewriteLink(const Element&, String& rewrittenLink) override;
-  bool shouldSkipResourceWithURL(const KURL&) override;
-  bool shouldSkipResource(
+  bool ShouldIgnoreElement(const Element&) override;
+  bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
+  bool RewriteLink(const Element&, String& rewritten_link) override;
+  bool ShouldSkipResourceWithURL(const KURL&) override;
+  bool ShouldSkipResource(
       FrameSerializer::ResourceHasCacheControlNoStoreHeader) override;
-  Vector<Attribute> getCustomAttributes(const Element&) override;
+  Vector<Attribute> GetCustomAttributes(const Element&) override;
 
  private:
-  bool shouldIgnoreHiddenElement(const Element&);
-  bool shouldIgnoreMetaElement(const Element&);
-  bool shouldIgnorePopupOverlayElement(const Element&);
-  void getCustomAttributesForImageElement(const HTMLImageElement&,
+  bool ShouldIgnoreHiddenElement(const Element&);
+  bool ShouldIgnoreMetaElement(const Element&);
+  bool ShouldIgnorePopupOverlayElement(const Element&);
+  void GetCustomAttributesForImageElement(const HTMLImageElement&,
                                           Vector<Attribute>*);
-  void getCustomAttributesForFormControlElement(const Element&,
+  void GetCustomAttributesForFormControlElement(const Element&,
                                                 Vector<Attribute>*);
 
-  WebFrameSerializer::MHTMLPartsGenerationDelegate& m_webDelegate;
+  WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
 };
 
 MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
-    WebFrameSerializer::MHTMLPartsGenerationDelegate& webDelegate)
-    : m_webDelegate(webDelegate) {}
+    WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate)
+    : web_delegate_(web_delegate) {}
 
-bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
-  if (shouldIgnoreHiddenElement(element))
+bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
+  if (ShouldIgnoreHiddenElement(element))
     return true;
-  if (shouldIgnoreMetaElement(element))
+  if (ShouldIgnoreMetaElement(element))
     return true;
-  if (m_webDelegate.removePopupOverlay() &&
-      shouldIgnorePopupOverlayElement(element)) {
+  if (web_delegate_.RemovePopupOverlay() &&
+      ShouldIgnorePopupOverlayElement(element)) {
     return true;
   }
   return false;
 }
 
-bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
+bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
     const Element& element) {
   // Do not include elements that are are set to hidden without affecting layout
   // by the page. For those elements that are hidden by default, they will not
@@ -130,7 +130,7 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
   // 1) All elements that are head or part of head, including head, meta, style,
   //    link and etc.
   // 2) Some specific elements in body: meta, style, datalist, option and etc.
-  if (element.layoutObject())
+  if (element.GetLayoutObject())
     return false;
   if (isHTMLHeadElement(element) || isHTMLMetaElement(element) ||
       isHTMLStyleElement(element) || isHTMLDataListElement(element) ||
@@ -141,7 +141,7 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
   return parent && !isHTMLHeadElement(parent);
 }
 
-bool MHTMLFrameSerializerDelegate::shouldIgnoreMetaElement(
+bool MHTMLFrameSerializerDelegate::ShouldIgnoreMetaElement(
     const Element& element) {
   // Do not include meta elements that declare Content-Security-Policy
   // directives. They should have already been enforced when the original
@@ -151,88 +151,88 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreMetaElement(
   // scheme could be prevented from loading.
   if (!isHTMLMetaElement(element))
     return false;
-  if (!element.fastHasAttribute(HTMLNames::contentAttr))
+  if (!element.FastHasAttribute(HTMLNames::contentAttr))
     return false;
-  const AtomicString& httpEquiv =
-      element.fastGetAttribute(HTMLNames::http_equivAttr);
-  return httpEquiv == "Content-Security-Policy";
+  const AtomicString& http_equiv =
+      element.FastGetAttribute(HTMLNames::http_equivAttr);
+  return http_equiv == "Content-Security-Policy";
 }
 
-bool MHTMLFrameSerializerDelegate::shouldIgnorePopupOverlayElement(
+bool MHTMLFrameSerializerDelegate::ShouldIgnorePopupOverlayElement(
     const Element& element) {
   // The element should be visible.
-  LayoutBox* box = element.layoutBox();
+  LayoutBox* box = element.GetLayoutBox();
   if (!box)
     return false;
 
   // The bounding box of the element should contain center point of the
   // viewport.
-  LocalDOMWindow* window = element.document().domWindow();
+  LocalDOMWindow* window = element.GetDocument().domWindow();
   DCHECK(window);
-  LayoutPoint centerPoint(window->innerWidth() / 2, window->innerHeight() / 2);
-  if (!box->frameRect().contains(centerPoint))
+  LayoutPoint center_point(window->innerWidth() / 2, window->innerHeight() / 2);
+  if (!box->FrameRect().Contains(center_point))
     return false;
 
   // The z-index should be greater than the threshold.
-  if (box->style()->zIndex() < kPopupOverlayZIndexThreshold)
+  if (box->Style()->ZIndex() < kPopupOverlayZIndexThreshold)
     return false;
 
   return true;
 }
 
-bool MHTMLFrameSerializerDelegate::shouldIgnoreAttribute(
+bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
     const Element& element,
     const Attribute& attribute) {
   // TODO(fgorski): Presence of srcset attribute causes MHTML to not display
   // images, as only the value of src is pulled into the archive. Discarding
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
-  if (attribute.localName() == HTMLNames::srcsetAttr)
+  if (attribute.LocalName() == HTMLNames::srcsetAttr)
     return true;
 
   // If srcdoc attribute for frame elements will be rewritten as src attribute
   // containing link instead of html contents, don't ignore the attribute.
   // Bail out now to avoid the check in Element::isScriptingAttribute.
-  bool isSrcDocAttribute = isHTMLFrameElementBase(element) &&
-                           attribute.name() == HTMLNames::srcdocAttr;
-  String newLinkForTheElement;
-  if (isSrcDocAttribute && rewriteLink(element, newLinkForTheElement))
+  bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
+                              attribute.GetName() == HTMLNames::srcdocAttr;
+  String new_link_for_the_element;
+  if (is_src_doc_attribute && RewriteLink(element, new_link_for_the_element))
     return false;
 
   // Do not include attributes that contain javascript. This is because the
   // script will not be executed when a MHTML page is being loaded.
-  return element.isScriptingAttribute(attribute);
+  return element.IsScriptingAttribute(attribute);
 }
 
-bool MHTMLFrameSerializerDelegate::rewriteLink(const Element& element,
-                                               String& rewrittenLink) {
-  if (!element.isFrameOwnerElement())
+bool MHTMLFrameSerializerDelegate::RewriteLink(const Element& element,
+                                               String& rewritten_link) {
+  if (!element.IsFrameOwnerElement())
     return false;
 
-  auto* frameOwnerElement = toHTMLFrameOwnerElement(&element);
-  Frame* frame = frameOwnerElement->contentFrame();
+  auto* frame_owner_element = ToHTMLFrameOwnerElement(&element);
+  Frame* frame = frame_owner_element->ContentFrame();
   if (!frame)
     return false;
 
-  WebString contentID = m_webDelegate.getContentID(WebFrame::fromFrame(frame));
-  if (contentID.isNull())
+  WebString content_id = web_delegate_.GetContentID(WebFrame::FromFrame(frame));
+  if (content_id.IsNull())
     return false;
 
-  KURL cidURI = MHTMLParser::convertContentIDToURI(contentID);
-  DCHECK(cidURI.isValid());
+  KURL cid_uri = MHTMLParser::ConvertContentIDToURI(content_id);
+  DCHECK(cid_uri.IsValid());
 
-  if (isHTMLFrameElementBase(&element)) {
-    rewrittenLink = cidURI.getString();
+  if (IsHTMLFrameElementBase(&element)) {
+    rewritten_link = cid_uri.GetString();
     return true;
   }
 
   if (isHTMLObjectElement(&element)) {
-    Document* doc = frameOwnerElement->contentDocument();
-    bool isHandledBySerializer = doc->isHTMLDocument() ||
-                                 doc->isXHTMLDocument() ||
-                                 doc->isImageDocument();
-    if (isHandledBySerializer) {
-      rewrittenLink = cidURI.getString();
+    Document* doc = frame_owner_element->contentDocument();
+    bool is_handled_by_serializer = doc->IsHTMLDocument() ||
+                                    doc->IsXHTMLDocument() ||
+                                    doc->IsImageDocument();
+    if (is_handled_by_serializer) {
+      rewritten_link = cid_uri.GetString();
       return true;
     }
   }
@@ -240,35 +240,35 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(const Element& element,
   return false;
 }
 
-bool MHTMLFrameSerializerDelegate::shouldSkipResourceWithURL(const KURL& url) {
-  return m_webDelegate.shouldSkipResource(url);
+bool MHTMLFrameSerializerDelegate::ShouldSkipResourceWithURL(const KURL& url) {
+  return web_delegate_.ShouldSkipResource(url);
 }
 
-bool MHTMLFrameSerializerDelegate::shouldSkipResource(
+bool MHTMLFrameSerializerDelegate::ShouldSkipResource(
     FrameSerializer::ResourceHasCacheControlNoStoreHeader
-        hasCacheControlNoStoreHeader) {
-  return m_webDelegate.cacheControlPolicy() ==
+        has_cache_control_no_store_header) {
+  return web_delegate_.CacheControlPolicy() ==
              WebFrameSerializerCacheControlPolicy::
-                 SkipAnyFrameOrResourceMarkedNoStore &&
-         hasCacheControlNoStoreHeader ==
-             FrameSerializer::HasCacheControlNoStoreHeader;
+                 kSkipAnyFrameOrResourceMarkedNoStore &&
+         has_cache_control_no_store_header ==
+             FrameSerializer::kHasCacheControlNoStoreHeader;
 }
 
-Vector<Attribute> MHTMLFrameSerializerDelegate::getCustomAttributes(
+Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
     const Element& element) {
   Vector<Attribute> attributes;
 
   if (isHTMLImageElement(element)) {
-    getCustomAttributesForImageElement(toHTMLImageElement(element),
+    GetCustomAttributesForImageElement(toHTMLImageElement(element),
                                        &attributes);
-  } else if (element.isFormControlElement()) {
-    getCustomAttributesForFormControlElement(element, &attributes);
+  } else if (element.IsFormControlElement()) {
+    GetCustomAttributesForFormControlElement(element, &attributes);
   }
 
   return attributes;
 }
 
-void MHTMLFrameSerializerDelegate::getCustomAttributesForImageElement(
+void MHTMLFrameSerializerDelegate::GetCustomAttributesForImageElement(
     const HTMLImageElement& element,
     Vector<Attribute>* attributes) {
   // Currently only the value of src is pulled into the archive and the srcset
@@ -278,82 +278,82 @@ void MHTMLFrameSerializerDelegate::getCustomAttributesForImageElement(
   // <img> element if not set.
 
   // The image should be loaded and participate the layout.
-  ImageResourceContent* image = element.cachedImage();
-  if (!image || !image->hasImage() || image->errorOccurred() ||
-      !element.layoutObject()) {
+  ImageResourceContent* image = element.CachedImage();
+  if (!image || !image->HasImage() || image->ErrorOccurred() ||
+      !element.GetLayoutObject()) {
     return;
   }
 
   // The width and height attributes should not be set.
-  if (element.fastHasAttribute(HTMLNames::widthAttr) ||
-      element.fastHasAttribute(HTMLNames::heightAttr)) {
+  if (element.FastHasAttribute(HTMLNames::widthAttr) ||
+      element.FastHasAttribute(HTMLNames::heightAttr)) {
     return;
   }
 
   // Check if different image is loaded. naturalWidth/naturalHeight will return
   // the image size adjusted with current DPR.
-  if (((int)element.naturalWidth()) == image->getImage()->width() &&
-      ((int)element.naturalHeight()) == image->getImage()->height()) {
+  if (((int)element.naturalWidth()) == image->GetImage()->width() &&
+      ((int)element.naturalHeight()) == image->GetImage()->height()) {
     return;
   }
 
-  Attribute widthAttribute(HTMLNames::widthAttr,
-                           AtomicString::number(element.layoutBoxWidth()));
-  attributes->push_back(widthAttribute);
-  Attribute heightAttribute(HTMLNames::heightAttr,
-                            AtomicString::number(element.layoutBoxHeight()));
-  attributes->push_back(heightAttribute);
+  Attribute width_attribute(HTMLNames::widthAttr,
+                            AtomicString::Number(element.LayoutBoxWidth()));
+  attributes->push_back(width_attribute);
+  Attribute height_attribute(HTMLNames::heightAttr,
+                             AtomicString::Number(element.LayoutBoxHeight()));
+  attributes->push_back(height_attribute);
 }
 
-void MHTMLFrameSerializerDelegate::getCustomAttributesForFormControlElement(
+void MHTMLFrameSerializerDelegate::GetCustomAttributesForFormControlElement(
     const Element& element,
     Vector<Attribute>* attributes) {
   // Disable all form elements in MTHML to tell the user that the form cannot be
   // worked on. MHTML is loaded in full sandboxing mode which disable the form
   // submission and script execution.
-  if (element.fastHasAttribute(HTMLNames::disabledAttr))
+  if (element.FastHasAttribute(HTMLNames::disabledAttr))
     return;
-  Attribute disabledAttribute(HTMLNames::disabledAttr, "");
-  attributes->push_back(disabledAttribute);
+  Attribute disabled_attribute(HTMLNames::disabledAttr, "");
+  attributes->push_back(disabled_attribute);
 }
 
-bool cacheControlNoStoreHeaderPresent(
-    const WebLocalFrameImpl& webLocalFrameImpl) {
+bool CacheControlNoStoreHeaderPresent(
+    const WebLocalFrameImpl& web_local_frame_impl) {
   const ResourceResponse& response =
-      webLocalFrameImpl.dataSource()->response().toResourceResponse();
-  if (response.cacheControlContainsNoStore())
+      web_local_frame_impl.DataSource()->GetResponse().ToResourceResponse();
+  if (response.CacheControlContainsNoStore())
     return true;
 
   const ResourceRequest& request =
-      webLocalFrameImpl.dataSource()->getRequest().toResourceRequest();
-  return request.cacheControlContainsNoStore();
+      web_local_frame_impl.DataSource()->GetRequest().ToResourceRequest();
+  return request.CacheControlContainsNoStore();
 }
 
-bool frameShouldBeSerializedAsMHTML(
+bool FrameShouldBeSerializedAsMHTML(
     WebLocalFrame* frame,
-    WebFrameSerializerCacheControlPolicy cacheControlPolicy) {
-  WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
-  DCHECK(webLocalFrameImpl);
+    WebFrameSerializerCacheControlPolicy cache_control_policy) {
+  WebLocalFrameImpl* web_local_frame_impl = ToWebLocalFrameImpl(frame);
+  DCHECK(web_local_frame_impl);
 
-  if (cacheControlPolicy == WebFrameSerializerCacheControlPolicy::None)
+  if (cache_control_policy == WebFrameSerializerCacheControlPolicy::kNone)
     return true;
 
-  bool needToCheckNoStore =
-      cacheControlPolicy == WebFrameSerializerCacheControlPolicy::
-                                SkipAnyFrameOrResourceMarkedNoStore ||
-      (!frame->parent() &&
-       cacheControlPolicy ==
-           WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame);
+  bool need_to_check_no_store =
+      cache_control_policy == WebFrameSerializerCacheControlPolicy::
+                                  kSkipAnyFrameOrResourceMarkedNoStore ||
+      (!frame->Parent() &&
+       cache_control_policy ==
+           WebFrameSerializerCacheControlPolicy::kFailForNoStoreMainFrame);
 
-  if (!needToCheckNoStore)
+  if (!need_to_check_no_store)
     return true;
 
-  return !cacheControlNoStoreHeaderPresent(*webLocalFrameImpl);
+  return !CacheControlNoStoreHeaderPresent(*web_local_frame_impl);
 }
 
 }  // namespace
 
-WebThreadSafeData WebFrameSerializer::generateMHTMLHeader(
+WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
     const WebString& boundary,
     WebLocalFrame* frame,
     MHTMLPartsGenerationDelegate* delegate) {
@@ -361,39 +361,39 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLHeader(
   DCHECK(frame);
   DCHECK(delegate);
 
-  if (!frameShouldBeSerializedAsMHTML(frame, delegate->cacheControlPolicy()))
+  if (!FrameShouldBeSerializedAsMHTML(frame, delegate->CacheControlPolicy()))
     return WebThreadSafeData();
 
-  WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
-  DCHECK(webLocalFrameImpl);
+  WebLocalFrameImpl* web_local_frame_impl = ToWebLocalFrameImpl(frame);
+  DCHECK(web_local_frame_impl);
 
-  Document* document = webLocalFrameImpl->frame()->document();
+  Document* document = web_local_frame_impl->GetFrame()->GetDocument();
 
-  RefPtr<RawData> buffer = RawData::create();
-  MHTMLArchive::generateMHTMLHeader(boundary, document->title(),
-                                    document->suggestedMIMEType(),
-                                    *buffer->mutableData());
-  return buffer.release();
+  RefPtr<RawData> buffer = RawData::Create();
+  MHTMLArchive::GenerateMHTMLHeader(boundary, document->title(),
+                                    document->SuggestedMIMEType(),
+                                    *buffer->MutableData());
+  return buffer.Release();
 }
 
-WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
+WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
     const WebString& boundary,
-    WebLocalFrame* webFrame,
-    MHTMLPartsGenerationDelegate* webDelegate) {
+    WebLocalFrame* web_frame,
+    MHTMLPartsGenerationDelegate* web_delegate) {
   TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLParts");
-  DCHECK(webFrame);
-  DCHECK(webDelegate);
+  DCHECK(web_frame);
+  DCHECK(web_delegate);
 
-  if (!frameShouldBeSerializedAsMHTML(webFrame,
-                                      webDelegate->cacheControlPolicy()))
+  if (!FrameShouldBeSerializedAsMHTML(web_frame,
+                                      web_delegate->CacheControlPolicy()))
     return WebThreadSafeData();
 
   // Translate arguments from public to internal blink APIs.
-  LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
-  MHTMLArchive::EncodingPolicy encodingPolicy =
-      webDelegate->useBinaryEncoding()
-          ? MHTMLArchive::EncodingPolicy::UseBinaryEncoding
-          : MHTMLArchive::EncodingPolicy::UseDefaultEncoding;
+  LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
+  MHTMLArchive::EncodingPolicy encoding_policy =
+      web_delegate->UseBinaryEncoding()
+          ? MHTMLArchive::EncodingPolicy::kUseBinaryEncoding
+          : MHTMLArchive::EncodingPolicy::kUseDefaultEncoding;
 
   // Serialize.
   TRACE_EVENT_BEGIN0("page-serialization",
@@ -402,9 +402,9 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.SerializationTime.SingleFrame");
-    MHTMLFrameSerializerDelegate coreDelegate(*webDelegate);
-    FrameSerializer serializer(resources, coreDelegate);
-    serializer.serializeFrame(*frame);
+    MHTMLFrameSerializerDelegate core_delegate(*web_delegate);
+    FrameSerializer serializer(resources, core_delegate);
+    serializer.SerializeFrame(*frame);
   }
 
   TRACE_EVENT_END1("page-serialization",
@@ -413,64 +413,64 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
                    static_cast<unsigned long long>(resources.size()));
 
   // There was an error serializing the frame (e.g. of an image resource).
-  if (resources.isEmpty())
+  if (resources.IsEmpty())
     return WebThreadSafeData();
 
   // Encode serialized resources as MHTML.
-  RefPtr<RawData> output = RawData::create();
+  RefPtr<RawData> output = RawData::Create();
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.EncodingTime.SingleFrame");
     // Frame is the 1st resource (see FrameSerializer::serializeFrame doc
     // comment). Frames get a Content-ID header.
-    MHTMLArchive::generateMHTMLPart(
-        boundary, webDelegate->getContentID(webFrame), encodingPolicy,
-        resources.takeFirst(), *output->mutableData());
-    while (!resources.isEmpty()) {
+    MHTMLArchive::GenerateMHTMLPart(
+        boundary, web_delegate->GetContentID(web_frame), encoding_policy,
+        resources.TakeFirst(), *output->MutableData());
+    while (!resources.IsEmpty()) {
       TRACE_EVENT0("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts encoding");
-      MHTMLArchive::generateMHTMLPart(boundary, String(), encodingPolicy,
-                                      resources.takeFirst(),
-                                      *output->mutableData());
+      MHTMLArchive::GenerateMHTMLPart(boundary, String(), encoding_policy,
+                                      resources.TakeFirst(),
+                                      *output->MutableData());
     }
   }
-  return output.release();
+  return output.Release();
 }
 
-bool WebFrameSerializer::serialize(
+bool WebFrameSerializer::Serialize(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
     WebFrameSerializer::LinkRewritingDelegate* delegate) {
-  WebFrameSerializerImpl serializerImpl(frame, client, delegate);
-  return serializerImpl.serialize();
+  WebFrameSerializerImpl serializer_impl(frame, client, delegate);
+  return serializer_impl.Serialize();
 }
 
-WebString WebFrameSerializer::generateMetaCharsetDeclaration(
+WebString WebFrameSerializer::GenerateMetaCharsetDeclaration(
     const WebString& charset) {
   // TODO(yosin) We should call |FrameSerializer::metaCharsetDeclarationOf()|.
-  String charsetString =
+  String charset_string =
       "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" +
       static_cast<const String&>(charset) + "\">";
-  return charsetString;
+  return charset_string;
 }
 
-WebString WebFrameSerializer::generateMarkOfTheWebDeclaration(
+WebString WebFrameSerializer::GenerateMarkOfTheWebDeclaration(
     const WebURL& url) {
   StringBuilder builder;
-  builder.append("\n<!-- ");
-  builder.append(FrameSerializer::markOfTheWebDeclaration(url));
-  builder.append(" -->\n");
-  return builder.toString();
+  builder.Append("\n<!-- ");
+  builder.Append(FrameSerializer::MarkOfTheWebDeclaration(url));
+  builder.Append(" -->\n");
+  return builder.ToString();
 }
 
-WebString WebFrameSerializer::generateBaseTagDeclaration(
-    const WebString& baseTarget) {
+WebString WebFrameSerializer::GenerateBaseTagDeclaration(
+    const WebString& base_target) {
   // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
-  if (baseTarget.isEmpty())
+  if (base_target.IsEmpty())
     return String("<base href=\".\">");
-  String baseString = "<base href=\".\" target=\"" +
-                      static_cast<const String&>(baseTarget) + "\">";
-  return baseString;
+  String base_string = "<base href=\".\" target=\"" +
+                       static_cast<const String&>(base_target) + "\">";
+  return base_string;
 }
 
 }  // namespace blink

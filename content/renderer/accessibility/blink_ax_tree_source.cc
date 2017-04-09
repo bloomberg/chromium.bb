@@ -61,7 +61,7 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
                                        AXContentNodeData* dst) {
   std::vector<int32_t> ids;
   for (size_t i = 0; i < objects.size(); i++)
-    ids.push_back(objects[i].axID());
+    ids.push_back(objects[i].AxID());
   if (!ids.empty())
     dst->AddIntListAttribute(attr, ids);
 }
@@ -77,52 +77,52 @@ class AXContentNodeDataSparseAttributeAdapter
  private:
   AXContentNodeData* dst_;
 
-  void addBoolAttribute(blink::WebAXBoolAttribute attribute,
+  void AddBoolAttribute(blink::WebAXBoolAttribute attribute,
                         bool value) override {
     NOTREACHED();
   }
 
-  void addStringAttribute(blink::WebAXStringAttribute attribute,
+  void AddStringAttribute(blink::WebAXStringAttribute attribute,
                           const blink::WebString& value) override {
     switch (attribute) {
-      case blink::WebAXStringAttribute::AriaKeyShortcuts:
-        dst_->AddStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS, value.utf8());
+      case blink::WebAXStringAttribute::kAriaKeyShortcuts:
+        dst_->AddStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS, value.Utf8());
         break;
-      case blink::WebAXStringAttribute::AriaRoleDescription:
-        dst_->AddStringAttribute(ui::AX_ATTR_ROLE_DESCRIPTION, value.utf8());
+      case blink::WebAXStringAttribute::kAriaRoleDescription:
+        dst_->AddStringAttribute(ui::AX_ATTR_ROLE_DESCRIPTION, value.Utf8());
         break;
       default:
         NOTREACHED();
     }
   }
 
-  void addObjectAttribute(blink::WebAXObjectAttribute attribute,
+  void AddObjectAttribute(blink::WebAXObjectAttribute attribute,
                           const blink::WebAXObject& value) override {
     switch (attribute) {
-      case blink::WebAXObjectAttribute::AriaActiveDescendant:
-        dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.axID());
+      case blink::WebAXObjectAttribute::kAriaActiveDescendant:
+        dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.AxID());
         break;
-      case blink::WebAXObjectAttribute::AriaErrorMessage:
-        dst_->AddIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, value.axID());
+      case blink::WebAXObjectAttribute::kAriaErrorMessage:
+        dst_->AddIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, value.AxID());
         break;
       default:
         NOTREACHED();
     }
   }
 
-  void addObjectVectorAttribute(
+  void AddObjectVectorAttribute(
       blink::WebAXObjectVectorAttribute attribute,
       const blink::WebVector<WebAXObject>& value) override {
     switch (attribute) {
-      case blink::WebAXObjectVectorAttribute::AriaControls:
+      case blink::WebAXObjectVectorAttribute::kAriaControls:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, value,
                                           dst_);
         break;
-      case blink::WebAXObjectVectorAttribute::AriaDetails:
+      case blink::WebAXObjectVectorAttribute::kAriaDetails:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_DETAILS_IDS, value,
                                           dst_);
         break;
-      case blink::WebAXObjectVectorAttribute::AriaFlowTo:
+      case blink::WebAXObjectVectorAttribute::kAriaFlowTo:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, value, dst_);
         break;
       default:
@@ -132,9 +132,9 @@ class AXContentNodeDataSparseAttributeAdapter
 };
 
 WebAXObject ParentObjectUnignored(WebAXObject child) {
-  WebAXObject parent = child.parentObject();
-  while (!parent.isDetached() && parent.accessibilityIsIgnored())
-    parent = parent.parentObject();
+  WebAXObject parent = child.ParentObject();
+  while (!parent.IsDetached() && parent.AccessibilityIsIgnored())
+    parent = parent.ParentObject();
   return parent;
 }
 
@@ -145,7 +145,7 @@ WebAXObject ParentObjectUnignored(WebAXObject child) {
 bool IsParentUnignoredOf(WebAXObject ancestor,
                          WebAXObject child) {
   WebAXObject parent = ParentObjectUnignored(child);
-  return parent.equals(ancestor);
+  return parent.Equals(ancestor);
 }
 
 std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
@@ -211,14 +211,14 @@ void BlinkAXTreeSource::Freeze() {
   frozen_ = true;
 
   if (render_frame_ && render_frame_->GetWebFrame())
-    document_ = render_frame_->GetWebFrame()->document();
+    document_ = render_frame_->GetWebFrame()->GetDocument();
   else
     document_ = WebDocument();
 
   root_ = ComputeRoot();
 
-  if (!document_.isNull())
-    focus_ = document_.focusedAccessibilityObject();
+  if (!document_.IsNull())
+    focus_ = document_.FocusedAccessibilityObject();
   else
     focus_ = WebAXObject();
 }
@@ -236,7 +236,7 @@ void BlinkAXTreeSource::SetRoot(blink::WebAXObject root) {
 bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
   CHECK(frozen_);
   while (IsValid(node)) {
-    if (node.equals(root()))
+    if (node.Equals(root()))
       return true;
     node = GetParent(node);
   }
@@ -252,25 +252,25 @@ void BlinkAXTreeSource::SetAccessibilityMode(AccessibilityMode new_mode) {
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
-  tree_data->loaded = root().isLoaded();
-  tree_data->loading_progress = root().estimatedLoadingProgress();
+  tree_data->loaded = root().IsLoaded();
+  tree_data->loading_progress = root().EstimatedLoadingProgress();
   tree_data->mimetype =
-      document().isXHTMLDocument() ? "text/xhtml" : "text/html";
-  tree_data->title = document().title().utf8();
-  tree_data->url = document().url().string().utf8();
+      document().IsXHTMLDocument() ? "text/xhtml" : "text/html";
+  tree_data->title = document().Title().Utf8();
+  tree_data->url = document().Url().GetString().Utf8();
 
-  if (!focus().isNull())
-    tree_data->focus_id = focus().axID();
+  if (!focus().IsNull())
+    tree_data->focus_id = focus().AxID();
 
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   blink::WebAXTextAffinity anchor_affinity, focus_affinity;
-  root().selection(anchor_object, anchor_offset, anchor_affinity, focus_object,
+  root().Selection(anchor_object, anchor_offset, anchor_affinity, focus_object,
                    focus_offset, focus_affinity);
-  if (!anchor_object.isNull() && !focus_object.isNull() &&
-      anchor_offset >= 0 && focus_offset >= 0) {
-    int32_t anchor_id = anchor_object.axID();
-    int32_t focus_id = focus_object.axID();
+  if (!anchor_object.IsNull() && !focus_object.IsNull() && anchor_offset >= 0 &&
+      focus_offset >= 0) {
+    int32_t anchor_id = anchor_object.AxID();
+    int32_t focus_id = focus_object.AxID();
     tree_data->sel_anchor_object_id = anchor_id;
     tree_data->sel_anchor_offset = anchor_offset;
     tree_data->sel_focus_object_id = focus_id;
@@ -280,13 +280,13 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   }
 
   // Get the tree ID for this frame and the parent frame.
-  WebLocalFrame* web_frame = document().frame();
+  WebLocalFrame* web_frame = document().GetFrame();
   if (web_frame) {
     RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
     tree_data->routing_id = render_frame->GetRoutingID();
 
     // Get the tree ID for the parent frame.
-    blink::WebFrame* parent_web_frame = web_frame->parent();
+    blink::WebFrame* parent_web_frame = web_frame->Parent();
     if (parent_web_frame) {
       tree_data->parent_routing_id =
           GetRoutingIdForFrameOrProxy(parent_web_frame);
@@ -304,11 +304,11 @@ blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetFromId(int32_t id) const {
-  return GetMainDocument().accessibilityObjectFromID(id);
+  return GetMainDocument().AccessibilityObjectFromID(id);
 }
 
 int32_t BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
-  return node.axID();
+  return node.AxID();
 }
 
 void BlinkAXTreeSource::GetChildren(
@@ -316,29 +316,29 @@ void BlinkAXTreeSource::GetChildren(
     std::vector<blink::WebAXObject>* out_children) const {
   CHECK(frozen_);
 
-  if (parent.role() == blink::WebAXRoleStaticText) {
-    int32_t focus_id = focus().axID();
+  if (parent.Role() == blink::kWebAXRoleStaticText) {
+    int32_t focus_id = focus().AxID();
     blink::WebAXObject ancestor = parent;
-    while (!ancestor.isDetached()) {
-      if (ancestor.axID() == accessibility_focus_id_ ||
-          (ancestor.axID() == focus_id && ancestor.isEditable())) {
-        parent.loadInlineTextBoxes();
+    while (!ancestor.IsDetached()) {
+      if (ancestor.AxID() == accessibility_focus_id_ ||
+          (ancestor.AxID() == focus_id && ancestor.IsEditable())) {
+        parent.LoadInlineTextBoxes();
         break;
       }
-      ancestor = ancestor.parentObject();
+      ancestor = ancestor.ParentObject();
     }
   }
 
   bool is_iframe = false;
-  WebNode node = parent.node();
-  if (!node.isNull() && node.isElementNode())
-    is_iframe = node.to<WebElement>().hasHTMLTagName("iframe");
+  WebNode node = parent.GetNode();
+  if (!node.IsNull() && node.IsElementNode())
+    is_iframe = node.To<WebElement>().HasHTMLTagName("iframe");
 
-  for (unsigned i = 0; i < parent.childCount(); i++) {
-    blink::WebAXObject child = parent.childAt(i);
+  for (unsigned i = 0; i < parent.ChildCount(); i++) {
+    blink::WebAXObject child = parent.ChildAt(i);
 
     // The child may be invalid due to issues in blink accessibility code.
-    if (child.isDetached())
+    if (child.IsDetached())
       continue;
 
     // Skip children whose parent isn't |parent|.
@@ -358,21 +358,21 @@ blink::WebAXObject BlinkAXTreeSource::GetParent(
   // we have to skip those here. Also, stop when we get to the root
   // element.
   do {
-    if (node.equals(root()))
+    if (node.Equals(root()))
       return blink::WebAXObject();
-    node = node.parentObject();
-  } while (!node.isDetached() && node.accessibilityIsIgnored());
+    node = node.ParentObject();
+  } while (!node.IsDetached() && node.AccessibilityIsIgnored());
 
   return node;
 }
 
 bool BlinkAXTreeSource::IsValid(blink::WebAXObject node) const {
-  return !node.isDetached();  // This also checks if it's null.
+  return !node.IsDetached();  // This also checks if it's null.
 }
 
 bool BlinkAXTreeSource::IsEqual(blink::WebAXObject node1,
                                 blink::WebAXObject node2) const {
-  return node1.equals(node2);
+  return node1.Equals(node2);
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetNull() const {
@@ -381,29 +381,29 @@ blink::WebAXObject BlinkAXTreeSource::GetNull() const {
 
 void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                                       AXContentNodeData* dst) const {
-  dst->role = AXRoleFromBlink(src.role());
+  dst->role = AXRoleFromBlink(src.Role());
   dst->state = AXStateFromBlink(src);
-  dst->id = src.axID();
+  dst->id = src.AxID();
 
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
-  src.getRelativeBounds(
-      offset_container, bounds_in_container, container_transform);
+  src.GetRelativeBounds(offset_container, bounds_in_container,
+                        container_transform);
   dst->location = bounds_in_container;
   if (!container_transform.isIdentity())
     dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
-  if (!offset_container.isDetached())
-    dst->offset_container_id = offset_container.axID();
+  if (!offset_container.IsDetached())
+    dst->offset_container_id = offset_container.AxID();
 
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
-  src.getSparseAXAttributes(sparse_attribute_adapter);
+  src.GetSparseAXAttributes(sparse_attribute_adapter);
 
   blink::WebAXNameFrom nameFrom;
   blink::WebVector<blink::WebAXObject> nameObjects;
-  blink::WebString web_name = src.name(nameFrom, nameObjects);
-  if (!web_name.isEmpty()) {
-    dst->AddStringAttribute(ui::AX_ATTR_NAME, web_name.utf8());
+  blink::WebString web_name = src.GetName(nameFrom, nameObjects);
+  if (!web_name.IsEmpty()) {
+    dst->AddStringAttribute(ui::AX_ATTR_NAME, web_name.Utf8());
     dst->AddIntAttribute(ui::AX_ATTR_NAME_FROM, AXNameFromFromBlink(nameFrom));
     AddIntListAttributeFromWebObjects(
         ui::AX_ATTR_LABELLEDBY_IDS, nameObjects, dst);
@@ -411,101 +411,101 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
   blink::WebAXDescriptionFrom descriptionFrom;
   blink::WebVector<blink::WebAXObject> descriptionObjects;
-  blink::WebString web_description = src.description(
-      nameFrom, descriptionFrom, descriptionObjects);
-  if (!web_description.isEmpty()) {
-    dst->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, web_description.utf8());
+  blink::WebString web_description =
+      src.Description(nameFrom, descriptionFrom, descriptionObjects);
+  if (!web_description.IsEmpty()) {
+    dst->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, web_description.Utf8());
     dst->AddIntAttribute(ui::AX_ATTR_DESCRIPTION_FROM,
         AXDescriptionFromFromBlink(descriptionFrom));
     AddIntListAttributeFromWebObjects(
         ui::AX_ATTR_DESCRIBEDBY_IDS, descriptionObjects, dst);
   }
 
-  if (src.valueDescription().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.valueDescription().utf8());
+  if (src.ValueDescription().length()) {
+    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.ValueDescription().Utf8());
   } else {
-    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.stringValue().utf8());
+    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.StringValue().Utf8());
   }
 
-  if (src.isButtonStateMixed())
+  if (src.IsButtonStateMixed())
     dst->AddBoolAttribute(ui::AX_ATTR_STATE_MIXED, true);
 
-  if (src.canSetValueAttribute())
+  if (src.CanSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
 
-  if (!src.url().isEmpty())
-    dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().string().utf8());
+  if (!src.Url().IsEmpty())
+    dst->AddStringAttribute(ui::AX_ATTR_URL, src.Url().GetString().Utf8());
 
   // The following set of attributes are only accessed when the accessibility
   // mode is set to screen reader mode, otherwise only the more basic
   // attributes are populated.
   if (accessibility_mode_.has_mode(AccessibilityMode::kScreenReader)) {
-    blink::WebString web_placeholder = src.placeholder(nameFrom);
-    if (!web_placeholder.isEmpty())
-      dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
+    blink::WebString web_placeholder = src.Placeholder(nameFrom);
+    if (!web_placeholder.IsEmpty())
+      dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.Utf8());
 
     if (dst->role == ui::AX_ROLE_COLOR_WELL)
-      dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.colorValue());
+      dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.ColorValue());
 
     if (dst->role == ui::AX_ROLE_LINK) {
-      blink::WebAXObject target = src.inPageLinkTarget();
-      if (!target.isNull()) {
-        int32_t target_id = target.axID();
+      blink::WebAXObject target = src.InPageLinkTarget();
+      if (!target.IsNull()) {
+        int32_t target_id = target.AxID();
         dst->AddIntAttribute(ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID, target_id);
       }
     }
 
     if (dst->role == ui::AX_ROLE_RADIO_BUTTON) {
       AddIntListAttributeFromWebObjects(ui::AX_ATTR_RADIO_GROUP_IDS,
-                                        src.radioButtonsInGroup(), dst);
+                                        src.RadioButtonsInGroup(), dst);
     }
 
     // Text attributes.
-    if (src.backgroundColor())
-      dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.backgroundColor());
+    if (src.BackgroundColor())
+      dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.BackgroundColor());
 
-    if (src.color())
-      dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.color());
+    if (src.GetColor())
+      dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.GetColor());
 
     WebAXObject parent = ParentObjectUnignored(src);
-    if (src.fontFamily().length()) {
-      if (parent.isNull() || parent.fontFamily() != src.fontFamily())
+    if (src.FontFamily().length()) {
+      if (parent.IsNull() || parent.FontFamily() != src.FontFamily())
         dst->AddStringAttribute(ui::AX_ATTR_FONT_FAMILY,
-                                src.fontFamily().utf8());
+                                src.FontFamily().Utf8());
     }
 
     // Font size is in pixels.
-    if (src.fontSize())
-      dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.fontSize());
+    if (src.FontSize())
+      dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.FontSize());
 
-    if (src.ariaCurrentState()) {
+    if (src.AriaCurrentState()) {
       dst->AddIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE,
-                           AXAriaCurrentStateFromBlink(src.ariaCurrentState()));
+                           AXAriaCurrentStateFromBlink(src.AriaCurrentState()));
     }
 
-    if (src.invalidState()) {
+    if (src.InvalidState()) {
       dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
-                           AXInvalidStateFromBlink(src.invalidState()));
+                           AXInvalidStateFromBlink(src.InvalidState()));
     }
-    if (src.invalidState() == blink::WebAXInvalidStateOther &&
-        src.ariaInvalidValue().length()) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_ARIA_INVALID_VALUE, src.ariaInvalidValue().utf8());
+    if (src.InvalidState() == blink::kWebAXInvalidStateOther &&
+        src.AriaInvalidValue().length()) {
+      dst->AddStringAttribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
+                              src.AriaInvalidValue().Utf8());
     }
 
-    if (src.textDirection()) {
+    if (src.GetTextDirection()) {
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                           AXTextDirectionFromBlink(src.textDirection()));
+                           AXTextDirectionFromBlink(src.GetTextDirection()));
     }
 
-    if (src.textStyle()) {
+    if (src.TextStyle()) {
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
-                           AXTextStyleFromBlink(src.textStyle()));
+                           AXTextStyleFromBlink(src.TextStyle()));
     }
 
     if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
       WebVector<int> src_character_offsets;
-      src.characterOffsets(src_character_offsets);
+      src.CharacterOffsets(src_character_offsets);
       std::vector<int32_t> character_offsets;
       character_offsets.reserve(src_character_offsets.size());
       for (size_t i = 0; i < src_character_offsets.size(); ++i)
@@ -515,7 +515,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
       WebVector<int> src_word_starts;
       WebVector<int> src_word_ends;
-      src.wordBoundaries(src_word_starts, src_word_ends);
+      src.GetWordBoundaries(src_word_starts, src_word_ends);
       std::vector<int32_t> word_starts;
       std::vector<int32_t> word_ends;
       word_starts.reserve(src_word_starts.size());
@@ -528,78 +528,76 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       dst->AddIntListAttribute(ui::AX_ATTR_WORD_ENDS, word_ends);
     }
 
-    if (src.accessKey().length()) {
-      dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.accessKey().utf8());
+    if (src.AccessKey().length()) {
+      dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.AccessKey().Utf8());
     }
 
-    if (src.ariaAutoComplete().length()) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_AUTO_COMPLETE,
-          src.ariaAutoComplete().utf8());
+    if (src.AriaAutoComplete().length()) {
+      dst->AddStringAttribute(ui::AX_ATTR_AUTO_COMPLETE,
+                              src.AriaAutoComplete().Utf8());
     }
 
-    if (src.action() != blink::WebAXSupportedAction::None) {
+    if (src.Action() != blink::WebAXSupportedAction::kNone) {
       dst->AddIntAttribute(ui::AX_ATTR_ACTION,
-                           AXSupportedActionFromBlink(src.action()));
+                           AXSupportedActionFromBlink(src.Action()));
     }
 
-    if (src.isAriaReadOnly())
+    if (src.IsAriaReadOnly())
       dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
 
-    if (src.hasComputedStyle()) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_DISPLAY, src.computedStyleDisplay().utf8());
+    if (src.HasComputedStyle()) {
+      dst->AddStringAttribute(ui::AX_ATTR_DISPLAY,
+                              src.ComputedStyleDisplay().Utf8());
     }
 
-    if (src.language().length()) {
-      if (parent.isNull() || parent.language() != src.language())
-        dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.language().utf8());
+    if (src.Language().length()) {
+      if (parent.IsNull() || parent.Language() != src.Language())
+        dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.Language().Utf8());
     }
 
-    if (src.keyboardShortcut().length()) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_SHORTCUT,
-          src.keyboardShortcut().utf8());
+    if (src.KeyboardShortcut().length()) {
+      dst->AddStringAttribute(ui::AX_ATTR_SHORTCUT,
+                              src.KeyboardShortcut().Utf8());
     }
 
-    if (!src.nextOnLine().isDetached()) {
+    if (!src.NextOnLine().IsDetached()) {
       dst->AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID,
-                           src.nextOnLine().axID());
+                           src.NextOnLine().AxID());
     }
 
-    if (!src.previousOnLine().isDetached()) {
+    if (!src.PreviousOnLine().IsDetached()) {
       dst->AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
-                           src.previousOnLine().axID());
+                           src.PreviousOnLine().AxID());
     }
 
-    if (!src.ariaActiveDescendant().isDetached()) {
+    if (!src.AriaActiveDescendant().IsDetached()) {
       dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
-                           src.ariaActiveDescendant().axID());
+                           src.AriaActiveDescendant().AxID());
     }
 
-    if (dst->role == ui::AX_ROLE_HEADING && src.headingLevel()) {
-      dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
+    if (dst->role == ui::AX_ROLE_HEADING && src.HeadingLevel()) {
+      dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.HeadingLevel());
     } else if ((dst->role == ui::AX_ROLE_TREE_ITEM ||
                 dst->role == ui::AX_ROLE_ROW) &&
-               src.hierarchicalLevel()) {
+               src.HierarchicalLevel()) {
       dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL,
-                           src.hierarchicalLevel());
+                           src.HierarchicalLevel());
     }
 
-    if (src.setSize())
-      dst->AddIntAttribute(ui::AX_ATTR_SET_SIZE, src.setSize());
+    if (src.SetSize())
+      dst->AddIntAttribute(ui::AX_ATTR_SET_SIZE, src.SetSize());
 
-    if (src.posInSet())
-      dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.posInSet());
+    if (src.PosInSet())
+      dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.PosInSet());
 
-    if (src.canvasHasFallbackContent())
+    if (src.CanvasHasFallbackContent())
       dst->AddBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK, true);
 
     // Spelling, grammar and other document markers.
     WebVector<blink::WebAXMarkerType> src_marker_types;
     WebVector<int> src_marker_starts;
     WebVector<int> src_marker_ends;
-    src.markers(src_marker_types, src_marker_starts, src_marker_ends);
+    src.Markers(src_marker_types, src_marker_starts, src_marker_ends);
     DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
     DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
 
@@ -621,36 +619,31 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       dst->AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
     }
 
-    if (src.isInLiveRegion()) {
-      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.liveRegionAtomic());
-      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.liveRegionBusy());
-      if (src.liveRegionBusy())
+    if (src.IsInLiveRegion()) {
+      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.LiveRegionAtomic());
+      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.LiveRegionBusy());
+      if (src.LiveRegionBusy())
         dst->state |= (1 << ui::AX_STATE_BUSY);
-      if (!src.liveRegionStatus().isEmpty()) {
-        dst->AddStringAttribute(
-            ui::AX_ATTR_LIVE_STATUS,
-            src.liveRegionStatus().utf8());
+      if (!src.LiveRegionStatus().IsEmpty()) {
+        dst->AddStringAttribute(ui::AX_ATTR_LIVE_STATUS,
+                                src.LiveRegionStatus().Utf8());
       }
-      dst->AddStringAttribute(
-          ui::AX_ATTR_LIVE_RELEVANT,
-          src.liveRegionRelevant().utf8());
+      dst->AddStringAttribute(ui::AX_ATTR_LIVE_RELEVANT,
+                              src.LiveRegionRelevant().Utf8());
       // If we are not at the root of an atomic live region.
-      if (src.containerLiveRegionAtomic() &&
-          !src.liveRegionRoot().isDetached() &&
-          !src.liveRegionAtomic()) {
+      if (src.ContainerLiveRegionAtomic() &&
+          !src.LiveRegionRoot().IsDetached() && !src.LiveRegionAtomic()) {
         dst->AddIntAttribute(ui::AX_ATTR_MEMBER_OF_ID,
-                             src.liveRegionRoot().axID());
+                             src.LiveRegionRoot().AxID());
       }
       dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
-                            src.containerLiveRegionAtomic());
+                            src.ContainerLiveRegionAtomic());
       dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY,
-                            src.containerLiveRegionBusy());
-      dst->AddStringAttribute(
-          ui::AX_ATTR_CONTAINER_LIVE_STATUS,
-          src.containerLiveRegionStatus().utf8());
-      dst->AddStringAttribute(
-          ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
-          src.containerLiveRegionRelevant().utf8());
+                            src.ContainerLiveRegionBusy());
+      dst->AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                              src.ContainerLiveRegionStatus().Utf8());
+      dst->AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
+                              src.ContainerLiveRegionRelevant().Utf8());
     }
 
     if (dst->role == ui::AX_ROLE_PROGRESS_INDICATOR ||
@@ -658,39 +651,39 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         dst->role == ui::AX_ROLE_SCROLL_BAR ||
         dst->role == ui::AX_ROLE_SLIDER ||
         dst->role == ui::AX_ROLE_SPIN_BUTTON) {
-      dst->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, src.valueForRange());
+      dst->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, src.ValueForRange());
       dst->AddFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
-                             src.maxValueForRange());
+                             src.MaxValueForRange());
       dst->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
-                             src.minValueForRange());
+                             src.MinValueForRange());
     }
 
     if (dst->role == ui::AX_ROLE_DIALOG ||
         dst->role == ui::AX_ROLE_ALERT_DIALOG) {
-      dst->AddBoolAttribute(ui::AX_ATTR_MODAL, src.isModal());
+      dst->AddBoolAttribute(ui::AX_ATTR_MODAL, src.IsModal());
     }
 
     if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)
       dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
 
     if (dst->role == ui::AX_ROLE_TABLE) {
-      int column_count = src.columnCount();
-      int row_count = src.rowCount();
+      int column_count = src.ColumnCount();
+      int row_count = src.RowCount();
       if (column_count > 0 && row_count > 0) {
         std::set<int32_t> unique_cell_id_set;
         std::vector<int32_t> cell_ids;
         std::vector<int32_t> unique_cell_ids;
         dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, column_count);
         dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, row_count);
-        WebAXObject header = src.headerContainerObject();
-        if (!header.isDetached())
-          dst->AddIntAttribute(ui::AX_ATTR_TABLE_HEADER_ID, header.axID());
+        WebAXObject header = src.HeaderContainerObject();
+        if (!header.IsDetached())
+          dst->AddIntAttribute(ui::AX_ATTR_TABLE_HEADER_ID, header.AxID());
         for (int i = 0; i < column_count * row_count; ++i) {
-          WebAXObject cell = src.cellForColumnAndRow(
-              i % column_count, i / column_count);
+          WebAXObject cell =
+              src.CellForColumnAndRow(i % column_count, i / column_count);
           int cell_id = -1;
-          if (!cell.isDetached()) {
-            cell_id = cell.axID();
+          if (!cell.IsDetached()) {
+            cell_id = cell.AxID();
             if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
               unique_cell_id_set.insert(cell_id);
               unique_cell_ids.push_back(cell_id);
@@ -706,27 +699,27 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (dst->role == ui::AX_ROLE_TABLE ||
         dst->role == ui::AX_ROLE_GRID ||
         dst->role == ui::AX_ROLE_TREE_GRID) {
-      int aria_colcount = src.ariaColumnCount();
+      int aria_colcount = src.AriaColumnCount();
       if (aria_colcount)
         dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_COUNT, aria_colcount);
 
-      int aria_rowcount = src.ariaRowCount();
+      int aria_rowcount = src.AriaRowCount();
       if (aria_rowcount)
         dst->AddIntAttribute(ui::AX_ATTR_ARIA_ROW_COUNT, aria_rowcount);
     }
 
     if (dst->role == ui::AX_ROLE_ROW) {
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_INDEX, src.rowIndex());
-      WebAXObject header = src.rowHeader();
-      if (!header.isDetached())
-        dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_HEADER_ID, header.axID());
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_INDEX, src.RowIndex());
+      WebAXObject header = src.RowHeader();
+      if (!header.IsDetached())
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_HEADER_ID, header.AxID());
     }
 
     if (dst->role == ui::AX_ROLE_COLUMN) {
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_INDEX, src.columnIndex());
-      WebAXObject header = src.columnHeader();
-      if (!header.isDetached())
-        dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_HEADER_ID, header.axID());
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_INDEX, src.ColumnIndex());
+      WebAXObject header = src.ColumnHeader();
+      if (!header.IsDetached())
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_HEADER_ID, header.AxID());
     }
 
     if (dst->role == ui::AX_ROLE_CELL ||
@@ -735,72 +728,73 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         dst->role == ui::AX_ROLE_ROW) {
       if (dst->role != ui::AX_ROLE_ROW) {
         dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
-                             src.cellColumnIndex());
+                             src.CellColumnIndex());
         dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
-                             src.cellColumnSpan());
+                             src.CellColumnSpan());
         dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
-                             src.cellRowIndex());
-        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN,src.cellRowSpan());
+                             src.CellRowIndex());
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN,
+                             src.CellRowSpan());
 
-        int aria_colindex = src.ariaColumnIndex();
+        int aria_colindex = src.AriaColumnIndex();
         if (aria_colindex)
           dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_INDEX, aria_colindex);
       }
 
-      int aria_rowindex = src.ariaRowIndex();
+      int aria_rowindex = src.AriaRowIndex();
       if (aria_rowindex)
         dst->AddIntAttribute(ui::AX_ATTR_ARIA_ROW_INDEX, aria_rowindex);
     }
 
     if ((dst->role == ui::AX_ROLE_ROW_HEADER ||
-         dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
+         dst->role == ui::AX_ROLE_COLUMN_HEADER) &&
+        src.SortDirection()) {
       dst->AddIntAttribute(ui::AX_ATTR_SORT_DIRECTION,
-                           AXSortDirectionFromBlink(src.sortDirection()));
+                           AXSortDirectionFromBlink(src.SortDirection()));
     }
   }
 
   // The majority of the rest of this code computes attributes needed for
   // all modes, not just for screen readers.
 
-  WebNode node = src.node();
+  WebNode node = src.GetNode();
   bool is_iframe = false;
 
-  if (!node.isNull() && node.isElementNode()) {
-    WebElement element = node.to<WebElement>();
-    is_iframe = element.hasHTMLTagName("iframe");
+  if (!node.IsNull() && node.IsElementNode()) {
+    WebElement element = node.To<WebElement>();
+    is_iframe = element.HasHTMLTagName("iframe");
 
     if (accessibility_mode_.has_mode(AccessibilityMode::kHTML)) {
       // TODO(ctguil): The tagName in WebKit is lower cased but
       // HTMLElement::nodeName calls localNameUpper. Consider adding
       // a WebElement method that returns the original lower cased tagName.
-      dst->AddStringAttribute(
-          ui::AX_ATTR_HTML_TAG,
-          base::ToLowerASCII(element.tagName().utf8()));
-      for (unsigned i = 0; i < element.attributeCount(); ++i) {
-        std::string name = base::ToLowerASCII(
-            element.attributeLocalName(i).utf8());
-        std::string value = element.attributeValue(i).utf8();
+      dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG,
+                              base::ToLowerASCII(element.TagName().Utf8()));
+      for (unsigned i = 0; i < element.AttributeCount(); ++i) {
+        std::string name =
+            base::ToLowerASCII(element.AttributeLocalName(i).Utf8());
+        std::string value = element.AttributeValue(i).Utf8();
         dst->html_attributes.push_back(std::make_pair(name, value));
       }
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
 #if defined(OS_WIN)
-      if (dst->role == ui::AX_ROLE_MATH && element.innerHTML().length()) {
+      if (dst->role == ui::AX_ROLE_MATH && element.InnerHTML().length()) {
         dst->AddStringAttribute(ui::AX_ATTR_INNER_HTML,
-                                element.innerHTML().utf8());
+                                element.InnerHTML().Utf8());
       }
 #endif
     }
 
-    if (src.isEditable()) {
-      dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, src.selectionStart());
-      dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, src.selectionEnd());
+    if (src.IsEditable()) {
+      dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, src.SelectionStart());
+      dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, src.SelectionEnd());
 
 #if defined(OS_CHROMEOS)
       // This attribute will soon be deprecated; see crbug.com/669134.
       WebVector<int> src_line_breaks;
-      src.lineBreaks(src_line_breaks);
+      src.LineBreaks(src_line_breaks);
       if (src_line_breaks.size()) {
         std::vector<int32_t> line_breaks;
         line_breaks.reserve(src_line_breaks.size());
@@ -812,10 +806,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     }
 
     // ARIA role.
-    if (element.hasAttribute("role")) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_ROLE,
-          element.getAttribute("role").utf8());
+    if (element.HasAttribute("role")) {
+      dst->AddStringAttribute(ui::AX_ATTR_ROLE,
+                              element.GetAttribute("role").Utf8());
     } else {
       std::string role = GetEquivalentAriaRoleString(dst->role);
       if (!role.empty())
@@ -831,7 +824,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     }
 
     // Frames and iframes.
-    WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
+    WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
     if (frame) {
       dst->AddContentIntAttribute(
           AX_CONTENT_ATTR_CHILD_ROUTING_ID,
@@ -844,35 +837,35 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   // cell, which is a child of both a row and a column. Because the cell's
   // parent is the row, the row adds it as a child, and the column adds it
   // as an indirect child.
-  int child_count = src.childCount();
+  int child_count = src.ChildCount();
   for (int i = 0; i < child_count; ++i) {
-    WebAXObject child = src.childAt(i);
+    WebAXObject child = src.ChildAt(i);
     std::vector<int32_t> indirect_child_ids;
-    if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
-      indirect_child_ids.push_back(child.axID());
+    if (!is_iframe && !child.IsDetached() && !IsParentUnignoredOf(src, child))
+      indirect_child_ids.push_back(child.AxID());
     if (indirect_child_ids.size() > 0) {
       dst->AddIntListAttribute(
           ui::AX_ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
     }
   }
 
-  if (src.isScrollableContainer()) {
-    const gfx::Point& scrollOffset = src.getScrollOffset();
+  if (src.IsScrollableContainer()) {
+    const gfx::Point& scrollOffset = src.GetScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X, scrollOffset.x());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y, scrollOffset.y());
 
-    const gfx::Point& minScrollOffset = src.minimumScrollOffset();
+    const gfx::Point& minScrollOffset = src.MinimumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MIN, minScrollOffset.x());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MIN, minScrollOffset.y());
 
-    const gfx::Point& maxScrollOffset = src.maximumScrollOffset();
+    const gfx::Point& maxScrollOffset = src.MaximumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, maxScrollOffset.x());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX, maxScrollOffset.y());
   }
 
   if (dst->id == image_data_node_id_) {
     dst->AddStringAttribute(ui::AX_ATTR_IMAGE_DATA_URL,
-                            src.imageDataUrl(max_image_data_size_).utf8());
+                            src.ImageDataUrl(max_image_data_size_).Utf8());
   }
 }
 
@@ -882,15 +875,15 @@ blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
 }
 
 WebAXObject BlinkAXTreeSource::ComputeRoot() const {
-  if (!explicit_root_.isNull())
+  if (!explicit_root_.IsNull())
     return explicit_root_;
 
   if (!render_frame_ || !render_frame_->GetWebFrame())
     return WebAXObject();
 
-  WebDocument document = render_frame_->GetWebFrame()->document();
-  if (!document.isNull())
-    return document.accessibilityObject();
+  WebDocument document = render_frame_->GetWebFrame()->GetDocument();
+  if (!document.IsNull())
+    return document.AccessibilityObject();
 
   return WebAXObject();
 }

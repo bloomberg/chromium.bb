@@ -11,48 +11,48 @@ namespace blink {
 
 class ScopedUsHistogramTimerTest : public ::testing::Test {
  public:
-  static void advanceClock(double microseconds) {
-    s_timeElapsed += microseconds;
+  static void AdvanceClock(double microseconds) {
+    time_elapsed_ += microseconds;
   }
 
  protected:
-  static double returnMockTime() { return s_timeElapsed; }
+  static double ReturnMockTime() { return time_elapsed_; }
 
   virtual void SetUp() {
-    s_timeElapsed = 0.0;
-    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
+    time_elapsed_ = 0.0;
+    original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
   }
 
   virtual void TearDown() {
-    setTimeFunctionsForTesting(m_originalTimeFunction);
+    SetTimeFunctionsForTesting(original_time_function_);
   }
 
  private:
-  static double s_timeElapsed;
-  TimeFunction m_originalTimeFunction;
+  static double time_elapsed_;
+  TimeFunction original_time_function_;
 };
 
-double ScopedUsHistogramTimerTest::s_timeElapsed;
+double ScopedUsHistogramTimerTest::time_elapsed_;
 
 class TestCustomCountHistogram : public CustomCountHistogram {
  public:
   TestCustomCountHistogram(const char* name,
                            base::HistogramBase::Sample min,
                            base::HistogramBase::Sample max,
-                           int32_t bucketCount)
-      : CustomCountHistogram(name, min, max, bucketCount) {}
+                           int32_t bucket_count)
+      : CustomCountHistogram(name, min, max, bucket_count) {}
 
-  base::HistogramBase* histogram() { return m_histogram; }
+  base::HistogramBase* Histogram() { return histogram_; }
 };
 
 TEST_F(ScopedUsHistogramTimerTest, Basic) {
-  TestCustomCountHistogram scopedUsCounter("test", 0, 10000000, 50);
+  TestCustomCountHistogram scoped_us_counter("test", 0, 10000000, 50);
   {
-    ScopedUsHistogramTimer timer(scopedUsCounter);
-    advanceClock(0.5);
+    ScopedUsHistogramTimer timer(scoped_us_counter);
+    AdvanceClock(0.5);
   }
   // 0.5s == 500000us
-  EXPECT_EQ(500000, scopedUsCounter.histogram()->SnapshotSamples()->sum());
+  EXPECT_EQ(500000, scoped_us_counter.Histogram()->SnapshotSamples()->sum());
 }
 
 }  // namespace blink

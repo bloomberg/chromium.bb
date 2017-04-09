@@ -32,51 +32,52 @@
 
 namespace blink {
 
-DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::create(
-    bool canProvideX,
+DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::Create(
+    bool can_provide_x,
     double x,
-    bool canProvideY,
+    bool can_provide_y,
     double y,
-    bool canProvideZ,
+    bool can_provide_z,
     double z) {
-  return new DeviceMotionData::Acceleration(canProvideX, x, canProvideY, y,
-                                            canProvideZ, z);
+  return new DeviceMotionData::Acceleration(can_provide_x, x, can_provide_y, y,
+                                            can_provide_z, z);
 }
 
-DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::create(
+DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::Create(
     const DeviceAccelerationInit& init) {
   return new DeviceMotionData::Acceleration(
       init.hasX(), init.hasX() ? init.x() : 0, init.hasY(),
       init.hasY() ? init.y() : 0, init.hasZ(), init.hasZ() ? init.z() : 0);
 }
 
-DeviceMotionData::Acceleration::Acceleration(bool canProvideX,
+DeviceMotionData::Acceleration::Acceleration(bool can_provide_x,
                                              double x,
-                                             bool canProvideY,
+                                             bool can_provide_y,
                                              double y,
-                                             bool canProvideZ,
+                                             bool can_provide_z,
                                              double z)
-    : m_x(x),
-      m_y(y),
-      m_z(z),
-      m_canProvideX(canProvideX),
-      m_canProvideY(canProvideY),
-      m_canProvideZ(canProvideZ)
+    : x_(x),
+      y_(y),
+      z_(z),
+      can_provide_x_(can_provide_x),
+      can_provide_y_(can_provide_y),
+      can_provide_z_(can_provide_z)
 
 {}
 
-DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::create(
-    bool canProvideAlpha,
+DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::Create(
+    bool can_provide_alpha,
     double alpha,
-    bool canProvideBeta,
+    bool can_provide_beta,
     double beta,
-    bool canProvideGamma,
+    bool can_provide_gamma,
     double gamma) {
-  return new DeviceMotionData::RotationRate(
-      canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma);
+  return new DeviceMotionData::RotationRate(can_provide_alpha, alpha,
+                                            can_provide_beta, beta,
+                                            can_provide_gamma, gamma);
 }
 
-DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::create(
+DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::Create(
     const DeviceRotationRateInit& init) {
   return new DeviceMotionData::RotationRate(
       init.hasAlpha(), init.hasAlpha() ? init.alpha() : 0, init.hasBeta(),
@@ -84,99 +85,100 @@ DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::create(
       init.hasGamma() ? init.gamma() : 0);
 }
 
-DeviceMotionData::RotationRate::RotationRate(bool canProvideAlpha,
+DeviceMotionData::RotationRate::RotationRate(bool can_provide_alpha,
                                              double alpha,
-                                             bool canProvideBeta,
+                                             bool can_provide_beta,
                                              double beta,
-                                             bool canProvideGamma,
+                                             bool can_provide_gamma,
                                              double gamma)
-    : m_alpha(alpha),
-      m_beta(beta),
-      m_gamma(gamma),
-      m_canProvideAlpha(canProvideAlpha),
-      m_canProvideBeta(canProvideBeta),
-      m_canProvideGamma(canProvideGamma) {}
+    : alpha_(alpha),
+      beta_(beta),
+      gamma_(gamma),
+      can_provide_alpha_(can_provide_alpha),
+      can_provide_beta_(can_provide_beta),
+      can_provide_gamma_(can_provide_gamma) {}
 
-DeviceMotionData* DeviceMotionData::create() {
+DeviceMotionData* DeviceMotionData::Create() {
   return new DeviceMotionData;
 }
 
-DeviceMotionData* DeviceMotionData::create(
+DeviceMotionData* DeviceMotionData::Create(
     Acceleration* acceleration,
-    Acceleration* accelerationIncludingGravity,
-    RotationRate* rotationRate,
+    Acceleration* acceleration_including_gravity,
+    RotationRate* rotation_rate,
     double interval) {
-  return new DeviceMotionData(acceleration, accelerationIncludingGravity,
-                              rotationRate, interval);
+  return new DeviceMotionData(acceleration, acceleration_including_gravity,
+                              rotation_rate, interval);
 }
 
-DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
-  return DeviceMotionData::create(
+DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit& init) {
+  return DeviceMotionData::Create(
       init.hasAcceleration()
-          ? DeviceMotionData::Acceleration::create(init.acceleration())
+          ? DeviceMotionData::Acceleration::Create(init.acceleration())
           : nullptr,
       init.hasAccelerationIncludingGravity()
-          ? DeviceMotionData::Acceleration::create(
+          ? DeviceMotionData::Acceleration::Create(
                 init.accelerationIncludingGravity())
           : nullptr,
       init.hasRotationRate()
-          ? DeviceMotionData::RotationRate::create(init.rotationRate())
+          ? DeviceMotionData::RotationRate::Create(init.rotationRate())
           : nullptr,
       init.interval());
 }
 
-DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {
-  return DeviceMotionData::create(
-      DeviceMotionData::Acceleration::create(
+DeviceMotionData* DeviceMotionData::Create(const device::MotionData& data) {
+  return DeviceMotionData::Create(
+      DeviceMotionData::Acceleration::Create(
           data.has_acceleration_x, data.acceleration_x, data.has_acceleration_y,
           data.acceleration_y, data.has_acceleration_z, data.acceleration_z),
-      DeviceMotionData::Acceleration::create(
+      DeviceMotionData::Acceleration::Create(
           data.has_acceleration_including_gravity_x,
           data.acceleration_including_gravity_x,
           data.has_acceleration_including_gravity_y,
           data.acceleration_including_gravity_y,
           data.has_acceleration_including_gravity_z,
           data.acceleration_including_gravity_z),
-      DeviceMotionData::RotationRate::create(
+      DeviceMotionData::RotationRate::Create(
           data.has_rotation_rate_alpha, data.rotation_rate_alpha,
           data.has_rotation_rate_beta, data.rotation_rate_beta,
           data.has_rotation_rate_gamma, data.rotation_rate_gamma),
       data.interval);
 }
 
-DeviceMotionData::DeviceMotionData() : m_interval(0) {}
+DeviceMotionData::DeviceMotionData() : interval_(0) {}
 
 DeviceMotionData::DeviceMotionData(Acceleration* acceleration,
-                                   Acceleration* accelerationIncludingGravity,
-                                   RotationRate* rotationRate,
+                                   Acceleration* acceleration_including_gravity,
+                                   RotationRate* rotation_rate,
                                    double interval)
-    : m_acceleration(acceleration),
-      m_accelerationIncludingGravity(accelerationIncludingGravity),
-      m_rotationRate(rotationRate),
-      m_interval(interval) {}
+    : acceleration_(acceleration),
+      acceleration_including_gravity_(acceleration_including_gravity),
+      rotation_rate_(rotation_rate),
+      interval_(interval) {}
 
 DEFINE_TRACE(DeviceMotionData) {
-  visitor->trace(m_acceleration);
-  visitor->trace(m_accelerationIncludingGravity);
-  visitor->trace(m_rotationRate);
+  visitor->Trace(acceleration_);
+  visitor->Trace(acceleration_including_gravity_);
+  visitor->Trace(rotation_rate_);
 }
 
-bool DeviceMotionData::canProvideEventData() const {
-  const bool hasAcceleration =
-      m_acceleration &&
-      (m_acceleration->canProvideX() || m_acceleration->canProvideY() ||
-       m_acceleration->canProvideZ());
-  const bool hasAccelerationIncludingGravity =
-      m_accelerationIncludingGravity &&
-      (m_accelerationIncludingGravity->canProvideX() ||
-       m_accelerationIncludingGravity->canProvideY() ||
-       m_accelerationIncludingGravity->canProvideZ());
-  const bool hasRotationRate =
-      m_rotationRate &&
-      (m_rotationRate->canProvideAlpha() || m_rotationRate->canProvideBeta() ||
-       m_rotationRate->canProvideGamma());
+bool DeviceMotionData::CanProvideEventData() const {
+  const bool has_acceleration =
+      acceleration_ &&
+      (acceleration_->CanProvideX() || acceleration_->CanProvideY() ||
+       acceleration_->CanProvideZ());
+  const bool has_acceleration_including_gravity =
+      acceleration_including_gravity_ &&
+      (acceleration_including_gravity_->CanProvideX() ||
+       acceleration_including_gravity_->CanProvideY() ||
+       acceleration_including_gravity_->CanProvideZ());
+  const bool has_rotation_rate =
+      rotation_rate_ &&
+      (rotation_rate_->CanProvideAlpha() || rotation_rate_->CanProvideBeta() ||
+       rotation_rate_->CanProvideGamma());
 
-  return hasAcceleration || hasAccelerationIncludingGravity || hasRotationRate;
+  return has_acceleration || has_acceleration_including_gravity ||
+         has_rotation_rate;
 }
 
 }  // namespace blink

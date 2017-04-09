@@ -42,194 +42,194 @@ namespace blink {
 // https://tabatkins.github.io/specs/css-font-display/#font-display-desc
 // TODO(toyoshim): Revisit short limit value once cache-aware font display is
 // launched. crbug.com/570205
-static const double fontLoadWaitShortLimitSec = 0.1;
-static const double fontLoadWaitLongLimitSec = 3.0;
+static const double kFontLoadWaitShortLimitSec = 0.1;
+static const double kFontLoadWaitLongLimitSec = 3.0;
 
 enum FontPackageFormat {
-  PackageFormatUnknown,
-  PackageFormatSFNT,
-  PackageFormatWOFF,
-  PackageFormatWOFF2,
-  PackageFormatSVG,
-  PackageFormatEnumMax
+  kPackageFormatUnknown,
+  kPackageFormatSFNT,
+  kPackageFormatWOFF,
+  kPackageFormatWOFF2,
+  kPackageFormatSVG,
+  kPackageFormatEnumMax
 };
 
-static FontPackageFormat packageFormatOf(SharedBuffer* buffer) {
+static FontPackageFormat PackageFormatOf(SharedBuffer* buffer) {
   if (buffer->size() < 4)
-    return PackageFormatUnknown;
+    return kPackageFormatUnknown;
 
-  const char* data = buffer->data();
+  const char* data = buffer->Data();
   if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F')
-    return PackageFormatWOFF;
+    return kPackageFormatWOFF;
   if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2')
-    return PackageFormatWOFF2;
-  return PackageFormatSFNT;
+    return kPackageFormatWOFF2;
+  return kPackageFormatSFNT;
 }
 
-static void recordPackageFormatHistogram(FontPackageFormat format) {
+static void RecordPackageFormatHistogram(FontPackageFormat format) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, packageFormatHistogram,
-      new EnumerationHistogram("WebFont.PackageFormat", PackageFormatEnumMax));
-  packageFormatHistogram.count(format);
+      EnumerationHistogram, package_format_histogram,
+      new EnumerationHistogram("WebFont.PackageFormat", kPackageFormatEnumMax));
+  package_format_histogram.Count(format);
 }
 
-FontResource* FontResource::fetch(FetchRequest& request,
+FontResource* FontResource::Fetch(FetchRequest& request,
                                   ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(WebURLRequest::RequestContextFont);
-  return toFontResource(
-      fetcher->requestResource(request, FontResourceFactory()));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(WebURLRequest::kRequestContextFont);
+  return ToFontResource(
+      fetcher->RequestResource(request, FontResourceFactory()));
 }
 
-FontResource::FontResource(const ResourceRequest& resourceRequest,
+FontResource::FontResource(const ResourceRequest& resource_request,
                            const ResourceLoaderOptions& options)
-    : Resource(resourceRequest, Font, options),
-      m_loadLimitState(LoadNotStarted),
-      m_corsFailed(false),
-      m_fontLoadShortLimitTimer(this,
-                                &FontResource::fontLoadShortLimitCallback),
-      m_fontLoadLongLimitTimer(this, &FontResource::fontLoadLongLimitCallback) {
-}
+    : Resource(resource_request, kFont, options),
+      load_limit_state_(kLoadNotStarted),
+      cors_failed_(false),
+      font_load_short_limit_timer_(this,
+                                   &FontResource::FontLoadShortLimitCallback),
+      font_load_long_limit_timer_(this,
+                                  &FontResource::FontLoadLongLimitCallback) {}
 
 FontResource::~FontResource() {}
 
-void FontResource::didAddClient(ResourceClient* c) {
-  DCHECK(FontResourceClient::isExpectedType(c));
-  Resource::didAddClient(c);
+void FontResource::DidAddClient(ResourceClient* c) {
+  DCHECK(FontResourceClient::IsExpectedType(c));
+  Resource::DidAddClient(c);
 
   // Block client callbacks if currently loading from cache.
-  if (isLoading() && loader()->isCacheAwareLoadingActivated())
+  if (IsLoading() && Loader()->IsCacheAwareLoadingActivated())
     return;
 
-  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
-  if (m_loadLimitState == ShortLimitExceeded ||
-      m_loadLimitState == LongLimitExceeded)
-    static_cast<FontResourceClient*>(c)->fontLoadShortLimitExceeded(this);
-  if (m_loadLimitState == LongLimitExceeded)
-    static_cast<FontResourceClient*>(c)->fontLoadLongLimitExceeded(this);
+  ProhibitAddRemoveClientInScope prohibit_add_remove_client(this);
+  if (load_limit_state_ == kShortLimitExceeded ||
+      load_limit_state_ == kLongLimitExceeded)
+    static_cast<FontResourceClient*>(c)->FontLoadShortLimitExceeded(this);
+  if (load_limit_state_ == kLongLimitExceeded)
+    static_cast<FontResourceClient*>(c)->FontLoadLongLimitExceeded(this);
 }
 
-void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
+void FontResource::SetRevalidatingRequest(const ResourceRequest& request) {
   // Reload will use the same object, and needs to reset |m_loadLimitState|
   // before any didAddClient() is called again.
-  DCHECK(isLoaded());
-  DCHECK(!m_fontLoadShortLimitTimer.isActive());
-  DCHECK(!m_fontLoadLongLimitTimer.isActive());
-  m_loadLimitState = LoadNotStarted;
-  Resource::setRevalidatingRequest(request);
+  DCHECK(IsLoaded());
+  DCHECK(!font_load_short_limit_timer_.IsActive());
+  DCHECK(!font_load_long_limit_timer_.IsActive());
+  load_limit_state_ = kLoadNotStarted;
+  Resource::SetRevalidatingRequest(request);
 }
 
-void FontResource::startLoadLimitTimers() {
-  DCHECK(isLoading());
-  DCHECK_EQ(m_loadLimitState, LoadNotStarted);
-  m_loadLimitState = UnderLimit;
-  m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec,
-                                         BLINK_FROM_HERE);
-  m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec,
-                                        BLINK_FROM_HERE);
+void FontResource::StartLoadLimitTimers() {
+  DCHECK(IsLoading());
+  DCHECK_EQ(load_limit_state_, kLoadNotStarted);
+  load_limit_state_ = kUnderLimit;
+  font_load_short_limit_timer_.StartOneShot(kFontLoadWaitShortLimitSec,
+                                            BLINK_FROM_HERE);
+  font_load_long_limit_timer_.StartOneShot(kFontLoadWaitLongLimitSec,
+                                           BLINK_FROM_HERE);
 }
 
-PassRefPtr<FontCustomPlatformData> FontResource::getCustomFontData() {
-  if (!m_fontData && !errorOccurred() && !isLoading()) {
-    if (data())
-      m_fontData = FontCustomPlatformData::create(data(), m_otsParsingMessage);
+PassRefPtr<FontCustomPlatformData> FontResource::GetCustomFontData() {
+  if (!font_data_ && !ErrorOccurred() && !IsLoading()) {
+    if (Data())
+      font_data_ = FontCustomPlatformData::Create(Data(), ots_parsing_message_);
 
-    if (m_fontData) {
-      recordPackageFormatHistogram(packageFormatOf(data()));
+    if (font_data_) {
+      RecordPackageFormatHistogram(PackageFormatOf(Data()));
     } else {
-      setStatus(ResourceStatus::DecodeError);
-      recordPackageFormatHistogram(PackageFormatUnknown);
+      SetStatus(ResourceStatus::kDecodeError);
+      RecordPackageFormatHistogram(kPackageFormatUnknown);
     }
   }
-  return m_fontData;
+  return font_data_;
 }
 
-void FontResource::willReloadAfterDiskCacheMiss() {
-  DCHECK(isLoading());
-  DCHECK(loader()->isCacheAwareLoadingActivated());
-  if (m_loadLimitState == ShortLimitExceeded ||
-      m_loadLimitState == LongLimitExceeded) {
-    notifyClientsShortLimitExceeded();
+void FontResource::WillReloadAfterDiskCacheMiss() {
+  DCHECK(IsLoading());
+  DCHECK(Loader()->IsCacheAwareLoadingActivated());
+  if (load_limit_state_ == kShortLimitExceeded ||
+      load_limit_state_ == kLongLimitExceeded) {
+    NotifyClientsShortLimitExceeded();
   }
-  if (m_loadLimitState == LongLimitExceeded)
-    notifyClientsLongLimitExceeded();
+  if (load_limit_state_ == kLongLimitExceeded)
+    NotifyClientsLongLimitExceeded();
 
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, loadLimitHistogram,
-      ("WebFont.LoadLimitOnDiskCacheMiss", LoadLimitStateEnumMax));
-  loadLimitHistogram.count(m_loadLimitState);
+      EnumerationHistogram, load_limit_histogram,
+      ("WebFont.LoadLimitOnDiskCacheMiss", kLoadLimitStateEnumMax));
+  load_limit_histogram.Count(load_limit_state_);
 }
 
-void FontResource::fontLoadShortLimitCallback(TimerBase*) {
-  DCHECK(isLoading());
-  DCHECK_EQ(m_loadLimitState, UnderLimit);
-  m_loadLimitState = ShortLimitExceeded;
+void FontResource::FontLoadShortLimitCallback(TimerBase*) {
+  DCHECK(IsLoading());
+  DCHECK_EQ(load_limit_state_, kUnderLimit);
+  load_limit_state_ = kShortLimitExceeded;
 
   // Block client callbacks if currently loading from cache.
-  if (loader()->isCacheAwareLoadingActivated())
+  if (Loader()->IsCacheAwareLoadingActivated())
     return;
-  notifyClientsShortLimitExceeded();
+  NotifyClientsShortLimitExceeded();
 }
 
-void FontResource::fontLoadLongLimitCallback(TimerBase*) {
-  DCHECK(isLoading());
-  DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
-  m_loadLimitState = LongLimitExceeded;
+void FontResource::FontLoadLongLimitCallback(TimerBase*) {
+  DCHECK(IsLoading());
+  DCHECK_EQ(load_limit_state_, kShortLimitExceeded);
+  load_limit_state_ = kLongLimitExceeded;
 
   // Block client callbacks if currently loading from cache.
-  if (loader()->isCacheAwareLoadingActivated())
+  if (Loader()->IsCacheAwareLoadingActivated())
     return;
-  notifyClientsLongLimitExceeded();
+  NotifyClientsLongLimitExceeded();
 }
 
-void FontResource::notifyClientsShortLimitExceeded() {
-  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
-  ResourceClientWalker<FontResourceClient> walker(clients());
-  while (FontResourceClient* client = walker.next())
-    client->fontLoadShortLimitExceeded(this);
+void FontResource::NotifyClientsShortLimitExceeded() {
+  ProhibitAddRemoveClientInScope prohibit_add_remove_client(this);
+  ResourceClientWalker<FontResourceClient> walker(Clients());
+  while (FontResourceClient* client = walker.Next())
+    client->FontLoadShortLimitExceeded(this);
 }
 
-void FontResource::notifyClientsLongLimitExceeded() {
-  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
-  ResourceClientWalker<FontResourceClient> walker(clients());
-  while (FontResourceClient* client = walker.next())
-    client->fontLoadLongLimitExceeded(this);
+void FontResource::NotifyClientsLongLimitExceeded() {
+  ProhibitAddRemoveClientInScope prohibit_add_remove_client(this);
+  ResourceClientWalker<FontResourceClient> walker(Clients());
+  while (FontResourceClient* client = walker.Next())
+    client->FontLoadLongLimitExceeded(this);
 }
 
-void FontResource::allClientsAndObserversRemoved() {
-  m_fontData.clear();
-  Resource::allClientsAndObserversRemoved();
+void FontResource::AllClientsAndObserversRemoved() {
+  font_data_.Clear();
+  Resource::AllClientsAndObserversRemoved();
 }
 
-void FontResource::checkNotify() {
-  m_fontLoadShortLimitTimer.stop();
-  m_fontLoadLongLimitTimer.stop();
+void FontResource::CheckNotify() {
+  font_load_short_limit_timer_.Stop();
+  font_load_long_limit_timer_.Stop();
 
-  Resource::checkNotify();
+  Resource::CheckNotify();
 }
 
-bool FontResource::isLowPriorityLoadingAllowedForRemoteFont() const {
-  DCHECK(!url().protocolIsData());
-  DCHECK(!isLoaded());
-  ResourceClientWalker<FontResourceClient> walker(clients());
-  while (FontResourceClient* client = walker.next()) {
-    if (!client->isLowPriorityLoadingAllowedForRemoteFont()) {
+bool FontResource::IsLowPriorityLoadingAllowedForRemoteFont() const {
+  DCHECK(!Url().ProtocolIsData());
+  DCHECK(!IsLoaded());
+  ResourceClientWalker<FontResourceClient> walker(Clients());
+  while (FontResourceClient* client = walker.Next()) {
+    if (!client->IsLowPriorityLoadingAllowedForRemoteFont()) {
       return false;
     }
   }
   return true;
 }
 
-void FontResource::onMemoryDump(WebMemoryDumpLevelOfDetail level,
-                                WebProcessMemoryDump* memoryDump) const {
-  Resource::onMemoryDump(level, memoryDump);
-  if (!m_fontData)
+void FontResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level,
+                                WebProcessMemoryDump* memory_dump) const {
+  Resource::OnMemoryDump(level, memory_dump);
+  if (!font_data_)
     return;
-  const String name = getMemoryDumpName() + "/decoded_webfont";
-  WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(name);
-  dump->addScalar("size", "bytes", m_fontData->dataSize());
-  memoryDump->addSuballocation(dump->guid(), "malloc");
+  const String name = GetMemoryDumpName() + "/decoded_webfont";
+  WebMemoryAllocatorDump* dump = memory_dump->CreateMemoryAllocatorDump(name);
+  dump->AddScalar("size", "bytes", font_data_->DataSize());
+  memory_dump->AddSuballocation(dump->Guid(), "malloc");
 }
 
 }  // namespace blink

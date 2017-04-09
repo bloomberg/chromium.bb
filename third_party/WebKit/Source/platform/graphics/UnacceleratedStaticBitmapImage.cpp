@@ -9,38 +9,38 @@
 namespace blink {
 
 PassRefPtr<UnacceleratedStaticBitmapImage>
-UnacceleratedStaticBitmapImage::create(sk_sp<SkImage> image) {
-  return adoptRef(new UnacceleratedStaticBitmapImage(std::move(image)));
+UnacceleratedStaticBitmapImage::Create(sk_sp<SkImage> image) {
+  return AdoptRef(new UnacceleratedStaticBitmapImage(std::move(image)));
 }
 
 UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
     sk_sp<SkImage> image)
-    : m_image(std::move(image)) {
-  DCHECK(m_image);
+    : image_(std::move(image)) {
+  DCHECK(image_);
 }
 
 UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {}
 
 IntSize UnacceleratedStaticBitmapImage::size() const {
-  return IntSize(m_image->width(), m_image->height());
+  return IntSize(image_->width(), image_->height());
 }
 
-bool UnacceleratedStaticBitmapImage::currentFrameKnownToBeOpaque(MetadataMode) {
-  return m_image->isOpaque();
+bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque(MetadataMode) {
+  return image_->isOpaque();
 }
 
-void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
+void UnacceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                           const PaintFlags& flags,
-                                          const FloatRect& dstRect,
-                                          const FloatRect& srcRect,
+                                          const FloatRect& dst_rect,
+                                          const FloatRect& src_rect,
                                           RespectImageOrientationEnum,
-                                          ImageClampingMode clampMode) {
-  StaticBitmapImage::drawHelper(canvas, flags, dstRect, srcRect, clampMode,
-                                m_image);
+                                          ImageClampingMode clamp_mode) {
+  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, clamp_mode,
+                                image_);
 }
 
-sk_sp<SkImage> UnacceleratedStaticBitmapImage::imageForCurrentFrame() {
-  return m_image;
+sk_sp<SkImage> UnacceleratedStaticBitmapImage::ImageForCurrentFrame() {
+  return image_;
 }
 
 }  // namespace blink

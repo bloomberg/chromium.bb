@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 struct QueryTest {
   const char* selector;
-  bool queryAll;
+  bool query_all;
   unsigned matches;
   // {totalCount, fastId, fastClass, fastTagName, fastScan, slowScan,
   //  slowTraversingShadowTreeScan}
@@ -26,81 +26,85 @@ struct QueryTest {
 };
 
 template <unsigned length>
-void runTests(Document& document, const QueryTest (&testCases)[length]) {
-  for (const auto& testCase : testCases) {
-    const char* selector = testCase.selector;
-    SCOPED_TRACE(testing::Message() << (testCase.queryAll ? "querySelectorAll('"
-                                                          : "querySelector('")
-                                    << selector << "')");
-    if (testCase.queryAll) {
-      StaticElementList* matchAll = document.querySelectorAll(selector);
-      EXPECT_EQ(testCase.matches, matchAll->length());
+void RunTests(Document& document, const QueryTest (&test_cases)[length]) {
+  for (const auto& test_case : test_cases) {
+    const char* selector = test_case.selector;
+    SCOPED_TRACE(testing::Message()
+                 << (test_case.query_all ? "querySelectorAll('"
+                                         : "querySelector('")
+                 << selector << "')");
+    if (test_case.query_all) {
+      StaticElementList* match_all = document.QuerySelectorAll(selector);
+      EXPECT_EQ(test_case.matches, match_all->length());
     } else {
-      Element* match = document.querySelector(selector);
-      EXPECT_EQ(testCase.matches, match ? 1u : 0u);
+      Element* match = document.QuerySelector(selector);
+      EXPECT_EQ(test_case.matches, match ? 1u : 0u);
     }
 #if DCHECK_IS_ON()
-    SelectorQuery::QueryStats stats = SelectorQuery::lastQueryStats();
-    EXPECT_EQ(testCase.stats.totalCount, stats.totalCount);
-    EXPECT_EQ(testCase.stats.fastId, stats.fastId);
-    EXPECT_EQ(testCase.stats.fastClass, stats.fastClass);
-    EXPECT_EQ(testCase.stats.fastTagName, stats.fastTagName);
-    EXPECT_EQ(testCase.stats.fastScan, stats.fastScan);
-    EXPECT_EQ(testCase.stats.slowScan, stats.slowScan);
-    EXPECT_EQ(testCase.stats.slowTraversingShadowTreeScan,
-              stats.slowTraversingShadowTreeScan);
+    SelectorQuery::QueryStats stats = SelectorQuery::LastQueryStats();
+    EXPECT_EQ(test_case.stats.total_count, stats.total_count);
+    EXPECT_EQ(test_case.stats.fast_id, stats.fast_id);
+    EXPECT_EQ(test_case.stats.fast_class, stats.fast_class);
+    EXPECT_EQ(test_case.stats.fast_tag_name, stats.fast_tag_name);
+    EXPECT_EQ(test_case.stats.fast_scan, stats.fast_scan);
+    EXPECT_EQ(test_case.stats.slow_scan, stats.slow_scan);
+    EXPECT_EQ(test_case.stats.slow_traversing_shadow_tree_scan,
+              stats.slow_traversing_shadow_tree_scan);
 #endif
   }
 }
 };
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
-  Document* document = Document::create();
-  HTMLHtmlElement* html = HTMLHtmlElement::create(*document);
-  document->appendChild(html);
+  Document* document = Document::Create();
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  document->AppendChild(html);
   document->documentElement()->setInnerHTML(
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
-  CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), ReferrerPolicyDefault,
-                               emptyString, CSSParserContext::StaticProfile),
+  CSSSelectorList selector_list = CSSParser::ParseSelector(
+      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+                               g_empty_string,
+                               CSSParserContext::kStaticProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
-      SelectorQuery::adopt(std::move(selectorList));
-  Element* elm = query->queryFirst(*document);
+      SelectorQuery::Adopt(std::move(selector_list));
+  Element* elm = query->QueryFirst(*document);
   EXPECT_EQ(nullptr, elm);
 
-  selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), ReferrerPolicyDefault,
-                               emptyString, CSSParserContext::StaticProfile),
+  selector_list = CSSParser::ParseSelector(
+      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+                               g_empty_string,
+                               CSSParserContext::kStaticProfile),
       nullptr, "span");
-  query = SelectorQuery::adopt(std::move(selectorList));
-  elm = query->queryFirst(*document);
+  query = SelectorQuery::Adopt(std::move(selector_list));
+  elm = query->QueryFirst(*document);
   EXPECT_NE(nullptr, elm);
 }
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
-  Document* document = HTMLDocument::create();
-  HTMLHtmlElement* html = HTMLHtmlElement::create(*document);
-  document->appendChild(html);
+  Document* document = HTMLDocument::Create();
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  document->AppendChild(html);
   document->documentElement()->setInnerHTML(
       "<body><p></p><p id=last></p></body>", ASSERT_NO_EXCEPTION);
 
-  document->body()->beginParsingChildren();
+  document->body()->BeginParsingChildren();
 
-  CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), ReferrerPolicyDefault,
-                               emptyString, CSSParserContext::StaticProfile),
+  CSSSelectorList selector_list = CSSParser::ParseSelector(
+      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+                               g_empty_string,
+                               CSSParserContext::kStaticProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
-      SelectorQuery::adopt(std::move(selectorList));
-  Element* elm = query->queryFirst(*document);
+      SelectorQuery::Adopt(std::move(selector_list));
+  Element* elm = query->QueryFirst(*document);
   ASSERT_TRUE(elm);
-  EXPECT_EQ("last", elm->idForStyleResolution());
+  EXPECT_EQ("last", elm->IdForStyleResolution());
 }
 
 TEST(SelectorQueryTest, StandardsModeFastPaths) {
-  Document* document = HTMLDocument::create();
+  Document* document = HTMLDocument::Create();
   document->write(
       "<!DOCTYPE html>"
       "<html>"
@@ -178,11 +182,11 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       {"#foo::shadow .a", true, 0, {14, 0, 0, 0, 0, 0, 14}},
       {"::content .a", true, 0, {14, 0, 0, 0, 0, 14, 0}},
   };
-  runTests(*document, kTestCases);
+  RunTests(*document, kTestCases);
 }
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
-  Document* document = HTMLDocument::create();
+  Document* document = HTMLDocument::Create();
   document->write(
       "<html>"
       "  <head></head>"
@@ -206,7 +210,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
       {"body #first", false, 1, {4, 0, 0, 0, 0, 4, 0}},
       {"body #one", true, 2, {6, 0, 0, 0, 0, 6, 0}},
   };
-  runTests(*document, kTestCases);
+  RunTests(*document, kTestCases);
 }
 
 }  // namespace blink

@@ -58,14 +58,14 @@ void AwRenderViewExt::CheckContentsSize() {
 
   gfx::Size contents_size;
 
-  blink::WebFrame* main_frame = webview->mainFrame();
+  blink::WebFrame* main_frame = webview->MainFrame();
   if (main_frame)
-    contents_size = main_frame->contentsSize();
+    contents_size = main_frame->ContentsSize();
 
   // Fall back to contentsPreferredMinimumSize if the mainFrame is reporting a
   // 0x0 size (this happens during initial load).
   if (contents_size.IsEmpty()) {
-    contents_size = webview->contentsPreferredMinimumSize();
+    contents_size = webview->ContentsPreferredMinimumSize();
   }
 
   if (contents_size == last_sent_contents_size_)

@@ -43,20 +43,20 @@ class MediaTrackConstraints;
 
 namespace MediaConstraintsImpl {
 
-WebMediaConstraints create();
-WebMediaConstraints create(ExecutionContext*,
+WebMediaConstraints Create();
+WebMediaConstraints Create(ExecutionContext*,
                            const Dictionary&,
                            MediaErrorState&);
-WebMediaConstraints create(ExecutionContext*,
+WebMediaConstraints Create(ExecutionContext*,
                            const MediaTrackConstraints&,
                            MediaErrorState&);
 
 // Exported with MODULES_EXPORT for testing
-MODULES_EXPORT void convertConstraints(const WebMediaConstraints& input,
+MODULES_EXPORT void ConvertConstraints(const WebMediaConstraints& input,
                                        MediaTrackConstraints& output);
 // Exported for testing only.
 MODULES_EXPORT WebMediaConstraints
-convertConstraintsToWeb(const MediaTrackConstraints&);
+ConvertConstraintsToWeb(const MediaTrackConstraints&);
 }
 
 }  // namespace blink

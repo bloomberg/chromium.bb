@@ -38,47 +38,47 @@
 
 namespace blink {
 
-static bool canLoadInProcess(NSFont* nsFont) {
-  RetainPtr<CGFontRef> cgFont(AdoptCF,
-                              CTFontCopyGraphicsFont(toCTFontRef(nsFont), 0));
+static bool CanLoadInProcess(NSFont* ns_font) {
+  RetainPtr<CGFontRef> cg_font(kAdoptCF,
+                               CTFontCopyGraphicsFont(toCTFontRef(ns_font), 0));
   // Toll-free bridged types CFStringRef and NSString*.
-  RetainPtr<NSString> fontName(
-      AdoptNS, const_cast<NSString*>(reinterpret_cast<const NSString*>(
-                   CGFontCopyPostScriptName(cgFont.get()))));
-  return ![fontName.get() isEqualToString:@"LastResort"];
+  RetainPtr<NSString> font_name(
+      kAdoptNS, const_cast<NSString*>(reinterpret_cast<const NSString*>(
+                    CGFontCopyPostScriptName(cg_font.Get()))));
+  return ![font_name.Get() isEqualToString:@"LastResort"];
 }
 
-static CTFontDescriptorRef cascadeToLastResortFontDescriptor() {
+static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
   static CTFontDescriptorRef descriptor;
   if (descriptor)
     return descriptor;
 
-  RetainPtr<CTFontDescriptorRef> lastResort(
-      AdoptCF, CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
-  const void* descriptors[] = {lastResort.get()};
-  RetainPtr<CFArrayRef> valuesArray(
-      AdoptCF,
+  RetainPtr<CTFontDescriptorRef> last_resort(
+      kAdoptCF, CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
+  const void* descriptors[] = {last_resort.Get()};
+  RetainPtr<CFArrayRef> values_array(
+      kAdoptCF,
       CFArrayCreate(kCFAllocatorDefault, descriptors,
                     WTF_ARRAY_LENGTH(descriptors), &kCFTypeArrayCallBacks));
 
   const void* keys[] = {kCTFontCascadeListAttribute};
-  const void* values[] = {valuesArray.get()};
+  const void* values[] = {values_array.Get()};
   RetainPtr<CFDictionaryRef> attributes(
-      AdoptCF,
+      kAdoptCF,
       CFDictionaryCreate(kCFAllocatorDefault, keys, values,
                          WTF_ARRAY_LENGTH(keys), &kCFTypeDictionaryKeyCallBacks,
                          &kCFTypeDictionaryValueCallBacks));
 
-  descriptor = CTFontDescriptorCreateWithAttributes(attributes.get());
+  descriptor = CTFontDescriptorCreateWithAttributes(attributes.Get());
 
   return descriptor;
 }
 
-static sk_sp<SkTypeface> loadFromBrowserProcess(NSFont* nsFont,
-                                                float textSize) {
+static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
+                                                float text_size) {
   // Send cross-process request to load font.
-  WebSandboxSupport* sandboxSupport = Platform::current()->sandboxSupport();
-  if (!sandboxSupport) {
+  WebSandboxSupport* sandbox_support = Platform::Current()->GetSandboxSupport();
+  if (!sandbox_support) {
     // This function should only be called in response to an error loading a
     // font due to being blocked by the sandbox.
     // This by definition shouldn't happen if there is no sandbox support.
@@ -86,114 +86,114 @@ static sk_sp<SkTypeface> loadFromBrowserProcess(NSFont* nsFont,
     return nullptr;
   }
 
-  CGFontRef loadedCgFont;
-  uint32_t fontID;
-  if (!sandboxSupport->loadFont(nsFont, &loadedCgFont, &fontID)) {
+  CGFontRef loaded_cg_font;
+  uint32_t font_id;
+  if (!sandbox_support->LoadFont(ns_font, &loaded_cg_font, &font_id)) {
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
-        << "Loading user font \"" << [[nsFont familyName] UTF8String]
+        << "Loading user font \"" << [[ns_font familyName] UTF8String]
         << "\" from non system location failed. Corrupt or missing font file?";
     return nullptr;
   }
-  RetainPtr<CGFontRef> cgFont(AdoptCF, loadedCgFont);
-  RetainPtr<CTFontRef> ctFont(
-      AdoptCF,
-      CTFontCreateWithGraphicsFont(cgFont.get(), textSize, 0,
-                                   cascadeToLastResortFontDescriptor()));
-  sk_sp<SkTypeface> returnFont(
-      SkCreateTypefaceFromCTFont(ctFont.get(), cgFont.get()));
+  RetainPtr<CGFontRef> cg_font(kAdoptCF, loaded_cg_font);
+  RetainPtr<CTFontRef> ct_font(
+      kAdoptCF,
+      CTFontCreateWithGraphicsFont(cg_font.Get(), text_size, 0,
+                                   CascadeToLastResortFontDescriptor()));
+  sk_sp<SkTypeface> return_font(
+      SkCreateTypefaceFromCTFont(ct_font.Get(), cg_font.Get()));
 
-  if (!returnFont.get())
+  if (!return_font.get())
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
         << "Instantiating SkTypeface from user font failed for font family \""
-        << [[nsFont familyName] UTF8String] << "\".";
-  return returnFont;
+        << [[ns_font familyName] UTF8String] << "\".";
+  return return_font;
 }
 
-void FontPlatformData::setupPaint(SkPaint* paint,
+void FontPlatformData::SetupPaint(SkPaint* paint,
                                   float,
                                   const Font* font) const {
-  bool shouldSmoothFonts = true;
-  bool shouldAntialias = true;
+  bool should_smooth_fonts = true;
+  bool should_antialias = true;
 
   if (font) {
-    switch (font->getFontDescription().fontSmoothing()) {
-      case Antialiased:
-        shouldSmoothFonts = false;
+    switch (font->GetFontDescription().FontSmoothing()) {
+      case kAntialiased:
+        should_smooth_fonts = false;
         break;
-      case SubpixelAntialiased:
+      case kSubpixelAntialiased:
         break;
-      case NoSmoothing:
-        shouldAntialias = false;
-        shouldSmoothFonts = false;
+      case kNoSmoothing:
+        should_antialias = false;
+        should_smooth_fonts = false;
         break;
-      case AutoSmoothing:
+      case kAutoSmoothing:
         // For the AutoSmooth case, don't do anything! Keep the default
         // settings.
         break;
     }
   }
 
-  if (LayoutTestSupport::isRunningLayoutTest()) {
-    shouldSmoothFonts = false;
-    shouldAntialias = shouldAntialias &&
-                      LayoutTestSupport::isFontAntialiasingEnabledForTest();
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
+    should_smooth_fonts = false;
+    should_antialias = should_antialias &&
+                       LayoutTestSupport::IsFontAntialiasingEnabledForTest();
   }
 
-  paint->setAntiAlias(shouldAntialias);
+  paint->setAntiAlias(should_antialias);
   paint->setEmbeddedBitmapText(false);
-  const float ts = m_textSize >= 0 ? m_textSize : 12;
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
   paint->setTextSize(SkFloatToScalar(ts));
-  paint->setTypeface(m_typeface);
-  paint->setFakeBoldText(m_syntheticBold);
-  paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
-  paint->setLCDRenderText(shouldSmoothFonts);
+  paint->setTypeface(typeface_);
+  paint->setFakeBoldText(synthetic_bold_);
+  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  paint->setLCDRenderText(should_smooth_fonts);
   paint->setSubpixelText(true);
 
   // When rendering using CoreGraphics, disable hinting when
   // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
   // used.  See crbug.com/152304
   if (font &&
-      (font->getFontDescription().fontSmoothing() == Antialiased ||
-       font->getFontDescription().textRendering() == GeometricPrecision))
+      (font->GetFontDescription().FontSmoothing() == kAntialiased ||
+       font->GetFontDescription().TextRendering() == kGeometricPrecision))
     paint->setHinting(SkPaint::kNo_Hinting);
 }
 
-FontPlatformData::FontPlatformData(NSFont* nsFont,
+FontPlatformData::FontPlatformData(NSFont* ns_font,
                                    float size,
-                                   bool syntheticBold,
-                                   bool syntheticItalic,
+                                   bool synthetic_bold,
+                                   bool synthetic_italic,
                                    FontOrientation orientation,
-                                   FontVariationSettings* variationSettings)
-    : m_textSize(size),
-      m_syntheticBold(syntheticBold),
-      m_syntheticItalic(syntheticItalic),
-      m_orientation(orientation),
-      m_isHashTableDeletedValue(false) {
-  DCHECK(nsFont);
-  if (canLoadInProcess(nsFont)) {
-    m_typeface.reset(SkCreateTypefaceFromCTFont(toCTFontRef(nsFont)));
+                                   FontVariationSettings* variation_settings)
+    : text_size_(size),
+      synthetic_bold_(synthetic_bold),
+      synthetic_italic_(synthetic_italic),
+      orientation_(orientation),
+      is_hash_table_deleted_value_(false) {
+  DCHECK(ns_font);
+  if (CanLoadInProcess(ns_font)) {
+    typeface_.reset(SkCreateTypefaceFromCTFont(toCTFontRef(ns_font)));
   } else {
     // In process loading fails for cases where third party font manager
     // software registers fonts in non system locations such as /Library/Fonts
     // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
-    m_typeface = loadFromBrowserProcess(nsFont, size);
+    typeface_ = LoadFromBrowserProcess(ns_font, size);
   }
 
-  if (variationSettings && variationSettings->size() < UINT16_MAX) {
-    SkFontMgr::FontParameters::Axis axes[variationSettings->size()];
-    for (size_t i = 0; i < variationSettings->size(); ++i) {
-      AtomicString featureTag = variationSettings->at(i).tag();
-      axes[i] = {atomicStringToFourByteTag(featureTag),
-                 SkFloatToScalar(variationSettings->at(i).value())};
+  if (variation_settings && variation_settings->size() < UINT16_MAX) {
+    SkFontMgr::FontParameters::Axis axes[variation_settings->size()];
+    for (size_t i = 0; i < variation_settings->size(); ++i) {
+      AtomicString feature_tag = variation_settings->at(i).Tag();
+      axes[i] = {AtomicStringToFourByteTag(feature_tag),
+                 SkFloatToScalar(variation_settings->at(i).Value())};
     }
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
     // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
     // axis parameters on system fonts directly.
-    m_typeface = sk_sp<SkTypeface>(fm->createFromStream(
-        m_typeface->openStream(nullptr)->duplicate(),
-        SkFontMgr::FontParameters().setAxes(axes, variationSettings->size())));
+    typeface_ = sk_sp<SkTypeface>(fm->createFromStream(
+        typeface_->openStream(nullptr)->duplicate(),
+        SkFontMgr::FontParameters().setAxes(axes, variation_settings->size())));
   }
 }
 

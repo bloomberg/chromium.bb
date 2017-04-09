@@ -11,25 +11,25 @@
 
 namespace blink {
 
-InterpolationValue SVGNumberInterpolationType::maybeConvertNeutral(
+InterpolationValue SVGNumberInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::create(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
-InterpolationValue SVGNumberInterpolationType::maybeConvertSVGValue(
-    const SVGPropertyBase& svgValue) const {
-  if (svgValue.type() != AnimatedNumber)
+InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
+    const SVGPropertyBase& svg_value) const {
+  if (svg_value.GetType() != kAnimatedNumber)
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::create(toSVGNumber(svgValue).value()));
+      InterpolableNumber::Create(ToSVGNumber(svg_value).Value()));
 }
 
-SVGPropertyBase* SVGNumberInterpolationType::appliedSVGValue(
-    const InterpolableValue& interpolableValue,
+SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double value = toInterpolableNumber(interpolableValue).value();
-  return SVGNumber::create(m_isNonNegative && value < 0 ? 0 : value);
+  double value = ToInterpolableNumber(interpolable_value).Value();
+  return SVGNumber::Create(is_non_negative_ && value < 0 ? 0 : value);
 }
 
 }  // namespace blink

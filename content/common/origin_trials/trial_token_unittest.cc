@@ -304,7 +304,7 @@ TEST_F(TrialTokenTest, ValidateValidSignature) {
   std::string token_signature;
   blink::WebOriginTrialTokenStatus status = Extract(
       kSampleToken, correct_public_key(), &token_payload, &token_signature);
-  ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  ASSERT_EQ(blink::WebOriginTrialTokenStatus::kSuccess, status);
   EXPECT_STREQ(kSampleTokenJSON, token_payload.c_str());
   EXPECT_EQ(expected_signature_, token_signature);
 }
@@ -315,7 +315,7 @@ TEST_F(TrialTokenTest, ValidateSubdomainValidSignature) {
   blink::WebOriginTrialTokenStatus status =
       Extract(kSampleSubdomainToken, correct_public_key(), &token_payload,
               &token_signature);
-  ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  ASSERT_EQ(blink::WebOriginTrialTokenStatus::kSuccess, status);
   EXPECT_STREQ(kSampleSubdomainTokenJSON, token_payload.c_str());
   EXPECT_EQ(expected_subdomain_signature_, token_signature);
 }
@@ -326,7 +326,7 @@ TEST_F(TrialTokenTest, ValidateNonSubdomainValidSignature) {
   blink::WebOriginTrialTokenStatus status =
       Extract(kSampleNonSubdomainToken, correct_public_key(), &token_payload,
               &token_signature);
-  ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  ASSERT_EQ(blink::WebOriginTrialTokenStatus::kSuccess, status);
   EXPECT_STREQ(kSampleNonSubdomainTokenJSON, token_payload.c_str());
   EXPECT_EQ(expected_nonsubdomain_signature_, token_signature);
 }
@@ -334,37 +334,37 @@ TEST_F(TrialTokenTest, ValidateNonSubdomainValidSignature) {
 TEST_F(TrialTokenTest, ValidateInvalidSignature) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload(kInvalidSignatureToken, correct_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature, status);
 }
 
 TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectKey) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload(kSampleToken, incorrect_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature, status);
 }
 
 TEST_F(TrialTokenTest, ValidateEmptyToken) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload("", correct_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed, status);
 }
 
 TEST_F(TrialTokenTest, ValidateShortToken) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload(kTruncatedToken, correct_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed, status);
 }
 
 TEST_F(TrialTokenTest, ValidateUnsupportedVersion) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload(kIncorrectVersionToken, correct_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongVersion, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongVersion, status);
 }
 
 TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectLength) {
   blink::WebOriginTrialTokenStatus status =
       ExtractIgnorePayload(kIncorrectLengthToken, correct_public_key());
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed, status);
 }
 
 // Test parsing of fields from JSON token.
@@ -443,35 +443,35 @@ TEST_F(TrialTokenTest, ValidateValidSubdomainToken) {
 TEST_F(TrialTokenTest, TokenIsValid) {
   std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             token->IsValid(expected_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(invalid_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(insecure_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(incorrect_port_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kExpired,
             token->IsValid(expected_origin_, invalid_timestamp_));
 }
 
 TEST_F(TrialTokenTest, SubdomainTokenIsValid) {
   std::unique_ptr<TrialToken> token = Parse(kSampleSubdomainTokenJSON);
   ASSERT_TRUE(token);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             token->IsValid(expected_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             token->IsValid(expected_subdomain_origin_, valid_timestamp_));
   EXPECT_EQ(
-      blink::WebOriginTrialTokenStatus::Success,
+      blink::WebOriginTrialTokenStatus::kSuccess,
       token->IsValid(expected_multiple_subdomain_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(incorrect_domain_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(insecure_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             token->IsValid(incorrect_port_origin_, valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kExpired,
             token->IsValid(expected_origin_, invalid_timestamp_));
 }
 
@@ -482,7 +482,7 @@ TEST_F(TrialTokenTest, ExtractValidToken) {
   std::unique_ptr<TrialToken> token =
       TrialToken::From(kSampleToken, correct_public_key(), &status);
   EXPECT_TRUE(token);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess, status);
   EXPECT_EQ(expected_signature_, token->signature());
 }
 
@@ -491,7 +491,7 @@ TEST_F(TrialTokenTest, ExtractInvalidSignature) {
   std::unique_ptr<TrialToken> token =
       TrialToken::From(kSampleToken, incorrect_public_key(), &status);
   EXPECT_FALSE(token);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature, status);
 }
 
 TEST_F(TrialTokenTest, ExtractMalformedToken) {
@@ -499,7 +499,7 @@ TEST_F(TrialTokenTest, ExtractMalformedToken) {
   std::unique_ptr<TrialToken> token =
       TrialToken::From(kIncorrectLengthToken, correct_public_key(), &status);
   EXPECT_FALSE(token);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed, status);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed, status);
 }
 
 }  // namespace content

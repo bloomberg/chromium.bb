@@ -44,71 +44,73 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   virtual ~StyleImage() {}
 
   bool operator==(const StyleImage& other) const {
-    return data() == other.data();
+    return Data() == other.Data();
   }
 
-  virtual CSSValue* cssValue() const = 0;
-  virtual CSSValue* computedCSSValue() const = 0;
+  virtual CSSValue* CssValue() const = 0;
+  virtual CSSValue* ComputedCSSValue() const = 0;
 
-  virtual bool canRender() const { return true; }
-  virtual bool isLoaded() const { return true; }
-  virtual bool errorOccurred() const { return false; }
+  virtual bool CanRender() const { return true; }
+  virtual bool IsLoaded() const { return true; }
+  virtual bool ErrorOccurred() const { return false; }
   // Note that the defaultObjectSize is assumed to be in the
   // effective zoom level given by multiplier, i.e. if multiplier is
   // the constant 1 the defaultObjectSize should be unzoomed.
-  virtual LayoutSize imageSize(const LayoutObject&,
+  virtual LayoutSize ImageSize(const LayoutObject&,
                                float multiplier,
-                               const LayoutSize& defaultObjectSize) const = 0;
-  virtual bool imageHasRelativeSize() const = 0;
-  virtual bool usesImageContainerSize() const = 0;
-  virtual void addClient(LayoutObject*) = 0;
-  virtual void removeClient(LayoutObject*) = 0;
+                               const LayoutSize& default_object_size) const = 0;
+  virtual bool ImageHasRelativeSize() const = 0;
+  virtual bool UsesImageContainerSize() const = 0;
+  virtual void AddClient(LayoutObject*) = 0;
+  virtual void RemoveClient(LayoutObject*) = 0;
   // Note that the containerSize is assumed to be in the effective
   // zoom level given by multiplier, i.e if the multiplier is the
   // constant 1 the containerSize should be unzoomed.
-  virtual PassRefPtr<Image> image(const LayoutObject&,
-                                  const IntSize& containerSize,
-                                  float multiplier) const = 0;
-  virtual WrappedImagePtr data() const = 0;
-  virtual float imageScaleFactor() const { return 1; }
-  virtual bool knownToBeOpaque(const LayoutObject&) const = 0;
-  virtual ImageResourceContent* cachedImage() const { return 0; }
+  virtual PassRefPtr<Image> GetImage(const LayoutObject&,
+                                     const IntSize& container_size,
+                                     float multiplier) const = 0;
+  virtual WrappedImagePtr Data() const = 0;
+  virtual float ImageScaleFactor() const { return 1; }
+  virtual bool KnownToBeOpaque(const LayoutObject&) const = 0;
+  virtual ImageResourceContent* CachedImage() const { return 0; }
 
-  ALWAYS_INLINE bool isImageResource() const { return m_isImageResource; }
-  ALWAYS_INLINE bool isPendingImage() const { return m_isPendingImage; }
-  ALWAYS_INLINE bool isGeneratedImage() const { return m_isGeneratedImage; }
-  ALWAYS_INLINE bool isImageResourceSet() const { return m_isImageResourceSet; }
-  ALWAYS_INLINE bool isInvalidImage() const { return m_isInvalidImage; }
-  ALWAYS_INLINE bool isPaintImage() const { return m_isPaintImage; }
+  ALWAYS_INLINE bool IsImageResource() const { return is_image_resource_; }
+  ALWAYS_INLINE bool IsPendingImage() const { return is_pending_image_; }
+  ALWAYS_INLINE bool IsGeneratedImage() const { return is_generated_image_; }
+  ALWAYS_INLINE bool IsImageResourceSet() const {
+    return is_image_resource_set_;
+  }
+  ALWAYS_INLINE bool IsInvalidImage() const { return is_invalid_image_; }
+  ALWAYS_INLINE bool IsPaintImage() const { return is_paint_image_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   StyleImage()
-      : m_isImageResource(false),
-        m_isPendingImage(false),
-        m_isGeneratedImage(false),
-        m_isImageResourceSet(false),
-        m_isInvalidImage(false),
-        m_isPaintImage(false) {}
-  bool m_isImageResource : 1;
-  bool m_isPendingImage : 1;
-  bool m_isGeneratedImage : 1;
-  bool m_isImageResourceSet : 1;
-  bool m_isInvalidImage : 1;
-  bool m_isPaintImage : 1;
+      : is_image_resource_(false),
+        is_pending_image_(false),
+        is_generated_image_(false),
+        is_image_resource_set_(false),
+        is_invalid_image_(false),
+        is_paint_image_(false) {}
+  bool is_image_resource_ : 1;
+  bool is_pending_image_ : 1;
+  bool is_generated_image_ : 1;
+  bool is_image_resource_set_ : 1;
+  bool is_invalid_image_ : 1;
+  bool is_paint_image_ : 1;
 
-  static LayoutSize applyZoom(const LayoutSize&, float multiplier);
-  LayoutSize imageSizeForSVGImage(SVGImage*,
+  static LayoutSize ApplyZoom(const LayoutSize&, float multiplier);
+  LayoutSize ImageSizeForSVGImage(SVGImage*,
                                   float multiplier,
-                                  const LayoutSize& defaultObjectSize) const;
+                                  const LayoutSize& default_object_size) const;
 };
 
 #define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function)                   \
   DEFINE_TYPE_CASTS(thisType, StyleImage, styleImage, styleImage->function, \
                     styleImage.function);                                   \
-  inline thisType* to##thisType(const Member<StyleImage>& styleImage) {     \
-    return to##thisType(styleImage.get());                                  \
+  inline thisType* To##thisType(const Member<StyleImage>& styleImage) {     \
+    return To##thisType(styleImage.Get());                                  \
   }                                                                         \
   typedef int NeedsSemiColonAfterDefineStyleImageTypeCasts
 

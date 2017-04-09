@@ -50,38 +50,38 @@ class CORE_EXPORT ContextMenuController final
   WTF_MAKE_NONCOPYABLE(ContextMenuController);
 
  public:
-  static ContextMenuController* create(Page*, ContextMenuClient*);
+  static ContextMenuController* Create(Page*, ContextMenuClient*);
   ~ContextMenuController();
   DECLARE_TRACE();
 
-  ContextMenu* contextMenu() const { return m_contextMenu.get(); }
-  void clearContextMenu();
+  ContextMenu* GetContextMenu() const { return context_menu_.get(); }
+  void ClearContextMenu();
 
-  void documentDetached(Document*);
+  void DocumentDetached(Document*);
 
-  void handleContextMenuEvent(Event*);
-  void showContextMenuAtPoint(LocalFrame*,
+  void HandleContextMenuEvent(Event*);
+  void ShowContextMenuAtPoint(LocalFrame*,
                               float x,
                               float y,
                               ContextMenuProvider*);
 
-  void contextMenuItemSelected(const ContextMenuItem*);
+  void ContextMenuItemSelected(const ContextMenuItem*);
 
-  const HitTestResult& hitTestResult() { return m_hitTestResult; }
+  const HitTestResult& GetHitTestResult() { return hit_test_result_; }
 
  private:
   ContextMenuController(Page*, ContextMenuClient*);
 
-  std::unique_ptr<ContextMenu> createContextMenu(Event*);
-  std::unique_ptr<ContextMenu> createContextMenu(LocalFrame*,
+  std::unique_ptr<ContextMenu> CreateContextMenu(Event*);
+  std::unique_ptr<ContextMenu> CreateContextMenu(LocalFrame*,
                                                  const LayoutPoint&);
-  void populateCustomContextMenu(const Event&);
-  void showContextMenu(Event*);
+  void PopulateCustomContextMenu(const Event&);
+  void ShowContextMenu(Event*);
 
-  ContextMenuClient* m_client;
-  std::unique_ptr<ContextMenu> m_contextMenu;
-  Member<ContextMenuProvider> m_menuProvider;
-  HitTestResult m_hitTestResult;
+  ContextMenuClient* client_;
+  std::unique_ptr<ContextMenu> context_menu_;
+  Member<ContextMenuProvider> menu_provider_;
+  HitTestResult hit_test_result_;
 };
 
 }  // namespace blink

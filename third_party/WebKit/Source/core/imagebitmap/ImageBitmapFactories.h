@@ -84,13 +84,13 @@ class ImageBitmapFactories final
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          ImageBitmapSource*,
-                                         Optional<IntRect> cropRect,
+                                         Optional<IntRect> crop_rect,
                                          const ImageBitmapOptions&,
                                          ExceptionState&);
-  static ScriptPromise createImageBitmapFromBlob(ScriptState*,
+  static ScriptPromise CreateImageBitmapFromBlob(ScriptState*,
                                                  EventTarget&,
                                                  ImageBitmapSource*,
-                                                 Optional<IntRect> cropRect,
+                                                 Optional<IntRect> crop_rect,
                                                  const ImageBitmapOptions&,
                                                  ExceptionState&);
 
@@ -99,22 +99,22 @@ class ImageBitmapFactories final
   DECLARE_TRACE();
 
  protected:
-  static const char* supplementName();
+  static const char* SupplementName();
 
  private:
   class ImageBitmapLoader final
       : public GarbageCollectedFinalized<ImageBitmapLoader>,
         public FileReaderLoaderClient {
    public:
-    static ImageBitmapLoader* create(ImageBitmapFactories& factory,
-                                     Optional<IntRect> cropRect,
+    static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
+                                     Optional<IntRect> crop_rect,
                                      const ImageBitmapOptions& options,
-                                     ScriptState* scriptState) {
-      return new ImageBitmapLoader(factory, cropRect, scriptState, options);
+                                     ScriptState* script_state) {
+      return new ImageBitmapLoader(factory, crop_rect, script_state, options);
     }
 
-    void loadBlobAsync(ExecutionContext*, Blob*);
-    ScriptPromise promise() { return m_resolver->promise(); }
+    void LoadBlobAsync(ExecutionContext*, Blob*);
+    ScriptPromise Promise() { return resolver_->Promise(); }
 
     DECLARE_TRACE();
 
@@ -122,41 +122,42 @@ class ImageBitmapFactories final
 
    private:
     ImageBitmapLoader(ImageBitmapFactories&,
-                      Optional<IntRect> cropRect,
+                      Optional<IntRect> crop_rect,
                       ScriptState*,
                       const ImageBitmapOptions&);
 
-    void rejectPromise();
+    void RejectPromise();
 
-    void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
-    void decodeImageOnDecoderThread(RefPtr<WebTaskRunner>,
-                                    DOMArrayBuffer*,
-                                    const String& premultiplyAlphaOption,
-                                    const String& colorSpaceConversionOption);
-    void resolvePromiseOnOriginalThread(sk_sp<SkImage>);
+    void ScheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
+    void DecodeImageOnDecoderThread(
+        RefPtr<WebTaskRunner>,
+        DOMArrayBuffer*,
+        const String& premultiply_alpha_option,
+        const String& color_space_conversion_option);
+    void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
     // FileReaderLoaderClient
-    void didStartLoading() override {}
-    void didReceiveData() override {}
-    void didFinishLoading() override;
-    void didFail(FileError::ErrorCode) override;
+    void DidStartLoading() override {}
+    void DidReceiveData() override {}
+    void DidFinishLoading() override;
+    void DidFail(FileError::ErrorCode) override;
 
-    std::unique_ptr<FileReaderLoader> m_loader;
-    Member<ImageBitmapFactories> m_factory;
-    Member<ScriptPromiseResolver> m_resolver;
-    Optional<IntRect> m_cropRect;
-    ImageBitmapOptions m_options;
+    std::unique_ptr<FileReaderLoader> loader_;
+    Member<ImageBitmapFactories> factory_;
+    Member<ScriptPromiseResolver> resolver_;
+    Optional<IntRect> crop_rect_;
+    ImageBitmapOptions options_;
   };
 
-  static ImageBitmapFactories& from(EventTarget&);
+  static ImageBitmapFactories& From(EventTarget&);
 
   template <class GlobalObject>
-  static ImageBitmapFactories& fromInternal(GlobalObject&);
+  static ImageBitmapFactories& FromInternal(GlobalObject&);
 
-  void addLoader(ImageBitmapLoader*);
-  void didFinishLoading(ImageBitmapLoader*);
+  void AddLoader(ImageBitmapLoader*);
+  void DidFinishLoading(ImageBitmapLoader*);
 
-  HeapHashSet<Member<ImageBitmapLoader>> m_pendingLoaders;
+  HeapHashSet<Member<ImageBitmapLoader>> pending_loaders_;
 };
 
 }  // namespace blink

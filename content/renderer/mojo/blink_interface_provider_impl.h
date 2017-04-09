@@ -33,7 +33,7 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
   ~BlinkInterfaceProviderImpl();
 
   // blink::InterfaceProvider override.
-  void getInterface(const char* name,
+  void GetInterface(const char* name,
                     mojo::ScopedMessagePipeHandle handle) override;
 
  private:

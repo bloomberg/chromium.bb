@@ -44,14 +44,14 @@ class PagePopup;
 class DateTimeChooserImpl final : public DateTimeChooser,
                                   public PagePopupClient {
  public:
-  static DateTimeChooserImpl* create(ChromeClientImpl*,
+  static DateTimeChooserImpl* Create(ChromeClientImpl*,
                                      DateTimeChooserClient*,
                                      const DateTimeChooserParameters&);
   ~DateTimeChooserImpl() override;
 
   // DateTimeChooser functions:
-  void endChooser() override;
-  AXObject* rootAXObject() override;
+  void EndChooser() override;
+  AXObject* RootAXObject() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -60,20 +60,20 @@ class DateTimeChooserImpl final : public DateTimeChooser,
                       DateTimeChooserClient*,
                       const DateTimeChooserParameters&);
   // PagePopupClient functions:
-  void writeDocument(SharedBuffer*) override;
-  void selectFontsFromOwnerDocument(Document&) override {}
-  Locale& locale() override;
-  void setValueAndClosePopup(int, const String&) override;
-  void setValue(const String&) override;
-  void closePopup() override;
-  Element& ownerElement() override;
-  void didClosePopup() override;
+  void WriteDocument(SharedBuffer*) override;
+  void SelectFontsFromOwnerDocument(Document&) override {}
+  Locale& GetLocale() override;
+  void SetValueAndClosePopup(int, const String&) override;
+  void SetValue(const String&) override;
+  void ClosePopup() override;
+  Element& OwnerElement() override;
+  void DidClosePopup() override;
 
-  Member<ChromeClientImpl> m_chromeClient;
-  Member<DateTimeChooserClient> m_client;
-  PagePopup* m_popup;
-  DateTimeChooserParameters m_parameters;
-  std::unique_ptr<Locale> m_locale;
+  Member<ChromeClientImpl> chrome_client_;
+  Member<DateTimeChooserClient> client_;
+  PagePopup* popup_;
+  DateTimeChooserParameters parameters_;
+  std::unique_ptr<Locale> locale_;
 };
 
 }  // namespace blink

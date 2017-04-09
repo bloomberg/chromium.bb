@@ -20,42 +20,42 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
     : public PairedBeginDisplayItem {
  public:
   BeginFilterDisplayItem(const DisplayItemClient& client,
-                         sk_sp<SkImageFilter> imageFilter,
+                         sk_sp<SkImageFilter> image_filter,
                          const FloatRect& bounds,
                          const FloatPoint& origin,
-                         CompositorFilterOperations filterOperations)
+                         CompositorFilterOperations filter_operations)
       : PairedBeginDisplayItem(client, kBeginFilter, sizeof(*this)),
-        m_imageFilter(std::move(imageFilter)),
-        m_compositorFilterOperations(std::move(filterOperations)),
-        m_bounds(bounds),
-        m_origin(origin) {}
+        image_filter_(std::move(image_filter)),
+        compositor_filter_operations_(std::move(filter_operations)),
+        bounds_(bounds),
+        origin_(origin) {}
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
-  bool drawsContent() const override;
+  bool DrawsContent() const override;
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    if (!DisplayItem::equals(other))
+  bool Equals(const DisplayItem& other) const final {
+    if (!DisplayItem::Equals(other))
       return false;
-    const auto& otherItem = static_cast<const BeginFilterDisplayItem&>(other);
+    const auto& other_item = static_cast<const BeginFilterDisplayItem&>(other);
     // Ignores changes of reference filters because SkImageFilter doesn't have
     // an equality operator.
-    return m_bounds == otherItem.m_bounds && m_origin == otherItem.m_origin &&
-           m_compositorFilterOperations.equalsIgnoringReferenceFilters(
-               otherItem.m_compositorFilterOperations);
+    return bounds_ == other_item.bounds_ && origin_ == other_item.origin_ &&
+           compositor_filter_operations_.EqualsIgnoringReferenceFilters(
+               other_item.compositor_filter_operations_);
   }
 
   // FIXME: m_imageFilter should be replaced with m_webFilterOperations when
   // copying data to the compositor.
-  sk_sp<SkImageFilter> m_imageFilter;
-  CompositorFilterOperations m_compositorFilterOperations;
-  const FloatRect m_bounds;
-  const FloatPoint m_origin;
+  sk_sp<SkImageFilter> image_filter_;
+  CompositorFilterOperations compositor_filter_operations_;
+  const FloatRect bounds_;
+  const FloatPoint origin_;
 };
 
 class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
@@ -63,14 +63,14 @@ class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
   EndFilterDisplayItem(const DisplayItemClient& client)
       : PairedEndDisplayItem(client, kEndFilter, sizeof(*this)) {}
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return otherType == kBeginFilter;
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return other_type == kBeginFilter;
   }
 #endif
 };

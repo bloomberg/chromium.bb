@@ -13,7 +13,7 @@ AutoCanvasDrawListener::AutoCanvasDrawListener(
     : CanvasDrawListener(std::move(handler)) {}
 
 // static
-AutoCanvasDrawListener* AutoCanvasDrawListener::create(
+AutoCanvasDrawListener* AutoCanvasDrawListener::Create(
     std::unique_ptr<WebCanvasCaptureHandler> handler) {
   return new AutoCanvasDrawListener(std::move(handler));
 }

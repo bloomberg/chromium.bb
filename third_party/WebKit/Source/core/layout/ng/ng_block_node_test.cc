@@ -19,7 +19,7 @@ class NGBlockNodeForTest : public RenderingTest {
 };
 
 TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <div id="box" >
       <div id="first_child" style="width:30px">
       </div>
@@ -27,7 +27,7 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   )HTML");
   const int kWidth = 30;
 
-  NGBlockNode* box = new NGBlockNode(getLayoutObjectByElementId("box"));
+  NGBlockNode* box = new NGBlockNode(GetLayoutObjectByElementId("box"));
   MinMaxContentSize sizes = box->ComputeMinMaxContentSize();
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_content);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_content);

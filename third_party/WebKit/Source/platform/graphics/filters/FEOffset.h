@@ -29,25 +29,25 @@ namespace blink {
 
 class PLATFORM_EXPORT FEOffset final : public FilterEffect {
  public:
-  static FEOffset* create(Filter*, float dx, float dy);
+  static FEOffset* Create(Filter*, float dx, float dy);
 
-  float dx() const;
-  void setDx(float);
+  float Dx() const;
+  void SetDx(float);
 
-  float dy() const;
-  void setDy(float);
+  float Dy() const;
+  void SetDy(float);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FEOffset(Filter*, float dx, float dy);
 
-  FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
-  float m_dx;
-  float m_dy;
+  float dx_;
+  float dy_;
 };
 
 }  // namespace blink

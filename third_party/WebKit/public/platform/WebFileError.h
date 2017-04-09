@@ -34,18 +34,18 @@ namespace blink {
 
 // File-related error code defined in HTML5 File API.
 enum WebFileError {
-  WebFileErrorNotFound = 1,
-  WebFileErrorSecurity = 2,
-  WebFileErrorAbort = 3,
-  WebFileErrorNotReadable = 4,
-  WebFileErrorEncoding = 5,
-  WebFileErrorNoModificationAllowed = 6,
-  WebFileErrorInvalidState = 7,
-  WebFileErrorSyntax = 8,
-  WebFileErrorInvalidModification = 9,
-  WebFileErrorQuotaExceeded = 10,
-  WebFileErrorTypeMismatch = 11,
-  WebFileErrorPathExists = 12,
+  kWebFileErrorNotFound = 1,
+  kWebFileErrorSecurity = 2,
+  kWebFileErrorAbort = 3,
+  kWebFileErrorNotReadable = 4,
+  kWebFileErrorEncoding = 5,
+  kWebFileErrorNoModificationAllowed = 6,
+  kWebFileErrorInvalidState = 7,
+  kWebFileErrorSyntax = 8,
+  kWebFileErrorInvalidModification = 9,
+  kWebFileErrorQuotaExceeded = 10,
+  kWebFileErrorTypeMismatch = 11,
+  kWebFileErrorPathExists = 12,
 };
 
 }  // namespace blink

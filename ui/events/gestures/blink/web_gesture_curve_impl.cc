@@ -106,7 +106,7 @@ WebGestureCurveImpl::~WebGestureCurveImpl() {
   }
 }
 
-bool WebGestureCurveImpl::apply(double time,
+bool WebGestureCurveImpl::Apply(double time,
                                 blink::WebGestureCurveTarget* target) {
   // If the fling has yet to start, simply return and report true to prevent
   // fling termination.
@@ -139,7 +139,7 @@ bool WebGestureCurveImpl::apply(double time,
 
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
-  bool did_scroll = target->scrollBy(blink::WebFloatSize(delta),
+  bool did_scroll = target->ScrollBy(blink::WebFloatSize(delta),
                                      blink::WebFloatSize(velocity));
   return did_scroll && still_active;
 }

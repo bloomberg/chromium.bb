@@ -121,7 +121,7 @@ class TaskQueueSelectorTest : public testing::Test {
   void SetUp() final {
     virtual_time_domain_ = base::WrapUnique<VirtualTimeDomain>(
         new VirtualTimeDomain(base::TimeTicks()));
-    for (size_t i = 0; i < kTaskQueueCount; i++) {
+    for (size_t i = 0; i < k_task_queue_count; i++) {
       scoped_refptr<TaskQueueImpl> task_queue =
           make_scoped_refptr(new TaskQueueImpl(
               nullptr, virtual_time_domain_.get(),
@@ -129,7 +129,7 @@ class TaskQueueSelectorTest : public testing::Test {
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(task_queue);
     }
-    for (size_t i = 0; i < kTaskQueueCount; i++) {
+    for (size_t i = 0; i < k_task_queue_count; i++) {
       EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[i]->GetQueuePriority())
           << i;
       queue_to_index_map_.insert(std::make_pair(task_queues_[i].get(), i));
@@ -154,7 +154,7 @@ class TaskQueueSelectorTest : public testing::Test {
                           "test", "test"));
   }
 
-  const size_t kTaskQueueCount = 5;
+  const size_t k_task_queue_count = 5;
   base::Closure test_closure_;
   TaskQueueSelectorForTest selector_;
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
@@ -527,7 +527,8 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
       TaskQueue::NORMAL_PRIORITY, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_EQ(chosen_work_queue->task_queue(), task_queues_[0].get());
-  EXPECT_STREQ(chosen_work_queue->name(), GetParam().expected_work_queue_name);
+  EXPECT_STREQ(chosen_work_queue->GetName(),
+               GetParam().expected_work_queue_name);
   EXPECT_EQ(chose_delayed_over_immediate,
             GetParam().expected_did_starve_immediate_queue);
 }

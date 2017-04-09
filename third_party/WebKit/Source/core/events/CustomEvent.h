@@ -40,27 +40,28 @@ class CORE_EXPORT CustomEvent final : public Event {
  public:
   ~CustomEvent() override;
 
-  static CustomEvent* create() { return new CustomEvent; }
+  static CustomEvent* Create() { return new CustomEvent; }
 
-  static CustomEvent* create(const AtomicString& type,
+  static CustomEvent* Create(const AtomicString& type,
                              const CustomEventInit& initializer) {
     return new CustomEvent(type, initializer);
   }
 
   void initCustomEvent(const AtomicString& type,
-                       bool canBubble,
+                       bool can_bubble,
                        bool cancelable,
                        const ScriptValue& detail);
   void initCustomEvent(const AtomicString& type,
-                       bool canBubble,
+                       bool can_bubble,
                        bool cancelable,
                        PassRefPtr<SerializedScriptValue>);
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
-  void setSerializedDetail(PassRefPtr<SerializedScriptValue> serializedDetail) {
-    m_serializedDetail = std::move(serializedDetail);
+  SerializedScriptValue* SerializedDetail() { return serialized_detail_.Get(); }
+  void SetSerializedDetail(
+      PassRefPtr<SerializedScriptValue> serialized_detail) {
+    serialized_detail_ = std::move(serialized_detail);
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -69,7 +70,7 @@ class CORE_EXPORT CustomEvent final : public Event {
   CustomEvent();
   CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
 
-  RefPtr<SerializedScriptValue> m_serializedDetail;
+  RefPtr<SerializedScriptValue> serialized_detail_;
 };
 
 }  // namespace blink

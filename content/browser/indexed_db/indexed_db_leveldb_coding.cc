@@ -20,18 +20,18 @@
 
 using base::StringPiece;
 using blink::WebIDBKeyType;
-using blink::WebIDBKeyTypeArray;
-using blink::WebIDBKeyTypeBinary;
-using blink::WebIDBKeyTypeDate;
-using blink::WebIDBKeyTypeInvalid;
-using blink::WebIDBKeyTypeMin;
-using blink::WebIDBKeyTypeNull;
-using blink::WebIDBKeyTypeNumber;
-using blink::WebIDBKeyTypeString;
+using blink::kWebIDBKeyTypeArray;
+using blink::kWebIDBKeyTypeBinary;
+using blink::kWebIDBKeyTypeDate;
+using blink::kWebIDBKeyTypeInvalid;
+using blink::kWebIDBKeyTypeMin;
+using blink::kWebIDBKeyTypeNull;
+using blink::kWebIDBKeyTypeNumber;
+using blink::kWebIDBKeyTypeString;
 using blink::WebIDBKeyPathType;
-using blink::WebIDBKeyPathTypeArray;
-using blink::WebIDBKeyPathTypeNull;
-using blink::WebIDBKeyPathTypeString;
+using blink::kWebIDBKeyPathTypeArray;
+using blink::kWebIDBKeyPathTypeNull;
+using blink::kWebIDBKeyPathTypeString;
 
 namespace content {
 
@@ -172,7 +172,7 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
   size_t previous_size = into->size();
   DCHECK(value.IsValid());
   switch (value.type()) {
-    case WebIDBKeyTypeArray: {
+    case kWebIDBKeyTypeArray: {
       EncodeByte(kIndexedDBKeyArrayTypeByte, into);
       size_t length = value.array().size();
       EncodeVarInt(length, into);
@@ -181,29 +181,29 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       DCHECK_GT(into->size(), previous_size);
       return;
     }
-    case WebIDBKeyTypeBinary:
+    case kWebIDBKeyTypeBinary:
       EncodeByte(kIndexedDBKeyBinaryTypeByte, into);
       EncodeBinary(value.binary(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case WebIDBKeyTypeString:
+    case kWebIDBKeyTypeString:
       EncodeByte(kIndexedDBKeyStringTypeByte, into);
       EncodeStringWithLength(value.string(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case WebIDBKeyTypeDate:
+    case kWebIDBKeyTypeDate:
       EncodeByte(kIndexedDBKeyDateTypeByte, into);
       EncodeDouble(value.date(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case WebIDBKeyTypeNumber:
+    case kWebIDBKeyTypeNumber:
       EncodeByte(kIndexedDBKeyNumberTypeByte, into);
       EncodeDouble(value.number(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case WebIDBKeyTypeNull:
-    case WebIDBKeyTypeInvalid:
-    case WebIDBKeyTypeMin:
+    case kWebIDBKeyTypeNull:
+    case kWebIDBKeyTypeInvalid:
+    case kWebIDBKeyTypeMin:
     default:
       NOTREACHED();
       EncodeByte(kIndexedDBKeyNullTypeByte, into);
@@ -216,11 +216,11 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       static_cast<unsigned char>(a) == static_cast<unsigned char>(b), \
       "Blink enum and coding byte must match.")
 
-COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeNull,
+COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeNull,
                                kIndexedDBKeyPathNullTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeString,
+COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeString,
                                kIndexedDBKeyPathStringTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(WebIDBKeyPathTypeArray,
+COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeArray,
                                kIndexedDBKeyPathArrayTypeByte);
 
 void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
@@ -231,13 +231,13 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   EncodeByte(kIndexedDBKeyPathTypeCodedByte2, into);
   EncodeByte(static_cast<char>(value.type()), into);
   switch (value.type()) {
-    case WebIDBKeyPathTypeNull:
+    case kWebIDBKeyPathTypeNull:
       break;
-    case WebIDBKeyPathTypeString: {
+    case kWebIDBKeyPathTypeString: {
       EncodeStringWithLength(value.string(), into);
       break;
     }
-    case WebIDBKeyPathTypeArray: {
+    case kWebIDBKeyPathTypeArray: {
       const std::vector<base::string16>& array = value.array();
       size_t count = array.size();
       EncodeVarInt(count, into);
@@ -411,14 +411,14 @@ bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(d, WebIDBKeyTypeDate);
+      *value = base::MakeUnique<IndexedDBKey>(d, kWebIDBKeyTypeDate);
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = base::MakeUnique<IndexedDBKey>(d, WebIDBKeyTypeNumber);
+      *value = base::MakeUnique<IndexedDBKey>(d, kWebIDBKeyTypeNumber);
       return true;
     }
   }
@@ -455,11 +455,11 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
   slice->remove_prefix(1);
 
   switch (type) {
-    case WebIDBKeyPathTypeNull:
+    case kWebIDBKeyPathTypeNull:
       DCHECK(slice->empty());
       *value = IndexedDBKeyPath();
       return true;
-    case WebIDBKeyPathTypeString: {
+    case kWebIDBKeyPathTypeString: {
       base::string16 string;
       if (!DecodeStringWithLength(slice, &string))
         return false;
@@ -467,7 +467,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       *value = IndexedDBKeyPath(string);
       return true;
     }
-    case WebIDBKeyPathTypeArray: {
+    case kWebIDBKeyPathTypeArray: {
       std::vector<base::string16> array;
       int64_t count;
       if (!DecodeVarInt(slice, &count))
@@ -569,23 +569,23 @@ bool ExtractEncodedIDBKey(StringPiece* slice, std::string* result) {
 static WebIDBKeyType KeyTypeByteToKeyType(unsigned char type) {
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      return WebIDBKeyTypeInvalid;
+      return kWebIDBKeyTypeInvalid;
     case kIndexedDBKeyArrayTypeByte:
-      return WebIDBKeyTypeArray;
+      return kWebIDBKeyTypeArray;
     case kIndexedDBKeyBinaryTypeByte:
-      return WebIDBKeyTypeBinary;
+      return kWebIDBKeyTypeBinary;
     case kIndexedDBKeyStringTypeByte:
-      return WebIDBKeyTypeString;
+      return kWebIDBKeyTypeString;
     case kIndexedDBKeyDateTypeByte:
-      return WebIDBKeyTypeDate;
+      return kWebIDBKeyTypeDate;
     case kIndexedDBKeyNumberTypeByte:
-      return WebIDBKeyTypeNumber;
+      return kWebIDBKeyTypeNumber;
     case kIndexedDBKeyMinKeyTypeByte:
-      return WebIDBKeyTypeMin;
+      return kWebIDBKeyTypeMin;
   }
 
   NOTREACHED();
-  return WebIDBKeyTypeInvalid;
+  return kWebIDBKeyTypeInvalid;
 }
 
 int CompareEncodedStringsWithLength(StringPiece* slice1,

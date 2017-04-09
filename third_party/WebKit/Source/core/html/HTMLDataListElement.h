@@ -42,16 +42,16 @@ class CORE_EXPORT HTMLDataListElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLDataListElement* create(Document&);
+  static HTMLDataListElement* Create(Document&);
 
   HTMLDataListOptionsCollection* options();
 
-  void optionElementChildrenChanged();
+  void OptionElementChildrenChanged();
 
  private:
   HTMLDataListElement(Document&);
-  void childrenChanged(const ChildrenChange&) override;
-  void finishParsingChildren() override;
+  void ChildrenChanged(const ChildrenChange&) override;
+  void FinishParsingChildren() override;
 };
 
 }  // namespace blink

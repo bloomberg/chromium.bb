@@ -35,42 +35,42 @@
 
 namespace blink {
 
-MediaSourceRegistry& MediaSourceRegistry::registry() {
-  DCHECK(isMainThread());
+MediaSourceRegistry& MediaSourceRegistry::Registry() {
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(MediaSourceRegistry, instance, ());
   return instance;
 }
 
-void MediaSourceRegistry::registerURL(SecurityOrigin*,
+void MediaSourceRegistry::RegisterURL(SecurityOrigin*,
                                       const KURL& url,
                                       URLRegistrable* registrable) {
-  DCHECK_EQ(&registrable->registry(), this);
-  DCHECK(isMainThread());
+  DCHECK_EQ(&registrable->Registry(), this);
+  DCHECK(IsMainThread());
 
   MediaSource* source = static_cast<MediaSource*>(registrable);
-  source->addedToRegistry();
-  m_mediaSources.set(url.getString(), source);
+  source->AddedToRegistry();
+  media_sources_.Set(url.GetString(), source);
 }
 
-void MediaSourceRegistry::unregisterURL(const KURL& url) {
-  DCHECK(isMainThread());
+void MediaSourceRegistry::UnregisterURL(const KURL& url) {
+  DCHECK(IsMainThread());
   PersistentHeapHashMap<String, Member<MediaSource>>::iterator iter =
-      m_mediaSources.find(url.getString());
-  if (iter == m_mediaSources.end())
+      media_sources_.Find(url.GetString());
+  if (iter == media_sources_.end())
     return;
 
   MediaSource* source = iter->value;
-  m_mediaSources.erase(iter);
-  source->removedFromRegistry();
+  media_sources_.erase(iter);
+  source->RemovedFromRegistry();
 }
 
-URLRegistrable* MediaSourceRegistry::lookup(const String& url) {
-  DCHECK(isMainThread());
-  return url.isNull() ? nullptr : m_mediaSources.at(url);
+URLRegistrable* MediaSourceRegistry::Lookup(const String& url) {
+  DCHECK(IsMainThread());
+  return url.IsNull() ? nullptr : media_sources_.at(url);
 }
 
 MediaSourceRegistry::MediaSourceRegistry() {
-  HTMLMediaSource::setRegistry(this);
+  HTMLMediaSource::SetRegistry(this);
 }
 
 }  // namespace blink

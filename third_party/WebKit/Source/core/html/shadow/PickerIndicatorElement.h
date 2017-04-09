@@ -49,50 +49,50 @@ class PickerIndicatorElement final : public HTMLDivElement,
   class PickerIndicatorOwner : public GarbageCollectedMixin {
    public:
     virtual ~PickerIndicatorOwner() {}
-    virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const = 0;
+    virtual bool IsPickerIndicatorOwnerDisabledOrReadOnly() const = 0;
     // FIXME: Remove. Deprecated in favor of double version.
-    virtual void pickerIndicatorChooseValue(const String&) = 0;
-    virtual void pickerIndicatorChooseValue(double) = 0;
-    virtual Element& pickerOwnerElement() const = 0;
-    virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
+    virtual void PickerIndicatorChooseValue(const String&) = 0;
+    virtual void PickerIndicatorChooseValue(double) = 0;
+    virtual Element& PickerOwnerElement() const = 0;
+    virtual bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
   };
 
-  static PickerIndicatorElement* create(Document&, PickerIndicatorOwner&);
+  static PickerIndicatorElement* Create(Document&, PickerIndicatorOwner&);
   ~PickerIndicatorElement() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void openPopup();
-  void closePopup();
-  bool willRespondToMouseClickEvents() override;
-  void removePickerIndicatorOwner() { m_pickerIndicatorOwner = nullptr; }
-  AXObject* popupRootAXObject() const;
+  void OpenPopup();
+  void ClosePopup();
+  bool WillRespondToMouseClickEvents() override;
+  void RemovePickerIndicatorOwner() { picker_indicator_owner_ = nullptr; }
+  AXObject* PopupRootAXObject() const;
 
   // DateTimeChooserClient implementation.
-  Element& ownerElement() const override;
-  void didChooseValue(const String&) override;
-  void didChooseValue(double) override;
-  void didEndChooser() override;
+  Element& OwnerElement() const override;
+  void DidChooseValue(const String&) override;
+  void DidChooseValue(double) override;
+  void DidEndChooser() override;
 
  private:
   PickerIndicatorElement(Document&, PickerIndicatorOwner&);
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void defaultEventHandler(Event*) override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool isPickerIndicatorElement() const override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void didNotifySubtreeInsertionsToDocument() override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  void DefaultEventHandler(Event*) override;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool IsPickerIndicatorElement() const override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void DidNotifySubtreeInsertionsToDocument() override;
 
-  HTMLInputElement* hostInput();
+  HTMLInputElement* HostInput();
 
-  Member<PickerIndicatorOwner> m_pickerIndicatorOwner;
-  Member<DateTimeChooser> m_chooser;
+  Member<PickerIndicatorOwner> picker_indicator_owner_;
+  Member<DateTimeChooser> chooser_;
 };
 
 DEFINE_TYPE_CASTS(PickerIndicatorElement,
                   Element,
                   element,
-                  element->isPickerIndicatorElement(),
-                  element.isPickerIndicatorElement());
+                  element->IsPickerIndicatorElement(),
+                  element.IsPickerIndicatorElement());
 
 }  // namespace blink
 #endif

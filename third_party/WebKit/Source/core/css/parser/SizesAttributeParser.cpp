@@ -11,40 +11,40 @@
 
 namespace blink {
 
-SizesAttributeParser::SizesAttributeParser(MediaValues* mediaValues,
+SizesAttributeParser::SizesAttributeParser(MediaValues* media_values,
                                            const String& attribute)
-    : m_mediaValues(mediaValues), m_length(0), m_lengthWasSet(false) {
-  DCHECK(m_mediaValues.get());
-  m_isValid = parse(CSSTokenizer(attribute).tokenRange());
+    : media_values_(media_values), length_(0), length_was_set_(false) {
+  DCHECK(media_values_.Get());
+  is_valid_ = Parse(CSSTokenizer(attribute).TokenRange());
 }
 
 float SizesAttributeParser::length() {
-  if (m_isValid)
-    return effectiveSize();
-  return effectiveSizeDefaultValue();
+  if (is_valid_)
+    return EffectiveSize();
+  return EffectiveSizeDefaultValue();
 }
 
-bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenRange range,
+bool SizesAttributeParser::CalculateLengthInPixels(CSSParserTokenRange range,
                                                    float& result) {
-  const CSSParserToken& startToken = range.peek();
-  CSSParserTokenType type = startToken.type();
-  if (type == DimensionToken) {
+  const CSSParserToken& start_token = range.Peek();
+  CSSParserTokenType type = start_token.GetType();
+  if (type == kDimensionToken) {
     double length;
-    if (!CSSPrimitiveValue::isLength(startToken.unitType()))
+    if (!CSSPrimitiveValue::IsLength(start_token.GetUnitType()))
       return false;
-    if ((m_mediaValues->computeLength(startToken.numericValue(),
-                                      startToken.unitType(), length)) &&
+    if ((media_values_->ComputeLength(start_token.NumericValue(),
+                                      start_token.GetUnitType(), length)) &&
         (length >= 0)) {
       result = clampTo<float>(length);
       return true;
     }
-  } else if (type == FunctionToken) {
-    SizesCalcParser calcParser(range, m_mediaValues);
-    if (!calcParser.isValid())
+  } else if (type == kFunctionToken) {
+    SizesCalcParser calc_parser(range, media_values_);
+    if (!calc_parser.IsValid())
       return false;
-    result = calcParser.result();
+    result = calc_parser.Result();
     return true;
-  } else if (type == NumberToken && !startToken.numericValue()) {
+  } else if (type == kNumberToken && !start_token.NumericValue()) {
     result = 0;
     return true;
   }
@@ -52,54 +52,54 @@ bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenRange range,
   return false;
 }
 
-bool SizesAttributeParser::mediaConditionMatches(
-    MediaQuerySet* mediaCondition) {
+bool SizesAttributeParser::MediaConditionMatches(
+    MediaQuerySet* media_condition) {
   // A Media Condition cannot have a media type other then screen.
-  MediaQueryEvaluator mediaQueryEvaluator(*m_mediaValues);
-  return mediaQueryEvaluator.eval(mediaCondition);
+  MediaQueryEvaluator media_query_evaluator(*media_values_);
+  return media_query_evaluator.Eval(media_condition);
 }
 
-bool SizesAttributeParser::parse(CSSParserTokenRange range) {
+bool SizesAttributeParser::Parse(CSSParserTokenRange range) {
   // Split on a comma token and parse the result tokens as (media-condition,
   // length) pairs
-  while (!range.atEnd()) {
-    const CSSParserToken* mediaConditionStart = &range.peek();
+  while (!range.AtEnd()) {
+    const CSSParserToken* media_condition_start = &range.Peek();
     // The length is the last component value before the comma which isn't
     // whitespace or a comment
-    const CSSParserToken* lengthTokenStart = &range.peek();
-    const CSSParserToken* lengthTokenEnd = &range.peek();
-    while (!range.atEnd() && range.peek().type() != CommaToken) {
-      lengthTokenStart = &range.peek();
-      range.consumeComponentValue();
-      lengthTokenEnd = &range.peek();
-      range.consumeWhitespace();
+    const CSSParserToken* length_token_start = &range.Peek();
+    const CSSParserToken* length_token_end = &range.Peek();
+    while (!range.AtEnd() && range.Peek().GetType() != kCommaToken) {
+      length_token_start = &range.Peek();
+      range.ConsumeComponentValue();
+      length_token_end = &range.Peek();
+      range.ConsumeWhitespace();
     }
-    range.consume();
+    range.Consume();
 
     float length;
-    if (!calculateLengthInPixels(
-            range.makeSubRange(lengthTokenStart, lengthTokenEnd), length))
+    if (!CalculateLengthInPixels(
+            range.MakeSubRange(length_token_start, length_token_end), length))
       continue;
-    MediaQuerySet* mediaCondition = MediaQueryParser::parseMediaCondition(
-        range.makeSubRange(mediaConditionStart, lengthTokenStart));
-    if (!mediaCondition || !mediaConditionMatches(mediaCondition))
+    MediaQuerySet* media_condition = MediaQueryParser::ParseMediaCondition(
+        range.MakeSubRange(media_condition_start, length_token_start));
+    if (!media_condition || !MediaConditionMatches(media_condition))
       continue;
-    m_length = length;
-    m_lengthWasSet = true;
+    length_ = length;
+    length_was_set_ = true;
     return true;
   }
   return false;
 }
 
-float SizesAttributeParser::effectiveSize() {
-  if (m_lengthWasSet)
-    return m_length;
-  return effectiveSizeDefaultValue();
+float SizesAttributeParser::EffectiveSize() {
+  if (length_was_set_)
+    return length_;
+  return EffectiveSizeDefaultValue();
 }
 
-float SizesAttributeParser::effectiveSizeDefaultValue() {
+float SizesAttributeParser::EffectiveSizeDefaultValue() {
   // Returning the equivalent of "100vw"
-  return clampTo<float>(m_mediaValues->viewportWidth());
+  return clampTo<float>(media_values_->ViewportWidth());
 }
 
 }  // namespace blink

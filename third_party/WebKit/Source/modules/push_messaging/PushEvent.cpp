@@ -11,27 +11,27 @@ namespace blink {
 PushEvent::PushEvent(const AtomicString& type,
                      PushMessageData* data,
                      WaitUntilObserver* observer)
-    : ExtendableEvent(type, ExtendableEventInit(), observer), m_data(data) {}
+    : ExtendableEvent(type, ExtendableEventInit(), observer), data_(data) {}
 
 PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
     : ExtendableEvent(type, initializer) {
   if (initializer.hasData())
-    m_data = PushMessageData::create(initializer.data());
+    data_ = PushMessageData::Create(initializer.data());
 }
 
 PushEvent::~PushEvent() {}
 
-const AtomicString& PushEvent::interfaceName() const {
+const AtomicString& PushEvent::InterfaceName() const {
   return EventNames::PushEvent;
 }
 
 PushMessageData* PushEvent::data() {
-  return m_data.get();
+  return data_.Get();
 }
 
 DEFINE_TRACE(PushEvent) {
-  visitor->trace(m_data);
-  ExtendableEvent::trace(visitor);
+  visitor->Trace(data_);
+  ExtendableEvent::Trace(visitor);
 }
 
 }  // namespace blink

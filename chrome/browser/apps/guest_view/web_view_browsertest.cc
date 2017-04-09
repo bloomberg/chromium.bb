@@ -295,10 +295,10 @@ class LeftMouseClick {
  public:
   explicit LeftMouseClick(content::WebContents* web_contents)
       : web_contents_(web_contents),
-        mouse_event_(blink::WebInputEvent::MouseDown,
-                     blink::WebInputEvent::NoModifiers,
-                     blink::WebInputEvent::TimeStampForTesting) {
-    mouse_event_.button = blink::WebMouseEvent::Button::Left;
+        mouse_event_(blink::WebInputEvent::kMouseDown,
+                     blink::WebInputEvent::kNoModifiers,
+                     blink::WebInputEvent::kTimeStampForTesting) {
+    mouse_event_.button = blink::WebMouseEvent::Button::kLeft;
   }
 
   ~LeftMouseClick() {
@@ -308,12 +308,12 @@ class LeftMouseClick {
   void Click(const gfx::Point& point, int duration_ms) {
     DCHECK(click_completed_);
     click_completed_ = false;
-    mouse_event_.setType(blink::WebInputEvent::MouseDown);
-    mouse_event_.setPositionInWidget(point.x(), point.y());
+    mouse_event_.SetType(blink::WebInputEvent::kMouseDown);
+    mouse_event_.SetPositionInWidget(point.x(), point.y());
     const gfx::Rect offset = web_contents_->GetContainerBounds();
-    mouse_event_.setPositionInScreen(point.x() + offset.x(),
+    mouse_event_.SetPositionInScreen(point.x() + offset.x(),
                                      point.y() + offset.y());
-    mouse_event_.clickCount = 1;
+    mouse_event_.click_count = 1;
     web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event_);
 
@@ -334,7 +334,7 @@ class LeftMouseClick {
 
  private:
   void SendMouseUp() {
-    mouse_event_.setType(blink::WebInputEvent::MouseUp);
+    mouse_event_.SetType(blink::WebInputEvent::kMouseUp);
     web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event_);
     click_completed_ = true;
@@ -776,14 +776,14 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   }
 
   void OpenContextMenu(content::WebContents* web_contents) {
-    blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                     blink::WebInputEvent::NoModifiers,
-                                     blink::WebInputEvent::TimeStampForTesting);
-    mouse_event.button = blink::WebMouseEvent::Button::Right;
-    mouse_event.setPositionInWidget(1, 1);
+    blink::WebMouseEvent mouse_event(
+        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    mouse_event.button = blink::WebMouseEvent::Button::kRight;
+    mouse_event.SetPositionInWidget(1, 1);
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event);
-    mouse_event.setType(blink::WebInputEvent::MouseUp);
+    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event);
   }
@@ -3484,10 +3484,10 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
   // Send an accessibility touch event to the main WebContents, but
   // positioned on top of the button inside the inner WebView.
   blink::WebMouseEvent accessibility_touch_event(
-      blink::WebInputEvent::MouseMove,
-      blink::WebInputEvent::IsTouchAccessibility,
-      blink::WebInputEvent::TimeStampForTesting);
-  accessibility_touch_event.setPositionInWidget(95, 55);
+      blink::WebInputEvent::kMouseMove,
+      blink::WebInputEvent::kIsTouchAccessibility,
+      blink::WebInputEvent::kTimeStampForTesting);
+  accessibility_touch_event.SetPositionInWidget(95, 55);
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       accessibility_touch_event);
 
@@ -3609,7 +3609,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
     ScrollWaiter waiter(embedder_host_view);
 
     content::SimulateMouseEvent(embedder_contents,
-                                blink::WebInputEvent::MouseMove,
+                                blink::WebInputEvent::kMouseMove,
                                 embedder_scroll_location);
     content::SimulateMouseWheelEvent(embedder_contents,
                                      embedder_scroll_location,
@@ -3634,7 +3634,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
     ScrollWaiter waiter(embedder_host_view);
 
     content::SimulateMouseEvent(embedder_contents,
-                                blink::WebInputEvent::MouseMove,
+                                blink::WebInputEvent::kMouseMove,
                                 guest_scroll_location);
     content::SimulateMouseWheelEvent(embedder_contents, guest_scroll_location,
                                      gfx::Vector2d(0, scroll_magnitude));

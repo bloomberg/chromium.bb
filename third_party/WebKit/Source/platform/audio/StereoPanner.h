@@ -21,25 +21,25 @@ class PLATFORM_EXPORT StereoPanner {
   WTF_MAKE_NONCOPYABLE(StereoPanner);
 
  public:
-  static std::unique_ptr<StereoPanner> create(float sampleRate);
+  static std::unique_ptr<StereoPanner> Create(float sample_rate);
   ~StereoPanner(){};
 
-  void panWithSampleAccurateValues(const AudioBus* inputBus,
-                                   AudioBus* outputBus,
-                                   const float* panValues,
-                                   size_t framesToProcess);
-  void panToTargetValue(const AudioBus* inputBus,
-                        AudioBus* outputBus,
-                        float panValue,
-                        size_t framesToProcess);
+  void PanWithSampleAccurateValues(const AudioBus* input_bus,
+                                   AudioBus* output_bus,
+                                   const float* pan_values,
+                                   size_t frames_to_process);
+  void PanToTargetValue(const AudioBus* input_bus,
+                        AudioBus* output_bus,
+                        float pan_value,
+                        size_t frames_to_process);
 
  private:
-  explicit StereoPanner(float sampleRate);
+  explicit StereoPanner(float sample_rate);
 
-  bool m_isFirstRender;
-  double m_smoothingConstant;
+  bool is_first_render_;
+  double smoothing_constant_;
 
-  double m_pan;
+  double pan_;
 };
 
 }  // namespace blink

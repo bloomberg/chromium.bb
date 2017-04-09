@@ -67,36 +67,36 @@ class DummyPageHolder {
   USING_FAST_MALLOC(DummyPageHolder);
 
  public:
-  static std::unique_ptr<DummyPageHolder> create(
-      const IntSize& initialViewSize = IntSize(),
+  static std::unique_ptr<DummyPageHolder> Create(
+      const IntSize& initial_view_size = IntSize(),
       Page::PageClients* = 0,
       LocalFrameClient* = nullptr,
       FrameSettingOverrideFunction = nullptr,
       InterfaceProvider* = nullptr);
   ~DummyPageHolder();
 
-  Page& page() const;
-  LocalFrame& frame() const;
-  FrameView& frameView() const;
-  Document& document() const;
+  Page& GetPage() const;
+  LocalFrame& GetFrame() const;
+  FrameView& GetFrameView() const;
+  Document& GetDocument() const;
 
  private:
-  DummyPageHolder(const IntSize& initialViewSize,
+  DummyPageHolder(const IntSize& initial_view_size,
                   Page::PageClients*,
                   LocalFrameClient*,
-                  FrameSettingOverrideFunction settingOverrider,
+                  FrameSettingOverrideFunction setting_overrider,
                   InterfaceProvider* = nullptr);
 
-  Persistent<Page> m_page;
+  Persistent<Page> page_;
 
   // The LocalFrame is accessed from worker threads by unit tests
   // (WorkerThreadableLoaderTest), hence we need to allow cross-thread
   // usage of |m_frame|.
   //
   // TODO: rework the tests to not require cross-thread access.
-  CrossThreadPersistent<LocalFrame> m_frame;
+  CrossThreadPersistent<LocalFrame> frame_;
 
-  Persistent<LocalFrameClient> m_localFrameClient;
+  Persistent<LocalFrameClient> local_frame_client_;
 };
 
 }  // namespace blink

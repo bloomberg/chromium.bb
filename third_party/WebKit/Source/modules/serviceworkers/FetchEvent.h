@@ -36,15 +36,15 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   using PreloadResponseProperty = ScriptPromiseProperty<Member<FetchEvent>,
                                                         Member<Response>,
                                                         Member<DOMException>>;
-  static FetchEvent* create(ScriptState*,
+  static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
                             const FetchEventInit&);
-  static FetchEvent* create(ScriptState*,
+  static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
                             const FetchEventInit&,
                             FetchRespondWithObserver*,
                             WaitUntilObserver*,
-                            bool navigationPreloadSent);
+                            bool navigation_preload_sent);
 
   Request* request() const;
   String clientId() const;
@@ -53,13 +53,13 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
   ScriptPromise preloadResponse(ScriptState*);
 
-  void onNavigationPreloadResponse(ScriptState*,
+  void OnNavigationPreloadResponse(ScriptState*,
                                    std::unique_ptr<WebURLResponse>,
                                    std::unique_ptr<WebDataConsumerHandle>);
-  void onNavigationPreloadError(ScriptState*,
+  void OnNavigationPreloadError(ScriptState*,
                                 std::unique_ptr<WebServiceWorkerError>);
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -69,14 +69,14 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
              const FetchEventInit&,
              FetchRespondWithObserver*,
              WaitUntilObserver*,
-             bool navigationPreloadSent);
+             bool navigation_preload_sent);
 
  private:
-  Member<FetchRespondWithObserver> m_observer;
-  Member<Request> m_request;
-  Member<PreloadResponseProperty> m_preloadResponseProperty;
-  String m_clientId;
-  bool m_isReload;
+  Member<FetchRespondWithObserver> observer_;
+  Member<Request> request_;
+  Member<PreloadResponseProperty> preload_response_property_;
+  String client_id_;
+  bool is_reload_;
 };
 
 }  // namespace blink

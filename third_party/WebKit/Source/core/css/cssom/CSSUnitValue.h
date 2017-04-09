@@ -15,29 +15,29 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSPrimitiveValue::UnitType unitFromName(const String& name);
-  static CSSUnitValue* create(double value,
+  static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
+  static CSSUnitValue* Create(double value,
                               const String& unit,
                               ExceptionState&);
-  static CSSUnitValue* fromCSSValue(const CSSPrimitiveValue&);
+  static CSSUnitValue* FromCSSValue(const CSSPrimitiveValue&);
 
-  void setValue(double newValue) { m_value = newValue; }
-  double value() const { return m_value; }
-  void setUnit(const String& newUnit, ExceptionState&);
+  void setValue(double new_value) { value_ = new_value; }
+  double value() const { return value_; }
+  void setUnit(const String& new_unit, ExceptionState&);
   String unit() const;
 
   String cssType() const;
 
-  StyleValueType type() const override { return StyleValueType::UnitType; }
+  StyleValueType GetType() const override { return StyleValueType::kUnitType; }
 
-  const CSSValue* toCSSValue() const override;
+  const CSSValue* ToCSSValue() const override;
 
  private:
   CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
-      : CSSNumericValue(), m_value(value), m_unit(unit) {}
+      : CSSNumericValue(), value_(value), unit_(unit) {}
 
-  double m_value;
-  CSSPrimitiveValue::UnitType m_unit;
+  double value_;
+  CSSPrimitiveValue::UnitType unit_;
 };
 
 }  // namespace blink

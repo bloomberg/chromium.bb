@@ -35,45 +35,45 @@
 namespace blink {
 
 WebThreadSafeData::WebThreadSafeData(const char* data, size_t length) {
-  m_private = RawData::create();
-  m_private->mutableData()->append(data, length);
+  private_ = RawData::Create();
+  private_->MutableData()->Append(data, length);
 }
 
-void WebThreadSafeData::reset() {
-  m_private.reset();
+void WebThreadSafeData::Reset() {
+  private_.Reset();
 }
 
-void WebThreadSafeData::assign(const WebThreadSafeData& other) {
-  m_private = other.m_private;
+void WebThreadSafeData::Assign(const WebThreadSafeData& other) {
+  private_ = other.private_;
 }
 
 size_t WebThreadSafeData::size() const {
-  if (m_private.isNull())
+  if (private_.IsNull())
     return 0;
-  return m_private->length();
+  return private_->length();
 }
 
-const char* WebThreadSafeData::data() const {
-  if (m_private.isNull())
+const char* WebThreadSafeData::Data() const {
+  if (private_.IsNull())
     return 0;
-  return m_private->data();
+  return private_->Data();
 }
 
 WebThreadSafeData::WebThreadSafeData(PassRefPtr<RawData> data)
-    : m_private(data) {}
+    : private_(data) {}
 
 WebThreadSafeData::WebThreadSafeData(const WebThreadSafeData& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
 WebThreadSafeData& WebThreadSafeData::operator=(
     const WebThreadSafeData& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
   return *this;
 }
 
 WebThreadSafeData& WebThreadSafeData::operator=(PassRefPtr<RawData> data) {
-  m_private = data;
+  private_ = data;
   return *this;
 }
 

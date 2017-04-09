@@ -16,48 +16,48 @@ class StyleInvalidatorTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  Document& document() { return m_dummyPageHolder->document(); }
-  StyleEngine& styleEngine() { return document().styleEngine(); }
-  StyleInvalidator& styleInvalidator() {
-    return document().styleEngine().styleInvalidator();
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
+  StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
+  StyleInvalidator& GetStyleInvalidator() {
+    return GetDocument().GetStyleEngine().GetStyleInvalidator();
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void StyleInvalidatorTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(StyleInvalidatorTest, ScheduleOnDocumentNode) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<div id='d'></div><i id='i'></i><span></span>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned beforeCount = styleEngine().styleForElementCount();
+  unsigned before_count = GetStyleEngine().StyleForElementCount();
 
-  RefPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
-  set->addTagName("div");
-  set->addTagName("span");
+  RefPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::Create();
+  set->AddTagName("div");
+  set->AddTagName("span");
 
   InvalidationLists lists;
   lists.descendants.push_back(set);
-  styleInvalidator().scheduleInvalidationSetsForNode(lists, document());
+  GetStyleInvalidator().ScheduleInvalidationSetsForNode(lists, GetDocument());
 
-  EXPECT_TRUE(document().needsStyleInvalidation());
-  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+  EXPECT_TRUE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
 
-  styleInvalidator().invalidate(document());
+  GetStyleInvalidator().Invalidate(GetDocument());
 
-  EXPECT_FALSE(document().needsStyleInvalidation());
-  EXPECT_FALSE(document().childNeedsStyleInvalidation());
-  EXPECT_FALSE(document().needsStyleRecalc());
-  EXPECT_TRUE(document().childNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
 
-  document().view()->updateAllLifecyclePhases();
-  unsigned afterCount = styleEngine().styleForElementCount();
-  EXPECT_EQ(2u, afterCount - beforeCount);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  unsigned after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(2u, after_count - before_count);
 }
 
 }  // namespace blink

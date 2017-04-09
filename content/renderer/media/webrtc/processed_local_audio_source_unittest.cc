@@ -81,18 +81,18 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   ~ProcessedLocalAudioSourceTest() override {}
 
   void SetUp() override {
-    blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_label"),
-                                   blink::WebMediaStreamSource::TypeAudio,
-                                   blink::WebString::fromUTF8("audio_track"),
+    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_label"),
+                                   blink::WebMediaStreamSource::kTypeAudio,
+                                   blink::WebString::FromUTF8("audio_track"),
                                    false /* remote */);
-    blink_audio_track_.initialize(blink_audio_source_.id(),
+    blink_audio_track_.Initialize(blink_audio_source_.Id(),
                                   blink_audio_source_);
   }
 
   void TearDown() override {
-    blink_audio_track_.reset();
-    blink_audio_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_audio_track_.Reset();
+    blink_audio_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void CreateProcessedLocalAudioSource(
@@ -107,7 +107,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
                    base::Unretained(this)),
         &mock_dependency_factory_);
     source->SetAllowInvalidRenderFrameIdForTesting(true);
-    blink_audio_source_.setExtraData(source);  // Takes ownership.
+    blink_audio_source_.SetExtraData(source);  // Takes ownership.
   }
 
   void CheckSourceFormatMatches(const media::AudioParameters& params) {
@@ -212,7 +212,7 @@ TEST_F(ProcessedLocalAudioSourceTest, FailToStartWithWrongConstraints) {
   MockConstraintFactory constraint_factory;
   const std::string dummy_constraint = "dummy";
   // Set a non-audio constraint.
-  constraint_factory.basic().width.setExact(240);
+  constraint_factory.basic().width.SetExact(240);
 
   CreateProcessedLocalAudioSource(
       constraint_factory.CreateWebMediaConstraints());

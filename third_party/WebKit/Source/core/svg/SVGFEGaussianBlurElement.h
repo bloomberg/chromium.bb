@@ -34,22 +34,22 @@ class SVGFEGaussianBlurElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
 
-  void setStdDeviation(float stdDeviationX, float stdDeviationY);
+  void setStdDeviation(float std_deviation_x, float std_deviation_y);
 
-  SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
-  SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedNumber* stdDeviationX() { return std_deviation_->FirstNumber(); }
+  SVGAnimatedNumber* stdDeviationY() { return std_deviation_->SecondNumber(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEGaussianBlurElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedNumberOptionalNumber> std_deviation_;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

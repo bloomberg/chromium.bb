@@ -36,35 +36,35 @@ class CORE_EXPORT CustomElementDescriptor final {
   CustomElementDescriptor() {}
 
   CustomElementDescriptor(const AtomicString& name,
-                          const AtomicString& localName)
-      : m_name(name), m_localName(localName) {}
+                          const AtomicString& local_name)
+      : name_(name), local_name_(local_name) {}
 
   explicit CustomElementDescriptor(WTF::HashTableDeletedValueType value)
-      : m_name(value) {}
+      : name_(value) {}
 
-  bool isHashTableDeletedValue() const {
-    return m_name.isHashTableDeletedValue();
+  bool IsHashTableDeletedValue() const {
+    return name_.IsHashTableDeletedValue();
   }
 
   bool operator==(const CustomElementDescriptor& other) const {
-    return m_name == other.m_name && m_localName == other.m_localName;
+    return name_ == other.name_ && local_name_ == other.local_name_;
   }
 
-  const AtomicString& name() const { return m_name; }
-  const AtomicString& localName() const { return m_localName; }
+  const AtomicString& GetName() const { return name_; }
+  const AtomicString& LocalName() const { return local_name_; }
 
-  bool matches(const Element& element) const {
-    return localName() == element.localName() &&
-           (isAutonomous() ||
-            name() == element.getAttribute(HTMLNames::isAttr)) &&
+  bool Matches(const Element& element) const {
+    return LocalName() == element.localName() &&
+           (IsAutonomous() ||
+            GetName() == element.getAttribute(HTMLNames::isAttr)) &&
            element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
   }
 
-  bool isAutonomous() const { return m_name == m_localName; }
+  bool IsAutonomous() const { return name_ == local_name_; }
 
  private:
-  AtomicString m_name;
-  AtomicString m_localName;
+  AtomicString name_;
+  AtomicString local_name_;
 };
 
 }  // namespace blink

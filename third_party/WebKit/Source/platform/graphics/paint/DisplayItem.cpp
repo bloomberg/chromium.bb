@@ -11,7 +11,7 @@ struct SameSizeAsDisplayItem {
   void* pointer;
   int i;
 #ifndef NDEBUG
-  WTF::String m_debugString;
+  WTF::String debug_string_;
 #endif
 };
 static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),
@@ -19,9 +19,9 @@ static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),
 
 #ifndef NDEBUG
 
-static WTF::String paintPhaseAsDebugString(int paintPhase) {
+static WTF::String PaintPhaseAsDebugString(int paint_phase) {
   // Must be kept in sync with PaintPhase.
-  switch (paintPhase) {
+  switch (paint_phase) {
     case 0:
       return "PaintPhaseBlockBackground";
     case 1:
@@ -55,7 +55,7 @@ static WTF::String paintPhaseAsDebugString(int paintPhase) {
 #define PAINT_PHASE_BASED_DEBUG_STRINGS(Category)          \
   if (type >= DisplayItem::k##Category##PaintPhaseFirst && \
       type <= DisplayItem::k##Category##PaintPhaseLast)    \
-    return #Category + paintPhaseAsDebugString(            \
+    return #Category + PaintPhaseAsDebugString(            \
                            type - DisplayItem::k##Category##PaintPhaseFirst);
 
 #define DEBUG_STRING_CASE(DisplayItemName) \
@@ -67,22 +67,22 @@ static WTF::String paintPhaseAsDebugString(int paintPhase) {
     ASSERT_NOT_REACHED(); \
     return "Unknown"
 
-static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
+static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
   if (type >= DisplayItem::kTableCollapsedBorderUnalignedBase) {
     if (type <= DisplayItem::kTableCollapsedBorderBase)
       return "TableCollapsedBorderAlignment";
     if (type <= DisplayItem::kTableCollapsedBorderLast) {
       StringBuilder sb;
-      sb.append("TableCollapsedBorder");
-      if (type & DisplayItem::TableCollapsedBorderTop)
-        sb.append("Top");
-      if (type & DisplayItem::TableCollapsedBorderRight)
-        sb.append("Right");
-      if (type & DisplayItem::TableCollapsedBorderBottom)
-        sb.append("Bottom");
-      if (type & DisplayItem::TableCollapsedBorderLeft)
-        sb.append("Left");
-      return sb.toString();
+      sb.Append("TableCollapsedBorder");
+      if (type & DisplayItem::kTableCollapsedBorderTop)
+        sb.Append("Top");
+      if (type & DisplayItem::kTableCollapsedBorderRight)
+        sb.Append("Right");
+      if (type & DisplayItem::kTableCollapsedBorderBottom)
+        sb.Append("Bottom");
+      if (type & DisplayItem::kTableCollapsedBorderLeft)
+        sb.Append("Left");
+      return sb.ToString();
     }
   }
   switch (type) {
@@ -129,12 +129,12 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
   }
 }
 
-static WTF::String drawingTypeAsDebugString(DisplayItem::Type type) {
+static WTF::String DrawingTypeAsDebugString(DisplayItem::Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(Drawing);
-  return "Drawing" + specialDrawingTypeAsDebugString(type);
+  return "Drawing" + SpecialDrawingTypeAsDebugString(type);
 }
 
-static String foreignLayerTypeAsDebugString(DisplayItem::Type type) {
+static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
   switch (type) {
     DEBUG_STRING_CASE(ForeignLayerCanvas);
     DEBUG_STRING_CASE(ForeignLayerPlugin);
@@ -143,7 +143,7 @@ static String foreignLayerTypeAsDebugString(DisplayItem::Type type) {
   }
 }
 
-static WTF::String clipTypeAsDebugString(DisplayItem::Type type) {
+static WTF::String ClipTypeAsDebugString(DisplayItem::Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(ClipBox);
   PAINT_PHASE_BASED_DEBUG_STRINGS(ClipColumnBounds);
   PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
@@ -166,7 +166,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type) {
   }
 }
 
-static String scrollTypeAsDebugString(DisplayItem::Type type) {
+static String ScrollTypeAsDebugString(DisplayItem::Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);
   switch (type) {
     DEBUG_STRING_CASE(ScrollOverflowControls);
@@ -174,38 +174,38 @@ static String scrollTypeAsDebugString(DisplayItem::Type type) {
   }
 }
 
-static String transform3DTypeAsDebugString(DisplayItem::Type type) {
+static String Transform3DTypeAsDebugString(DisplayItem::Type type) {
   switch (type) {
     DEBUG_STRING_CASE(Transform3DElementTransform);
     DEFAULT_CASE;
   }
 }
 
-WTF::String DisplayItem::typeAsDebugString(Type type) {
-  if (isDrawingType(type))
-    return drawingTypeAsDebugString(type);
+WTF::String DisplayItem::TypeAsDebugString(Type type) {
+  if (IsDrawingType(type))
+    return DrawingTypeAsDebugString(type);
 
-  if (isForeignLayerType(type))
-    return foreignLayerTypeAsDebugString(type);
+  if (IsForeignLayerType(type))
+    return ForeignLayerTypeAsDebugString(type);
 
-  if (isClipType(type))
-    return clipTypeAsDebugString(type);
-  if (isEndClipType(type))
-    return "End" + clipTypeAsDebugString(endClipTypeToClipType(type));
+  if (IsClipType(type))
+    return ClipTypeAsDebugString(type);
+  if (IsEndClipType(type))
+    return "End" + ClipTypeAsDebugString(endClipTypeToClipType(type));
 
   PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);
-  if (isEndFloatClipType(type))
-    return "End" + typeAsDebugString(endFloatClipTypeToFloatClipType(type));
+  if (IsEndFloatClipType(type))
+    return "End" + TypeAsDebugString(endFloatClipTypeToFloatClipType(type));
 
-  if (isScrollType(type))
-    return scrollTypeAsDebugString(type);
-  if (isEndScrollType(type))
-    return "End" + scrollTypeAsDebugString(endScrollTypeToScrollType(type));
+  if (IsScrollType(type))
+    return ScrollTypeAsDebugString(type);
+  if (IsEndScrollType(type))
+    return "End" + ScrollTypeAsDebugString(endScrollTypeToScrollType(type));
 
-  if (isTransform3DType(type))
-    return transform3DTypeAsDebugString(type);
-  if (isEndTransform3DType(type))
-    return "End" + transform3DTypeAsDebugString(
+  if (IsTransform3DType(type))
+    return Transform3DTypeAsDebugString(type);
+  if (IsEndTransform3DType(type))
+    return "End" + Transform3DTypeAsDebugString(
                        endTransform3DTypeToTransform3DType(type));
 
   switch (type) {
@@ -222,33 +222,33 @@ WTF::String DisplayItem::typeAsDebugString(Type type) {
   }
 }
 
-WTF::String DisplayItem::asDebugString() const {
-  WTF::StringBuilder stringBuilder;
-  stringBuilder.append('{');
-  dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append('}');
-  return stringBuilder.toString();
+WTF::String DisplayItem::AsDebugString() const {
+  WTF::StringBuilder string_builder;
+  string_builder.Append('{');
+  DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append('}');
+  return string_builder.ToString();
 }
 
-void DisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  if (!hasValidClient()) {
-    stringBuilder.append("validClient: false, originalDebugString: ");
+void DisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  if (!HasValidClient()) {
+    string_builder.Append("validClient: false, originalDebugString: ");
     // This is the original debug string which is in json format.
-    stringBuilder.append(clientDebugString());
+    string_builder.Append(ClientDebugString());
     return;
   }
 
-  stringBuilder.append(String::format("client: \"%p", &client()));
-  if (!clientDebugString().isEmpty()) {
-    stringBuilder.append(' ');
-    stringBuilder.append(clientDebugString());
+  string_builder.Append(String::Format("client: \"%p", &Client()));
+  if (!ClientDebugString().IsEmpty()) {
+    string_builder.Append(' ');
+    string_builder.Append(ClientDebugString());
   }
-  stringBuilder.append("\", type: \"");
-  stringBuilder.append(typeAsDebugString(getType()));
-  stringBuilder.append('"');
-  if (m_skippedCache)
-    stringBuilder.append(", skippedCache: true");
+  string_builder.Append("\", type: \"");
+  string_builder.Append(TypeAsDebugString(GetType()));
+  string_builder.Append('"');
+  if (skipped_cache_)
+    string_builder.Append(", skippedCache: true");
 }
 
 #endif

@@ -18,91 +18,93 @@ class WebURL;
 class WebContentSettingsClient {
  public:
   // Controls whether access to Web Databases is allowed for this frame.
-  virtual bool allowDatabase(const WebString& name,
-                             const WebString& displayName,
-                             unsigned estimatedSize) {
+  virtual bool AllowDatabase(const WebString& name,
+                             const WebString& display_name,
+                             unsigned estimated_size) {
     return true;
   }
 
   // Controls whether access to File System is allowed for this frame.
-  virtual bool requestFileSystemAccessSync() { return true; }
+  virtual bool RequestFileSystemAccessSync() { return true; }
 
   // Controls whether access to File System is allowed for this frame.
-  virtual void requestFileSystemAccessAsync(
+  virtual void RequestFileSystemAccessAsync(
       const WebContentSettingCallbacks& callbacks) {
-    WebContentSettingCallbacks permissionCallbacks(callbacks);
-    permissionCallbacks.doAllow();
+    WebContentSettingCallbacks permission_callbacks(callbacks);
+    permission_callbacks.DoAllow();
   }
 
   // Controls whether images are allowed for this frame.
-  virtual bool allowImage(bool enabledPerSettings, const WebURL& imageURL) {
-    return enabledPerSettings;
+  virtual bool AllowImage(bool enabled_per_settings, const WebURL& image_url) {
+    return enabled_per_settings;
   }
 
   // Controls whether access to Indexed DB are allowed for this frame.
-  virtual bool allowIndexedDB(const WebString& name, const WebSecurityOrigin&) {
+  virtual bool AllowIndexedDB(const WebString& name, const WebSecurityOrigin&) {
     return true;
   }
 
   // Controls whether plugins are allowed for this frame.
-  virtual bool allowPlugins(bool enabledPerSettings) {
-    return enabledPerSettings;
+  virtual bool AllowPlugins(bool enabled_per_settings) {
+    return enabled_per_settings;
   }
 
   // Controls whether scripts are allowed to execute for this frame.
-  virtual bool allowScript(bool enabledPerSettings) {
-    return enabledPerSettings;
+  virtual bool AllowScript(bool enabled_per_settings) {
+    return enabled_per_settings;
   }
 
   // Controls whether scripts loaded from the given URL are allowed to execute
   // for this frame.
-  virtual bool allowScriptFromSource(bool enabledPerSettings,
-                                     const WebURL& scriptURL) {
-    return enabledPerSettings;
+  virtual bool AllowScriptFromSource(bool enabled_per_settings,
+                                     const WebURL& script_url) {
+    return enabled_per_settings;
   }
 
   // Controls whether insecure scripts are allowed to execute for this frame.
-  virtual bool allowRunningInsecureContent(bool enabledPerSettings,
+  virtual bool AllowRunningInsecureContent(bool enabled_per_settings,
                                            const WebSecurityOrigin&,
                                            const WebURL&) {
-    return enabledPerSettings;
+    return enabled_per_settings;
   }
 
   // Controls whether HTML5 Web Storage is allowed for this frame.
   // If local is true, then this is for local storage, otherwise it's for
   // session storage.
-  virtual bool allowStorage(bool local) { return true; }
+  virtual bool AllowStorage(bool local) { return true; }
 
   // Controls whether access to read the clipboard is allowed for this frame.
-  virtual bool allowReadFromClipboard(bool defaultValue) {
-    return defaultValue;
+  virtual bool AllowReadFromClipboard(bool default_value) {
+    return default_value;
   }
 
   // Controls whether access to write the clipboard is allowed for this frame.
-  virtual bool allowWriteToClipboard(bool defaultValue) { return defaultValue; }
+  virtual bool AllowWriteToClipboard(bool default_value) {
+    return default_value;
+  }
 
   // Controls whether enabling Web Components API for this frame.
-  virtual bool allowWebComponents(bool defaultValue) { return defaultValue; }
+  virtual bool AllowWebComponents(bool default_value) { return default_value; }
 
   // Controls whether to enable MutationEvents for this frame.
   // The common use case of this method is actually to selectively disable
   // MutationEvents, but it's been named for consistency with the rest of the
   // interface.
-  virtual bool allowMutationEvents(bool defaultValue) { return defaultValue; }
+  virtual bool AllowMutationEvents(bool default_value) { return default_value; }
 
   // Controls whether autoplay is allowed for this frame.
-  virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
+  virtual bool AllowAutoplay(bool default_value) { return default_value; }
 
   // Reports that passive mixed content was found at the provided URL.
-  virtual void passiveInsecureContentFound(const WebURL&) {}
+  virtual void PassiveInsecureContentFound(const WebURL&) {}
 
   // Notifies the client that the frame would have instantiated a plugin if
   // plugins were enabled.
-  virtual void didNotAllowPlugins() {}
+  virtual void DidNotAllowPlugins() {}
 
   // Notifies the client that the frame would have executed script if script
   // were enabled.
-  virtual void didNotAllowScript() {}
+  virtual void DidNotAllowScript() {}
 
   virtual ~WebContentSettingsClient() {}
 };

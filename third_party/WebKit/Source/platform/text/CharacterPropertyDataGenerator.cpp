@@ -26,7 +26,7 @@ static void generate(FILE*) {}
 const UChar32 kMaxCodepoint = 0x10FFFF;
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
 
-static void setRanges(CharacterProperty* values,
+static void SetRanges(CharacterProperty* values,
                       const UChar32* ranges,
                       size_t length,
                       CharacterProperty value) {
@@ -39,7 +39,7 @@ static void setRanges(CharacterProperty* values,
   }
 }
 
-static void setValues(CharacterProperty* values,
+static void SetValues(CharacterProperty* values,
                       const UChar32* begin,
                       size_t length,
                       CharacterProperty value) {
@@ -50,12 +50,12 @@ static void setValues(CharacterProperty* values,
   }
 }
 
-static void generateUTrieSerialized(FILE* fp, int32_t size, uint8_t* array) {
+static void GenerateUTrieSerialized(FILE* fp, int32_t size, uint8_t* array) {
   fprintf(fp,
           "#include <cstdint>\n\n"
           "namespace blink {\n\n"
-          "extern const int32_t serializedCharacterDataSize = %d;\n"
-          "extern const uint8_t serializedCharacterData[] = {",
+          "extern const int32_t kSerializedCharacterDataSize = %d;\n"
+          "extern const uint8_t kSerializedCharacterData[] = {",
           size);
   for (int32_t i = 0; i < size;) {
     fprintf(fp, "\n   ");
@@ -67,21 +67,21 @@ static void generateUTrieSerialized(FILE* fp, int32_t size, uint8_t* array) {
           "} // namespace blink\n");
 }
 
-static void generate(FILE* fp) {
+static void Generate(FILE* fp) {
   // Create a value array of all possible code points.
-  const UChar32 size = kMaxCodepoint + 1;
-  std::unique_ptr<CharacterProperty[]> values(new CharacterProperty[size]);
-  memset(values.get(), 0, sizeof(CharacterProperty) * size);
+  const UChar32 kSize = kMaxCodepoint + 1;
+  std::unique_ptr<CharacterProperty[]> values(new CharacterProperty[kSize]);
+  memset(values.get(), 0, sizeof(CharacterProperty) * kSize);
 
 #define SET(name)                                                   \
-  setRanges(values.get(), name##Ranges, ARRAY_LENGTH(name##Ranges), \
+  SetRanges(values.get(), name##Ranges, ARRAY_LENGTH(name##Ranges), \
             CharacterProperty::name);                               \
-  setValues(values.get(), name##Array, ARRAY_LENGTH(name##Array),   \
+  SetValues(values.get(), name##Array, ARRAY_LENGTH(name##Array),   \
             CharacterProperty::name);
 
-  SET(isCJKIdeographOrSymbol);
-  SET(isUprightInMixedVertical);
-  SET(isPotentialCustomElementNameChar);
+  SET(kIsCJKIdeographOrSymbol);
+  SET(kIsUprightInMixedVertical);
+  SET(kIsPotentialCustomElementNameChar);
 
   // Create a trie from the value array.
   UErrorCode error = U_ZERO_ERROR;
@@ -90,14 +90,14 @@ static void generate(FILE* fp) {
   UChar32 start = 0;
   CharacterProperty value = values[0];
   for (UChar32 c = 1;; c++) {
-    if (c < size && values[c] == value)
+    if (c < kSize && values[c] == value)
       continue;
     if (static_cast<uint32_t>(value)) {
       utrie2_setRange32(trie, start, c - 1, static_cast<uint32_t>(value), TRUE,
                         &error);
       assert(error == U_ZERO_ERROR);
     }
-    if (c >= size)
+    if (c >= kSize)
       break;
     start = c;
     value = values[start];
@@ -106,14 +106,14 @@ static void generate(FILE* fp) {
   // Freeze and serialize the trie to a byte array.
   utrie2_freeze(trie, UTrie2ValueBits::UTRIE2_16_VALUE_BITS, &error);
   assert(error == U_ZERO_ERROR);
-  int32_t serializedSize = utrie2_serialize(trie, nullptr, 0, &error);
+  int32_t serialized_size = utrie2_serialize(trie, nullptr, 0, &error);
   error = U_ZERO_ERROR;
-  std::unique_ptr<uint8_t[]> serialized(new uint8_t[serializedSize]);
-  serializedSize =
-      utrie2_serialize(trie, serialized.get(), serializedSize, &error);
+  std::unique_ptr<uint8_t[]> serialized(new uint8_t[serialized_size]);
+  serialized_size =
+      utrie2_serialize(trie, serialized.get(), serialized_size, &error);
   assert(error == U_ZERO_ERROR);
 
-  generateUTrieSerialized(fp, serializedSize, serialized.get());
+  GenerateUTrieSerialized(fp, serialized_size, serialized.get());
 
   utrie2_close(trie);
 }
@@ -124,10 +124,10 @@ static void generate(FILE* fp) {
 int main(int argc, char** argv) {
   // Write the serialized array to the source file.
   if (argc <= 1) {
-    blink::generate(stdout);
+    blink::Generate(stdout);
   } else {
     FILE* fp = fopen(argv[1], "wb");
-    blink::generate(fp);
+    blink::Generate(fp);
     fclose(fp);
   }
 

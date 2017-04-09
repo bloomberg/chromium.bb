@@ -24,17 +24,17 @@ class MODULES_EXPORT WindowAudioWorklet final
  public:
   static AudioWorklet* audioWorklet(LocalDOMWindow&);
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 
  private:
-  static WindowAudioWorklet& from(LocalDOMWindow&);
+  static WindowAudioWorklet& From(LocalDOMWindow&);
 
   explicit WindowAudioWorklet(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<AudioWorklet> m_audioWorklet;
+  Member<AudioWorklet> audio_worklet_;
 };
 
 }  // namespace blink

@@ -7,103 +7,103 @@
 namespace blink {
 
 TextIteratorBehavior::Builder::Builder(const TextIteratorBehavior& behavior)
-    : m_behavior(behavior) {}
+    : behavior_(behavior) {}
 
 TextIteratorBehavior::Builder::Builder() = default;
 TextIteratorBehavior::Builder::~Builder() = default;
 
-TextIteratorBehavior TextIteratorBehavior::Builder::build() {
-  return m_behavior;
+TextIteratorBehavior TextIteratorBehavior::Builder::Build() {
+  return behavior_;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setCollapseTrailingSpace(bool value) {
-  m_behavior.m_collapseTrailingSpace = value;
+TextIteratorBehavior::Builder::SetCollapseTrailingSpace(bool value) {
+  behavior_.collapse_trailing_space_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setDoesNotBreakAtReplacedElement(bool value) {
-  m_behavior.m_doesNotBreakAtReplacedElement = value;
+TextIteratorBehavior::Builder::SetDoesNotBreakAtReplacedElement(bool value) {
+  behavior_.does_not_break_at_replaced_element_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEmitsCharactersBetweenAllVisiblePositions(
+TextIteratorBehavior::Builder::SetEmitsCharactersBetweenAllVisiblePositions(
     bool value) {
-  m_behavior.m_emitsCharactersBetweenAllVisiblePositions = value;
+  behavior_.emits_characters_between_all_visible_positions_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEmitsImageAltText(bool value) {
-  m_behavior.m_emitsImageAltText = value;
+TextIteratorBehavior::Builder::SetEmitsImageAltText(bool value) {
+  behavior_.emits_image_alt_text_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEmitsSpaceForNbsp(bool value) {
-  m_behavior.m_emitsSpaceForNbsp = value;
+TextIteratorBehavior::Builder::SetEmitsSpaceForNbsp(bool value) {
+  behavior_.emits_space_for_nbsp_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEmitsObjectReplacementCharacter(bool value) {
-  m_behavior.m_emitsObjectReplacementCharacter = value;
+TextIteratorBehavior::Builder::SetEmitsObjectReplacementCharacter(bool value) {
+  behavior_.emits_object_replacement_character_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEmitsOriginalText(bool value) {
-  m_behavior.m_emitsOriginalText = value;
+TextIteratorBehavior::Builder::SetEmitsOriginalText(bool value) {
+  behavior_.emits_original_text_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEntersOpenShadowRoots(bool value) {
-  m_behavior.m_entersOpenShadowRoots = value;
+TextIteratorBehavior::Builder::SetEntersOpenShadowRoots(bool value) {
+  behavior_.enters_open_shadow_roots_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setEntersTextControls(bool value) {
-  m_behavior.m_entersTextControls = value;
+TextIteratorBehavior::Builder::SetEntersTextControls(bool value) {
+  behavior_.enters_text_controls_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setExcludeAutofilledValue(bool value) {
-  m_behavior.m_excludeAutofilledValue = value;
+TextIteratorBehavior::Builder::SetExcludeAutofilledValue(bool value) {
+  behavior_.exclude_autofilled_value_ = value;
   return *this;
 }
 
-TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::setForInnerText(
+TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::SetForInnerText(
     bool value) {
-  m_behavior.m_forInnerText = value;
+  behavior_.for_inner_text_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setForSelectionToString(bool value) {
-  m_behavior.m_forSelectionToString = value;
+TextIteratorBehavior::Builder::SetForSelectionToString(bool value) {
+  behavior_.for_selection_to_string_ = value;
   return *this;
 }
 
-TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::setForWindowFind(
+TextIteratorBehavior::Builder& TextIteratorBehavior::Builder::SetForWindowFind(
     bool value) {
-  m_behavior.m_forWindowFind = value;
+  behavior_.for_window_find_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setIgnoresStyleVisibility(bool value) {
-  m_behavior.m_ignoresStyleVisibility = value;
+TextIteratorBehavior::Builder::SetIgnoresStyleVisibility(bool value) {
+  behavior_.ignores_style_visibility_ = value;
   return *this;
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::setStopsOnFormControls(bool value) {
-  m_behavior.m_stopsOnFormControls = value;
+TextIteratorBehavior::Builder::SetStopsOnFormControls(bool value) {
+  behavior_.stops_on_form_controls_ = value;
   return *this;
 }
 
@@ -112,43 +112,43 @@ TextIteratorBehavior::TextIteratorBehavior(const TextIteratorBehavior& other) =
     default;
 
 TextIteratorBehavior::TextIteratorBehavior()
-    : m_collapseTrailingSpace(false),
-      m_doesNotBreakAtReplacedElement(false),
-      m_emitsCharactersBetweenAllVisiblePositions(false),
-      m_emitsImageAltText(false),
-      m_emitsSpaceForNbsp(false),
-      m_emitsObjectReplacementCharacter(false),
-      m_emitsOriginalText(false),
-      m_entersOpenShadowRoots(false),
-      m_entersTextControls(false),
-      m_excludeAutofilledValue(false),
-      m_forInnerText(false),
-      m_forSelectionToString(false),
-      m_forWindowFind(false),
-      m_ignoresStyleVisibility(false),
-      m_stopsOnFormControls(false) {}
+    : collapse_trailing_space_(false),
+      does_not_break_at_replaced_element_(false),
+      emits_characters_between_all_visible_positions_(false),
+      emits_image_alt_text_(false),
+      emits_space_for_nbsp_(false),
+      emits_object_replacement_character_(false),
+      emits_original_text_(false),
+      enters_open_shadow_roots_(false),
+      enters_text_controls_(false),
+      exclude_autofilled_value_(false),
+      for_inner_text_(false),
+      for_selection_to_string_(false),
+      for_window_find_(false),
+      ignores_style_visibility_(false),
+      stops_on_form_controls_(false) {}
 
 TextIteratorBehavior::~TextIteratorBehavior() = default;
 
 bool TextIteratorBehavior::operator==(const TextIteratorBehavior& other) const {
-  return m_collapseTrailingSpace == other.m_collapseTrailingSpace ||
-         m_doesNotBreakAtReplacedElement ==
-             other.m_doesNotBreakAtReplacedElement ||
-         m_emitsCharactersBetweenAllVisiblePositions ==
-             other.m_emitsCharactersBetweenAllVisiblePositions ||
-         m_emitsImageAltText == other.m_emitsImageAltText ||
-         m_emitsSpaceForNbsp == other.m_emitsSpaceForNbsp ||
-         m_emitsObjectReplacementCharacter ==
-             other.m_emitsObjectReplacementCharacter ||
-         m_emitsOriginalText == other.m_emitsOriginalText ||
-         m_entersOpenShadowRoots == other.m_entersOpenShadowRoots ||
-         m_entersTextControls == other.m_entersTextControls ||
-         m_excludeAutofilledValue == other.m_excludeAutofilledValue ||
-         m_forInnerText == other.m_forInnerText ||
-         m_forSelectionToString == other.m_forSelectionToString ||
-         m_forWindowFind == other.m_forWindowFind ||
-         m_ignoresStyleVisibility == other.m_ignoresStyleVisibility ||
-         m_stopsOnFormControls == other.m_stopsOnFormControls;
+  return collapse_trailing_space_ == other.collapse_trailing_space_ ||
+         does_not_break_at_replaced_element_ ==
+             other.does_not_break_at_replaced_element_ ||
+         emits_characters_between_all_visible_positions_ ==
+             other.emits_characters_between_all_visible_positions_ ||
+         emits_image_alt_text_ == other.emits_image_alt_text_ ||
+         emits_space_for_nbsp_ == other.emits_space_for_nbsp_ ||
+         emits_object_replacement_character_ ==
+             other.emits_object_replacement_character_ ||
+         emits_original_text_ == other.emits_original_text_ ||
+         enters_open_shadow_roots_ == other.enters_open_shadow_roots_ ||
+         enters_text_controls_ == other.enters_text_controls_ ||
+         exclude_autofilled_value_ == other.exclude_autofilled_value_ ||
+         for_inner_text_ == other.for_inner_text_ ||
+         for_selection_to_string_ == other.for_selection_to_string_ ||
+         for_window_find_ == other.for_window_find_ ||
+         ignores_style_visibility_ == other.ignores_style_visibility_ ||
+         stops_on_form_controls_ == other.stops_on_form_controls_;
 }
 
 bool TextIteratorBehavior::operator!=(const TextIteratorBehavior& other) const {
@@ -157,17 +157,17 @@ bool TextIteratorBehavior::operator!=(const TextIteratorBehavior& other) const {
 
 // static
 TextIteratorBehavior
-TextIteratorBehavior::emitsObjectReplacementCharacterBehavior() {
+TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior() {
   return TextIteratorBehavior::Builder()
-      .setEmitsObjectReplacementCharacter(true)
-      .build();
+      .SetEmitsObjectReplacementCharacter(true)
+      .Build();
 }
 
 // static
-TextIteratorBehavior TextIteratorBehavior::ignoresStyleVisibilityBehavior() {
+TextIteratorBehavior TextIteratorBehavior::IgnoresStyleVisibilityBehavior() {
   return TextIteratorBehavior::Builder()
-      .setIgnoresStyleVisibility(true)
-      .build();
+      .SetIgnoresStyleVisibility(true)
+      .Build();
 }
 
 }  // namespace blink

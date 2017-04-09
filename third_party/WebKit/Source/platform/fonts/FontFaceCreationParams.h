@@ -39,95 +39,98 @@
 
 namespace blink {
 
-enum FontFaceCreationType { CreateFontByFamily, CreateFontByFciIdAndTtcIndex };
+enum FontFaceCreationType {
+  kCreateFontByFamily,
+  kCreateFontByFciIdAndTtcIndex
+};
 
 class FontFaceCreationParams {
   USING_FAST_MALLOC(FontFaceCreationParams);
 
  public:
   FontFaceCreationParams()
-      : m_creationType(CreateFontByFamily),
-        m_family(AtomicString()),
-        m_filename(CString()),
-        m_fontconfigInterfaceId(0),
-        m_ttcIndex(0) {}
+      : creation_type_(kCreateFontByFamily),
+        family_(AtomicString()),
+        filename_(CString()),
+        fontconfig_interface_id_(0),
+        ttc_index_(0) {}
 
   explicit FontFaceCreationParams(AtomicString family)
-      : m_creationType(CreateFontByFamily),
-        m_family(family),
-        m_filename(CString()),
-        m_fontconfigInterfaceId(0),
-        m_ttcIndex(0) {
+      : creation_type_(kCreateFontByFamily),
+        family_(family),
+        filename_(CString()),
+        fontconfig_interface_id_(0),
+        ttc_index_(0) {
 #if OS(WIN)
     // Leading "@" in the font name enables Windows vertical flow flag for the
     // font.  Because we do vertical flow by ourselves, we don't want to use the
     // Windows feature.  IE disregards "@" regardless of the orientation, so we
     // follow the behavior and normalize the family name.
-    m_family = (m_family.isEmpty() || m_family[0] != '@')
-                   ? m_family
-                   : AtomicString(m_family.impl()->substring(1));
+    family_ = (family_.IsEmpty() || family_[0] != '@')
+                  ? family_
+                  : AtomicString(family_.Impl()->Substring(1));
 #endif
   }
 
   FontFaceCreationParams(CString filename,
-                         int fontconfigInterfaceId,
-                         int ttcIndex = 0)
-      : m_creationType(CreateFontByFciIdAndTtcIndex),
-        m_filename(filename),
-        m_fontconfigInterfaceId(fontconfigInterfaceId),
-        m_ttcIndex(ttcIndex) {}
+                         int fontconfig_interface_id,
+                         int ttc_index = 0)
+      : creation_type_(kCreateFontByFciIdAndTtcIndex),
+        filename_(filename),
+        fontconfig_interface_id_(fontconfig_interface_id),
+        ttc_index_(ttc_index) {}
 
-  FontFaceCreationType creationType() const { return m_creationType; }
-  AtomicString family() const {
-    ASSERT(m_creationType == CreateFontByFamily);
-    return m_family;
+  FontFaceCreationType CreationType() const { return creation_type_; }
+  AtomicString Family() const {
+    ASSERT(creation_type_ == kCreateFontByFamily);
+    return family_;
   }
-  CString filename() const {
-    ASSERT(m_creationType == CreateFontByFciIdAndTtcIndex);
-    return m_filename;
+  CString Filename() const {
+    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    return filename_;
   }
-  int fontconfigInterfaceId() const {
-    ASSERT(m_creationType == CreateFontByFciIdAndTtcIndex);
-    return m_fontconfigInterfaceId;
+  int FontconfigInterfaceId() const {
+    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    return fontconfig_interface_id_;
   }
-  int ttcIndex() const {
-    ASSERT(m_creationType == CreateFontByFciIdAndTtcIndex);
-    return m_ttcIndex;
+  int TtcIndex() const {
+    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    return ttc_index_;
   }
 
-  unsigned hash() const {
-    if (m_creationType == CreateFontByFciIdAndTtcIndex) {
+  unsigned GetHash() const {
+    if (creation_type_ == kCreateFontByFciIdAndTtcIndex) {
       StringHasher hasher;
       // Hashing the filename and ints in this way is sensitive to character
       // encoding and endianness. However, since the hash is not transferred
       // over a network or permanently stored and only used for the runtime of
       // Chromium, this is not a concern.
-      hasher.addCharacters(reinterpret_cast<const LChar*>(m_filename.data()),
-                           m_filename.length());
-      hasher.addCharacters(reinterpret_cast<const LChar*>(&m_ttcIndex),
-                           sizeof(m_ttcIndex));
-      hasher.addCharacters(
-          reinterpret_cast<const LChar*>(&m_fontconfigInterfaceId),
-          sizeof(m_fontconfigInterfaceId));
-      return hasher.hash();
+      hasher.AddCharacters(reinterpret_cast<const LChar*>(filename_.Data()),
+                           filename_.length());
+      hasher.AddCharacters(reinterpret_cast<const LChar*>(&ttc_index_),
+                           sizeof(ttc_index_));
+      hasher.AddCharacters(
+          reinterpret_cast<const LChar*>(&fontconfig_interface_id_),
+          sizeof(fontconfig_interface_id_));
+      return hasher.GetHash();
     }
-    return CaseFoldingHash::hash(m_family.isEmpty() ? "" : m_family);
+    return CaseFoldingHash::GetHash(family_.IsEmpty() ? "" : family_);
   }
 
   bool operator==(const FontFaceCreationParams& other) const {
-    return m_creationType == other.m_creationType &&
-           equalIgnoringCase(m_family, other.m_family) &&
-           m_filename == other.m_filename &&
-           m_fontconfigInterfaceId == other.m_fontconfigInterfaceId &&
-           m_ttcIndex == other.m_ttcIndex;
+    return creation_type_ == other.creation_type_ &&
+           EqualIgnoringCase(family_, other.family_) &&
+           filename_ == other.filename_ &&
+           fontconfig_interface_id_ == other.fontconfig_interface_id_ &&
+           ttc_index_ == other.ttc_index_;
   }
 
  private:
-  FontFaceCreationType m_creationType;
-  AtomicString m_family;
-  CString m_filename;
-  int m_fontconfigInterfaceId;
-  int m_ttcIndex;
+  FontFaceCreationType creation_type_;
+  AtomicString family_;
+  CString filename_;
+  int fontconfig_interface_id_;
+  int ttc_index_;
 };
 
 }  // namespace blink

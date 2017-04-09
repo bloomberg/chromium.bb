@@ -22,7 +22,7 @@ void MockGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   {
     base::AutoLock lock(lock_);
 
-    for (unsigned int i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+    for (unsigned int i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
       if (test_data_.items[i].connected) {
         PadState* pad = GetPadState(i);
         if (pad)

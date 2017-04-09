@@ -41,54 +41,54 @@ class Storage;
 class WebStorageArea;
 class WebStorageNamespace;
 
-enum StorageType { LocalStorage, SessionStorage };
+enum StorageType { kLocalStorage, kSessionStorage };
 
 class MODULES_EXPORT StorageArea final
     : public GarbageCollectedFinalized<StorageArea> {
  public:
-  static StorageArea* create(std::unique_ptr<WebStorageArea>, StorageType);
+  static StorageArea* Create(std::unique_ptr<WebStorageArea>, StorageType);
 
   virtual ~StorageArea();
 
   // The HTML5 DOM Storage API
-  unsigned length(ExceptionState&, LocalFrame* sourceFrame);
-  String key(unsigned index, ExceptionState&, LocalFrame* sourceFrame);
-  String getItem(const String& key, ExceptionState&, LocalFrame* sourceFrame);
-  void setItem(const String& key,
+  unsigned length(ExceptionState&, LocalFrame* source_frame);
+  String Key(unsigned index, ExceptionState&, LocalFrame* source_frame);
+  String GetItem(const String& key, ExceptionState&, LocalFrame* source_frame);
+  void SetItem(const String& key,
                const String& value,
                ExceptionState&,
-               LocalFrame* sourceFrame);
-  void removeItem(const String& key, ExceptionState&, LocalFrame* sourceFrame);
-  void clear(ExceptionState&, LocalFrame* sourceFrame);
-  bool contains(const String& key, ExceptionState&, LocalFrame* sourceFrame);
+               LocalFrame* source_frame);
+  void RemoveItem(const String& key, ExceptionState&, LocalFrame* source_frame);
+  void Clear(ExceptionState&, LocalFrame* source_frame);
+  bool Contains(const String& key, ExceptionState&, LocalFrame* source_frame);
 
-  bool canAccessStorage(LocalFrame*);
+  bool CanAccessStorage(LocalFrame*);
 
-  static void dispatchLocalStorageEvent(const String& key,
-                                        const String& oldValue,
-                                        const String& newValue,
+  static void DispatchLocalStorageEvent(const String& key,
+                                        const String& old_value,
+                                        const String& new_value,
                                         SecurityOrigin*,
-                                        const KURL& pageURL,
-                                        WebStorageArea* sourceAreaInstance);
-  static void dispatchSessionStorageEvent(const String& key,
-                                          const String& oldValue,
-                                          const String& newValue,
+                                        const KURL& page_url,
+                                        WebStorageArea* source_area_instance);
+  static void DispatchSessionStorageEvent(const String& key,
+                                          const String& old_value,
+                                          const String& new_value,
                                           SecurityOrigin*,
-                                          const KURL& pageURL,
+                                          const KURL& page_url,
                                           const WebStorageNamespace&,
-                                          WebStorageArea* sourceAreaInstance);
+                                          WebStorageArea* source_area_instance);
 
   DECLARE_TRACE();
 
  private:
   StorageArea(std::unique_ptr<WebStorageArea>, StorageType);
 
-  static bool isEventSource(Storage*, WebStorageArea* sourceAreaInstance);
+  static bool IsEventSource(Storage*, WebStorageArea* source_area_instance);
 
-  std::unique_ptr<WebStorageArea> m_storageArea;
-  StorageType m_storageType;
-  WeakMember<LocalFrame> m_frameUsedForCanAccessStorage;
-  bool m_canAccessStorageCachedResult;
+  std::unique_ptr<WebStorageArea> storage_area_;
+  StorageType storage_type_;
+  WeakMember<LocalFrame> frame_used_for_can_access_storage_;
+  bool can_access_storage_cached_result_;
 };
 
 }  // namespace blink

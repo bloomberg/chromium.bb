@@ -15,155 +15,156 @@ namespace blink {
 class WebMeaningfulLayoutsTest : public SimTest {};
 
 TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharacters) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Write 201 characters.
-  const char* tenCharacters = "0123456789";
+  const char* ten_characters = "0123456789";
   for (int i = 0; i < 20; ++i)
-    mainResource.write(tenCharacters);
-  mainResource.write("!");
+    main_resource.Write(ten_characters);
+  main_resource.Write("!");
 
-  mainResource.finish();
+  main_resource.Finish();
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Write 200 characters.
-  const char* tenCharacters = "0123456789";
+  const char* ten_characters = "0123456789";
   for (int i = 0; i < 20; ++i)
-    mainResource.write(tenCharacters);
+    main_resource.Write(ten_characters);
 
   // Pump a frame mid-load.
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(0, webViewClient().visuallyNonEmptyLayoutCount());
+  EXPECT_EQ(0, WebViewClient().VisuallyNonEmptyLayoutCount());
 
   // Write more than 200 characters.
-  mainResource.write("!");
+  main_resource.Write("!");
 
-  mainResource.finish();
+  main_resource.Finish();
 
   // setting visually non-empty happens when the parsing finishes,
   // not as the character count goes over 200.
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
 }
 
 // TODO(dglazkov): Write pixel-count and canvas-based VisuallyNonEmpty tests
 
 TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Write <200 characters.
-  mainResource.write("less than 200 characters.");
+  main_resource.Write("less than 200 characters.");
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  mainResource.finish();
+  main_resource.Finish();
 
   // Even though the layout state is clean ...
-  EXPECT_TRUE(document().lifecycle().state() >= DocumentLifecycle::LayoutClean);
+  EXPECT_TRUE(GetDocument().Lifecycle().GetState() >=
+              DocumentLifecycle::kLayoutClean);
 
   // We should still generate a request for another (possibly last) frame.
-  EXPECT_TRUE(compositor().needsBeginFrame());
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
 
   // ... which we (the scheduler) happily provide.
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   // ... which correctly signals the VisuallyNonEmpty.
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsing) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.complete("content");
+  main_resource.Complete("content");
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedLoading) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.complete("content");
+  main_resource.Complete("content");
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
-  SimRequest imageResource("https://example.com/cat.png", "image/png");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest image_resource("https://example.com/cat.png", "image/png");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.complete("<img src=cat.png>");
+  main_resource.Complete("<img src=cat.png>");
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
-  EXPECT_EQ(0, webViewClient().finishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(0, WebViewClient().FinishedLoadingLayoutCount());
 
-  imageResource.complete("image data");
+  image_resource.Complete("image data");
 
   // Pump the message loop to process the image loading task.
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
-  EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
-  SimRequest mainResource("https://example.com/index.html", "text/html");
-  SimRequest iframeResource("https://example.com/iframe.html", "text/html");
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
 
-  loadURL("https://example.com/index.html");
+  LoadURL("https://example.com/index.html");
 
-  mainResource.complete("<iframe src=iframe.html></iframe>");
+  main_resource.Complete("<iframe src=iframe.html></iframe>");
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
-  EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
-  EXPECT_EQ(0, webViewClient().finishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(0, WebViewClient().FinishedLoadingLayoutCount());
 
-  iframeResource.complete("iframe data");
+  iframe_resource.Complete("iframe data");
 
   // Pump the message loop to process the iframe loading task.
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
-  EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
-  EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
 }
 
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
@@ -171,30 +172,30 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
 // if it was calculated in 32-bit and thus it would be considered as empty.
 TEST_F(WebMeaningfulLayoutsTest,
        NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest svgResource("https://example.com/test.svg", "image/svg+xml");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest svg_resource("https://example.com/test.svg", "image/svg+xml");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
-  mainResource.write("<DOCTYPE html><body><img src=\"test.svg\">");
+  main_resource.Start();
+  main_resource.Write("<DOCTYPE html><body><img src=\"test.svg\">");
   // Run pending tasks to initiate the request to test.svg.
-  testing::runPendingTasks();
-  EXPECT_EQ(0, webViewClient().visuallyNonEmptyLayoutCount());
+  testing::RunPendingTasks();
+  EXPECT_EQ(0, WebViewClient().VisuallyNonEmptyLayoutCount());
 
   // We serve the SVG file and check visuallyNonEmptyLayoutCount() before
   // mainResource.finish() because finishing the main resource causes
   // |FrameView::m_isVisuallyNonEmpty| to be true and
   // visuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
-  svgResource.start();
-  svgResource.write(
+  svg_resource.Start();
+  svg_resource.Write(
       "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"65536\" "
       "width=\"65536\"></svg>");
-  svgResource.finish();
-  compositor().beginFrame();
-  EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+  svg_resource.Finish();
+  Compositor().BeginFrame();
+  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
 
-  mainResource.finish();
+  main_resource.Finish();
 }
 
 }  // namespace blink

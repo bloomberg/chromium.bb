@@ -30,7 +30,7 @@ namespace blink {
 
 enum class TextDirection : unsigned { kRtl, kLtr };
 
-inline bool isLeftToRightDirection(TextDirection direction) {
+inline bool IsLeftToRightDirection(TextDirection direction) {
   return direction == TextDirection::kLtr;
 }
 }

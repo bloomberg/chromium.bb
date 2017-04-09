@@ -15,71 +15,71 @@ namespace blink {
 
 class SpellCheckerTest : public SpellCheckTestBase {
  protected:
-  int layoutCount() const { return page().frameView().layoutCount(); }
-  DummyPageHolder& page() const { return dummyPageHolder(); }
+  int LayoutCount() const { return Page().GetFrameView().LayoutCount(); }
+  DummyPageHolder& Page() const { return GetDummyPageHolder(); }
 
-  void forceLayout();
+  void ForceLayout();
 };
 
-void SpellCheckerTest::forceLayout() {
-  FrameView& frameView = page().frameView();
-  IntRect frameRect = frameView.frameRect();
-  frameRect.setWidth(frameRect.width() + 1);
-  frameRect.setHeight(frameRect.height() + 1);
-  page().frameView().setFrameRect(frameRect);
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+void SpellCheckerTest::ForceLayout() {
+  FrameView& frame_view = Page().GetFrameView();
+  IntRect frame_rect = frame_view.FrameRect();
+  frame_rect.SetWidth(frame_rect.Width() + 1);
+  frame_rect.SetHeight(frame_rect.Height() + 1);
+  Page().GetFrameView().SetFrameRect(frame_rect);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 }
 
 TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {
-  setBodyContent("<input placeholder='placeholder'>abc");
-  updateAllLifecyclePhases();
-  Element* input = document().querySelector("input");
+  SetBodyContent("<input placeholder='placeholder'>abc");
+  UpdateAllLifecyclePhases();
+  Element* input = GetDocument().QuerySelector("input");
   input->focus();
   // Do not crash in advanceToNextMisspelling.
-  document().frame()->spellChecker().advanceToNextMisspelling(false);
+  GetDocument().GetFrame()->GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
 // Regression test for crbug.com/701309
 TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithImageInTableNoCrash) {
-  setBodyContent(
+  SetBodyContent(
       "<div contenteditable>"
       "<table><tr><td>"
       "<img src=foo.jpg>"
       "</td></tr></table>"
       "zz zz zz"
       "</div>");
-  document().querySelector("div")->focus();
-  updateAllLifecyclePhases();
+  GetDocument().QuerySelector("div")->focus();
+  UpdateAllLifecyclePhases();
 
   // Do not crash in advanceToNextMisspelling.
-  document().frame()->spellChecker().advanceToNextMisspelling(false);
+  GetDocument().GetFrame()->GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
 TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
-  setBodyContent("<input>");
+  SetBodyContent("<input>");
   HTMLInputElement* input =
-      toHTMLInputElement(document().querySelector("input"));
+      toHTMLInputElement(GetDocument().QuerySelector("input"));
   input->focus();
   input->setValue("Hello, input field");
-  document().updateStyleAndLayout();
-  VisibleSelection oldSelection =
-      document()
-          .frame()
-          ->selection()
-          .computeVisibleSelectionInDOMTreeDeprecated();
+  GetDocument().UpdateStyleAndLayout();
+  VisibleSelection old_selection =
+      GetDocument()
+          .GetFrame()
+          ->Selection()
+          .ComputeVisibleSelectionInDOMTreeDeprecated();
 
-  Position newPosition(input->innerEditorElement()->firstChild(), 3);
-  document().frame()->selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(newPosition).build());
+  Position new_position(input->InnerEditorElement()->FirstChild(), 3);
+  GetDocument().GetFrame()->Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(new_position).Build());
   ASSERT_EQ(3u, input->selectionStart());
 
-  EXPECT_TRUE(frame().spellChecker().isSpellCheckingEnabled());
-  forceLayout();
-  int startCount = layoutCount();
-  frame().spellChecker().respondToChangedSelection(
-      oldSelection.start(),
-      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-  EXPECT_EQ(startCount, layoutCount());
+  EXPECT_TRUE(GetFrame().GetSpellChecker().IsSpellCheckingEnabled());
+  ForceLayout();
+  int start_count = LayoutCount();
+  GetFrame().GetSpellChecker().RespondToChangedSelection(
+      old_selection.Start(),
+      FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle);
+  EXPECT_EQ(start_count, LayoutCount());
 }
 
 }  // namespace blink

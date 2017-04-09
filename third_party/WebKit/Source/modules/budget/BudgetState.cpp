@@ -6,12 +6,12 @@
 
 namespace blink {
 
-BudgetState::BudgetState() : m_budgetAt(0), m_time(DOMTimeStamp()) {}
+BudgetState::BudgetState() : budget_at_(0), time_(DOMTimeStamp()) {}
 
-BudgetState::BudgetState(double budgetAt, DOMTimeStamp time)
-    : m_budgetAt(budgetAt), m_time(time) {}
+BudgetState::BudgetState(double budget_at, DOMTimeStamp time)
+    : budget_at_(budget_at), time_(time) {}
 
 BudgetState::BudgetState(const BudgetState& other)
-    : m_budgetAt(other.m_budgetAt), m_time(other.m_time) {}
+    : budget_at_(other.budget_at_), time_(other.time_) {}
 
 }  // namespace blink

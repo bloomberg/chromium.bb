@@ -37,23 +37,24 @@ namespace blink {
 
 TEST(WebSelectorTest, Canonicalizes) {
   EXPECT_EQ("h1, h2[style=\"foobar\"] span",
-            canonicalizeSelector("h1,h2[style='foobar']    span").utf8());
+            CanonicalizeSelector("h1,h2[style='foobar']    span").Utf8());
   EXPECT_EQ("h1, h2[style=\"foobar\"] span",
-            canonicalizeSelector("h1, h2[style=\"foobar\"] span").utf8());
+            CanonicalizeSelector("h1, h2[style=\"foobar\"] span").Utf8());
 }
 
 TEST(WebSelectorTest, Checks) {
-  EXPECT_EQ("", canonicalizeSelector("h1..h2").utf8());
-  EXPECT_EQ("", canonicalizeSelector("h1..h2", WebSelectorTypeCompound).utf8());
+  EXPECT_EQ("", CanonicalizeSelector("h1..h2").Utf8());
+  EXPECT_EQ("",
+            CanonicalizeSelector("h1..h2", kWebSelectorTypeCompound).Utf8());
 }
 
 TEST(WebSelectorTest, Restricts) {
-  EXPECT_EQ("",
-            canonicalizeSelector("h1 span,h2", WebSelectorTypeCompound).utf8());
+  EXPECT_EQ(
+      "", CanonicalizeSelector("h1 span,h2", kWebSelectorTypeCompound).Utf8());
   EXPECT_EQ("h1, h2[style=\"foobar\"].cls",
-            canonicalizeSelector("h1,h2[style=\"foobar\"].cls",
-                                 WebSelectorTypeCompound)
-                .utf8());
+            CanonicalizeSelector("h1,h2[style=\"foobar\"].cls",
+                                 kWebSelectorTypeCompound)
+                .Utf8());
 }
 
 }  // namespace blink

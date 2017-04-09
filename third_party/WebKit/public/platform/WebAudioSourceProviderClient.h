@@ -29,7 +29,7 @@ namespace blink {
 
 class WebAudioSourceProviderClient {
  public:
-  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+  virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
 
  protected:
   virtual ~WebAudioSourceProviderClient() {}

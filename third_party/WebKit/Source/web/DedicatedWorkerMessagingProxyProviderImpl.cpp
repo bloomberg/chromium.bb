@@ -52,24 +52,24 @@ DedicatedWorkerMessagingProxyProviderImpl::
     : DedicatedWorkerMessagingProxyProvider(page) {}
 
 InProcessWorkerMessagingProxy*
-DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(
+DedicatedWorkerMessagingProxyProviderImpl::CreateWorkerMessagingProxy(
     Worker* worker) {
-  if (worker->getExecutionContext()->isDocument()) {
-    Document* document = toDocument(worker->getExecutionContext());
-    WebLocalFrameImpl* webFrame =
-        WebLocalFrameImpl::fromFrame(document->frame());
-    WorkerClients* workerClients = WorkerClients::create();
-    provideIndexedDBClientToWorker(workerClients,
-                                   IndexedDBClientImpl::create(*workerClients));
-    provideLocalFileSystemToWorker(workerClients,
-                                   LocalFileSystemClient::create());
-    provideContentSettingsClientToWorker(
-        workerClients,
-        WTF::wrapUnique(
-            webFrame->client()->createWorkerContentSettingsClientProxy()));
+  if (worker->GetExecutionContext()->IsDocument()) {
+    Document* document = ToDocument(worker->GetExecutionContext());
+    WebLocalFrameImpl* web_frame =
+        WebLocalFrameImpl::FromFrame(document->GetFrame());
+    WorkerClients* worker_clients = WorkerClients::Create();
+    ProvideIndexedDBClientToWorker(
+        worker_clients, IndexedDBClientImpl::Create(*worker_clients));
+    ProvideLocalFileSystemToWorker(worker_clients,
+                                   LocalFileSystemClient::Create());
+    ProvideContentSettingsClientToWorker(
+        worker_clients,
+        WTF::WrapUnique(
+            web_frame->Client()->CreateWorkerContentSettingsClientProxy()));
     // FIXME: call provideServiceWorkerContainerClientToWorker here when we
     // support ServiceWorker in dedicated workers (http://crbug.com/371690)
-    return new DedicatedWorkerMessagingProxy(worker, workerClients);
+    return new DedicatedWorkerMessagingProxy(worker, worker_clients);
   }
   NOTREACHED();
   return 0;

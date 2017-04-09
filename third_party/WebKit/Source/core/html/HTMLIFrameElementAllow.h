@@ -19,26 +19,26 @@ class CORE_EXPORT HTMLIFrameElementAllow final : public DOMTokenList,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementAllow);
 
  public:
-  static HTMLIFrameElementAllow* create(HTMLIFrameElement* element) {
+  static HTMLIFrameElementAllow* Create(HTMLIFrameElement* element) {
     return new HTMLIFrameElementAllow(element);
   }
 
   ~HTMLIFrameElementAllow() override;
 
   // Returns unique set of valid feature names.
-  Vector<WebFeaturePolicyFeature> parseAllowedFeatureNames(
-      String& invalidTokensErrorMessage) const;
+  Vector<WebFeaturePolicyFeature> ParseAllowedFeatureNames(
+      String& invalid_tokens_error_message) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit HTMLIFrameElementAllow(HTMLIFrameElement*);
-  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   // DOMTokenListObserver.
-  void valueWasSet() override;
+  void ValueWasSet() override;
 
-  Member<HTMLIFrameElement> m_element;
+  Member<HTMLIFrameElement> element_;
 };
 
 }  // namespace blink

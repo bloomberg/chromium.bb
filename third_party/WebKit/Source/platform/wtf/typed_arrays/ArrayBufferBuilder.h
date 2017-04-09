@@ -52,47 +52,47 @@ class WTF_EXPORT ArrayBufferBuilder final {
   ArrayBufferBuilder();
 
   ArrayBufferBuilder(unsigned capacity)
-      : m_bytesUsed(0), m_variableCapacity(true) {
-    m_buffer = ArrayBuffer::create(capacity, 1);
+      : bytes_used_(0), variable_capacity_(true) {
+    buffer_ = ArrayBuffer::Create(capacity, 1);
   }
 
-  bool isValid() const { return m_buffer.get(); }
+  bool IsValid() const { return buffer_.Get(); }
 
   // Appending empty data is not allowed.
-  unsigned append(const char* data, unsigned length);
+  unsigned Append(const char* data, unsigned length);
 
   // Returns the accumulated data as an ArrayBuffer instance. If needed,
   // creates a new ArrayBuffer instance and copies contents from the internal
   // buffer to it. Otherwise, returns a PassRefPtr pointing to the internal
   // buffer.
-  PassRefPtr<ArrayBuffer> toArrayBuffer();
+  PassRefPtr<ArrayBuffer> ToArrayBuffer();
 
   // Converts the accumulated data into a String using the default encoding.
-  String toString();
+  String ToString();
 
   // Number of bytes currently accumulated.
-  unsigned byteLength() const { return m_bytesUsed; }
+  unsigned ByteLength() const { return bytes_used_; }
 
   // Number of bytes allocated.
-  unsigned capacity() const { return m_buffer->byteLength(); }
+  unsigned Capacity() const { return buffer_->ByteLength(); }
 
-  void shrinkToFit();
+  void ShrinkToFit();
 
-  const void* data() const { return m_buffer->data(); }
+  const void* Data() const { return buffer_->Data(); }
 
   // If set to false, the capacity won't be expanded and when appended data
   // overflows, the overflowed part will be dropped.
-  void setVariableCapacity(bool value) { m_variableCapacity = value; }
+  void SetVariableCapacity(bool value) { variable_capacity_ = value; }
 
  private:
   // Expands the size of m_buffer to size + m_bytesUsed bytes. Returns true
   // iff successful. If reallocation is needed, copies only data in
   // [0, m_bytesUsed) range.
-  bool expandCapacity(unsigned size);
+  bool ExpandCapacity(unsigned size);
 
-  unsigned m_bytesUsed;
-  bool m_variableCapacity;
-  RefPtr<ArrayBuffer> m_buffer;
+  unsigned bytes_used_;
+  bool variable_capacity_;
+  RefPtr<ArrayBuffer> buffer_;
 };
 
 }  // namespace WTF

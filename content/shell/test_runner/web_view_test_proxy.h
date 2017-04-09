@@ -140,85 +140,85 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
   explicit WebViewTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
-  blink::WebScreenInfo screenInfo() override {
-    blink::WebScreenInfo info = Base::screenInfo();
-    blink::WebScreenInfo test_info = widget_test_client()->screenInfo();
-    if (test_info.orientationType != blink::WebScreenOrientationUndefined) {
-      info.orientationType = test_info.orientationType;
-      info.orientationAngle = test_info.orientationAngle;
+  blink::WebScreenInfo GetScreenInfo() override {
+    blink::WebScreenInfo info = Base::GetScreenInfo();
+    blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();
+    if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
+      info.orientation_type = test_info.orientation_type;
+      info.orientation_angle = test_info.orientation_angle;
     }
     return info;
   }
-  void scheduleAnimation() override {
-    widget_test_client()->scheduleAnimation();
+  void ScheduleAnimation() override {
+    widget_test_client()->ScheduleAnimation();
   }
-  bool requestPointerLock() override {
-    return widget_test_client()->requestPointerLock();
+  bool RequestPointerLock() override {
+    return widget_test_client()->RequestPointerLock();
   }
-  void requestPointerUnlock() override {
-    widget_test_client()->requestPointerUnlock();
+  void RequestPointerUnlock() override {
+    widget_test_client()->RequestPointerUnlock();
   }
-  bool isPointerLocked() override {
-    return widget_test_client()->isPointerLocked();
+  bool IsPointerLocked() override {
+    return widget_test_client()->IsPointerLocked();
   }
-  void didFocus() override {
-    view_test_client()->didFocus();
-    Base::didFocus();
+  void DidFocus() override {
+    view_test_client()->DidFocus();
+    Base::DidFocus();
   }
-  void setToolTipText(const blink::WebString& text,
+  void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override {
-    widget_test_client()->setToolTipText(text, hint);
-    Base::setToolTipText(text, hint);
+    widget_test_client()->SetToolTipText(text, hint);
+    Base::SetToolTipText(text, hint);
   }
 
   // WebViewClient implementation.
-  void startDragging(blink::WebReferrerPolicy policy,
+  void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const blink::WebImage& image,
                      const blink::WebPoint& point) override {
-    widget_test_client()->startDragging(policy, data, mask, image, point);
+    widget_test_client()->StartDragging(policy, data, mask, image, point);
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }
-  void didChangeContents() override {
-    view_test_client()->didChangeContents();
-    Base::didChangeContents();
+  void DidChangeContents() override {
+    view_test_client()->DidChangeContents();
+    Base::DidChangeContents();
   }
-  blink::WebView* createView(blink::WebLocalFrame* creator,
+  blink::WebView* CreateView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener) override {
-    if (!view_test_client()->createView(creator, request, features, frame_name,
+    if (!view_test_client()->CreateView(creator, request, features, frame_name,
                                         policy, suppress_opener))
       return nullptr;
-    return Base::createView(creator, request, features, frame_name, policy,
+    return Base::CreateView(creator, request, features, frame_name, policy,
                             suppress_opener);
   }
-  void setStatusText(const blink::WebString& text) override {
-    view_test_client()->setStatusText(text);
-    Base::setStatusText(text);
+  void SetStatusText(const blink::WebString& text) override {
+    view_test_client()->SetStatusText(text);
+    Base::SetStatusText(text);
   }
-  void printPage(blink::WebLocalFrame* frame) override {
-    view_test_client()->printPage(frame);
+  void PrintPage(blink::WebLocalFrame* frame) override {
+    view_test_client()->PrintPage(frame);
   }
-  blink::WebSpeechRecognizer* speechRecognizer() override {
-    return view_test_client()->speechRecognizer();
+  blink::WebSpeechRecognizer* SpeechRecognizer() override {
+    return view_test_client()->SpeechRecognizer();
   }
-  void showValidationMessage(
+  void ShowValidationMessage(
       const blink::WebRect& anchor_in_root_view,
       const blink::WebString& main_message,
       blink::WebTextDirection main_message_hint,
       const blink::WebString& sub_message,
       blink::WebTextDirection sub_message_hint) override {
-    view_test_client()->showValidationMessage(anchor_in_root_view, main_message,
+    view_test_client()->ShowValidationMessage(anchor_in_root_view, main_message,
                                               main_message_hint, sub_message,
                                               sub_message_hint);
   }
-  blink::WebString acceptLanguages() override {
-    return view_test_client()->acceptLanguages();
+  blink::WebString AcceptLanguages() override {
+    return view_test_client()->AcceptLanguages();
   }
 
  private:

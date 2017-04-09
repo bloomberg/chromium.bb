@@ -45,19 +45,19 @@ class CORE_EXPORT SurroundingText {
   WTF_MAKE_NONCOPYABLE(SurroundingText);
 
  public:
-  SurroundingText(const Range&, unsigned maxLength);
-  SurroundingText(const Position&, unsigned maxLength);
+  SurroundingText(const Range&, unsigned max_length);
+  SurroundingText(const Position&, unsigned max_length);
 
-  String content() const;
-  unsigned startOffsetInContent() const;
-  unsigned endOffsetInContent() const;
+  String Content() const;
+  unsigned StartOffsetInContent() const;
+  unsigned EndOffsetInContent() const;
 
  private:
-  void initialize(const Position&, const Position&, unsigned maxLength);
+  void Initialize(const Position&, const Position&, unsigned max_length);
 
-  Persistent<Range> m_contentRange;
-  size_t m_startOffsetInContent;
-  size_t m_endOffsetInContent;
+  Persistent<Range> content_range_;
+  size_t start_offset_in_content_;
+  size_t end_offset_in_content_;
 };
 
 }  // namespace blink

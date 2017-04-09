@@ -125,7 +125,7 @@ void SetContentCaptureParamsFromConstraints(
   // set yet; or 2) the maximum specificed is smaller than the current setting.
   double frame_rate = 0.0;
   if (GetConstraintMaxAsDouble(constraints,
-                               &blink::WebMediaTrackConstraintSet::frameRate,
+                               &blink::WebMediaTrackConstraintSet::frame_rate,
                                &frame_rate) &&
       FrameRateValueIsValid(frame_rate)) {
     if (params->requested_format.frame_rate <= 0.0f ||
@@ -186,7 +186,8 @@ void SetPowerLineFrequencyParamFromConstraints(
   params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_DEFAULT;
   if (!GetConstraintValueAsInteger(
           constraints,
-          &blink::WebMediaTrackConstraintSet::googPowerLineFrequency, &freq)) {
+          &blink::WebMediaTrackConstraintSet::goog_power_line_frequency,
+          &freq)) {
     return;
   }
   if (freq == static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ))

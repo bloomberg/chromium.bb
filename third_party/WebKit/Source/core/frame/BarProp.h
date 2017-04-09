@@ -45,15 +45,15 @@ class BarProp final : public GarbageCollected<BarProp>,
 
  public:
   enum Type {
-    Locationbar,
-    Menubar,
-    Personalbar,
-    Scrollbars,
-    Statusbar,
-    Toolbar
+    kLocationbar,
+    kMenubar,
+    kPersonalbar,
+    kScrollbars,
+    kStatusbar,
+    kToolbar
   };
 
-  static BarProp* create(LocalFrame* frame, Type type) {
+  static BarProp* Create(LocalFrame* frame, Type type) {
     return new BarProp(frame, type);
   }
 
@@ -63,7 +63,7 @@ class BarProp final : public GarbageCollected<BarProp>,
 
  private:
   BarProp(LocalFrame*, Type);
-  Type m_type;
+  Type type_;
 };
 
 }  // namespace blink

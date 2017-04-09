@@ -20,16 +20,16 @@ class CSSPositionInterpolationType : public CSSLengthListInterpolationType {
       : CSSLengthListInterpolationType(property) {}
 
  private:
-  InterpolationValue maybeConvertValue(const CSSValue& value,
+  InterpolationValue MaybeConvertValue(const CSSValue& value,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final {
-    if (!value.isValuePair()) {
+    if (!value.IsValuePair()) {
       return nullptr;
     }
-    const CSSValuePair& pair = toCSSValuePair(value);
-    return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
-      return CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(
-          index == 0 ? pair.first() : pair.second());
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    return ListInterpolationFunctions::CreateList(2, [&pair](size_t index) {
+      return CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
+          index == 0 ? pair.First() : pair.Second());
     });
   }
 };

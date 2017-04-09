@@ -32,40 +32,41 @@ namespace blink {
 // Collection that limits to a particular tag.
 class TagCollection : public HTMLCollection {
  public:
-  static TagCollection* create(ContainerNode& rootNode,
-                               const AtomicString& namespaceURI,
-                               const AtomicString& localName) {
-    DCHECK(namespaceURI != starAtom);
-    return new TagCollection(rootNode, TagCollectionType, namespaceURI,
-                             localName);
+  static TagCollection* Create(ContainerNode& root_node,
+                               const AtomicString& namespace_uri,
+                               const AtomicString& local_name) {
+    DCHECK(namespace_uri != g_star_atom);
+    return new TagCollection(root_node, kTagCollectionType, namespace_uri,
+                             local_name);
   }
 
-  static TagCollection* create(ContainerNode& rootNode,
+  static TagCollection* Create(ContainerNode& root_node,
                                CollectionType type,
-                               const AtomicString& localName) {
-    DCHECK_EQ(type, TagCollectionType);
-    return new TagCollection(rootNode, TagCollectionType, starAtom, localName);
+                               const AtomicString& local_name) {
+    DCHECK_EQ(type, kTagCollectionType);
+    return new TagCollection(root_node, kTagCollectionType, g_star_atom,
+                             local_name);
   }
 
   ~TagCollection() override;
 
-  bool elementMatches(const Element&) const;
+  bool ElementMatches(const Element&) const;
 
  protected:
-  TagCollection(ContainerNode& rootNode,
+  TagCollection(ContainerNode& root_node,
                 CollectionType,
-                const AtomicString& namespaceURI,
-                const AtomicString& localName);
+                const AtomicString& namespace_uri,
+                const AtomicString& local_name);
 
-  AtomicString m_namespaceURI;
-  AtomicString m_localName;
+  AtomicString namespace_uri_;
+  AtomicString local_name_;
 };
 
 DEFINE_TYPE_CASTS(TagCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == TagCollectionType,
-                  collection.type() == TagCollectionType);
+                  collection->GetType() == kTagCollectionType,
+                  collection.GetType() == kTagCollectionType);
 
 }  // namespace blink
 

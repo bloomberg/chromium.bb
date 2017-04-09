@@ -34,31 +34,31 @@
 
 namespace blink {
 
-bool navigationPolicyFromMouseEvent(unsigned short button,
+bool NavigationPolicyFromMouseEvent(unsigned short button,
                                     bool ctrl,
                                     bool shift,
                                     bool alt,
                                     bool meta,
                                     NavigationPolicy* policy) {
 #if OS(MACOSX)
-  const bool newTabModifier = (button == 1) || meta;
+  const bool new_tab_modifier = (button == 1) || meta;
 #else
-  const bool newTabModifier = (button == 1) || ctrl;
+  const bool new_tab_modifier = (button == 1) || ctrl;
 #endif
-  if (!newTabModifier && !shift && !alt)
+  if (!new_tab_modifier && !shift && !alt)
     return false;
 
   DCHECK(policy);
-  if (newTabModifier) {
+  if (new_tab_modifier) {
     if (shift)
-      *policy = NavigationPolicyNewForegroundTab;
+      *policy = kNavigationPolicyNewForegroundTab;
     else
-      *policy = NavigationPolicyNewBackgroundTab;
+      *policy = kNavigationPolicyNewBackgroundTab;
   } else {
     if (shift)
-      *policy = NavigationPolicyNewWindow;
+      *policy = kNavigationPolicyNewWindow;
     else
-      *policy = NavigationPolicyDownload;
+      *policy = kNavigationPolicyDownload;
   }
   return true;
 }

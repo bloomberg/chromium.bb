@@ -38,43 +38,43 @@ namespace blink {
 
 using namespace HTMLNames;
 
-void KeyboardClickableInputTypeView::handleKeydownEvent(KeyboardEvent* event) {
+void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent* event) {
   const String& key = event->key();
   if (key == " ") {
-    element().setActive(true);
+    GetElement().SetActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
     // and the caller will only dispatch a keypress if we don't call
     // setDefaultHandled().
   }
 }
 
-void KeyboardClickableInputTypeView::handleKeypressEvent(KeyboardEvent* event) {
-  int charCode = event->charCode();
-  if (charCode == '\r') {
-    element().dispatchSimulatedClick(event);
-    event->setDefaultHandled();
+void KeyboardClickableInputTypeView::HandleKeypressEvent(KeyboardEvent* event) {
+  int char_code = event->charCode();
+  if (char_code == '\r') {
+    GetElement().DispatchSimulatedClick(event);
+    event->SetDefaultHandled();
     return;
   }
-  if (charCode == ' ') {
+  if (char_code == ' ') {
     // Prevent scrolling down the page.
-    event->setDefaultHandled();
+    event->SetDefaultHandled();
   }
 }
 
-void KeyboardClickableInputTypeView::handleKeyupEvent(KeyboardEvent* event) {
+void KeyboardClickableInputTypeView::HandleKeyupEvent(KeyboardEvent* event) {
   const String& key = event->key();
   if (key != " ")
     return;
   // Simulate mouse click for spacebar for button types.
-  dispatchSimulatedClickIfActive(event);
+  DispatchSimulatedClickIfActive(event);
 }
 
 // FIXME: Could share this with BaseCheckableInputType and RangeInputType if we
 // had a common base class.
-void KeyboardClickableInputTypeView::accessKeyAction(bool sendMouseEvents) {
-  InputTypeView::accessKeyAction(sendMouseEvents);
-  element().dispatchSimulatedClick(
-      0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
+void KeyboardClickableInputTypeView::AccessKeyAction(bool send_mouse_events) {
+  InputTypeView::AccessKeyAction(send_mouse_events);
+  GetElement().DispatchSimulatedClick(
+      0, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
 }  // namespace blink

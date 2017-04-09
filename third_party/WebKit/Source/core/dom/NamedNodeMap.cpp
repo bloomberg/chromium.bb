@@ -35,63 +35,64 @@ namespace blink {
 using namespace HTMLNames;
 
 Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const {
-  return m_element->getAttributeNode(name);
+  return element_->getAttributeNode(name);
 }
 
-Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI,
-                                   const AtomicString& localName) const {
-  return m_element->getAttributeNodeNS(namespaceURI, localName);
+Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespace_uri,
+                                   const AtomicString& local_name) const {
+  return element_->getAttributeNodeNS(namespace_uri, local_name);
 }
 
 Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
-                                    ExceptionState& exceptionState) {
-  size_t index = m_element->attributes().findIndex(
-      name, m_element->shouldIgnoreAttributeCase());
+                                    ExceptionState& exception_state) {
+  size_t index = element_->Attributes().FindIndex(
+      name, element_->ShouldIgnoreAttributeCase());
   if (index == kNotFound) {
-    exceptionState.throwDOMException(
-        NotFoundError, "No item with name '" + name + "' was found.");
+    exception_state.ThrowDOMException(
+        kNotFoundError, "No item with name '" + name + "' was found.");
     return nullptr;
   }
-  return m_element->detachAttribute(index);
+  return element_->DetachAttribute(index);
 }
 
-Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI,
-                                      const AtomicString& localName,
-                                      ExceptionState& exceptionState) {
-  size_t index = m_element->attributes().findIndex(
-      QualifiedName(nullAtom, localName, namespaceURI));
+Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespace_uri,
+                                      const AtomicString& local_name,
+                                      ExceptionState& exception_state) {
+  size_t index = element_->Attributes().FindIndex(
+      QualifiedName(g_null_atom, local_name, namespace_uri));
   if (index == kNotFound) {
-    exceptionState.throwDOMException(
-        NotFoundError, "No item with name '" + namespaceURI + "::" + localName +
-                           "' was found.");
+    exception_state.ThrowDOMException(kNotFoundError,
+                                      "No item with name '" + namespace_uri +
+                                          "::" + local_name + "' was found.");
     return nullptr;
   }
-  return m_element->detachAttribute(index);
+  return element_->DetachAttribute(index);
 }
 
-Attr* NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState) {
+Attr* NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exception_state) {
   DCHECK(attr);
-  return m_element->setAttributeNode(attr, exceptionState);
+  return element_->setAttributeNode(attr, exception_state);
 }
 
-Attr* NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState) {
+Attr* NamedNodeMap::setNamedItemNS(Attr* attr,
+                                   ExceptionState& exception_state) {
   DCHECK(attr);
-  return m_element->setAttributeNodeNS(attr, exceptionState);
+  return element_->setAttributeNodeNS(attr, exception_state);
 }
 
 Attr* NamedNodeMap::item(unsigned index) const {
-  AttributeCollection attributes = m_element->attributes();
+  AttributeCollection attributes = element_->Attributes();
   if (index >= attributes.size())
     return nullptr;
-  return m_element->ensureAttr(attributes[index].name());
+  return element_->EnsureAttr(attributes[index].GetName());
 }
 
 size_t NamedNodeMap::length() const {
-  return m_element->attributes().size();
+  return element_->Attributes().size();
 }
 
 DEFINE_TRACE(NamedNodeMap) {
-  visitor->trace(m_element);
+  visitor->Trace(element_);
 }
 
 }  // namespace blink

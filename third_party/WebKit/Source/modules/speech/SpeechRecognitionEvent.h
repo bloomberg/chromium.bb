@@ -40,17 +40,17 @@ class SpeechRecognitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionEvent* create(const AtomicString&,
+  static SpeechRecognitionEvent* Create(const AtomicString&,
                                         const SpeechRecognitionEventInit&);
   ~SpeechRecognitionEvent() override;
 
-  static SpeechRecognitionEvent* createResult(
-      unsigned long resultIndex,
+  static SpeechRecognitionEvent* CreateResult(
+      unsigned long result_index,
       const HeapVector<Member<SpeechRecognitionResult>>& results);
-  static SpeechRecognitionEvent* createNoMatch(SpeechRecognitionResult*);
+  static SpeechRecognitionEvent* CreateNoMatch(SpeechRecognitionResult*);
 
-  unsigned long resultIndex() const { return m_resultIndex; }
-  SpeechRecognitionResultList* results() const { return m_results; }
+  unsigned long resultIndex() const { return result_index_; }
+  SpeechRecognitionResultList* results() const { return results_; }
 
   // These two methods are here to satisfy the specification which requires
   // these attributes to exist.
@@ -58,19 +58,19 @@ class SpeechRecognitionEvent final : public Event {
   Document* emma() { return nullptr; }
 
   // Event
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   SpeechRecognitionEvent(const AtomicString&,
                          const SpeechRecognitionEventInit&);
-  SpeechRecognitionEvent(const AtomicString& eventName,
-                         unsigned long resultIndex,
+  SpeechRecognitionEvent(const AtomicString& event_name,
+                         unsigned long result_index,
                          SpeechRecognitionResultList* results);
 
-  unsigned long m_resultIndex;
-  Member<SpeechRecognitionResultList> m_results;
+  unsigned long result_index_;
+  Member<SpeechRecognitionResultList> results_;
 };
 
 }  // namespace blink

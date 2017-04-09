@@ -37,7 +37,7 @@ class CORE_EXPORT PaintInvalidationState {
   WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 
  public:
-  PaintInvalidationState(const PaintInvalidationState& parentState,
+  PaintInvalidationState(const PaintInvalidationState& parent_state,
                          const LayoutObject&);
 
   // For root LayoutView, or when sub-frame LayoutView's
@@ -47,129 +47,130 @@ class CORE_EXPORT PaintInvalidationState {
   // TODO(wangxianzhu): Eliminate the latter case.
   PaintInvalidationState(
       const LayoutView&,
-      Vector<const LayoutObject*>& pendingDelayedPaintInvalidations);
+      Vector<const LayoutObject*>& pending_delayed_paint_invalidations);
 
   // When a PaintInvalidationState is constructed, it can be used to map
   // points/rects in the object's local space (border box space for
   // LayoutBoxes). After invalidation of the current object, before invalidation
   // of the subtrees, this method must be called to apply clip and scroll offset
   // etc. for creating child PaintInvalidationStates.
-  void updateForChildren(PaintInvalidationReason);
+  void UpdateForChildren(PaintInvalidationReason);
 
-  bool hasForcedSubtreeInvalidationFlags() const {
-    return m_forcedSubtreeInvalidationFlags;
-  }
-
-  bool forcedSubtreeInvalidationCheckingWithinContainer() const {
-    return m_forcedSubtreeInvalidationFlags &
-           PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
-  }
-  void setForceSubtreeInvalidationCheckingWithinContainer() {
-    m_forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
+  bool HasForcedSubtreeInvalidationFlags() const {
+    return forced_subtree_invalidation_flags_;
   }
 
-  bool forcedSubtreeFullInvalidationWithinContainer() const {
-    return m_forcedSubtreeInvalidationFlags &
-           PaintInvalidatorContext::ForcedSubtreeFullInvalidation;
+  bool ForcedSubtreeInvalidationCheckingWithinContainer() const {
+    return forced_subtree_invalidation_flags_ &
+           PaintInvalidatorContext::kForcedSubtreeInvalidationChecking;
+  }
+  void SetForceSubtreeInvalidationCheckingWithinContainer() {
+    forced_subtree_invalidation_flags_ |=
+        PaintInvalidatorContext::kForcedSubtreeInvalidationChecking;
   }
 
-  bool forcedSubtreeInvalidationRectUpdateWithinContainerOnly() const {
-    return m_forcedSubtreeInvalidationFlags ==
-           PaintInvalidatorContext::ForcedSubtreeVisualRectUpdate;
-  }
-  void setForceSubtreeInvalidationRectUpdateWithinContainer() {
-    m_forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeVisualRectUpdate;
+  bool ForcedSubtreeFullInvalidationWithinContainer() const {
+    return forced_subtree_invalidation_flags_ &
+           PaintInvalidatorContext::kForcedSubtreeFullInvalidation;
   }
 
-  const LayoutBoxModelObject& paintInvalidationContainer() const {
-    return *m_paintInvalidationContainer;
+  bool ForcedSubtreeInvalidationRectUpdateWithinContainerOnly() const {
+    return forced_subtree_invalidation_flags_ ==
+           PaintInvalidatorContext::kForcedSubtreeVisualRectUpdate;
+  }
+  void SetForceSubtreeInvalidationRectUpdateWithinContainer() {
+    forced_subtree_invalidation_flags_ |=
+        PaintInvalidatorContext::kForcedSubtreeVisualRectUpdate;
+  }
+
+  const LayoutBoxModelObject& PaintInvalidationContainer() const {
+    return *paint_invalidation_container_;
   }
 
   // Computes the location of the current object ((0,0) in the space of the
   // object) in the space of paint invalidation backing.
-  LayoutPoint computeLocationInBacking(
-      const LayoutPoint& visualRectLocation) const;
+  LayoutPoint ComputeLocationInBacking(
+      const LayoutPoint& visual_rect_location) const;
 
   // Returns the rect bounds needed to invalidate paint of this object,
   // in the space of paint invalidation backing.
-  LayoutRect computeVisualRectInBacking() const;
+  LayoutRect ComputeVisualRectInBacking() const;
 
-  void mapLocalRectToVisualRectInBacking(LayoutRect&) const;
+  void MapLocalRectToVisualRectInBacking(LayoutRect&) const;
 
-  PaintLayer& paintingLayer() const;
+  PaintLayer& PaintingLayer() const;
 
-  const LayoutObject& currentObject() const { return m_currentObject; }
+  const LayoutObject& CurrentObject() const { return current_object_; }
 
  private:
   friend class VisualRectMappingTest;
   friend class PaintInvalidatorContextAdapter;
 
-  inline PaintLayer& childPaintingLayer(const LayoutObject& child) const;
+  inline PaintLayer& ChildPaintingLayer(const LayoutObject& child) const;
 
-  void mapLocalRectToPaintInvalidationContainer(LayoutRect&) const;
+  void MapLocalRectToPaintInvalidationContainer(LayoutRect&) const;
 
-  void updateForCurrentObject(const PaintInvalidationState& parentState);
-  void updateForNormalChildren();
+  void UpdateForCurrentObject(const PaintInvalidationState& parent_state);
+  void UpdateForNormalChildren();
 
-  LayoutRect computeVisualRectInBackingForSVG() const;
+  LayoutRect ComputeVisualRectInBackingForSVG() const;
 
-  void addClipRectRelativeToPaintOffset(const LayoutRect& localClipRect);
+  void AddClipRectRelativeToPaintOffset(const LayoutRect& local_clip_rect);
 
-  const LayoutObject& m_currentObject;
+  const LayoutObject& current_object_;
 
-  unsigned m_forcedSubtreeInvalidationFlags;
+  unsigned forced_subtree_invalidation_flags_;
 
-  bool m_clipped;
-  bool m_clippedForAbsolutePosition;
+  bool clipped_;
+  bool clipped_for_absolute_position_;
 
   // Clip rect from paintInvalidationContainer if m_cachedOffsetsEnabled is
   // true.
-  LayoutRect m_clipRect;
-  LayoutRect m_clipRectForAbsolutePosition;
+  LayoutRect clip_rect_;
+  LayoutRect clip_rect_for_absolute_position_;
 
   // x/y offset from the paintInvalidationContainer if m_cachedOffsetsEnabled is
   // true.
   // It includes relative positioning and scroll offsets.
-  LayoutSize m_paintOffset;
-  LayoutSize m_paintOffsetForAbsolutePosition;
+  LayoutSize paint_offset_;
+  LayoutSize paint_offset_for_absolute_position_;
 
   // Whether m_paintOffset[XXX] and m_clipRect[XXX] are valid and can be used
   // to map a rect from space of the current object to space of
   // paintInvalidationContainer.
-  bool m_cachedOffsetsEnabled;
-  bool m_cachedOffsetsForAbsolutePositionEnabled;
+  bool cached_offsets_enabled_;
+  bool cached_offsets_for_absolute_position_enabled_;
 
   // The following two fields are never null. Declare them as pointers because
   // we need some logic to initialize them in the body of the constructor.
 
   // The current paint invalidation container for normal flow objects.
   // It is the enclosing composited object.
-  const LayoutBoxModelObject* m_paintInvalidationContainer;
+  const LayoutBoxModelObject* paint_invalidation_container_;
 
   // The current paint invalidation container for stacked contents (stacking
   // contexts or positioned objects).  It is the nearest ancestor composited
   // object which establishes a stacking context.  See
   // Source/core/paint/README.md ### PaintInvalidationState for details on how
   // stacked contents' paint invalidation containers differ.
-  const LayoutBoxModelObject* m_paintInvalidationContainerForStackedContents;
+  const LayoutBoxModelObject*
+      paint_invalidation_container_for_stacked_contents_;
 
-  const LayoutObject& m_containerForAbsolutePosition;
+  const LayoutObject& container_for_absolute_position_;
 
   // Transform from the initial viewport coordinate system of an outermost
   // SVG root to the userspace _before_ the relevant element. Combining this
   // with |m_paintOffset| yields the "final" offset.
-  AffineTransform m_svgTransform;
+  AffineTransform svg_transform_;
 
   // Records objects needing paint invalidation on the next frame. See the
   // definition of PaintInvalidationDelayedFull for more details.
-  Vector<const LayoutObject*>& m_pendingDelayedPaintInvalidations;
+  Vector<const LayoutObject*>& pending_delayed_paint_invalidations_;
 
-  PaintLayer& m_paintingLayer;
+  PaintLayer& painting_layer_;
 
 #if DCHECK_IS_ON()
-  bool m_didUpdateForChildren = false;
+  bool did_update_for_children_ = false;
 #endif
 
 #if DCHECK_IS_ON() && !defined(NDEBUG)
@@ -189,11 +190,11 @@ class CORE_EXPORT PaintInvalidationState {
 class PaintInvalidatorContextAdapter : public PaintInvalidatorContext {
  public:
   PaintInvalidatorContextAdapter(const PaintInvalidationState&);
-  void mapLocalRectToVisualRectInBacking(const LayoutObject&,
+  void MapLocalRectToVisualRectInBacking(const LayoutObject&,
                                          LayoutRect&) const override;
 
  private:
-  const PaintInvalidationState& m_paintInvalidationState;
+  const PaintInvalidationState& paint_invalidation_state_;
 };
 
 }  // namespace blink

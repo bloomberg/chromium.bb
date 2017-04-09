@@ -40,11 +40,11 @@ class VTTTokenTypes {
 
  public:
   enum Type {
-    Uninitialized,
-    Character,
-    StartTag,
-    EndTag,
-    TimestampTag,
+    kUninitialized,
+    kCharacter,
+    kStartTag,
+    kEndTag,
+    kTimestampTag,
   };
 };
 
@@ -54,39 +54,39 @@ class VTTToken {
  public:
   typedef VTTTokenTypes Type;
 
-  VTTToken() : m_type(Type::Uninitialized) {}
+  VTTToken() : type_(Type::kUninitialized) {}
 
-  static VTTToken StringToken(const String& characterData) {
-    return VTTToken(Type::Character, characterData);
+  static VTTToken StringToken(const String& character_data) {
+    return VTTToken(Type::kCharacter, character_data);
   }
-  static VTTToken StartTag(const String& tagName,
-                           const AtomicString& classes = emptyAtom,
-                           const AtomicString& annotation = emptyAtom) {
-    VTTToken token(Type::StartTag, tagName);
-    token.m_classes = classes;
-    token.m_annotation = annotation;
+  static VTTToken StartTag(const String& tag_name,
+                           const AtomicString& classes = g_empty_atom,
+                           const AtomicString& annotation = g_empty_atom) {
+    VTTToken token(Type::kStartTag, tag_name);
+    token.classes_ = classes;
+    token.annotation_ = annotation;
     return token;
   }
-  static VTTToken EndTag(const String& tagName) {
-    return VTTToken(Type::EndTag, tagName);
+  static VTTToken EndTag(const String& tag_name) {
+    return VTTToken(Type::kEndTag, tag_name);
   }
-  static VTTToken TimestampTag(const String& timestampData) {
-    return VTTToken(Type::TimestampTag, timestampData);
+  static VTTToken TimestampTag(const String& timestamp_data) {
+    return VTTToken(Type::kTimestampTag, timestamp_data);
   }
 
-  Type::Type type() const { return m_type; }
-  const String& name() const { return m_data; }
-  const String& characters() const { return m_data; }
-  const AtomicString& classes() const { return m_classes; }
-  const AtomicString& annotation() const { return m_annotation; }
+  Type::Type GetType() const { return type_; }
+  const String& GetName() const { return data_; }
+  const String& Characters() const { return data_; }
+  const AtomicString& Classes() const { return classes_; }
+  const AtomicString& Annotation() const { return annotation_; }
 
  private:
-  VTTToken(Type::Type type, const String& data) : m_type(type), m_data(data) {}
+  VTTToken(Type::Type type, const String& data) : type_(type), data_(data) {}
 
-  Type::Type m_type;
-  String m_data;
-  AtomicString m_annotation;
-  AtomicString m_classes;
+  Type::Type type_;
+  String data_;
+  AtomicString annotation_;
+  AtomicString classes_;
 };
 
 }  // namespace blink

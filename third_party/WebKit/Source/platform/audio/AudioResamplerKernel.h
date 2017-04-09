@@ -50,36 +50,36 @@ class PLATFORM_EXPORT AudioResamplerKernel {
   // be copied. This sample data provides the input to the resampler when
   // process() is called.  framesToProcess must be less than or equal to
   // MaxFramesToProcess.
-  float* getSourcePointer(size_t framesToProcess,
-                          size_t* numberOfSourceFramesNeeded);
+  float* GetSourcePointer(size_t frames_to_process,
+                          size_t* number_of_source_frames_needed);
 
   // process() resamples framesToProcess frames from the source into
   // destination.  Each call to process() must be preceded by a call to
   // getSourcePointer() so that source input may be supplied.  framesToProcess
   // must be less than or equal to MaxFramesToProcess.
-  void process(float* destination, size_t framesToProcess);
+  void Process(float* destination, size_t frames_to_process);
 
   // Resets the processing state.
-  void reset();
+  void Reset();
 
-  static const size_t MaxFramesToProcess;
+  static const size_t kMaxFramesToProcess;
 
  private:
-  double rate() const;
+  double Rate() const;
 
-  AudioResampler* m_resampler;
-  AudioFloatArray m_sourceBuffer;
+  AudioResampler* resampler_;
+  AudioFloatArray source_buffer_;
 
   // This is a (floating point) read index on the input stream.
-  double m_virtualReadIndex;
+  double virtual_read_index_;
 
   // We need to have continuity from one call of process() to the next.
   // m_lastValues stores the last two sample values from the last call to
   // process().  m_fillIndex represents how many buffered samples we have which
   // can be as many as 2.  For the first call to process() (or after reset())
   // there will be no buffered samples.
-  float m_lastValues[2];
-  unsigned m_fillIndex;
+  float last_values_[2];
+  unsigned fill_index_;
 };
 
 }  // namespace blink

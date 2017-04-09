@@ -12,7 +12,7 @@ namespace blink {
 class DocumentParserClient : public GarbageCollectedMixin {
  public:
   // This callback is called when all data pushed to parser has been consumed.
-  virtual void notifyParserStopped() = 0;
+  virtual void NotifyParserStopped() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

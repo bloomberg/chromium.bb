@@ -20,21 +20,21 @@ class PLATFORM_EXPORT OrientationIterator {
 
  public:
   enum RenderOrientation {
-    OrientationKeep,
-    OrientationRotateSideways,
-    OrientationInvalid
+    kOrientationKeep,
+    kOrientationRotateSideways,
+    kOrientationInvalid
   };
 
   OrientationIterator(const UChar* buffer,
-                      unsigned bufferSize,
-                      FontOrientation runOrientation);
+                      unsigned buffer_size,
+                      FontOrientation run_orientation);
 
-  bool consume(unsigned* orientationLimit, RenderOrientation*);
+  bool Consume(unsigned* orientation_limit, RenderOrientation*);
 
  private:
-  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-  unsigned m_bufferSize;
-  bool m_atEnd;
+  std::unique_ptr<UTF16TextIterator> utf16_iterator_;
+  unsigned buffer_size_;
+  bool at_end_;
 };
 
 }  // namespace blink

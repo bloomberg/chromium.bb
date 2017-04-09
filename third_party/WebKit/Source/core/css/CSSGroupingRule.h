@@ -38,7 +38,7 @@ class CSSGroupingRule : public CSSRule {
  public:
   ~CSSGroupingRule() override;
 
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   CSSRuleList* cssRules() const override;
 
@@ -47,18 +47,18 @@ class CSSGroupingRule : public CSSRule {
 
   // For CSSRuleList
   unsigned length() const;
-  CSSRule* item(unsigned index) const;
+  CSSRule* Item(unsigned index) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent);
+  CSSGroupingRule(StyleRuleGroup* group_rule, CSSStyleSheet* parent);
 
-  void appendCSSTextForItems(StringBuilder&) const;
+  void AppendCSSTextForItems(StringBuilder&) const;
 
-  Member<StyleRuleGroup> m_groupRule;
-  mutable HeapVector<Member<CSSRule>> m_childRuleCSSOMWrappers;
-  mutable Member<CSSRuleList> m_ruleListCSSOMWrapper;
+  Member<StyleRuleGroup> group_rule_;
+  mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
+  mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
 };
 
 }  // namespace blink

@@ -52,93 +52,93 @@ class HTMLFormattingElementList {
 
    public:
     // Inline because they're hot and Vector<T> uses them.
-    explicit Entry(HTMLStackItem* item) : m_item(item) {}
-    enum MarkerEntryType { MarkerEntry };
-    explicit Entry(MarkerEntryType) : m_item(nullptr) {}
+    explicit Entry(HTMLStackItem* item) : item_(item) {}
+    enum MarkerEntryType { kMarkerEntry };
+    explicit Entry(MarkerEntryType) : item_(nullptr) {}
     ~Entry() {}
 
-    bool isMarker() const { return !m_item; }
+    bool IsMarker() const { return !item_; }
 
-    HTMLStackItem* stackItem() const { return m_item; }
-    Element* element() const {
+    HTMLStackItem* StackItem() const { return item_; }
+    Element* GetElement() const {
       // The fact that !m_item == isMarker() is an implementation detail callers
       // should check isMarker() before calling element().
-      DCHECK(m_item);
-      return m_item->element();
+      DCHECK(item_);
+      return item_->GetElement();
     }
-    void replaceElement(HTMLStackItem* item) { m_item = item; }
+    void ReplaceElement(HTMLStackItem* item) { item_ = item; }
 
     // Needed for use with Vector.  These are super-hot and must be inline.
     bool operator==(Element* element) const {
-      return !m_item ? !element : m_item->element() == element;
+      return !item_ ? !element : item_->GetElement() == element;
     }
     bool operator!=(Element* element) const {
-      return !m_item ? !!element : m_item->element() != element;
+      return !item_ ? !!element : item_->GetElement() != element;
     }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_item); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(item_); }
 
    private:
-    Member<HTMLStackItem> m_item;
+    Member<HTMLStackItem> item_;
   };
 
   class Bookmark {
     STACK_ALLOCATED();
 
    public:
-    explicit Bookmark(Entry* entry) : m_hasBeenMoved(false), m_mark(entry) {}
+    explicit Bookmark(Entry* entry) : has_been_moved_(false), mark_(entry) {}
 
-    void moveToAfter(Entry* before) {
-      m_hasBeenMoved = true;
-      m_mark = before;
+    void MoveToAfter(Entry* before) {
+      has_been_moved_ = true;
+      mark_ = before;
     }
 
-    bool hasBeenMoved() const { return m_hasBeenMoved; }
-    Entry* mark() const { return m_mark; }
+    bool HasBeenMoved() const { return has_been_moved_; }
+    Entry* Mark() const { return mark_; }
 
    private:
-    bool m_hasBeenMoved;
-    Entry* m_mark;
+    bool has_been_moved_;
+    Entry* mark_;
   };
 
-  bool isEmpty() const { return !size(); }
-  size_t size() const { return m_entries.size(); }
+  bool IsEmpty() const { return !size(); }
+  size_t size() const { return entries_.size(); }
 
-  Element* closestElementInScopeWithName(const AtomicString&);
+  Element* ClosestElementInScopeWithName(const AtomicString&);
 
-  Entry* find(Element*);
-  bool contains(Element*);
-  void append(HTMLStackItem*);
-  void remove(Element*);
+  Entry* Find(Element*);
+  bool Contains(Element*);
+  void Append(HTMLStackItem*);
+  void Remove(Element*);
 
-  Bookmark bookmarkFor(Element*);
-  void swapTo(Element* oldElement, HTMLStackItem* newItem, const Bookmark&);
+  Bookmark BookmarkFor(Element*);
+  void SwapTo(Element* old_element, HTMLStackItem* new_item, const Bookmark&);
 
-  void appendMarker();
+  void AppendMarker();
   // clearToLastMarker also clears the marker (per the HTML5 spec).
-  void clearToLastMarker();
+  void ClearToLastMarker();
 
-  const Entry& at(size_t i) const { return m_entries[i]; }
-  Entry& at(size_t i) { return m_entries[i]; }
+  const Entry& at(size_t i) const { return entries_[i]; }
+  Entry& at(size_t i) { return entries_[i]; }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_entries); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(entries_); }
 
 #ifndef NDEBUG
-  void show();
+  void Show();
 #endif
 
  private:
-  Entry* first() { return &at(0); }
+  Entry* First() { return &at(0); }
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#list-of-active-formatting-elements
   // These functions enforce the "Noah's Ark" condition, which removes redundant
   // mis-nested elements.
-  void tryToEnsureNoahsArkConditionQuickly(
+  void TryToEnsureNoahsArkConditionQuickly(
       HTMLStackItem*,
-      HeapVector<Member<HTMLStackItem>>& remainingCandiates);
-  void ensureNoahsArkCondition(HTMLStackItem*);
+      HeapVector<Member<HTMLStackItem>>& remaining_candiates);
+  void EnsureNoahsArkCondition(HTMLStackItem*);
 
-  HeapVector<Entry> m_entries;
+  HeapVector<Entry> entries_;
 };
 
 }  // namespace blink

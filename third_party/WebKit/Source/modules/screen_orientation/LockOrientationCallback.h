@@ -27,11 +27,11 @@ class LockOrientationCallback final : public WebLockOrientationCallback {
   explicit LockOrientationCallback(ScriptPromiseResolver*);
   ~LockOrientationCallback() override;
 
-  void onSuccess() override;
-  void onError(WebLockOrientationError) override;
+  void OnSuccess() override;
+  void OnError(WebLockOrientationError) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

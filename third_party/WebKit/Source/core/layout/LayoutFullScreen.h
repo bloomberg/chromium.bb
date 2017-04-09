@@ -36,45 +36,45 @@ class LayoutBlockFlow;
 
 class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
  public:
-  static LayoutFullScreen* createAnonymous(Document*);
+  static LayoutFullScreen* CreateAnonymous(Document*);
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectLayoutFullScreen ||
-           LayoutFlexibleBox::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectLayoutFullScreen ||
+           LayoutFlexibleBox::IsOfType(type);
   }
-  const char* name() const override { return "LayoutFullScreen"; }
+  const char* GetName() const override { return "LayoutFullScreen"; }
 
-  void resetPlaceholder() { m_placeholder = nullptr; }
-  LayoutBlockFlow* placeholder() { return m_placeholder; }
-  void createPlaceholder(PassRefPtr<ComputedStyle>,
-                         const LayoutRect& frameRect);
+  void ResetPlaceholder() { placeholder_ = nullptr; }
+  LayoutBlockFlow* Placeholder() { return placeholder_; }
+  void CreatePlaceholder(PassRefPtr<ComputedStyle>,
+                         const LayoutRect& frame_rect);
 
-  static LayoutObject* wrapLayoutObject(LayoutObject*,
+  static LayoutObject* WrapLayoutObject(LayoutObject*,
                                         LayoutObject*,
                                         Document*);
-  void unwrapLayoutObject();
+  void UnwrapLayoutObject();
 
-  void updateStyle();
-  void updateStyle(LayoutObject* parent);
-  bool anonymousHasStylePropagationOverride() override { return true; }
+  void UpdateStyle();
+  void UpdateStyle(LayoutObject* parent);
+  bool AnonymousHasStylePropagationOverride() override { return true; }
 
   // Must call setStyleWithWritingModeOfParent() instead.
-  void setStyle(PassRefPtr<ComputedStyle>) = delete;
+  void SetStyle(PassRefPtr<ComputedStyle>) = delete;
 
  private:
   LayoutFullScreen();
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
  protected:
-  LayoutBlockFlow* m_placeholder;
-  ItemPosition selfAlignmentNormalBehavior(
+  LayoutBlockFlow* placeholder_;
+  ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const override {
     DCHECK(!child);
-    return ItemPositionCenter;
+    return kItemPositionCenter;
   }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, isLayoutFullScreen());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, IsLayoutFullScreen());
 
 }  // namespace blink
 

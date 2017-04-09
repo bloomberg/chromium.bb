@@ -40,19 +40,19 @@ class Event;
 
 class WebDOMEvent {
  public:
-  ~WebDOMEvent() { reset(); }
+  ~WebDOMEvent() { Reset(); }
 
   WebDOMEvent() {}
-  WebDOMEvent(const WebDOMEvent& other) { assign(other); }
+  WebDOMEvent(const WebDOMEvent& other) { Assign(other); }
   WebDOMEvent& operator=(const WebDOMEvent& e) {
-    assign(e);
+    Assign(e);
     return *this;
   }
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebDOMEvent&);
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebDOMEvent&);
 
-  bool isNull() const { return m_private.isNull(); }
+  bool IsNull() const { return private_.IsNull(); }
 
 #if BLINK_IMPLEMENTATION
   WebDOMEvent(Event*);
@@ -60,14 +60,14 @@ class WebDOMEvent {
 #endif
 
   template <typename T>
-  T to() {
+  T To() {
     T res;
     res.WebDOMEvent::assign(*this);
     return res;
   }
 
   template <typename T>
-  const T toConst() const {
+  const T ToConst() const {
     T res;
     res.WebDOMEvent::assign(*this);
     return res;
@@ -75,20 +75,20 @@ class WebDOMEvent {
 
  protected:
 #if BLINK_IMPLEMENTATION
-  void assign(Event*);
+  void Assign(Event*);
 
   template <typename T>
-  T* unwrap() {
-    return static_cast<T*>(m_private.get());
+  T* Unwrap() {
+    return static_cast<T*>(private_.Get());
   }
 
   template <typename T>
-  const T* constUnwrap() const {
-    return static_cast<const T*>(m_private.get());
+  const T* ConstUnwrap() const {
+    return static_cast<const T*>(private_.Get());
   }
 #endif
 
-  WebPrivatePtr<Event> m_private;
+  WebPrivatePtr<Event> private_;
 };
 
 }  // namespace blink

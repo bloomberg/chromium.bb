@@ -40,7 +40,7 @@ class WebURL;
 
 class WebMediaStreamRegistry {
  public:
-  BLINK_EXPORT static WebMediaStream lookupMediaStreamDescriptor(const WebURL&);
+  BLINK_EXPORT static WebMediaStream LookupMediaStreamDescriptor(const WebURL&);
 };
 
 }  // namespace blink

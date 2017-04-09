@@ -37,9 +37,9 @@ class HTMLModElement final : public HTMLElement {
  private:
   HTMLModElement(const QualifiedName&, Document&);
 
-  bool isURLAttribute(const Attribute&) const override;
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
 };
 
 }  // namespace blink

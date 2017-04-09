@@ -39,24 +39,24 @@ class ExecutionContext;
 
 class DOMWindowEventQueue final : public EventQueue {
  public:
-  static DOMWindowEventQueue* create(ExecutionContext*);
+  static DOMWindowEventQueue* Create(ExecutionContext*);
   ~DOMWindowEventQueue() override;
 
   // EventQueue
   DECLARE_VIRTUAL_TRACE();
-  bool enqueueEvent(Event*) override;
-  bool cancelEvent(Event*) override;
-  void close() override;
+  bool EnqueueEvent(Event*) override;
+  bool CancelEvent(Event*) override;
+  void Close() override;
 
  private:
   explicit DOMWindowEventQueue(ExecutionContext*);
 
-  void pendingEventTimerFired();
-  void dispatchEvent(Event*);
+  void PendingEventTimerFired();
+  void DispatchEvent(Event*);
 
-  Member<DOMWindowEventQueueTimer> m_pendingEventTimer;
-  HeapListHashSet<Member<Event>, 16> m_queuedEvents;
-  bool m_isClosed;
+  Member<DOMWindowEventQueueTimer> pending_event_timer_;
+  HeapListHashSet<Member<Event>, 16> queued_events_;
+  bool is_closed_;
 
   friend class DOMWindowEventQueueTimer;
 };

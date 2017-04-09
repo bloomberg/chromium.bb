@@ -37,49 +37,49 @@
 
 namespace blink {
 
-SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
-    : m_staticValue(staticValue), m_contextTransform(this, nullptr) {}
+SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& static_value)
+    : static_value_(static_value), context_transform_(this, nullptr) {}
 
 SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
-    : m_contextTransform(this, transform) {
+    : context_transform_(this, transform) {
   DCHECK(transform);
 }
 
 DEFINE_TRACE(SVGMatrixTearOff) {
-  visitor->trace(m_contextTransform);
+  visitor->Trace(context_transform_);
 }
 
 DEFINE_TRACE_WRAPPERS(SVGMatrixTearOff) {
-  visitor->traceWrappers(m_contextTransform);
+  visitor->TraceWrappers(context_transform_);
 }
 
-const AffineTransform& SVGMatrixTearOff::value() const {
-  return m_contextTransform ? m_contextTransform->target()->matrix()
-                            : m_staticValue;
+const AffineTransform& SVGMatrixTearOff::Value() const {
+  return context_transform_ ? context_transform_->Target()->Matrix()
+                            : static_value_;
 }
 
-AffineTransform* SVGMatrixTearOff::mutableValue() {
-  return m_contextTransform ? m_contextTransform->target()->mutableMatrix()
-                            : &m_staticValue;
+AffineTransform* SVGMatrixTearOff::MutableValue() {
+  return context_transform_ ? context_transform_->Target()->MutableMatrix()
+                            : &static_value_;
 }
 
-void SVGMatrixTearOff::commitChange() {
-  if (!m_contextTransform)
+void SVGMatrixTearOff::CommitChange() {
+  if (!context_transform_)
     return;
 
-  m_contextTransform->target()->onMatrixChange();
-  m_contextTransform->commitChange();
+  context_transform_->Target()->OnMatrixChange();
+  context_transform_->CommitChange();
 }
 
 #define DEFINE_SETTER(ATTRIBUTE)                                          \
   void SVGMatrixTearOff::set##ATTRIBUTE(double f,                         \
                                         ExceptionState& exceptionState) { \
-    if (m_contextTransform && m_contextTransform->isImmutable()) {        \
-      SVGPropertyTearOffBase::throwReadOnly(exceptionState);              \
+    if (context_transform_ && context_transform_->IsImmutable()) {        \
+      SVGPropertyTearOffBase::ThrowReadOnly(exceptionState);              \
       return;                                                             \
     }                                                                     \
-    mutableValue()->set##ATTRIBUTE(f);                                    \
-    commitChange();                                                       \
+    MutableValue()->Set##ATTRIBUTE(f);                                    \
+    CommitChange();                                                       \
   }
 
 DEFINE_SETTER(A);
@@ -92,80 +92,80 @@ DEFINE_SETTER(F);
 #undef DEFINE_SETTER
 
 SVGMatrixTearOff* SVGMatrixTearOff::translate(double tx, double ty) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->translate(tx, ty);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->Translate(tx, ty);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::scale(double s) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->scale(s, s);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->Scale(s, s);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::scaleNonUniform(double sx, double sy) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->scale(sx, sy);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->Scale(sx, sy);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::rotate(double d) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->rotate(d);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->Rotate(d);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::flipX() {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->flipX();
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->FlipX();
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::flipY() {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->flipY();
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->FlipY();
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::skewX(double angle) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->skewX(angle);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->SkewX(angle);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::skewY(double angle) {
-  SVGMatrixTearOff* matrix = create(value());
-  matrix->mutableValue()->skewY(angle);
+  SVGMatrixTearOff* matrix = Create(Value());
+  matrix->MutableValue()->SkewY(angle);
   return matrix;
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::multiply(SVGMatrixTearOff* other) {
-  SVGMatrixTearOff* matrix = create(value());
-  *matrix->mutableValue() *= other->value();
+  SVGMatrixTearOff* matrix = Create(Value());
+  *matrix->MutableValue() *= other->Value();
   return matrix;
 }
 
-SVGMatrixTearOff* SVGMatrixTearOff::inverse(ExceptionState& exceptionState) {
-  if (!value().isInvertible()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The matrix is not invertible.");
+SVGMatrixTearOff* SVGMatrixTearOff::inverse(ExceptionState& exception_state) {
+  if (!Value().IsInvertible()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "The matrix is not invertible.");
     return nullptr;
   }
-  return create(value().inverse());
+  return Create(Value().Inverse());
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::rotateFromVector(
     double x,
     double y,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   if (!x || !y) {
-    exceptionState.throwDOMException(InvalidAccessError,
-                                     "Arguments cannot be zero.");
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "Arguments cannot be zero.");
     return nullptr;
   }
-  AffineTransform copy = value();
-  copy.rotateFromVector(x, y);
-  return create(copy);
+  AffineTransform copy = Value();
+  copy.RotateFromVector(x, y);
+  return Create(copy);
 }
 
 }  // namespace blink

@@ -46,74 +46,74 @@ namespace blink {
 // All ranges we care about should fit within 32 bits.
 
 // Frequently used range definitions
-const unsigned char cRangeCyrillic = 0;
-const unsigned char cRangeGreek = 1;
-const unsigned char cRangeTurkish = 2;
-const unsigned char cRangeHebrew = 3;
-const unsigned char cRangeArabic = 4;
-const unsigned char cRangeBaltic = 5;
-const unsigned char cRangeThai = 6;
-const unsigned char cRangeKorean = 7;
-const unsigned char cRangeJapanese = 8;
-const unsigned char cRangeSChinese = 9;
-const unsigned char cRangeTChinese = 10;
-const unsigned char cRangeDevanagari = 11;
-const unsigned char cRangeTamil = 12;
-const unsigned char cRangeArmenian = 13;
-const unsigned char cRangeBengali = 14;
-const unsigned char cRangeCanadian = 15;
-const unsigned char cRangeEthiopic = 16;
-const unsigned char cRangeGeorgian = 17;
-const unsigned char cRangeGujarati = 18;
-const unsigned char cRangeGurmukhi = 19;
-const unsigned char cRangeKhmer = 20;
-const unsigned char cRangeMalayalam = 21;
+const unsigned char kCRangeCyrillic = 0;
+const unsigned char kCRangeGreek = 1;
+const unsigned char kCRangeTurkish = 2;
+const unsigned char kCRangeHebrew = 3;
+const unsigned char kCRangeArabic = 4;
+const unsigned char kCRangeBaltic = 5;
+const unsigned char kCRangeThai = 6;
+const unsigned char kCRangeKorean = 7;
+const unsigned char kCRangeJapanese = 8;
+const unsigned char kCRangeSChinese = 9;
+const unsigned char kCRangeTChinese = 10;
+const unsigned char kCRangeDevanagari = 11;
+const unsigned char kCRangeTamil = 12;
+const unsigned char kCRangeArmenian = 13;
+const unsigned char kCRangeBengali = 14;
+const unsigned char kCRangeCanadian = 15;
+const unsigned char kCRangeEthiopic = 16;
+const unsigned char kCRangeGeorgian = 17;
+const unsigned char kCRangeGujarati = 18;
+const unsigned char kCRangeGurmukhi = 19;
+const unsigned char kCRangeKhmer = 20;
+const unsigned char kCRangeMalayalam = 21;
 
-const unsigned char cRangeSpecificItemNum = 22;
+const unsigned char kCRangeSpecificItemNum = 22;
 
 // range/rangeSet grow to this place 22-29
 
-const unsigned char cRangeSetStart =
+const unsigned char kCRangeSetStart =
     30;  // range set definition starts from here
-const unsigned char cRangeSetLatin = 30;
-const unsigned char cRangeSetCJK = 31;
-const unsigned char cRangeSetEnd = 31;  // range set definition ends here
+const unsigned char kCRangeSetLatin = 30;
+const unsigned char kCRangeSetCJK = 31;
+const unsigned char kCRangeSetEnd = 31;  // range set definition ends here
 
 // less frequently used range definition
-const unsigned char cRangeSurrogate = 32;
-const unsigned char cRangePrivate = 33;
-const unsigned char cRangeMisc = 34;
-const unsigned char cRangeUnassigned = 35;
-const unsigned char cRangeSyriac = 36;
-const unsigned char cRangeThaana = 37;
-const unsigned char cRangeOriya = 38;
-const unsigned char cRangeTelugu = 39;
-const unsigned char cRangeKannada = 40;
-const unsigned char cRangeSinhala = 41;
-const unsigned char cRangeLao = 42;
-const unsigned char cRangeTibetan = 43;
-const unsigned char cRangeMyanmar = 44;
-const unsigned char cRangeCherokee = 45;
-const unsigned char cRangeOghamRunic = 46;
-const unsigned char cRangeMongolian = 47;
-const unsigned char cRangeMathOperators = 48;
-const unsigned char cRangeMiscTechnical = 49;
-const unsigned char cRangeControlOpticalEnclose = 50;
-const unsigned char cRangeBoxBlockGeometrics = 51;
-const unsigned char cRangeMiscSymbols = 52;
-const unsigned char cRangeDingbats = 53;
-const unsigned char cRangeBraillePattern = 54;
-const unsigned char cRangeYi = 55;
-const unsigned char cRangeCombiningDiacriticalMarks = 56;
-const unsigned char cRangeSpecials = 57;
+const unsigned char kCRangeSurrogate = 32;
+const unsigned char kCRangePrivate = 33;
+const unsigned char kCRangeMisc = 34;
+const unsigned char kCRangeUnassigned = 35;
+const unsigned char kCRangeSyriac = 36;
+const unsigned char kCRangeThaana = 37;
+const unsigned char kCRangeOriya = 38;
+const unsigned char kCRangeTelugu = 39;
+const unsigned char kCRangeKannada = 40;
+const unsigned char kCRangeSinhala = 41;
+const unsigned char kCRangeLao = 42;
+const unsigned char kCRangeTibetan = 43;
+const unsigned char kCRangeMyanmar = 44;
+const unsigned char kCRangeCherokee = 45;
+const unsigned char kCRangeOghamRunic = 46;
+const unsigned char kCRangeMongolian = 47;
+const unsigned char kCRangeMathOperators = 48;
+const unsigned char kCRangeMiscTechnical = 49;
+const unsigned char kCRangeControlOpticalEnclose = 50;
+const unsigned char kCRangeBoxBlockGeometrics = 51;
+const unsigned char kCRangeMiscSymbols = 52;
+const unsigned char kCRangeDingbats = 53;
+const unsigned char kCRangeBraillePattern = 54;
+const unsigned char kCRangeYi = 55;
+const unsigned char kCRangeCombiningDiacriticalMarks = 56;
+const unsigned char kCRangeSpecials = 57;
 
-const unsigned char cRangeTableBase =
+const unsigned char kCRangeTableBase =
     128;  // values over 127 are reserved for internal use only
-const unsigned char cRangeTertiaryTable = 145;  // leave room for 16 subtable
-                                                // indices (cRangeTableBase + 1
-                                                // .. cRangeTableBase + 16)
+const unsigned char kCRangeTertiaryTable = 145;  // leave room for 16 subtable
+                                                 // indices (cRangeTableBase + 1
+                                                 // .. cRangeTableBase + 16)
 
-PLATFORM_EXPORT unsigned findCharUnicodeRange(UChar32);
+PLATFORM_EXPORT unsigned FindCharUnicodeRange(UChar32);
 
 }  // namespace blink
 

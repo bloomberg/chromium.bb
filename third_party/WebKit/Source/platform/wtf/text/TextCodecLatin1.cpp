@@ -34,7 +34,7 @@
 
 namespace WTF {
 
-static const UChar table[256] = {
+static const UChar kTable[256] = {
     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,  // 00-07
     0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,  // 08-0F
     0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,  // 10-17
@@ -69,7 +69,7 @@ static const UChar table[256] = {
     0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x00FF   // F8-FF
 };
 
-void TextCodecLatin1::registerEncodingNames(EncodingNameRegistrar registrar) {
+void TextCodecLatin1::RegisterEncodingNames(EncodingNameRegistrar registrar) {
   // Taken from the alias table at https://encoding.spec.whatwg.org/
   registrar("windows-1252", "windows-1252");
   registrar("ANSI_X3.4-1968", "windows-1252");
@@ -90,47 +90,47 @@ void TextCodecLatin1::registerEncodingNames(EncodingNameRegistrar registrar) {
   registrar("x-cp1252", "windows-1252");
 }
 
-static std::unique_ptr<TextCodec> newStreamingTextDecoderWindowsLatin1(
+static std::unique_ptr<TextCodec> NewStreamingTextDecoderWindowsLatin1(
     const TextEncoding&,
     const void*) {
-  return WTF::wrapUnique(new TextCodecLatin1);
+  return WTF::WrapUnique(new TextCodecLatin1);
 }
 
-void TextCodecLatin1::registerCodecs(TextCodecRegistrar registrar) {
-  registrar("windows-1252", newStreamingTextDecoderWindowsLatin1, 0);
+void TextCodecLatin1::RegisterCodecs(TextCodecRegistrar registrar) {
+  registrar("windows-1252", NewStreamingTextDecoderWindowsLatin1, 0);
 
   // ASCII and Latin-1 both decode as Windows Latin-1 although they retain
   // unique identities.
-  registrar("ISO-8859-1", newStreamingTextDecoderWindowsLatin1, 0);
-  registrar("US-ASCII", newStreamingTextDecoderWindowsLatin1, 0);
+  registrar("ISO-8859-1", NewStreamingTextDecoderWindowsLatin1, 0);
+  registrar("US-ASCII", NewStreamingTextDecoderWindowsLatin1, 0);
 }
 
-String TextCodecLatin1::decode(const char* bytes,
+String TextCodecLatin1::Decode(const char* bytes,
                                size_t length,
                                FlushBehavior,
                                bool,
                                bool&) {
   LChar* characters;
   if (!length)
-    return emptyString;
-  String result = String::createUninitialized(length, characters);
+    return g_empty_string;
+  String result = String::CreateUninitialized(length, characters);
 
   const uint8_t* source = reinterpret_cast<const uint8_t*>(bytes);
   const uint8_t* end = reinterpret_cast<const uint8_t*>(bytes + length);
-  const uint8_t* alignedEnd = alignToMachineWord(end);
+  const uint8_t* aligned_end = AlignToMachineWord(end);
   LChar* destination = characters;
 
   while (source < end) {
-    if (isASCII(*source)) {
+    if (IsASCII(*source)) {
       // Fast path for ASCII. Most Latin-1 text will be ASCII.
-      if (isAlignedToMachineWord(source)) {
-        while (source < alignedEnd) {
+      if (IsAlignedToMachineWord(source)) {
+        while (source < aligned_end) {
           MachineWord chunk = *reinterpret_cast_ptr<const MachineWord*>(source);
 
-          if (!isAllASCII<LChar>(chunk))
+          if (!IsAllASCII<LChar>(chunk))
             goto useLookupTable;
 
-          copyASCIIMachineWord(destination, source);
+          CopyASCIIMachineWord(destination, source);
           source += sizeof(MachineWord);
           destination += sizeof(MachineWord);
         }
@@ -141,10 +141,10 @@ String TextCodecLatin1::decode(const char* bytes,
       *destination = *source;
     } else {
     useLookupTable:
-      if (table[*source] > 0xff)
+      if (kTable[*source] > 0xff)
         goto upConvertTo16Bit;
 
-      *destination = static_cast<LChar>(table[*source]);
+      *destination = static_cast<LChar>(kTable[*source]);
     }
 
     ++source;
@@ -155,33 +155,33 @@ String TextCodecLatin1::decode(const char* bytes,
 
 upConvertTo16Bit:
   UChar* characters16;
-  String result16 = String::createUninitialized(length, characters16);
+  String result16 = String::CreateUninitialized(length, characters16);
 
   UChar* destination16 = characters16;
 
   // Zero extend and copy already processed 8 bit data
   LChar* ptr8 = characters;
-  LChar* endPtr8 = destination;
+  LChar* end_ptr8 = destination;
 
-  while (ptr8 < endPtr8)
+  while (ptr8 < end_ptr8)
     *destination16++ = *ptr8++;
 
   // Handle the character that triggered the 16 bit path
-  *destination16 = table[*source];
+  *destination16 = kTable[*source];
   ++source;
   ++destination16;
 
   while (source < end) {
-    if (isASCII(*source)) {
+    if (IsASCII(*source)) {
       // Fast path for ASCII. Most Latin-1 text will be ASCII.
-      if (isAlignedToMachineWord(source)) {
-        while (source < alignedEnd) {
+      if (IsAlignedToMachineWord(source)) {
+        while (source < aligned_end) {
           MachineWord chunk = *reinterpret_cast_ptr<const MachineWord*>(source);
 
-          if (!isAllASCII<LChar>(chunk))
+          if (!IsAllASCII<LChar>(chunk))
             goto useLookupTable16;
 
-          copyASCIIMachineWord(destination16, source);
+          CopyASCIIMachineWord(destination16, source);
           source += sizeof(MachineWord);
           destination16 += sizeof(MachineWord);
         }
@@ -192,7 +192,7 @@ upConvertTo16Bit:
       *destination16 = *source;
     } else {
     useLookupTable16:
-      *destination16 = table[*source];
+      *destination16 = kTable[*source];
     }
 
     ++source;
@@ -203,14 +203,14 @@ upConvertTo16Bit:
 }
 
 template <typename CharType>
-static CString encodeComplexWindowsLatin1(const CharType* characters,
+static CString EncodeComplexWindowsLatin1(const CharType* characters,
                                           size_t length,
                                           UnencodableHandling handling) {
-  size_t targetLength = length;
-  Vector<char> result(targetLength);
-  char* bytes = result.data();
+  size_t target_length = length;
+  Vector<char> result(target_length);
+  char* bytes = result.Data();
 
-  size_t resultLength = 0;
+  size_t result_length = 0;
   for (size_t i = 0; i < length;) {
     UChar32 c;
     // If CharType is LChar the U16_NEXT call reads a byte and increments;
@@ -219,47 +219,47 @@ static CString encodeComplexWindowsLatin1(const CharType* characters,
     // If input was a surrogate pair (non-BMP character) then we overestimated
     // the length.
     if (c > 0xffff)
-      --targetLength;
+      --target_length;
     unsigned char b = static_cast<unsigned char>(c);
     // Do an efficient check to detect characters other than 00-7F and A0-FF.
     if (b != c || (c & 0xE0) == 0x80) {
       // Look for a way to encode this with Windows Latin-1.
       for (b = 0x80; b < 0xA0; ++b) {
-        if (table[b] == c)
+        if (kTable[b] == c)
           goto gotByte;
       }
       // No way to encode this character with Windows Latin-1.
       UnencodableReplacementArray replacement;
-      int replacementLength =
-          TextCodec::getUnencodableReplacement(c, handling, replacement);
-      DCHECK_GT(replacementLength, 0);
+      int replacement_length =
+          TextCodec::GetUnencodableReplacement(c, handling, replacement);
+      DCHECK_GT(replacement_length, 0);
       // Only one char was initially reserved per input character, so grow if
       // necessary. Note that the case of surrogate pairs and
       // QuestionMarksForUnencodables the result length may be shorter than
       // the input length.
-      targetLength += replacementLength - 1;
-      if (targetLength > result.size()) {
-        result.grow(targetLength);
-        bytes = result.data();
+      target_length += replacement_length - 1;
+      if (target_length > result.size()) {
+        result.Grow(target_length);
+        bytes = result.Data();
       }
-      memcpy(bytes + resultLength, replacement, replacementLength);
-      resultLength += replacementLength;
+      memcpy(bytes + result_length, replacement, replacement_length);
+      result_length += replacement_length;
       continue;
     }
   gotByte:
-    bytes[resultLength++] = b;
+    bytes[result_length++] = b;
   }
 
-  return CString(bytes, resultLength);
+  return CString(bytes, result_length);
 }
 
 template <typename CharType>
-CString TextCodecLatin1::encodeCommon(const CharType* characters,
+CString TextCodecLatin1::EncodeCommon(const CharType* characters,
                                       size_t length,
                                       UnencodableHandling handling) {
   {
     char* bytes;
-    CString string = CString::createUninitialized(length, bytes);
+    CString string = CString::CreateUninitialized(length, bytes);
 
     // Convert the string a fast way and simultaneously do an efficient check to
     // see if it's all ASCII.
@@ -275,19 +275,19 @@ CString TextCodecLatin1::encodeCommon(const CharType* characters,
   }
 
   // If it wasn't all ASCII, call the function that handles more-complex cases.
-  return encodeComplexWindowsLatin1(characters, length, handling);
+  return EncodeComplexWindowsLatin1(characters, length, handling);
 }
 
-CString TextCodecLatin1::encode(const UChar* characters,
+CString TextCodecLatin1::Encode(const UChar* characters,
                                 size_t length,
                                 UnencodableHandling handling) {
-  return encodeCommon(characters, length, handling);
+  return EncodeCommon(characters, length, handling);
 }
 
-CString TextCodecLatin1::encode(const LChar* characters,
+CString TextCodecLatin1::Encode(const LChar* characters,
                                 size_t length,
                                 UnencodableHandling handling) {
-  return encodeCommon(characters, length, handling);
+  return EncodeCommon(characters, length, handling);
 }
 
 }  // namespace WTF

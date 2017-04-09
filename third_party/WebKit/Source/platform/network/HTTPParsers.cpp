@@ -53,7 +53,7 @@ namespace blink {
 
 namespace {
 
-const Vector<AtomicString>& replaceHeaders() {
+const Vector<AtomicString>& ReplaceHeaders() {
   // The list of response headers that we do not copy from the original
   // response when generating a ResourceResponse for a MIME payload.
   // Note: this is called only on the main thread.
@@ -63,14 +63,14 @@ const Vector<AtomicString>& replaceHeaders() {
   return headers;
 }
 
-bool isWhitespace(UChar chr) {
+bool IsWhitespace(UChar chr) {
   return (chr == ' ') || (chr == '\t');
 }
 
 // true if there is more to parse, after incrementing pos past whitespace.
 // Note: Might return pos == str.length()
 // if |matcher| is nullptr, isWhitespace() is used.
-inline bool skipWhiteSpace(const String& str,
+inline bool SkipWhiteSpace(const String& str,
                            unsigned& pos,
                            CharacterMatchFunctionPtr matcher = nullptr) {
   unsigned len = str.length();
@@ -79,7 +79,7 @@ inline bool skipWhiteSpace(const String& str,
     while (pos < len && matcher(str[pos]))
       ++pos;
   } else {
-    while (pos < len && isWhitespace(str[pos]))
+    while (pos < len && IsWhitespace(str[pos]))
       ++pos;
   }
 
@@ -89,12 +89,12 @@ inline bool skipWhiteSpace(const String& str,
 // Returns true if the function can match the whole token (case insensitive)
 // incrementing pos on match, otherwise leaving pos unchanged.
 // Note: Might return pos == str.length()
-inline bool skipToken(const String& str, unsigned& pos, const char* token) {
+inline bool SkipToken(const String& str, unsigned& pos, const char* token) {
   unsigned len = str.length();
   unsigned current = pos;
 
   while (current < len && *token) {
-    if (toASCIILower(str[current]) != *token++)
+    if (ToASCIILower(str[current]) != *token++)
       return false;
     ++current;
   }
@@ -107,14 +107,14 @@ inline bool skipToken(const String& str, unsigned& pos, const char* token) {
 }
 
 // True if the expected equals sign is seen and there is more to follow.
-inline bool skipEquals(const String& str, unsigned& pos) {
-  return skipWhiteSpace(str, pos) && str[pos++] == '=' &&
-         skipWhiteSpace(str, pos);
+inline bool SkipEquals(const String& str, unsigned& pos) {
+  return SkipWhiteSpace(str, pos) && str[pos++] == '=' &&
+         SkipWhiteSpace(str, pos);
 }
 
 // True if a value present, incrementing pos to next space or semicolon, if any.
 // Note: might return pos == str.length().
-inline bool skipValue(const String& str, unsigned& pos) {
+inline bool SkipValue(const String& str, unsigned& pos) {
   unsigned start = pos;
   unsigned len = str.length();
   while (pos < len) {
@@ -126,36 +126,36 @@ inline bool skipValue(const String& str, unsigned& pos) {
 }
 
 template <typename CharType>
-inline bool isASCIILowerAlphaOrDigit(CharType c) {
-  return isASCIILower(c) || isASCIIDigit(c);
+inline bool IsASCIILowerAlphaOrDigit(CharType c) {
+  return IsASCIILower(c) || IsASCIIDigit(c);
 }
 
 template <typename CharType>
-inline bool isASCIILowerAlphaOrDigitOrHyphen(CharType c) {
-  return isASCIILowerAlphaOrDigit(c) || c == '-';
+inline bool IsASCIILowerAlphaOrDigitOrHyphen(CharType c) {
+  return IsASCIILowerAlphaOrDigit(c) || c == '-';
 }
 
-Suborigin::SuboriginPolicyOptions getSuboriginPolicyOptionFromString(
-    const String& policyOptionName) {
-  if (policyOptionName == "'unsafe-postmessage-send'")
-    return Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend;
+Suborigin::SuboriginPolicyOptions GetSuboriginPolicyOptionFromString(
+    const String& policy_option_name) {
+  if (policy_option_name == "'unsafe-postmessage-send'")
+    return Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend;
 
-  if (policyOptionName == "'unsafe-postmessage-receive'")
-    return Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive;
+  if (policy_option_name == "'unsafe-postmessage-receive'")
+    return Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive;
 
-  if (policyOptionName == "'unsafe-cookies'")
-    return Suborigin::SuboriginPolicyOptions::UnsafeCookies;
+  if (policy_option_name == "'unsafe-cookies'")
+    return Suborigin::SuboriginPolicyOptions::kUnsafeCookies;
 
-  if (policyOptionName == "'unsafe-credentials'")
-    return Suborigin::SuboriginPolicyOptions::UnsafeCredentials;
+  if (policy_option_name == "'unsafe-credentials'")
+    return Suborigin::SuboriginPolicyOptions::kUnsafeCredentials;
 
-  return Suborigin::SuboriginPolicyOptions::None;
+  return Suborigin::SuboriginPolicyOptions::kNone;
 }
 
 // suborigin-name = LOWERALPHA *( LOWERALPHA / DIGIT )
 //
 // Does not trim whitespace before or after the suborigin-name.
-const UChar* parseSuboriginName(const UChar* begin,
+const UChar* ParseSuboriginName(const UChar* begin,
                                 const UChar* end,
                                 String& name,
                                 WTF::Vector<String>& messages) {
@@ -167,26 +167,26 @@ const UChar* parseSuboriginName(const UChar* begin,
 
   const UChar* position = begin;
 
-  if (!skipExactly<UChar, isASCIILower>(position, end)) {
+  if (!skipExactly<UChar, IsASCIILower>(position, end)) {
     messages.push_back("Invalid character \'" + String(position, 1) +
                        "\' in suborigin. First character must be a lower case "
                        "alphabetic character.");
     return nullptr;
   }
 
-  skipWhile<UChar, isASCIILowerAlphaOrDigit>(position, end);
-  if (position != end && !isASCIISpace(*position)) {
+  skipWhile<UChar, IsASCIILowerAlphaOrDigit>(position, end);
+  if (position != end && !IsASCIISpace(*position)) {
     messages.push_back("Invalid character \'" + String(position, 1) +
                        "\' in suborigin.");
     return nullptr;
   }
 
   size_t length = position - begin;
-  name = String(begin, length).lower();
+  name = String(begin, length).Lower();
   return position;
 }
 
-const UChar* parseSuboriginPolicyOption(const UChar* begin,
+const UChar* ParseSuboriginPolicyOption(const UChar* begin,
                                         const UChar* end,
                                         String& option,
                                         WTF::Vector<String>& messages) {
@@ -200,8 +200,8 @@ const UChar* parseSuboriginPolicyOption(const UChar* begin,
   }
   position = position + 1;
 
-  skipWhile<UChar, isASCIILowerAlphaOrDigitOrHyphen>(position, end);
-  if (position == end || isASCIISpace(*position)) {
+  skipWhile<UChar, IsASCIILowerAlphaOrDigitOrHyphen>(position, end);
+  if (position == end || IsASCIISpace(*position)) {
     messages.push_back(String("Expected \' to end policy option."));
     return nullptr;
   }
@@ -221,27 +221,27 @@ const UChar* parseSuboriginPolicyOption(const UChar* begin,
 
 }  // namespace
 
-bool isValidHTTPHeaderValue(const String& name) {
+bool IsValidHTTPHeaderValue(const String& name) {
   // FIXME: This should really match name against
   // field-value in section 4.2 of RFC 2616.
 
-  return name.containsOnlyLatin1() && !name.contains('\r') &&
-         !name.contains('\n') && !name.contains('\0');
+  return name.ContainsOnlyLatin1() && !name.Contains('\r') &&
+         !name.Contains('\n') && !name.Contains('\0');
 }
 
 // See RFC 7230, Section 3.2.
 // Checks whether |value| matches field-content in RFC 7230.
 // link: http://tools.ietf.org/html/rfc7230#section-3.2
-bool isValidHTTPFieldContentRFC7230(const String& value) {
-  if (value.isEmpty())
+bool IsValidHTTPFieldContentRFC7230(const String& value) {
+  if (value.IsEmpty())
     return false;
 
-  UChar firstCharacter = value[0];
-  if (firstCharacter == ' ' || firstCharacter == '\t')
+  UChar first_character = value[0];
+  if (first_character == ' ' || first_character == '\t')
     return false;
 
-  UChar lastCharacter = value[value.length() - 1];
-  if (lastCharacter == ' ' || lastCharacter == '\t')
+  UChar last_character = value[value.length() - 1];
+  if (last_character == ' ' || last_character == '\t')
     return false;
 
   for (unsigned i = 0; i < value.length(); ++i) {
@@ -256,8 +256,8 @@ bool isValidHTTPFieldContentRFC7230(const String& value) {
 }
 
 // See RFC 7230, Section 3.2.6.
-bool isValidHTTPToken(const String& characters) {
-  if (characters.isEmpty())
+bool IsValidHTTPToken(const String& characters) {
+  if (characters.IsEmpty())
     return false;
   for (unsigned i = 0; i < characters.length(); ++i) {
     UChar c = characters[i];
@@ -267,22 +267,22 @@ bool isValidHTTPToken(const String& characters) {
   return true;
 }
 
-ContentDispositionType getContentDispositionType(
-    const String& contentDisposition) {
-  if (contentDisposition.isEmpty())
-    return ContentDispositionNone;
+ContentDispositionType GetContentDispositionType(
+    const String& content_disposition) {
+  if (content_disposition.IsEmpty())
+    return kContentDispositionNone;
 
   Vector<String> parameters;
-  contentDisposition.split(';', parameters);
+  content_disposition.Split(';', parameters);
 
-  if (parameters.isEmpty())
-    return ContentDispositionNone;
+  if (parameters.IsEmpty())
+    return kContentDispositionNone;
 
-  String dispositionType = parameters[0];
-  dispositionType.stripWhiteSpace();
+  String disposition_type = parameters[0];
+  disposition_type.StripWhiteSpace();
 
-  if (equalIgnoringCase(dispositionType, "inline"))
-    return ContentDispositionInline;
+  if (EqualIgnoringCase(disposition_type, "inline"))
+    return kContentDispositionInline;
 
   // Some broken sites just send bogus headers like
   //
@@ -291,24 +291,24 @@ ContentDispositionType getContentDispositionType(
   //   Content-Disposition: name="file"
   //
   // without a disposition token... screen those out.
-  if (!isValidHTTPToken(dispositionType))
-    return ContentDispositionNone;
+  if (!IsValidHTTPToken(disposition_type))
+    return kContentDispositionNone;
 
   // We have a content-disposition of "attachment" or unknown.
   // RFC 2183, section 2.8 says that an unknown disposition
   // value should be treated as "attachment"
-  return ContentDispositionAttachment;
+  return kContentDispositionAttachment;
 }
 
-bool parseHTTPRefresh(const String& refresh,
+bool ParseHTTPRefresh(const String& refresh,
                       CharacterMatchFunctionPtr matcher,
                       double& delay,
                       String& url) {
   unsigned len = refresh.length();
   unsigned pos = 0;
-  matcher = matcher ? matcher : isWhitespace;
+  matcher = matcher ? matcher : IsWhitespace;
 
-  if (!skipWhiteSpace(refresh, pos, matcher))
+  if (!SkipWhiteSpace(refresh, pos, matcher))
     return false;
 
   while (pos != len && refresh[pos] != ',' && refresh[pos] != ';' &&
@@ -318,39 +318,39 @@ bool parseHTTPRefresh(const String& refresh,
   if (pos == len) {  // no URL
     url = String();
     bool ok;
-    delay = refresh.stripWhiteSpace().toDouble(&ok);
+    delay = refresh.StripWhiteSpace().ToDouble(&ok);
     return ok;
   } else {
     bool ok;
-    delay = refresh.left(pos).stripWhiteSpace().toDouble(&ok);
+    delay = refresh.Left(pos).StripWhiteSpace().ToDouble(&ok);
     if (!ok)
       return false;
 
-    skipWhiteSpace(refresh, pos, matcher);
+    SkipWhiteSpace(refresh, pos, matcher);
     if (pos < len && (refresh[pos] == ',' || refresh[pos] == ';'))
       ++pos;
-    skipWhiteSpace(refresh, pos, matcher);
-    unsigned urlStartPos = pos;
-    if (refresh.find("url", urlStartPos, TextCaseASCIIInsensitive) ==
-        urlStartPos) {
-      urlStartPos += 3;
-      skipWhiteSpace(refresh, urlStartPos, matcher);
-      if (refresh[urlStartPos] == '=') {
-        ++urlStartPos;
-        skipWhiteSpace(refresh, urlStartPos, matcher);
+    SkipWhiteSpace(refresh, pos, matcher);
+    unsigned url_start_pos = pos;
+    if (refresh.Find("url", url_start_pos, kTextCaseASCIIInsensitive) ==
+        url_start_pos) {
+      url_start_pos += 3;
+      SkipWhiteSpace(refresh, url_start_pos, matcher);
+      if (refresh[url_start_pos] == '=') {
+        ++url_start_pos;
+        SkipWhiteSpace(refresh, url_start_pos, matcher);
       } else {
-        urlStartPos = pos;  // e.g. "Refresh: 0; url.html"
+        url_start_pos = pos;  // e.g. "Refresh: 0; url.html"
       }
     }
 
-    unsigned urlEndPos = len;
+    unsigned url_end_pos = len;
 
-    if (refresh[urlStartPos] == '"' || refresh[urlStartPos] == '\'') {
-      UChar quotationMark = refresh[urlStartPos];
-      urlStartPos++;
-      while (urlEndPos > urlStartPos) {
-        urlEndPos--;
-        if (refresh[urlEndPos] == quotationMark)
+    if (refresh[url_start_pos] == '"' || refresh[url_start_pos] == '\'') {
+      UChar quotation_mark = refresh[url_start_pos];
+      url_start_pos++;
+      while (url_end_pos > url_start_pos) {
+        url_end_pos--;
+        if (refresh[url_end_pos] == quotation_mark)
           break;
       }
 
@@ -359,40 +359,40 @@ bool parseHTTPRefresh(const String& refresh,
       // there was an opening quote.  If we looped over the entire alleged URL
       // string back to the opening quote, just go ahead and use everything
       // after the opening quote instead.
-      if (urlEndPos == urlStartPos)
-        urlEndPos = len;
+      if (url_end_pos == url_start_pos)
+        url_end_pos = len;
     }
 
-    url = refresh.substring(urlStartPos, urlEndPos - urlStartPos)
-              .stripWhiteSpace();
+    url = refresh.Substring(url_start_pos, url_end_pos - url_start_pos)
+              .StripWhiteSpace();
     return true;
   }
 }
 
-double parseDate(const String& value) {
-  return parseDateFromNullTerminatedCharacters(value.utf8().data());
+double ParseDate(const String& value) {
+  return ParseDateFromNullTerminatedCharacters(value.Utf8().Data());
 }
 
-AtomicString extractMIMETypeFromMediaType(const AtomicString& mediaType) {
-  unsigned length = mediaType.length();
+AtomicString ExtractMIMETypeFromMediaType(const AtomicString& media_type) {
+  unsigned length = media_type.length();
 
   unsigned pos = 0;
 
   while (pos < length) {
-    UChar c = mediaType[pos];
+    UChar c = media_type[pos];
     if (c != '\t' && c != ' ')
       break;
     ++pos;
   }
 
   if (pos == length)
-    return mediaType;
+    return media_type;
 
-  unsigned typeStart = pos;
+  unsigned type_start = pos;
 
-  unsigned typeEnd = pos;
+  unsigned type_end = pos;
   while (pos < length) {
-    UChar c = mediaType[pos];
+    UChar c = media_type[pos];
 
     // While RFC 2616 does not allow it, other browsers allow multiple values in
     // the HTTP media type header field, Content-Type. In such cases, the media
@@ -406,40 +406,40 @@ AtomicString extractMIMETypeFromMediaType(const AtomicString& mediaType) {
       break;
 
     if (c != '\t' && c != ' ')
-      typeEnd = pos + 1;
+      type_end = pos + 1;
 
     ++pos;
   }
 
   return AtomicString(
-      mediaType.getString().substring(typeStart, typeEnd - typeStart));
+      media_type.GetString().Substring(type_start, type_end - type_start));
 }
 
-String extractCharsetFromMediaType(const String& mediaType) {
+String ExtractCharsetFromMediaType(const String& media_type) {
   unsigned pos, len;
-  findCharsetInMediaType(mediaType, pos, len);
-  return mediaType.substring(pos, len);
+  FindCharsetInMediaType(media_type, pos, len);
+  return media_type.Substring(pos, len);
 }
 
-void findCharsetInMediaType(const String& mediaType,
-                            unsigned& charsetPos,
-                            unsigned& charsetLen,
+void FindCharsetInMediaType(const String& media_type,
+                            unsigned& charset_pos,
+                            unsigned& charset_len,
                             unsigned start) {
-  charsetPos = start;
-  charsetLen = 0;
+  charset_pos = start;
+  charset_len = 0;
 
   size_t pos = start;
-  unsigned length = mediaType.length();
+  unsigned length = media_type.length();
 
   while (pos < length) {
-    pos = mediaType.find("charset", pos, TextCaseASCIIInsensitive);
+    pos = media_type.Find("charset", pos, kTextCaseASCIIInsensitive);
     if (pos == kNotFound || !pos) {
-      charsetLen = 0;
+      charset_len = 0;
       return;
     }
 
     // is what we found a beginning of a word?
-    if (mediaType[pos - 1] > ' ' && mediaType[pos - 1] != ';') {
+    if (media_type[pos - 1] > ' ' && media_type[pos - 1] != ';') {
       pos += 7;
       continue;
     }
@@ -447,139 +447,141 @@ void findCharsetInMediaType(const String& mediaType,
     pos += 7;
 
     // skip whitespace
-    while (pos != length && mediaType[pos] <= ' ')
+    while (pos != length && media_type[pos] <= ' ')
       ++pos;
 
-    if (mediaType[pos++] != '=')  // this "charset" substring wasn't a parameter
-                                  // name, but there may be others
+    if (media_type[pos++] !=
+        '=')  // this "charset" substring wasn't a parameter
+              // name, but there may be others
       continue;
 
-    while (pos != length && (mediaType[pos] <= ' ' || mediaType[pos] == '"' ||
-                             mediaType[pos] == '\''))
+    while (pos != length && (media_type[pos] <= ' ' || media_type[pos] == '"' ||
+                             media_type[pos] == '\''))
       ++pos;
 
     // we don't handle spaces within quoted parameter values, because charset
     // names cannot have any
     unsigned endpos = pos;
-    while (pos != length && mediaType[endpos] > ' ' &&
-           mediaType[endpos] != '"' && mediaType[endpos] != '\'' &&
-           mediaType[endpos] != ';')
+    while (pos != length && media_type[endpos] > ' ' &&
+           media_type[endpos] != '"' && media_type[endpos] != '\'' &&
+           media_type[endpos] != ';')
       ++endpos;
 
-    charsetPos = pos;
-    charsetLen = endpos - pos;
+    charset_pos = pos;
+    charset_len = endpos - pos;
     return;
   }
 }
 
-ReflectedXSSDisposition parseXSSProtectionHeader(const String& header,
-                                                 String& failureReason,
-                                                 unsigned& failurePosition,
-                                                 String& reportURL) {
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidToggle, ("expected 0 or 1"));
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidSeparator,
+ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
+                                                 String& failure_reason,
+                                                 unsigned& failure_position,
+                                                 String& report_url) {
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_toggle,
+                      ("expected 0 or 1"));
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_separator,
                       ("expected semicolon"));
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidEquals,
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_equals,
                       ("expected equals sign"));
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidMode,
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_mode,
                       ("invalid mode directive"));
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidReport,
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_report,
                       ("invalid report directive"));
-  DEFINE_STATIC_LOCAL(String, failureReasonDuplicateMode,
+  DEFINE_STATIC_LOCAL(String, failure_reason_duplicate_mode,
                       ("duplicate mode directive"));
-  DEFINE_STATIC_LOCAL(String, failureReasonDuplicateReport,
+  DEFINE_STATIC_LOCAL(String, failure_reason_duplicate_report,
                       ("duplicate report directive"));
-  DEFINE_STATIC_LOCAL(String, failureReasonInvalidDirective,
+  DEFINE_STATIC_LOCAL(String, failure_reason_invalid_directive,
                       ("unrecognized directive"));
 
   unsigned pos = 0;
 
-  if (!skipWhiteSpace(header, pos))
-    return ReflectedXSSUnset;
+  if (!SkipWhiteSpace(header, pos))
+    return kReflectedXSSUnset;
 
   if (header[pos] == '0')
-    return AllowReflectedXSS;
+    return kAllowReflectedXSS;
 
   if (header[pos++] != '1') {
-    failureReason = failureReasonInvalidToggle;
-    return ReflectedXSSInvalid;
+    failure_reason = failure_reason_invalid_toggle;
+    return kReflectedXSSInvalid;
   }
 
-  ReflectedXSSDisposition result = FilterReflectedXSS;
-  bool modeDirectiveSeen = false;
-  bool reportDirectiveSeen = false;
+  ReflectedXSSDisposition result = kFilterReflectedXSS;
+  bool mode_directive_seen = false;
+  bool report_directive_seen = false;
 
   while (1) {
     // At end of previous directive: consume whitespace, semicolon, and
     // whitespace.
-    if (!skipWhiteSpace(header, pos))
+    if (!SkipWhiteSpace(header, pos))
       return result;
 
     if (header[pos++] != ';') {
-      failureReason = failureReasonInvalidSeparator;
-      failurePosition = pos;
-      return ReflectedXSSInvalid;
+      failure_reason = failure_reason_invalid_separator;
+      failure_position = pos;
+      return kReflectedXSSInvalid;
     }
 
-    if (!skipWhiteSpace(header, pos))
+    if (!SkipWhiteSpace(header, pos))
       return result;
 
     // At start of next directive.
-    if (skipToken(header, pos, "mode")) {
-      if (modeDirectiveSeen) {
-        failureReason = failureReasonDuplicateMode;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+    if (SkipToken(header, pos, "mode")) {
+      if (mode_directive_seen) {
+        failure_reason = failure_reason_duplicate_mode;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      modeDirectiveSeen = true;
-      if (!skipEquals(header, pos)) {
-        failureReason = failureReasonInvalidEquals;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+      mode_directive_seen = true;
+      if (!SkipEquals(header, pos)) {
+        failure_reason = failure_reason_invalid_equals;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      if (!skipToken(header, pos, "block")) {
-        failureReason = failureReasonInvalidMode;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+      if (!SkipToken(header, pos, "block")) {
+        failure_reason = failure_reason_invalid_mode;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      result = BlockReflectedXSS;
-    } else if (skipToken(header, pos, "report")) {
-      if (reportDirectiveSeen) {
-        failureReason = failureReasonDuplicateReport;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+      result = kBlockReflectedXSS;
+    } else if (SkipToken(header, pos, "report")) {
+      if (report_directive_seen) {
+        failure_reason = failure_reason_duplicate_report;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      reportDirectiveSeen = true;
-      if (!skipEquals(header, pos)) {
-        failureReason = failureReasonInvalidEquals;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+      report_directive_seen = true;
+      if (!SkipEquals(header, pos)) {
+        failure_reason = failure_reason_invalid_equals;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      size_t startPos = pos;
-      if (!skipValue(header, pos)) {
-        failureReason = failureReasonInvalidReport;
-        failurePosition = pos;
-        return ReflectedXSSInvalid;
+      size_t start_pos = pos;
+      if (!SkipValue(header, pos)) {
+        failure_reason = failure_reason_invalid_report;
+        failure_position = pos;
+        return kReflectedXSSInvalid;
       }
-      reportURL = header.substring(startPos, pos - startPos);
-      failurePosition =
-          startPos;  // If later semantic check deems unacceptable.
+      report_url = header.Substring(start_pos, pos - start_pos);
+      failure_position =
+          start_pos;  // If later semantic check deems unacceptable.
     } else {
-      failureReason = failureReasonInvalidDirective;
-      failurePosition = pos;
-      return ReflectedXSSInvalid;
+      failure_reason = failure_reason_invalid_directive;
+      failure_position = pos;
+      return kReflectedXSSInvalid;
     }
   }
 }
 
-ContentTypeOptionsDisposition parseContentTypeOptionsHeader(
+ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
     const String& header) {
-  if (header.stripWhiteSpace().lower() == "nosniff")
-    return ContentTypeOptionsNosniff;
-  return ContentTypeOptionsNone;
+  if (header.StripWhiteSpace().Lower() == "nosniff")
+    return kContentTypeOptionsNosniff;
+  return kContentTypeOptionsNone;
 }
 
-static bool isCacheHeaderSeparator(UChar c) {
+static bool IsCacheHeaderSeparator(UChar c) {
   // See RFC 2616, Section 2.2
   switch (c) {
     case '(':
@@ -607,268 +609,269 @@ static bool isCacheHeaderSeparator(UChar c) {
   }
 }
 
-static bool isControlCharacter(UChar c) {
+static bool IsControlCharacter(UChar c) {
   return c < ' ' || c == 127;
 }
 
-static inline String trimToNextSeparator(const String& str) {
-  return str.substring(0, str.find(isCacheHeaderSeparator));
+static inline String TrimToNextSeparator(const String& str) {
+  return str.Substring(0, str.Find(IsCacheHeaderSeparator));
 }
 
-static void parseCacheHeader(const String& header,
+static void ParseCacheHeader(const String& header,
                              Vector<std::pair<String, String>>& result) {
-  const String safeHeader = header.removeCharacters(isControlCharacter);
-  unsigned max = safeHeader.length();
+  const String safe_header = header.RemoveCharacters(IsControlCharacter);
+  unsigned max = safe_header.length();
   for (unsigned pos = 0; pos < max; /* pos incremented in loop */) {
-    size_t nextCommaPosition = safeHeader.find(',', pos);
-    size_t nextEqualSignPosition = safeHeader.find('=', pos);
-    if (nextEqualSignPosition != kNotFound &&
-        (nextEqualSignPosition < nextCommaPosition ||
-         nextCommaPosition == kNotFound)) {
+    size_t next_comma_position = safe_header.Find(',', pos);
+    size_t next_equal_sign_position = safe_header.Find('=', pos);
+    if (next_equal_sign_position != kNotFound &&
+        (next_equal_sign_position < next_comma_position ||
+         next_comma_position == kNotFound)) {
       // Get directive name, parse right hand side of equal sign, then add to
       // map
-      String directive = trimToNextSeparator(
-          safeHeader.substring(pos, nextEqualSignPosition - pos)
-              .stripWhiteSpace());
-      pos += nextEqualSignPosition - pos + 1;
+      String directive = TrimToNextSeparator(
+          safe_header.Substring(pos, next_equal_sign_position - pos)
+              .StripWhiteSpace());
+      pos += next_equal_sign_position - pos + 1;
 
-      String value = safeHeader.substring(pos, max - pos).stripWhiteSpace();
+      String value = safe_header.Substring(pos, max - pos).StripWhiteSpace();
       if (value[0] == '"') {
         // The value is a quoted string
-        size_t nextDoubleQuotePosition = value.find('"', 1);
-        if (nextDoubleQuotePosition != kNotFound) {
+        size_t next_double_quote_position = value.Find('"', 1);
+        if (next_double_quote_position != kNotFound) {
           // Store the value as a quoted string without quotes
           result.push_back(std::pair<String, String>(
-              directive, value.substring(1, nextDoubleQuotePosition - 1)
-                             .stripWhiteSpace()));
-          pos +=
-              (safeHeader.find('"', pos) - pos) + nextDoubleQuotePosition + 1;
+              directive, value.Substring(1, next_double_quote_position - 1)
+                             .StripWhiteSpace()));
+          pos += (safe_header.Find('"', pos) - pos) +
+                 next_double_quote_position + 1;
           // Move past next comma, if there is one
-          size_t nextCommaPosition2 = safeHeader.find(',', pos);
-          if (nextCommaPosition2 != kNotFound)
-            pos += nextCommaPosition2 - pos + 1;
+          size_t next_comma_position2 = safe_header.Find(',', pos);
+          if (next_comma_position2 != kNotFound)
+            pos += next_comma_position2 - pos + 1;
           else
             return;  // Parse error if there is anything left with no comma
         } else {
           // Parse error; just use the rest as the value
           result.push_back(std::pair<String, String>(
               directive,
-              trimToNextSeparator(
-                  value.substring(1, value.length() - 1).stripWhiteSpace())));
+              TrimToNextSeparator(
+                  value.Substring(1, value.length() - 1).StripWhiteSpace())));
           return;
         }
       } else {
         // The value is a token until the next comma
-        size_t nextCommaPosition2 = value.find(',');
-        if (nextCommaPosition2 != kNotFound) {
+        size_t next_comma_position2 = value.Find(',');
+        if (next_comma_position2 != kNotFound) {
           // The value is delimited by the next comma
           result.push_back(std::pair<String, String>(
               directive,
-              trimToNextSeparator(
-                  value.substring(0, nextCommaPosition2).stripWhiteSpace())));
-          pos += (safeHeader.find(',', pos) - pos) + 1;
+              TrimToNextSeparator(
+                  value.Substring(0, next_comma_position2).StripWhiteSpace())));
+          pos += (safe_header.Find(',', pos) - pos) + 1;
         } else {
           // The rest is the value; no change to value needed
           result.push_back(
-              std::pair<String, String>(directive, trimToNextSeparator(value)));
+              std::pair<String, String>(directive, TrimToNextSeparator(value)));
           return;
         }
       }
-    } else if (nextCommaPosition != kNotFound &&
-               (nextCommaPosition < nextEqualSignPosition ||
-                nextEqualSignPosition == kNotFound)) {
+    } else if (next_comma_position != kNotFound &&
+               (next_comma_position < next_equal_sign_position ||
+                next_equal_sign_position == kNotFound)) {
       // Add directive to map with empty string as value
       result.push_back(std::pair<String, String>(
-          trimToNextSeparator(safeHeader.substring(pos, nextCommaPosition - pos)
-                                  .stripWhiteSpace()),
+          TrimToNextSeparator(
+              safe_header.Substring(pos, next_comma_position - pos)
+                  .StripWhiteSpace()),
           ""));
-      pos += nextCommaPosition - pos + 1;
+      pos += next_comma_position - pos + 1;
     } else {
       // Add last directive to map with empty string as value
       result.push_back(std::pair<String, String>(
-          trimToNextSeparator(
-              safeHeader.substring(pos, max - pos).stripWhiteSpace()),
+          TrimToNextSeparator(
+              safe_header.Substring(pos, max - pos).StripWhiteSpace()),
           ""));
       return;
     }
   }
 }
 
-CacheControlHeader parseCacheControlDirectives(
-    const AtomicString& cacheControlValue,
-    const AtomicString& pragmaValue) {
-  CacheControlHeader cacheControlHeader;
-  cacheControlHeader.parsed = true;
-  cacheControlHeader.maxAge = std::numeric_limits<double>::quiet_NaN();
+CacheControlHeader ParseCacheControlDirectives(
+    const AtomicString& cache_control_value,
+    const AtomicString& pragma_value) {
+  CacheControlHeader cache_control_header;
+  cache_control_header.parsed = true;
+  cache_control_header.max_age = std::numeric_limits<double>::quiet_NaN();
 
-  static const char noCacheDirective[] = "no-cache";
-  static const char noStoreDirective[] = "no-store";
-  static const char mustRevalidateDirective[] = "must-revalidate";
-  static const char maxAgeDirective[] = "max-age";
+  static const char kNoCacheDirective[] = "no-cache";
+  static const char kNoStoreDirective[] = "no-store";
+  static const char kMustRevalidateDirective[] = "must-revalidate";
+  static const char kMaxAgeDirective[] = "max-age";
 
-  if (!cacheControlValue.isEmpty()) {
+  if (!cache_control_value.IsEmpty()) {
     Vector<std::pair<String, String>> directives;
-    parseCacheHeader(cacheControlValue, directives);
+    ParseCacheHeader(cache_control_value, directives);
 
-    size_t directivesSize = directives.size();
-    for (size_t i = 0; i < directivesSize; ++i) {
+    size_t directives_size = directives.size();
+    for (size_t i = 0; i < directives_size; ++i) {
       // RFC2616 14.9.1: A no-cache directive with a value is only meaningful
       // for proxy caches.  It should be ignored by a browser level cache.
-      if (equalIgnoringCase(directives[i].first, noCacheDirective) &&
-          directives[i].second.isEmpty()) {
-        cacheControlHeader.containsNoCache = true;
-      } else if (equalIgnoringCase(directives[i].first, noStoreDirective)) {
-        cacheControlHeader.containsNoStore = true;
-      } else if (equalIgnoringCase(directives[i].first,
-                                   mustRevalidateDirective)) {
-        cacheControlHeader.containsMustRevalidate = true;
-      } else if (equalIgnoringCase(directives[i].first, maxAgeDirective)) {
-        if (!std::isnan(cacheControlHeader.maxAge)) {
+      if (EqualIgnoringCase(directives[i].first, kNoCacheDirective) &&
+          directives[i].second.IsEmpty()) {
+        cache_control_header.contains_no_cache = true;
+      } else if (EqualIgnoringCase(directives[i].first, kNoStoreDirective)) {
+        cache_control_header.contains_no_store = true;
+      } else if (EqualIgnoringCase(directives[i].first,
+                                   kMustRevalidateDirective)) {
+        cache_control_header.contains_must_revalidate = true;
+      } else if (EqualIgnoringCase(directives[i].first, kMaxAgeDirective)) {
+        if (!std::isnan(cache_control_header.max_age)) {
           // First max-age directive wins if there are multiple ones.
           continue;
         }
         bool ok;
-        double maxAge = directives[i].second.toDouble(&ok);
+        double max_age = directives[i].second.ToDouble(&ok);
         if (ok)
-          cacheControlHeader.maxAge = maxAge;
+          cache_control_header.max_age = max_age;
       }
     }
   }
 
-  if (!cacheControlHeader.containsNoCache) {
+  if (!cache_control_header.contains_no_cache) {
     // Handle Pragma: no-cache
     // This is deprecated and equivalent to Cache-control: no-cache
     // Don't bother tokenizing the value, it is not important
-    cacheControlHeader.containsNoCache =
-        pragmaValue.lower().contains(noCacheDirective);
+    cache_control_header.contains_no_cache =
+        pragma_value.Lower().Contains(kNoCacheDirective);
   }
-  return cacheControlHeader;
+  return cache_control_header;
 }
 
-void parseCommaDelimitedHeader(const String& headerValue,
-                               CommaDelimitedHeaderSet& headerSet) {
+void ParseCommaDelimitedHeader(const String& header_value,
+                               CommaDelimitedHeaderSet& header_set) {
   Vector<String> results;
-  headerValue.split(",", results);
+  header_value.Split(",", results);
   for (auto& value : results)
-    headerSet.insert(value.stripWhiteSpace(isWhitespace));
+    header_set.insert(value.StripWhiteSpace(IsWhitespace));
 }
 
-bool parseSuboriginHeader(const String& header,
+bool ParseSuboriginHeader(const String& header,
                           Suborigin* suborigin,
                           WTF::Vector<String>& messages) {
   Vector<String> headers;
-  header.split(',', true, headers);
+  header.Split(',', true, headers);
 
   if (headers.size() > 1)
     messages.push_back(
         "Multiple Suborigin headers found. Ignoring all but the first.");
 
   Vector<UChar> characters;
-  headers[0].appendTo(characters);
+  headers[0].AppendTo(characters);
 
-  const UChar* position = characters.data();
+  const UChar* position = characters.Data();
   const UChar* end = position + characters.size();
 
-  skipWhile<UChar, isASCIISpace>(position, end);
+  skipWhile<UChar, IsASCIISpace>(position, end);
 
   String name;
-  position = parseSuboriginName(position, end, name, messages);
+  position = ParseSuboriginName(position, end, name, messages);
   // For now it is appropriate to simply return false if the name is empty and
   // act as if the header doesn't exist. If suborigin policy options are created
   // that can apply to the empty suborigin, than this will have to change.
-  if (!position || name.isEmpty())
+  if (!position || name.IsEmpty())
     return false;
 
-  suborigin->setName(name);
+  suborigin->SetName(name);
 
   while (position < end) {
-    skipWhile<UChar, isASCIISpace>(position, end);
+    skipWhile<UChar, IsASCIISpace>(position, end);
     if (position == end)
       return true;
 
-    String optionName;
-    position = parseSuboriginPolicyOption(position, end, optionName, messages);
+    String option_name;
+    position = ParseSuboriginPolicyOption(position, end, option_name, messages);
 
     if (!position) {
-      suborigin->clear();
+      suborigin->Clear();
       return false;
     }
 
     Suborigin::SuboriginPolicyOptions option =
-        getSuboriginPolicyOptionFromString(optionName);
-    if (option == Suborigin::SuboriginPolicyOptions::None)
+        GetSuboriginPolicyOptionFromString(option_name);
+    if (option == Suborigin::SuboriginPolicyOptions::kNone)
       messages.push_back("Ignoring unknown suborigin policy option " +
-                         optionName + ".");
+                         option_name + ".");
     else
-      suborigin->addPolicyOption(option);
+      suborigin->AddPolicyOption(option);
   }
 
   return true;
 }
 
-bool parseMultipartHeadersFromBody(const char* bytes,
+bool ParseMultipartHeadersFromBody(const char* bytes,
                                    size_t size,
                                    ResourceResponse* response,
                                    size_t* end) {
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
 
-  int headersEndPos =
+  int headers_end_pos =
       net::HttpUtil::LocateEndOfAdditionalHeaders(bytes, size, 0);
 
-  if (headersEndPos < 0)
+  if (headers_end_pos < 0)
     return false;
 
-  *end = headersEndPos;
+  *end = headers_end_pos;
 
   // Eat headers and prepend a status line as is required by
   // HttpResponseHeaders.
   std::string headers("HTTP/1.1 200 OK\r\n");
-  headers.append(bytes, headersEndPos);
+  headers.append(bytes, headers_end_pos);
 
-  scoped_refptr<net::HttpResponseHeaders> responseHeaders =
+  scoped_refptr<net::HttpResponseHeaders> response_headers =
       new net::HttpResponseHeaders(
           net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
 
-  std::string mimeType, charset;
-  responseHeaders->GetMimeTypeAndCharset(&mimeType, &charset);
-  response->setMimeType(WebString::fromUTF8(mimeType));
-  response->setTextEncodingName(WebString::fromUTF8(charset));
+  std::string mime_type, charset;
+  response_headers->GetMimeTypeAndCharset(&mime_type, &charset);
+  response->SetMimeType(WebString::FromUTF8(mime_type));
+  response->SetTextEncodingName(WebString::FromUTF8(charset));
 
   // Copy headers listed in replaceHeaders to the response.
-  for (const AtomicString& header : replaceHeaders()) {
+  for (const AtomicString& header : ReplaceHeaders()) {
     std::string value;
     StringUTF8Adaptor adaptor(header);
-    base::StringPiece headerStringPiece(adaptor.asStringPiece());
+    base::StringPiece header_string_piece(adaptor.AsStringPiece());
     size_t iterator = 0;
 
-    response->clearHTTPHeaderField(header);
-    while (responseHeaders->EnumerateHeader(&iterator, headerStringPiece,
-                                            &value)) {
-      response->addHTTPHeaderField(header, WebString::fromLatin1(value));
+    response->ClearHTTPHeaderField(header);
+    while (response_headers->EnumerateHeader(&iterator, header_string_piece,
+                                             &value)) {
+      response->AddHTTPHeaderField(header, WebString::FromLatin1(value));
     }
   }
   return true;
 }
 
 // See https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01, Section 4.
-std::unique_ptr<JSONArray> parseJSONHeader(const String& header,
-                                           int maxParseDepth) {
+std::unique_ptr<JSONArray> ParseJSONHeader(const String& header,
+                                           int max_parse_depth) {
   StringBuilder sb;
-  sb.append("[");
-  sb.append(header);
-  sb.append("]");
-  std::unique_ptr<JSONValue> headerValue =
-      parseJSON(sb.toString(), maxParseDepth);
-  return JSONArray::from(std::move(headerValue));
+  sb.Append("[");
+  sb.Append(header);
+  sb.Append("]");
+  std::unique_ptr<JSONValue> header_value =
+      ParseJSON(sb.ToString(), max_parse_depth);
+  return JSONArray::From(std::move(header_value));
 }
 
-bool parseContentRangeHeaderFor206(const String& contentRange,
-                                   int64_t* firstBytePosition,
-                                   int64_t* lastBytePosition,
-                                   int64_t* instanceLength) {
+bool ParseContentRangeHeaderFor206(const String& content_range,
+                                   int64_t* first_byte_position,
+                                   int64_t* last_byte_position,
+                                   int64_t* instance_length) {
   return net::HttpUtil::ParseContentRangeHeaderFor206(
-      StringUTF8Adaptor(contentRange).asStringPiece(), firstBytePosition,
-      lastBytePosition, instanceLength);
+      StringUTF8Adaptor(content_range).AsStringPiece(), first_byte_position,
+      last_byte_position, instance_length);
 }
 
 }  // namespace blink

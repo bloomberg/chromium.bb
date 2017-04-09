@@ -57,7 +57,7 @@ class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
   }
 
   // WebCompositeAndReadbackAsyncCallback implementation.
-  void didCompositeAndReadback(const SkBitmap& bitmap) override;
+  void DidCompositeAndReadback(const SkBitmap& bitmap) override;
 
  private:
   base::Callback<void(const SkBitmap&)> callback_;
@@ -74,8 +74,8 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   if (!dump_request.layout_test_runtime_flags.dump_selection_rect())
     return;
   // If there is a selection rect - draw a red 1px border enclosing rect
-  blink::WebRect wr = dump_request.web_view->mainFrame()->selectionBoundsRect();
-  if (wr.isEmpty())
+  blink::WebRect wr = dump_request.web_view->MainFrame()->SelectionBoundsRect();
+  if (wr.IsEmpty())
     return;
   // Render a red rectangle bounding selection rect
   cc::PaintFlags flags;
@@ -89,12 +89,12 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
 }
 
 void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
-  dump_request->web_view->updateAllLifecyclePhases();
+  dump_request->web_view->UpdateAllLifecyclePhases();
 
   blink::WebSize page_size_in_pixels = dump_request->web_view->size();
-  blink::WebFrame* web_frame = dump_request->web_view->mainFrame();
+  blink::WebFrame* web_frame = dump_request->web_view->MainFrame();
 
-  int page_count = web_frame->printBegin(page_size_in_pixels);
+  int page_count = web_frame->PrintBegin(page_size_in_pixels);
   int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
 
   bool is_opaque = false;
@@ -109,8 +109,8 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   }
 
   cc::SkiaPaintCanvas canvas(bitmap);
-  web_frame->printPagesWithBoundaries(&canvas, page_size_in_pixels);
-  web_frame->printEnd();
+  web_frame->PrintPagesWithBoundaries(&canvas, page_size_in_pixels);
+  web_frame->PrintEnd();
 
   DrawSelectionRect(*dump_request, &canvas);
   dump_request->callback.Run(bitmap);
@@ -122,7 +122,7 @@ CaptureCallback::CaptureCallback(
 
 CaptureCallback::~CaptureCallback() {}
 
-void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
+void CaptureCallback::DidCompositeAndReadback(const SkBitmap& bitmap) {
   TRACE_EVENT2("shell", "CaptureCallback::didCompositeAndReadback", "x",
                bitmap.info().width(), "y", bitmap.info().height());
   if (!wait_for_popup_) {
@@ -170,14 +170,14 @@ void DumpPixelsAsync(blink::WebView* web_view,
 
   CaptureCallback* capture_callback = new CaptureCallback(base::Bind(
       &DidCapturePixelsAsync, base::Passed(std::move(pixels_request))));
-  web_view->compositeAndReadbackAsync(capture_callback);
-  if (blink::WebPagePopup* popup = web_view->pagePopup()) {
+  web_view->CompositeAndReadbackAsync(capture_callback);
+  if (blink::WebPagePopup* popup = web_view->GetPagePopup()) {
     capture_callback->set_wait_for_popup(true);
-    blink::WebPoint position = popup->positionRelativeToOwner();
+    blink::WebPoint position = popup->PositionRelativeToOwner();
     position.x *= device_scale_factor_for_test;
     position.y *= device_scale_factor_for_test;
     capture_callback->set_popup_position(position);
-    popup->compositeAndReadbackAsync(capture_callback);
+    popup->CompositeAndReadbackAsync(capture_callback);
   }
 }
 
@@ -188,13 +188,13 @@ void CopyImageAtAndCapturePixels(
     const base::Callback<void(const SkBitmap&)>& callback) {
   DCHECK(!callback.is_null());
   uint64_t sequence_number =
-      blink::Platform::current()->clipboard()->sequenceNumber(
+      blink::Platform::Current()->Clipboard()->SequenceNumber(
           blink::WebClipboard::Buffer());
   // TODO(lukasza): Support image capture in OOPIFs for
   // https://crbug.com/477150.
-  web_view->mainFrame()->toWebLocalFrame()->copyImageAt(blink::WebPoint(x, y));
+  web_view->MainFrame()->ToWebLocalFrame()->CopyImageAt(blink::WebPoint(x, y));
   if (sequence_number ==
-      blink::Platform::current()->clipboard()->sequenceNumber(
+      blink::Platform::Current()->Clipboard()->SequenceNumber(
           blink::WebClipboard::Buffer())) {
     SkBitmap emptyBitmap;
     callback.Run(emptyBitmap);
@@ -202,9 +202,9 @@ void CopyImageAtAndCapturePixels(
   }
 
   blink::WebImage image = static_cast<blink::WebMockClipboard*>(
-                              blink::Platform::current()->clipboard())
-                              ->readRawImage(blink::WebClipboard::Buffer());
-  const SkBitmap& bitmap = image.getSkBitmap();
+                              blink::Platform::Current()->Clipboard())
+                              ->ReadRawImage(blink::WebClipboard::Buffer());
+  const SkBitmap& bitmap = image.GetSkBitmap();
   SkAutoLockPixels autoLock(bitmap);
   callback.Run(bitmap);
 }

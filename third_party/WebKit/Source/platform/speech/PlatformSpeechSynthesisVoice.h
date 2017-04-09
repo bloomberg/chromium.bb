@@ -36,41 +36,42 @@ namespace blink {
 class PLATFORM_EXPORT PlatformSpeechSynthesisVoice final
     : public RefCounted<PlatformSpeechSynthesisVoice> {
  public:
-  static PassRefPtr<PlatformSpeechSynthesisVoice> create(const String& voiceURI,
-                                                         const String& name,
-                                                         const String& lang,
-                                                         bool localService,
-                                                         bool isDefault);
-  static PassRefPtr<PlatformSpeechSynthesisVoice> create();
+  static PassRefPtr<PlatformSpeechSynthesisVoice> Create(
+      const String& voice_uri,
+      const String& name,
+      const String& lang,
+      bool local_service,
+      bool is_default);
+  static PassRefPtr<PlatformSpeechSynthesisVoice> Create();
 
-  const String& voiceURI() const { return m_voiceURI; }
-  void setVoiceURI(const String& voiceURI) { m_voiceURI = voiceURI; }
+  const String& VoiceURI() const { return voice_uri_; }
+  void SetVoiceURI(const String& voice_uri) { voice_uri_ = voice_uri; }
 
-  const String& name() const { return m_name; }
-  void setName(const String& name) { m_name = name; }
+  const String& GetName() const { return name_; }
+  void SetName(const String& name) { name_ = name; }
 
-  const String& lang() const { return m_lang; }
-  void setLang(const String& lang) { m_lang = lang; }
+  const String& Lang() const { return lang_; }
+  void SetLang(const String& lang) { lang_ = lang; }
 
-  bool localService() const { return m_localService; }
-  void setLocalService(bool localService) { m_localService = localService; }
+  bool LocalService() const { return local_service_; }
+  void SetLocalService(bool local_service) { local_service_ = local_service; }
 
-  bool isDefault() const { return m_default; }
-  void setIsDefault(bool isDefault) { m_default = isDefault; }
+  bool IsDefault() const { return default_; }
+  void SetIsDefault(bool is_default) { default_ = is_default; }
 
  private:
-  PlatformSpeechSynthesisVoice(const String& voiceURI,
+  PlatformSpeechSynthesisVoice(const String& voice_uri,
                                const String& name,
                                const String& lang,
-                               bool localService,
-                               bool isDefault);
+                               bool local_service,
+                               bool is_default);
   PlatformSpeechSynthesisVoice();
 
-  String m_voiceURI;
-  String m_name;
-  String m_lang;
-  bool m_localService;
-  bool m_default;
+  String voice_uri_;
+  String name_;
+  String lang_;
+  bool local_service_;
+  bool default_;
 };
 
 }  // namespace blink

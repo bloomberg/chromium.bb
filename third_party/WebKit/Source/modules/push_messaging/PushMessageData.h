@@ -26,8 +26,8 @@ class MODULES_EXPORT PushMessageData final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PushMessageData* create(const String& data);
-  static PushMessageData* create(
+  static PushMessageData* Create(const String& data);
+  static PushMessageData* Create(
       const ArrayBufferOrArrayBufferViewOrUSVString& data);
 
   virtual ~PushMessageData();
@@ -40,9 +40,9 @@ class MODULES_EXPORT PushMessageData final
   DECLARE_TRACE();
 
  private:
-  PushMessageData(const char* data, unsigned bytesSize);
+  PushMessageData(const char* data, unsigned bytes_size);
 
-  Vector<char> m_data;
+  Vector<char> data_;
 };
 
 }  // namespace blink

@@ -16,15 +16,15 @@ class HTMLLinkElement;
 
 class MODULES_EXPORT ServiceWorkerLinkResource final : public LinkResource {
  public:
-  static ServiceWorkerLinkResource* create(HTMLLinkElement* owner);
+  static ServiceWorkerLinkResource* Create(HTMLLinkElement* owner);
 
   ~ServiceWorkerLinkResource() override;
 
   // LinkResource implementation:
-  void process() override;
-  LinkResourceType type() const override { return Other; }
-  bool hasLoaded() const override;
-  void ownerRemoved() override;
+  void Process() override;
+  LinkResourceType GetType() const override { return kOther; }
+  bool HasLoaded() const override;
+  void OwnerRemoved() override;
 
  private:
   explicit ServiceWorkerLinkResource(HTMLLinkElement* owner);

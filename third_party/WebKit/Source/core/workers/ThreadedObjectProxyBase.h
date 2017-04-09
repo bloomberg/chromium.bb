@@ -26,28 +26,28 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
  public:
   ~ThreadedObjectProxyBase() override = default;
 
-  void reportPendingActivity(bool hasPendingActivity);
+  void ReportPendingActivity(bool has_pending_activity);
 
   // WorkerReportingProxy overrides.
-  void countFeature(UseCounter::Feature) override;
-  void countDeprecation(UseCounter::Feature) override;
-  void reportConsoleMessage(MessageSource,
+  void CountFeature(UseCounter::Feature) override;
+  void CountDeprecation(UseCounter::Feature) override;
+  void ReportConsoleMessage(MessageSource,
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void postMessageToPageInspector(const String&) override;
-  void didCloseWorkerGlobalScope() override;
-  void didTerminateWorkerThread() override;
+  void PostMessageToPageInspector(const String&) override;
+  void DidCloseWorkerGlobalScope() override;
+  void DidTerminateWorkerThread() override;
 
  protected:
   explicit ThreadedObjectProxyBase(ParentFrameTaskRunners*);
-  virtual WeakPtr<ThreadedMessagingProxyBase> messagingProxyWeakPtr() = 0;
-  ParentFrameTaskRunners* getParentFrameTaskRunners();
+  virtual WeakPtr<ThreadedMessagingProxyBase> MessagingProxyWeakPtr() = 0;
+  ParentFrameTaskRunners* GetParentFrameTaskRunners();
 
  private:
   // Used to post a task to ThreadedMessagingProxyBase on the parent context
   // thread.
-  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
 };
 
 }  // namespace blink

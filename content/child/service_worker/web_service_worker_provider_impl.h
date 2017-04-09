@@ -32,21 +32,21 @@ class WebServiceWorkerProviderImpl
                                ServiceWorkerProviderContext* context);
   ~WebServiceWorkerProviderImpl() override;
 
-  void setClient(blink::WebServiceWorkerProviderClient* client) override;
+  void SetClient(blink::WebServiceWorkerProviderClient* client) override;
 
-  void registerServiceWorker(
+  void RegisterServiceWorker(
       const blink::WebURL& pattern,
       const blink::WebURL& script_url,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) override;
-  void getRegistration(
+  void GetRegistration(
       const blink::WebURL& document_url,
       std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>) override;
-  void getRegistrations(
+  void GetRegistrations(
       std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>) override;
-  void getRegistrationForReady(
+  void GetRegistrationForReady(
       std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>)
       override;
-  bool validateScopeAndScriptURL(const blink::WebURL& pattern,
+  bool ValidateScopeAndScriptURL(const blink::WebURL& pattern,
                                  const blink::WebURL& script_url,
                                  blink::WebString* error_message) override;
 

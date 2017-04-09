@@ -41,114 +41,114 @@ namespace blink {
 
 namespace {
 
-Editor::Command command(Document* document, const String& commandName) {
-  LocalFrame* frame = document->frame();
-  if (!frame || frame->document() != document)
+Editor::Command GetCommand(Document* document, const String& command_name) {
+  LocalFrame* frame = document->GetFrame();
+  if (!frame || frame->GetDocument() != document)
     return Editor::Command();
 
-  document->updateStyleAndLayoutTree();
-  return frame->editor().createCommand(commandName, CommandFromDOM);
+  document->UpdateStyleAndLayoutTree();
+  return frame->GetEditor().CreateCommand(command_name, kCommandFromDOM);
 }
 
 }  // namespace
 
-bool Document::execCommand(const String& commandName,
+bool Document::execCommand(const String& command_name,
                            bool,
                            const String& value,
-                           ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "execCommand is only supported on HTML documents.");
+                           ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "execCommand is only supported on HTML documents.");
     return false;
   }
-  if (focusedElement() && isTextControlElement(*focusedElement()))
-    UseCounter::count(*this, UseCounter::ExecCommandOnInputOrTextarea);
+  if (FocusedElement() && IsTextControlElement(*FocusedElement()))
+    UseCounter::Count(*this, UseCounter::kExecCommandOnInputOrTextarea);
 
   // We don't allow recursive |execCommand()| to protect against attack code.
   // Recursive call of |execCommand()| could be happened by moving iframe
   // with script triggered by insertion, e.g. <iframe src="javascript:...">
   // <iframe onload="...">. This usage is valid as of the specification
   // although, it isn't common use case, rather it is used as attack code.
-  if (m_isRunningExecCommand) {
+  if (is_running_exec_command_) {
     String message =
         "We don't execute document.execCommand() this time, because it is "
         "called recursively.";
-    addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
+    AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource,
+                                             kWarningMessageLevel, message));
     return false;
   }
-  AutoReset<bool> executeScope(&m_isRunningExecCommand, true);
+  AutoReset<bool> execute_scope(&is_running_exec_command_, true);
 
   // Postpone DOM mutation events, which can execute scripts and change
   // DOM tree against implementation assumption.
-  EventQueueScope eventQueueScope;
-  Editor::tidyUpHTMLStructure(*this);
-  Editor::Command editorCommand = command(this, commandName);
+  EventQueueScope event_queue_scope;
+  Editor::TidyUpHTMLStructure(*this);
+  Editor::Command editor_command = GetCommand(this, command_name);
 
-  DEFINE_STATIC_LOCAL(SparseHistogram, editorCommandHistogram,
+  DEFINE_STATIC_LOCAL(SparseHistogram, editor_command_histogram,
                       ("WebCore.Document.execCommand"));
-  editorCommandHistogram.sample(editorCommand.idForHistogram());
-  return editorCommand.execute(value);
+  editor_command_histogram.Sample(editor_command.IdForHistogram());
+  return editor_command.Execute(value);
 }
 
-bool Document::queryCommandEnabled(const String& commandName,
-                                   ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+bool Document::queryCommandEnabled(const String& command_name,
+                                   ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "queryCommandEnabled is only supported on HTML documents.");
     return false;
   }
 
-  return command(this, commandName).isEnabled();
+  return GetCommand(this, command_name).IsEnabled();
 }
 
-bool Document::queryCommandIndeterm(const String& commandName,
-                                    ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+bool Document::queryCommandIndeterm(const String& command_name,
+                                    ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "queryCommandIndeterm is only supported on HTML documents.");
     return false;
   }
 
-  return command(this, commandName).state() == MixedTriState;
+  return GetCommand(this, command_name).GetState() == kMixedTriState;
 }
 
-bool Document::queryCommandState(const String& commandName,
-                                 ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+bool Document::queryCommandState(const String& command_name,
+                                 ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "queryCommandState is only supported on HTML documents.");
     return false;
   }
 
-  return command(this, commandName).state() == TrueTriState;
+  return GetCommand(this, command_name).GetState() == kTrueTriState;
 }
 
-bool Document::queryCommandSupported(const String& commandName,
-                                     ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+bool Document::queryCommandSupported(const String& command_name,
+                                     ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "queryCommandSupported is only supported on HTML documents.");
     return false;
   }
 
-  return command(this, commandName).isSupported();
+  return GetCommand(this, command_name).IsSupported();
 }
 
-String Document::queryCommandValue(const String& commandName,
-                                   ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+String Document::queryCommandValue(const String& command_name,
+                                   ExceptionState& exception_state) {
+  if (!IsHTMLDocument() && !IsXHTMLDocument()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "queryCommandValue is only supported on HTML documents.");
     return "";
   }
 
-  return command(this, commandName).value();
+  return GetCommand(this, command_name).Value();
 }
 
 }  // namespace blink

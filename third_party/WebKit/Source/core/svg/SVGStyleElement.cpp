@@ -31,33 +31,33 @@
 namespace blink {
 
 inline SVGStyleElement::SVGStyleElement(Document& document,
-                                        bool createdByParser)
+                                        bool created_by_parser)
     : SVGElement(SVGNames::styleTag, document),
-      StyleElement(&document, createdByParser) {}
+      StyleElement(&document, created_by_parser) {}
 
 SVGStyleElement::~SVGStyleElement() {}
 
-SVGStyleElement* SVGStyleElement::create(Document& document,
-                                         bool createdByParser) {
-  return new SVGStyleElement(document, createdByParser);
+SVGStyleElement* SVGStyleElement::Create(Document& document,
+                                         bool created_by_parser) {
+  return new SVGStyleElement(document, created_by_parser);
 }
 
 bool SVGStyleElement::disabled() const {
-  if (!m_sheet)
+  if (!sheet_)
     return false;
 
-  return m_sheet->disabled();
+  return sheet_->disabled();
 }
 
-void SVGStyleElement::setDisabled(bool setDisabled) {
-  if (CSSStyleSheet* styleSheet = sheet())
-    styleSheet->setDisabled(setDisabled);
+void SVGStyleElement::setDisabled(bool set_disabled) {
+  if (CSSStyleSheet* style_sheet = sheet())
+    style_sheet->setDisabled(set_disabled);
 }
 
 const AtomicString& SVGStyleElement::type() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, defaultValue, ("text/css"));
+  DEFINE_STATIC_LOCAL(const AtomicString, default_value, ("text/css"));
   const AtomicString& n = getAttribute(SVGNames::typeAttr);
-  return n.isNull() ? defaultValue : n;
+  return n.IsNull() ? default_value : n;
 }
 
 void SVGStyleElement::setType(const AtomicString& type) {
@@ -65,8 +65,8 @@ void SVGStyleElement::setType(const AtomicString& type) {
 }
 
 const AtomicString& SVGStyleElement::media() const {
-  const AtomicString& n = fastGetAttribute(SVGNames::mediaAttr);
-  return n.isNull() ? MediaTypeNames::all : n;
+  const AtomicString& n = FastGetAttribute(SVGNames::mediaAttr);
+  return n.IsNull() ? MediaTypeNames::all : n;
 }
 
 void SVGStyleElement::setMedia(const AtomicString& media) {
@@ -74,76 +74,76 @@ void SVGStyleElement::setMedia(const AtomicString& media) {
 }
 
 String SVGStyleElement::title() const {
-  return fastGetAttribute(SVGNames::titleAttr);
+  return FastGetAttribute(SVGNames::titleAttr);
 }
 
 void SVGStyleElement::setTitle(const AtomicString& title) {
   setAttribute(SVGNames::titleAttr, title);
 }
 
-void SVGStyleElement::parseAttribute(
+void SVGStyleElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == SVGNames::titleAttr) {
-    if (m_sheet && isInDocumentTree())
-      m_sheet->setTitle(params.newValue);
+    if (sheet_ && IsInDocumentTree())
+      sheet_->SetTitle(params.new_value);
 
     return;
   }
 
-  SVGElement::parseAttribute(params);
+  SVGElement::ParseAttribute(params);
 }
 
-void SVGStyleElement::finishParsingChildren() {
+void SVGStyleElement::FinishParsingChildren() {
   StyleElement::ProcessingResult result =
-      StyleElement::finishParsingChildren(*this);
-  SVGElement::finishParsingChildren();
-  if (result == StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+      StyleElement::FinishParsingChildren(*this);
+  SVGElement::FinishParsingChildren();
+  if (result == StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
-Node::InsertionNotificationRequest SVGStyleElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  SVGElement::insertedInto(insertionPoint);
-  return InsertionShouldCallDidNotifySubtreeInsertions;
+Node::InsertionNotificationRequest SVGStyleElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  SVGElement::InsertedInto(insertion_point);
+  return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void SVGStyleElement::didNotifySubtreeInsertionsToDocument() {
-  if (StyleElement::processStyleSheet(document(), *this) ==
-      StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+void SVGStyleElement::DidNotifySubtreeInsertionsToDocument() {
+  if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==
+      StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
-void SVGStyleElement::removedFrom(ContainerNode* insertionPoint) {
-  SVGElement::removedFrom(insertionPoint);
-  StyleElement::removedFrom(*this, insertionPoint);
+void SVGStyleElement::RemovedFrom(ContainerNode* insertion_point) {
+  SVGElement::RemovedFrom(insertion_point);
+  StyleElement::RemovedFrom(*this, insertion_point);
 }
 
-void SVGStyleElement::childrenChanged(const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
-  if (StyleElement::childrenChanged(*this) ==
-      StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+void SVGStyleElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGElement::ChildrenChanged(change);
+  if (StyleElement::ChildrenChanged(*this) ==
+      StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
-void SVGStyleElement::notifyLoadedSheetAndAllCriticalSubresources(
-    LoadedSheetErrorStatus errorStatus) {
-  if (errorStatus != NoErrorLoadingSubresource)
-    TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
-        ->postTask(BLINK_FROM_HERE,
-                   WTF::bind(&SVGStyleElement::dispatchPendingEvent,
-                             wrapPersistent(this)));
+void SVGStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
+    LoadedSheetErrorStatus error_status) {
+  if (error_status != kNoErrorLoadingSubresource)
+    TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&SVGStyleElement::DispatchPendingEvent,
+                             WrapPersistent(this)));
 }
 
-void SVGStyleElement::dispatchPendingEvent() {
-  dispatchEvent(Event::create(EventTypeNames::error));
+void SVGStyleElement::DispatchPendingEvent() {
+  DispatchEvent(Event::Create(EventTypeNames::error));
 }
 
 DEFINE_TRACE(SVGStyleElement) {
-  StyleElement::trace(visitor);
-  SVGElement::trace(visitor);
+  StyleElement::Trace(visitor);
+  SVGElement::Trace(visitor);
 }
 
 }  // namespace blink

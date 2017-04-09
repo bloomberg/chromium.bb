@@ -49,99 +49,99 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
       const PositionTemplate<Strategy>& end,
       const TextIteratorBehavior& = TextIteratorBehavior());
 
-  bool atEnd() const { return !m_positionNode || m_shouldStop; }
-  void advance();
+  bool AtEnd() const { return !position_node_ || should_stop_; }
+  void Advance();
 
-  int length() const { return m_textLength; }
+  int length() const { return text_length_; }
 
   // Note: |characterAt()| returns characters in the reversed order, since
   // the iterator is backwards. For example, if the current text is "abc",
   // then |characterAt(0)| returns 'c'.
-  UChar characterAt(unsigned index) const;
+  UChar CharacterAt(unsigned index) const;
 
-  Node* node() const { return m_node; }
+  Node* GetNode() const { return node_; }
 
   // Calculate the minimum |actualLength >= minLength| such that code units
   // with offset range [position, position + actualLength) are whole code
   // points. Prepend these code points to |output| and return |actualLength|.
   // TODO(xiaochengh): Use (start, end) instead of (start, length).
-  int copyTextTo(BackwardsTextBuffer* output,
+  int CopyTextTo(BackwardsTextBuffer* output,
                  int position,
-                 int minLength) const;
+                 int min_length) const;
   // TODO(xiaochengh): Avoid default parameters.
-  int copyTextTo(BackwardsTextBuffer* output, int position = 0) const;
+  int CopyTextTo(BackwardsTextBuffer* output, int position = 0) const;
 
-  Node* startContainer() const;
-  int endOffset() const;
-  PositionTemplate<Strategy> startPosition() const;
-  PositionTemplate<Strategy> endPosition() const;
+  Node* StartContainer() const;
+  int EndOffset() const;
+  PositionTemplate<Strategy> StartPosition() const;
+  PositionTemplate<Strategy> EndPosition() const;
 
-  bool isInTextSecurityMode() const;
+  bool IsInTextSecurityMode() const;
 
  private:
-  void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
-  void exitNode();
-  bool handleTextNode();
-  LayoutText* handleFirstLetter(int& startOffset, int& offsetInNode);
-  bool handleReplacedElement();
-  bool handleNonTextNode();
-  void emitCharacter(UChar, Node*, int startOffset, int endOffset);
-  bool advanceRespectingRange(Node*);
+  void Init(Node* start_node, Node* end_node, int start_offset, int end_offset);
+  void ExitNode();
+  bool HandleTextNode();
+  LayoutText* HandleFirstLetter(int& start_offset, int& offset_in_node);
+  bool HandleReplacedElement();
+  bool HandleNonTextNode();
+  void EmitCharacter(UChar, Node*, int start_offset, int end_offset);
+  bool AdvanceRespectingRange(Node*);
 
-  bool isBetweenSurrogatePair(int position) const;
+  bool IsBetweenSurrogatePair(int position) const;
 
   // Prepend code units with offset range [position, position + copyLength)
   // to the output buffer.
-  void copyCodeUnitsTo(BackwardsTextBuffer* output,
+  void CopyCodeUnitsTo(BackwardsTextBuffer* output,
                        int position,
-                       int copyLength) const;
+                       int copy_length) const;
 
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
-  Member<Node> m_node;
-  int m_offset;
-  bool m_handledNode;
-  bool m_handledChildren;
-  FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
+  Member<Node> node_;
+  int offset_;
+  bool handled_node_;
+  bool handled_children_;
+  FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
 
   // End of the range.
-  Member<Node> m_startNode;
-  int m_startOffset;
+  Member<Node> start_node_;
+  int start_offset_;
   // Start of the range.
-  Member<Node> m_endNode;
-  int m_endOffset;
+  Member<Node> end_node_;
+  int end_offset_;
 
   // The current text and its position, in the form to be returned from the
   // iterator.
-  Member<Node> m_positionNode;
-  int m_positionStartOffset;
-  int m_positionEndOffset;
+  Member<Node> position_node_;
+  int position_start_offset_;
+  int position_end_offset_;
 
   // We're interested in the range [m_textOffset, m_textOffset + m_textLength)
   // of m_textContainer.
-  String m_textContainer;
-  int m_textOffset;
-  int m_textLength;
+  String text_container_;
+  int text_offset_;
+  int text_length_;
 
   // Used for whitespace characters that aren't in the DOM, so we can point at
   // them.
-  UChar m_singleCharacterBuffer;
+  UChar single_character_buffer_;
 
   // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
-  bool m_havePassedStartNode;
+  bool have_passed_start_node_;
 
   // Should handle first-letter layoutObject in the next call to handleTextNode.
-  bool m_shouldHandleFirstLetter;
+  bool should_handle_first_letter_;
 
   // Used when the iteration should stop if form controls are reached.
-  bool m_stopsOnFormControls;
+  bool stops_on_form_controls_;
 
   // Used when m_stopsOnFormControls is set to determine if the iterator should
   // keep advancing.
-  bool m_shouldStop;
+  bool should_stop_;
 
   // Used in pasting inside password field.
-  bool m_emitsOriginalText;
+  bool emits_original_text_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

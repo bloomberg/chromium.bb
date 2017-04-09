@@ -18,9 +18,9 @@ bool GetWebCursorInfo(const WebCursor& cursor,
   cursor.GetCursorInfo(&cursor_info);
 
   web_cursor_info->type = cursor_info.type;
-  web_cursor_info->hotSpot = cursor_info.hotspot;
-  web_cursor_info->customImage = cursor_info.custom_image;
-  web_cursor_info->imageScaleFactor = cursor_info.image_scale_factor;
+  web_cursor_info->hot_spot = cursor_info.hotspot;
+  web_cursor_info->custom_image = cursor_info.custom_image;
+  web_cursor_info->image_scale_factor = cursor_info.image_scale_factor;
   return true;
 }
 
@@ -28,9 +28,9 @@ void InitializeCursorFromWebCursorInfo(WebCursor* cursor,
                                        const WebCursorInfo& web_cursor_info) {
   WebCursor::CursorInfo cursor_info;
   cursor_info.type = web_cursor_info.type;
-  cursor_info.image_scale_factor = web_cursor_info.imageScaleFactor;
-  cursor_info.hotspot = web_cursor_info.hotSpot;
-  cursor_info.custom_image = web_cursor_info.customImage.getSkBitmap();
+  cursor_info.image_scale_factor = web_cursor_info.image_scale_factor;
+  cursor_info.hotspot = web_cursor_info.hot_spot;
+  cursor_info.custom_image = web_cursor_info.custom_image.GetSkBitmap();
   cursor->InitFromCursorInfo(cursor_info);
 }
 

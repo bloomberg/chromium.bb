@@ -387,24 +387,24 @@ void CastStreamingNativeHandler::CreateCastSession(
     if (!args[0]->IsNull() && !args[0]->IsUndefined()) {
       CHECK(args[0]->IsObject());
       blink::WebDOMMediaStreamTrack track =
-          blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
-      if (track.isNull()) {
+          blink::WebDOMMediaStreamTrack::FromV8Value(args[0]);
+      if (track.IsNull()) {
         isolate->ThrowException(v8::Exception::Error(
             v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
         return;
       }
-      stream1.reset(new CastRtpStream(track.component(), session));
+      stream1.reset(new CastRtpStream(track.Component(), session));
     }
     if (!args[1]->IsNull() && !args[1]->IsUndefined()) {
       CHECK(args[1]->IsObject());
       blink::WebDOMMediaStreamTrack track =
-          blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
-      if (track.isNull()) {
+          blink::WebDOMMediaStreamTrack::FromV8Value(args[1]);
+      if (track.IsNull()) {
         isolate->ThrowException(v8::Exception::Error(
             v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
         return;
       }
-      stream2.reset(new CastRtpStream(track.component(), session));
+      stream2.reset(new CastRtpStream(track.Component(), session));
     }
   }
   std::unique_ptr<CastUdpTransport> udp_transport(
@@ -899,9 +899,9 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   const std::string url = *v8::String::Utf8Value(args[6]);
   blink::WebMediaStream stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+      blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
 
-  if (stream.isNull()) {
+  if (stream.IsNull()) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(args.GetIsolate(), kInvalidMediaStreamURL)));
     return;
@@ -976,8 +976,8 @@ void CastStreamingNativeHandler::AddTracksToMediaStream(
     scoped_refptr<media::AudioCapturerSource> audio,
     std::unique_ptr<media::VideoCapturerSource> video) {
   blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
-  if (web_stream.isNull()) {
+      blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
+  if (web_stream.IsNull()) {
     LOG(DFATAL) << "Stream not found.";
     return;
   }

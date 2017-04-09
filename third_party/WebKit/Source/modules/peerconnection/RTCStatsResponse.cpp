@@ -26,34 +26,34 @@
 
 namespace blink {
 
-RTCStatsResponse* RTCStatsResponse::create() {
+RTCStatsResponse* RTCStatsResponse::Create() {
   return new RTCStatsResponse();
 }
 
 RTCStatsResponse::RTCStatsResponse() {}
 
 RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name) {
-  if (m_idmap.find(name) != m_idmap.end())
-    return m_result[m_idmap.at(name)];
+  if (idmap_.Find(name) != idmap_.end())
+    return result_[idmap_.at(name)];
   return nullptr;
 }
 
-void RTCStatsResponse::addStats(const WebRTCLegacyStats& stats) {
-  m_result.push_back(RTCLegacyStatsReport::create(stats.id(), stats.type(),
-                                                  stats.timestamp()));
-  m_idmap.insert(stats.id(), m_result.size() - 1);
-  RTCLegacyStatsReport* report = m_result[m_result.size() - 1].get();
+void RTCStatsResponse::AddStats(const WebRTCLegacyStats& stats) {
+  result_.push_back(RTCLegacyStatsReport::Create(stats.Id(), stats.GetType(),
+                                                 stats.Timestamp()));
+  idmap_.insert(stats.Id(), result_.size() - 1);
+  RTCLegacyStatsReport* report = result_[result_.size() - 1].Get();
 
   for (std::unique_ptr<WebRTCLegacyStatsMemberIterator> member(
-           stats.iterator());
-       !member->isEnd(); member->next()) {
-    report->addStatistic(member->name(), member->valueToString());
+           stats.Iterator());
+       !member->IsEnd(); member->Next()) {
+    report->AddStatistic(member->GetName(), member->ValueToString());
   }
 }
 
 DEFINE_TRACE(RTCStatsResponse) {
-  visitor->trace(m_result);
-  RTCStatsResponseBase::trace(visitor);
+  visitor->Trace(result_);
+  RTCStatsResponseBase::Trace(visitor);
 }
 
 }  // namespace blink

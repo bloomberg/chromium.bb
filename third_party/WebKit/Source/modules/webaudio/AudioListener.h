@@ -48,58 +48,58 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioListener* create(BaseAudioContext& context) {
+  static AudioListener* Create(BaseAudioContext& context) {
     return new AudioListener(context);
   }
   virtual ~AudioListener();
 
   // Location of the listener
-  AudioParam* positionX() const { return m_positionX; };
-  AudioParam* positionY() const { return m_positionY; };
-  AudioParam* positionZ() const { return m_positionZ; };
+  AudioParam* positionX() const { return position_x_; };
+  AudioParam* positionY() const { return position_y_; };
+  AudioParam* positionZ() const { return position_z_; };
 
   // Forward direction vector of the listener
-  AudioParam* forwardX() const { return m_forwardX; };
-  AudioParam* forwardY() const { return m_forwardY; };
-  AudioParam* forwardZ() const { return m_forwardZ; };
+  AudioParam* forwardX() const { return forward_x_; };
+  AudioParam* forwardY() const { return forward_y_; };
+  AudioParam* forwardZ() const { return forward_z_; };
 
   // Up direction vector for the listener
-  AudioParam* upX() const { return m_upX; };
-  AudioParam* upY() const { return m_upY; };
-  AudioParam* upZ() const { return m_upZ; };
+  AudioParam* upX() const { return up_x_; };
+  AudioParam* upY() const { return up_y_; };
+  AudioParam* upZ() const { return up_z_; };
 
   // True if any of AudioParams have automations.
-  bool hasSampleAccurateValues() const;
+  bool HasSampleAccurateValues() const;
 
   // Update the internal state of the listener, including updating the dirty
   // state of all PannerNodes if necessary.
-  void updateState();
+  void UpdateState();
 
-  bool isListenerDirty() const { return m_isListenerDirty; }
+  bool IsListenerDirty() const { return is_listener_dirty_; }
 
-  const FloatPoint3D position() const {
-    return FloatPoint3D(m_positionX->value(), m_positionY->value(),
-                        m_positionZ->value());
+  const FloatPoint3D GetPosition() const {
+    return FloatPoint3D(position_x_->value(), position_y_->value(),
+                        position_z_->value());
   }
-  const FloatPoint3D orientation() const {
-    return FloatPoint3D(m_forwardX->value(), m_forwardY->value(),
-                        m_forwardZ->value());
+  const FloatPoint3D Orientation() const {
+    return FloatPoint3D(forward_x_->value(), forward_y_->value(),
+                        forward_z_->value());
   }
-  const FloatPoint3D upVector() const {
-    return FloatPoint3D(m_upX->value(), m_upY->value(), m_upZ->value());
+  const FloatPoint3D UpVector() const {
+    return FloatPoint3D(up_x_->value(), up_y_->value(), up_z_->value());
   }
 
-  const float* getPositionXValues(size_t framesToProcess);
-  const float* getPositionYValues(size_t framesToProcess);
-  const float* getPositionZValues(size_t framesToProcess);
+  const float* GetPositionXValues(size_t frames_to_process);
+  const float* GetPositionYValues(size_t frames_to_process);
+  const float* GetPositionZValues(size_t frames_to_process);
 
-  const float* getForwardXValues(size_t framesToProcess);
-  const float* getForwardYValues(size_t framesToProcess);
-  const float* getForwardZValues(size_t framesToProcess);
+  const float* GetForwardXValues(size_t frames_to_process);
+  const float* GetForwardYValues(size_t frames_to_process);
+  const float* GetForwardZValues(size_t frames_to_process);
 
-  const float* getUpXValues(size_t framesToProcess);
-  const float* getUpYValues(size_t framesToProcess);
-  const float* getUpZValues(size_t framesToProcess);
+  const float* GetUpXValues(size_t frames_to_process);
+  const float* GetUpYValues(size_t frames_to_process);
+  const float* GetUpZValues(size_t frames_to_process);
 
   // Position
   void setPosition(float x, float y, float z) {
@@ -110,24 +110,24 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   void setOrientation(float x,
                       float y,
                       float z,
-                      float upX,
-                      float upY,
-                      float upZ) {
+                      float up_x,
+                      float up_y,
+                      float up_z) {
     setOrientation(FloatPoint3D(x, y, z));
-    setUpVector(FloatPoint3D(upX, upY, upZ));
+    SetUpVector(FloatPoint3D(up_x, up_y, up_z));
   }
 
-  Mutex& listenerLock() { return m_listenerLock; }
-  void addPanner(PannerHandler&);
-  void removePanner(PannerHandler&);
+  Mutex& ListenerLock() { return listener_lock_; }
+  void AddPanner(PannerHandler&);
+  void RemovePanner(PannerHandler&);
 
   // HRTF DB loader
-  HRTFDatabaseLoader* hrtfDatabaseLoader() {
-    return m_hrtfDatabaseLoader.get();
+  HRTFDatabaseLoader* HrtfDatabaseLoader() {
+    return hrtf_database_loader_.Get();
   }
-  void createAndLoadHRTFDatabaseLoader(float);
-  bool isHRTFDatabaseLoaded();
-  void waitForHRTFDatabaseLoaderThreadCompletion();
+  void CreateAndLoadHRTFDatabaseLoader(float);
+  bool IsHRTFDatabaseLoaded();
+  void WaitForHRTFDatabaseLoaderThreadCompletion();
 
   DECLARE_TRACE();
 
@@ -136,61 +136,61 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
 
   void setPosition(const FloatPoint3D&);
   void setOrientation(const FloatPoint3D&);
-  void setUpVector(const FloatPoint3D&);
+  void SetUpVector(const FloatPoint3D&);
 
-  void markPannersAsDirty(unsigned);
+  void MarkPannersAsDirty(unsigned);
 
   // Location of the listener
-  Member<AudioParam> m_positionX;
-  Member<AudioParam> m_positionY;
-  Member<AudioParam> m_positionZ;
+  Member<AudioParam> position_x_;
+  Member<AudioParam> position_y_;
+  Member<AudioParam> position_z_;
 
   // Forward direction vector of the listener
-  Member<AudioParam> m_forwardX;
-  Member<AudioParam> m_forwardY;
-  Member<AudioParam> m_forwardZ;
+  Member<AudioParam> forward_x_;
+  Member<AudioParam> forward_y_;
+  Member<AudioParam> forward_z_;
 
   // Up direction vector for the listener
-  Member<AudioParam> m_upX;
-  Member<AudioParam> m_upY;
-  Member<AudioParam> m_upZ;
+  Member<AudioParam> up_x_;
+  Member<AudioParam> up_y_;
+  Member<AudioParam> up_z_;
 
   // The position, forward, and up vectors from the last rendering quantum.
-  FloatPoint3D m_lastPosition;
-  FloatPoint3D m_lastForward;
-  FloatPoint3D m_lastUp;
+  FloatPoint3D last_position_;
+  FloatPoint3D last_forward_;
+  FloatPoint3D last_up_;
 
   // Last time that the automations were updated.
-  double m_lastUpdateTime;
+  double last_update_time_;
 
   // Set every rendering quantum if the listener has moved in any way
   // (position, forward, or up).  This should only be read or written to from
   // the audio thread.
-  bool m_isListenerDirty;
+  bool is_listener_dirty_;
 
-  void updateValuesIfNeeded(size_t framesToProcess);
+  void UpdateValuesIfNeeded(size_t frames_to_process);
 
-  AudioFloatArray m_positionXValues;
-  AudioFloatArray m_positionYValues;
-  AudioFloatArray m_positionZValues;
+  AudioFloatArray position_x_values_;
+  AudioFloatArray position_y_values_;
+  AudioFloatArray position_z_values_;
 
-  AudioFloatArray m_forwardXValues;
-  AudioFloatArray m_forwardYValues;
-  AudioFloatArray m_forwardZValues;
+  AudioFloatArray forward_x_values_;
+  AudioFloatArray forward_y_values_;
+  AudioFloatArray forward_z_values_;
 
-  AudioFloatArray m_upXValues;
-  AudioFloatArray m_upYValues;
-  AudioFloatArray m_upZValues;
+  AudioFloatArray up_x_values_;
+  AudioFloatArray up_y_values_;
+  AudioFloatArray up_z_values_;
 
   // Synchronize a panner's process() with setting of the state of the listener.
-  mutable Mutex m_listenerLock;
+  mutable Mutex listener_lock_;
   // List for pannerNodes in context. This is updated only in the main thread,
   // and can be referred in audio thread.
   // These raw pointers are safe because PannerHandler::uninitialize()
   // unregisters it from m_panners.
-  HashSet<PannerHandler*> m_panners;
+  HashSet<PannerHandler*> panners_;
   // HRTF DB loader for panner node.
-  RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
+  RefPtr<HRTFDatabaseLoader> hrtf_database_loader_;
 };
 
 }  // namespace blink

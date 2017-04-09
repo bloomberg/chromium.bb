@@ -22,7 +22,7 @@ class MockDeviceLightListener : public blink::WebDeviceLightListener {
   MockDeviceLightListener() : did_change_device_light_(false) {}
   ~MockDeviceLightListener() override {}
 
-  void didChangeDeviceLight(double value) override {
+  void DidChangeDeviceLight(double value) override {
     data_.value = value;
     did_change_device_light_ = true;
   }

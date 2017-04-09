@@ -26,25 +26,25 @@ class EditingTestBase : public ::testing::Test {
 
   void SetUp() override;
 
-  void setupPageWithClients(Page::PageClients*);
+  void SetupPageWithClients(Page::PageClients*);
 
-  Document& document() const;
-  DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
-  LocalFrame& frame() const;
-  FrameSelection& selection() const;
+  Document& GetDocument() const;
+  DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }
+  LocalFrame& GetFrame() const;
+  FrameSelection& Selection() const;
 
-  static ShadowRoot* createShadowRootForElementWithIDAndSetInnerHTML(
+  static ShadowRoot* CreateShadowRootForElementWithIDAndSetInnerHTML(
       TreeScope&,
-      const char* hostElementID,
-      const char* shadowRootContent);
+      const char* host_element_id,
+      const char* shadow_root_content);
 
-  void setBodyContent(const std::string&);
-  ShadowRoot* setShadowContent(const char* shadowContent,
-                               const char* shadowHostId);
-  void updateAllLifecyclePhases();
+  void SetBodyContent(const std::string&);
+  ShadowRoot* SetShadowContent(const char* shadow_content,
+                               const char* shadow_host_id);
+  void UpdateAllLifecyclePhases();
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 }  // namespace blink

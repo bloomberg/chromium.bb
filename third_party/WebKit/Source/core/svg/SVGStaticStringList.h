@@ -44,34 +44,34 @@ class SVGElement;
 // this is never animated.
 class SVGStaticStringList final : public SVGAnimatedPropertyBase {
  public:
-  static SVGStaticStringList* create(SVGElement* contextElement,
-                                     const QualifiedName& attributeName) {
-    return new SVGStaticStringList(contextElement, attributeName);
+  static SVGStaticStringList* Create(SVGElement* context_element,
+                                     const QualifiedName& attribute_name) {
+    return new SVGStaticStringList(context_element, attribute_name);
   }
 
   ~SVGStaticStringList() override;
 
   // SVGAnimatedPropertyBase:
-  SVGPropertyBase* currentValueBase() override;
-  const SVGPropertyBase& baseValueBase() const override;
-  bool isAnimating() const override;
-  SVGPropertyBase* createAnimatedValue() override;
-  void setAnimatedValue(SVGPropertyBase*) override;
-  void animationEnded() override;
-  bool needsSynchronizeAttribute() override;
+  SVGPropertyBase* CurrentValueBase() override;
+  const SVGPropertyBase& BaseValueBase() const override;
+  bool IsAnimating() const override;
+  SVGPropertyBase* CreateAnimatedValue() override;
+  void SetAnimatedValue(SVGPropertyBase*) override;
+  void AnimationEnded() override;
+  bool NeedsSynchronizeAttribute() override;
 
-  SVGParsingError setBaseValueAsString(const String&) override;
+  SVGParsingError SetBaseValueAsString(const String&) override;
 
-  SVGStringList* value() { return m_value.get(); }
-  SVGStringListTearOff* tearOff();
+  SVGStringList* Value() { return value_.Get(); }
+  SVGStringListTearOff* TearOff();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   SVGStaticStringList(SVGElement*, const QualifiedName&);
 
-  Member<SVGStringList> m_value;
-  Member<SVGStringListTearOff> m_tearOff;
+  Member<SVGStringList> value_;
+  Member<SVGStringListTearOff> tear_off_;
 };
 
 }  // namespace blink

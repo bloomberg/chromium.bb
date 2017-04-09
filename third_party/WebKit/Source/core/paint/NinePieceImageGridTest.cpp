@@ -18,10 +18,10 @@ class NinePieceImageGridTest : public RenderingTest {
  public:
   NinePieceImageGridTest() {}
 
-  StyleImage* generatedImage() {
+  StyleImage* GeneratedImage() {
     CSSLinearGradientValue* gradient =
-        CSSLinearGradientValue::create(Repeating);
-    return StyleGeneratedImage::create(*gradient);
+        CSSLinearGradientValue::Create(kRepeating);
+    return StyleGeneratedImage::Create(*gradient);
   }
 
  private:
@@ -29,254 +29,254 @@ class NinePieceImageGridTest : public RenderingTest {
 };
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoDrawables) {
-  NinePieceImage ninePiece;
-  ninePiece.setImage(generatedImage());
+  NinePieceImage nine_piece;
+  nine_piece.SetImage(GeneratedImage());
 
-  IntSize imageSize(100, 100);
-  IntRect borderImageArea(0, 0, 100, 100);
-  IntRectOutsets borderWidths(0, 0, 0, 0);
+  IntSize image_size(100, 100);
+  IntRect border_image_area(0, 0, 100, 100);
+  IntRectOutsets border_widths(0, 0, 0, 0);
 
-  NinePieceImageGrid grid =
-      NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
-  for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-        grid.getNinePieceDrawInfo(piece, 1);
-    EXPECT_FALSE(drawInfo.isDrawable);
+  NinePieceImageGrid grid = NinePieceImageGrid(
+      nine_piece, image_size, border_image_area, border_widths);
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info =
+        grid.GetNinePieceDrawInfo(piece, 1);
+    EXPECT_FALSE(draw_info.is_drawable);
   }
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_AllDrawable) {
-  NinePieceImage ninePiece;
-  ninePiece.setImage(generatedImage());
-  ninePiece.setImageSlices(LengthBox(10, 10, 10, 10));
-  ninePiece.setFill(true);
+  NinePieceImage nine_piece;
+  nine_piece.SetImage(GeneratedImage());
+  nine_piece.SetImageSlices(LengthBox(10, 10, 10, 10));
+  nine_piece.SetFill(true);
 
-  IntSize imageSize(100, 100);
-  IntRect borderImageArea(0, 0, 100, 100);
-  IntRectOutsets borderWidths(10, 10, 10, 10);
+  IntSize image_size(100, 100);
+  IntRect border_image_area(0, 0, 100, 100);
+  IntRectOutsets border_widths(10, 10, 10, 10);
 
-  NinePieceImageGrid grid =
-      NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
-  for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-        grid.getNinePieceDrawInfo(piece, 1);
-    EXPECT_TRUE(drawInfo.isDrawable);
+  NinePieceImageGrid grid = NinePieceImageGrid(
+      nine_piece, image_size, border_image_area, border_widths);
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info =
+        grid.GetNinePieceDrawInfo(piece, 1);
+    EXPECT_TRUE(draw_info.is_drawable);
   }
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoFillMiddleNotDrawable) {
-  NinePieceImage ninePiece;
-  ninePiece.setImage(generatedImage());
-  ninePiece.setImageSlices(LengthBox(10, 10, 10, 10));
-  ninePiece.setFill(false);  // default
+  NinePieceImage nine_piece;
+  nine_piece.SetImage(GeneratedImage());
+  nine_piece.SetImageSlices(LengthBox(10, 10, 10, 10));
+  nine_piece.SetFill(false);  // default
 
-  IntSize imageSize(100, 100);
-  IntRect borderImageArea(0, 0, 100, 100);
-  IntRectOutsets borderWidths(10, 10, 10, 10);
+  IntSize image_size(100, 100);
+  IntRect border_image_area(0, 0, 100, 100);
+  IntRectOutsets border_widths(10, 10, 10, 10);
 
-  NinePieceImageGrid grid =
-      NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
-  for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-        grid.getNinePieceDrawInfo(piece, 1);
-    if (piece != MiddlePiece)
-      EXPECT_TRUE(drawInfo.isDrawable);
+  NinePieceImageGrid grid = NinePieceImageGrid(
+      nine_piece, image_size, border_image_area, border_widths);
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info =
+        grid.GetNinePieceDrawInfo(piece, 1);
+    if (piece != kMiddlePiece)
+      EXPECT_TRUE(draw_info.is_drawable);
     else
-      EXPECT_FALSE(drawInfo.isDrawable);
+      EXPECT_FALSE(draw_info.is_drawable);
   }
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_TopLeftDrawable) {
-  NinePieceImage ninePiece;
-  ninePiece.setImage(generatedImage());
-  ninePiece.setImageSlices(LengthBox(10, 10, 10, 10));
+  NinePieceImage nine_piece;
+  nine_piece.SetImage(GeneratedImage());
+  nine_piece.SetImageSlices(LengthBox(10, 10, 10, 10));
 
-  IntSize imageSize(100, 100);
-  IntRect borderImageArea(0, 0, 100, 100);
-  IntRectOutsets borderWidths(10, 10, 10, 10);
+  IntSize image_size(100, 100);
+  IntRect border_image_area(0, 0, 100, 100);
+  IntRectOutsets border_widths(10, 10, 10, 10);
 
   const struct {
-    IntRectOutsets borderWidths;
-    bool expectedIsDrawable;
-  } testCases[] = {
+    IntRectOutsets border_widths;
+    bool expected_is_drawable;
+  } test_cases[] = {
       {IntRectOutsets(0, 0, 0, 0), false},
       {IntRectOutsets(10, 0, 0, 0), false},
       {IntRectOutsets(0, 0, 0, 10), false},
       {IntRectOutsets(10, 0, 0, 10), true},
   };
 
-  for (const auto& testCase : testCases) {
+  for (const auto& test_case : test_cases) {
     NinePieceImageGrid grid = NinePieceImageGrid(
-        ninePiece, imageSize, borderImageArea, testCase.borderWidths);
-    for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-      NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-          grid.getNinePieceDrawInfo(piece, 1);
-      if (piece == TopLeftPiece)
-        EXPECT_EQ(drawInfo.isDrawable, testCase.expectedIsDrawable);
+        nine_piece, image_size, border_image_area, test_case.border_widths);
+    for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+      NinePieceImageGrid::NinePieceDrawInfo draw_info =
+          grid.GetNinePieceDrawInfo(piece, 1);
+      if (piece == kTopLeftPiece)
+        EXPECT_EQ(draw_info.is_drawable, test_case.expected_is_drawable);
     }
   }
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ScaleDownBorder) {
-  NinePieceImage ninePiece;
-  ninePiece.setImage(generatedImage());
-  ninePiece.setImageSlices(LengthBox(10, 10, 10, 10));
+  NinePieceImage nine_piece;
+  nine_piece.SetImage(GeneratedImage());
+  nine_piece.SetImageSlices(LengthBox(10, 10, 10, 10));
 
-  IntSize imageSize(100, 100);
-  IntRect borderImageArea(0, 0, 100, 100);
-  IntRectOutsets borderWidths(10, 10, 10, 10);
+  IntSize image_size(100, 100);
+  IntRect border_image_area(0, 0, 100, 100);
+  IntRectOutsets border_widths(10, 10, 10, 10);
 
   // Set border slices wide enough so that the widths are scaled
   // down and corner pieces cover the entire border image area.
-  ninePiece.setBorderSlices(BorderImageLengthBox(6));
+  nine_piece.SetBorderSlices(BorderImageLengthBox(6));
 
-  NinePieceImageGrid grid =
-      NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
-  for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-        grid.getNinePieceDrawInfo(piece, 1);
-    if (drawInfo.isCornerPiece)
-      EXPECT_EQ(drawInfo.destination.size(), FloatSize(50, 50));
+  NinePieceImageGrid grid = NinePieceImageGrid(
+      nine_piece, image_size, border_image_area, border_widths);
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info =
+        grid.GetNinePieceDrawInfo(piece, 1);
+    if (draw_info.is_corner_piece)
+      EXPECT_EQ(draw_info.destination.size(), FloatSize(50, 50));
     else
-      EXPECT_TRUE(drawInfo.destination.size().isEmpty());
+      EXPECT_TRUE(draw_info.destination.size().IsEmpty());
   }
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
   const struct {
-    IntSize imageSize;
-    IntRect borderImageArea;
-    IntRectOutsets borderWidths;
+    IntSize image_size;
+    IntRect border_image_area;
+    IntRectOutsets border_widths;
     bool fill;
-    LengthBox imageSlices;
-    Image::TileRule horizontalRule;
-    Image::TileRule verticalRule;
+    LengthBox image_slices;
+    Image::TileRule horizontal_rule;
+    Image::TileRule vertical_rule;
     struct {
-      bool isDrawable;
-      bool isCornerPiece;
+      bool is_drawable;
+      bool is_corner_piece;
       FloatRect destination;
       FloatRect source;
-      float tileScaleHorizontal;
-      float tileScaleVertical;
-      Image::TileRule horizontalRule;
-      Image::TileRule verticalRule;
+      float tile_scale_horizontal;
+      float tile_scale_vertical;
+      Image::TileRule horizontal_rule;
+      Image::TileRule vertical_rule;
     } pieces[9];
-  } testCases[] = {
+  } test_cases[] = {
       {// Empty border and slices but with fill
        IntSize(100, 100),
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 0, 0),
        true,
-       LengthBox(Length(0, Fixed), Length(0, Fixed), Length(0, Fixed),
-                 Length(0, Fixed)),
-       Image::StretchTile,
-       Image::StretchTile,
+       LengthBox(Length(0, kFixed), Length(0, kFixed), Length(0, kFixed),
+                 Length(0, kFixed)),
+       Image::kStretchTile,
+       Image::kStretchTile,
        {
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(0, 0, 100, 100), FloatRect(0, 0, 100, 100),
-            1, 1, Image::StretchTile, Image::StretchTile},
+            1, 1, Image::kStretchTile, Image::kStretchTile},
        }},
       {// Single border and fill
        IntSize(100, 100),
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 10, 0),
        true,
-       LengthBox(Length(20, Percent), Length(20, Percent), Length(20, Percent),
-                 Length(20, Percent)),
-       Image::StretchTile,
-       Image::StretchTile,
+       LengthBox(Length(20, kPercent), Length(20, kPercent),
+                 Length(20, kPercent), Length(20, kPercent)),
+       Image::kStretchTile,
+       Image::kStretchTile,
        {
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(0, 90, 100, 10), FloatRect(20, 80, 60, 20),
-            0.5, 0.5, Image::StretchTile, Image::StretchTile},
+            0.5, 0.5, Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(0, 0, 100, 90), FloatRect(20, 20, 60, 60),
-            1.666667, 1.5, Image::StretchTile, Image::StretchTile},
+            1.666667, 1.5, Image::kStretchTile, Image::kStretchTile},
        }},
       {// All borders, no fill
        IntSize(100, 100),
        IntRect(0, 0, 100, 100),
        IntRectOutsets(10, 10, 10, 10),
        false,
-       LengthBox(Length(20, Percent), Length(20, Percent), Length(20, Percent),
-                 Length(20, Percent)),
-       Image::StretchTile,
-       Image::StretchTile,
+       LengthBox(Length(20, kPercent), Length(20, kPercent),
+                 Length(20, kPercent), Length(20, kPercent)),
+       Image::kStretchTile,
+       Image::kStretchTile,
        {
            {true, true, FloatRect(0, 0, 10, 10), FloatRect(0, 0, 20, 20), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {true, true, FloatRect(0, 90, 10, 10), FloatRect(0, 80, 20, 20), 1,
-            1, Image::StretchTile, Image::StretchTile},
+            1, Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(0, 10, 10, 80), FloatRect(0, 20, 20, 60),
-            0.5, 0.5, Image::StretchTile, Image::StretchTile},
+            0.5, 0.5, Image::kStretchTile, Image::kStretchTile},
            {true, true, FloatRect(90, 0, 10, 10), FloatRect(80, 0, 20, 20), 1,
-            1, Image::StretchTile, Image::StretchTile},
+            1, Image::kStretchTile, Image::kStretchTile},
            {true, true, FloatRect(90, 90, 10, 10), FloatRect(80, 80, 20, 20), 1,
-            1, Image::StretchTile, Image::StretchTile},
+            1, Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(90, 10, 10, 80), FloatRect(80, 20, 20, 60),
-            0.5, 0.5, Image::StretchTile, Image::StretchTile},
+            0.5, 0.5, Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(10, 0, 80, 10), FloatRect(20, 0, 60, 20),
-            0.5, 0.5, Image::StretchTile, Image::StretchTile},
+            0.5, 0.5, Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(10, 90, 80, 10), FloatRect(20, 80, 60, 20),
-            0.5, 0.5, Image::StretchTile, Image::StretchTile},
+            0.5, 0.5, Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
        }},
       {// Single border, no fill
        IntSize(100, 100),
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 0, 10),
        false,
-       LengthBox(Length(20, Percent), Length(20, Percent), Length(20, Percent),
-                 Length(20, Percent)),
-       Image::StretchTile,
-       Image::RoundTile,
+       LengthBox(Length(20, kPercent), Length(20, kPercent),
+                 Length(20, kPercent), Length(20, kPercent)),
+       Image::kStretchTile,
+       Image::kRoundTile,
        {
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {true, false, FloatRect(0, 0, 10, 100), FloatRect(0, 20, 20, 60),
-            0.5, 0.5, Image::StretchTile, Image::RoundTile},
+            0.5, 0.5, Image::kStretchTile, Image::kRoundTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::RoundTile},
+            Image::kStretchTile, Image::kRoundTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::RoundTile},
+            Image::kStretchTile, Image::kRoundTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::RoundTile},
+            Image::kStretchTile, Image::kRoundTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::RoundTile},
+            Image::kStretchTile, Image::kRoundTile},
        }},
       {// All borders but no slices, with fill (stretch horizontally, space
        // vertically)
@@ -284,75 +284,77 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(10, 10, 10, 10),
        true,
-       LengthBox(Length(0, Fixed), Length(0, Fixed), Length(0, Fixed),
-                 Length(0, Fixed)),
-       Image::StretchTile,
-       Image::SpaceTile,
+       LengthBox(Length(0, kFixed), Length(0, kFixed), Length(0, kFixed),
+                 Length(0, kFixed)),
+       Image::kStretchTile,
+       Image::kSpaceTile,
        {
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::SpaceTile},
+            Image::kStretchTile, Image::kSpaceTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, true, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 1, 1,
-            Image::StretchTile, Image::StretchTile},
+            Image::kStretchTile, Image::kStretchTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::SpaceTile},
+            Image::kStretchTile, Image::kSpaceTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::SpaceTile},
+            Image::kStretchTile, Image::kSpaceTile},
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
-            Image::StretchTile, Image::SpaceTile},
+            Image::kStretchTile, Image::kSpaceTile},
            {true, false, FloatRect(10, 10, 80, 80), FloatRect(0, 0, 100, 100),
-            0.800000, 1, Image::StretchTile, Image::SpaceTile},
+            0.800000, 1, Image::kStretchTile, Image::kSpaceTile},
        }},
   };
 
-  for (auto& testCase : testCases) {
-    NinePieceImage ninePiece;
-    ninePiece.setImage(generatedImage());
-    ninePiece.setFill(testCase.fill);
-    ninePiece.setImageSlices(testCase.imageSlices);
-    ninePiece.setHorizontalRule((ENinePieceImageRule)testCase.horizontalRule);
-    ninePiece.setVerticalRule((ENinePieceImageRule)testCase.verticalRule);
+  for (auto& test_case : test_cases) {
+    NinePieceImage nine_piece;
+    nine_piece.SetImage(GeneratedImage());
+    nine_piece.SetFill(test_case.fill);
+    nine_piece.SetImageSlices(test_case.image_slices);
+    nine_piece.SetHorizontalRule(
+        (ENinePieceImageRule)test_case.horizontal_rule);
+    nine_piece.SetVerticalRule((ENinePieceImageRule)test_case.vertical_rule);
 
-    NinePieceImageGrid grid =
-        NinePieceImageGrid(ninePiece, testCase.imageSize,
-                           testCase.borderImageArea, testCase.borderWidths);
-    for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-      NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-          grid.getNinePieceDrawInfo(piece, 1);
-      EXPECT_EQ(testCase.pieces[piece].isDrawable, drawInfo.isDrawable);
-      if (!testCase.pieces[piece].isDrawable)
+    NinePieceImageGrid grid = NinePieceImageGrid(
+        nine_piece, test_case.image_size, test_case.border_image_area,
+        test_case.border_widths);
+    for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+      NinePieceImageGrid::NinePieceDrawInfo draw_info =
+          grid.GetNinePieceDrawInfo(piece, 1);
+      EXPECT_EQ(test_case.pieces[piece].is_drawable, draw_info.is_drawable);
+      if (!test_case.pieces[piece].is_drawable)
         continue;
 
-      EXPECT_EQ(testCase.pieces[piece].destination.x(),
-                drawInfo.destination.x());
-      EXPECT_EQ(testCase.pieces[piece].destination.y(),
-                drawInfo.destination.y());
-      EXPECT_EQ(testCase.pieces[piece].destination.width(),
-                drawInfo.destination.width());
-      EXPECT_EQ(testCase.pieces[piece].destination.height(),
-                drawInfo.destination.height());
-      EXPECT_EQ(testCase.pieces[piece].source.x(), drawInfo.source.x());
-      EXPECT_EQ(testCase.pieces[piece].source.y(), drawInfo.source.y());
-      EXPECT_EQ(testCase.pieces[piece].source.width(), drawInfo.source.width());
-      EXPECT_EQ(testCase.pieces[piece].source.height(),
-                drawInfo.source.height());
+      EXPECT_EQ(test_case.pieces[piece].destination.X(),
+                draw_info.destination.X());
+      EXPECT_EQ(test_case.pieces[piece].destination.Y(),
+                draw_info.destination.Y());
+      EXPECT_EQ(test_case.pieces[piece].destination.Width(),
+                draw_info.destination.Width());
+      EXPECT_EQ(test_case.pieces[piece].destination.Height(),
+                draw_info.destination.Height());
+      EXPECT_EQ(test_case.pieces[piece].source.X(), draw_info.source.X());
+      EXPECT_EQ(test_case.pieces[piece].source.Y(), draw_info.source.Y());
+      EXPECT_EQ(test_case.pieces[piece].source.Width(),
+                draw_info.source.Width());
+      EXPECT_EQ(test_case.pieces[piece].source.Height(),
+                draw_info.source.Height());
 
-      if (testCase.pieces[piece].isCornerPiece)
+      if (test_case.pieces[piece].is_corner_piece)
         continue;
 
-      EXPECT_FLOAT_EQ(testCase.pieces[piece].tileScaleHorizontal,
-                      drawInfo.tileScale.width());
-      EXPECT_FLOAT_EQ(testCase.pieces[piece].tileScaleVertical,
-                      drawInfo.tileScale.height());
-      EXPECT_EQ(testCase.pieces[piece].horizontalRule,
-                drawInfo.tileRule.horizontal);
-      EXPECT_EQ(testCase.pieces[piece].verticalRule,
-                drawInfo.tileRule.vertical);
+      EXPECT_FLOAT_EQ(test_case.pieces[piece].tile_scale_horizontal,
+                      draw_info.tile_scale.Width());
+      EXPECT_FLOAT_EQ(test_case.pieces[piece].tile_scale_vertical,
+                      draw_info.tile_scale.Height());
+      EXPECT_EQ(test_case.pieces[piece].horizontal_rule,
+                draw_info.tile_rule.horizontal);
+      EXPECT_EQ(test_case.pieces[piece].vertical_rule,
+                draw_info.tile_rule.vertical);
     }
   }
 }

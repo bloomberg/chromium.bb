@@ -35,21 +35,21 @@
 
 namespace blink {
 
-void Microtask::performCheckpoint(v8::Isolate* isolate) {
-  if (ScriptForbiddenScope::isScriptForbidden())
+void Microtask::PerformCheckpoint(v8::Isolate* isolate) {
+  if (ScriptForbiddenScope::IsScriptForbidden())
     return;
   v8::MicrotasksScope::PerformCheckpoint(isolate);
 }
 
-static void microtaskFunctionCallback(void* data) {
+static void MicrotaskFunctionCallback(void* data) {
   std::unique_ptr<WTF::Closure> task =
-      WTF::wrapUnique(static_cast<WTF::Closure*>(data));
+      WTF::WrapUnique(static_cast<WTF::Closure*>(data));
   (*task)();
 }
 
-void Microtask::enqueueMicrotask(std::unique_ptr<WTF::Closure> callback) {
+void Microtask::EnqueueMicrotask(std::unique_ptr<WTF::Closure> callback) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  isolate->EnqueueMicrotask(&microtaskFunctionCallback,
+  isolate->EnqueueMicrotask(&MicrotaskFunctionCallback,
                             static_cast<void*>(callback.release()));
 }
 

@@ -45,14 +45,14 @@ class SQLResultSetRowList final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLResultSetRowList* create() { return new SQLResultSetRowList; }
+  static SQLResultSetRowList* Create() { return new SQLResultSetRowList; }
   DEFINE_INLINE_TRACE() {}
 
-  const Vector<String>& columnNames() const { return m_columns; }
-  const Vector<SQLValue>& values() const { return m_result; }
+  const Vector<String>& ColumnNames() const { return columns_; }
+  const Vector<SQLValue>& Values() const { return result_; }
 
-  void addColumn(const String& name) { m_columns.push_back(name); }
-  void addResult(const SQLValue& result) { m_result.push_back(result); }
+  void AddColumn(const String& name) { columns_.push_back(name); }
+  void AddResult(const SQLValue& result) { result_.push_back(result); }
 
   unsigned length() const;
   ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
@@ -60,8 +60,8 @@ class SQLResultSetRowList final
  private:
   SQLResultSetRowList() {}
 
-  Vector<String> m_columns;
-  Vector<SQLValue> m_result;
+  Vector<String> columns_;
+  Vector<SQLValue> result_;
 };
 
 }  // namespace blink

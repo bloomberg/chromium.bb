@@ -147,24 +147,24 @@ TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
       media::AudioLatency::GetInteractiveBufferSize(kHardwareBufferSize);
   SetupDevice(interactiveLatencyHint);
 
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), interactiveBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), interactiveBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), interactiveBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), interactiveBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), interactiveBufferSize);
 
   blink::WebAudioLatencyHint balancedLatencyHint(
       blink::WebAudioLatencyHint::kCategoryBalanced);
@@ -172,24 +172,24 @@ TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
       kHardwareSampleRate, kHardwareBufferSize);
   SetupDevice(balancedLatencyHint);
 
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), balancedBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), balancedBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), balancedBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), balancedBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), balancedBufferSize);
 
   blink::WebAudioLatencyHint playbackLatencyHint(
       blink::WebAudioLatencyHint::kCategoryPlayback);
@@ -197,24 +197,24 @@ TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
       media::AudioLatency::GetHighLatencyBufferSize(kHardwareSampleRate, 0);
   SetupDevice(playbackLatencyHint);
 
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), playbackBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), playbackBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), playbackBufferSize);
 
-  webaudio_device_->start();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+  webaudio_device_->Start();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), playbackBufferSize);
 
-  webaudio_device_->stop();
-  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
-  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+  webaudio_device_->Stop();
+  EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->FramesPerBuffer(), playbackBufferSize);
 
 #if !defined(OS_ANDROID)
   EXPECT_GE(playbackBufferSize, balancedBufferSize);

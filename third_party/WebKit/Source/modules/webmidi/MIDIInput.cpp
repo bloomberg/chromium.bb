@@ -38,7 +38,7 @@ namespace blink {
 
 using midi::mojom::PortState;
 
-MIDIInput* MIDIInput::create(MIDIAccess* access,
+MIDIInput* MIDIInput::Create(MIDIAccess* access,
                              const String& id,
                              const String& manufacturer,
                              const String& name,
@@ -54,10 +54,10 @@ MIDIInput::MIDIInput(MIDIAccess* access,
                      const String& name,
                      const String& version,
                      PortState state)
-    : MIDIPort(access, id, manufacturer, name, TypeInput, version, state) {}
+    : MIDIPort(access, id, manufacturer, name, kTypeInput, version, state) {}
 
 EventListener* MIDIInput::onmidimessage() {
-  return getAttributeEventListener(EventTypeNames::midimessage);
+  return GetAttributeEventListener(EventTypeNames::midimessage);
 }
 
 void MIDIInput::setOnmidimessage(EventListener* listener) {
@@ -65,29 +65,29 @@ void MIDIInput::setOnmidimessage(EventListener* listener) {
   // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
   open();
 
-  setAttributeEventListener(EventTypeNames::midimessage, listener);
+  SetAttributeEventListener(EventTypeNames::midimessage, listener);
 }
 
-void MIDIInput::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  MIDIPort::addedEventListener(eventType, registeredListener);
-  if (eventType == EventTypeNames::midimessage) {
+void MIDIInput::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  MIDIPort::AddedEventListener(event_type, registered_listener);
+  if (event_type == EventTypeNames::midimessage) {
     // Implicit open. See setOnmidimessage().
     open();
   }
 }
 
-void MIDIInput::didReceiveMIDIData(unsigned portIndex,
+void MIDIInput::DidReceiveMIDIData(unsigned port_index,
                                    const unsigned char* data,
                                    size_t length,
-                                   double timeStamp) {
-  DCHECK(isMainThread());
+                                   double time_stamp) {
+  DCHECK(IsMainThread());
 
   if (!length)
     return;
 
-  if (getConnection() != ConnectionStateOpen)
+  if (GetConnection() != kConnectionStateOpen)
     return;
 
   // Drop sysex message here when the client does not request it. Note that this
@@ -96,12 +96,12 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex,
   // the current process has an explicit permission to handle sysex message.
   if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
     return;
-  DOMUint8Array* array = DOMUint8Array::create(data, length);
-  dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
+  DOMUint8Array* array = DOMUint8Array::Create(data, length);
+  DispatchEvent(MIDIMessageEvent::Create(time_stamp, array));
 }
 
 DEFINE_TRACE(MIDIInput) {
-  MIDIPort::trace(visitor);
+  MIDIPort::Trace(visitor);
 }
 
 }  // namespace blink

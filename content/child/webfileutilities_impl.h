@@ -18,11 +18,11 @@ class CONTENT_EXPORT WebFileUtilitiesImpl
   virtual ~WebFileUtilitiesImpl();
 
   // WebFileUtilities methods:
-  bool getFileInfo(const blink::WebString& path,
+  bool GetFileInfo(const blink::WebString& path,
                    blink::WebFileInfo& result) override;
-  blink::WebString directoryName(const blink::WebString& path) override;
-  blink::WebString baseName(const blink::WebString& path) override;
-  blink::WebURL filePathToURL(const blink::WebString& path) override;
+  blink::WebString DirectoryName(const blink::WebString& path) override;
+  blink::WebString BaseName(const blink::WebString& path) override;
+  blink::WebURL FilePathToURL(const blink::WebString& path) override;
 
   void set_sandbox_enabled(bool sandbox_enabled) {
     sandbox_enabled_ = sandbox_enabled;

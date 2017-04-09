@@ -33,27 +33,27 @@ class MediaQuerySet;
 class StyleSheetContents;
 
 class StyleRuleImport : public StyleRuleBase {
-  USING_PRE_FINALIZER(StyleRuleImport, dispose);
+  USING_PRE_FINALIZER(StyleRuleImport, Dispose);
 
  public:
-  static StyleRuleImport* create(const String& href, MediaQuerySet*);
+  static StyleRuleImport* Create(const String& href, MediaQuerySet*);
 
   ~StyleRuleImport();
 
-  StyleSheetContents* parentStyleSheet() const { return m_parentStyleSheet; }
-  void setParentStyleSheet(StyleSheetContents* sheet) {
+  StyleSheetContents* ParentStyleSheet() const { return parent_style_sheet_; }
+  void SetParentStyleSheet(StyleSheetContents* sheet) {
     DCHECK(sheet);
-    m_parentStyleSheet = sheet;
+    parent_style_sheet_ = sheet;
   }
-  void clearParentStyleSheet() { m_parentStyleSheet = nullptr; }
+  void ClearParentStyleSheet() { parent_style_sheet_ = nullptr; }
 
-  String href() const { return m_strHref; }
-  StyleSheetContents* styleSheet() const { return m_styleSheet.get(); }
+  String Href() const { return str_href_; }
+  StyleSheetContents* GetStyleSheet() const { return style_sheet_.Get(); }
 
-  bool isLoading() const;
-  MediaQuerySet* mediaQueries() { return m_mediaQueries.get(); }
+  bool IsLoading() const;
+  MediaQuerySet* MediaQueries() { return media_queries_.Get(); }
 
-  void requestStyleSheet();
+  void RequestStyleSheet();
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -68,46 +68,46 @@ class StyleRuleImport : public StyleRuleBase {
     USING_GARBAGE_COLLECTED_MIXIN(ImportedStyleSheetClient);
 
    public:
-    ImportedStyleSheetClient(StyleRuleImport* ownerRule)
-        : m_ownerRule(ownerRule) {}
+    ImportedStyleSheetClient(StyleRuleImport* owner_rule)
+        : owner_rule_(owner_rule) {}
     ~ImportedStyleSheetClient() override {}
-    void setCSSStyleSheet(const String& href,
-                          const KURL& baseURL,
-                          ReferrerPolicy referrerPolicy,
+    void SetCSSStyleSheet(const String& href,
+                          const KURL& base_url,
+                          ReferrerPolicy referrer_policy,
                           const String& charset,
                           const CSSStyleSheetResource* sheet) override {
-      m_ownerRule->setCSSStyleSheet(href, baseURL, referrerPolicy, charset,
+      owner_rule_->SetCSSStyleSheet(href, base_url, referrer_policy, charset,
                                     sheet);
     }
-    String debugName() const override { return "ImportedStyleSheetClient"; }
+    String DebugName() const override { return "ImportedStyleSheetClient"; }
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_ownerRule);
-      StyleSheetResourceClient::trace(visitor);
+      visitor->Trace(owner_rule_);
+      StyleSheetResourceClient::Trace(visitor);
     }
 
    private:
-    Member<StyleRuleImport> m_ownerRule;
+    Member<StyleRuleImport> owner_rule_;
   };
 
-  void setCSSStyleSheet(const String& href,
-                        const KURL& baseURL,
+  void SetCSSStyleSheet(const String& href,
+                        const KURL& base_url,
                         ReferrerPolicy,
                         const String& charset,
                         const CSSStyleSheetResource*);
 
   StyleRuleImport(const String& href, MediaQuerySet*);
 
-  void dispose();
+  void Dispose();
 
-  Member<StyleSheetContents> m_parentStyleSheet;
+  Member<StyleSheetContents> parent_style_sheet_;
 
-  Member<ImportedStyleSheetClient> m_styleSheetClient;
-  String m_strHref;
-  Member<MediaQuerySet> m_mediaQueries;
-  Member<StyleSheetContents> m_styleSheet;
-  Member<CSSStyleSheetResource> m_resource;
-  bool m_loading;
+  Member<ImportedStyleSheetClient> style_sheet_client_;
+  String str_href_;
+  Member<MediaQuerySet> media_queries_;
+  Member<StyleSheetContents> style_sheet_;
+  Member<CSSStyleSheetResource> resource_;
+  bool loading_;
 };
 
 DEFINE_STYLE_RULE_TYPE_CASTS(Import);

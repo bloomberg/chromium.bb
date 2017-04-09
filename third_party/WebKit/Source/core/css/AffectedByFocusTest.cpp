@@ -22,52 +22,52 @@ class AffectedByFocusTest : public ::testing::Test {
  protected:
   struct ElementResult {
     const blink::HTMLQualifiedName tag;
-    bool affectedBy;
-    bool childrenOrSiblingsAffectedBy;
+    bool affected_by;
+    bool children_or_siblings_affected_by;
   };
 
   void SetUp() override;
 
-  Document& document() const { return *m_document; }
+  Document& GetDocument() const { return *document_; }
 
-  void setHtmlInnerHTML(const char* htmlContent);
+  void SetHtmlInnerHTML(const char* html_content);
 
-  void checkElements(ElementResult expected[], unsigned expectedCount) const;
+  void CheckElements(ElementResult expected[], unsigned expected_count) const;
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 
-  Persistent<Document> m_document;
+  Persistent<Document> document_;
 };
 
 void AffectedByFocusTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-  m_document = &m_dummyPageHolder->document();
-  DCHECK(m_document);
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  document_ = &dummy_page_holder_->GetDocument();
+  DCHECK(document_);
 }
 
-void AffectedByFocusTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void AffectedByFocusTest::SetHtmlInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
-void AffectedByFocusTest::checkElements(ElementResult expected[],
-                                        unsigned expectedCount) const {
+void AffectedByFocusTest::CheckElements(ElementResult expected[],
+                                        unsigned expected_count) const {
   unsigned i = 0;
-  HTMLElement* element = document().body();
+  HTMLElement* element = GetDocument().body();
 
-  for (; element && i < expectedCount;
-       element = Traversal<HTMLElement>::next(*element), ++i) {
-    ASSERT_TRUE(element->hasTagName(expected[i].tag));
-    DCHECK(element->computedStyle());
-    ASSERT_EQ(expected[i].affectedBy,
-              element->computedStyle()->affectedByFocus());
-    ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy,
-              element->childrenOrSiblingsAffectedByFocus());
+  for (; element && i < expected_count;
+       element = Traversal<HTMLElement>::Next(*element), ++i) {
+    ASSERT_TRUE(element->HasTagName(expected[i].tag));
+    DCHECK(element->GetComputedStyle());
+    ASSERT_EQ(expected[i].affected_by,
+              element->GetComputedStyle()->AffectedByFocus());
+    ASSERT_EQ(expected[i].children_or_siblings_affected_by,
+              element->ChildrenOrSiblingsAffectedByFocus());
   }
 
   DCHECK(!element);
-  DCHECK_EQ(i, expectedCount);
+  DCHECK_EQ(i, expected_count);
 }
 
 // A global :focus rule in html.css currently causes every single element to be
@@ -81,13 +81,13 @@ TEST_F(AffectedByFocusTest, UAUniversalFocusRule) {
                               {divTag, true, false},
                               {spanTag, true, false}};
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<body>"
       "<div><div></div></div>"
       "<div><span></span></div>"
       "</body>");
 
-  checkElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // ":focus div" will mark ascendants of all divs with
@@ -99,7 +99,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendant) {
                               {divTag, true, false},
                               {spanTag, true, false}};
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<style>:focus div { background-color: pink }</style>"
       "</head>"
@@ -108,7 +108,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendant) {
       "<div><span></span></div>"
       "</body>");
 
-  checkElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // "body:focus div" will mark the body element with
@@ -120,7 +120,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
                               {divTag, true, false},
                               {spanTag, true, false}};
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<style>body:focus div { background-color: pink }</style>"
       "</head>"
@@ -129,7 +129,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
       "<div><span></span></div>"
       "</body>");
 
-  checkElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // ":not(body):focus div" should not mark the body element with
@@ -144,7 +144,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
                               {divTag, true, false},
                               {spanTag, true, false}};
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<style>:not(body):focus div { background-color: pink }</style>"
       "</head>"
@@ -153,7 +153,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
       "<div><span></span></div>"
       "</body>");
 
-  checkElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // Checking current behavior for ":focus + div", but this is a BUG or at best
@@ -168,7 +168,7 @@ TEST_F(AffectedByFocusTest, FocusedSibling) {
                               {spanTag, true, false},
                               {divTag, true, false}};
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<style>:focus + div { background-color: pink }</style>"
       "</head>"
@@ -179,14 +179,14 @@ TEST_F(AffectedByFocusTest, FocusedSibling) {
       "<div></div>"
       "</body>");
 
-  checkElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 TEST_F(AffectedByFocusTest, AffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you only
   // get a single element style recalc.
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>:focus { border: 1px solid lime; }</style>"
       "<div id=d tabIndex=1>"
       "<div></div>"
@@ -201,24 +201,24 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate) {
       "<div></div>"
       "</div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned startCount = document().styleEngine().styleForElementCount();
+  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  document().getElementById("d")->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("d")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned elementCount =
-      document().styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(1U, elementCount);
+  ASSERT_EQ(1U, element_count);
 }
 
 TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the whole subtree.
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>:focus div { border: 1px solid lime; }</style>"
       "<div id=d tabIndex=1>"
       "<div></div>"
@@ -233,24 +233,24 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
       "<div></div>"
       "</div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned startCount = document().styleEngine().styleForElementCount();
+  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  document().getElementById("d")->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("d")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned elementCount =
-      document().styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(11U, elementCount);
+  ASSERT_EQ(11U, element_count);
 }
 
 TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the outer div and the class=a div only.
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>:focus .a { border: 1px solid lime; }</style>"
       "<div id=d tabIndex=1>"
       "<div></div>"
@@ -265,17 +265,17 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
       "<div class='a'></div>"
       "</div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned startCount = document().styleEngine().styleForElementCount();
+  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  document().getElementById("d")->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("d")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned elementCount =
-      document().styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(2U, elementCount);
+  ASSERT_EQ(2U, element_count);
 }
 
 TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
@@ -284,7 +284,7 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
   // include 'a', but the id=d div should be affectedByFocus, not
   // childrenOrSiblingsAffectedByFocus.
 
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>#nomatch:focus .a { border: 1px solid lime; }</style>"
       "<div id=d tabIndex=1>"
       "<div></div>"
@@ -299,17 +299,17 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
       "<div class='a'></div>"
       "</div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned startCount = document().styleEngine().styleForElementCount();
+  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  document().getElementById("d")->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("d")->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  unsigned elementCount =
-      document().styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(1U, elementCount);
+  ASSERT_EQ(1U, element_count);
 }
 
 }  // namespace blink

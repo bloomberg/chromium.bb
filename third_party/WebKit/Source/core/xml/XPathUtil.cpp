@@ -33,11 +33,11 @@
 namespace blink {
 namespace XPath {
 
-bool isRootDomNode(Node* node) {
+bool IsRootDomNode(Node* node) {
   return node && !node->parentNode();
 }
 
-String stringValue(Node* node) {
+String StringValue(Node* node) {
   switch (node->getNodeType()) {
     case Node::kAttributeNode:
     case Node::kProcessingInstructionNode:
@@ -46,25 +46,25 @@ String stringValue(Node* node) {
     case Node::kCdataSectionNode:
       return node->nodeValue();
     default:
-      if (isRootDomNode(node) || node->isElementNode()) {
+      if (IsRootDomNode(node) || node->IsElementNode()) {
         StringBuilder result;
-        result.reserveCapacity(1024);
+        result.ReserveCapacity(1024);
 
-        for (Node& n : NodeTraversal::descendantsOf(*node)) {
-          if (n.isTextNode()) {
-            const String& nodeValue = n.nodeValue();
-            result.append(nodeValue);
+        for (Node& n : NodeTraversal::DescendantsOf(*node)) {
+          if (n.IsTextNode()) {
+            const String& node_value = n.nodeValue();
+            result.Append(node_value);
           }
         }
 
-        return result.toString();
+        return result.ToString();
       }
   }
 
   return String();
 }
 
-bool isValidContextNode(Node* node) {
+bool IsValidContextNode(Node* node) {
   if (!node)
     return false;
   switch (node->getNodeType()) {

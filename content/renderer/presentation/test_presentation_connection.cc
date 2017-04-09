@@ -14,7 +14,7 @@ TestPresentationConnection::TestPresentationConnection() = default;
 
 TestPresentationConnection::~TestPresentationConnection() = default;
 
-void TestPresentationConnection::bindProxy(
+void TestPresentationConnection::BindProxy(
     std::unique_ptr<blink::WebPresentationConnectionProxy> proxy) {
   proxy_ = std::move(proxy);
 }

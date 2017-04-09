@@ -15,8 +15,8 @@ namespace blink {
 
 // https://w3c.github.io/browser-payment-api/#paymentmethoddata-dictionary
 struct WebPaymentMethodData {
-  WebVector<WebString> supportedMethods;
-  WebString stringifiedData;
+  WebVector<WebString> supported_methods;
+  WebString stringified_data;
 };
 
 }  // namespace blink

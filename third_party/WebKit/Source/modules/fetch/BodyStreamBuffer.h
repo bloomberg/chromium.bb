@@ -34,55 +34,55 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   // This function must be called with entering an appropriate V8 context.
   BodyStreamBuffer(ScriptState*, ScriptValue stream);
 
-  ScriptValue stream();
+  ScriptValue Stream();
 
   // Callable only when neither locked nor disturbed.
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(
+  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
       BytesConsumer::BlobSizePolicy);
-  PassRefPtr<EncodedFormData> drainAsFormData();
-  void startLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
-  void tee(BodyStreamBuffer**, BodyStreamBuffer**);
+  PassRefPtr<EncodedFormData> DrainAsFormData();
+  void StartLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
+  void Tee(BodyStreamBuffer**, BodyStreamBuffer**);
 
   // UnderlyingSourceBase
   ScriptPromise pull(ScriptState*) override;
-  ScriptPromise cancel(ScriptState*, ScriptValue reason) override;
-  bool hasPendingActivity() const override;
-  void contextDestroyed(ExecutionContext*) override;
+  ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
+  bool HasPendingActivity() const override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // BytesConsumer::Client
-  void onStateChange() override;
+  void OnStateChange() override;
 
-  bool isStreamReadable();
-  bool isStreamClosed();
-  bool isStreamErrored();
-  bool isStreamLocked();
-  bool isStreamDisturbed();
-  void closeAndLockAndDisturb();
-  ScriptState* scriptState() { return m_scriptState.get(); }
+  bool IsStreamReadable();
+  bool IsStreamClosed();
+  bool IsStreamErrored();
+  bool IsStreamLocked();
+  bool IsStreamDisturbed();
+  void CloseAndLockAndDisturb();
+  ScriptState* GetScriptState() { return script_state_.Get(); }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_consumer);
-    visitor->trace(m_loader);
-    UnderlyingSourceBase::trace(visitor);
+    visitor->Trace(consumer_);
+    visitor->Trace(loader_);
+    UnderlyingSourceBase::Trace(visitor);
   }
 
  private:
   class LoaderClient;
 
-  BytesConsumer* releaseHandle();
-  void close();
-  void error();
-  void cancelConsumer();
-  void processData();
-  void endLoading();
-  void stopLoading();
+  BytesConsumer* ReleaseHandle();
+  void Close();
+  void GetError();
+  void CancelConsumer();
+  void ProcessData();
+  void EndLoading();
+  void StopLoading();
 
-  RefPtr<ScriptState> m_scriptState;
-  Member<BytesConsumer> m_consumer;
+  RefPtr<ScriptState> script_state_;
+  Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
-  Member<FetchDataLoader> m_loader;
-  bool m_streamNeedsMore = false;
-  bool m_madeFromReadableStream;
+  Member<FetchDataLoader> loader_;
+  bool stream_needs_more_ = false;
+  bool made_from_readable_stream_;
 };
 
 }  // namespace blink

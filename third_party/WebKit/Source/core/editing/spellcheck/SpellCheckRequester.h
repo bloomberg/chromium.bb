@@ -46,34 +46,34 @@ class TextCheckerClient;
 // TODO(xiaochengh): Move this class to dedicated files.
 class SpellCheckRequest final : public TextCheckingRequest {
  public:
-  static SpellCheckRequest* create(const EphemeralRange& checkingRange,
-                                   int requestNumber);
+  static SpellCheckRequest* Create(const EphemeralRange& checking_range,
+                                   int request_number);
 
   ~SpellCheckRequest() override;
-  void dispose();
+  void Dispose();
 
-  Range* checkingRange() const { return m_checkingRange; }
-  Element* rootEditableElement() const { return m_rootEditableElement; }
+  Range* CheckingRange() const { return checking_range_; }
+  Element* RootEditableElement() const { return root_editable_element_; }
 
-  void setCheckerAndSequence(SpellCheckRequester*, int sequence);
+  void SetCheckerAndSequence(SpellCheckRequester*, int sequence);
 
-  const TextCheckingRequestData& data() const override;
-  bool isValid() const;
-  void didSucceed(const Vector<TextCheckingResult>&) override;
-  void didCancel() override;
+  const TextCheckingRequestData& Data() const override;
+  bool IsValid() const;
+  void DidSucceed(const Vector<TextCheckingResult>&) override;
+  void DidCancel() override;
 
-  int requestNumber() const { return m_requestNumber; }
+  int RequestNumber() const { return request_number_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SpellCheckRequest(Range* checkingRange, const String&, int requestNumber);
+  SpellCheckRequest(Range* checking_range, const String&, int request_number);
 
-  Member<SpellCheckRequester> m_requester;
-  Member<Range> m_checkingRange;
-  Member<Element> m_rootEditableElement;
-  TextCheckingRequestData m_requestData;
-  int m_requestNumber;
+  Member<SpellCheckRequester> requester_;
+  Member<Range> checking_range_;
+  Member<Element> root_editable_element_;
+  TextCheckingRequestData request_data_;
+  int request_number_;
 };
 
 class SpellCheckRequester final
@@ -81,55 +81,55 @@ class SpellCheckRequester final
   WTF_MAKE_NONCOPYABLE(SpellCheckRequester);
 
  public:
-  static SpellCheckRequester* create(LocalFrame& frame) {
+  static SpellCheckRequester* Create(LocalFrame& frame) {
     return new SpellCheckRequester(frame);
   }
 
   ~SpellCheckRequester();
   DECLARE_TRACE();
 
-  void requestCheckingFor(const EphemeralRange&);
-  void requestCheckingFor(const EphemeralRange&, int requestNum);
-  void cancelCheck();
+  void RequestCheckingFor(const EphemeralRange&);
+  void RequestCheckingFor(const EphemeralRange&, int request_num);
+  void CancelCheck();
 
-  int lastRequestSequence() const { return m_lastRequestSequence; }
+  int LastRequestSequence() const { return last_request_sequence_; }
 
-  int lastProcessedSequence() const { return m_lastProcessedSequence; }
+  int LastProcessedSequence() const { return last_processed_sequence_; }
 
   // Exposed for leak detector only, see comment for corresponding
   // SpellChecker method.
-  void prepareForLeakDetection();
+  void PrepareForLeakDetection();
 
  private:
   friend class SpellCheckRequest;
 
   explicit SpellCheckRequester(LocalFrame&);
 
-  TextCheckerClient& client() const;
-  void timerFiredToProcessQueuedRequest(TimerBase*);
-  void invokeRequest(SpellCheckRequest*);
-  void enqueueRequest(SpellCheckRequest*);
-  void didCheckSucceed(int sequence, const Vector<TextCheckingResult>&);
-  void didCheckCancel(int sequence);
-  void didCheck(int sequence, const Vector<TextCheckingResult>&);
+  TextCheckerClient& Client() const;
+  void TimerFiredToProcessQueuedRequest(TimerBase*);
+  void InvokeRequest(SpellCheckRequest*);
+  void EnqueueRequest(SpellCheckRequest*);
+  void DidCheckSucceed(int sequence, const Vector<TextCheckingResult>&);
+  void DidCheckCancel(int sequence);
+  void DidCheck(int sequence, const Vector<TextCheckingResult>&);
 
-  void clearProcessingRequest();
+  void ClearProcessingRequest();
 
-  Member<LocalFrame> m_frame;
-  LocalFrame& frame() const {
-    DCHECK(m_frame);
-    return *m_frame;
+  Member<LocalFrame> frame_;
+  LocalFrame& GetFrame() const {
+    DCHECK(frame_);
+    return *frame_;
   }
 
-  int m_lastRequestSequence;
-  int m_lastProcessedSequence;
+  int last_request_sequence_;
+  int last_processed_sequence_;
 
-  TaskRunnerTimer<SpellCheckRequester> m_timerToProcessQueuedRequest;
+  TaskRunnerTimer<SpellCheckRequester> timer_to_process_queued_request_;
 
-  Member<SpellCheckRequest> m_processingRequest;
+  Member<SpellCheckRequest> processing_request_;
 
   typedef HeapDeque<Member<SpellCheckRequest>> RequestQueue;
-  RequestQueue m_requestQueue;
+  RequestQueue request_queue_;
 };
 
 }  // namespace blink

@@ -15,110 +15,112 @@
 namespace blink {
 
 std::unique_ptr<InterpolableValue>
-SVGLengthInterpolationType::neutralInterpolableValue() {
-  std::unique_ptr<InterpolableList> listOfValues =
-      InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-  for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i)
-    listOfValues->set(i, InterpolableNumber::create(0));
+SVGLengthInterpolationType::NeutralInterpolableValue() {
+  std::unique_ptr<InterpolableList> list_of_values =
+      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
+    list_of_values->Set(i, InterpolableNumber::Create(0));
 
-  return std::move(listOfValues);
+  return std::move(list_of_values);
 }
 
-InterpolationValue SVGLengthInterpolationType::convertSVGLength(
+InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
     const SVGLength& length) {
-  const CSSPrimitiveValue& primitiveValue = length.asCSSPrimitiveValue();
+  const CSSPrimitiveValue& primitive_value = length.AsCSSPrimitiveValue();
 
-  CSSLengthArray lengthArray;
-  primitiveValue.accumulateLengthArray(lengthArray);
+  CSSLengthArray length_array;
+  primitive_value.AccumulateLengthArray(length_array);
 
-  std::unique_ptr<InterpolableList> listOfValues =
-      InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-  for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i)
-    listOfValues->set(i, InterpolableNumber::create(lengthArray.values[i]));
+  std::unique_ptr<InterpolableList> list_of_values =
+      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
+    list_of_values->Set(i, InterpolableNumber::Create(length_array.values[i]));
 
-  return InterpolationValue(std::move(listOfValues));
+  return InterpolationValue(std::move(list_of_values));
 }
 
-SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(
-    const InterpolableValue& interpolableValue,
-    const SVGLengthContext& lengthContext,
-    SVGLengthMode unitMode,
-    bool negativeValuesForbidden) {
-  const InterpolableList& listOfValues = toInterpolableList(interpolableValue);
+SVGLength* SVGLengthInterpolationType::ResolveInterpolableSVGLength(
+    const InterpolableValue& interpolable_value,
+    const SVGLengthContext& length_context,
+    SVGLengthMode unit_mode,
+    bool negative_values_forbidden) {
+  const InterpolableList& list_of_values =
+      ToInterpolableList(interpolable_value);
 
   double value = 0;
-  CSSPrimitiveValue::UnitType unitType = CSSPrimitiveValue::UnitType::UserUnits;
-  unsigned unitTypeCount = 0;
+  CSSPrimitiveValue::UnitType unit_type =
+      CSSPrimitiveValue::UnitType::kUserUnits;
+  unsigned unit_type_count = 0;
   // We optimise for the common case where only one unit type is involved.
-  for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
-    double entry = toInterpolableNumber(listOfValues.get(i))->value();
+  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+    double entry = ToInterpolableNumber(list_of_values.Get(i))->Value();
     if (!entry)
       continue;
-    unitTypeCount++;
-    if (unitTypeCount > 1)
+    unit_type_count++;
+    if (unit_type_count > 1)
       break;
 
     value = entry;
-    unitType = CSSPrimitiveValue::lengthUnitTypeToUnitType(
+    unit_type = CSSPrimitiveValue::LengthUnitTypeToUnitType(
         static_cast<CSSPrimitiveValue::LengthUnitType>(i));
   }
 
-  if (unitTypeCount > 1) {
+  if (unit_type_count > 1) {
     value = 0;
-    unitType = CSSPrimitiveValue::UnitType::UserUnits;
+    unit_type = CSSPrimitiveValue::UnitType::kUserUnits;
 
     // SVGLength does not support calc expressions, so we convert to canonical
     // units.
-    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
-      double entry = toInterpolableNumber(listOfValues.get(i))->value();
+    for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
+      double entry = ToInterpolableNumber(list_of_values.Get(i))->Value();
       if (entry)
-        value += lengthContext.convertValueToUserUnits(
-            entry, unitMode,
-            CSSPrimitiveValue::lengthUnitTypeToUnitType(
+        value += length_context.ConvertValueToUserUnits(
+            entry, unit_mode,
+            CSSPrimitiveValue::LengthUnitTypeToUnitType(
                 static_cast<CSSPrimitiveValue::LengthUnitType>(i)));
     }
   }
 
-  if (negativeValuesForbidden && value < 0)
+  if (negative_values_forbidden && value < 0)
     value = 0;
 
-  SVGLength* result = SVGLength::create(unitMode);  // defaults to the length 0
-  result->newValueSpecifiedUnits(unitType, value);
+  SVGLength* result = SVGLength::Create(unit_mode);  // defaults to the length 0
+  result->NewValueSpecifiedUnits(unit_type, value);
   return result;
 }
 
-InterpolationValue SVGLengthInterpolationType::maybeConvertNeutral(
+InterpolationValue SVGLengthInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(neutralInterpolableValue());
+  return InterpolationValue(NeutralInterpolableValue());
 }
 
-InterpolationValue SVGLengthInterpolationType::maybeConvertSVGValue(
-    const SVGPropertyBase& svgValue) const {
-  if (svgValue.type() != AnimatedLength)
+InterpolationValue SVGLengthInterpolationType::MaybeConvertSVGValue(
+    const SVGPropertyBase& svg_value) const {
+  if (svg_value.GetType() != kAnimatedLength)
     return nullptr;
 
-  return convertSVGLength(toSVGLength(svgValue));
+  return ConvertSVGLength(ToSVGLength(svg_value));
 }
 
-SVGPropertyBase* SVGLengthInterpolationType::appliedSVGValue(
-    const InterpolableValue& interpolableValue,
+SVGPropertyBase* SVGLengthInterpolationType::AppliedSVGValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   NOTREACHED();
   // This function is no longer called, because apply has been overridden.
   return nullptr;
 }
 
-void SVGLengthInterpolationType::apply(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+void SVGLengthInterpolationType::Apply(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  SVGElement& element = environment.svgElement();
-  SVGLengthContext lengthContext(&element);
-  element.setWebAnimatedAttribute(
-      attribute(),
-      resolveInterpolableSVGLength(interpolableValue, lengthContext, m_unitMode,
-                                   m_negativeValuesForbidden));
+  SVGElement& element = environment.SvgElement();
+  SVGLengthContext length_context(&element);
+  element.SetWebAnimatedAttribute(
+      Attribute(),
+      ResolveInterpolableSVGLength(interpolable_value, length_context,
+                                   unit_mode_, negative_values_forbidden_));
 }
 
 }  // namespace blink

@@ -19,14 +19,14 @@ MockWebDocumentSubresourceFilter::MockWebDocumentSubresourceFilter(
 MockWebDocumentSubresourceFilter::~MockWebDocumentSubresourceFilter() {}
 
 blink::WebDocumentSubresourceFilter::LoadPolicy
-MockWebDocumentSubresourceFilter::getLoadPolicy(
+MockWebDocumentSubresourceFilter::GetLoadPolicy(
     const blink::WebURL& resource_url,
     blink::WebURLRequest::RequestContext) {
   return getLoadPolicyImpl(resource_url);
 }
 
 blink::WebDocumentSubresourceFilter::LoadPolicy
-MockWebDocumentSubresourceFilter::getLoadPolicyForWebSocketConnect(
+MockWebDocumentSubresourceFilter::GetLoadPolicyForWebSocketConnect(
     const blink::WebURL& url) {
   return getLoadPolicyImpl(url);
 }
@@ -44,6 +44,6 @@ MockWebDocumentSubresourceFilter::getLoadPolicyImpl(const blink::WebURL& url) {
              : kDisallow;
 }
 
-void MockWebDocumentSubresourceFilter::reportDisallowedLoad() {}
+void MockWebDocumentSubresourceFilter::ReportDisallowedLoad() {}
 
 }  // namespace test_runner

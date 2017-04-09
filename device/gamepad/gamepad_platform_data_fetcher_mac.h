@@ -77,13 +77,13 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
   struct AssociatedData {
     int location_id;
     IOHIDDeviceRef device_ref;
-    IOHIDElementRef button_elements[blink::WebGamepad::buttonsLengthCap];
-    IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
-    CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
-    CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
-    CFIndex axis_report_sizes[blink::WebGamepad::axesLengthCap];
+    IOHIDElementRef button_elements[blink::WebGamepad::kButtonsLengthCap];
+    IOHIDElementRef axis_elements[blink::WebGamepad::kAxesLengthCap];
+    CFIndex axis_minimums[blink::WebGamepad::kAxesLengthCap];
+    CFIndex axis_maximums[blink::WebGamepad::kAxesLengthCap];
+    CFIndex axis_report_sizes[blink::WebGamepad::kAxesLengthCap];
   };
-  AssociatedData associated_[blink::WebGamepads::itemsLengthCap];
+  AssociatedData associated_[blink::WebGamepads::kItemsLengthCap];
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherMac);
 };

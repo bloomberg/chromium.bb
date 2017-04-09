@@ -38,19 +38,19 @@ class SVGResourcesCycleSolver {
   SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
   ~SVGResourcesCycleSolver();
 
-  void resolveCycles();
+  void ResolveCycles();
 
   typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
 
  private:
-  bool resourceContainsCycles(LayoutSVGResourceContainer*);
-  void breakCycle(LayoutSVGResourceContainer*);
+  bool ResourceContainsCycles(LayoutSVGResourceContainer*);
+  void BreakCycle(LayoutSVGResourceContainer*);
 
-  LayoutObject* m_layoutObject;
-  SVGResources* m_resources;
+  LayoutObject* layout_object_;
+  SVGResources* resources_;
 
-  ResourceSet m_activeResources;
-  ResourceSet m_dagCache;
+  ResourceSet active_resources_;
+  ResourceSet dag_cache_;
 };
 
 }  // namespace blink

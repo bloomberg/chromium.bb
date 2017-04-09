@@ -10,20 +10,20 @@
 namespace blink {
 
 template <class T>
-T cssValueIDToPlatformEnum(CSSValueID v) {
+T CssValueIDToPlatformEnum(CSSValueID v) {
   // By default, we use the generated mappings. For special cases, we
   // specialize.
   return detail::cssValueIDToPlatformEnumGenerated<T>(v);
 }
 
 template <class T>
-inline CSSValueID platformEnumToCSSValueID(T v) {
+inline CSSValueID PlatformEnumToCSSValueID(T v) {
   // By default, we use the generated mappings. For special cases, we overload.
   return detail::platformEnumToCSSValueIDGenerated(v);
 }
 
 template <>
-inline UnicodeBidi cssValueIDToPlatformEnum(CSSValueID v) {
+inline UnicodeBidi CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueWebkitIsolate)
     return UnicodeBidi::kIsolate;
   if (v == CSSValueWebkitIsolateOverride)
@@ -34,7 +34,7 @@ inline UnicodeBidi cssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
-inline ETextAlign cssValueIDToPlatformEnum(CSSValueID v) {
+inline ETextAlign CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueWebkitAuto)  // Legacy -webkit-auto. Eqiuvalent to start.
     return ETextAlign::kStart;
   if (v == CSSValueInternalCenter)
@@ -43,7 +43,7 @@ inline ETextAlign cssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
-inline WritingMode cssValueIDToPlatformEnum(CSSValueID v) {
+inline WritingMode CssValueIDToPlatformEnum(CSSValueID v) {
   switch (v) {
     case CSSValueHorizontalTb:
     case CSSValueLr:
@@ -66,7 +66,7 @@ inline WritingMode cssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
-inline ECursor cssValueIDToPlatformEnum(CSSValueID v) {
+inline ECursor CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueWebkitZoomIn)
     return ECursor::kZoomIn;
   if (v == CSSValueWebkitZoomOut)
@@ -75,7 +75,7 @@ inline ECursor cssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
-inline EDisplay cssValueIDToPlatformEnum(CSSValueID v) {
+inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueWebkitFlex)
     return EDisplay::kFlex;
   if (v == CSSValueWebkitInlineFlex)

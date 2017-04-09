@@ -37,24 +37,24 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
 IPC_ENUM_TRAITS_MAX_VALUE(content::MhtmlSaveStatus,
                           content::MhtmlSaveStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
-                          blink::WebContentSecurityPolicySourceLast)
+                          blink::kWebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
-                          blink::WebContentSecurityPolicyTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::WebAddressSpaceLast)
+                          blink::kWebContentSecurityPolicyTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::kWebAddressSpaceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSharedWorkerCreationContextType,
-                          blink::WebSharedWorkerCreationContextTypeLast)
+                          blink::kWebSharedWorkerCreationContextTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
-                              blink::WebInputEvent::TypeFirst,
-                              blink::WebInputEvent::TypeLast)
+                              blink::WebInputEvent::kTypeFirst,
+                              blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
-                          blink::WebPageVisibilityStateLast)
+                          blink::kWebPageVisibilityStateLast)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
-  IPC_STRUCT_TRAITS_MEMBER(startOffset)
-  IPC_STRUCT_TRAITS_MEMBER(endOffset)
+  IPC_STRUCT_TRAITS_MEMBER(start_offset)
+  IPC_STRUCT_TRAITS_MEMBER(end_offset)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(thick)
-  IPC_STRUCT_TRAITS_MEMBER(backgroundColor)
+  IPC_STRUCT_TRAITS_MEMBER(background_color)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_

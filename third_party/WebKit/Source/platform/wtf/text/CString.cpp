@@ -34,7 +34,7 @@ using namespace std;
 
 namespace WTF {
 
-PassRefPtr<CStringImpl> CStringImpl::createUninitialized(size_t length,
+PassRefPtr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
                                                          char*& data) {
   // TODO(esprehn): This doesn't account for the NUL.
   RELEASE_ASSERT(length <
@@ -43,14 +43,14 @@ PassRefPtr<CStringImpl> CStringImpl::createUninitialized(size_t length,
   // The +1 is for the terminating NUL character.
   size_t size = sizeof(CStringImpl) + length + 1;
   CStringImpl* buffer = static_cast<CStringImpl*>(
-      Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringImpl)));
+      Partitions::BufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringImpl)));
   data = reinterpret_cast<char*>(buffer + 1);
   data[length] = '\0';
-  return adoptRef(new (buffer) CStringImpl(length));
+  return AdoptRef(new (buffer) CStringImpl(length));
 }
 
 void CStringImpl::operator delete(void* ptr) {
-  Partitions::bufferFree(ptr);
+  Partitions::BufferFree(ptr);
 }
 
 CString::CString(const char* chars, size_t length) {
@@ -59,38 +59,38 @@ CString::CString(const char* chars, size_t length) {
     return;
   }
   char* data;
-  m_buffer = CStringImpl::createUninitialized(length, data);
+  buffer_ = CStringImpl::CreateUninitialized(length, data);
   memcpy(data, chars, length);
 }
 
-bool CString::isSafeToSendToAnotherThread() const {
-  return !m_buffer || m_buffer->hasOneRef();
+bool CString::IsSafeToSendToAnotherThread() const {
+  return !buffer_ || buffer_->HasOneRef();
 }
 
 bool operator==(const CString& a, const CString& b) {
-  if (a.isNull() != b.isNull())
+  if (a.IsNull() != b.IsNull())
     return false;
   if (a.length() != b.length())
     return false;
-  return !memcmp(a.data(), b.data(), a.length());
+  return !memcmp(a.Data(), b.Data(), a.length());
 }
 
 bool operator==(const CString& a, const char* b) {
-  if (a.isNull() != !b)
+  if (a.IsNull() != !b)
     return false;
   if (!b)
     return true;
-  return !strcmp(a.data(), b);
+  return !strcmp(a.Data(), b);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const CString& string) {
-  if (string.isNull())
+  if (string.IsNull())
     return ostream << "<null>";
 
   ostream << '"';
   for (size_t index = 0; index < string.length(); ++index) {
     // Print shorthands for select cases.
-    char character = string.data()[index];
+    char character = string.Data()[index];
     switch (character) {
       case '\t':
         ostream << "\\t";
@@ -108,7 +108,7 @@ std::ostream& operator<<(std::ostream& ostream, const CString& string) {
         ostream << "\\\\";
         break;
       default:
-        if (isASCIIPrintable(character)) {
+        if (IsASCIIPrintable(character)) {
           ostream << character;
         } else {
           // Print "\xHH" for control or non-ASCII characters.

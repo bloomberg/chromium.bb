@@ -17,7 +17,7 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
  public:
-  static InspectorCacheStorageAgent* create() {
+  static InspectorCacheStorageAgent* Create() {
     return new InspectorCacheStorageAgent();
   }
 
@@ -25,15 +25,15 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
 
   DECLARE_VIRTUAL_TRACE();
 
-  void requestCacheNames(const String& securityOrigin,
+  void requestCacheNames(const String& security_origin,
                          std::unique_ptr<RequestCacheNamesCallback>) override;
-  void requestEntries(const String& cacheId,
-                      int skipCount,
-                      int pageSize,
+  void requestEntries(const String& cache_id,
+                      int skip_count,
+                      int page_size,
                       std::unique_ptr<RequestEntriesCallback>) override;
-  void deleteCache(const String& cacheId,
+  void deleteCache(const String& cache_id,
                    std::unique_ptr<DeleteCacheCallback>) override;
-  void deleteEntry(const String& cacheId,
+  void deleteEntry(const String& cache_id,
                    const String& request,
                    std::unique_ptr<DeleteEntryCallback>) override;
 

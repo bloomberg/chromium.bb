@@ -32,18 +32,18 @@
 
 namespace blink {
 
-int InstanceCounters::s_counters[CounterTypeLength];
+int InstanceCounters::counters_[kCounterTypeLength];
 
 // Counts only nodes for a performance reason. Many node are created and atomic
 // barriers or locks should be avoided (crbug/641019).
-int InstanceCounters::s_nodeCounter;
+int InstanceCounters::node_counter_;
 
-int InstanceCounters::counterValue(CounterType type) {
-  if (type == NodeCounter) {
-    DCHECK(isMainThread());
-    return s_nodeCounter;
+int InstanceCounters::CounterValue(CounterType type) {
+  if (type == kNodeCounter) {
+    DCHECK(IsMainThread());
+    return node_counter_;
   }
-  return acquireLoad(&s_counters[type]);
+  return AcquireLoad(&counters_[type]);
 }
 
 }  // namespace blink

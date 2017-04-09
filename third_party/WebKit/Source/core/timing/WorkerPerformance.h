@@ -46,12 +46,12 @@ class WorkerPerformance final : public PerformanceBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WorkerPerformance* create(WorkerGlobalScope* context) {
+  static WorkerPerformance* Create(WorkerGlobalScope* context) {
     return new WorkerPerformance(context);
   }
 
-  ExecutionContext* getExecutionContext() const override {
-    return m_executionContext;
+  ExecutionContext* GetExecutionContext() const override {
+    return execution_context_;
   }
 
   MemoryInfo* memory();
@@ -61,7 +61,7 @@ class WorkerPerformance final : public PerformanceBase {
  private:
   explicit WorkerPerformance(WorkerGlobalScope*);
 
-  Member<ExecutionContext> m_executionContext;
+  Member<ExecutionContext> execution_context_;
 };
 
 }  // namespace blink

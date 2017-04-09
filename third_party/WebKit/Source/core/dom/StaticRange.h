@@ -21,47 +21,47 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static StaticRange* create(Document& document) {
+  static StaticRange* Create(Document& document) {
     return new StaticRange(document);
   }
-  static StaticRange* create(Document& document,
-                             Node* startContainer,
-                             unsigned startOffset,
-                             Node* endContainer,
-                             unsigned endOffset) {
-    return new StaticRange(document, startContainer, startOffset, endContainer,
-                           endOffset);
+  static StaticRange* Create(Document& document,
+                             Node* start_container,
+                             unsigned start_offset,
+                             Node* end_container,
+                             unsigned end_offset) {
+    return new StaticRange(document, start_container, start_offset,
+                           end_container, end_offset);
   }
-  static StaticRange* create(const Range* range) {
-    return new StaticRange(range->ownerDocument(), range->startContainer(),
+  static StaticRange* Create(const Range* range) {
+    return new StaticRange(range->OwnerDocument(), range->startContainer(),
                            range->startOffset(), range->endContainer(),
                            range->endOffset());
   }
-  static StaticRange* create(const EphemeralRange& range) {
-    DCHECK(!range.isNull());
-    return new StaticRange(range.document(),
-                           range.startPosition().computeContainerNode(),
-                           range.startPosition().computeOffsetInContainerNode(),
-                           range.endPosition().computeContainerNode(),
-                           range.endPosition().computeOffsetInContainerNode());
+  static StaticRange* Create(const EphemeralRange& range) {
+    DCHECK(!range.IsNull());
+    return new StaticRange(range.GetDocument(),
+                           range.StartPosition().ComputeContainerNode(),
+                           range.StartPosition().ComputeOffsetInContainerNode(),
+                           range.EndPosition().ComputeContainerNode(),
+                           range.EndPosition().ComputeOffsetInContainerNode());
   }
 
-  Node* startContainer() const { return m_startContainer.get(); }
-  void setStartContainer(Node* startContainer) {
-    m_startContainer = startContainer;
+  Node* startContainer() const { return start_container_.Get(); }
+  void setStartContainer(Node* start_container) {
+    start_container_ = start_container;
   }
 
-  unsigned startOffset() const { return m_startOffset; }
-  void setStartOffset(unsigned startOffset) { m_startOffset = startOffset; }
+  unsigned startOffset() const { return start_offset_; }
+  void setStartOffset(unsigned start_offset) { start_offset_ = start_offset; }
 
-  Node* endContainer() const { return m_endContainer.get(); }
-  void setEndContainer(Node* endContainer) { m_endContainer = endContainer; }
+  Node* endContainer() const { return end_container_.Get(); }
+  void setEndContainer(Node* end_container) { end_container_ = end_container; }
 
-  unsigned endOffset() const { return m_endOffset; }
-  void setEndOffset(unsigned endOffset) { m_endOffset = endOffset; }
+  unsigned endOffset() const { return end_offset_; }
+  void setEndOffset(unsigned end_offset) { end_offset_ = end_offset; }
 
   bool collapsed() const {
-    return m_startContainer == m_endContainer && m_startOffset == m_endOffset;
+    return start_container_ == end_container_ && start_offset_ == end_offset_;
   }
 
   void setStart(Node* container, unsigned offset);
@@ -74,16 +74,16 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
  private:
   explicit StaticRange(Document&);
   StaticRange(Document&,
-              Node* startContainer,
-              unsigned startOffset,
-              Node* endContainer,
-              unsigned endOffset);
+              Node* start_container,
+              unsigned start_offset,
+              Node* end_container,
+              unsigned end_offset);
 
-  Member<Document> m_ownerDocument;  // Required by |toRange()|.
-  Member<Node> m_startContainer;
-  unsigned m_startOffset;
-  Member<Node> m_endContainer;
-  unsigned m_endOffset;
+  Member<Document> owner_document_;  // Required by |toRange()|.
+  Member<Node> start_container_;
+  unsigned start_offset_;
+  Member<Node> end_container_;
+  unsigned end_offset_;
 };
 
 using StaticRangeVector = HeapVector<Member<StaticRange>>;

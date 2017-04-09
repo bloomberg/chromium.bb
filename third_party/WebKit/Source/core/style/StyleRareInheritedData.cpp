@@ -36,25 +36,25 @@ namespace blink {
 
 struct SameSizeAsStyleRareInheritedData
     : public RefCounted<SameSizeAsStyleRareInheritedData> {
-  void* styleImage;
-  Color firstColor;
-  float firstFloat;
+  void* style_image;
+  Color first_color;
+  float first_float;
   Color colors[7];
-  void* ownPtrs[1];
-  AtomicString atomicStrings[3];
-  void* refPtrs[1];
-  Persistent<void*> persistentHandles[2];
+  void* own_ptrs[1];
+  AtomicString atomic_strings[3];
+  void* ref_ptrs[1];
+  Persistent<void*> persistent_handles[2];
   Length lengths[1];
-  float secondFloat;
-  unsigned m_bitfields[2];
-  short pagedMediaShorts[2];
-  short hyphenationShorts[3];
-  uint8_t lineHeightStep;
+  float second_float;
+  unsigned bitfields_[2];
+  short paged_media_shorts[2];
+  short hyphenation_shorts[3];
+  uint8_t line_height_step;
 
-  Color touchColors;
-  TabSize tabSize;
+  Color touch_colors;
+  TabSize tab_size;
   void* variables[1];
-  TextSizeAdjust textSizeAdjust;
+  TextSizeAdjust text_size_adjust;
 };
 
 static_assert(sizeof(StyleRareInheritedData) <=
@@ -62,198 +62,204 @@ static_assert(sizeof(StyleRareInheritedData) <=
               "StyleRareInheritedData should stay small");
 
 StyleRareInheritedData::StyleRareInheritedData()
-    : listStyleImage(ComputedStyle::initialListStyleImage()),
-      textStrokeWidth(ComputedStyle::initialTextStrokeWidth()),
-      indent(ComputedStyle::initialTextIndent()),
-      m_effectiveZoom(ComputedStyle::initialZoom()),
-      widows(ComputedStyle::initialWidows()),
-      orphans(ComputedStyle::initialOrphans()),
-      m_textStrokeColorIsCurrentColor(true),
-      m_textFillColorIsCurrentColor(true),
-      m_textEmphasisColorIsCurrentColor(true),
-      m_caretColorIsCurrentColor(false),
-      m_caretColorIsAuto(true),
-      m_visitedLinkTextStrokeColorIsCurrentColor(true),
-      m_visitedLinkTextFillColorIsCurrentColor(true),
-      m_visitedLinkTextEmphasisColorIsCurrentColor(true),
-      m_visitedLinkCaretColorIsCurrentColor(false),
-      m_visitedLinkCaretColorIsAuto(true),
-      textSecurity(ComputedStyle::initialTextSecurity()),
-      userModify(READ_ONLY),
-      wordBreak(ComputedStyle::initialWordBreak()),
-      overflowWrap(ComputedStyle::initialOverflowWrap()),
-      lineBreak(LineBreakAuto),
-      userSelect(ComputedStyle::initialUserSelect()),
-      speak(SpeakNormal),
-      hyphens(HyphensManual),
-      textEmphasisFill(TextEmphasisFillFilled),
-      textEmphasisMark(TextEmphasisMarkNone),
-      textEmphasisPosition(TextEmphasisPositionOver),
-      m_textAlignLast(ComputedStyle::initialTextAlignLast()),
-      m_textJustify(ComputedStyle::initialTextJustify()),
-      m_textOrientation(TextOrientationMixed),
-      m_textCombine(ComputedStyle::initialTextCombine()),
-      m_textIndentLine(ComputedStyle::initialTextIndentLine()),
-      m_textIndentType(ComputedStyle::initialTextIndentLine()),
-      m_imageRendering(ComputedStyle::initialImageRendering()),
-      m_textUnderlinePosition(ComputedStyle::initialTextUnderlinePosition()),
-      m_textDecorationSkip(ComputedStyle::initialTextDecorationSkip()),
-      m_rubyPosition(ComputedStyle::initialRubyPosition()),
-      m_subtreeWillChangeContents(false),
-      m_selfOrAncestorHasDirAutoAttribute(false),
-      m_respectImageOrientation(false),
-      hyphenationLimitBefore(-1),
-      hyphenationLimitAfter(-1),
-      hyphenationLimitLines(-1),
-      m_lineHeightStep(0),
-      tapHighlightColor(ComputedStyle::initialTapHighlightColor()),
-      m_tabSize(ComputedStyle::initialTabSize()),
-      m_textSizeAdjust(ComputedStyle::initialTextSizeAdjust()) {}
+    : list_style_image(ComputedStyle::InitialListStyleImage()),
+      text_stroke_width(ComputedStyle::InitialTextStrokeWidth()),
+      indent(ComputedStyle::InitialTextIndent()),
+      effective_zoom_(ComputedStyle::InitialZoom()),
+      widows(ComputedStyle::InitialWidows()),
+      orphans(ComputedStyle::InitialOrphans()),
+      text_stroke_color_is_current_color_(true),
+      text_fill_color_is_current_color_(true),
+      text_emphasis_color_is_current_color_(true),
+      caret_color_is_current_color_(false),
+      caret_color_is_auto_(true),
+      visited_link_text_stroke_color_is_current_color_(true),
+      visited_link_text_fill_color_is_current_color_(true),
+      visited_link_text_emphasis_color_is_current_color_(true),
+      visited_link_caret_color_is_current_color_(false),
+      visited_link_caret_color_is_auto_(true),
+      text_security(ComputedStyle::InitialTextSecurity()),
+      user_modify(READ_ONLY),
+      word_break(ComputedStyle::InitialWordBreak()),
+      overflow_wrap(ComputedStyle::InitialOverflowWrap()),
+      line_break(kLineBreakAuto),
+      user_select(ComputedStyle::InitialUserSelect()),
+      speak(kSpeakNormal),
+      hyphens(kHyphensManual),
+      text_emphasis_fill(kTextEmphasisFillFilled),
+      text_emphasis_mark(kTextEmphasisMarkNone),
+      text_emphasis_position(kTextEmphasisPositionOver),
+      text_align_last_(ComputedStyle::InitialTextAlignLast()),
+      text_justify_(ComputedStyle::InitialTextJustify()),
+      text_orientation_(kTextOrientationMixed),
+      text_combine_(ComputedStyle::InitialTextCombine()),
+      text_indent_line_(ComputedStyle::InitialTextIndentLine()),
+      text_indent_type_(ComputedStyle::InitialTextIndentLine()),
+      image_rendering_(ComputedStyle::InitialImageRendering()),
+      text_underline_position_(ComputedStyle::InitialTextUnderlinePosition()),
+      text_decoration_skip_(ComputedStyle::InitialTextDecorationSkip()),
+      ruby_position_(ComputedStyle::InitialRubyPosition()),
+      subtree_will_change_contents_(false),
+      self_or_ancestor_has_dir_auto_attribute_(false),
+      respect_image_orientation_(false),
+      hyphenation_limit_before(-1),
+      hyphenation_limit_after(-1),
+      hyphenation_limit_lines(-1),
+      line_height_step_(0),
+      tap_highlight_color(ComputedStyle::InitialTapHighlightColor()),
+      tab_size_(ComputedStyle::InitialTabSize()),
+      text_size_adjust_(ComputedStyle::InitialTextSizeAdjust()) {}
 
 StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     : RefCounted<StyleRareInheritedData>(),
-      listStyleImage(o.listStyleImage),
-      m_textStrokeColor(o.m_textStrokeColor),
-      textStrokeWidth(o.textStrokeWidth),
-      m_textFillColor(o.m_textFillColor),
-      m_textEmphasisColor(o.m_textEmphasisColor),
-      m_caretColor(o.m_caretColor),
-      m_visitedLinkTextStrokeColor(o.m_visitedLinkTextStrokeColor),
-      m_visitedLinkTextFillColor(o.m_visitedLinkTextFillColor),
-      m_visitedLinkTextEmphasisColor(o.m_visitedLinkTextEmphasisColor),
-      m_visitedLinkCaretColor(o.m_visitedLinkCaretColor),
-      textShadow(o.textShadow),
+      list_style_image(o.list_style_image),
+      text_stroke_color_(o.text_stroke_color_),
+      text_stroke_width(o.text_stroke_width),
+      text_fill_color_(o.text_fill_color_),
+      text_emphasis_color_(o.text_emphasis_color_),
+      caret_color_(o.caret_color_),
+      visited_link_text_stroke_color_(o.visited_link_text_stroke_color_),
+      visited_link_text_fill_color_(o.visited_link_text_fill_color_),
+      visited_link_text_emphasis_color_(o.visited_link_text_emphasis_color_),
+      visited_link_caret_color_(o.visited_link_caret_color_),
+      text_shadow(o.text_shadow),
       highlight(o.highlight),
-      cursorData(o.cursorData),
+      cursor_data(o.cursor_data),
       indent(o.indent),
-      m_effectiveZoom(o.m_effectiveZoom),
+      effective_zoom_(o.effective_zoom_),
       widows(o.widows),
       orphans(o.orphans),
-      m_textStrokeColorIsCurrentColor(o.m_textStrokeColorIsCurrentColor),
-      m_textFillColorIsCurrentColor(o.m_textFillColorIsCurrentColor),
-      m_textEmphasisColorIsCurrentColor(o.m_textEmphasisColorIsCurrentColor),
-      m_caretColorIsCurrentColor(o.m_caretColorIsCurrentColor),
-      m_caretColorIsAuto(o.m_caretColorIsAuto),
-      m_visitedLinkTextStrokeColorIsCurrentColor(
-          o.m_visitedLinkTextStrokeColorIsCurrentColor),
-      m_visitedLinkTextFillColorIsCurrentColor(
-          o.m_visitedLinkTextFillColorIsCurrentColor),
-      m_visitedLinkTextEmphasisColorIsCurrentColor(
-          o.m_visitedLinkTextEmphasisColorIsCurrentColor),
-      m_visitedLinkCaretColorIsCurrentColor(
-          o.m_visitedLinkCaretColorIsCurrentColor),
-      m_visitedLinkCaretColorIsAuto(o.m_visitedLinkCaretColorIsAuto),
-      textSecurity(o.textSecurity),
-      userModify(o.userModify),
-      wordBreak(o.wordBreak),
-      overflowWrap(o.overflowWrap),
-      lineBreak(o.lineBreak),
-      userSelect(o.userSelect),
+      text_stroke_color_is_current_color_(
+          o.text_stroke_color_is_current_color_),
+      text_fill_color_is_current_color_(o.text_fill_color_is_current_color_),
+      text_emphasis_color_is_current_color_(
+          o.text_emphasis_color_is_current_color_),
+      caret_color_is_current_color_(o.caret_color_is_current_color_),
+      caret_color_is_auto_(o.caret_color_is_auto_),
+      visited_link_text_stroke_color_is_current_color_(
+          o.visited_link_text_stroke_color_is_current_color_),
+      visited_link_text_fill_color_is_current_color_(
+          o.visited_link_text_fill_color_is_current_color_),
+      visited_link_text_emphasis_color_is_current_color_(
+          o.visited_link_text_emphasis_color_is_current_color_),
+      visited_link_caret_color_is_current_color_(
+          o.visited_link_caret_color_is_current_color_),
+      visited_link_caret_color_is_auto_(o.visited_link_caret_color_is_auto_),
+      text_security(o.text_security),
+      user_modify(o.user_modify),
+      word_break(o.word_break),
+      overflow_wrap(o.overflow_wrap),
+      line_break(o.line_break),
+      user_select(o.user_select),
       speak(o.speak),
       hyphens(o.hyphens),
-      textEmphasisFill(o.textEmphasisFill),
-      textEmphasisMark(o.textEmphasisMark),
-      textEmphasisPosition(o.textEmphasisPosition),
-      m_textAlignLast(o.m_textAlignLast),
-      m_textJustify(o.m_textJustify),
-      m_textOrientation(o.m_textOrientation),
-      m_textCombine(o.m_textCombine),
-      m_textIndentLine(o.m_textIndentLine),
-      m_textIndentType(o.m_textIndentType),
-      m_imageRendering(o.m_imageRendering),
-      m_textUnderlinePosition(o.m_textUnderlinePosition),
-      m_textDecorationSkip(o.m_textDecorationSkip),
-      m_rubyPosition(o.m_rubyPosition),
-      m_subtreeWillChangeContents(o.m_subtreeWillChangeContents),
-      m_selfOrAncestorHasDirAutoAttribute(
-          o.m_selfOrAncestorHasDirAutoAttribute),
-      m_respectImageOrientation(o.m_respectImageOrientation),
-      hyphenationString(o.hyphenationString),
-      hyphenationLimitBefore(o.hyphenationLimitBefore),
-      hyphenationLimitAfter(o.hyphenationLimitAfter),
-      hyphenationLimitLines(o.hyphenationLimitLines),
-      m_lineHeightStep(o.m_lineHeightStep),
-      textEmphasisCustomMark(o.textEmphasisCustomMark),
-      tapHighlightColor(o.tapHighlightColor),
-      appliedTextDecorations(o.appliedTextDecorations),
-      m_tabSize(o.m_tabSize),
+      text_emphasis_fill(o.text_emphasis_fill),
+      text_emphasis_mark(o.text_emphasis_mark),
+      text_emphasis_position(o.text_emphasis_position),
+      text_align_last_(o.text_align_last_),
+      text_justify_(o.text_justify_),
+      text_orientation_(o.text_orientation_),
+      text_combine_(o.text_combine_),
+      text_indent_line_(o.text_indent_line_),
+      text_indent_type_(o.text_indent_type_),
+      image_rendering_(o.image_rendering_),
+      text_underline_position_(o.text_underline_position_),
+      text_decoration_skip_(o.text_decoration_skip_),
+      ruby_position_(o.ruby_position_),
+      subtree_will_change_contents_(o.subtree_will_change_contents_),
+      self_or_ancestor_has_dir_auto_attribute_(
+          o.self_or_ancestor_has_dir_auto_attribute_),
+      respect_image_orientation_(o.respect_image_orientation_),
+      hyphenation_string(o.hyphenation_string),
+      hyphenation_limit_before(o.hyphenation_limit_before),
+      hyphenation_limit_after(o.hyphenation_limit_after),
+      hyphenation_limit_lines(o.hyphenation_limit_lines),
+      line_height_step_(o.line_height_step_),
+      text_emphasis_custom_mark(o.text_emphasis_custom_mark),
+      tap_highlight_color(o.tap_highlight_color),
+      applied_text_decorations(o.applied_text_decorations),
+      tab_size_(o.tab_size_),
       variables(o.variables),
-      m_textSizeAdjust(o.m_textSizeAdjust) {}
+      text_size_adjust_(o.text_size_adjust_) {}
 
 StyleRareInheritedData::~StyleRareInheritedData() {}
 
 bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
-  return m_textStrokeColor == o.m_textStrokeColor &&
-         textStrokeWidth == o.textStrokeWidth &&
-         m_textFillColor == o.m_textFillColor &&
-         m_textEmphasisColor == o.m_textEmphasisColor &&
-         m_caretColor == o.m_caretColor &&
-         m_visitedLinkTextStrokeColor == o.m_visitedLinkTextStrokeColor &&
-         m_visitedLinkTextFillColor == o.m_visitedLinkTextFillColor &&
-         m_visitedLinkTextEmphasisColor == o.m_visitedLinkTextEmphasisColor &&
-         m_visitedLinkCaretColor == o.m_visitedLinkCaretColor &&
-         tapHighlightColor == o.tapHighlightColor && shadowDataEquivalent(o) &&
-         highlight == o.highlight &&
-         dataEquivalent(cursorData.get(), o.cursorData.get()) &&
-         indent == o.indent && m_effectiveZoom == o.m_effectiveZoom &&
+  return text_stroke_color_ == o.text_stroke_color_ &&
+         text_stroke_width == o.text_stroke_width &&
+         text_fill_color_ == o.text_fill_color_ &&
+         text_emphasis_color_ == o.text_emphasis_color_ &&
+         caret_color_ == o.caret_color_ &&
+         visited_link_text_stroke_color_ == o.visited_link_text_stroke_color_ &&
+         visited_link_text_fill_color_ == o.visited_link_text_fill_color_ &&
+         visited_link_text_emphasis_color_ ==
+             o.visited_link_text_emphasis_color_ &&
+         visited_link_caret_color_ == o.visited_link_caret_color_ &&
+         tap_highlight_color == o.tap_highlight_color &&
+         ShadowDataEquivalent(o) && highlight == o.highlight &&
+         DataEquivalent(cursor_data.Get(), o.cursor_data.Get()) &&
+         indent == o.indent && effective_zoom_ == o.effective_zoom_ &&
          widows == o.widows && orphans == o.orphans &&
-         m_textStrokeColorIsCurrentColor == o.m_textStrokeColorIsCurrentColor &&
-         m_textFillColorIsCurrentColor == o.m_textFillColorIsCurrentColor &&
-         m_textEmphasisColorIsCurrentColor ==
-             o.m_textEmphasisColorIsCurrentColor &&
-         m_caretColorIsCurrentColor == o.m_caretColorIsCurrentColor &&
-         m_caretColorIsAuto == o.m_caretColorIsAuto &&
-         m_visitedLinkTextStrokeColorIsCurrentColor ==
-             o.m_visitedLinkTextStrokeColorIsCurrentColor &&
-         m_visitedLinkTextFillColorIsCurrentColor ==
-             o.m_visitedLinkTextFillColorIsCurrentColor &&
-         m_visitedLinkTextEmphasisColorIsCurrentColor ==
-             o.m_visitedLinkTextEmphasisColorIsCurrentColor &&
-         m_visitedLinkCaretColorIsCurrentColor ==
-             o.m_visitedLinkCaretColorIsCurrentColor &&
-         m_visitedLinkCaretColorIsAuto == o.m_visitedLinkCaretColorIsAuto &&
-         textSecurity == o.textSecurity && userModify == o.userModify &&
-         wordBreak == o.wordBreak && overflowWrap == o.overflowWrap &&
-         lineBreak == o.lineBreak && userSelect == o.userSelect &&
+         text_stroke_color_is_current_color_ ==
+             o.text_stroke_color_is_current_color_ &&
+         text_fill_color_is_current_color_ ==
+             o.text_fill_color_is_current_color_ &&
+         text_emphasis_color_is_current_color_ ==
+             o.text_emphasis_color_is_current_color_ &&
+         caret_color_is_current_color_ == o.caret_color_is_current_color_ &&
+         caret_color_is_auto_ == o.caret_color_is_auto_ &&
+         visited_link_text_stroke_color_is_current_color_ ==
+             o.visited_link_text_stroke_color_is_current_color_ &&
+         visited_link_text_fill_color_is_current_color_ ==
+             o.visited_link_text_fill_color_is_current_color_ &&
+         visited_link_text_emphasis_color_is_current_color_ ==
+             o.visited_link_text_emphasis_color_is_current_color_ &&
+         visited_link_caret_color_is_current_color_ ==
+             o.visited_link_caret_color_is_current_color_ &&
+         visited_link_caret_color_is_auto_ ==
+             o.visited_link_caret_color_is_auto_ &&
+         text_security == o.text_security && user_modify == o.user_modify &&
+         word_break == o.word_break && overflow_wrap == o.overflow_wrap &&
+         line_break == o.line_break && user_select == o.user_select &&
          speak == o.speak && hyphens == o.hyphens &&
-         hyphenationLimitBefore == o.hyphenationLimitBefore &&
-         hyphenationLimitAfter == o.hyphenationLimitAfter &&
-         hyphenationLimitLines == o.hyphenationLimitLines &&
-         textEmphasisFill == o.textEmphasisFill &&
-         textEmphasisMark == o.textEmphasisMark &&
-         textEmphasisPosition == o.textEmphasisPosition &&
-         m_textAlignLast == o.m_textAlignLast &&
-         m_textJustify == o.m_textJustify &&
-         m_textOrientation == o.m_textOrientation &&
-         m_textCombine == o.m_textCombine &&
-         m_textIndentLine == o.m_textIndentLine &&
-         m_textIndentType == o.m_textIndentType &&
-         m_subtreeWillChangeContents == o.m_subtreeWillChangeContents &&
-         m_selfOrAncestorHasDirAutoAttribute ==
-             o.m_selfOrAncestorHasDirAutoAttribute &&
-         m_respectImageOrientation == o.m_respectImageOrientation &&
-         hyphenationString == o.hyphenationString &&
-         m_lineHeightStep == o.m_lineHeightStep &&
-         textEmphasisCustomMark == o.textEmphasisCustomMark &&
-         quotesDataEquivalent(o) && m_tabSize == o.m_tabSize &&
-         m_imageRendering == o.m_imageRendering &&
-         m_textUnderlinePosition == o.m_textUnderlinePosition &&
-         m_textDecorationSkip == o.m_textDecorationSkip &&
-         m_rubyPosition == o.m_rubyPosition &&
-         dataEquivalent(listStyleImage.get(), o.listStyleImage.get()) &&
-         dataEquivalent(appliedTextDecorations, o.appliedTextDecorations) &&
-         dataEquivalent(variables, o.variables) &&
-         m_textSizeAdjust == o.m_textSizeAdjust;
+         hyphenation_limit_before == o.hyphenation_limit_before &&
+         hyphenation_limit_after == o.hyphenation_limit_after &&
+         hyphenation_limit_lines == o.hyphenation_limit_lines &&
+         text_emphasis_fill == o.text_emphasis_fill &&
+         text_emphasis_mark == o.text_emphasis_mark &&
+         text_emphasis_position == o.text_emphasis_position &&
+         text_align_last_ == o.text_align_last_ &&
+         text_justify_ == o.text_justify_ &&
+         text_orientation_ == o.text_orientation_ &&
+         text_combine_ == o.text_combine_ &&
+         text_indent_line_ == o.text_indent_line_ &&
+         text_indent_type_ == o.text_indent_type_ &&
+         subtree_will_change_contents_ == o.subtree_will_change_contents_ &&
+         self_or_ancestor_has_dir_auto_attribute_ ==
+             o.self_or_ancestor_has_dir_auto_attribute_ &&
+         respect_image_orientation_ == o.respect_image_orientation_ &&
+         hyphenation_string == o.hyphenation_string &&
+         line_height_step_ == o.line_height_step_ &&
+         text_emphasis_custom_mark == o.text_emphasis_custom_mark &&
+         QuotesDataEquivalent(o) && tab_size_ == o.tab_size_ &&
+         image_rendering_ == o.image_rendering_ &&
+         text_underline_position_ == o.text_underline_position_ &&
+         text_decoration_skip_ == o.text_decoration_skip_ &&
+         ruby_position_ == o.ruby_position_ &&
+         DataEquivalent(list_style_image.Get(), o.list_style_image.Get()) &&
+         DataEquivalent(applied_text_decorations, o.applied_text_decorations) &&
+         DataEquivalent(variables, o.variables) &&
+         text_size_adjust_ == o.text_size_adjust_;
 }
 
-bool StyleRareInheritedData::shadowDataEquivalent(
+bool StyleRareInheritedData::ShadowDataEquivalent(
     const StyleRareInheritedData& o) const {
-  return dataEquivalent(textShadow.get(), o.textShadow.get());
+  return DataEquivalent(text_shadow.Get(), o.text_shadow.Get());
 }
 
-bool StyleRareInheritedData::quotesDataEquivalent(
+bool StyleRareInheritedData::QuotesDataEquivalent(
     const StyleRareInheritedData& o) const {
-  return dataEquivalent(quotes, o.quotes);
+  return DataEquivalent(quotes, o.quotes);
 }
 
 }  // namespace blink

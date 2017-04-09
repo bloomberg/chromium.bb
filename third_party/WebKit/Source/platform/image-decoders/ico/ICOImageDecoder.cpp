@@ -39,301 +39,301 @@ namespace blink {
 // Number of bits in .ICO/.CUR used to store the directory and its entries,
 // respectively (doesn't match sizeof values for member structs since we omit
 // some fields).
-static const size_t sizeOfDirectory = 6;
-static const size_t sizeOfDirEntry = 16;
+static const size_t kSizeOfDirectory = 6;
+static const size_t kSizeOfDirEntry = 16;
 
-ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption,
-                                 const ColorBehavior& colorBehavior,
-                                 size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
-      m_fastReader(nullptr),
-      m_decodedOffset(0),
-      m_dirEntriesCount(0),
-      m_colorBehavior(colorBehavior) {}
+ICOImageDecoder::ICOImageDecoder(AlphaOption alpha_option,
+                                 const ColorBehavior& color_behavior,
+                                 size_t max_decoded_bytes)
+    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+      fast_reader_(nullptr),
+      decoded_offset_(0),
+      dir_entries_count_(0),
+      color_behavior_(color_behavior) {}
 
 ICOImageDecoder::~ICOImageDecoder() {}
 
-void ICOImageDecoder::onSetData(SegmentReader* data) {
-  m_fastReader.setData(data);
+void ICOImageDecoder::OnSetData(SegmentReader* data) {
+  fast_reader_.SetData(data);
 
-  for (BMPReaders::iterator i(m_bmpReaders.begin()); i != m_bmpReaders.end();
+  for (BMPReaders::iterator i(bmp_readers_.begin()); i != bmp_readers_.end();
        ++i) {
     if (*i)
-      (*i)->setData(data);
+      (*i)->SetData(data);
   }
-  for (size_t i = 0; i < m_pngDecoders.size(); ++i)
-    setDataForPNGDecoderAtIndex(i);
+  for (size_t i = 0; i < png_decoders_.size(); ++i)
+    SetDataForPNGDecoderAtIndex(i);
 }
 
 IntSize ICOImageDecoder::size() const {
-  return m_frameSize.isEmpty() ? ImageDecoder::size() : m_frameSize;
+  return frame_size_.IsEmpty() ? ImageDecoder::size() : frame_size_;
 }
 
-IntSize ICOImageDecoder::frameSizeAtIndex(size_t index) const {
-  return (index && (index < m_dirEntries.size())) ? m_dirEntries[index].m_size
+IntSize ICOImageDecoder::FrameSizeAtIndex(size_t index) const {
+  return (index && (index < dir_entries_.size())) ? dir_entries_[index].size_
                                                   : size();
 }
 
-bool ICOImageDecoder::setSize(unsigned width, unsigned height) {
+bool ICOImageDecoder::SetSize(unsigned width, unsigned height) {
   // The size calculated inside the BMPImageReader had better match the one in
   // the icon directory.
-  return m_frameSize.isEmpty()
-             ? ImageDecoder::setSize(width, height)
-             : ((IntSize(width, height) == m_frameSize) || setFailed());
+  return frame_size_.IsEmpty()
+             ? ImageDecoder::SetSize(width, height)
+             : ((IntSize(width, height) == frame_size_) || SetFailed());
 }
 
-bool ICOImageDecoder::frameIsCompleteAtIndex(size_t index) const {
-  if (index >= m_dirEntries.size())
+bool ICOImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+  if (index >= dir_entries_.size())
     return false;
-  const IconDirectoryEntry& dirEntry = m_dirEntries[index];
-  return (dirEntry.m_imageOffset + dirEntry.m_byteSize) <= m_data->size();
+  const IconDirectoryEntry& dir_entry = dir_entries_[index];
+  return (dir_entry.image_offset_ + dir_entry.byte_size_) <= data_->size();
 }
 
-bool ICOImageDecoder::setFailed() {
-  m_bmpReaders.clear();
-  m_pngDecoders.clear();
-  return ImageDecoder::setFailed();
+bool ICOImageDecoder::SetFailed() {
+  bmp_readers_.Clear();
+  png_decoders_.Clear();
+  return ImageDecoder::SetFailed();
 }
 
-bool ICOImageDecoder::hotSpot(IntPoint& hotSpot) const {
+bool ICOImageDecoder::HotSpot(IntPoint& hot_spot) const {
   // When unspecified, the default frame is always frame 0. This is consistent
   // with BitmapImage, where currentFrame() starts at 0 and only increases when
   // animation is requested.
-  return hotSpotAtIndex(0, hotSpot);
+  return HotSpotAtIndex(0, hot_spot);
 }
 
-bool ICOImageDecoder::hotSpotAtIndex(size_t index, IntPoint& hotSpot) const {
-  if (index >= m_dirEntries.size() || m_fileType != CURSOR)
+bool ICOImageDecoder::HotSpotAtIndex(size_t index, IntPoint& hot_spot) const {
+  if (index >= dir_entries_.size() || file_type_ != CURSOR)
     return false;
 
-  hotSpot = m_dirEntries[index].m_hotSpot;
+  hot_spot = dir_entries_[index].hot_spot_;
   return true;
 }
 
 // static
-bool ICOImageDecoder::compareEntries(const IconDirectoryEntry& a,
+bool ICOImageDecoder::CompareEntries(const IconDirectoryEntry& a,
                                      const IconDirectoryEntry& b) {
   // Larger icons are better.  After that, higher bit-depth icons are better.
-  const int aEntryArea = a.m_size.width() * a.m_size.height();
-  const int bEntryArea = b.m_size.width() * b.m_size.height();
-  return (aEntryArea == bEntryArea) ? (a.m_bitCount > b.m_bitCount)
-                                    : (aEntryArea > bEntryArea);
+  const int a_entry_area = a.size_.Width() * a.size_.Height();
+  const int b_entry_area = b.size_.Width() * b.size_.Height();
+  return (a_entry_area == b_entry_area) ? (a.bit_count_ > b.bit_count_)
+                                        : (a_entry_area > b_entry_area);
 }
 
-size_t ICOImageDecoder::decodeFrameCount() {
-  decodeSize();
+size_t ICOImageDecoder::DecodeFrameCount() {
+  DecodeSize();
 
   // If decodeSize() fails, return the existing number of frames.  This way
   // if we get halfway through the image before decoding fails, we won't
   // suddenly start reporting that the image has zero frames.
-  if (failed())
-    return m_frameBufferCache.size();
+  if (Failed())
+    return frame_buffer_cache_.size();
 
   // If the file is incomplete, return the length of the sequence of completely
   // received frames.  We don't do this when the file is fully received, since
   // some ICOs have entries whose claimed offset + size extends past the end of
   // the file, and we still want to display these if they don't trigger decoding
   // failures elsewhere.
-  if (!isAllDataReceived()) {
-    for (size_t i = 0; i < m_dirEntries.size(); ++i) {
-      const IconDirectoryEntry& dirEntry = m_dirEntries[i];
-      if ((dirEntry.m_imageOffset + dirEntry.m_byteSize) > m_data->size())
+  if (!IsAllDataReceived()) {
+    for (size_t i = 0; i < dir_entries_.size(); ++i) {
+      const IconDirectoryEntry& dir_entry = dir_entries_[i];
+      if ((dir_entry.image_offset_ + dir_entry.byte_size_) > data_->size())
         return i;
     }
   }
-  return m_dirEntries.size();
+  return dir_entries_.size();
 }
 
-void ICOImageDecoder::setDataForPNGDecoderAtIndex(size_t index) {
-  if (!m_pngDecoders[index])
+void ICOImageDecoder::SetDataForPNGDecoderAtIndex(size_t index) {
+  if (!png_decoders_[index])
     return;
 
-  m_pngDecoders[index]->setData(m_data.get(), isAllDataReceived());
+  png_decoders_[index]->SetData(data_.Get(), IsAllDataReceived());
 }
 
-void ICOImageDecoder::decode(size_t index, bool onlySize) {
-  if (failed())
+void ICOImageDecoder::Decode(size_t index, bool only_size) {
+  if (Failed())
     return;
 
   // Defensively clear the FastSharedBufferReader's cache, as another caller
   // may have called SharedBuffer::mergeSegmentsIntoBuffer().
-  m_fastReader.clearCache();
+  fast_reader_.ClearCache();
 
   // If we couldn't decode the image but we've received all the data, decoding
   // has failed.
-  if ((!decodeDirectory() || (!onlySize && !decodeAtIndex(index))) &&
-      isAllDataReceived()) {
-    setFailed();
+  if ((!DecodeDirectory() || (!only_size && !DecodeAtIndex(index))) &&
+      IsAllDataReceived()) {
+    SetFailed();
     // If we're done decoding this frame, we don't need the BMPImageReader or
     // PNGImageDecoder anymore.  (If we failed, these have already been
     // cleared.)
-  } else if ((m_frameBufferCache.size() > index) &&
-             (m_frameBufferCache[index].getStatus() ==
-              ImageFrame::FrameComplete)) {
-    m_bmpReaders[index].reset();
-    m_pngDecoders[index].reset();
+  } else if ((frame_buffer_cache_.size() > index) &&
+             (frame_buffer_cache_[index].GetStatus() ==
+              ImageFrame::kFrameComplete)) {
+    bmp_readers_[index].reset();
+    png_decoders_[index].reset();
   }
 }
 
-bool ICOImageDecoder::decodeDirectory() {
+bool ICOImageDecoder::DecodeDirectory() {
   // Read and process directory.
-  if ((m_decodedOffset < sizeOfDirectory) && !processDirectory())
+  if ((decoded_offset_ < kSizeOfDirectory) && !ProcessDirectory())
     return false;
 
   // Read and process directory entries.
-  return (m_decodedOffset >=
-          (sizeOfDirectory + (m_dirEntriesCount * sizeOfDirEntry))) ||
-         processDirectoryEntries();
+  return (decoded_offset_ >=
+          (kSizeOfDirectory + (dir_entries_count_ * kSizeOfDirEntry))) ||
+         ProcessDirectoryEntries();
 }
 
-bool ICOImageDecoder::decodeAtIndex(size_t index) {
-  SECURITY_DCHECK(index < m_dirEntries.size());
-  const IconDirectoryEntry& dirEntry = m_dirEntries[index];
-  const ImageType imageType = imageTypeAtIndex(index);
-  if (imageType == Unknown)
+bool ICOImageDecoder::DecodeAtIndex(size_t index) {
+  SECURITY_DCHECK(index < dir_entries_.size());
+  const IconDirectoryEntry& dir_entry = dir_entries_[index];
+  const ImageType image_type = ImageTypeAtIndex(index);
+  if (image_type == kUnknown)
     return false;  // Not enough data to determine image type yet.
 
-  if (imageType == BMP) {
-    if (!m_bmpReaders[index]) {
-      m_bmpReaders[index] = WTF::wrapUnique(
-          new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
-      m_bmpReaders[index]->setData(m_data.get());
+  if (image_type == BMP) {
+    if (!bmp_readers_[index]) {
+      bmp_readers_[index] = WTF::WrapUnique(
+          new BMPImageReader(this, dir_entry.image_offset_, 0, true));
+      bmp_readers_[index]->SetData(data_.Get());
     }
     // Update the pointer to the buffer as it could change after
     // m_frameBufferCache.resize().
-    m_bmpReaders[index]->setBuffer(&m_frameBufferCache[index]);
-    m_frameSize = dirEntry.m_size;
-    bool result = m_bmpReaders[index]->decodeBMP(false);
-    m_frameSize = IntSize();
+    bmp_readers_[index]->SetBuffer(&frame_buffer_cache_[index]);
+    frame_size_ = dir_entry.size_;
+    bool result = bmp_readers_[index]->DecodeBMP(false);
+    frame_size_ = IntSize();
     return result;
   }
 
-  if (!m_pngDecoders[index]) {
-    AlphaOption alphaOption =
-        m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
-    m_pngDecoders[index] = WTF::wrapUnique(
-        new PNGImageDecoder(alphaOption, m_colorBehavior, m_maxDecodedBytes,
-                            dirEntry.m_imageOffset));
-    setDataForPNGDecoderAtIndex(index);
+  if (!png_decoders_[index]) {
+    AlphaOption alpha_option =
+        premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
+    png_decoders_[index] = WTF::WrapUnique(
+        new PNGImageDecoder(alpha_option, color_behavior_, max_decoded_bytes_,
+                            dir_entry.image_offset_));
+    SetDataForPNGDecoderAtIndex(index);
   }
-  auto* pngDecoder = m_pngDecoders[index].get();
-  if (pngDecoder->isSizeAvailable()) {
+  auto* png_decoder = png_decoders_[index].get();
+  if (png_decoder->IsSizeAvailable()) {
     // Fail if the size the PNGImageDecoder calculated does not match the size
     // in the directory.
-    if (pngDecoder->size() != dirEntry.m_size)
-      return setFailed();
+    if (png_decoder->size() != dir_entry.size_)
+      return SetFailed();
 
-    const auto* frame = pngDecoder->frameBufferAtIndex(0);
+    const auto* frame = png_decoder->FrameBufferAtIndex(0);
     if (frame)
-      m_frameBufferCache[index] = *frame;
+      frame_buffer_cache_[index] = *frame;
   }
-  if (pngDecoder->failed())
-    return setFailed();
-  return m_frameBufferCache[index].getStatus() == ImageFrame::FrameComplete;
+  if (png_decoder->Failed())
+    return SetFailed();
+  return frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete;
 }
 
-bool ICOImageDecoder::processDirectory() {
+bool ICOImageDecoder::ProcessDirectory() {
   // Read directory.
-  DCHECK(!m_decodedOffset);
-  if (m_data->size() < sizeOfDirectory)
+  DCHECK(!decoded_offset_);
+  if (data_->size() < kSizeOfDirectory)
     return false;
-  const uint16_t fileType = readUint16(2);
-  m_dirEntriesCount = readUint16(4);
-  m_decodedOffset = sizeOfDirectory;
+  const uint16_t file_type = ReadUint16(2);
+  dir_entries_count_ = ReadUint16(4);
+  decoded_offset_ = kSizeOfDirectory;
 
   // See if this is an icon filetype we understand, and make sure we have at
   // least one entry in the directory.
-  if (((fileType != ICON) && (fileType != CURSOR)) || (!m_dirEntriesCount))
-    return setFailed();
+  if (((file_type != ICON) && (file_type != CURSOR)) || (!dir_entries_count_))
+    return SetFailed();
 
-  m_fileType = static_cast<FileType>(fileType);
+  file_type_ = static_cast<FileType>(file_type);
   return true;
 }
 
-bool ICOImageDecoder::processDirectoryEntries() {
+bool ICOImageDecoder::ProcessDirectoryEntries() {
   // Read directory entries.
-  DCHECK_EQ(m_decodedOffset, sizeOfDirectory);
-  if ((m_decodedOffset > m_data->size()) ||
-      ((m_data->size() - m_decodedOffset) <
-       (m_dirEntriesCount * sizeOfDirEntry)))
+  DCHECK_EQ(decoded_offset_, kSizeOfDirectory);
+  if ((decoded_offset_ > data_->size()) ||
+      ((data_->size() - decoded_offset_) <
+       (dir_entries_count_ * kSizeOfDirEntry)))
     return false;
 
   // Enlarge member vectors to hold all the entries.
-  m_dirEntries.resize(m_dirEntriesCount);
-  m_bmpReaders.resize(m_dirEntriesCount);
-  m_pngDecoders.resize(m_dirEntriesCount);
+  dir_entries_.Resize(dir_entries_count_);
+  bmp_readers_.Resize(dir_entries_count_);
+  png_decoders_.Resize(dir_entries_count_);
 
-  for (IconDirectoryEntries::iterator i(m_dirEntries.begin());
-       i != m_dirEntries.end(); ++i)
-    *i = readDirectoryEntry();  // Updates m_decodedOffset.
+  for (IconDirectoryEntries::iterator i(dir_entries_.begin());
+       i != dir_entries_.end(); ++i)
+    *i = ReadDirectoryEntry();  // Updates m_decodedOffset.
 
   // Make sure the specified image offsets are past the end of the directory
   // entries.
-  for (IconDirectoryEntries::iterator i(m_dirEntries.begin());
-       i != m_dirEntries.end(); ++i) {
-    if (i->m_imageOffset < m_decodedOffset)
-      return setFailed();
+  for (IconDirectoryEntries::iterator i(dir_entries_.begin());
+       i != dir_entries_.end(); ++i) {
+    if (i->image_offset_ < decoded_offset_)
+      return SetFailed();
   }
 
   // Arrange frames in decreasing quality order.
-  std::sort(m_dirEntries.begin(), m_dirEntries.end(), compareEntries);
+  std::sort(dir_entries_.begin(), dir_entries_.end(), CompareEntries);
 
   // The image size is the size of the largest entry.
-  const IconDirectoryEntry& dirEntry = m_dirEntries.front();
+  const IconDirectoryEntry& dir_entry = dir_entries_.front();
   // Technically, this next call shouldn't be able to fail, since the width
   // and height here are each <= 256, and |m_frameSize| is empty.
-  return setSize(dirEntry.m_size.width(), dirEntry.m_size.height());
+  return SetSize(dir_entry.size_.Width(), dir_entry.size_.Height());
 }
 
-ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::readDirectoryEntry() {
+ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::ReadDirectoryEntry() {
   // Read icon data.
   // The following calls to readUint8() return a uint8_t, which is appropriate
   // because that's the on-disk type of the width and height values.  Storing
   // them in ints (instead of matching uint8_ts) is so we can record dimensions
   // of size 256 (which is what a zero byte really means).
-  int width = readUint8(0);
+  int width = ReadUint8(0);
   if (!width)
     width = 256;
-  int height = readUint8(1);
+  int height = ReadUint8(1);
   if (!height)
     height = 256;
   IconDirectoryEntry entry;
-  entry.m_size = IntSize(width, height);
-  if (m_fileType == CURSOR) {
-    entry.m_bitCount = 0;
-    entry.m_hotSpot = IntPoint(readUint16(4), readUint16(6));
+  entry.size_ = IntSize(width, height);
+  if (file_type_ == CURSOR) {
+    entry.bit_count_ = 0;
+    entry.hot_spot_ = IntPoint(ReadUint16(4), ReadUint16(6));
   } else {
-    entry.m_bitCount = readUint16(6);
-    entry.m_hotSpot = IntPoint();
+    entry.bit_count_ = ReadUint16(6);
+    entry.hot_spot_ = IntPoint();
   }
-  entry.m_byteSize = readUint32(8);
-  entry.m_imageOffset = readUint32(12);
+  entry.byte_size_ = ReadUint32(8);
+  entry.image_offset_ = ReadUint32(12);
 
   // Some icons don't have a bit depth, only a color count.  Convert the
   // color count to the minimum necessary bit depth.  It doesn't matter if
   // this isn't quite what the bitmap info header says later, as we only use
   // this value to determine which icon entry is best.
-  if (!entry.m_bitCount) {
-    int colorCount = readUint8(2);
-    if (!colorCount)
-      colorCount = 256;  // Vague in the spec, needed by real-world icons.
-    for (--colorCount; colorCount; colorCount >>= 1)
-      ++entry.m_bitCount;
+  if (!entry.bit_count_) {
+    int color_count = ReadUint8(2);
+    if (!color_count)
+      color_count = 256;  // Vague in the spec, needed by real-world icons.
+    for (--color_count; color_count; color_count >>= 1)
+      ++entry.bit_count_;
   }
 
-  m_decodedOffset += sizeOfDirEntry;
+  decoded_offset_ += kSizeOfDirEntry;
   return entry;
 }
 
-ICOImageDecoder::ImageType ICOImageDecoder::imageTypeAtIndex(size_t index) {
+ICOImageDecoder::ImageType ICOImageDecoder::ImageTypeAtIndex(size_t index) {
   // Check if this entry is a BMP or a PNG; we need 4 bytes to check the magic
   // number.
-  SECURITY_DCHECK(index < m_dirEntries.size());
-  const uint32_t imageOffset = m_dirEntries[index].m_imageOffset;
-  if ((imageOffset > m_data->size()) || ((m_data->size() - imageOffset) < 4))
-    return Unknown;
+  SECURITY_DCHECK(index < dir_entries_.size());
+  const uint32_t image_offset = dir_entries_[index].image_offset_;
+  if ((image_offset > data_->size()) || ((data_->size() - image_offset) < 4))
+    return kUnknown;
   char buffer[4];
-  const char* data = m_fastReader.getConsecutiveData(imageOffset, 4, buffer);
+  const char* data = fast_reader_.GetConsecutiveData(image_offset, 4, buffer);
   return strncmp(data, "\x89PNG", 4) ? BMP : PNG;
 }
 

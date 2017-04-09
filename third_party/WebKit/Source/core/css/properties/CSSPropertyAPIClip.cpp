@@ -12,13 +12,13 @@ namespace blink {
 
 namespace {
 
-CSSValue* consumeClipComponent(CSSParserTokenRange& range,
-                               CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLength(
-      range, cssParserMode, ValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::Allow);
+CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
+                               CSSParserMode css_parser_mode) {
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLength(
+      range, css_parser_mode, kValueRangeAll,
+      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 
 }  // namespace
@@ -26,34 +26,34 @@ CSSValue* consumeClipComponent(CSSParserTokenRange& range,
 const CSSValue* CSSPropertyAPIClip::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  if (range.peek().functionId() != CSSValueRect)
+  if (range.Peek().FunctionId() != CSSValueRect)
     return nullptr;
 
-  CSSParserTokenRange args = CSSPropertyParserHelpers::consumeFunction(range);
+  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
   // rect(t, r, b, l) || rect(t r b l)
-  CSSValue* top = consumeClipComponent(args, context.mode());
+  CSSValue* top = ConsumeClipComponent(args, context.Mode());
   if (!top)
     return nullptr;
-  bool needsComma =
-      CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args);
-  CSSValue* right = consumeClipComponent(args, context.mode());
+  bool needs_comma =
+      CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args);
+  CSSValue* right = ConsumeClipComponent(args, context.Mode());
   if (!right ||
-      (needsComma &&
-       !CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args)))
+      (needs_comma &&
+       !CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)))
     return nullptr;
-  CSSValue* bottom = consumeClipComponent(args, context.mode());
+  CSSValue* bottom = ConsumeClipComponent(args, context.Mode());
   if (!bottom ||
-      (needsComma &&
-       !CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args)))
+      (needs_comma &&
+       !CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)))
     return nullptr;
-  CSSValue* left = consumeClipComponent(args, context.mode());
-  if (!left || !args.atEnd())
+  CSSValue* left = ConsumeClipComponent(args, context.Mode());
+  if (!left || !args.AtEnd())
     return nullptr;
-  return CSSQuadValue::create(top, right, bottom, left,
-                              CSSQuadValue::SerializeAsRect);
+  return CSSQuadValue::Create(top, right, bottom, left,
+                              CSSQuadValue::kSerializeAsRect);
 }
 
 }  // namespace blink

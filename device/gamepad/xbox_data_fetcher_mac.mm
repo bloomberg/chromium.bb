@@ -779,8 +779,8 @@ void XboxDataFetcher::AddController(XboxController* controller) {
                                   sizeof(state->data.mapping));
 
   state->data.connected = true;
-  state->data.axesLength = 4;
-  state->data.buttonsLength = 17;
+  state->data.axes_length = 4;
+  state->data.buttons_length = 17;
   state->data.timestamp = 0;
   state->mapper = 0;
   state->axis_mask = 0;

@@ -42,42 +42,42 @@ class SVGString final : public SVGPropertyBase {
   typedef void TearOffType;
   typedef String PrimitiveType;
 
-  static SVGString* create() { return new SVGString(); }
+  static SVGString* Create() { return new SVGString(); }
 
-  static SVGString* create(const String& value) { return new SVGString(value); }
+  static SVGString* Create(const String& value) { return new SVGString(value); }
 
-  SVGString* clone() const { return create(m_value); }
-  SVGPropertyBase* cloneForAnimation(const String& value) const override {
-    return create(value);
+  SVGString* Clone() const { return Create(value_); }
+  SVGPropertyBase* CloneForAnimation(const String& value) const override {
+    return Create(value);
   }
 
-  String valueAsString() const override { return m_value; }
-  SVGParsingError setValueAsString(const String& value) {
-    m_value = value;
-    return SVGParseStatus::NoError;
+  String ValueAsString() const override { return value_; }
+  SVGParsingError SetValueAsString(const String& value) {
+    value_ = value;
+    return SVGParseStatus::kNoError;
   }
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  const String& value() const { return m_value; }
-  void setValue(const String& value) { m_value = value; }
+  const String& Value() const { return value_; }
+  void SetValue(const String& value) { value_ = value; }
 
-  static AnimatedPropertyType classType() { return AnimatedString; }
-  AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType ClassType() { return kAnimatedString; }
+  AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
   SVGString() {}
-  explicit SVGString(const String& value) : m_value(value) {}
+  explicit SVGString(const String& value) : value_(value) {}
 
-  String m_value;
+  String value_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGString);

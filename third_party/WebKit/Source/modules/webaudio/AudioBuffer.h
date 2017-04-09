@@ -48,63 +48,63 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioBuffer* create(unsigned numberOfChannels,
-                             size_t numberOfFrames,
-                             float sampleRate);
-  static AudioBuffer* create(unsigned numberOfChannels,
-                             size_t numberOfFrames,
-                             float sampleRate,
+  static AudioBuffer* Create(unsigned number_of_channels,
+                             size_t number_of_frames,
+                             float sample_rate);
+  static AudioBuffer* Create(unsigned number_of_channels,
+                             size_t number_of_frames,
+                             float sample_rate,
                              ExceptionState&);
-  static AudioBuffer* create(const AudioBufferOptions&, ExceptionState&);
+  static AudioBuffer* Create(const AudioBufferOptions&, ExceptionState&);
 
   // Returns 0 if data is not a valid audio file.
-  static AudioBuffer* createFromAudioFileData(const void* data,
-                                              size_t dataSize,
-                                              bool mixToMono,
-                                              float sampleRate);
+  static AudioBuffer* CreateFromAudioFileData(const void* data,
+                                              size_t data_size,
+                                              bool mix_to_mono,
+                                              float sample_rate);
 
-  static AudioBuffer* createFromAudioBus(AudioBus*);
+  static AudioBuffer* CreateFromAudioBus(AudioBus*);
 
   // Format
-  size_t length() const { return m_length; }
+  size_t length() const { return length_; }
   double duration() const {
     return length() / static_cast<double>(sampleRate());
   }
-  float sampleRate() const { return m_sampleRate; }
+  float sampleRate() const { return sample_rate_; }
 
   // Channel data access
-  unsigned numberOfChannels() const { return m_channels.size(); }
-  DOMFloat32Array* getChannelData(unsigned channelIndex, ExceptionState&);
-  DOMFloat32Array* getChannelData(unsigned channelIndex);
-  void copyFromChannel(DOMFloat32Array*, long channelNumber, ExceptionState&);
+  unsigned numberOfChannels() const { return channels_.size(); }
+  DOMFloat32Array* getChannelData(unsigned channel_index, ExceptionState&);
+  DOMFloat32Array* getChannelData(unsigned channel_index);
+  void copyFromChannel(DOMFloat32Array*, long channel_number, ExceptionState&);
   void copyFromChannel(DOMFloat32Array*,
-                       long channelNumber,
-                       unsigned long startInChannel,
+                       long channel_number,
+                       unsigned long start_in_channel,
                        ExceptionState&);
-  void copyToChannel(DOMFloat32Array*, long channelNumber, ExceptionState&);
+  void copyToChannel(DOMFloat32Array*, long channel_number, ExceptionState&);
   void copyToChannel(DOMFloat32Array*,
-                     long channelNumber,
-                     unsigned long startInChannel,
+                     long channel_number,
+                     unsigned long start_in_channel,
                      ExceptionState&);
 
-  void zero();
+  void Zero();
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_channels); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(channels_); }
 
  private:
   explicit AudioBuffer(AudioBus*);
 
-  static DOMFloat32Array* createFloat32ArrayOrNull(size_t length);
+  static DOMFloat32Array* CreateFloat32ArrayOrNull(size_t length);
 
-  AudioBuffer(unsigned numberOfChannels,
-              size_t numberOfFrames,
-              float sampleRate);
-  bool createdSuccessfully(unsigned desiredNumberOfChannels) const;
+  AudioBuffer(unsigned number_of_channels,
+              size_t number_of_frames,
+              float sample_rate);
+  bool CreatedSuccessfully(unsigned desired_number_of_channels) const;
 
-  float m_sampleRate;
-  size_t m_length;
+  float sample_rate_;
+  size_t length_;
 
-  HeapVector<Member<DOMFloat32Array>> m_channels;
+  HeapVector<Member<DOMFloat32Array>> channels_;
 };
 
 }  // namespace blink

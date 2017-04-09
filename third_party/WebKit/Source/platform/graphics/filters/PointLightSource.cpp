@@ -34,21 +34,21 @@
 
 namespace blink {
 
-bool PointLightSource::setPosition(const FloatPoint3D& position) {
-  if (m_position == position)
+bool PointLightSource::SetPosition(const FloatPoint3D& position) {
+  if (position_ == position)
     return false;
-  m_position = position;
+  position_ = position;
   return true;
 }
 
 static TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
-  ts << "x=" << p.x() << " y=" << p.y() << " z=" << p.z();
+  ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
   return ts;
 }
 
-TextStream& PointLightSource::externalRepresentation(TextStream& ts) const {
+TextStream& PointLightSource::ExternalRepresentation(TextStream& ts) const {
   ts << "[type=POINT-LIGHT] ";
-  ts << "[position=\"" << position() << "\"]";
+  ts << "[position=\"" << GetPosition() << "\"]";
   return ts;
 }
 

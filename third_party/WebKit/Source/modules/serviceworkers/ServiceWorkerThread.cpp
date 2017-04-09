@@ -38,29 +38,29 @@
 
 namespace blink {
 
-std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(
-    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy) {
-  return WTF::wrapUnique(new ServiceWorkerThread(std::move(workerLoaderProxy),
-                                                 workerReportingProxy));
+std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::Create(
+    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    WorkerReportingProxy& worker_reporting_proxy) {
+  return WTF::WrapUnique(new ServiceWorkerThread(std::move(worker_loader_proxy),
+                                                 worker_reporting_proxy));
 }
 
 ServiceWorkerThread::ServiceWorkerThread(
-    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
-      m_workerBackingThread(
-          WorkerBackingThread::create("ServiceWorker Thread")) {}
+    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    WorkerReportingProxy& worker_reporting_proxy)
+    : WorkerThread(std::move(worker_loader_proxy), worker_reporting_proxy),
+      worker_backing_thread_(
+          WorkerBackingThread::Create("ServiceWorker Thread")) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {}
 
-void ServiceWorkerThread::clearWorkerBackingThread() {
-  m_workerBackingThread = nullptr;
+void ServiceWorkerThread::ClearWorkerBackingThread() {
+  worker_backing_thread_ = nullptr;
 }
 
-WorkerOrWorkletGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(
-    std::unique_ptr<WorkerThreadStartupData> startupData) {
-  return ServiceWorkerGlobalScope::create(this, std::move(startupData));
+WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
+    std::unique_ptr<WorkerThreadStartupData> startup_data) {
+  return ServiceWorkerGlobalScope::Create(this, std::move(startup_data));
 }
 
 }  // namespace blink

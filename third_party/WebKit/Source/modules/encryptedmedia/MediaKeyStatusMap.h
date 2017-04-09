@@ -39,24 +39,24 @@ class MediaKeyStatusMap final
  public:
   MediaKeyStatusMap() {}
 
-  void clear();
-  void addEntry(WebData keyId, const String& status);
+  void Clear();
+  void AddEntry(WebData key_id, const String& status);
   const MapEntry& at(size_t) const;
 
   // IDL attributes / methods
-  size_t size() const { return m_entries.size(); }
-  bool has(const ArrayBufferOrArrayBufferView& keyId);
-  ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& keyId);
+  size_t size() const { return entries_.size(); }
+  bool has(const ArrayBufferOrArrayBufferView& key_id);
+  ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& key_id);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   // PairIterable<> implementation.
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
-  size_t indexOf(const DOMArrayPiece& keyId) const;
+  size_t IndexOf(const DOMArrayPiece& key_id) const;
 
-  MediaKeyStatusMapType m_entries;
+  MediaKeyStatusMapType entries_;
 };
 
 }  // namespace blink

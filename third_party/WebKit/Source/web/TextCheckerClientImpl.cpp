@@ -11,55 +11,55 @@
 
 namespace blink {
 
-TextCheckerClientImpl::TextCheckerClientImpl(WebLocalFrameImpl* webLocalFrame)
-    : m_webLocalFrame(webLocalFrame) {}
+TextCheckerClientImpl::TextCheckerClientImpl(WebLocalFrameImpl* web_local_frame)
+    : web_local_frame_(web_local_frame) {}
 
 DEFINE_TRACE(TextCheckerClientImpl) {
-  visitor->trace(m_webLocalFrame);
+  visitor->Trace(web_local_frame_);
 }
 
-WebTextCheckClient* TextCheckerClientImpl::webTextCheckClient() const {
-  return m_webLocalFrame->textCheckClient();
+WebTextCheckClient* TextCheckerClientImpl::GetWebTextCheckClient() const {
+  return web_local_frame_->TextCheckClient();
 }
 
-void TextCheckerClientImpl::checkSpellingOfString(const String& text,
-                                                  int* misspellingLocation,
-                                                  int* misspellingLength) {
+void TextCheckerClientImpl::CheckSpellingOfString(const String& text,
+                                                  int* misspelling_location,
+                                                  int* misspelling_length) {
   // SpellCheckWord will write (0, 0) into the output vars, which is what our
   // caller expects if the word is spelled correctly.
-  int spellLocation = -1;
-  int spellLength = 0;
+  int spell_location = -1;
+  int spell_length = 0;
 
   // Check to see if the provided text is spelled correctly.
-  if (webTextCheckClient()) {
-    webTextCheckClient()->checkSpelling(text, spellLocation, spellLength,
-                                        nullptr);
+  if (GetWebTextCheckClient()) {
+    GetWebTextCheckClient()->CheckSpelling(text, spell_location, spell_length,
+                                           nullptr);
   } else {
-    spellLocation = 0;
-    spellLength = 0;
+    spell_location = 0;
+    spell_length = 0;
   }
 
   // Note: the Mac code checks if the pointers are null before writing to them,
   // so we do too.
-  if (misspellingLocation)
-    *misspellingLocation = spellLocation;
-  if (misspellingLength)
-    *misspellingLength = spellLength;
+  if (misspelling_location)
+    *misspelling_location = spell_location;
+  if (misspelling_length)
+    *misspelling_length = spell_length;
 }
 
-void TextCheckerClientImpl::requestCheckingOfString(
+void TextCheckerClientImpl::RequestCheckingOfString(
     TextCheckingRequest* request) {
-  if (!webTextCheckClient())
+  if (!GetWebTextCheckClient())
     return;
-  const String& text = request->data().text();
-  webTextCheckClient()->requestCheckingOfText(
+  const String& text = request->Data().GetText();
+  GetWebTextCheckClient()->RequestCheckingOfText(
       text, new WebTextCheckingCompletionImpl(request));
 }
 
-void TextCheckerClientImpl::cancelAllPendingRequests() {
-  if (!webTextCheckClient())
+void TextCheckerClientImpl::CancelAllPendingRequests() {
+  if (!GetWebTextCheckClient())
     return;
-  webTextCheckClient()->cancelAllPendingRequests();
+  GetWebTextCheckClient()->CancelAllPendingRequests();
 }
 
 }  // namespace blink

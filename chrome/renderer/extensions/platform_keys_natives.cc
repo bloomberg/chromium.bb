@@ -23,19 +23,19 @@ namespace {
 bool StringToWebCryptoOperation(const std::string& str,
                                 blink::WebCryptoOperation* op) {
   if (str == "GenerateKey") {
-    *op = blink::WebCryptoOperationGenerateKey;
+    *op = blink::kWebCryptoOperationGenerateKey;
     return true;
   }
   if (str == "ImportKey") {
-    *op = blink::WebCryptoOperationImportKey;
+    *op = blink::kWebCryptoOperationImportKey;
     return true;
   }
   if (str == "Sign") {
-    *op = blink::WebCryptoOperationSign;
+    *op = blink::kWebCryptoOperationSign;
     return true;
   }
   if (str == "Verify") {
-    *op = blink::WebCryptoOperationVerify;
+    *op = blink::kWebCryptoOperationVerify;
     return true;
   }
   return false;
@@ -43,42 +43,42 @@ bool StringToWebCryptoOperation(const std::string& str,
 
 std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
     const blink::WebCryptoAlgorithm& algorithm) {
-  DCHECK(!algorithm.isNull());
+  DCHECK(!algorithm.IsNull());
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   const blink::WebCryptoAlgorithmInfo* info =
-      blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id());
+      blink::WebCryptoAlgorithm::LookupAlgorithmInfo(algorithm.Id());
   dict->SetStringWithoutPathExpansion("name", info->name);
 
   const blink::WebCryptoAlgorithm* hash = nullptr;
 
   const blink::WebCryptoRsaHashedKeyGenParams* rsaHashedKeyGen =
-      algorithm.rsaHashedKeyGenParams();
+      algorithm.RsaHashedKeyGenParams();
   if (rsaHashedKeyGen) {
     dict->SetIntegerWithoutPathExpansion("modulusLength",
-                                         rsaHashedKeyGen->modulusLengthBits());
+                                         rsaHashedKeyGen->ModulusLengthBits());
     const blink::WebVector<unsigned char>& public_exponent =
-        rsaHashedKeyGen->publicExponent();
+        rsaHashedKeyGen->PublicExponent();
     dict->SetWithoutPathExpansion(
         "publicExponent",
         base::BinaryValue::CreateWithCopiedBuffer(
-            reinterpret_cast<const char*>(public_exponent.data()),
+            reinterpret_cast<const char*>(public_exponent.Data()),
             public_exponent.size()));
 
-    hash = &rsaHashedKeyGen->hash();
-    DCHECK(!hash->isNull());
+    hash = &rsaHashedKeyGen->GetHash();
+    DCHECK(!hash->IsNull());
   }
 
   const blink::WebCryptoRsaHashedImportParams* rsaHashedImport =
-      algorithm.rsaHashedImportParams();
+      algorithm.RsaHashedImportParams();
   if (rsaHashedImport) {
-    hash = &rsaHashedImport->hash();
-    DCHECK(!hash->isNull());
+    hash = &rsaHashedImport->GetHash();
+    DCHECK(!hash->IsNull());
   }
 
   if (hash) {
     const blink::WebCryptoAlgorithmInfo* hash_info =
-        blink::WebCryptoAlgorithm::lookupAlgorithmInfo(hash->id());
+        blink::WebCryptoAlgorithm::LookupAlgorithmInfo(hash->Id());
 
     std::unique_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
     hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
@@ -113,12 +113,12 @@ void PlatformKeysNatives::NormalizeAlgorithm(
   blink::WebString error_details;
   int exception_code = 0;
 
-  blink::WebCryptoAlgorithm algorithm = blink::normalizeCryptoAlgorithm(
+  blink::WebCryptoAlgorithm algorithm = blink::NormalizeCryptoAlgorithm(
       v8::Local<v8::Object>::Cast(call_info[0]), operation, &exception_code,
       &error_details, call_info.GetIsolate());
 
   std::unique_ptr<base::DictionaryValue> algorithm_dict;
-  if (!algorithm.isNull())
+  if (!algorithm.IsNull())
     algorithm_dict = WebCryptoAlgorithmToBaseValue(algorithm);
 
   if (!algorithm_dict)

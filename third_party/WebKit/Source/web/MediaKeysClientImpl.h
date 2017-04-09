@@ -14,7 +14,7 @@ class MediaKeysClientImpl final : public MediaKeysClient {
   MediaKeysClientImpl();
 
   // MediaKeysClient implementation.
-  WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) override;
+  WebEncryptedMediaClient* EncryptedMediaClient(ExecutionContext*) override;
 };
 
 }  // namespace blink

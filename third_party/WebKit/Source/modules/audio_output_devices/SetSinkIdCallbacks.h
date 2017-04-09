@@ -27,16 +27,16 @@ class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
  public:
   SetSinkIdCallbacks(ScriptPromiseResolver*,
                      HTMLMediaElement&,
-                     const String& sinkId);
+                     const String& sink_id);
   ~SetSinkIdCallbacks() override;
 
-  void onSuccess() override;
-  void onError(WebSetSinkIdError) override;
+  void OnSuccess() override;
+  void OnError(WebSetSinkIdError) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
-  Persistent<HTMLMediaElement> m_element;
-  String m_sinkId;
+  Persistent<ScriptPromiseResolver> resolver_;
+  Persistent<HTMLMediaElement> element_;
+  String sink_id_;
 };
 
 }  // namespace blink

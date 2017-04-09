@@ -11,137 +11,139 @@
 namespace blink {
 
 namespace {
-Element* nextSkippingChildrenOfShadowHost(const Element& start,
+Element* NextSkippingChildrenOfShadowHost(const Element& start,
                                           const Element& scope) {
-  DCHECK(scope.assignedSlot());
-  if (!start.authorShadowRoot()) {
-    if (Element* first = ElementTraversal::firstChild(start))
+  DCHECK(scope.AssignedSlot());
+  if (!start.AuthorShadowRoot()) {
+    if (Element* first = ElementTraversal::FirstChild(start))
       return first;
   }
 
   for (const Element* current = &start; current != scope;
        current = current->parentElement()) {
-    if (Element* nextSibling = ElementTraversal::nextSibling(*current))
-      return nextSibling;
+    if (Element* next_sibling = ElementTraversal::NextSibling(*current))
+      return next_sibling;
   }
   return nullptr;
 }
 
-Element* lastWithinOrSelfSkippingChildrenOfShadowHost(const Element& scope) {
+Element* LastWithinOrSelfSkippingChildrenOfShadowHost(const Element& scope) {
   Element* current = const_cast<Element*>(&scope);
-  while (!current->authorShadowRoot()) {
-    Element* lastChild = ElementTraversal::lastChild(*current);
-    if (!lastChild)
+  while (!current->AuthorShadowRoot()) {
+    Element* last_child = ElementTraversal::LastChild(*current);
+    if (!last_child)
       break;
-    current = lastChild;
+    current = last_child;
   }
   return current;
 }
 
-Element* previousSkippingChildrenOfShadowHost(const Element& start,
+Element* PreviousSkippingChildrenOfShadowHost(const Element& start,
                                               const Element& scope) {
-  DCHECK(scope.assignedSlot());
+  DCHECK(scope.AssignedSlot());
   DCHECK_NE(start, &scope);
-  if (Element* previousSibling = ElementTraversal::previousSibling(start))
-    return lastWithinOrSelfSkippingChildrenOfShadowHost(*previousSibling);
+  if (Element* previous_sibling = ElementTraversal::PreviousSibling(start))
+    return LastWithinOrSelfSkippingChildrenOfShadowHost(*previous_sibling);
   return start.parentElement();
 }
 }  // namespace
 
-HTMLSlotElement* SlotScopedTraversal::findScopeOwnerSlot(
+HTMLSlotElement* SlotScopedTraversal::FindScopeOwnerSlot(
     const Element& current) {
-  if (Element* nearestInclusiveAncestorAssignedToSlot =
-          SlotScopedTraversal::nearestInclusiveAncestorAssignedToSlot(current))
-    return nearestInclusiveAncestorAssignedToSlot->assignedSlot();
+  if (Element* nearest_inclusive_ancestor_assigned_to_slot =
+          SlotScopedTraversal::NearestInclusiveAncestorAssignedToSlot(current))
+    return nearest_inclusive_ancestor_assigned_to_slot->AssignedSlot();
   return nullptr;
 }
 
-Element* SlotScopedTraversal::nearestInclusiveAncestorAssignedToSlot(
+Element* SlotScopedTraversal::NearestInclusiveAncestorAssignedToSlot(
     const Element& current) {
   Element* element = const_cast<Element*>(&current);
   for (; element; element = element->parentElement()) {
-    if (element->assignedSlot())
+    if (element->AssignedSlot())
       break;
   }
   return element;
 }
 
-Element* SlotScopedTraversal::next(const Element& current) {
-  Element* nearestInclusiveAncestorAssignedToSlot =
-      SlotScopedTraversal::nearestInclusiveAncestorAssignedToSlot(current);
-  DCHECK(nearestInclusiveAncestorAssignedToSlot);
+Element* SlotScopedTraversal::Next(const Element& current) {
+  Element* nearest_inclusive_ancestor_assigned_to_slot =
+      SlotScopedTraversal::NearestInclusiveAncestorAssignedToSlot(current);
+  DCHECK(nearest_inclusive_ancestor_assigned_to_slot);
   // Search within children of an element which is assigned to a slot.
-  if (Element* next = nextSkippingChildrenOfShadowHost(
-          current, *nearestInclusiveAncestorAssignedToSlot))
+  if (Element* next = NextSkippingChildrenOfShadowHost(
+          current, *nearest_inclusive_ancestor_assigned_to_slot))
     return next;
 
   // Seek to the next element assigned to the same slot.
   HTMLSlotElement* slot =
-      nearestInclusiveAncestorAssignedToSlot->assignedSlot();
+      nearest_inclusive_ancestor_assigned_to_slot->AssignedSlot();
   DCHECK(slot);
-  const HeapVector<Member<Node>>& assignedNodes = slot->assignedNodes();
-  size_t currentIndex =
-      assignedNodes.find(*nearestInclusiveAncestorAssignedToSlot);
-  DCHECK_NE(currentIndex, kNotFound);
-  for (++currentIndex; currentIndex < assignedNodes.size(); ++currentIndex) {
-    if (assignedNodes[currentIndex]->isElementNode())
-      return toElement(assignedNodes[currentIndex]);
+  const HeapVector<Member<Node>>& assigned_nodes = slot->AssignedNodes();
+  size_t current_index =
+      assigned_nodes.Find(*nearest_inclusive_ancestor_assigned_to_slot);
+  DCHECK_NE(current_index, kNotFound);
+  for (++current_index; current_index < assigned_nodes.size();
+       ++current_index) {
+    if (assigned_nodes[current_index]->IsElementNode())
+      return ToElement(assigned_nodes[current_index]);
   }
   return nullptr;
 }
 
-Element* SlotScopedTraversal::previous(const Element& current) {
-  Element* nearestInclusiveAncestorAssignedToSlot =
-      SlotScopedTraversal::nearestInclusiveAncestorAssignedToSlot(current);
-  DCHECK(nearestInclusiveAncestorAssignedToSlot);
+Element* SlotScopedTraversal::Previous(const Element& current) {
+  Element* nearest_inclusive_ancestor_assigned_to_slot =
+      SlotScopedTraversal::NearestInclusiveAncestorAssignedToSlot(current);
+  DCHECK(nearest_inclusive_ancestor_assigned_to_slot);
 
-  if (current != nearestInclusiveAncestorAssignedToSlot) {
+  if (current != nearest_inclusive_ancestor_assigned_to_slot) {
     // Search within children of an element which is assigned to a slot.
-    Element* previous = previousSkippingChildrenOfShadowHost(
-        current, *nearestInclusiveAncestorAssignedToSlot);
+    Element* previous = PreviousSkippingChildrenOfShadowHost(
+        current, *nearest_inclusive_ancestor_assigned_to_slot);
     DCHECK(previous);
     return previous;
   }
 
   // Seek to the previous element assigned to the same slot.
-  const HeapVector<Member<Node>>& assignedNodes =
-      nearestInclusiveAncestorAssignedToSlot->assignedSlot()->assignedNodes();
-  size_t currentIndex =
-      assignedNodes.reverseFind(*nearestInclusiveAncestorAssignedToSlot);
-  DCHECK_NE(currentIndex, kNotFound);
-  for (; currentIndex > 0; --currentIndex) {
-    const Member<Node> assignedNode = assignedNodes[currentIndex - 1];
-    if (!assignedNode->isElementNode())
+  const HeapVector<Member<Node>>& assigned_nodes =
+      nearest_inclusive_ancestor_assigned_to_slot->AssignedSlot()
+          ->AssignedNodes();
+  size_t current_index =
+      assigned_nodes.ReverseFind(*nearest_inclusive_ancestor_assigned_to_slot);
+  DCHECK_NE(current_index, kNotFound);
+  for (; current_index > 0; --current_index) {
+    const Member<Node> assigned_node = assigned_nodes[current_index - 1];
+    if (!assigned_node->IsElementNode())
       continue;
-    return lastWithinOrSelfSkippingChildrenOfShadowHost(
-        *toElement(assignedNode));
+    return LastWithinOrSelfSkippingChildrenOfShadowHost(
+        *ToElement(assigned_node));
   }
   return nullptr;
 }
 
-Element* SlotScopedTraversal::firstAssignedToSlot(HTMLSlotElement& slot) {
-  const HeapVector<Member<Node>>& assignedNodes = slot.assignedNodes();
-  for (auto assignedNode : assignedNodes) {
-    if (assignedNode->isElementNode())
-      return toElement(assignedNode);
+Element* SlotScopedTraversal::FirstAssignedToSlot(HTMLSlotElement& slot) {
+  const HeapVector<Member<Node>>& assigned_nodes = slot.AssignedNodes();
+  for (auto assigned_node : assigned_nodes) {
+    if (assigned_node->IsElementNode())
+      return ToElement(assigned_node);
   }
   return nullptr;
 }
 
-Element* SlotScopedTraversal::lastAssignedToSlot(HTMLSlotElement& slot) {
-  const HeapVector<Member<Node>>& assignedNodes = slot.assignedNodes();
-  for (auto assignedNode = assignedNodes.rbegin();
-       assignedNode != assignedNodes.rend(); ++assignedNode) {
-    if (!(*assignedNode)->isElementNode())
+Element* SlotScopedTraversal::LastAssignedToSlot(HTMLSlotElement& slot) {
+  const HeapVector<Member<Node>>& assigned_nodes = slot.AssignedNodes();
+  for (auto assigned_node = assigned_nodes.rbegin();
+       assigned_node != assigned_nodes.rend(); ++assigned_node) {
+    if (!(*assigned_node)->IsElementNode())
       continue;
-    return lastWithinOrSelfSkippingChildrenOfShadowHost(
-        *toElement(*assignedNode));
+    return LastWithinOrSelfSkippingChildrenOfShadowHost(
+        *ToElement(*assigned_node));
   }
   return nullptr;
 }
 
-bool SlotScopedTraversal::isSlotScoped(const Element& current) {
-  return SlotScopedTraversal::nearestInclusiveAncestorAssignedToSlot(current);
+bool SlotScopedTraversal::IsSlotScoped(const Element& current) {
+  return SlotScopedTraversal::NearestInclusiveAncestorAssignedToSlot(current);
 }
 
 }  // namespace blink

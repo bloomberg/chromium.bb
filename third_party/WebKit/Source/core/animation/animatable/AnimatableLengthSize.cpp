@@ -32,10 +32,10 @@
 
 namespace blink {
 
-bool AnimatableLengthSize::equalTo(const AnimatableValue* value) const {
-  const AnimatableLengthSize* lengthSize = toAnimatableLengthSize(value);
-  return m_width->equals(lengthSize->m_width.get()) &&
-         m_height->equals(lengthSize->m_height.get());
+bool AnimatableLengthSize::EqualTo(const AnimatableValue* value) const {
+  const AnimatableLengthSize* length_size = ToAnimatableLengthSize(value);
+  return width_->Equals(length_size->width_.Get()) &&
+         height_->Equals(length_size->height_.Get());
 }
 
 }  // namespace blink

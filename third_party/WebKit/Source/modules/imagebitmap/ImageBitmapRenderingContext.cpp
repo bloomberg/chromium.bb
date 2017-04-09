@@ -19,35 +19,35 @@ ImageBitmapRenderingContext::ImageBitmapRenderingContext(
     const CanvasContextCreationAttributes& attrs,
     Document& document)
     : CanvasRenderingContext(canvas, nullptr, attrs),
-      m_imageLayerBridge(
-          new ImageLayerBridge(attrs.alpha() ? NonOpaque : Opaque)) {}
+      image_layer_bridge_(
+          new ImageLayerBridge(attrs.alpha() ? kNonOpaque : kOpaque)) {}
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() {}
 
-void ImageBitmapRenderingContext::setCanvasGetContextResult(
+void ImageBitmapRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
   result.setImageBitmapRenderingContext(this);
 }
 
 void ImageBitmapRenderingContext::transferFromImageBitmap(
-    ImageBitmap* imageBitmap,
-    ExceptionState& exceptionState) {
-  if (imageBitmap && imageBitmap->isNeutered()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The input ImageBitmap has been detached");
+    ImageBitmap* image_bitmap,
+    ExceptionState& exception_state) {
+  if (image_bitmap && image_bitmap->IsNeutered()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "The input ImageBitmap has been detached");
     return;
   }
 
-  m_imageLayerBridge->setImage(imageBitmap ? imageBitmap->bitmapImage()
-                                           : nullptr);
+  image_layer_bridge_->SetImage(image_bitmap ? image_bitmap->BitmapImage()
+                                             : nullptr);
 
-  didDraw();
+  DidDraw();
 
-  if (imageBitmap)
-    imageBitmap->close();
+  if (image_bitmap)
+    image_bitmap->close();
 }
 
-CanvasRenderingContext* ImageBitmapRenderingContext::Factory::create(
+CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributes& attrs,
     Document& document) {
@@ -56,30 +56,30 @@ CanvasRenderingContext* ImageBitmapRenderingContext::Factory::create(
   return new ImageBitmapRenderingContext(canvas, attrs, document);
 }
 
-void ImageBitmapRenderingContext::stop() {
-  m_imageLayerBridge->dispose();
+void ImageBitmapRenderingContext::Stop() {
+  image_layer_bridge_->Dispose();
 }
 
-PassRefPtr<Image> ImageBitmapRenderingContext::getImage(AccelerationHint,
+PassRefPtr<Image> ImageBitmapRenderingContext::GetImage(AccelerationHint,
                                                         SnapshotReason) const {
-  return m_imageLayerBridge->image();
+  return image_layer_bridge_->GetImage();
 }
 
-WebLayer* ImageBitmapRenderingContext::platformLayer() const {
-  return m_imageLayerBridge->platformLayer();
+WebLayer* ImageBitmapRenderingContext::PlatformLayer() const {
+  return image_layer_bridge_->PlatformLayer();
 }
 
-bool ImageBitmapRenderingContext::isPaintable() const {
-  return !!m_imageLayerBridge->image();
+bool ImageBitmapRenderingContext::IsPaintable() const {
+  return !!image_layer_bridge_->GetImage();
 }
 
 DEFINE_TRACE(ImageBitmapRenderingContext) {
-  visitor->trace(m_imageLayerBridge);
-  CanvasRenderingContext::trace(visitor);
+  visitor->Trace(image_layer_bridge_);
+  CanvasRenderingContext::Trace(visitor);
 }
 
-bool ImageBitmapRenderingContext::isAccelerated() const {
-  return m_imageLayerBridge->isAccelerated();
+bool ImageBitmapRenderingContext::IsAccelerated() const {
+  return image_layer_bridge_->IsAccelerated();
 }
 
 }  // blink

@@ -35,134 +35,136 @@
 namespace blink {
 
 enum class NodeListRootType {
-  Node,
-  TreeScope,
+  kNode,
+  kTreeScope,
 };
 
 class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
  public:
-  LiveNodeListBase(ContainerNode& ownerNode,
-                   NodeListRootType rootType,
-                   NodeListInvalidationType invalidationType,
-                   CollectionType collectionType)
-      : m_ownerNode(ownerNode),
-        m_rootType(static_cast<unsigned>(rootType)),
-        m_invalidationType(invalidationType),
-        m_collectionType(collectionType) {
-    DCHECK_EQ(m_rootType, static_cast<unsigned>(rootType));
-    DCHECK_EQ(m_invalidationType, static_cast<unsigned>(invalidationType));
-    DCHECK_EQ(m_collectionType, static_cast<unsigned>(collectionType));
+  LiveNodeListBase(ContainerNode& owner_node,
+                   NodeListRootType root_type,
+                   NodeListInvalidationType invalidation_type,
+                   CollectionType collection_type)
+      : owner_node_(owner_node),
+        root_type_(static_cast<unsigned>(root_type)),
+        invalidation_type_(invalidation_type),
+        collection_type_(collection_type) {
+    DCHECK_EQ(root_type_, static_cast<unsigned>(root_type));
+    DCHECK_EQ(invalidation_type_, static_cast<unsigned>(invalidation_type));
+    DCHECK_EQ(collection_type_, static_cast<unsigned>(collection_type));
   }
 
   virtual ~LiveNodeListBase() {}
 
-  ContainerNode& rootNode() const;
+  ContainerNode& RootNode() const;
 
-  void didMoveToDocument(Document& oldDocument, Document& newDocument);
-  ALWAYS_INLINE bool isRootedAtTreeScope() const {
-    return m_rootType == static_cast<unsigned>(NodeListRootType::TreeScope);
+  void DidMoveToDocument(Document& old_document, Document& new_document);
+  ALWAYS_INLINE bool IsRootedAtTreeScope() const {
+    return root_type_ == static_cast<unsigned>(NodeListRootType::kTreeScope);
   }
-  ALWAYS_INLINE NodeListInvalidationType invalidationType() const {
-    return static_cast<NodeListInvalidationType>(m_invalidationType);
+  ALWAYS_INLINE NodeListInvalidationType InvalidationType() const {
+    return static_cast<NodeListInvalidationType>(invalidation_type_);
   }
-  ALWAYS_INLINE CollectionType type() const {
-    return static_cast<CollectionType>(m_collectionType);
+  ALWAYS_INLINE CollectionType GetType() const {
+    return static_cast<CollectionType>(collection_type_);
   }
-  ContainerNode& ownerNode() const { return *m_ownerNode; }
+  ContainerNode& ownerNode() const { return *owner_node_; }
 
-  virtual void invalidateCache(Document* oldDocument = 0) const = 0;
-  void invalidateCacheForAttribute(const QualifiedName*) const;
+  virtual void InvalidateCache(Document* old_document = 0) const = 0;
+  void InvalidateCacheForAttribute(const QualifiedName*) const;
 
-  static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType,
+  static bool ShouldInvalidateTypeOnAttributeChange(NodeListInvalidationType,
                                                     const QualifiedName&);
 
  protected:
-  Document& document() const { return m_ownerNode->document(); }
+  Document& GetDocument() const { return owner_node_->GetDocument(); }
 
-  ALWAYS_INLINE NodeListRootType rootType() const {
-    return static_cast<NodeListRootType>(m_rootType);
+  ALWAYS_INLINE NodeListRootType RootType() const {
+    return static_cast<NodeListRootType>(root_type_);
   }
 
   template <typename MatchFunc>
-  static Element* traverseMatchingElementsForwardToOffset(
-      Element& currentElement,
-      const ContainerNode* stayWithin,
+  static Element* TraverseMatchingElementsForwardToOffset(
+      Element& current_element,
+      const ContainerNode* stay_within,
       unsigned offset,
-      unsigned& currentOffset,
+      unsigned& current_offset,
       MatchFunc);
   template <typename MatchFunc>
-  static Element* traverseMatchingElementsBackwardToOffset(
-      Element& currentElement,
-      const ContainerNode* stayWithin,
+  static Element* TraverseMatchingElementsBackwardToOffset(
+      Element& current_element,
+      const ContainerNode* stay_within,
       unsigned offset,
-      unsigned& currentOffset,
+      unsigned& current_offset,
       MatchFunc);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_ownerNode); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(owner_node_); }
 
  private:
-  Member<ContainerNode> m_ownerNode;  // Cannot be null.
-  const unsigned m_rootType : 1;
-  const unsigned m_invalidationType : 4;
-  const unsigned m_collectionType : 5;
+  Member<ContainerNode> owner_node_;  // Cannot be null.
+  const unsigned root_type_ : 1;
+  const unsigned invalidation_type_ : 4;
+  const unsigned collection_type_ : 5;
 };
 
-ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(
+ALWAYS_INLINE bool LiveNodeListBase::ShouldInvalidateTypeOnAttributeChange(
     NodeListInvalidationType type,
-    const QualifiedName& attrName) {
+    const QualifiedName& attr_name) {
   switch (type) {
-    case InvalidateOnClassAttrChange:
-      return attrName == HTMLNames::classAttr;
-    case InvalidateOnNameAttrChange:
-      return attrName == HTMLNames::nameAttr;
-    case InvalidateOnIdNameAttrChange:
-      return attrName == HTMLNames::idAttr || attrName == HTMLNames::nameAttr;
-    case InvalidateOnForAttrChange:
-      return attrName == HTMLNames::forAttr;
-    case InvalidateForFormControls:
-      return attrName == HTMLNames::nameAttr || attrName == HTMLNames::idAttr ||
-             attrName == HTMLNames::forAttr ||
-             attrName == HTMLNames::formAttr || attrName == HTMLNames::typeAttr;
-    case InvalidateOnHRefAttrChange:
-      return attrName == HTMLNames::hrefAttr;
-    case DoNotInvalidateOnAttributeChanges:
+    case kInvalidateOnClassAttrChange:
+      return attr_name == HTMLNames::classAttr;
+    case kInvalidateOnNameAttrChange:
+      return attr_name == HTMLNames::nameAttr;
+    case kInvalidateOnIdNameAttrChange:
+      return attr_name == HTMLNames::idAttr || attr_name == HTMLNames::nameAttr;
+    case kInvalidateOnForAttrChange:
+      return attr_name == HTMLNames::forAttr;
+    case kInvalidateForFormControls:
+      return attr_name == HTMLNames::nameAttr ||
+             attr_name == HTMLNames::idAttr ||
+             attr_name == HTMLNames::forAttr ||
+             attr_name == HTMLNames::formAttr ||
+             attr_name == HTMLNames::typeAttr;
+    case kInvalidateOnHRefAttrChange:
+      return attr_name == HTMLNames::hrefAttr;
+    case kDoNotInvalidateOnAttributeChanges:
       return false;
-    case InvalidateOnAnyAttrChange:
+    case kInvalidateOnAnyAttrChange:
       return true;
   }
   return false;
 }
 
 template <typename MatchFunc>
-Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(
-    Element& currentElement,
-    const ContainerNode* stayWithin,
+Element* LiveNodeListBase::TraverseMatchingElementsForwardToOffset(
+    Element& current_element,
+    const ContainerNode* stay_within,
     unsigned offset,
-    unsigned& currentOffset,
-    MatchFunc isMatch) {
-  DCHECK_LT(currentOffset, offset);
+    unsigned& current_offset,
+    MatchFunc is_match) {
+  DCHECK_LT(current_offset, offset);
   for (Element* next =
-           ElementTraversal::next(currentElement, stayWithin, isMatch);
-       next; next = ElementTraversal::next(*next, stayWithin, isMatch)) {
-    if (++currentOffset == offset)
+           ElementTraversal::Next(current_element, stay_within, is_match);
+       next; next = ElementTraversal::Next(*next, stay_within, is_match)) {
+    if (++current_offset == offset)
       return next;
   }
   return 0;
 }
 
 template <typename MatchFunc>
-Element* LiveNodeListBase::traverseMatchingElementsBackwardToOffset(
-    Element& currentElement,
-    const ContainerNode* stayWithin,
+Element* LiveNodeListBase::TraverseMatchingElementsBackwardToOffset(
+    Element& current_element,
+    const ContainerNode* stay_within,
     unsigned offset,
-    unsigned& currentOffset,
-    MatchFunc isMatch) {
-  DCHECK_GT(currentOffset, offset);
+    unsigned& current_offset,
+    MatchFunc is_match) {
+  DCHECK_GT(current_offset, offset);
   for (Element* previous =
-           ElementTraversal::previous(currentElement, stayWithin, isMatch);
-       previous;
-       previous = ElementTraversal::previous(*previous, stayWithin, isMatch)) {
-    if (--currentOffset == offset)
+           ElementTraversal::Previous(current_element, stay_within, is_match);
+       previous; previous = ElementTraversal::Previous(*previous, stay_within,
+                                                       is_match)) {
+    if (--current_offset == offset)
       return previous;
   }
   return 0;

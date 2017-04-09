@@ -19,13 +19,13 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   WTF_MAKE_NONCOPYABLE(AudioWorklet);
 
  public:
-  static AudioWorklet* create(LocalFrame*);
+  static AudioWorklet* Create(LocalFrame*);
   ~AudioWorklet() override;
 
-  void initialize() final;
-  bool isInitialized() const final;
+  void Initialize() final;
+  bool IsInitialized() const final;
 
-  WorkletGlobalScopeProxy* workletGlobalScopeProxy() const final;
+  WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -34,7 +34,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   // The proxy outlives the worklet as it is used to perform thread shutdown,
   // it deletes itself once this has occurred.
-  ThreadedWorkletMessagingProxy* m_workletMessagingProxy;
+  ThreadedWorkletMessagingProxy* worklet_messaging_proxy_;
 };
 
 }  // namespace blink

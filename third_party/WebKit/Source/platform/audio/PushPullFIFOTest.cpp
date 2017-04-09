@@ -25,52 +25,52 @@ TEST(PushPullFIFOBasicTest, BasicTests) {
   // i.e.) m_fifoLength <= kMaxFIFOLength
   EXPECT_DEATH(new PushPullFIFO(2, PushPullFIFO::kMaxFIFOLength + 1), "");
 
-  std::unique_ptr<PushPullFIFO> testFifo =
-      WTF::wrapUnique(new PushPullFIFO(2, 1024));
+  std::unique_ptr<PushPullFIFO> test_fifo =
+      WTF::WrapUnique(new PushPullFIFO(2, 1024));
 
   // The input bus length must be |AudioUtilities::kRenderQuantumFrames|.
   // i.e.) inputBus->length() == kRenderQuantumFrames
-  RefPtr<AudioBus> inputBusOf129Frames =
-      AudioBus::create(2, AudioUtilities::kRenderQuantumFrames + 1);
-  EXPECT_DEATH(testFifo->push(inputBusOf129Frames.get()), "");
-  RefPtr<AudioBus> inputBusOf127Frames =
-      AudioBus::create(2, AudioUtilities::kRenderQuantumFrames - 1);
-  EXPECT_DEATH(testFifo->push(inputBusOf127Frames.get()), "");
+  RefPtr<AudioBus> input_bus_of129_frames =
+      AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames + 1);
+  EXPECT_DEATH(test_fifo->Push(input_bus_of129_frames.Get()), "");
+  RefPtr<AudioBus> input_bus_of127_frames =
+      AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames - 1);
+  EXPECT_DEATH(test_fifo->Push(input_bus_of127_frames.Get()), "");
 
   // Pull request frames cannot exceed the length of output bus.
   // i.e.) framesRequested <= outputBus->length()
-  RefPtr<AudioBus> outputBusOf512Frames = AudioBus::create(2, 512);
-  EXPECT_DEATH(testFifo->pull(outputBusOf512Frames.get(), 513), "");
+  RefPtr<AudioBus> output_bus_of512_frames = AudioBus::Create(2, 512);
+  EXPECT_DEATH(test_fifo->Pull(output_bus_of512_frames.Get(), 513), "");
 
   // Pull request frames cannot exceed the length of FIFO.
   // i.e.) framesRequested <= m_fifoLength
-  RefPtr<AudioBus> outputBusOf1025Frames = AudioBus::create(2, 1025);
-  EXPECT_DEATH(testFifo->pull(outputBusOf1025Frames.get(), 1025), "");
+  RefPtr<AudioBus> output_bus_of1025_frames = AudioBus::Create(2, 1025);
+  EXPECT_DEATH(test_fifo->Pull(output_bus_of1025_frames.Get(), 1025), "");
 }
 
 // Fills each AudioChannel in an AudioBus with a series of linearly increasing
 // values starting from |startingValue| and incrementing by 1. Then return value
 // will be |startingValue| + |bus_length|.
-size_t fillBusWithLinearRamp(AudioBus* targetBus, size_t startingValue) {
-  for (unsigned c = 0; c < targetBus->numberOfChannels(); ++c) {
-    float* busChannel = targetBus->channel(c)->mutableData();
-    for (size_t i = 0; i < targetBus->channel(c)->length(); ++i) {
-      busChannel[i] = static_cast<float>(startingValue + i);
+size_t FillBusWithLinearRamp(AudioBus* target_bus, size_t starting_value) {
+  for (unsigned c = 0; c < target_bus->NumberOfChannels(); ++c) {
+    float* bus_channel = target_bus->Channel(c)->MutableData();
+    for (size_t i = 0; i < target_bus->Channel(c)->length(); ++i) {
+      bus_channel[i] = static_cast<float>(starting_value + i);
     }
   }
-  return startingValue + targetBus->length();
+  return starting_value + target_bus->length();
 }
 
 // Inspect the content of AudioBus with a given set of index and value across
 // channels.
-bool verifyBusValueAtIndex(AudioBus* targetBus,
+bool VerifyBusValueAtIndex(AudioBus* target_bus,
                            int index,
-                           float expectedValue) {
-  for (unsigned c = 0; c < targetBus->numberOfChannels(); ++c) {
-    float* busChannel = targetBus->channel(c)->mutableData();
-    if (busChannel[index] != expectedValue) {
-      LOG(ERROR) << ">> [FAIL] expected " << expectedValue << " at index "
-                 << index << " but got " << busChannel[index] << ".";
+                           float expected_value) {
+  for (unsigned c = 0; c < target_bus->NumberOfChannels(); ++c) {
+    float* bus_channel = target_bus->Channel(c)->MutableData();
+    if (bus_channel[index] != expected_value) {
+      LOG(ERROR) << ">> [FAIL] expected " << expected_value << " at index "
+                 << index << " but got " << bus_channel[index] << ".";
       return false;
     }
   }
@@ -81,7 +81,7 @@ struct FIFOAction {
   // The type of action; "PUSH" or "PULL".
   const char* action;
   // Number of frames for the operation.
-  const size_t numberOfFrames;
+  const size_t number_of_frames;
 };
 
 struct AudioBusSample {
@@ -93,37 +93,37 @@ struct AudioBusSample {
 
 struct FIFOTestSetup {
   // Length of FIFO to be created for test case.
-  const size_t fifoLength;
+  const size_t fifo_length;
   // Channel count of FIFO to be created for test case.
-  const unsigned numberOfChannels;
+  const unsigned number_of_channels;
   // A list of |FIFOAction| entries to be performed in test case.
-  const std::vector<FIFOAction> fifoActions;
+  const std::vector<FIFOAction> fifo_actions;
 };
 
 struct FIFOTestExpectedState {
   // Expected read index in FIFO.
-  const size_t indexRead;
+  const size_t index_read;
   // Expected write index in FIFO.
-  const size_t indexWrite;
+  const size_t index_write;
   // Expected overflow count in FIFO.
-  const unsigned overflowCount;
+  const unsigned overflow_count;
   // Expected underflow count in FIFO.
-  const unsigned underflowCount;
+  const unsigned underflow_count;
   // A list of expected |AudioBusSample| entries for the FIFO bus.
-  const std::vector<AudioBusSample> fifoSamples;
+  const std::vector<AudioBusSample> fifo_samples;
   // A list of expected |AudioBusSample| entries for the output bus.
-  const std::vector<AudioBusSample> outputSamples;
+  const std::vector<AudioBusSample> output_samples;
 };
 
 // The data structure for the parameterized test cases.
 struct FIFOTestParam {
   FIFOTestSetup setup;
-  FIFOTestExpectedState expectedState;
+  FIFOTestExpectedState expected_state;
 };
 
 std::ostream& operator<<(std::ostream& out, const FIFOTestParam& param) {
-  out << "fifoLength=" << param.setup.fifoLength
-      << " numberOfChannels=" << param.setup.numberOfChannels;
+  out << "fifoLength=" << param.setup.fifo_length
+      << " numberOfChannels=" << param.setup.number_of_channels;
   return out;
 }
 
@@ -132,54 +132,54 @@ class PushPullFIFOFeatureTest : public ::testing::TestWithParam<FIFOTestParam> {
 
 TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
   const FIFOTestSetup setup = GetParam().setup;
-  const FIFOTestExpectedState expectedState = GetParam().expectedState;
+  const FIFOTestExpectedState expected_state = GetParam().expected_state;
 
   // Create a FIFO with a specified configuration.
-  std::unique_ptr<PushPullFIFO> fifo = WTF::wrapUnique(
-      new PushPullFIFO(setup.numberOfChannels, setup.fifoLength));
+  std::unique_ptr<PushPullFIFO> fifo = WTF::WrapUnique(
+      new PushPullFIFO(setup.number_of_channels, setup.fifo_length));
 
-  RefPtr<AudioBus> outputBus;
+  RefPtr<AudioBus> output_bus;
 
   // Iterate all the scheduled push/pull actions.
-  size_t frameCounter = 0;
-  for (const auto& action : setup.fifoActions) {
+  size_t frame_counter = 0;
+  for (const auto& action : setup.fifo_actions) {
     if (strcmp(action.action, "PUSH") == 0) {
-      RefPtr<AudioBus> inputBus =
-          AudioBus::create(setup.numberOfChannels, action.numberOfFrames);
-      frameCounter = fillBusWithLinearRamp(inputBus.get(), frameCounter);
-      fifo->push(inputBus.get());
-      LOG(INFO) << "PUSH " << action.numberOfFrames
-                << " frames (frameCounter=" << frameCounter << ")";
+      RefPtr<AudioBus> input_bus =
+          AudioBus::Create(setup.number_of_channels, action.number_of_frames);
+      frame_counter = FillBusWithLinearRamp(input_bus.Get(), frame_counter);
+      fifo->Push(input_bus.Get());
+      LOG(INFO) << "PUSH " << action.number_of_frames
+                << " frames (frameCounter=" << frame_counter << ")";
     } else {
-      outputBus =
-          AudioBus::create(setup.numberOfChannels, action.numberOfFrames);
-      fifo->pull(outputBus.get(), action.numberOfFrames);
-      LOG(INFO) << "PULL " << action.numberOfFrames << " frames";
+      output_bus =
+          AudioBus::Create(setup.number_of_channels, action.number_of_frames);
+      fifo->Pull(output_bus.Get(), action.number_of_frames);
+      LOG(INFO) << "PULL " << action.number_of_frames << " frames";
     }
   }
 
   // Get FIFO config data.
-  const PushPullFIFOStateForTest actualState = fifo->getStateForTest();
+  const PushPullFIFOStateForTest actual_state = fifo->GetStateForTest();
 
   // Verify the read/write indexes.
-  EXPECT_EQ(expectedState.indexRead, actualState.indexRead);
-  EXPECT_EQ(expectedState.indexWrite, actualState.indexWrite);
-  EXPECT_EQ(expectedState.overflowCount, actualState.overflowCount);
-  EXPECT_EQ(expectedState.underflowCount, actualState.underflowCount);
+  EXPECT_EQ(expected_state.index_read, actual_state.index_read);
+  EXPECT_EQ(expected_state.index_write, actual_state.index_write);
+  EXPECT_EQ(expected_state.overflow_count, actual_state.overflow_count);
+  EXPECT_EQ(expected_state.underflow_count, actual_state.underflow_count);
 
   // Verify in-FIFO samples.
-  for (const auto& sample : expectedState.fifoSamples) {
-    EXPECT_TRUE(verifyBusValueAtIndex(fifo->bus(), sample.index, sample.value));
+  for (const auto& sample : expected_state.fifo_samples) {
+    EXPECT_TRUE(VerifyBusValueAtIndex(fifo->Bus(), sample.index, sample.value));
   }
 
   // Verify samples from the most recent output bus.
-  for (const auto& sample : expectedState.outputSamples) {
+  for (const auto& sample : expected_state.output_samples) {
     EXPECT_TRUE(
-        verifyBusValueAtIndex(outputBus.get(), sample.index, sample.value));
+        VerifyBusValueAtIndex(output_bus.Get(), sample.index, sample.value));
   }
 }
 
-FIFOTestParam featureTestParams[] = {
+FIFOTestParam g_feature_test_params[] = {
     // Test cases 0 ~ 3: Regular operation on various channel configuration.
     //  - Mono, Stereo, Quad, 5.1.
     //  - FIFO length and pull size are RQ-aligned.
@@ -356,7 +356,7 @@ FIFOTestParam featureTestParams[] = {
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOFeatureTest,
                         PushPullFIFOFeatureTest,
-                        ::testing::ValuesIn(featureTestParams));
+                        ::testing::ValuesIn(g_feature_test_params));
 
 }  // namespace
 

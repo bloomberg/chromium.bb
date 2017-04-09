@@ -146,7 +146,7 @@ class Vector {
     DCHECK_LE(to, length_);
     DCHECK_LT(from, to);
     DCHECK_LE(0, from);
-    return Vector<T>(start() + from, to - from);
+    return Vector<T>(Start() + from, to - from);
   }
 
   // Returns the length of the vector.
@@ -156,7 +156,7 @@ class Vector {
   bool is_empty() const { return length_ == 0; }
 
   // Returns the pointer to the start of the data in the vector.
-  T* start() const { return start_; }
+  T* Start() const { return start_; }
 
   // Access individual vector elements.
   T& operator[](int index) const {
@@ -164,9 +164,9 @@ class Vector {
     return start_[index];
   }
 
-  T& first() { return start_[0]; }
+  T& First() { return start_[0]; }
 
-  T& last() { return start_[length_ - 1]; }
+  T& Last() { return start_[length_ - 1]; }
 
  private:
   T* start_;
@@ -188,7 +188,7 @@ class StringBuilder {
   int size() const { return buffer_.length(); }
 
   // Get the current position in the builder.
-  int position() const {
+  int GetPosition() const {
     DCHECK(!is_finalized());
     return position_;
   }
@@ -242,10 +242,10 @@ class StringBuilder {
     buffer_[position_] = '\0';
     // Make sure nobody managed to add a 0-character to the
     // buffer while building the string.
-    DCHECK_EQ(strlen(buffer_.start()), static_cast<size_t>(position_));
+    DCHECK_EQ(strlen(buffer_.Start()), static_cast<size_t>(position_));
     position_ = -1;
     DCHECK(is_finalized());
-    return buffer_.start();
+    return buffer_.Start();
   }
 
  private:

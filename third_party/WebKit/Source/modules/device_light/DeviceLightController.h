@@ -21,8 +21,8 @@ class MODULES_EXPORT DeviceLightController final
  public:
   ~DeviceLightController() override;
 
-  static const char* supplementName();
-  static DeviceLightController& from(Document&);
+  static const char* SupplementName();
+  static DeviceLightController& From(Document&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -30,14 +30,14 @@ class MODULES_EXPORT DeviceLightController final
   explicit DeviceLightController(Document&);
 
   // Inherited from DeviceEventControllerBase.
-  void registerWithDispatcher() override;
-  void unregisterWithDispatcher() override;
-  bool hasLastData() override;
+  void RegisterWithDispatcher() override;
+  void UnregisterWithDispatcher() override;
+  bool HasLastData() override;
 
   // Inherited from DeviceSingleWindowEventController.
-  Event* lastEvent() const override;
-  const AtomicString& eventTypeName() const override;
-  bool isNullEvent(Event*) const override;
+  Event* LastEvent() const override;
+  const AtomicString& EventTypeName() const override;
+  bool IsNullEvent(Event*) const override;
 };
 
 }  // namespace blink

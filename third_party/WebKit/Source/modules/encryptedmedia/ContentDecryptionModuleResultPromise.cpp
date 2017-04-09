@@ -15,106 +15,106 @@
 namespace blink {
 
 ExceptionCode WebCdmExceptionToExceptionCode(
-    WebContentDecryptionModuleException cdmException) {
-  switch (cdmException) {
-    case WebContentDecryptionModuleExceptionTypeError:
-      return V8TypeError;
-    case WebContentDecryptionModuleExceptionNotSupportedError:
-      return NotSupportedError;
-    case WebContentDecryptionModuleExceptionInvalidStateError:
-      return InvalidStateError;
-    case WebContentDecryptionModuleExceptionQuotaExceededError:
-      return QuotaExceededError;
-    case WebContentDecryptionModuleExceptionUnknownError:
-      return UnknownError;
+    WebContentDecryptionModuleException cdm_exception) {
+  switch (cdm_exception) {
+    case kWebContentDecryptionModuleExceptionTypeError:
+      return kV8TypeError;
+    case kWebContentDecryptionModuleExceptionNotSupportedError:
+      return kNotSupportedError;
+    case kWebContentDecryptionModuleExceptionInvalidStateError:
+      return kInvalidStateError;
+    case kWebContentDecryptionModuleExceptionQuotaExceededError:
+      return kQuotaExceededError;
+    case kWebContentDecryptionModuleExceptionUnknownError:
+      return kUnknownError;
   }
 
   NOTREACHED();
-  return UnknownError;
+  return kUnknownError;
 }
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
-    ScriptState* scriptState)
-    : m_resolver(ScriptPromiseResolver::create(scriptState)) {}
+    ScriptState* script_state)
+    : resolver_(ScriptPromiseResolver::Create(script_state)) {}
 
 ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() {}
 
-void ContentDecryptionModuleResultPromise::complete() {
+void ContentDecryptionModuleResultPromise::Complete() {
   NOTREACHED();
-  if (!isValidToFulfillPromise())
+  if (!IsValidToFulfillPromise())
     return;
-  reject(InvalidStateError, "Unexpected completion.");
+  Reject(kInvalidStateError, "Unexpected completion.");
 }
 
-void ContentDecryptionModuleResultPromise::completeWithContentDecryptionModule(
+void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
     WebContentDecryptionModule* cdm) {
   NOTREACHED();
-  if (!isValidToFulfillPromise())
+  if (!IsValidToFulfillPromise())
     return;
-  reject(InvalidStateError, "Unexpected completion.");
+  Reject(kInvalidStateError, "Unexpected completion.");
 }
 
-void ContentDecryptionModuleResultPromise::completeWithSession(
+void ContentDecryptionModuleResultPromise::CompleteWithSession(
     WebContentDecryptionModuleResult::SessionStatus status) {
   NOTREACHED();
-  if (!isValidToFulfillPromise())
+  if (!IsValidToFulfillPromise())
     return;
-  reject(InvalidStateError, "Unexpected completion.");
+  Reject(kInvalidStateError, "Unexpected completion.");
 }
 
-void ContentDecryptionModuleResultPromise::completeWithError(
-    WebContentDecryptionModuleException exceptionCode,
-    unsigned long systemCode,
-    const WebString& errorMessage) {
-  if (!isValidToFulfillPromise())
+void ContentDecryptionModuleResultPromise::CompleteWithError(
+    WebContentDecryptionModuleException exception_code,
+    unsigned long system_code,
+    const WebString& error_message) {
+  if (!IsValidToFulfillPromise())
     return;
 
   // Non-zero |systemCode| is appended to the |errorMessage|. If the
   // |errorMessage| is empty, we'll report "Rejected with system code
   // (systemCode)".
   StringBuilder result;
-  result.append(errorMessage);
-  if (systemCode != 0) {
-    if (result.isEmpty())
-      result.append("Rejected with system code");
-    result.append(" (");
-    result.appendNumber(systemCode);
-    result.append(')');
+  result.Append(error_message);
+  if (system_code != 0) {
+    if (result.IsEmpty())
+      result.Append("Rejected with system code");
+    result.Append(" (");
+    result.AppendNumber(system_code);
+    result.Append(')');
   }
-  reject(WebCdmExceptionToExceptionCode(exceptionCode), result.toString());
+  Reject(WebCdmExceptionToExceptionCode(exception_code), result.ToString());
 }
 
-ScriptPromise ContentDecryptionModuleResultPromise::promise() {
-  return m_resolver->promise();
+ScriptPromise ContentDecryptionModuleResultPromise::Promise() {
+  return resolver_->Promise();
 }
 
-void ContentDecryptionModuleResultPromise::reject(ExceptionCode code,
-                                                  const String& errorMessage) {
-  DCHECK(isValidToFulfillPromise());
+void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
+                                                  const String& error_message) {
+  DCHECK(IsValidToFulfillPromise());
 
-  ScriptState::Scope scope(m_resolver->getScriptState());
-  v8::Isolate* isolate = m_resolver->getScriptState()->isolate();
-  m_resolver->reject(
-      V8ThrowException::createDOMException(isolate, code, errorMessage));
-  m_resolver.clear();
+  ScriptState::Scope scope(resolver_->GetScriptState());
+  v8::Isolate* isolate = resolver_->GetScriptState()->GetIsolate();
+  resolver_->Reject(
+      V8ThrowException::CreateDOMException(isolate, code, error_message));
+  resolver_.Clear();
 }
 
-ExecutionContext* ContentDecryptionModuleResultPromise::getExecutionContext()
+ExecutionContext* ContentDecryptionModuleResultPromise::GetExecutionContext()
     const {
-  return m_resolver->getExecutionContext();
+  return resolver_->GetExecutionContext();
 }
 
-bool ContentDecryptionModuleResultPromise::isValidToFulfillPromise() {
+bool ContentDecryptionModuleResultPromise::IsValidToFulfillPromise() {
   // getExecutionContext() is no longer valid once the context is destroyed.
   // isContextDestroyed() is called to see if the context is in the
   // process of being destroyed. If it is, there is no need to fulfill this
   // promise which is about to go away anyway.
-  return getExecutionContext() && !getExecutionContext()->isContextDestroyed();
+  return GetExecutionContext() && !GetExecutionContext()->IsContextDestroyed();
 }
 
 DEFINE_TRACE(ContentDecryptionModuleResultPromise) {
-  visitor->trace(m_resolver);
-  ContentDecryptionModuleResult::trace(visitor);
+  visitor->Trace(resolver_);
+  ContentDecryptionModuleResult::Trace(visitor);
 }
 
 }  // namespace blink

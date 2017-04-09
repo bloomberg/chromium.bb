@@ -23,27 +23,27 @@
 
 namespace blink {
 
-void SVGString::add(SVGPropertyBase*, SVGElement*) {
+void SVGString::Add(SVGPropertyBase*, SVGElement*) {
   NOTREACHED();
 }
 
-void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement,
+void SVGString::CalculateAnimatedValue(SVGAnimationElement* animation_element,
                                        float percentage,
-                                       unsigned repeatCount,
+                                       unsigned repeat_count,
                                        SVGPropertyBase* from,
                                        SVGPropertyBase* to,
                                        SVGPropertyBase*,
                                        SVGElement*) {
-  DCHECK(animationElement);
+  DCHECK(animation_element);
 
-  String fromString = toSVGString(from)->m_value;
-  String toString = toSVGString(to)->m_value;
+  String from_string = ToSVGString(from)->value_;
+  String to_string = ToSVGString(to)->value_;
 
-  animationElement->animateDiscreteType<String>(percentage, fromString,
-                                                toString, m_value);
+  animation_element->AnimateDiscreteType<String>(percentage, from_string,
+                                                 to_string, value_);
 }
 
-float SVGString::calculateDistance(SVGPropertyBase*, SVGElement*) {
+float SVGString::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   // No paced animations for strings.
   return -1;
 }

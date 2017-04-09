@@ -39,25 +39,25 @@ HTTPHeaderMap::HTTPHeaderMap() {}
 
 HTTPHeaderMap::~HTTPHeaderMap() {}
 
-std::unique_ptr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const {
+std::unique_ptr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::CopyData() const {
   std::unique_ptr<CrossThreadHTTPHeaderMapData> data =
-      WTF::makeUnique<CrossThreadHTTPHeaderMapData>();
-  data->reserveInitialCapacity(size());
+      WTF::MakeUnique<CrossThreadHTTPHeaderMapData>();
+  data->ReserveInitialCapacity(size());
 
-  HTTPHeaderMap::const_iterator endIt = end();
-  for (HTTPHeaderMap::const_iterator it = begin(); it != endIt; ++it)
-    data->uncheckedAppend(std::make_pair(it->key.getString().isolatedCopy(),
-                                         it->value.getString().isolatedCopy()));
+  HTTPHeaderMap::const_iterator end_it = end();
+  for (HTTPHeaderMap::const_iterator it = begin(); it != end_it; ++it)
+    data->UncheckedAppend(std::make_pair(it->key.GetString().IsolatedCopy(),
+                                         it->value.GetString().IsolatedCopy()));
 
   return data;
 }
 
-void HTTPHeaderMap::adopt(std::unique_ptr<CrossThreadHTTPHeaderMapData> data) {
-  clear();
-  size_t dataSize = data->size();
-  for (size_t index = 0; index < dataSize; ++index) {
+void HTTPHeaderMap::Adopt(std::unique_ptr<CrossThreadHTTPHeaderMapData> data) {
+  Clear();
+  size_t data_size = data->size();
+  for (size_t index = 0; index < data_size; ++index) {
     std::pair<String, String>& header = (*data)[index];
-    set(AtomicString(header.first), AtomicString(header.second));
+    Set(AtomicString(header.first), AtomicString(header.second));
   }
 }
 

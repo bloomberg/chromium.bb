@@ -32,45 +32,45 @@
 namespace blink {
 
 PopStateEvent::PopStateEvent()
-    : m_serializedState(nullptr), m_history(nullptr) {}
+    : serialized_state_(nullptr), history_(nullptr) {}
 
 PopStateEvent::PopStateEvent(const AtomicString& type,
                              const PopStateEventInit& initializer)
-    : Event(type, initializer), m_history(nullptr) {
+    : Event(type, initializer), history_(nullptr) {
   if (initializer.hasState())
-    m_state = initializer.state();
+    state_ = initializer.state();
 }
 
-PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState,
+PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serialized_state,
                              History* history)
     : Event(EventTypeNames::popstate, false, true),
-      m_serializedState(std::move(serializedState)),
-      m_history(history) {}
+      serialized_state_(std::move(serialized_state)),
+      history_(history) {}
 
 PopStateEvent::~PopStateEvent() {}
 
-PopStateEvent* PopStateEvent::create() {
+PopStateEvent* PopStateEvent::Create() {
   return new PopStateEvent;
 }
 
-PopStateEvent* PopStateEvent::create(
-    PassRefPtr<SerializedScriptValue> serializedState,
+PopStateEvent* PopStateEvent::Create(
+    PassRefPtr<SerializedScriptValue> serialized_state,
     History* history) {
-  return new PopStateEvent(std::move(serializedState), history);
+  return new PopStateEvent(std::move(serialized_state), history);
 }
 
-PopStateEvent* PopStateEvent::create(const AtomicString& type,
+PopStateEvent* PopStateEvent::Create(const AtomicString& type,
                                      const PopStateEventInit& initializer) {
   return new PopStateEvent(type, initializer);
 }
 
-const AtomicString& PopStateEvent::interfaceName() const {
+const AtomicString& PopStateEvent::InterfaceName() const {
   return EventNames::PopStateEvent;
 }
 
 DEFINE_TRACE(PopStateEvent) {
-  visitor->trace(m_history);
-  Event::trace(visitor);
+  visitor->Trace(history_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

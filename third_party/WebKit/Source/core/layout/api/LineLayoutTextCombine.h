@@ -12,27 +12,27 @@ namespace blink {
 
 class LineLayoutTextCombine : public LineLayoutText {
  public:
-  explicit LineLayoutTextCombine(LayoutTextCombine* layoutTextCombine)
-      : LineLayoutText(layoutTextCombine) {}
+  explicit LineLayoutTextCombine(LayoutTextCombine* layout_text_combine)
+      : LineLayoutText(layout_text_combine) {}
 
   explicit LineLayoutTextCombine(const LineLayoutItem& item)
       : LineLayoutText(item) {
-    SECURITY_DCHECK(!item || item.isCombineText());
+    SECURITY_DCHECK(!item || item.IsCombineText());
   }
 
   explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) {}
 
   LineLayoutTextCombine() {}
 
-  bool isCombined() const { return toTextCombine()->isCombined(); }
+  bool IsCombined() const { return ToTextCombine()->IsCombined(); }
 
  private:
-  LayoutTextCombine* toTextCombine() {
-    return toLayoutTextCombine(layoutObject());
+  LayoutTextCombine* ToTextCombine() {
+    return ToLayoutTextCombine(GetLayoutObject());
   }
 
-  const LayoutTextCombine* toTextCombine() const {
-    return toLayoutTextCombine(layoutObject());
+  const LayoutTextCombine* ToTextCombine() const {
+    return ToLayoutTextCombine(GetLayoutObject());
   }
 };
 

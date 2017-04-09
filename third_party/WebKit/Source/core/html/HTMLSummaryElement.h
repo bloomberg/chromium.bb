@@ -29,21 +29,21 @@ class HTMLDetailsElement;
 
 class HTMLSummaryElement final : public HTMLElement {
  public:
-  static HTMLSummaryElement* create(Document&);
-  bool isMainSummary() const;
-  bool willRespondToMouseClickEvents() override;
+  static HTMLSummaryElement* Create(Document&);
+  bool IsMainSummary() const;
+  bool WillRespondToMouseClickEvents() override;
 
-  Element* markerControl();
+  Element* MarkerControl();
 
  private:
   explicit HTMLSummaryElement(Document&);
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void defaultEventHandler(Event*) override;
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
-  HTMLDetailsElement* detailsElement() const;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  void DefaultEventHandler(Event*) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  HTMLDetailsElement* DetailsElement() const;
 
-  bool supportsFocus() const override;
+  bool SupportsFocus() const override;
 };
 
 }  // namespace blink

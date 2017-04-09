@@ -24,198 +24,198 @@ namespace blink {
 
 class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(
-      ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(
+      ScriptState* script_state,
       ReadableStreamBytesConsumer* consumer) {
-    return (new OnFulfilled(scriptState, consumer))->bindToV8Function();
+    return (new OnFulfilled(script_state, consumer))->BindToV8Function();
   }
 
-  ScriptValue call(ScriptValue v) override {
+  ScriptValue Call(ScriptValue v) override {
     bool done;
-    v8::Local<v8::Value> item = v.v8Value();
+    v8::Local<v8::Value> item = v.V8Value();
     DCHECK(item->IsObject());
     v8::Local<v8::Value> value =
-        v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(), &done)
+        V8UnpackIteratorResult(v.GetScriptState(), item.As<v8::Object>(), &done)
             .ToLocalChecked();
     if (done) {
-      m_consumer->onReadDone();
+      consumer_->OnReadDone();
       return v;
     }
     if (!value->IsUint8Array()) {
-      m_consumer->onRejected();
+      consumer_->OnRejected();
       return ScriptValue();
     }
-    m_consumer->onRead(V8Uint8Array::toImpl(value.As<v8::Object>()));
+    consumer_->OnRead(V8Uint8Array::toImpl(value.As<v8::Object>()));
     return v;
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_consumer);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(consumer_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  OnFulfilled(ScriptState* scriptState, ReadableStreamBytesConsumer* consumer)
-      : ScriptFunction(scriptState), m_consumer(consumer) {}
+  OnFulfilled(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
+      : ScriptFunction(script_state), consumer_(consumer) {}
 
-  Member<ReadableStreamBytesConsumer> m_consumer;
+  Member<ReadableStreamBytesConsumer> consumer_;
 };
 
 class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(
-      ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(
+      ScriptState* script_state,
       ReadableStreamBytesConsumer* consumer) {
-    return (new OnRejected(scriptState, consumer))->bindToV8Function();
+    return (new OnRejected(script_state, consumer))->BindToV8Function();
   }
 
-  ScriptValue call(ScriptValue v) override {
-    m_consumer->onRejected();
+  ScriptValue Call(ScriptValue v) override {
+    consumer_->OnRejected();
     return v;
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_consumer);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(consumer_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  OnRejected(ScriptState* scriptState, ReadableStreamBytesConsumer* consumer)
-      : ScriptFunction(scriptState), m_consumer(consumer) {}
+  OnRejected(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
+      : ScriptFunction(script_state), consumer_(consumer) {}
 
-  Member<ReadableStreamBytesConsumer> m_consumer;
+  Member<ReadableStreamBytesConsumer> consumer_;
 };
 
 ReadableStreamBytesConsumer::ReadableStreamBytesConsumer(
-    ScriptState* scriptState,
-    ScriptValue streamReader)
-    : m_reader(scriptState->isolate(), streamReader.v8Value()),
-      m_scriptState(scriptState) {
-  m_reader.setPhantom();
+    ScriptState* script_state,
+    ScriptValue stream_reader)
+    : reader_(script_state->GetIsolate(), stream_reader.V8Value()),
+      script_state_(script_state) {
+  reader_.SetPhantom();
 }
 
 ReadableStreamBytesConsumer::~ReadableStreamBytesConsumer() {}
 
-BytesConsumer::Result ReadableStreamBytesConsumer::beginRead(
+BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
     const char** buffer,
     size_t* available) {
   *buffer = nullptr;
   *available = 0;
-  if (m_state == PublicState::Errored)
-    return Result::Error;
-  if (m_state == PublicState::Closed)
-    return Result::Done;
+  if (state_ == PublicState::kErrored)
+    return Result::kError;
+  if (state_ == PublicState::kClosed)
+    return Result::kDone;
 
-  if (m_pendingBuffer) {
-    DCHECK_LE(m_pendingOffset, m_pendingBuffer->length());
-    *buffer = reinterpret_cast<const char*>(m_pendingBuffer->data()) +
-              m_pendingOffset;
-    *available = m_pendingBuffer->length() - m_pendingOffset;
-    return Result::Ok;
+  if (pending_buffer_) {
+    DCHECK_LE(pending_offset_, pending_buffer_->length());
+    *buffer = reinterpret_cast<const char*>(pending_buffer_->Data()) +
+              pending_offset_;
+    *available = pending_buffer_->length() - pending_offset_;
+    return Result::kOk;
   }
-  if (!m_isReading) {
-    m_isReading = true;
-    ScriptState::Scope scope(m_scriptState.get());
-    ScriptValue reader(m_scriptState.get(),
-                       m_reader.newLocal(m_scriptState->isolate()));
+  if (!is_reading_) {
+    is_reading_ = true;
+    ScriptState::Scope scope(script_state_.Get());
+    ScriptValue reader(script_state_.Get(),
+                       reader_.NewLocal(script_state_->GetIsolate()));
     // The owner must retain the reader.
-    DCHECK(!reader.isEmpty());
-    ReadableStreamOperations::defaultReaderRead(m_scriptState.get(), reader)
-        .then(OnFulfilled::createFunction(m_scriptState.get(), this),
-              OnRejected::createFunction(m_scriptState.get(), this));
+    DCHECK(!reader.IsEmpty());
+    ReadableStreamOperations::DefaultReaderRead(script_state_.Get(), reader)
+        .Then(OnFulfilled::CreateFunction(script_state_.Get(), this),
+              OnRejected::CreateFunction(script_state_.Get(), this));
   }
-  return Result::ShouldWait;
+  return Result::kShouldWait;
 }
 
-BytesConsumer::Result ReadableStreamBytesConsumer::endRead(size_t readSize) {
-  DCHECK(m_pendingBuffer);
-  DCHECK_LE(m_pendingOffset + readSize, m_pendingBuffer->length());
-  m_pendingOffset += readSize;
-  if (m_pendingOffset >= m_pendingBuffer->length()) {
-    m_pendingBuffer = nullptr;
-    m_pendingOffset = 0;
+BytesConsumer::Result ReadableStreamBytesConsumer::EndRead(size_t read_size) {
+  DCHECK(pending_buffer_);
+  DCHECK_LE(pending_offset_ + read_size, pending_buffer_->length());
+  pending_offset_ += read_size;
+  if (pending_offset_ >= pending_buffer_->length()) {
+    pending_buffer_ = nullptr;
+    pending_offset_ = 0;
   }
-  return Result::Ok;
+  return Result::kOk;
 }
 
-void ReadableStreamBytesConsumer::setClient(Client* client) {
-  DCHECK(!m_client);
+void ReadableStreamBytesConsumer::SetClient(Client* client) {
+  DCHECK(!client_);
   DCHECK(client);
-  m_client = client;
+  client_ = client;
 }
 
-void ReadableStreamBytesConsumer::clearClient() {
-  m_client = nullptr;
+void ReadableStreamBytesConsumer::ClearClient() {
+  client_ = nullptr;
 }
 
-void ReadableStreamBytesConsumer::cancel() {
-  if (m_state == PublicState::Closed || m_state == PublicState::Errored)
+void ReadableStreamBytesConsumer::Cancel() {
+  if (state_ == PublicState::kClosed || state_ == PublicState::kErrored)
     return;
-  m_state = PublicState::Closed;
-  clearClient();
-  m_reader.clear();
+  state_ = PublicState::kClosed;
+  ClearClient();
+  reader_.Clear();
 }
 
-BytesConsumer::PublicState ReadableStreamBytesConsumer::getPublicState() const {
-  return m_state;
+BytesConsumer::PublicState ReadableStreamBytesConsumer::GetPublicState() const {
+  return state_;
 }
 
-BytesConsumer::Error ReadableStreamBytesConsumer::getError() const {
+BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
   return Error("Failed to read from a ReadableStream.");
 }
 
 DEFINE_TRACE(ReadableStreamBytesConsumer) {
-  visitor->trace(m_client);
-  visitor->trace(m_pendingBuffer);
-  BytesConsumer::trace(visitor);
+  visitor->Trace(client_);
+  visitor->Trace(pending_buffer_);
+  BytesConsumer::Trace(visitor);
 }
 
-void ReadableStreamBytesConsumer::dispose() {
-  m_reader.clear();
+void ReadableStreamBytesConsumer::Dispose() {
+  reader_.Clear();
 }
 
-void ReadableStreamBytesConsumer::onRead(DOMUint8Array* buffer) {
-  DCHECK(m_isReading);
+void ReadableStreamBytesConsumer::OnRead(DOMUint8Array* buffer) {
+  DCHECK(is_reading_);
   DCHECK(buffer);
-  DCHECK(!m_pendingBuffer);
-  DCHECK(!m_pendingOffset);
-  m_isReading = false;
-  if (m_state == PublicState::Closed)
+  DCHECK(!pending_buffer_);
+  DCHECK(!pending_offset_);
+  is_reading_ = false;
+  if (state_ == PublicState::kClosed)
     return;
-  DCHECK_EQ(m_state, PublicState::ReadableOrWaiting);
-  m_pendingBuffer = buffer;
-  if (m_client)
-    m_client->onStateChange();
+  DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+  pending_buffer_ = buffer;
+  if (client_)
+    client_->OnStateChange();
 }
 
-void ReadableStreamBytesConsumer::onReadDone() {
-  DCHECK(m_isReading);
-  DCHECK(!m_pendingBuffer);
-  m_isReading = false;
-  if (m_state == PublicState::Closed)
+void ReadableStreamBytesConsumer::OnReadDone() {
+  DCHECK(is_reading_);
+  DCHECK(!pending_buffer_);
+  is_reading_ = false;
+  if (state_ == PublicState::kClosed)
     return;
-  DCHECK_EQ(m_state, PublicState::ReadableOrWaiting);
-  m_state = PublicState::Closed;
-  m_reader.clear();
-  Client* client = m_client;
-  clearClient();
+  DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+  state_ = PublicState::kClosed;
+  reader_.Clear();
+  Client* client = client_;
+  ClearClient();
   if (client)
-    client->onStateChange();
+    client->OnStateChange();
 }
 
-void ReadableStreamBytesConsumer::onRejected() {
-  DCHECK(m_isReading);
-  DCHECK(!m_pendingBuffer);
-  m_isReading = false;
-  if (m_state == PublicState::Closed)
+void ReadableStreamBytesConsumer::OnRejected() {
+  DCHECK(is_reading_);
+  DCHECK(!pending_buffer_);
+  is_reading_ = false;
+  if (state_ == PublicState::kClosed)
     return;
-  DCHECK_EQ(m_state, PublicState::ReadableOrWaiting);
-  m_state = PublicState::Errored;
-  m_reader.clear();
-  Client* client = m_client;
-  clearClient();
+  DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+  state_ = PublicState::kErrored;
+  reader_.Clear();
+  Client* client = client_;
+  ClearClient();
   if (client)
-    client->onStateChange();
+    client->OnStateChange();
 }
 
 }  // namespace blink

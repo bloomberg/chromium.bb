@@ -7,73 +7,74 @@
 namespace blink {
 
 InspectorTaskRunner::IgnoreInterruptsScope::IgnoreInterruptsScope(
-    InspectorTaskRunner* taskRunner)
-    : m_wasIgnoring(taskRunner->m_ignoreInterrupts), m_taskRunner(taskRunner) {
+    InspectorTaskRunner* task_runner)
+    : was_ignoring_(task_runner->ignore_interrupts_),
+      task_runner_(task_runner) {
   // There may be nested scopes e.g. when tasks are being executed on XHR
   // breakpoint.
-  m_taskRunner->m_ignoreInterrupts = true;
+  task_runner_->ignore_interrupts_ = true;
 }
 
 InspectorTaskRunner::IgnoreInterruptsScope::~IgnoreInterruptsScope() {
-  m_taskRunner->m_ignoreInterrupts = m_wasIgnoring;
+  task_runner_->ignore_interrupts_ = was_ignoring_;
 }
 
 InspectorTaskRunner::InspectorTaskRunner()
-    : m_ignoreInterrupts(false), m_killed(false) {}
+    : ignore_interrupts_(false), killed_(false) {}
 
 InspectorTaskRunner::~InspectorTaskRunner() {}
 
-void InspectorTaskRunner::appendTask(std::unique_ptr<Task> task) {
-  MutexLocker lock(m_mutex);
-  if (m_killed)
+void InspectorTaskRunner::AppendTask(std::unique_ptr<Task> task) {
+  MutexLocker lock(mutex_);
+  if (killed_)
     return;
-  m_queue.push_back(std::move(task));
-  m_condition.signal();
+  queue_.push_back(std::move(task));
+  condition_.Signal();
 }
 
-std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::takeNextTask(
-    InspectorTaskRunner::WaitMode waitMode) {
-  MutexLocker lock(m_mutex);
-  bool timedOut = false;
+std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::TakeNextTask(
+    InspectorTaskRunner::WaitMode wait_mode) {
+  MutexLocker lock(mutex_);
+  bool timed_out = false;
 
-  static double infiniteTime = std::numeric_limits<double>::max();
-  double absoluteTime = waitMode == WaitForTask ? infiniteTime : 0.0;
-  while (!m_killed && !timedOut && m_queue.isEmpty())
-    timedOut = !m_condition.timedWait(m_mutex, absoluteTime);
-  ASSERT(!timedOut || absoluteTime != infiniteTime);
+  static double infinite_time = std::numeric_limits<double>::max();
+  double absolute_time = wait_mode == kWaitForTask ? infinite_time : 0.0;
+  while (!killed_ && !timed_out && queue_.IsEmpty())
+    timed_out = !condition_.TimedWait(mutex_, absolute_time);
+  ASSERT(!timed_out || absolute_time != infinite_time);
 
-  if (m_killed || timedOut)
+  if (killed_ || timed_out)
     return nullptr;
 
-  SECURITY_DCHECK(!m_queue.isEmpty());
-  return m_queue.takeFirst();
+  SECURITY_DCHECK(!queue_.IsEmpty());
+  return queue_.TakeFirst();
 }
 
-void InspectorTaskRunner::kill() {
-  MutexLocker lock(m_mutex);
-  m_killed = true;
-  m_condition.broadcast();
+void InspectorTaskRunner::Kill() {
+  MutexLocker lock(mutex_);
+  killed_ = true;
+  condition_.Broadcast();
 }
 
-void InspectorTaskRunner::interruptAndRunAllTasksDontWait(
+void InspectorTaskRunner::InterruptAndRunAllTasksDontWait(
     v8::Isolate* isolate) {
-  isolate->RequestInterrupt(&v8InterruptCallback, this);
+  isolate->RequestInterrupt(&V8InterruptCallback, this);
 }
 
-void InspectorTaskRunner::runAllTasksDontWait() {
+void InspectorTaskRunner::RunAllTasksDontWait() {
   while (true) {
-    std::unique_ptr<Task> task = takeNextTask(DontWaitForTask);
+    std::unique_ptr<Task> task = TakeNextTask(kDontWaitForTask);
     if (!task)
       return;
     (*task)();
   }
 }
 
-void InspectorTaskRunner::v8InterruptCallback(v8::Isolate*, void* data) {
+void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
   InspectorTaskRunner* runner = static_cast<InspectorTaskRunner*>(data);
-  if (runner->m_ignoreInterrupts)
+  if (runner->ignore_interrupts_)
     return;
-  runner->runAllTasksDontWait();
+  runner->RunAllTasksDontWait();
 }
 
 }  // namespace blink

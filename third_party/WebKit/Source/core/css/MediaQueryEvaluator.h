@@ -59,7 +59,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator);
 
  public:
-  static void init();
+  static void Init();
 
   // Creates evaluator which evaluates to true for all media queries.
   MediaQueryEvaluator() {}
@@ -67,7 +67,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   // Creates evaluator which evaluates only simple media queries
   // Evaluator returns true for acceptedMediaType and returns true for any media
   // features.
-  MediaQueryEvaluator(const char* acceptedMediaType);
+  MediaQueryEvaluator(const char* accepted_media_type);
 
   // Creates evaluator which evaluates full media queries.
   explicit MediaQueryEvaluator(LocalFrame*);
@@ -80,28 +80,28 @@ class CORE_EXPORT MediaQueryEvaluator final
 
   ~MediaQueryEvaluator();
 
-  bool mediaTypeMatch(const String& mediaTypeToMatch) const;
+  bool MediaTypeMatch(const String& media_type_to_match) const;
 
   // Evaluates a list of media queries.
-  bool eval(const MediaQuerySet*,
-            MediaQueryResultList* viewportDependent = nullptr,
-            MediaQueryResultList* deviceDependent = nullptr) const;
+  bool Eval(const MediaQuerySet*,
+            MediaQueryResultList* viewport_dependent = nullptr,
+            MediaQueryResultList* device_dependent = nullptr) const;
 
   // Evaluates media query.
-  bool eval(const MediaQuery*,
-            MediaQueryResultList* viewportDependent = nullptr,
-            MediaQueryResultList* deviceDependent = nullptr) const;
+  bool Eval(const MediaQuery*,
+            MediaQueryResultList* viewport_dependent = nullptr,
+            MediaQueryResultList* device_dependent = nullptr) const;
 
   // Evaluates media query subexpression, ie "and (media-feature: value)" part.
-  bool eval(const MediaQueryExp*) const;
+  bool Eval(const MediaQueryExp*) const;
 
   DECLARE_TRACE();
 
  private:
-  const String mediaType() const;
+  const String MediaType() const;
 
-  String m_mediaType;
-  Member<MediaValues> m_mediaValues;
+  String media_type_;
+  Member<MediaValues> media_values_;
 };
 
 }  // namespace blink

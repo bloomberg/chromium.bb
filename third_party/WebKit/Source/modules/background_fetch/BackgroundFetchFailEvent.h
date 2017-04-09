@@ -23,20 +23,20 @@ class MODULES_EXPORT BackgroundFetchFailEvent final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchFailEvent* create(
+  static BackgroundFetchFailEvent* Create(
       const AtomicString& type,
       const BackgroundFetchFailEventInit& initializer) {
     return new BackgroundFetchFailEvent(type, initializer);
   }
 
-  static BackgroundFetchFailEvent* create(
+  static BackgroundFetchFailEvent* Create(
       const AtomicString& type,
       const BackgroundFetchFailEventInit& initializer,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-      ScriptState* scriptState,
+      ScriptState* script_state,
       WaitUntilObserver* observer) {
-    return new BackgroundFetchFailEvent(type, initializer, fetches, scriptState,
-                                        observer);
+    return new BackgroundFetchFailEvent(type, initializer, fetches,
+                                        script_state, observer);
   }
 
   ~BackgroundFetchFailEvent() override;
@@ -45,7 +45,7 @@ class MODULES_EXPORT BackgroundFetchFailEvent final
   HeapVector<Member<BackgroundFetchSettledFetch>> fetches() const;
 
   // ExtendableEvent interface.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -59,7 +59,7 @@ class MODULES_EXPORT BackgroundFetchFailEvent final
       ScriptState*,
       WaitUntilObserver*);
 
-  HeapVector<Member<BackgroundFetchSettledFetch>> m_fetches;
+  HeapVector<Member<BackgroundFetchSettledFetch>> fetches_;
 };
 
 }  // namespace blink

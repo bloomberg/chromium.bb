@@ -14,12 +14,12 @@ class AnimationPlaybackEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationPlaybackEvent* create(const AtomicString& type,
-                                        double currentTime,
-                                        double timelineTime) {
-    return new AnimationPlaybackEvent(type, currentTime, timelineTime);
+  static AnimationPlaybackEvent* Create(const AtomicString& type,
+                                        double current_time,
+                                        double timeline_time) {
+    return new AnimationPlaybackEvent(type, current_time, timeline_time);
   }
-  static AnimationPlaybackEvent* create(
+  static AnimationPlaybackEvent* Create(
       const AtomicString& type,
       const AnimationPlaybackEventInit& initializer) {
     return new AnimationPlaybackEvent(type, initializer);
@@ -27,24 +27,24 @@ class AnimationPlaybackEvent final : public Event {
 
   ~AnimationPlaybackEvent() override;
 
-  double currentTime(bool& isNull) const;
+  double currentTime(bool& is_null) const;
   double currentTime() const;
-  double timelineTime(bool& isNull) const;
+  double timelineTime(bool& is_null) const;
   double timelineTime() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   AnimationPlaybackEvent(const AtomicString& type,
-                         double currentTime,
-                         double timelineTime);
+                         double current_time,
+                         double timeline_time);
   AnimationPlaybackEvent(const AtomicString&,
                          const AnimationPlaybackEventInit&);
 
-  double m_currentTime;
-  double m_timelineTime;
+  double current_time_;
+  double timeline_time_;
 };
 
 }  // namespace blink

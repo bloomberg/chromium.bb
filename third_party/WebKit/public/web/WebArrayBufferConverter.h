@@ -45,10 +45,10 @@ namespace blink {
 
 class WebArrayBufferConverter {
  public:
-  BLINK_EXPORT static v8::Local<v8::Value> toV8Value(WebArrayBuffer*,
+  BLINK_EXPORT static v8::Local<v8::Value> ToV8Value(WebArrayBuffer*,
                                                      v8::Local<v8::Object>,
                                                      v8::Isolate*);
-  BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Local<v8::Value>,
+  BLINK_EXPORT static WebArrayBuffer* CreateFromV8Value(v8::Local<v8::Value>,
                                                         v8::Isolate*);
 };
 

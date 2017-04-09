@@ -72,12 +72,12 @@ bool ResourceRequestPolicy::CanRequestResource(
       !WebviewInfo::IsResourceWebviewAccessible(
           extension, dispatcher_->webview_partition_id(),
           resource_url.path())) {
-    GURL frame_url = frame->document().url();
+    GURL frame_url = frame->GetDocument().Url();
 
     // The page_origin may be GURL("null") for unique origins like data URLs,
     // but this is ok for the checks below.  We only care if it matches the
     // current extension or has a devtools scheme.
-    GURL page_origin = url::Origin(frame->top()->getSecurityOrigin()).GetURL();
+    GURL page_origin = url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
 
     // Exceptions are:
     // - empty origin (needed for some edge cases when we have empty origins)
@@ -104,9 +104,9 @@ bool ResourceRequestPolicy::CanRequestResource(
           "web_accessible_resources manifest key in order to be loaded by "
           "pages outside the extension.",
           resource_url.spec().c_str());
-      frame->addMessageToConsole(
-          blink::WebConsoleMessage(blink::WebConsoleMessage::LevelError,
-                                    blink::WebString::fromUTF8(message)));
+      frame->AddMessageToConsole(
+          blink::WebConsoleMessage(blink::WebConsoleMessage::kLevelError,
+                                   blink::WebString::FromUTF8(message)));
       return false;
     }
   }

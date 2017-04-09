@@ -68,7 +68,7 @@ const int kNavigationCorrectionFetchTimeoutSec = 3;
 
 NetErrorHelperCore::PageType GetLoadingPageType(
     blink::WebDataSource* data_source) {
-  GURL url = data_source->getRequest().url();
+  GURL url = data_source->GetRequest().Url();
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
@@ -138,7 +138,7 @@ void NetErrorHelper::DidCommitProvisionalLoad(
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
-                      render_frame()->GetWebFrame()->document().url());
+                      render_frame()->GetWebFrame()->GetDocument().Url());
 }
 
 void NetErrorHelper::DidFinishLoad() {
@@ -219,8 +219,9 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   } else {
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(
-        error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
-        error.staleCopyInCache, can_show_network_diagnostics_dialog,
+        error.reason, error.domain.Utf8(), error.unreachable_url,
+        is_failed_post, error.stale_copy_in_cache,
+        can_show_network_diagnostics_dialog,
         ChromeRenderThreadObserver::is_incognito_process(),
         RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
@@ -237,7 +238,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
 
 void NetErrorHelper::LoadErrorPage(const std::string& html,
                                    const GURL& failed_url) {
-  render_frame()->GetWebFrame()->loadHTMLString(
+  render_frame()->GetWebFrame()->LoadHTMLString(
       html, GURL(kUnreachableWebDataURL), failed_url, true);
 }
 
@@ -251,11 +252,11 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool can_show_network_diagnostics_dialog) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(
-      error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
-      error.staleCopyInCache, can_show_network_diagnostics_dialog,
+      error.reason, error.domain.Utf8(), error.unreachable_url, is_failed_post,
+      error.stale_copy_in_cache, can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      RenderThread::Get()->GetLocale(),
-      std::unique_ptr<ErrorPageParams>(), &error_strings);
+      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
+      &error_strings);
 
   std::string json;
   JSONWriter::Write(error_strings, &json);
@@ -284,7 +285,7 @@ void NetErrorHelper::FetchNavigationCorrections(
 
   correction_fetcher_->Start(
       render_frame()->GetWebFrame(),
-      blink::WebURLRequest::RequestContextInternal,
+      blink::WebURLRequest::kRequestContextInternal,
       base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
                  base::Unretained(this)));
 
@@ -307,24 +308,24 @@ void NetErrorHelper::SendTrackingRequest(
 
   tracking_fetcher_->Start(
       render_frame()->GetWebFrame(),
-      blink::WebURLRequest::RequestContextInternal,
+      blink::WebURLRequest::kRequestContextInternal,
       base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
                  base::Unretained(this)));
 }
 
 void NetErrorHelper::ReloadPage(bool bypass_cache) {
-  render_frame()->GetWebFrame()->reload(
-      bypass_cache ? blink::WebFrameLoadType::ReloadBypassingCache
-                   : blink::WebFrameLoadType::Reload);
+  render_frame()->GetWebFrame()->Reload(
+      bypass_cache ? blink::WebFrameLoadType::kReloadBypassingCache
+                   : blink::WebFrameLoadType::kReload);
 }
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
   blink::WebFrame* web_frame = render_frame()->GetWebFrame();
-  DCHECK_NE("POST", web_frame->dataSource()->getRequest().httpMethod().ascii());
+  DCHECK_NE("POST", web_frame->DataSource()->GetRequest().HttpMethod().Ascii());
 
   blink::WebURLRequest request(page_url);
-  request.setCachePolicy(blink::WebCachePolicy::ReturnCacheDataDontLoad);
-  web_frame->loadRequest(request);
+  request.SetCachePolicy(blink::WebCachePolicy::kReturnCacheDataDontLoad);
+  web_frame->LoadRequest(request);
 }
 
 void NetErrorHelper::DiagnoseError(const GURL& page_url) {
@@ -371,7 +372,7 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
   // it to a temporary to prevent any potential re-entrancy issues.
   std::unique_ptr<content::ResourceFetcher> fetcher(
       correction_fetcher_.release());
-  bool success = (!response.isNull() && response.httpStatusCode() == 200);
+  bool success = (!response.IsNull() && response.HttpStatusCode() == 200);
   core_->OnNavigationCorrectionsFetched(success ? data : "",
                                         base::i18n::IsRTL());
 }

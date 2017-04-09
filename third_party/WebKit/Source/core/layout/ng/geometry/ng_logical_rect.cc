@@ -27,11 +27,11 @@ bool NGLogicalRect::operator==(const NGLogicalRect& other) const {
 String NGLogicalRect::ToString() const {
   return IsEmpty()
              ? "(empty)"
-             : String::format("%sx%s at (%s,%s)",
-                              size.inline_size.toString().ascii().data(),
-                              size.block_size.toString().ascii().data(),
-                              offset.inline_offset.toString().ascii().data(),
-                              offset.block_offset.toString().ascii().data());
+             : String::Format("%sx%s at (%s,%s)",
+                              size.inline_size.ToString().Ascii().Data(),
+                              size.block_size.ToString().Ascii().Data(),
+                              offset.inline_offset.ToString().Ascii().Data(),
+                              offset.block_offset.ToString().Ascii().Data());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGLogicalRect& value) {

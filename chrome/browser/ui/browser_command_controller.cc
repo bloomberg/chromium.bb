@@ -179,7 +179,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   // behavior of these keys.  Ash handles F4 and up; this leaves us needing to
   // reserve browser back/forward and refresh here.
   ui::KeyboardCode key_code =
-    static_cast<ui::KeyboardCode>(event.windowsKeyCode);
+      static_cast<ui::KeyboardCode>(event.windows_key_code);
   if ((key_code == ui::VKEY_BROWSER_BACK && command_id == IDC_BACK) ||
       (key_code == ui::VKEY_BROWSER_FORWARD && command_id == IDC_FORWARD) ||
       (key_code == ui::VKEY_BROWSER_REFRESH && command_id == IDC_RELOAD)) {

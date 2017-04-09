@@ -14,12 +14,12 @@ class WebDocument;
 
 struct WebLanguageDetectionDetails {
   WebURL url;
-  WebString contentLanguage;
-  WebString htmlLanguage;
-  bool hasNoTranslateMeta = false;
+  WebString content_language;
+  WebString html_language;
+  bool has_no_translate_meta = false;
 
   BLINK_EXPORT static WebLanguageDetectionDetails
-  collectLanguageDetectionDetails(const WebDocument&);
+  CollectLanguageDetectionDetails(const WebDocument&);
 };
 
 }  // namespace blink

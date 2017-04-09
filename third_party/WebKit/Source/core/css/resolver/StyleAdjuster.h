@@ -37,13 +37,13 @@ class StyleAdjuster {
   STATIC_ONLY(StyleAdjuster);
 
  public:
-  static void adjustComputedStyle(ComputedStyle& styleToAdjust,
-                                  const ComputedStyle& parentStyle,
-                                  const ComputedStyle& layoutParentStyle,
+  static void AdjustComputedStyle(ComputedStyle& style_to_adjust,
+                                  const ComputedStyle& parent_style,
+                                  const ComputedStyle& layout_parent_style,
                                   Element*);
-  static void adjustStyleForEditing(ComputedStyle&);
-  static void adjustStyleForAlignment(ComputedStyle&,
-                                      const ComputedStyle& parentStyle);
+  static void AdjustStyleForEditing(ComputedStyle&);
+  static void AdjustStyleForAlignment(ComputedStyle&,
+                                      const ComputedStyle& parent_style);
 };
 
 }  // namespace blink

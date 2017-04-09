@@ -40,77 +40,79 @@ namespace blink {
 
 SVGPoint::SVGPoint() {}
 
-SVGPoint::SVGPoint(const FloatPoint& point) : m_value(point) {}
+SVGPoint::SVGPoint(const FloatPoint& point) : value_(point) {}
 
-SVGPoint* SVGPoint::clone() const {
-  return SVGPoint::create(m_value);
+SVGPoint* SVGPoint::Clone() const {
+  return SVGPoint::Create(value_);
 }
 
 template <typename CharType>
-SVGParsingError SVGPoint::parse(const CharType*& ptr, const CharType* end) {
+SVGParsingError SVGPoint::Parse(const CharType*& ptr, const CharType* end) {
   float x = 0;
   float y = 0;
-  if (!parseNumber(ptr, end, x) ||
-      !parseNumber(ptr, end, y, DisallowWhitespace))
-    return SVGParseStatus::ExpectedNumber;
+  if (!ParseNumber(ptr, end, x) ||
+      !ParseNumber(ptr, end, y, kDisallowWhitespace))
+    return SVGParseStatus::kExpectedNumber;
 
-  if (skipOptionalSVGSpaces(ptr, end)) {
+  if (SkipOptionalSVGSpaces(ptr, end)) {
     // Nothing should come after the second number.
-    return SVGParseStatus::TrailingGarbage;
+    return SVGParseStatus::kTrailingGarbage;
   }
 
-  m_value = FloatPoint(x, y);
-  return SVGParseStatus::NoError;
+  value_ = FloatPoint(x, y);
+  return SVGParseStatus::kNoError;
 }
 
-FloatPoint SVGPoint::matrixTransform(const AffineTransform& transform) const {
-  double newX, newY;
-  transform.map(static_cast<double>(x()), static_cast<double>(y()), newX, newY);
-  return FloatPoint::narrowPrecision(newX, newY);
+FloatPoint SVGPoint::MatrixTransform(const AffineTransform& transform) const {
+  double new_x, new_y;
+  transform.Map(static_cast<double>(X()), static_cast<double>(Y()), new_x,
+                new_y);
+  return FloatPoint::NarrowPrecision(new_x, new_y);
 }
 
-SVGParsingError SVGPoint::setValueAsString(const String& string) {
-  if (string.isEmpty()) {
-    m_value = FloatPoint(0.0f, 0.0f);
-    return SVGParseStatus::NoError;
+SVGParsingError SVGPoint::SetValueAsString(const String& string) {
+  if (string.IsEmpty()) {
+    value_ = FloatPoint(0.0f, 0.0f);
+    return SVGParseStatus::kNoError;
   }
 
-  if (string.is8Bit()) {
-    const LChar* ptr = string.characters8();
+  if (string.Is8Bit()) {
+    const LChar* ptr = string.Characters8();
     const LChar* end = ptr + string.length();
-    return parse(ptr, end);
+    return Parse(ptr, end);
   }
-  const UChar* ptr = string.characters16();
+  const UChar* ptr = string.Characters16();
   const UChar* end = ptr + string.length();
-  return parse(ptr, end);
+  return Parse(ptr, end);
 }
 
-String SVGPoint::valueAsString() const {
+String SVGPoint::ValueAsString() const {
   StringBuilder builder;
-  builder.appendNumber(x());
-  builder.append(' ');
-  builder.appendNumber(y());
-  return builder.toString();
+  builder.AppendNumber(X());
+  builder.Append(' ');
+  builder.AppendNumber(Y());
+  return builder.ToString();
 }
 
-void SVGPoint::add(SVGPropertyBase* other, SVGElement*) {
+void SVGPoint::Add(SVGPropertyBase* other, SVGElement*) {
   // SVGPoint is not animated by itself
   NOTREACHED();
 }
 
-void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement,
-                                      float percentage,
-                                      unsigned repeatCount,
-                                      SVGPropertyBase* fromValue,
-                                      SVGPropertyBase* toValue,
-                                      SVGPropertyBase* toAtEndOfDurationValue,
-                                      SVGElement*) {
+void SVGPoint::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement*) {
   // SVGPoint is not animated by itself
   NOTREACHED();
 }
 
-float SVGPoint::calculateDistance(SVGPropertyBase* to,
-                                  SVGElement* contextElement) {
+float SVGPoint::CalculateDistance(SVGPropertyBase* to,
+                                  SVGElement* context_element) {
   // SVGPoint is not animated by itself
   NOTREACHED();
   return 0.0f;

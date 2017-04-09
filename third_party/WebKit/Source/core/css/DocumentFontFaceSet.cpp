@@ -30,7 +30,7 @@
 namespace blink {
 
 FontFaceSet* DocumentFontFaceSet::fonts(Document& document) {
-  return FontFaceSet::from(document);
+  return FontFaceSet::From(document);
 }
 
 }  // namespace blink

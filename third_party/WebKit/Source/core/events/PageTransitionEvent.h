@@ -35,11 +35,11 @@ class PageTransitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PageTransitionEvent* create() { return new PageTransitionEvent; }
-  static PageTransitionEvent* create(const AtomicString& type, bool persisted) {
+  static PageTransitionEvent* Create() { return new PageTransitionEvent; }
+  static PageTransitionEvent* Create(const AtomicString& type, bool persisted) {
     return new PageTransitionEvent(type, persisted);
   }
-  static PageTransitionEvent* create(
+  static PageTransitionEvent* Create(
       const AtomicString& type,
       const PageTransitionEventInit& initializer) {
     return new PageTransitionEvent(type, initializer);
@@ -47,9 +47,9 @@ class PageTransitionEvent final : public Event {
 
   ~PageTransitionEvent() override;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  bool persisted() const { return m_persisted; }
+  bool persisted() const { return persisted_; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -58,7 +58,7 @@ class PageTransitionEvent final : public Event {
   PageTransitionEvent(const AtomicString& type, bool persisted);
   PageTransitionEvent(const AtomicString&, const PageTransitionEventInit&);
 
-  bool m_persisted;
+  bool persisted_;
 };
 
 }  // namespace blink

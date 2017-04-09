@@ -43,98 +43,98 @@ namespace blink {
 using blink::WebLocalizedString;
 using namespace HTMLNames;
 
-static const int dateDefaultStep = 1;
-static const int dateDefaultStepBase = 0;
-static const int dateStepScaleFactor = 86400000;
+static const int kDateDefaultStep = 1;
+static const int kDateDefaultStepBase = 0;
+static const int kDateStepScaleFactor = 86400000;
 
 inline DateInputType::DateInputType(HTMLInputElement& element)
     : BaseTemporalInputType(element) {}
 
-InputType* DateInputType::create(HTMLInputElement& element) {
+InputType* DateInputType::Create(HTMLInputElement& element) {
   return new DateInputType(element);
 }
 
-void DateInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeDate);
+void DateInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeDate);
 }
 
-const AtomicString& DateInputType::formControlType() const {
+const AtomicString& DateInputType::FormControlType() const {
   return InputTypeNames::date;
 }
 
-StepRange DateInputType::createStepRange(
-    AnyStepHandling anyStepHandling) const {
+StepRange DateInputType::CreateStepRange(
+    AnyStepHandling any_step_handling) const {
   DEFINE_STATIC_LOCAL(
-      const StepRange::StepDescription, stepDescription,
-      (dateDefaultStep, dateDefaultStepBase, dateStepScaleFactor,
-       StepRange::ParsedStepValueShouldBeInteger));
+      const StepRange::StepDescription, step_description,
+      (kDateDefaultStep, kDateDefaultStepBase, kDateStepScaleFactor,
+       StepRange::kParsedStepValueShouldBeInteger));
 
-  return InputType::createStepRange(
-      anyStepHandling, dateDefaultStepBase,
-      Decimal::fromDouble(DateComponents::minimumDate()),
-      Decimal::fromDouble(DateComponents::maximumDate()), stepDescription);
+  return InputType::CreateStepRange(
+      any_step_handling, kDateDefaultStepBase,
+      Decimal::FromDouble(DateComponents::MinimumDate()),
+      Decimal::FromDouble(DateComponents::MaximumDate()), step_description);
 }
 
-bool DateInputType::parseToDateComponentsInternal(const String& string,
+bool DateInputType::ParseToDateComponentsInternal(const String& string,
                                                   DateComponents* out) const {
   DCHECK(out);
   unsigned end;
-  return out->parseDate(string, 0, end) && end == string.length();
+  return out->ParseDate(string, 0, end) && end == string.length();
 }
 
-bool DateInputType::setMillisecondToDateComponents(double value,
+bool DateInputType::SetMillisecondToDateComponents(double value,
                                                    DateComponents* date) const {
   DCHECK(date);
-  return date->setMillisecondsSinceEpochForDate(value);
+  return date->SetMillisecondsSinceEpochForDate(value);
 }
 
-void DateInputType::warnIfValueIsInvalid(const String& value) const {
-  if (value != element().sanitizeValue(value))
-    addWarningToConsole(
+void DateInputType::WarnIfValueIsInvalid(const String& value) const {
+  if (value != GetElement().SanitizeValue(value))
+    AddWarningToConsole(
         "The specified value %s does not conform to the required format, "
         "\"yyyy-MM-dd\".",
         value);
 }
 
-String DateInputType::formatDateTimeFieldsState(
-    const DateTimeFieldsState& dateTimeFieldsState) const {
-  if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() ||
-      !dateTimeFieldsState.hasYear())
-    return emptyString;
+String DateInputType::FormatDateTimeFieldsState(
+    const DateTimeFieldsState& date_time_fields_state) const {
+  if (!date_time_fields_state.HasDayOfMonth() ||
+      !date_time_fields_state.HasMonth() || !date_time_fields_state.HasYear())
+    return g_empty_string;
 
-  return String::format("%04u-%02u-%02u", dateTimeFieldsState.year(),
-                        dateTimeFieldsState.month(),
-                        dateTimeFieldsState.dayOfMonth());
+  return String::Format("%04u-%02u-%02u", date_time_fields_state.Year(),
+                        date_time_fields_state.Month(),
+                        date_time_fields_state.DayOfMonth());
 }
 
-void DateInputType::setupLayoutParameters(
-    DateTimeEditElement::LayoutParameters& layoutParameters,
+void DateInputType::SetupLayoutParameters(
+    DateTimeEditElement::LayoutParameters& layout_parameters,
     const DateComponents& date) const {
-  layoutParameters.dateTimeFormat = layoutParameters.locale.dateFormat();
-  layoutParameters.fallbackDateTimeFormat = "yyyy-MM-dd";
-  if (!parseToDateComponents(element().fastGetAttribute(minAttr),
-                             &layoutParameters.minimum))
-    layoutParameters.minimum = DateComponents();
-  if (!parseToDateComponents(element().fastGetAttribute(maxAttr),
-                             &layoutParameters.maximum))
-    layoutParameters.maximum = DateComponents();
-  layoutParameters.placeholderForDay =
-      locale().queryString(WebLocalizedString::PlaceholderForDayOfMonthField);
-  layoutParameters.placeholderForMonth =
-      locale().queryString(WebLocalizedString::PlaceholderForMonthField);
-  layoutParameters.placeholderForYear =
-      locale().queryString(WebLocalizedString::PlaceholderForYearField);
+  layout_parameters.date_time_format = layout_parameters.locale.DateFormat();
+  layout_parameters.fallback_date_time_format = "yyyy-MM-dd";
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+                             &layout_parameters.minimum))
+    layout_parameters.minimum = DateComponents();
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+                             &layout_parameters.maximum))
+    layout_parameters.maximum = DateComponents();
+  layout_parameters.placeholder_for_day = GetLocale().QueryString(
+      WebLocalizedString::kPlaceholderForDayOfMonthField);
+  layout_parameters.placeholder_for_month =
+      GetLocale().QueryString(WebLocalizedString::kPlaceholderForMonthField);
+  layout_parameters.placeholder_for_year =
+      GetLocale().QueryString(WebLocalizedString::kPlaceholderForYearField);
 }
 
-bool DateInputType::isValidFormat(bool hasYear,
-                                  bool hasMonth,
-                                  bool hasWeek,
-                                  bool hasDay,
-                                  bool hasAMPM,
-                                  bool hasHour,
-                                  bool hasMinute,
-                                  bool hasSecond) const {
-  return hasYear && hasMonth && hasDay;
+bool DateInputType::IsValidFormat(bool has_year,
+                                  bool has_month,
+                                  bool has_week,
+                                  bool has_day,
+                                  bool has_ampm,
+                                  bool has_hour,
+                                  bool has_minute,
+                                  bool has_second) const {
+  return has_year && has_month && has_day;
 }
 
 }  // namespace blink

@@ -44,26 +44,26 @@ class AttachedDetachedInvocation final
       V0CustomElementLifecycleCallbacks::CallbackType which);
 
  private:
-  void dispatch(Element*) override;
+  void Dispatch(Element*) override;
 
-  V0CustomElementLifecycleCallbacks::CallbackType m_which;
+  V0CustomElementLifecycleCallbacks::CallbackType which_;
 };
 
 AttachedDetachedInvocation::AttachedDetachedInvocation(
     V0CustomElementLifecycleCallbacks* callbacks,
     V0CustomElementLifecycleCallbacks::CallbackType which)
-    : V0CustomElementCallbackInvocation(callbacks), m_which(which) {
-  DCHECK(m_which == V0CustomElementLifecycleCallbacks::AttachedCallback ||
-         m_which == V0CustomElementLifecycleCallbacks::DetachedCallback);
+    : V0CustomElementCallbackInvocation(callbacks), which_(which) {
+  DCHECK(which_ == V0CustomElementLifecycleCallbacks::kAttachedCallback ||
+         which_ == V0CustomElementLifecycleCallbacks::kDetachedCallback);
 }
 
-void AttachedDetachedInvocation::dispatch(Element* element) {
-  switch (m_which) {
-    case V0CustomElementLifecycleCallbacks::AttachedCallback:
-      callbacks()->attached(element);
+void AttachedDetachedInvocation::Dispatch(Element* element) {
+  switch (which_) {
+    case V0CustomElementLifecycleCallbacks::kAttachedCallback:
+      Callbacks()->Attached(element);
       break;
-    case V0CustomElementLifecycleCallbacks::DetachedCallback:
-      callbacks()->detached(element);
+    case V0CustomElementLifecycleCallbacks::kDetachedCallback:
+      Callbacks()->Detached(element);
       break;
     default:
       NOTREACHED();
@@ -75,29 +75,29 @@ class AttributeChangedInvocation final
  public:
   AttributeChangedInvocation(V0CustomElementLifecycleCallbacks*,
                              const AtomicString& name,
-                             const AtomicString& oldValue,
-                             const AtomicString& newValue);
+                             const AtomicString& old_value,
+                             const AtomicString& new_value);
 
  private:
-  void dispatch(Element*) override;
+  void Dispatch(Element*) override;
 
-  AtomicString m_name;
-  AtomicString m_oldValue;
-  AtomicString m_newValue;
+  AtomicString name_;
+  AtomicString old_value_;
+  AtomicString new_value_;
 };
 
 AttributeChangedInvocation::AttributeChangedInvocation(
     V0CustomElementLifecycleCallbacks* callbacks,
     const AtomicString& name,
-    const AtomicString& oldValue,
-    const AtomicString& newValue)
+    const AtomicString& old_value,
+    const AtomicString& new_value)
     : V0CustomElementCallbackInvocation(callbacks),
-      m_name(name),
-      m_oldValue(oldValue),
-      m_newValue(newValue) {}
+      name_(name),
+      old_value_(old_value),
+      new_value_(new_value) {}
 
-void AttributeChangedInvocation::dispatch(Element* element) {
-  callbacks()->attributeChanged(element, m_name, m_oldValue, m_newValue);
+void AttributeChangedInvocation::Dispatch(Element* element) {
+  Callbacks()->AttributeChanged(element, name_, old_value_, new_value_);
 }
 
 class CreatedInvocation final : public V0CustomElementCallbackInvocation {
@@ -106,28 +106,28 @@ class CreatedInvocation final : public V0CustomElementCallbackInvocation {
       : V0CustomElementCallbackInvocation(callbacks) {}
 
  private:
-  void dispatch(Element*) override;
-  bool isCreatedCallback() const override { return true; }
+  void Dispatch(Element*) override;
+  bool IsCreatedCallback() const override { return true; }
 };
 
-void CreatedInvocation::dispatch(Element* element) {
-  if (element->isConnected() && element->document().domWindow())
-    V0CustomElementScheduler::scheduleCallback(
-        callbacks(), element,
-        V0CustomElementLifecycleCallbacks::AttachedCallback);
-  callbacks()->created(element);
+void CreatedInvocation::Dispatch(Element* element) {
+  if (element->isConnected() && element->GetDocument().domWindow())
+    V0CustomElementScheduler::ScheduleCallback(
+        Callbacks(), element,
+        V0CustomElementLifecycleCallbacks::kAttachedCallback);
+  Callbacks()->Created(element);
 }
 
 V0CustomElementCallbackInvocation*
-V0CustomElementCallbackInvocation::createInvocation(
+V0CustomElementCallbackInvocation::CreateInvocation(
     V0CustomElementLifecycleCallbacks* callbacks,
     V0CustomElementLifecycleCallbacks::CallbackType which) {
   switch (which) {
-    case V0CustomElementLifecycleCallbacks::CreatedCallback:
+    case V0CustomElementLifecycleCallbacks::kCreatedCallback:
       return new CreatedInvocation(callbacks);
 
-    case V0CustomElementLifecycleCallbacks::AttachedCallback:
-    case V0CustomElementLifecycleCallbacks::DetachedCallback:
+    case V0CustomElementLifecycleCallbacks::kAttachedCallback:
+    case V0CustomElementLifecycleCallbacks::kDetachedCallback:
       return new AttachedDetachedInvocation(callbacks, which);
     default:
       NOTREACHED();
@@ -136,17 +136,17 @@ V0CustomElementCallbackInvocation::createInvocation(
 }
 
 V0CustomElementCallbackInvocation*
-V0CustomElementCallbackInvocation::createAttributeChangedInvocation(
+V0CustomElementCallbackInvocation::CreateAttributeChangedInvocation(
     V0CustomElementLifecycleCallbacks* callbacks,
     const AtomicString& name,
-    const AtomicString& oldValue,
-    const AtomicString& newValue) {
-  return new AttributeChangedInvocation(callbacks, name, oldValue, newValue);
+    const AtomicString& old_value,
+    const AtomicString& new_value) {
+  return new AttributeChangedInvocation(callbacks, name, old_value, new_value);
 }
 
 DEFINE_TRACE(V0CustomElementCallbackInvocation) {
-  visitor->trace(m_callbacks);
-  V0CustomElementProcessingStep::trace(visitor);
+  visitor->Trace(callbacks_);
+  V0CustomElementProcessingStep::Trace(visitor);
 }
 
 }  // namespace blink

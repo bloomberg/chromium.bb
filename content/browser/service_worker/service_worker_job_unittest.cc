@@ -109,9 +109,9 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
 ServiceWorkerStatusCode EventResultToStatus(
     blink::WebServiceWorkerEventResult result) {
   switch (result) {
-    case blink::WebServiceWorkerEventResultCompleted:
+    case blink::kWebServiceWorkerEventResultCompleted:
       return SERVICE_WORKER_OK;
-    case blink::WebServiceWorkerEventResultRejected:
+    case blink::kWebServiceWorkerEventResultRejected:
       return SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
   }
   NOTREACHED() << "Got invalid result: " << result;
@@ -1458,8 +1458,8 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
  public:
   EventCallbackHelper()
       : EmbeddedWorkerTestHelper(base::FilePath()),
-        install_event_result_(blink::WebServiceWorkerEventResultCompleted),
-        activate_event_result_(blink::WebServiceWorkerEventResultCompleted) {}
+        install_event_result_(blink::kWebServiceWorkerEventResultCompleted),
+        activate_event_result_(blink::kWebServiceWorkerEventResultCompleted) {}
 
   void OnInstallEvent(int embedded_worker_id,
                       int request_id) override {
@@ -1560,7 +1560,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   helper->set_install_callback(
       base::Bind(&ServiceWorkerVersion::RemoveControllee,
                  old_version, host.get()));
-  helper->set_install_event_result(blink::WebServiceWorkerEventResultRejected);
+  helper->set_install_event_result(blink::kWebServiceWorkerEventResultRejected);
   EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
 
   // Verify the registration was uninstalled.
@@ -1596,7 +1596,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   helper->set_install_callback(
       base::Bind(&ServiceWorkerVersion::RemoveControllee,
                  old_version, host.get()));
-  helper->set_activate_event_result(blink::WebServiceWorkerEventResultRejected);
+  helper->set_activate_event_result(
+      blink::kWebServiceWorkerEventResultRejected);
   EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
 
   // Verify the registration remains.

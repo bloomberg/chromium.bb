@@ -39,31 +39,31 @@
 namespace blink {
 
 WebRTCStatsRequest::WebRTCStatsRequest(RTCStatsRequest* request)
-    : m_private(request) {}
+    : private_(request) {}
 
-void WebRTCStatsRequest::assign(const WebRTCStatsRequest& other) {
-  m_private = other.m_private;
+void WebRTCStatsRequest::Assign(const WebRTCStatsRequest& other) {
+  private_ = other.private_;
 }
 
-void WebRTCStatsRequest::reset() {
-  m_private.reset();
+void WebRTCStatsRequest::Reset() {
+  private_.Reset();
 }
 
-WebRTCStatsResponse WebRTCStatsRequest::createResponse() const {
-  return WebRTCStatsResponse(m_private->createResponse());
+WebRTCStatsResponse WebRTCStatsRequest::CreateResponse() const {
+  return WebRTCStatsResponse(private_->CreateResponse());
 }
 
-bool WebRTCStatsRequest::hasSelector() const {
-  return m_private->hasSelector();
+bool WebRTCStatsRequest::HasSelector() const {
+  return private_->HasSelector();
 }
 
-const WebMediaStreamTrack WebRTCStatsRequest::component() const {
-  return WebMediaStreamTrack(m_private->component());
+const WebMediaStreamTrack WebRTCStatsRequest::Component() const {
+  return WebMediaStreamTrack(private_->Component());
 }
 
-void WebRTCStatsRequest::requestSucceeded(
+void WebRTCStatsRequest::RequestSucceeded(
     const WebRTCStatsResponse& response) const {
-  m_private->requestSucceeded(response);
+  private_->RequestSucceeded(response);
 }
 
 }  // namespace blink

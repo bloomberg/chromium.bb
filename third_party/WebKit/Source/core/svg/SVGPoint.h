@@ -44,48 +44,48 @@ class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
  public:
   typedef SVGPointTearOff TearOffType;
 
-  static SVGPoint* create() { return new SVGPoint(); }
+  static SVGPoint* Create() { return new SVGPoint(); }
 
-  static SVGPoint* create(const FloatPoint& point) {
+  static SVGPoint* Create(const FloatPoint& point) {
     return new SVGPoint(point);
   }
 
-  SVGPoint* clone() const;
+  SVGPoint* Clone() const;
 
-  const FloatPoint& value() const { return m_value; }
-  void setValue(const FloatPoint& value) { m_value = value; }
+  const FloatPoint& Value() const { return value_; }
+  void SetValue(const FloatPoint& value) { value_ = value; }
 
-  float x() const { return m_value.x(); }
-  float y() const { return m_value.y(); }
-  void setX(float f) { m_value.setX(f); }
-  void setY(float f) { m_value.setY(f); }
+  float X() const { return value_.X(); }
+  float Y() const { return value_.Y(); }
+  void SetX(float f) { value_.SetX(f); }
+  void SetY(float f) { value_.SetY(f); }
 
-  FloatPoint matrixTransform(const AffineTransform&) const;
+  FloatPoint MatrixTransform(const AffineTransform&) const;
 
-  String valueAsString() const override;
-  SVGParsingError setValueAsString(const String&);
+  String ValueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
-                              SVGElement* contextElement) override;
-  float calculateDistance(SVGPropertyBase* to,
-                          SVGElement* contextElement) override;
+                              SVGPropertyBase* to_at_end_of_duration_value,
+                              SVGElement* context_element) override;
+  float CalculateDistance(SVGPropertyBase* to,
+                          SVGElement* context_element) override;
 
-  static AnimatedPropertyType classType() { return AnimatedPoint; }
+  static AnimatedPropertyType ClassType() { return kAnimatedPoint; }
 
  private:
   SVGPoint();
   explicit SVGPoint(const FloatPoint&);
 
   template <typename CharType>
-  SVGParsingError parse(const CharType*& ptr, const CharType* end);
+  SVGParsingError Parse(const CharType*& ptr, const CharType* end);
 
-  FloatPoint m_value;
+  FloatPoint value_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPoint);

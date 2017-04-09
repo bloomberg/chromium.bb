@@ -22,14 +22,14 @@ class NinePieceImagePainter {
  public:
   NinePieceImagePainter(const LayoutBoxModelObject&);
 
-  bool paint(GraphicsContext&,
+  bool Paint(GraphicsContext&,
              const LayoutRect&,
              const ComputedStyle&,
              const NinePieceImage&,
              SkBlendMode) const;
 
  private:
-  const LayoutBoxModelObject& m_layoutObject;
+  const LayoutBoxModelObject& layout_object_;
 };
 
 }  // namespace blink

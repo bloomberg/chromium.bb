@@ -26,7 +26,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioContext* create(Document&,
+  static AudioContext* Create(Document&,
                               const AudioContextOptions&,
                               ExceptionState&);
 
@@ -34,12 +34,12 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   DECLARE_VIRTUAL_TRACE();
 
   ScriptPromise closeContext(ScriptState*);
-  bool isContextClosed() const final;
+  bool IsContextClosed() const final;
 
   ScriptPromise suspendContext(ScriptState*) final;
   ScriptPromise resumeContext(ScriptState*) final;
 
-  bool hasRealtimeConstraint() final { return true; }
+  bool HasRealtimeConstraint() final { return true; }
 
   void getOutputTimestamp(ScriptState*, AudioTimestamp&);
   double baseLatency() const;
@@ -47,13 +47,13 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
  protected:
   AudioContext(Document&, const WebAudioLatencyHint&);
 
-  void didClose() final;
+  void DidClose() final;
 
  private:
-  void stopRendering();
+  void StopRendering();
 
-  unsigned m_contextId;
-  Member<ScriptPromiseResolver> m_closeResolver;
+  unsigned context_id_;
+  Member<ScriptPromiseResolver> close_resolver_;
 };
 
 }  // namespace blink

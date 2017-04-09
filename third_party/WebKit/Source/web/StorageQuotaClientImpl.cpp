@@ -46,23 +46,25 @@ StorageQuotaClientImpl::StorageQuotaClientImpl() {}
 
 StorageQuotaClientImpl::~StorageQuotaClientImpl() {}
 
-void StorageQuotaClientImpl::requestQuota(ScriptState* scriptState,
-                                          WebStorageQuotaType storageType,
-                                          unsigned long long newQuotaInBytes,
-                                          StorageQuotaCallback* successCallback,
-                                          StorageErrorCallback* errorCallback) {
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DCHECK(executionContext);
-  DCHECK(executionContext->isDocument())
+void StorageQuotaClientImpl::RequestQuota(
+    ScriptState* script_state,
+    WebStorageQuotaType storage_type,
+    unsigned long long new_quota_in_bytes,
+    StorageQuotaCallback* success_callback,
+    StorageErrorCallback* error_callback) {
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DCHECK(execution_context);
+  DCHECK(execution_context->IsDocument())
       << "Quota requests are not supported in workers";
 
-  Document* document = toDocument(executionContext);
-  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
+  Document* document = ToDocument(execution_context);
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
   StorageQuotaCallbacks* callbacks =
-      DeprecatedStorageQuotaCallbacksImpl::create(successCallback,
-                                                  errorCallback);
-  webFrame->client()->requestStorageQuota(storageType, newQuotaInBytes,
-                                          callbacks);
+      DeprecatedStorageQuotaCallbacksImpl::Create(success_callback,
+                                                  error_callback);
+  web_frame->Client()->RequestStorageQuota(storage_type, new_quota_in_bytes,
+                                           callbacks);
 }
 
 }  // namespace blink

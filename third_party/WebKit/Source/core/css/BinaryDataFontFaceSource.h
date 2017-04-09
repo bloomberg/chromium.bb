@@ -17,12 +17,12 @@ class BinaryDataFontFaceSource final : public CSSFontFaceSource {
  public:
   BinaryDataFontFaceSource(SharedBuffer*, String&);
   ~BinaryDataFontFaceSource() override;
-  bool isValid() const override;
+  bool IsValid() const override;
 
  private:
-  PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
+  PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
 
-  RefPtr<FontCustomPlatformData> m_customPlatformData;
+  RefPtr<FontCustomPlatformData> custom_platform_data_;
 };
 
 }  // namespace blink

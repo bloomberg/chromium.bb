@@ -19,24 +19,24 @@ class PhotoCapabilities final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PhotoCapabilities* create();
+  static PhotoCapabilities* Create();
   virtual ~PhotoCapabilities() = default;
 
-  MediaSettingsRange* imageHeight() const { return m_imageHeight; }
-  void setImageHeight(MediaSettingsRange* value) { m_imageHeight = value; }
+  MediaSettingsRange* imageHeight() const { return image_height_; }
+  void SetImageHeight(MediaSettingsRange* value) { image_height_ = value; }
 
-  MediaSettingsRange* imageWidth() const { return m_imageWidth; }
-  void setImageWidth(MediaSettingsRange* value) { m_imageWidth = value; }
+  MediaSettingsRange* imageWidth() const { return image_width_; }
+  void SetImageWidth(MediaSettingsRange* value) { image_width_ = value; }
 
   Vector<String> fillLightMode() const;
-  void setFillLightMode(Vector<media::mojom::blink::FillLightMode> modes) {
-    m_fillLightModes = modes;
+  void SetFillLightMode(Vector<media::mojom::blink::FillLightMode> modes) {
+    fill_light_modes_ = modes;
   }
 
   String redEyeReduction() const;
-  void setRedEyeReduction(
-      media::mojom::blink::RedEyeReduction redEyeReduction) {
-    m_redEyeReduction = redEyeReduction;
+  void SetRedEyeReduction(
+      media::mojom::blink::RedEyeReduction red_eye_reduction) {
+    red_eye_reduction_ = red_eye_reduction;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -44,10 +44,10 @@ class PhotoCapabilities final
  private:
   PhotoCapabilities() = default;
 
-  Member<MediaSettingsRange> m_imageHeight;
-  Member<MediaSettingsRange> m_imageWidth;
-  Vector<media::mojom::blink::FillLightMode> m_fillLightModes;
-  media::mojom::blink::RedEyeReduction m_redEyeReduction;
+  Member<MediaSettingsRange> image_height_;
+  Member<MediaSettingsRange> image_width_;
+  Vector<media::mojom::blink::FillLightMode> fill_light_modes_;
+  media::mojom::blink::RedEyeReduction red_eye_reduction_;
 };
 
 }  // namespace blink

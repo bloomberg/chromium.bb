@@ -39,10 +39,10 @@ class HTMLLinkElement;
 class HTMLImportChildClient : public GarbageCollectedMixin {
  public:
   virtual ~HTMLImportChildClient() {}
-  virtual void didFinish() = 0;
-  virtual void importChildWasDisposed(HTMLImportChild*) = 0;
-  virtual bool isSync() const = 0;
-  virtual HTMLLinkElement* link() = 0;
+  virtual void DidFinish() = 0;
+  virtual void ImportChildWasDisposed(HTMLImportChild*) = 0;
+  virtual bool IsSync() const = 0;
+  virtual HTMLLinkElement* Link() = 0;
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 

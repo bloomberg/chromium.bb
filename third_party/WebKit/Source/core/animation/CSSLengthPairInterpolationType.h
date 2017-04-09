@@ -18,13 +18,13 @@ class CSSLengthPairInterpolationType : public CSSLengthListInterpolationType {
       : CSSLengthListInterpolationType(property) {}
 
  private:
-  InterpolationValue maybeConvertValue(const CSSValue& value,
+  InterpolationValue MaybeConvertValue(const CSSValue& value,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final {
-    const CSSValuePair& pair = toCSSValuePair(value);
-    return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
-      const CSSValue& item = index == 0 ? pair.first() : pair.second();
-      return LengthInterpolationFunctions::maybeConvertCSSValue(item);
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    return ListInterpolationFunctions::CreateList(2, [&pair](size_t index) {
+      const CSSValue& item = index == 0 ? pair.First() : pair.Second();
+      return LengthInterpolationFunctions::MaybeConvertCSSValue(item);
     });
   }
 };

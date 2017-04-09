@@ -41,44 +41,44 @@ class AnimatableUnknown final : public AnimatableValue {
  public:
   ~AnimatableUnknown() override {}
 
-  static PassRefPtr<AnimatableUnknown> create(const CSSValue* value) {
-    return adoptRef(new AnimatableUnknown(value));
+  static PassRefPtr<AnimatableUnknown> Create(const CSSValue* value) {
+    return AdoptRef(new AnimatableUnknown(value));
   }
-  static PassRefPtr<AnimatableUnknown> create(CSSValueID value) {
-    return adoptRef(new AnimatableUnknown(CSSIdentifierValue::create(value)));
+  static PassRefPtr<AnimatableUnknown> Create(CSSValueID value) {
+    return AdoptRef(new AnimatableUnknown(CSSIdentifierValue::Create(value)));
   }
 
-  const CSSValue* toCSSValue() const { return m_value; }
-  CSSValueID toCSSValueID() const {
-    return toCSSIdentifierValue(m_value.get())->getValueID();
+  const CSSValue* ToCSSValue() const { return value_; }
+  CSSValueID ToCSSValueID() const {
+    return ToCSSIdentifierValue(value_.Get())->GetValueID();
   }
 
  protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value,
+  PassRefPtr<AnimatableValue> InterpolateTo(const AnimatableValue* value,
                                             double fraction) const override {
-    return defaultInterpolateTo(this, value, fraction);
+    return DefaultInterpolateTo(this, value, fraction);
   }
 
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+  bool UsesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
-  explicit AnimatableUnknown(const CSSValue* value) : m_value(value) {}
-  AnimatableType type() const override { return TypeUnknown; }
-  bool equalTo(const AnimatableValue*) const override;
+  explicit AnimatableUnknown(const CSSValue* value) : value_(value) {}
+  AnimatableType GetType() const override { return kTypeUnknown; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  const Persistent<const CSSValue> m_value;
+  const Persistent<const CSSValue> value_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, IsUnknown());
 
-inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const {
-  const AnimatableUnknown* unknown = toAnimatableUnknown(value);
-  return dataEquivalent(m_value, unknown->m_value);
+inline bool AnimatableUnknown::EqualTo(const AnimatableValue* value) const {
+  const AnimatableUnknown* unknown = ToAnimatableUnknown(value);
+  return DataEquivalent(value_, unknown->value_);
 }
 
-inline bool AnimatableUnknown::usesDefaultInterpolationWith(
+inline bool AnimatableUnknown::UsesDefaultInterpolationWith(
     const AnimatableValue* value) const {
-  return !equalTo(value);
+  return !EqualTo(value);
 }
 
 }  // namespace blink

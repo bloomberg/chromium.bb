@@ -42,43 +42,43 @@ class StyleResolverStats {
   USING_FAST_MALLOC(StyleResolverStats);
 
  public:
-  static std::unique_ptr<StyleResolverStats> create() {
-    return WTF::wrapUnique(new StyleResolverStats);
+  static std::unique_ptr<StyleResolverStats> Create() {
+    return WTF::WrapUnique(new StyleResolverStats);
   }
 
-  void reset();
-  bool allCountersEnabled() const;
-  std::unique_ptr<TracedValue> toTracedValue() const;
+  void Reset();
+  bool AllCountersEnabled() const;
+  std::unique_ptr<TracedValue> ToTracedValue() const;
 
-  unsigned sharedStyleLookups;
-  unsigned sharedStyleCandidates;
-  unsigned sharedStyleFound;
-  unsigned sharedStyleMissed;
-  unsigned sharedStyleRejectedByUncommonAttributeRules;
-  unsigned sharedStyleRejectedBySiblingRules;
-  unsigned sharedStyleRejectedByParent;
-  unsigned matchedPropertyApply;
-  unsigned matchedPropertyCacheHit;
-  unsigned matchedPropertyCacheInheritedHit;
-  unsigned matchedPropertyCacheAdded;
-  unsigned rulesFastRejected;
-  unsigned rulesRejected;
-  unsigned rulesMatched;
-  unsigned stylesChanged;
-  unsigned stylesUnchanged;
-  unsigned stylesAnimated;
-  unsigned elementsStyled;
-  unsigned pseudoElementsStyled;
-  unsigned baseStylesUsed;
-  unsigned independentInheritedStylesPropagated;
-  unsigned customPropertiesApplied;
+  unsigned shared_style_lookups;
+  unsigned shared_style_candidates;
+  unsigned shared_style_found;
+  unsigned shared_style_missed;
+  unsigned shared_style_rejected_by_uncommon_attribute_rules;
+  unsigned shared_style_rejected_by_sibling_rules;
+  unsigned shared_style_rejected_by_parent;
+  unsigned matched_property_apply;
+  unsigned matched_property_cache_hit;
+  unsigned matched_property_cache_inherited_hit;
+  unsigned matched_property_cache_added;
+  unsigned rules_fast_rejected;
+  unsigned rules_rejected;
+  unsigned rules_matched;
+  unsigned styles_changed;
+  unsigned styles_unchanged;
+  unsigned styles_animated;
+  unsigned elements_styled;
+  unsigned pseudo_elements_styled;
+  unsigned base_styles_used;
+  unsigned independent_inherited_styles_propagated;
+  unsigned custom_properties_applied;
 
  private:
-  StyleResolverStats() { reset(); }
+  StyleResolverStats() { Reset(); }
 };
 
 #define INCREMENT_STYLE_STATS_COUNTER(styleEngine, counter, n) \
-  ((styleEngine).stats() && ((styleEngine).stats()->counter += n));
+  ((styleEngine).Stats() && ((styleEngine).Stats()->counter += n));
 
 }  // namespace blink
 

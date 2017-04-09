@@ -29,30 +29,30 @@ namespace blink {
 
 WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_CHROMIUM_depth_texture");
 }
 
-WebGLExtensionName WebGLDepthTexture::name() const {
-  return WebGLDepthTextureName;
+WebGLExtensionName WebGLDepthTexture::GetName() const {
+  return kWebGLDepthTextureName;
 }
 
-WebGLDepthTexture* WebGLDepthTexture::create(
+WebGLDepthTexture* WebGLDepthTexture::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLDepthTexture(context);
 }
 
-bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context) {
-  Extensions3DUtil* extensionsUtil = context->extensionsUtil();
+bool WebGLDepthTexture::Supported(WebGLRenderingContextBase* context) {
+  Extensions3DUtil* extensions_util = context->ExtensionsUtil();
   // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms
   // of two separate texture objects is too difficult, so disable depth
   // textures unless a packed depth/stencil format is available.
-  if (!extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"))
+  if (!extensions_util->SupportsExtension("GL_OES_packed_depth_stencil"))
     return false;
-  return extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture");
+  return extensions_util->SupportsExtension("GL_CHROMIUM_depth_texture");
 }
 
-const char* WebGLDepthTexture::extensionName() {
+const char* WebGLDepthTexture::ExtensionName() {
   return "WEBGL_depth_texture";
 }
 

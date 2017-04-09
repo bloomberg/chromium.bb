@@ -17,20 +17,20 @@ class StyleResolverState;
 
 class ShadowInterpolationFunctions {
  public:
-  static InterpolationValue convertShadowData(const ShadowData&, double zoom);
-  static InterpolationValue maybeConvertCSSValue(const CSSValue&);
-  static std::unique_ptr<InterpolableValue> createNeutralInterpolableValue();
-  static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*,
+  static InterpolationValue ConvertShadowData(const ShadowData&, double zoom);
+  static InterpolationValue MaybeConvertCSSValue(const CSSValue&);
+  static std::unique_ptr<InterpolableValue> CreateNeutralInterpolableValue();
+  static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
-  static PairwiseInterpolationValue maybeMergeSingles(
+  static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static void composite(std::unique_ptr<InterpolableValue>&,
+  static void Composite(std::unique_ptr<InterpolableValue>&,
                         RefPtr<NonInterpolableValue>&,
-                        double underlyingFraction,
+                        double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);
-  static ShadowData createShadowData(const InterpolableValue&,
+  static ShadowData CreateShadowData(const InterpolableValue&,
                                      const NonInterpolableValue*,
                                      const StyleResolverState&);
 };

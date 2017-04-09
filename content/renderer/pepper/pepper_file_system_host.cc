@@ -132,7 +132,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
   if (!view)
     return PP_ERROR_FAILED;
 
-  const GURL& url = view->GetWebView()->mainFrame()->document().url();
+  const GURL& url = view->GetWebView()->MainFrame()->GetDocument().Url();
   const std::string root_name = ppapi::IsolatedFileSystemTypeToRootName(type);
   if (root_name.empty())
     return PP_ERROR_BADARGUMENT;

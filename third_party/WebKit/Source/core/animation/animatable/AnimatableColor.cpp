@@ -37,32 +37,32 @@ AnimatableColorImpl::AnimatableColorImpl(float red,
                                          float green,
                                          float blue,
                                          float alpha)
-    : m_alpha(clampTo(alpha, 0.0f, 1.0f)),
-      m_red(clampTo(red, 0.0f, 1.0f)),
-      m_green(clampTo(green, 0.0f, 1.0f)),
-      m_blue(clampTo(blue, 0.0f, 1.0f)) {}
+    : alpha_(clampTo(alpha, 0.0f, 1.0f)),
+      red_(clampTo(red, 0.0f, 1.0f)),
+      green_(clampTo(green, 0.0f, 1.0f)),
+      blue_(clampTo(blue, 0.0f, 1.0f)) {}
 
 AnimatableColorImpl::AnimatableColorImpl(Color color)
-    : m_alpha(color.alpha() / 255.0f),
-      m_red(color.red() / 255.0f * m_alpha),
-      m_green(color.green() / 255.0f * m_alpha),
-      m_blue(color.blue() / 255.0f * m_alpha) {}
+    : alpha_(color.Alpha() / 255.0f),
+      red_(color.Red() / 255.0f * alpha_),
+      green_(color.Green() / 255.0f * alpha_),
+      blue_(color.Blue() / 255.0f * alpha_) {}
 
 bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const {
-  return m_red == other.m_red && m_green == other.m_green &&
-         m_blue == other.m_blue && m_alpha == other.m_alpha;
+  return red_ == other.red_ && green_ == other.green_ && blue_ == other.blue_ &&
+         alpha_ == other.alpha_;
 }
 
-PassRefPtr<AnimatableColor> AnimatableColor::create(
+PassRefPtr<AnimatableColor> AnimatableColor::Create(
     const AnimatableColorImpl& color,
-    const AnimatableColorImpl& visitedLinkColor) {
-  return adoptRef(new AnimatableColor(color, visitedLinkColor));
+    const AnimatableColorImpl& visited_link_color) {
+  return AdoptRef(new AnimatableColor(color, visited_link_color));
 }
 
-bool AnimatableColor::equalTo(const AnimatableValue* value) const {
-  const AnimatableColor* color = toAnimatableColor(value);
-  return m_color == color->m_color &&
-         m_visitedLinkColor == color->m_visitedLinkColor;
+bool AnimatableColor::EqualTo(const AnimatableValue* value) const {
+  const AnimatableColor* color = ToAnimatableColor(value);
+  return color_ == color->color_ &&
+         visited_link_color_ == color->visited_link_color_;
 }
 
 }  // namespace blink

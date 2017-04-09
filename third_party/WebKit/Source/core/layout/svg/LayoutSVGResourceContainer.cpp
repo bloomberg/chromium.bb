@@ -27,188 +27,189 @@
 
 namespace blink {
 
-static inline SVGTreeScopeResources& svgTreeScopeResourcesFromElement(
+static inline SVGTreeScopeResources& SvgTreeScopeResourcesFromElement(
     Element* element) {
   DCHECK(element);
-  return element->treeScope().ensureSVGTreeScopedResources();
+  return element->GetTreeScope().EnsureSVGTreeScopedResources();
 }
 
 LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
     : LayoutSVGHiddenContainer(node),
-      m_isInLayout(false),
-      m_invalidationMask(0),
-      m_registered(false),
-      m_isInvalidating(false) {}
+      is_in_layout_(false),
+      invalidation_mask_(0),
+      registered_(false),
+      is_invalidating_(false) {}
 
 LayoutSVGResourceContainer::~LayoutSVGResourceContainer() {}
 
-void LayoutSVGResourceContainer::layout() {
+void LayoutSVGResourceContainer::GetLayout() {
   // FIXME: Investigate a way to detect and break resource layout dependency
   // cycles early. Then we can remove this method altogether, and fall back onto
   // LayoutSVGHiddenContainer::layout().
-  DCHECK(needsLayout());
-  if (m_isInLayout)
+  DCHECK(NeedsLayout());
+  if (is_in_layout_)
     return;
 
-  AutoReset<bool> inLayoutChange(&m_isInLayout, true);
+  AutoReset<bool> in_layout_change(&is_in_layout_, true);
 
-  LayoutSVGHiddenContainer::layout();
+  LayoutSVGHiddenContainer::GetLayout();
 
-  clearInvalidationMask();
+  ClearInvalidationMask();
 }
 
-SVGElementProxySet* LayoutSVGResourceContainer::elementProxySet() {
-  return element()->elementProxySet();
+SVGElementProxySet* LayoutSVGResourceContainer::ElementProxySet() {
+  return GetElement()->ElementProxySet();
 }
 
-void LayoutSVGResourceContainer::notifyContentChanged() {
-  if (SVGElementProxySet* proxySet = elementProxySet())
-    proxySet->notifyContentChanged(element()->treeScope());
+void LayoutSVGResourceContainer::NotifyContentChanged() {
+  if (SVGElementProxySet* proxy_set = ElementProxySet())
+    proxy_set->NotifyContentChanged(GetElement()->GetTreeScope());
 }
 
-void LayoutSVGResourceContainer::willBeDestroyed() {
-  LayoutSVGHiddenContainer::willBeDestroyed();
-  svgTreeScopeResourcesFromElement(element()).removeResource(
-      element()->getIdAttribute(), this);
-  DCHECK(m_clients.isEmpty());
+void LayoutSVGResourceContainer::WillBeDestroyed() {
+  LayoutSVGHiddenContainer::WillBeDestroyed();
+  SvgTreeScopeResourcesFromElement(GetElement())
+      .RemoveResource(GetElement()->GetIdAttribute(), this);
+  DCHECK(clients_.IsEmpty());
 }
 
-void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff,
-                                                const ComputedStyle* oldStyle) {
-  LayoutSVGHiddenContainer::styleDidChange(diff, oldStyle);
-  svgTreeScopeResourcesFromElement(element()).updateResource(
-      element()->getIdAttribute(), this);
+void LayoutSVGResourceContainer::StyleDidChange(
+    StyleDifference diff,
+    const ComputedStyle* old_style) {
+  LayoutSVGHiddenContainer::StyleDidChange(diff, old_style);
+  SvgTreeScopeResourcesFromElement(GetElement())
+      .UpdateResource(GetElement()->GetIdAttribute(), this);
 }
 
-void LayoutSVGResourceContainer::detachAllClients(const AtomicString& toId) {
-  removeAllClientsFromCache();
+void LayoutSVGResourceContainer::DetachAllClients(const AtomicString& to_id) {
+  RemoveAllClientsFromCache();
 
-  for (auto* client : m_clients) {
+  for (auto* client : clients_) {
     // Unlink the resource from the client's SVGResources. (The actual
     // removal will be signaled after processing all the clients.)
     SVGResources* resources =
-        SVGResourcesCache::cachedResourcesForLayoutObject(client);
+        SVGResourcesCache::CachedResourcesForLayoutObject(client);
     // Or else the client wouldn't be in the list in the first place.
     DCHECK(resources);
-    resources->resourceDestroyed(this);
+    resources->ResourceDestroyed(this);
 
     // Add a pending resolution based on the id of the old resource.
-    Element* clientElement = toElement(client->node());
-    svgTreeScopeResourcesFromElement(clientElement)
-        .addPendingResource(toId, *clientElement);
+    Element* client_element = ToElement(client->GetNode());
+    SvgTreeScopeResourcesFromElement(client_element)
+        .AddPendingResource(to_id, *client_element);
   }
-  m_clients.clear();
+  clients_.Clear();
 }
 
-void LayoutSVGResourceContainer::idChanged(const AtomicString& oldId,
-                                           const AtomicString& newId) {
-  svgTreeScopeResourcesFromElement(element()).updateResource(oldId, newId,
-                                                             this);
+void LayoutSVGResourceContainer::IdChanged(const AtomicString& old_id,
+                                           const AtomicString& new_id) {
+  SvgTreeScopeResourcesFromElement(GetElement())
+      .UpdateResource(old_id, new_id, this);
 }
 
-void LayoutSVGResourceContainer::markAllClientsForInvalidation(
+void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     InvalidationMode mode) {
-  if (m_isInvalidating)
+  if (is_invalidating_)
     return;
-  SVGElementProxySet* proxySet = elementProxySet();
-  if (m_clients.isEmpty() && (!proxySet || proxySet->isEmpty()))
+  SVGElementProxySet* proxy_set = ElementProxySet();
+  if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()))
     return;
-  if (m_invalidationMask & mode)
+  if (invalidation_mask_ & mode)
     return;
 
-  m_invalidationMask |= mode;
-  m_isInvalidating = true;
-  bool needsLayout = mode == LayoutAndBoundariesInvalidation;
-  bool markForInvalidation = mode != ParentOnlyInvalidation;
+  invalidation_mask_ |= mode;
+  is_invalidating_ = true;
+  bool needs_layout = mode == kLayoutAndBoundariesInvalidation;
+  bool mark_for_invalidation = mode != kParentOnlyInvalidation;
 
   // Invalidate clients registered on the this object (via SVGResources).
-  for (auto* client : m_clients) {
-    DCHECK(client->isSVG());
-    if (client->isSVGResourceContainer()) {
-      toLayoutSVGResourceContainer(client)->removeAllClientsFromCache(
-          markForInvalidation);
+  for (auto* client : clients_) {
+    DCHECK(client->IsSVG());
+    if (client->IsSVGResourceContainer()) {
+      ToLayoutSVGResourceContainer(client)->RemoveAllClientsFromCache(
+          mark_for_invalidation);
       continue;
     }
 
-    if (markForInvalidation)
-      markClientForInvalidation(client, mode);
+    if (mark_for_invalidation)
+      MarkClientForInvalidation(client, mode);
 
-    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
-        client, needsLayout);
+    LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+        client, needs_layout);
   }
 
   // Invalidate clients registered via an SVGElementProxy.
-  notifyContentChanged();
+  NotifyContentChanged();
 
-  m_isInvalidating = false;
+  is_invalidating_ = false;
 }
 
-void LayoutSVGResourceContainer::markClientForInvalidation(
+void LayoutSVGResourceContainer::MarkClientForInvalidation(
     LayoutObject* client,
     InvalidationMode mode) {
   DCHECK(client);
-  DCHECK(!m_clients.isEmpty());
+  DCHECK(!clients_.IsEmpty());
 
   switch (mode) {
-    case LayoutAndBoundariesInvalidation:
-    case BoundariesInvalidation:
-      client->setNeedsBoundariesUpdate();
+    case kLayoutAndBoundariesInvalidation:
+    case kBoundariesInvalidation:
+      client->SetNeedsBoundariesUpdate();
       break;
-    case PaintInvalidation:
+    case kPaintInvalidation:
       // Since LayoutSVGInlineTexts don't have SVGResources (they use their
       // parent's), they will not be notified of changes to paint servers. So
       // if the client is one that could have a LayoutSVGInlineText use a
       // paint invalidation reason that will force paint invalidation of the
       // entire <text>/<tspan>/... subtree.
-      client->setShouldDoFullPaintInvalidation(
-          PaintInvalidationSVGResourceChange);
+      client->SetShouldDoFullPaintInvalidation(
+          kPaintInvalidationSVGResourceChange);
       // Invalidate paint properties to update effects if any.
-      client->setNeedsPaintPropertyUpdate();
+      client->SetNeedsPaintPropertyUpdate();
       break;
-    case ParentOnlyInvalidation:
+    case kParentOnlyInvalidation:
       break;
   }
 }
 
-void LayoutSVGResourceContainer::addClient(LayoutObject* client) {
+void LayoutSVGResourceContainer::AddClient(LayoutObject* client) {
   DCHECK(client);
-  m_clients.insert(client);
-  clearInvalidationMask();
+  clients_.insert(client);
+  ClearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::removeClient(LayoutObject* client) {
+void LayoutSVGResourceContainer::RemoveClient(LayoutObject* client) {
   DCHECK(client);
-  removeClientFromCache(client, false);
-  m_clients.erase(client);
+  RemoveClientFromCache(client, false);
+  clients_.erase(client);
 }
 
-void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(
-    SubtreeLayoutScope* layoutScope) {
-  if (selfNeedsLayout())
+void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
+    SubtreeLayoutScope* layout_scope) {
+  if (SelfNeedsLayout())
     return;
 
-  setNeedsLayoutAndFullPaintInvalidation(
-      LayoutInvalidationReason::SvgResourceInvalidated, MarkContainerChain,
-      layoutScope);
+  SetNeedsLayoutAndFullPaintInvalidation(
+      LayoutInvalidationReason::kSvgResourceInvalidated, kMarkContainerChain,
+      layout_scope);
 
-  if (everHadLayout())
-    removeAllClientsFromCache();
+  if (EverHadLayout())
+    RemoveAllClientsFromCache();
 }
 
-static inline void removeFromCacheAndInvalidateDependencies(
+static inline void RemoveFromCacheAndInvalidateDependencies(
     LayoutObject* object,
-    bool needsLayout) {
+    bool needs_layout) {
   DCHECK(object);
   if (SVGResources* resources =
-          SVGResourcesCache::cachedResourcesForLayoutObject(object)) {
-    resources->removeClientFromCacheAffectingObjectBounds(object);
+          SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
+    resources->RemoveClientFromCacheAffectingObjectBounds(object);
   }
 
-  if (!object->node() || !object->node()->isSVGElement())
+  if (!object->GetNode() || !object->GetNode()->IsSVGElement())
     return;
 
   SVGElementSet* dependencies =
-      toSVGElement(object->node())->setOfIncomingReferences();
+      ToSVGElement(object->GetNode())->SetOfIncomingReferences();
   if (!dependencies)
     return;
 
@@ -217,47 +218,47 @@ static inline void removeFromCacheAndInvalidateDependencies(
   // possible cycles here.
   // This strong reference is safe, as it is guaranteed that this set will be
   // emptied at the end of recursion.
-  DEFINE_STATIC_LOCAL(SVGElementSet, invalidatingDependencies,
+  DEFINE_STATIC_LOCAL(SVGElementSet, invalidating_dependencies,
                       (new SVGElementSet));
 
   for (SVGElement* element : *dependencies) {
-    if (LayoutObject* layoutObject = element->layoutObject()) {
-      if (UNLIKELY(!invalidatingDependencies.insert(element).isNewEntry)) {
+    if (LayoutObject* layout_object = element->GetLayoutObject()) {
+      if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
         // Reference cycle: we are in process of invalidating this dependant.
         continue;
       }
 
-      LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
-          layoutObject, needsLayout);
-      invalidatingDependencies.erase(element);
+      LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+          layout_object, needs_layout);
+      invalidating_dependencies.erase(element);
     }
   }
 }
 
-void LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
+void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
     LayoutObject* object,
-    bool needsLayout) {
+    bool needs_layout) {
   DCHECK(object);
-  DCHECK(object->node());
+  DCHECK(object->GetNode());
 
-  if (needsLayout && !object->documentBeingDestroyed())
-    object->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::SvgResourceInvalidated);
+  if (needs_layout && !object->DocumentBeingDestroyed())
+    object->SetNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::kSvgResourceInvalidated);
 
-  removeFromCacheAndInvalidateDependencies(object, needsLayout);
+  RemoveFromCacheAndInvalidateDependencies(object, needs_layout);
 
   // Invalidate resources in ancestor chain, if needed.
-  LayoutObject* current = object->parent();
+  LayoutObject* current = object->Parent();
   while (current) {
-    removeFromCacheAndInvalidateDependencies(current, needsLayout);
+    RemoveFromCacheAndInvalidateDependencies(current, needs_layout);
 
-    if (current->isSVGResourceContainer()) {
+    if (current->IsSVGResourceContainer()) {
       // This will process the rest of the ancestors.
-      toLayoutSVGResourceContainer(current)->removeAllClientsFromCache();
+      ToLayoutSVGResourceContainer(current)->RemoveAllClientsFromCache();
       break;
     }
 
-    current = current->parent();
+    current = current->Parent();
   }
 }
 

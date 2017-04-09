@@ -37,43 +37,43 @@ class SMILTime {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  SMILTime() : m_time(0) {}
-  SMILTime(double time) : m_time(time) {}
+  SMILTime() : time_(0) {}
+  SMILTime(double time) : time_(time) {}
 
-  static SMILTime unresolved() {
+  static SMILTime Unresolved() {
     return std::numeric_limits<double>::quiet_NaN();
   }
-  static SMILTime indefinite() {
+  static SMILTime Indefinite() {
     return std::numeric_limits<double>::infinity();
   }
 
-  double value() const { return m_time; }
+  double Value() const { return time_; }
 
-  bool isFinite() const { return std::isfinite(m_time); }
-  bool isIndefinite() const { return std::isinf(m_time); }
-  bool isUnresolved() const { return std::isnan(m_time); }
+  bool IsFinite() const { return std::isfinite(time_); }
+  bool IsIndefinite() const { return std::isinf(time_); }
+  bool IsUnresolved() const { return std::isnan(time_); }
 
  private:
-  double m_time;
+  double time_;
 };
 
 class SMILTimeWithOrigin {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum Origin { ParserOrigin, ScriptOrigin };
+  enum Origin { kParserOrigin, kScriptOrigin };
 
-  SMILTimeWithOrigin() : m_origin(ParserOrigin) {}
+  SMILTimeWithOrigin() : origin_(kParserOrigin) {}
 
   SMILTimeWithOrigin(const SMILTime& time, Origin origin)
-      : m_time(time), m_origin(origin) {}
+      : time_(time), origin_(origin) {}
 
-  const SMILTime& time() const { return m_time; }
-  bool originIsScript() const { return m_origin == ScriptOrigin; }
+  const SMILTime& Time() const { return time_; }
+  bool OriginIsScript() const { return origin_ == kScriptOrigin; }
 
  private:
-  SMILTime m_time;
-  Origin m_origin;
+  SMILTime time_;
+  Origin origin_;
 };
 
 struct SMILInterval {
@@ -87,10 +87,10 @@ struct SMILInterval {
 };
 
 inline bool operator==(const SMILTime& a, const SMILTime& b) {
-  return (a.isUnresolved() && b.isUnresolved()) || a.value() == b.value();
+  return (a.IsUnresolved() && b.IsUnresolved()) || a.Value() == b.Value();
 }
 inline bool operator!(const SMILTime& a) {
-  return !a.isFinite() || !a.value();
+  return !a.IsFinite() || !a.Value();
 }
 inline bool operator!=(const SMILTime& a, const SMILTime& b) {
   return !operator==(a, b);
@@ -100,7 +100,7 @@ inline bool operator!=(const SMILTime& a, const SMILTime& b) {
 // (NaN). The first comparison is handled by IEEE754 but NaN values must be
 // checked explicitly to guarantee that unresolved is ordered correctly too.
 inline bool operator>(const SMILTime& a, const SMILTime& b) {
-  return a.isUnresolved() || (a.value() > b.value());
+  return a.IsUnresolved() || (a.Value() > b.Value());
 }
 inline bool operator<(const SMILTime& a, const SMILTime& b) {
   return operator>(b, a);
@@ -113,14 +113,14 @@ inline bool operator<=(const SMILTime& a, const SMILTime& b) {
 }
 inline bool operator<(const SMILTimeWithOrigin& a,
                       const SMILTimeWithOrigin& b) {
-  return a.time() < b.time();
+  return a.Time() < b.Time();
 }
 
 inline SMILTime operator+(const SMILTime& a, const SMILTime& b) {
-  return a.value() + b.value();
+  return a.Value() + b.Value();
 }
 inline SMILTime operator-(const SMILTime& a, const SMILTime& b) {
-  return a.value() - b.value();
+  return a.Value() - b.Value();
 }
 // So multiplying times does not make too much sense but SMIL defines it for
 // duration * repeatCount
@@ -129,18 +129,18 @@ SMILTime operator*(const SMILTime&, const SMILTime&);
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
   // Compare the "raw" values since the operator!= for SMILTime always return
   // true for non-finite times.
-  return a.begin.value() != b.begin.value() || a.end.value() != b.end.value();
+  return a.begin.Value() != b.begin.Value() || a.end.Value() != b.end.Value();
 }
 
 struct SMILTimeHash {
   STATIC_ONLY(SMILTimeHash);
-  static unsigned hash(const SMILTime& key) {
-    return WTF::FloatHash<double>::hash(key.value());
+  static unsigned GetHash(const SMILTime& key) {
+    return WTF::FloatHash<double>::GetHash(key.Value());
   }
-  static bool equal(const SMILTime& a, const SMILTime& b) {
-    return WTF::FloatHash<double>::equal(a.value(), b.value());
+  static bool Equal(const SMILTime& a, const SMILTime& b) {
+    return WTF::FloatHash<double>::Equal(a.Value(), b.Value());
   }
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 }  // namespace blink
@@ -154,11 +154,11 @@ struct DefaultHash<blink::SMILTime> {
 
 template <>
 struct HashTraits<blink::SMILTime> : GenericHashTraits<blink::SMILTime> {
-  static blink::SMILTime emptyValue() { return blink::SMILTime::unresolved(); }
-  static void constructDeletedValue(blink::SMILTime& slot, bool) {
+  static blink::SMILTime EmptyValue() { return blink::SMILTime::Unresolved(); }
+  static void ConstructDeletedValue(blink::SMILTime& slot, bool) {
     slot = -std::numeric_limits<double>::infinity();
   }
-  static bool isDeletedValue(blink::SMILTime value) {
+  static bool IsDeletedValue(blink::SMILTime value) {
     return value == -std::numeric_limits<double>::infinity();
   }
 };

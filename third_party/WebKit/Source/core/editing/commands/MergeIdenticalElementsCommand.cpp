@@ -33,62 +33,62 @@ namespace blink {
 
 MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(Element* first,
                                                              Element* second)
-    : SimpleEditCommand(first->document()),
-      m_element1(first),
-      m_element2(second) {
-  DCHECK(m_element1);
-  DCHECK(m_element2);
-  DCHECK_EQ(m_element1->nextSibling(), m_element2);
+    : SimpleEditCommand(first->GetDocument()),
+      element1_(first),
+      element2_(second) {
+  DCHECK(element1_);
+  DCHECK(element2_);
+  DCHECK_EQ(element1_->nextSibling(), element2_);
 }
 
-void MergeIdenticalElementsCommand::doApply(EditingState*) {
-  if (m_element1->nextSibling() != m_element2 ||
-      !hasEditableStyle(*m_element1) || !hasEditableStyle(*m_element2))
+void MergeIdenticalElementsCommand::DoApply(EditingState*) {
+  if (element1_->nextSibling() != element2_ || !HasEditableStyle(*element1_) ||
+      !HasEditableStyle(*element2_))
     return;
 
-  m_atChild = m_element2->firstChild();
+  at_child_ = element2_->FirstChild();
 
   NodeVector children;
-  getChildNodes(*m_element1, children);
+  GetChildNodes(*element1_, children);
 
   for (auto& child : children) {
-    m_element2->insertBefore(child.release(), m_atChild.get(),
-                             IGNORE_EXCEPTION_FOR_TESTING);
+    element2_->InsertBefore(child.Release(), at_child_.Get(),
+                            IGNORE_EXCEPTION_FOR_TESTING);
   }
 
-  m_element1->remove(IGNORE_EXCEPTION_FOR_TESTING);
+  element1_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void MergeIdenticalElementsCommand::doUnapply() {
-  DCHECK(m_element1);
-  DCHECK(m_element2);
+void MergeIdenticalElementsCommand::DoUnapply() {
+  DCHECK(element1_);
+  DCHECK(element2_);
 
-  Node* atChild = m_atChild.release();
+  Node* at_child = at_child_.Release();
 
-  ContainerNode* parent = m_element2->parentNode();
-  if (!parent || !hasEditableStyle(*parent))
+  ContainerNode* parent = element2_->parentNode();
+  if (!parent || !HasEditableStyle(*parent))
     return;
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
-  if (exceptionState.hadException())
+  parent->InsertBefore(element1_.Get(), element2_.Get(), exception_state);
+  if (exception_state.HadException())
     return;
 
   HeapVector<Member<Node>> children;
-  for (Node* child = m_element2->firstChild(); child && child != atChild;
+  for (Node* child = element2_->FirstChild(); child && child != at_child;
        child = child->nextSibling())
     children.push_back(child);
 
   for (auto& child : children)
-    m_element1->appendChild(child.release(), exceptionState);
+    element1_->AppendChild(child.Release(), exception_state);
 }
 
 DEFINE_TRACE(MergeIdenticalElementsCommand) {
-  visitor->trace(m_element1);
-  visitor->trace(m_element2);
-  visitor->trace(m_atChild);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(element1_);
+  visitor->Trace(element2_);
+  visitor->Trace(at_child_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

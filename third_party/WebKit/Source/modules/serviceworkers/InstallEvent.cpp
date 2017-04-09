@@ -11,87 +11,87 @@
 
 namespace blink {
 
-InstallEvent* InstallEvent::create(const AtomicString& type,
-                                   const ExtendableEventInit& eventInit) {
-  return new InstallEvent(type, eventInit);
+InstallEvent* InstallEvent::Create(const AtomicString& type,
+                                   const ExtendableEventInit& event_init) {
+  return new InstallEvent(type, event_init);
 }
 
-InstallEvent* InstallEvent::create(const AtomicString& type,
-                                   const ExtendableEventInit& eventInit,
+InstallEvent* InstallEvent::Create(const AtomicString& type,
+                                   const ExtendableEventInit& event_init,
                                    WaitUntilObserver* observer) {
-  return new InstallEvent(type, eventInit, observer);
+  return new InstallEvent(type, event_init, observer);
 }
 
 InstallEvent::~InstallEvent() {}
 
-void InstallEvent::registerForeignFetch(ScriptState* scriptState,
+void InstallEvent::registerForeignFetch(ScriptState* script_state,
                                         const ForeignFetchOptions& options,
-                                        ExceptionState& exceptionState) {
-  if (!isBeingDispatched()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The event handler is already finished.");
+                                        ExceptionState& exception_state) {
+  if (!IsBeingDispatched()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "The event handler is already finished.");
     return;
   }
 
-  if (!options.hasOrigins() || options.origins().isEmpty()) {
-    exceptionState.throwTypeError("At least one origin is required");
+  if (!options.hasOrigins() || options.origins().IsEmpty()) {
+    exception_state.ThrowTypeError("At least one origin is required");
     return;
   }
-  const Vector<String>& originList = options.origins();
+  const Vector<String>& origin_list = options.origins();
 
   // The origins parameter is either just a "*" to indicate all origins, or an
   // explicit list of origins as absolute URLs. Internally an empty list of
   // origins is used to represent the "*" case though.
-  Vector<RefPtr<SecurityOrigin>> parsedOrigins;
-  if (originList.size() != 1 || originList[0] != "*") {
-    parsedOrigins.resize(originList.size());
-    for (size_t i = 0; i < originList.size(); ++i) {
-      parsedOrigins[i] = SecurityOrigin::createFromString(originList[i]);
+  Vector<RefPtr<SecurityOrigin>> parsed_origins;
+  if (origin_list.size() != 1 || origin_list[0] != "*") {
+    parsed_origins.Resize(origin_list.size());
+    for (size_t i = 0; i < origin_list.size(); ++i) {
+      parsed_origins[i] = SecurityOrigin::CreateFromString(origin_list[i]);
       // Invalid URLs will result in a unique origin. And in general
       // unique origins should not be accepted.
-      if (parsedOrigins[i]->isUnique()) {
-        exceptionState.throwTypeError("Invalid origin URL: " + originList[i]);
+      if (parsed_origins[i]->IsUnique()) {
+        exception_state.ThrowTypeError("Invalid origin URL: " + origin_list[i]);
         return;
       }
     }
   }
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   ServiceWorkerGlobalScopeClient* client =
-      ServiceWorkerGlobalScopeClient::from(executionContext);
+      ServiceWorkerGlobalScopeClient::From(execution_context);
 
-  String scopePath = static_cast<KURL>(client->scope()).path();
-  RefPtr<SecurityOrigin> origin = executionContext->getSecurityOrigin();
+  String scope_path = static_cast<KURL>(client->Scope()).GetPath();
+  RefPtr<SecurityOrigin> origin = execution_context->GetSecurityOrigin();
 
-  if (!options.hasScopes() || options.scopes().isEmpty()) {
-    exceptionState.throwTypeError("At least one scope is required");
+  if (!options.hasScopes() || options.scopes().IsEmpty()) {
+    exception_state.ThrowTypeError("At least one scope is required");
     return;
   }
-  const Vector<String>& subScopes = options.scopes();
-  Vector<KURL> subScopeURLs(subScopes.size());
-  for (size_t i = 0; i < subScopes.size(); ++i) {
-    subScopeURLs[i] = executionContext->completeURL(subScopes[i]);
-    if (!subScopeURLs[i].isValid()) {
-      exceptionState.throwTypeError("Invalid subscope URL: " + subScopes[i]);
+  const Vector<String>& sub_scopes = options.scopes();
+  Vector<KURL> sub_scope_ur_ls(sub_scopes.size());
+  for (size_t i = 0; i < sub_scopes.size(); ++i) {
+    sub_scope_ur_ls[i] = execution_context->CompleteURL(sub_scopes[i]);
+    if (!sub_scope_ur_ls[i].IsValid()) {
+      exception_state.ThrowTypeError("Invalid subscope URL: " + sub_scopes[i]);
       return;
     }
-    subScopeURLs[i].removeFragmentIdentifier();
-    if (!origin->canRequest(subScopeURLs[i])) {
-      exceptionState.throwTypeError("Subscope URL is not within scope: " +
-                                    subScopes[i]);
+    sub_scope_ur_ls[i].RemoveFragmentIdentifier();
+    if (!origin->CanRequest(sub_scope_ur_ls[i])) {
+      exception_state.ThrowTypeError("Subscope URL is not within scope: " +
+                                     sub_scopes[i]);
       return;
     }
-    String subScopePath = subScopeURLs[i].path();
-    if (!subScopePath.startsWith(scopePath)) {
-      exceptionState.throwTypeError("Subscope URL is not within scope: " +
-                                    subScopes[i]);
+    String sub_scope_path = sub_scope_ur_ls[i].GetPath();
+    if (!sub_scope_path.StartsWith(scope_path)) {
+      exception_state.ThrowTypeError("Subscope URL is not within scope: " +
+                                     sub_scopes[i]);
       return;
     }
   }
-  client->registerForeignFetchScopes(subScopeURLs, parsedOrigins);
+  client->RegisterForeignFetchScopes(sub_scope_ur_ls, parsed_origins);
 }
 
-const AtomicString& InstallEvent::interfaceName() const {
+const AtomicString& InstallEvent::InterfaceName() const {
   return EventNames::InstallEvent;
 }
 

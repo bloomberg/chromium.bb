@@ -15,29 +15,29 @@ class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 
-inline v8::Local<v8::Value> ToV8(const SQLValue& sqlValue,
-                                 v8::Local<v8::Object> creationContext,
+inline v8::Local<v8::Value> ToV8(const SQLValue& sql_value,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  switch (sqlValue.getType()) {
-    case SQLValue::NullValue:
+  switch (sql_value.GetType()) {
+    case SQLValue::kNullValue:
       return v8::Null(isolate);
-    case SQLValue::NumberValue:
-      return v8::Number::New(isolate, sqlValue.number());
-    case SQLValue::StringValue:
-      return v8String(isolate, sqlValue.string());
+    case SQLValue::kNumberValue:
+      return v8::Number::New(isolate, sql_value.Number());
+    case SQLValue::kStringValue:
+      return V8String(isolate, sql_value.GetString());
   }
   ASSERT_NOT_REACHED();
   return v8::Local<v8::Value>();
 }
 
 v8::Local<v8::Value> ToV8(const IDBKeyPath&,
-                          v8::Local<v8::Object> creationContext,
+                          v8::Local<v8::Object> creation_context,
                           v8::Isolate*);
 MODULES_EXPORT v8::Local<v8::Value> ToV8(const IDBKey*,
-                                         v8::Local<v8::Object> creationContext,
+                                         v8::Local<v8::Object> creation_context,
                                          v8::Isolate*);
 v8::Local<v8::Value> ToV8(const IDBAny*,
-                          v8::Local<v8::Object> creationContext,
+                          v8::Local<v8::Object> creation_context,
                           v8::Isolate*);
 
 }  // namespace blink

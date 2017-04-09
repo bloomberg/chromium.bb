@@ -27,86 +27,86 @@
 namespace blink {
 
 CSSParserSelector::CSSParserSelector()
-    : m_selector(WTF::makeUnique<CSSSelector>()) {}
+    : selector_(WTF::MakeUnique<CSSSelector>()) {}
 
-CSSParserSelector::CSSParserSelector(const QualifiedName& tagQName,
-                                     bool isImplicit)
-    : m_selector(WTF::makeUnique<CSSSelector>(tagQName, isImplicit)) {}
+CSSParserSelector::CSSParserSelector(const QualifiedName& tag_q_name,
+                                     bool is_implicit)
+    : selector_(WTF::MakeUnique<CSSSelector>(tag_q_name, is_implicit)) {}
 
 CSSParserSelector::~CSSParserSelector() {
-  if (!m_tagHistory)
+  if (!tag_history_)
     return;
-  Vector<std::unique_ptr<CSSParserSelector>, 16> toDelete;
-  std::unique_ptr<CSSParserSelector> selector = std::move(m_tagHistory);
+  Vector<std::unique_ptr<CSSParserSelector>, 16> to_delete;
+  std::unique_ptr<CSSParserSelector> selector = std::move(tag_history_);
   while (true) {
-    std::unique_ptr<CSSParserSelector> next = std::move(selector->m_tagHistory);
-    toDelete.push_back(std::move(selector));
+    std::unique_ptr<CSSParserSelector> next = std::move(selector->tag_history_);
+    to_delete.push_back(std::move(selector));
     if (!next)
       break;
     selector = std::move(next);
   }
 }
 
-void CSSParserSelector::adoptSelectorVector(
-    Vector<std::unique_ptr<CSSParserSelector>>& selectorVector) {
-  CSSSelectorList* selectorList =
-      new CSSSelectorList(CSSSelectorList::adoptSelectorVector(selectorVector));
-  m_selector->setSelectorList(WTF::wrapUnique(selectorList));
+void CSSParserSelector::AdoptSelectorVector(
+    Vector<std::unique_ptr<CSSParserSelector>>& selector_vector) {
+  CSSSelectorList* selector_list = new CSSSelectorList(
+      CSSSelectorList::AdoptSelectorVector(selector_vector));
+  selector_->SetSelectorList(WTF::WrapUnique(selector_list));
 }
 
-void CSSParserSelector::setSelectorList(
-    std::unique_ptr<CSSSelectorList> selectorList) {
-  m_selector->setSelectorList(std::move(selectorList));
+void CSSParserSelector::SetSelectorList(
+    std::unique_ptr<CSSSelectorList> selector_list) {
+  selector_->SetSelectorList(std::move(selector_list));
 }
 
-bool CSSParserSelector::isSimple() const {
-  if (m_selector->selectorList() ||
-      m_selector->match() == CSSSelector::PseudoElement)
+bool CSSParserSelector::IsSimple() const {
+  if (selector_->SelectorList() ||
+      selector_->Match() == CSSSelector::kPseudoElement)
     return false;
 
-  if (!m_tagHistory)
+  if (!tag_history_)
     return true;
 
-  if (m_selector->match() == CSSSelector::Tag) {
+  if (selector_->Match() == CSSSelector::kTag) {
     // We can't check against anyQName() here because namespace may not be
     // nullAtom.
     // Example:
     //     @namespace "http://www.w3.org/2000/svg";
     //     svg:not(:root) { ...
-    if (m_selector->tagQName().localName() == starAtom)
-      return m_tagHistory->isSimple();
+    if (selector_->TagQName().LocalName() == g_star_atom)
+      return tag_history_->IsSimple();
   }
 
   return false;
 }
 
-void CSSParserSelector::appendTagHistory(
+void CSSParserSelector::AppendTagHistory(
     CSSSelector::RelationType relation,
     std::unique_ptr<CSSParserSelector> selector) {
   CSSParserSelector* end = this;
-  while (end->tagHistory())
-    end = end->tagHistory();
-  end->setRelation(relation);
-  end->setTagHistory(std::move(selector));
+  while (end->TagHistory())
+    end = end->TagHistory();
+  end->SetRelation(relation);
+  end->SetTagHistory(std::move(selector));
 }
 
-std::unique_ptr<CSSParserSelector> CSSParserSelector::releaseTagHistory() {
-  setRelation(CSSSelector::SubSelector);
-  return std::move(m_tagHistory);
+std::unique_ptr<CSSParserSelector> CSSParserSelector::ReleaseTagHistory() {
+  SetRelation(CSSSelector::kSubSelector);
+  return std::move(tag_history_);
 }
 
-void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName,
-                                           bool isImplicit) {
-  std::unique_ptr<CSSParserSelector> second = CSSParserSelector::create();
-  second->m_selector = std::move(m_selector);
-  second->m_tagHistory = std::move(m_tagHistory);
-  m_tagHistory = std::move(second);
-  m_selector = WTF::makeUnique<CSSSelector>(tagQName, isImplicit);
+void CSSParserSelector::PrependTagSelector(const QualifiedName& tag_q_name,
+                                           bool is_implicit) {
+  std::unique_ptr<CSSParserSelector> second = CSSParserSelector::Create();
+  second->selector_ = std::move(selector_);
+  second->tag_history_ = std::move(tag_history_);
+  tag_history_ = std::move(second);
+  selector_ = WTF::MakeUnique<CSSSelector>(tag_q_name, is_implicit);
 }
 
-bool CSSParserSelector::isHostPseudoSelector() const {
-  return pseudoType() == CSSSelector::PseudoHost ||
-         pseudoType() == CSSSelector::PseudoHostContext;
+bool CSSParserSelector::IsHostPseudoSelector() const {
+  return GetPseudoType() == CSSSelector::kPseudoHost ||
+         GetPseudoType() == CSSSelector::kPseudoHostContext;
 }
 
 }  // namespace blink

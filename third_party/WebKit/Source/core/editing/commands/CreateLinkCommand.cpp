@@ -32,34 +32,34 @@ namespace blink {
 
 CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
     : CompositeEditCommand(document) {
-  m_url = url;
+  url_ = url;
 }
 
-void CreateLinkCommand::doApply(EditingState* editingState) {
-  if (endingSelection().isNone())
+void CreateLinkCommand::DoApply(EditingState* editing_state) {
+  if (EndingSelection().IsNone())
     return;
 
-  HTMLAnchorElement* anchorElement = HTMLAnchorElement::create(document());
-  anchorElement->setHref(AtomicString(m_url));
+  HTMLAnchorElement* anchor_element = HTMLAnchorElement::Create(GetDocument());
+  anchor_element->SetHref(AtomicString(url_));
 
-  if (endingSelection().isRange()) {
-    applyStyledElement(anchorElement, editingState);
-    if (editingState->isAborted())
+  if (EndingSelection().IsRange()) {
+    ApplyStyledElement(anchor_element, editing_state);
+    if (editing_state->IsAborted())
       return;
   } else {
-    insertNodeAt(anchorElement, endingSelection().start(), editingState);
-    if (editingState->isAborted())
+    InsertNodeAt(anchor_element, EndingSelection().Start(), editing_state);
+    if (editing_state->IsAborted())
       return;
-    Text* textNode = Text::create(document(), m_url);
-    appendNode(textNode, anchorElement, editingState);
-    if (editingState->isAborted())
+    Text* text_node = Text::Create(GetDocument(), url_);
+    AppendNode(text_node, anchor_element, editing_state);
+    if (editing_state->IsAborted())
       return;
-    setEndingSelection(
+    SetEndingSelection(
         SelectionInDOMTree::Builder()
-            .collapse(Position::inParentBeforeNode(*anchorElement))
-            .extend(Position::inParentAfterNode(*anchorElement))
-            .setIsDirectional(endingSelection().isDirectional())
-            .build());
+            .Collapse(Position::InParentBeforeNode(*anchor_element))
+            .Extend(Position::InParentAfterNode(*anchor_element))
+            .SetIsDirectional(EndingSelection().IsDirectional())
+            .Build());
   }
 }
 

@@ -21,7 +21,7 @@ typedef struct {
   const bool output;
 } TestCase;
 
-TestCase screenTestCases[] = {
+TestCase g_screen_test_cases[] = {
     {"", 1},
     {" ", 1},
     {"screen", 1},
@@ -69,7 +69,7 @@ TestCase screenTestCases[] = {
     {0, 0}  // Do not remove the terminator line.
 };
 
-TestCase viewportTestCases[] = {
+TestCase g_viewport_test_cases[] = {
     {"all and (min-width: 500px)", 1},
     {"(min-width: 500px)", 1},
     {"(min-width: 501px)", 0},
@@ -94,7 +94,7 @@ TestCase viewportTestCases[] = {
     {0, 0}  // Do not remove the terminator line.
 };
 
-TestCase floatViewportTestCases[] = {
+TestCase g_float_viewport_test_cases[] = {
     {"all and (min-width: 600.5px)", 1},
     {"(min-width: 600px)", 1},
     {"(min-width: 600.5px)", 1},
@@ -118,7 +118,7 @@ TestCase floatViewportTestCases[] = {
     {0, 0}  // Do not remove the terminator line.
 };
 
-TestCase floatNonFriendlyViewportTestCases[] = {
+TestCase g_float_non_friendly_viewport_test_cases[] = {
     {"(min-width: 821px)", 1},
     {"(max-width: 821px)", 1},
     {"(width: 821px)", 1},
@@ -130,105 +130,107 @@ TestCase floatNonFriendlyViewportTestCases[] = {
     {0, 0}  // Do not remove the terminator line.
 };
 
-TestCase printTestCases[] = {
+TestCase g_print_test_cases[] = {
     {"print and (min-resolution: 1dppx)", 1},
     {"print and (min-resolution: 118dpcm)", 1},
     {"print and (min-resolution: 119dpcm)", 0},
     {0, 0}  // Do not remove the terminator line.
 };
 
-void testMQEvaluator(TestCase* testCases,
-                     const MediaQueryEvaluator& mediaQueryEvaluator) {
-  Persistent<MediaQuerySet> querySet = nullptr;
-  for (unsigned i = 0; testCases[i].input; ++i) {
-    querySet = MediaQuerySet::create(testCases[i].input);
-    EXPECT_EQ(testCases[i].output, mediaQueryEvaluator.eval(querySet.get()));
+void TestMQEvaluator(TestCase* test_cases,
+                     const MediaQueryEvaluator& media_query_evaluator) {
+  Persistent<MediaQuerySet> query_set = nullptr;
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    query_set = MediaQuerySet::Create(test_cases[i].input);
+    EXPECT_EQ(test_cases[i].output,
+              media_query_evaluator.Eval(query_set.Get()));
   }
 }
 
 TEST(MediaQueryEvaluatorTest, Cached) {
   MediaValuesCached::MediaValuesCachedData data;
-  data.viewportWidth = 500;
-  data.viewportHeight = 500;
-  data.deviceWidth = 500;
-  data.deviceHeight = 500;
-  data.devicePixelRatio = 2.0;
-  data.colorBitsPerComponent = 24;
-  data.monochromeBitsPerComponent = 0;
-  data.primaryPointerType = PointerTypeFine;
-  data.primaryHoverType = HoverTypeHover;
-  data.defaultFontSize = 16;
-  data.threeDEnabled = true;
-  data.mediaType = MediaTypeNames::screen;
-  data.strictMode = true;
-  data.displayMode = WebDisplayModeBrowser;
-  data.displayShape = DisplayShapeRect;
-  MediaValues* mediaValues = MediaValuesCached::create(data);
+  data.viewport_width = 500;
+  data.viewport_height = 500;
+  data.device_width = 500;
+  data.device_height = 500;
+  data.device_pixel_ratio = 2.0;
+  data.color_bits_per_component = 24;
+  data.monochrome_bits_per_component = 0;
+  data.primary_pointer_type = kPointerTypeFine;
+  data.primary_hover_type = kHoverTypeHover;
+  data.default_font_size = 16;
+  data.three_d_enabled = true;
+  data.media_type = MediaTypeNames::screen;
+  data.strict_mode = true;
+  data.display_mode = kWebDisplayModeBrowser;
+  data.display_shape = kDisplayShapeRect;
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
-  MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
-  testMQEvaluator(screenTestCases, mediaQueryEvaluator);
-  testMQEvaluator(viewportTestCases, mediaQueryEvaluator);
+  MediaQueryEvaluator media_query_evaluator(*media_values);
+  TestMQEvaluator(g_screen_test_cases, media_query_evaluator);
+  TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
 
-  data.mediaType = MediaTypeNames::print;
-  mediaValues = MediaValuesCached::create(data);
-  MediaQueryEvaluator printMediaQueryEvaluator(*mediaValues);
-  testMQEvaluator(printTestCases, printMediaQueryEvaluator);
+  data.media_type = MediaTypeNames::print;
+  media_values = MediaValuesCached::Create(data);
+  MediaQueryEvaluator print_media_query_evaluator(*media_values);
+  TestMQEvaluator(g_print_test_cases, print_media_query_evaluator);
 }
 
 TEST(MediaQueryEvaluatorTest, Dynamic) {
-  std::unique_ptr<DummyPageHolder> pageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  pageHolder->frameView().setMediaType(MediaTypeNames::screen);
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  page_holder->GetFrameView().SetMediaType(MediaTypeNames::screen);
 
-  MediaQueryEvaluator mediaQueryEvaluator(&pageHolder->frame());
-  testMQEvaluator(viewportTestCases, mediaQueryEvaluator);
-  pageHolder->frameView().setMediaType(MediaTypeNames::print);
-  testMQEvaluator(printTestCases, mediaQueryEvaluator);
+  MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());
+  TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
+  page_holder->GetFrameView().SetMediaType(MediaTypeNames::print);
+  TestMQEvaluator(g_print_test_cases, media_query_evaluator);
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicNoView) {
-  std::unique_ptr<DummyPageHolder> pageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  LocalFrame* frame = &pageHolder->frame();
-  pageHolder.reset();
-  ASSERT_EQ(nullptr, frame->view());
-  MediaQueryEvaluator mediaQueryEvaluator(frame);
-  MediaQuerySet* querySet = MediaQuerySet::create("foobar");
-  EXPECT_FALSE(mediaQueryEvaluator.eval(querySet));
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  LocalFrame* frame = &page_holder->GetFrame();
+  page_holder.reset();
+  ASSERT_EQ(nullptr, frame->View());
+  MediaQueryEvaluator media_query_evaluator(frame);
+  MediaQuerySet* query_set = MediaQuerySet::Create("foobar");
+  EXPECT_FALSE(media_query_evaluator.Eval(query_set));
 }
 
 TEST(MediaQueryEvaluatorTest, CachedFloatViewport) {
   MediaValuesCached::MediaValuesCachedData data;
-  data.viewportWidth = 600.5;
-  data.viewportHeight = 700.125;
-  MediaValues* mediaValues = MediaValuesCached::create(data);
+  data.viewport_width = 600.5;
+  data.viewport_height = 700.125;
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
-  MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
-  testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);
+  MediaQueryEvaluator media_query_evaluator(*media_values);
+  TestMQEvaluator(g_float_viewport_test_cases, media_query_evaluator);
 }
 
 TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
   MediaValuesCached::MediaValuesCachedData data;
-  data.viewportWidth = 821;
-  data.viewportHeight = 821;
-  MediaValues* mediaValues = MediaValuesCached::create(data);
+  data.viewport_width = 821;
+  data.viewport_height = 821;
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
-  MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
-  testMQEvaluator(floatNonFriendlyViewportTestCases, mediaQueryEvaluator);
+  MediaQueryEvaluator media_query_evaluator(*media_values);
+  TestMQEvaluator(g_float_non_friendly_viewport_test_cases,
+                  media_query_evaluator);
 }
 
 TEST(MediaQueryEvaluatorTest, InitialViewport) {
-  std::unique_ptr<DummyPageHolder> pageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  pageHolder->frameView().setMediaType(MediaTypeNames::screen);
-  pageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
-  pageHolder->frameView().setInitialViewportSize(IntSize(500, 500));
-  pageHolder->frameView().setLayoutSize(IntSize(800, 800));
-  pageHolder->frameView().setFrameRect(IntRect(0, 0, 800, 800));
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  page_holder->GetFrameView().SetMediaType(MediaTypeNames::screen);
+  page_holder->GetFrameView().SetLayoutSizeFixedToFrameSize(false);
+  page_holder->GetFrameView().SetInitialViewportSize(IntSize(500, 500));
+  page_holder->GetFrameView().SetLayoutSize(IntSize(800, 800));
+  page_holder->GetFrameView().SetFrameRect(IntRect(0, 0, 800, 800));
 
-  MediaQueryEvaluator mediaQueryEvaluator(
-      MediaValuesInitialViewport::create(pageHolder->frame()));
-  testMQEvaluator(viewportTestCases, mediaQueryEvaluator);
+  MediaQueryEvaluator media_query_evaluator(
+      MediaValuesInitialViewport::Create(page_holder->GetFrame()));
+  TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
 }
 
 }  // namespace blink

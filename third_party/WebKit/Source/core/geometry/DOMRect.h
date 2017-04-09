@@ -18,16 +18,16 @@ class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMRect* create(double x = 0,
+  static DOMRect* Create(double x = 0,
                          double y = 0,
                          double width = 0,
                          double height = 0);
   static DOMRect* fromRect(const DOMRectInit&);
 
-  void setX(double x) { m_x = x; }
-  void setY(double y) { m_y = y; }
-  void setWidth(double width) { m_width = width; }
-  void setHeight(double height) { m_height = height; }
+  void setX(double x) { x_ = x; }
+  void setY(double y) { y_ = y; }
+  void setWidth(double width) { width_ = width; }
+  void setHeight(double height) { height_ = height; }
 
  protected:
   DOMRect(double x, double y, double z, double w);

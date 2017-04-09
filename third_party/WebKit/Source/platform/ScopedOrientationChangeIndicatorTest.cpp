@@ -9,36 +9,36 @@
 namespace blink {
 
 TEST(ScopedOrientationChangeIndicatorTest, InitialState) {
-  EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_FALSE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 }
 
 TEST(ScopedOrientationChangeIndicatorTest, ConstructOneIndicatorWithGesture) {
   ScopedOrientationChangeIndicator indicator;
 
-  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 }
 
 TEST(ScopedOrientationChangeIndicatorTest, MultipleIndicatorInTheSameScope) {
   ScopedOrientationChangeIndicator indicator1;
 
-  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 
   ScopedOrientationChangeIndicator indicator2;
 
-  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 }
 
 TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingGesture) {
   { ScopedOrientationChangeIndicator indicator; }
 
-  EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_FALSE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 }
 
 TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingNoGesture) {
   ScopedOrientationChangeIndicator indicator;
   { ScopedOrientationChangeIndicator indicator; }
 
-  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::ProcessingOrientationChange());
 }
 
 }  // namespace blink

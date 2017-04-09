@@ -36,7 +36,7 @@
 namespace blink {
 
 V0CustomElementMicrotaskResolutionStep*
-V0CustomElementMicrotaskResolutionStep::create(
+V0CustomElementMicrotaskResolutionStep::Create(
     V0CustomElementRegistrationContext* context,
     Element* element,
     const V0CustomElementDescriptor& descriptor) {
@@ -48,27 +48,27 @@ V0CustomElementMicrotaskResolutionStep::V0CustomElementMicrotaskResolutionStep(
     V0CustomElementRegistrationContext* context,
     Element* element,
     const V0CustomElementDescriptor& descriptor)
-    : m_context(context), m_element(element), m_descriptor(descriptor) {}
+    : context_(context), element_(element), descriptor_(descriptor) {}
 
 V0CustomElementMicrotaskResolutionStep::
     ~V0CustomElementMicrotaskResolutionStep() {}
 
 V0CustomElementMicrotaskStep::Result
-V0CustomElementMicrotaskResolutionStep::process() {
-  m_context->resolve(m_element.get(), m_descriptor);
-  return V0CustomElementMicrotaskStep::FinishedProcessing;
+V0CustomElementMicrotaskResolutionStep::Process() {
+  context_->Resolve(element_.Get(), descriptor_);
+  return V0CustomElementMicrotaskStep::kFinishedProcessing;
 }
 
 DEFINE_TRACE(V0CustomElementMicrotaskResolutionStep) {
-  visitor->trace(m_context);
-  visitor->trace(m_element);
-  V0CustomElementMicrotaskStep::trace(visitor);
+  visitor->Trace(context_);
+  visitor->Trace(element_);
+  V0CustomElementMicrotaskStep::Trace(visitor);
 }
 
 #if !defined(NDEBUG)
-void V0CustomElementMicrotaskResolutionStep::show(unsigned indent) {
+void V0CustomElementMicrotaskResolutionStep::Show(unsigned indent) {
   fprintf(stderr, "%*sResolution: ", indent, "");
-  m_element->outerHTML().show();
+  element_->outerHTML().Show();
 }
 #endif
 

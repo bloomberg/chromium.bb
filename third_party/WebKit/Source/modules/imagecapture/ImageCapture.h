@@ -37,22 +37,22 @@ class MODULES_EXPORT ImageCapture final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ImageCapture* create(ExecutionContext*,
+  static ImageCapture* Create(ExecutionContext*,
                               MediaStreamTrack*,
                               ExceptionState&);
   ~ImageCapture() override;
 
   // EventTarget implementation.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
+  MediaStreamTrack* videoStreamTrack() const { return stream_track_.Get(); }
 
   ScriptPromise getPhotoCapabilities(ScriptState*);
 
@@ -62,40 +62,40 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise grabFrame(ScriptState*);
 
-  MediaTrackCapabilities& getMediaTrackCapabilities();
-  void setMediaTrackConstraints(ScriptPromiseResolver*,
+  MediaTrackCapabilities& GetMediaTrackCapabilities();
+  void SetMediaTrackConstraints(ScriptPromiseResolver*,
                                 const HeapVector<MediaTrackConstraintSet>&);
-  const MediaTrackConstraintSet& getMediaTrackConstraints() const;
-  void clearMediaTrackConstraints(ScriptPromiseResolver*);
-  void getMediaTrackSettings(MediaTrackSettings&) const;
+  const MediaTrackConstraintSet& GetMediaTrackConstraints() const;
+  void ClearMediaTrackConstraints(ScriptPromiseResolver*);
+  void GetMediaTrackSettings(MediaTrackSettings&) const;
 
   // TODO(mcasas): Remove this service method, https://crbug.com/338503.
-  bool hasNonImageCaptureConstraints(const MediaTrackConstraints&) const;
+  bool HasNonImageCaptureConstraints(const MediaTrackConstraints&) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
-  void onPhotoCapabilities(ScriptPromiseResolver*,
+  void OnPhotoCapabilities(ScriptPromiseResolver*,
                            media::mojom::blink::PhotoCapabilitiesPtr);
-  void onSetOptions(ScriptPromiseResolver*, bool);
-  void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
-  void onCapabilitiesUpdate(media::mojom::blink::PhotoCapabilitiesPtr);
+  void OnSetOptions(ScriptPromiseResolver*, bool);
+  void OnTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
+  void OnCapabilitiesUpdate(media::mojom::blink::PhotoCapabilitiesPtr);
 
-  void onCapabilitiesUpdateInternal(
+  void OnCapabilitiesUpdateInternal(
       const media::mojom::blink::PhotoCapabilities&);
-  void onServiceConnectionError();
+  void OnServiceConnectionError();
 
-  Member<MediaStreamTrack> m_streamTrack;
-  std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
-  media::mojom::blink::ImageCapturePtr m_service;
+  Member<MediaStreamTrack> stream_track_;
+  std::unique_ptr<WebImageCaptureFrameGrabber> frame_grabber_;
+  media::mojom::blink::ImageCapturePtr service_;
 
-  MediaTrackCapabilities m_capabilities;
-  MediaTrackSettings m_settings;
-  MediaTrackConstraintSet m_currentConstraints;
+  MediaTrackCapabilities capabilities_;
+  MediaTrackSettings settings_;
+  MediaTrackConstraintSet current_constraints_;
 
-  HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
+  HeapHashSet<Member<ScriptPromiseResolver>> service_requests_;
 };
 
 }  // namespace blink

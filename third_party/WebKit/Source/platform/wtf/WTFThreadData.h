@@ -49,41 +49,41 @@ class WTF_EXPORT WTFThreadData {
   WTFThreadData();
   ~WTFThreadData();
 
-  AtomicStringTable& getAtomicStringTable() { return *m_atomicStringTable; }
+  AtomicStringTable& GetAtomicStringTable() { return *atomic_string_table_; }
 
-  ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
+  ICUConverterWrapper& CachedConverterICU() { return *cached_converter_icu_; }
 
-  ThreadIdentifier threadId() const { return m_threadId; }
+  ThreadIdentifier ThreadId() const { return thread_id_; }
 
   // Must be called on the main thread before any callers to wtfThreadData().
-  static void initialize();
+  static void Initialize();
 
 #if OS(WIN) && COMPILER(MSVC)
-  static size_t threadStackSize();
+  static size_t ThreadStackSize();
 #endif
 
  private:
-  std::unique_ptr<AtomicStringTable> m_atomicStringTable;
-  std::unique_ptr<ICUConverterWrapper> m_cachedConverterICU;
+  std::unique_ptr<AtomicStringTable> atomic_string_table_;
+  std::unique_ptr<ICUConverterWrapper> cached_converter_icu_;
 
-  ThreadIdentifier m_threadId;
+  ThreadIdentifier thread_id_;
 
 #if OS(WIN) && COMPILER(MSVC)
-  size_t m_threadStackSize = 0u;
+  size_t thread_stack_size_ = 0u;
 #endif
 
-  static ThreadSpecific<WTFThreadData>* staticData;
-  friend WTFThreadData& wtfThreadData();
+  static ThreadSpecific<WTFThreadData>* static_data_;
+  friend WTFThreadData& WtfThreadData();
 };
 
-inline WTFThreadData& wtfThreadData() {
-  DCHECK(WTFThreadData::staticData);
-  return **WTFThreadData::staticData;
+inline WTFThreadData& WtfThreadData() {
+  DCHECK(WTFThreadData::static_data_);
+  return **WTFThreadData::static_data_;
 }
 
 }  // namespace WTF
 
 using WTF::WTFThreadData;
-using WTF::wtfThreadData;
+using WTF::WtfThreadData;
 
 #endif  // WTFThreadData_h

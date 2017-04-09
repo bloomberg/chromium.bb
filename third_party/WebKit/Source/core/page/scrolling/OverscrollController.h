@@ -22,31 +22,31 @@ class VisualViewport;
 // as soon as a gesture ends.
 class OverscrollController : public GarbageCollected<OverscrollController> {
  public:
-  static OverscrollController* create(const VisualViewport& visualViewport,
-                                      ChromeClient& chromeClient) {
-    return new OverscrollController(visualViewport, chromeClient);
+  static OverscrollController* Create(const VisualViewport& visual_viewport,
+                                      ChromeClient& chrome_client) {
+    return new OverscrollController(visual_viewport, chrome_client);
   }
 
-  void resetAccumulated(bool resetX, bool resetY);
+  void ResetAccumulated(bool reset_x, bool reset_y);
 
   // Reports unused scroll as overscroll to the content layer. The position
   // argument is the most recent location of the gesture, the finger position
   // for touch scrolling and the cursor position for wheel. Velocity is used
   // in the case of a fling gesture where we want the overscroll to feel like
   // it has momentum.
-  void handleOverscroll(const ScrollResult&,
-                        const FloatPoint& positionInRootFrame,
-                        const FloatSize& velocityInRootFrame);
+  void HandleOverscroll(const ScrollResult&,
+                        const FloatPoint& position_in_root_frame,
+                        const FloatSize& velocity_in_root_frame);
 
   DECLARE_TRACE();
 
  private:
   OverscrollController(const VisualViewport&, ChromeClient&);
 
-  WeakMember<const VisualViewport> m_visualViewport;
-  WeakMember<ChromeClient> m_chromeClient;
+  WeakMember<const VisualViewport> visual_viewport_;
+  WeakMember<ChromeClient> chrome_client_;
 
-  FloatSize m_accumulatedRootOverscroll;
+  FloatSize accumulated_root_overscroll_;
 };
 
 }  // namespace blink

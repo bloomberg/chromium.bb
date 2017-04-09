@@ -15,37 +15,37 @@ namespace blink {
 class MockFontResourceClient final
     : public GarbageCollectedFinalized<MockFontResourceClient>,
       public FontResourceClient {
-  USING_PRE_FINALIZER(MockFontResourceClient, dispose);
+  USING_PRE_FINALIZER(MockFontResourceClient, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(MockFontResourceClient);
 
  public:
   explicit MockFontResourceClient(Resource*);
   ~MockFontResourceClient() override;
 
-  void fontLoadShortLimitExceeded(FontResource*) override;
-  void fontLoadLongLimitExceeded(FontResource*) override;
+  void FontLoadShortLimitExceeded(FontResource*) override;
+  void FontLoadLongLimitExceeded(FontResource*) override;
 
-  bool fontLoadShortLimitExceededCalled() const {
-    return m_fontLoadShortLimitExceededCalled;
+  bool FontLoadShortLimitExceededCalled() const {
+    return font_load_short_limit_exceeded_called_;
   }
 
-  bool fontLoadLongLimitExceededCalled() const {
-    return m_fontLoadLongLimitExceededCalled;
+  bool FontLoadLongLimitExceededCalled() const {
+    return font_load_long_limit_exceeded_called_;
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_resource);
-    FontResourceClient::trace(visitor);
+    visitor->Trace(resource_);
+    FontResourceClient::Trace(visitor);
   }
 
-  String debugName() const override { return "MockFontResourceClient"; }
+  String DebugName() const override { return "MockFontResourceClient"; }
 
  private:
-  void dispose();
+  void Dispose();
 
-  Member<Resource> m_resource;
-  bool m_fontLoadShortLimitExceededCalled;
-  bool m_fontLoadLongLimitExceededCalled;
+  Member<Resource> resource_;
+  bool font_load_short_limit_exceeded_called_;
+  bool font_load_long_limit_exceeded_called_;
 };
 
 }  // namespace blink

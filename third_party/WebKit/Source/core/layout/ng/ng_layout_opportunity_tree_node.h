@@ -48,7 +48,7 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode {
 
   // Whether this node is a leaf node.
   // The node is a leaf if it doesn't have exclusions that split it apart.
-  bool IsLeafNode() const { return exclusions.isEmpty(); }
+  bool IsLeafNode() const { return exclusions.IsEmpty(); }
 
   String ToString() const;
 };

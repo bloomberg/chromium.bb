@@ -17,162 +17,163 @@
 namespace blink {
 
 ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(
-    ScrollableArea* scrollableArea)
-    : m_scrollableArea(scrollableArea), m_startTime(0.0) {}
+    ScrollableArea* scrollable_area)
+    : scrollable_area_(scrollable_area), start_time_(0.0) {}
 
 ProgrammaticScrollAnimator::~ProgrammaticScrollAnimator() {}
 
-void ProgrammaticScrollAnimator::resetAnimationState() {
-  ScrollAnimatorCompositorCoordinator::resetAnimationState();
-  m_animationCurve.reset();
-  m_startTime = 0.0;
+void ProgrammaticScrollAnimator::ResetAnimationState() {
+  ScrollAnimatorCompositorCoordinator::ResetAnimationState();
+  animation_curve_.reset();
+  start_time_ = 0.0;
 }
 
-void ProgrammaticScrollAnimator::notifyOffsetChanged(
+void ProgrammaticScrollAnimator::NotifyOffsetChanged(
     const ScrollOffset& offset) {
-  scrollOffsetChanged(offset, ProgrammaticScroll);
+  ScrollOffsetChanged(offset, kProgrammaticScroll);
 }
 
-void ProgrammaticScrollAnimator::scrollToOffsetWithoutAnimation(
+void ProgrammaticScrollAnimator::ScrollToOffsetWithoutAnimation(
     const ScrollOffset& offset) {
-  cancelAnimation();
-  notifyOffsetChanged(offset);
+  CancelAnimation();
+  NotifyOffsetChanged(offset);
 }
 
-void ProgrammaticScrollAnimator::animateToOffset(const ScrollOffset& offset) {
-  if (m_runState == RunState::PostAnimationCleanup)
-    resetAnimationState();
+void ProgrammaticScrollAnimator::AnimateToOffset(const ScrollOffset& offset) {
+  if (run_state_ == RunState::kPostAnimationCleanup)
+    ResetAnimationState();
 
-  m_startTime = 0.0;
-  m_targetOffset = offset;
-  m_animationCurve = CompositorScrollOffsetAnimationCurve::create(
-      compositorOffsetFromBlinkOffset(m_targetOffset),
-      CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased);
+  start_time_ = 0.0;
+  target_offset_ = offset;
+  animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+      CompositorOffsetFromBlinkOffset(target_offset_),
+      CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased);
 
-  m_scrollableArea->registerForAnimation();
-  if (!m_scrollableArea->scheduleAnimation()) {
-    resetAnimationState();
-    notifyOffsetChanged(offset);
+  scrollable_area_->RegisterForAnimation();
+  if (!scrollable_area_->ScheduleAnimation()) {
+    ResetAnimationState();
+    NotifyOffsetChanged(offset);
   }
-  m_runState = RunState::WaitingToSendToCompositor;
+  run_state_ = RunState::kWaitingToSendToCompositor;
 }
 
-void ProgrammaticScrollAnimator::cancelAnimation() {
-  ASSERT(m_runState != RunState::RunningOnCompositorButNeedsUpdate);
-  ScrollAnimatorCompositorCoordinator::cancelAnimation();
+void ProgrammaticScrollAnimator::CancelAnimation() {
+  ASSERT(run_state_ != RunState::kRunningOnCompositorButNeedsUpdate);
+  ScrollAnimatorCompositorCoordinator::CancelAnimation();
 }
 
-void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime) {
-  if (m_runState != RunState::RunningOnMainThread)
+void ProgrammaticScrollAnimator::TickAnimation(double monotonic_time) {
+  if (run_state_ != RunState::kRunningOnMainThread)
     return;
 
-  if (!m_startTime)
-    m_startTime = monotonicTime;
-  double elapsedTime = monotonicTime - m_startTime;
-  bool isFinished = (elapsedTime > m_animationCurve->duration());
+  if (!start_time_)
+    start_time_ = monotonic_time;
+  double elapsed_time = monotonic_time - start_time_;
+  bool is_finished = (elapsed_time > animation_curve_->Duration());
   ScrollOffset offset =
-      blinkOffsetFromCompositorOffset(m_animationCurve->getValue(elapsedTime));
-  notifyOffsetChanged(offset);
+      BlinkOffsetFromCompositorOffset(animation_curve_->GetValue(elapsed_time));
+  NotifyOffsetChanged(offset);
 
-  if (isFinished) {
-    m_runState = RunState::PostAnimationCleanup;
-  } else if (!m_scrollableArea->scheduleAnimation()) {
-    notifyOffsetChanged(offset);
-    resetAnimationState();
+  if (is_finished) {
+    run_state_ = RunState::kPostAnimationCleanup;
+  } else if (!scrollable_area_->ScheduleAnimation()) {
+    NotifyOffsetChanged(offset);
+    ResetAnimationState();
   }
 }
 
-void ProgrammaticScrollAnimator::updateCompositorAnimations() {
-  if (m_runState == RunState::PostAnimationCleanup) {
+void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
+  if (run_state_ == RunState::kPostAnimationCleanup) {
     // No special cleanup, simply reset animation state. We have this state
     // here because the state machine is shared with ScrollAnimator which
     // has to do some cleanup that requires the compositing state to be clean.
-    return resetAnimationState();
+    return ResetAnimationState();
   }
 
-  if (m_compositorAnimationId && m_runState != RunState::RunningOnCompositor) {
+  if (compositor_animation_id_ &&
+      run_state_ != RunState::kRunningOnCompositor) {
     // If the current run state is WaitingToSendToCompositor but we have a
     // non-zero compositor animation id, there's a currently running
     // compositor animation that needs to be removed here before the new
     // animation is added below.
-    ASSERT(m_runState == RunState::WaitingToCancelOnCompositor ||
-           m_runState == RunState::WaitingToSendToCompositor);
+    ASSERT(run_state_ == RunState::kWaitingToCancelOnCompositor ||
+           run_state_ == RunState::kWaitingToSendToCompositor);
 
-    removeAnimation();
+    RemoveAnimation();
 
-    m_compositorAnimationId = 0;
-    m_compositorAnimationGroupId = 0;
-    if (m_runState == RunState::WaitingToCancelOnCompositor) {
-      resetAnimationState();
+    compositor_animation_id_ = 0;
+    compositor_animation_group_id_ = 0;
+    if (run_state_ == RunState::kWaitingToCancelOnCompositor) {
+      ResetAnimationState();
       return;
     }
   }
 
-  if (m_runState == RunState::WaitingToSendToCompositor) {
-    if (!m_compositorAnimationAttachedToElementId)
-      reattachCompositorPlayerIfNeeded(
-          getScrollableArea()->compositorAnimationTimeline());
+  if (run_state_ == RunState::kWaitingToSendToCompositor) {
+    if (!compositor_animation_attached_to_element_id_)
+      ReattachCompositorPlayerIfNeeded(
+          GetScrollableArea()->GetCompositorAnimationTimeline());
 
-    bool sentToCompositor = false;
+    bool sent_to_compositor = false;
 
-    if (!m_scrollableArea->shouldScrollOnMainThread()) {
+    if (!scrollable_area_->ShouldScrollOnMainThread()) {
       std::unique_ptr<CompositorAnimation> animation =
-          CompositorAnimation::create(
-              *m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
+          CompositorAnimation::Create(
+              *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
 
-      int animationId = animation->id();
-      int animationGroupId = animation->group();
+      int animation_id = animation->Id();
+      int animation_group_id = animation->Group();
 
-      if (addAnimation(std::move(animation))) {
-        sentToCompositor = true;
-        m_runState = RunState::RunningOnCompositor;
-        m_compositorAnimationId = animationId;
-        m_compositorAnimationGroupId = animationGroupId;
+      if (AddAnimation(std::move(animation))) {
+        sent_to_compositor = true;
+        run_state_ = RunState::kRunningOnCompositor;
+        compositor_animation_id_ = animation_id;
+        compositor_animation_group_id_ = animation_group_id;
       }
     }
 
-    if (!sentToCompositor) {
-      m_runState = RunState::RunningOnMainThread;
-      m_animationCurve->setInitialValue(
-          compositorOffsetFromBlinkOffset(m_scrollableArea->getScrollOffset()));
-      if (!m_scrollableArea->scheduleAnimation()) {
-        notifyOffsetChanged(m_targetOffset);
-        resetAnimationState();
+    if (!sent_to_compositor) {
+      run_state_ = RunState::kRunningOnMainThread;
+      animation_curve_->SetInitialValue(
+          CompositorOffsetFromBlinkOffset(scrollable_area_->GetScrollOffset()));
+      if (!scrollable_area_->ScheduleAnimation()) {
+        NotifyOffsetChanged(target_offset_);
+        ResetAnimationState();
       }
     }
   }
 }
 
-void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(
+void ProgrammaticScrollAnimator::LayerForCompositedScrollingDidChange(
     CompositorAnimationTimeline* timeline) {
-  reattachCompositorPlayerIfNeeded(timeline);
+  ReattachCompositorPlayerIfNeeded(timeline);
 
   // If the composited scrolling layer is lost during a composited animation,
   // continue the animation on the main thread.
-  if (m_runState == RunState::RunningOnCompositor &&
-      !m_scrollableArea->layerForScrolling()) {
-    m_runState = RunState::RunningOnMainThread;
-    m_compositorAnimationId = 0;
-    m_compositorAnimationGroupId = 0;
-    m_animationCurve->setInitialValue(
-        compositorOffsetFromBlinkOffset(m_scrollableArea->getScrollOffset()));
-    m_scrollableArea->registerForAnimation();
-    if (!m_scrollableArea->scheduleAnimation()) {
-      resetAnimationState();
-      notifyOffsetChanged(m_targetOffset);
+  if (run_state_ == RunState::kRunningOnCompositor &&
+      !scrollable_area_->LayerForScrolling()) {
+    run_state_ = RunState::kRunningOnMainThread;
+    compositor_animation_id_ = 0;
+    compositor_animation_group_id_ = 0;
+    animation_curve_->SetInitialValue(
+        CompositorOffsetFromBlinkOffset(scrollable_area_->GetScrollOffset()));
+    scrollable_area_->RegisterForAnimation();
+    if (!scrollable_area_->ScheduleAnimation()) {
+      ResetAnimationState();
+      NotifyOffsetChanged(target_offset_);
     }
   }
 }
 
-void ProgrammaticScrollAnimator::notifyCompositorAnimationFinished(
-    int groupId) {
-  ASSERT(m_runState != RunState::RunningOnCompositorButNeedsUpdate);
-  ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(groupId);
+void ProgrammaticScrollAnimator::NotifyCompositorAnimationFinished(
+    int group_id) {
+  ASSERT(run_state_ != RunState::kRunningOnCompositorButNeedsUpdate);
+  ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(group_id);
 }
 
 DEFINE_TRACE(ProgrammaticScrollAnimator) {
-  visitor->trace(m_scrollableArea);
-  ScrollAnimatorCompositorCoordinator::trace(visitor);
+  visitor->Trace(scrollable_area_);
+  ScrollAnimatorCompositorCoordinator::Trace(visitor);
 }
 
 }  // namespace blink

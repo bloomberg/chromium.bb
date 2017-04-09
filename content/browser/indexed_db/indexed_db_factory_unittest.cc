@@ -46,7 +46,7 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(origin, data_directory, nullptr /* request_context */,
                          &data_loss_info, &disk_full, &s);
-    EXPECT_EQ(blink::WebIDBDataLossNone, data_loss_info.status);
+    EXPECT_EQ(blink::kWebIDBDataLossNone, data_loss_info.status);
     return backing_store;
   }
 
@@ -232,7 +232,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
         error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
-    EXPECT_EQ(blink::WebIDBDatabaseExceptionQuotaError, error.code());
+    EXPECT_EQ(blink::kWebIDBDatabaseExceptionQuotaError, error.code());
   }
   bool error_called() const { return error_called_; }
 

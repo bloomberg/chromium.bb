@@ -43,7 +43,7 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBFactory* create() { return new IDBFactory(); }
+  static IDBFactory* Create() { return new IDBFactory(); }
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   IDBRequest* getDatabaseNames(ScriptState*, ExceptionState&);
@@ -59,7 +59,7 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
 
   // This is currently not exposed to the web applications and is only used by
   // the DevTools.
-  IDBOpenDBRequest* closeConnectionsAndDeleteDatabase(ScriptState*,
+  IDBOpenDBRequest* CloseConnectionsAndDeleteDatabase(ScriptState*,
                                                       const String& name,
                                                       ExceptionState&);
 
@@ -71,12 +71,12 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
  private:
   IDBFactory();
 
-  IDBOpenDBRequest* openInternal(ScriptState*,
+  IDBOpenDBRequest* OpenInternal(ScriptState*,
                                  const String& name,
                                  int64_t version,
                                  ExceptionState&);
 
-  IDBOpenDBRequest* deleteDatabaseInternal(ScriptState*,
+  IDBOpenDBRequest* DeleteDatabaseInternal(ScriptState*,
                                            const String& name,
                                            ExceptionState&,
                                            bool);

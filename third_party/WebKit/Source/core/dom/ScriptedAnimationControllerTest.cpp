@@ -22,36 +22,36 @@ class ScriptedAnimationControllerTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  Document& document() const { return m_dummyPageHolder->document(); }
-  ScriptedAnimationController& controller() { return *m_controller; }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  ScriptedAnimationController& Controller() { return *controller_; }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<ScriptedAnimationController> m_controller;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<ScriptedAnimationController> controller_;
 };
 
 void ScriptedAnimationControllerTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 
   // Note: The document doesn't know about this ScriptedAnimationController
   // instance, and will create another if
   // Document::ensureScriptedAnimationController is called.
-  m_controller =
-      wrapPersistent(ScriptedAnimationController::create(&document()));
+  controller_ =
+      WrapPersistent(ScriptedAnimationController::Create(&GetDocument()));
 }
 
 namespace {
 
 class TaskOrderObserver {
  public:
-  std::unique_ptr<WTF::Closure> createTask(int id) {
-    return WTF::bind(&TaskOrderObserver::runTask, WTF::unretained(this), id);
+  std::unique_ptr<WTF::Closure> CreateTask(int id) {
+    return WTF::Bind(&TaskOrderObserver::RunTask, WTF::Unretained(this), id);
   }
-  const Vector<int>& order() const { return m_order; }
+  const Vector<int>& Order() const { return order_; }
 
  private:
-  void runTask(int id) { m_order.push_back(id); }
-  Vector<int> m_order;
+  void RunTask(int id) { order_.push_back(id); }
+  Vector<int> order_;
 };
 
 }  // anonymous namespace
@@ -59,33 +59,33 @@ class TaskOrderObserver {
 TEST_F(ScriptedAnimationControllerTest, EnqueueOneTask) {
   TaskOrderObserver observer;
 
-  controller().enqueueTask(observer.createTask(1));
-  EXPECT_EQ(0u, observer.order().size());
+  Controller().EnqueueTask(observer.CreateTask(1));
+  EXPECT_EQ(0u, observer.Order().size());
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(1u, observer.order().size());
-  EXPECT_EQ(1, observer.order()[0]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(1u, observer.Order().size());
+  EXPECT_EQ(1, observer.Order()[0]);
 }
 
 TEST_F(ScriptedAnimationControllerTest, EnqueueTwoTasks) {
   TaskOrderObserver observer;
 
-  controller().enqueueTask(observer.createTask(1));
-  controller().enqueueTask(observer.createTask(2));
-  EXPECT_EQ(0u, observer.order().size());
+  Controller().EnqueueTask(observer.CreateTask(1));
+  Controller().EnqueueTask(observer.CreateTask(2));
+  EXPECT_EQ(0u, observer.Order().size());
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(2u, observer.order().size());
-  EXPECT_EQ(1, observer.order()[0]);
-  EXPECT_EQ(2, observer.order()[1]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(2u, observer.Order().size());
+  EXPECT_EQ(1, observer.Order()[0]);
+  EXPECT_EQ(2, observer.Order()[1]);
 }
 
 namespace {
 
-void enqueueTask(ScriptedAnimationController* controller,
+void EnqueueTask(ScriptedAnimationController* controller,
                  TaskOrderObserver* observer,
                  int id) {
-  controller->enqueueTask(observer->createTask(id));
+  controller->EnqueueTask(observer->CreateTask(id));
 }
 
 }  // anonymous namespace
@@ -95,23 +95,23 @@ void enqueueTask(ScriptedAnimationController* controller,
 TEST_F(ScriptedAnimationControllerTest, EnqueueWithinTask) {
   TaskOrderObserver observer;
 
-  controller().enqueueTask(observer.createTask(1));
-  controller().enqueueTask(WTF::bind(&enqueueTask,
-                                     wrapPersistent(&controller()),
-                                     WTF::unretained(&observer), 2));
-  controller().enqueueTask(observer.createTask(3));
-  EXPECT_EQ(0u, observer.order().size());
+  Controller().EnqueueTask(observer.CreateTask(1));
+  Controller().EnqueueTask(WTF::Bind(&EnqueueTask,
+                                     WrapPersistent(&Controller()),
+                                     WTF::Unretained(&observer), 2));
+  Controller().EnqueueTask(observer.CreateTask(3));
+  EXPECT_EQ(0u, observer.Order().size());
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(2u, observer.order().size());
-  EXPECT_EQ(1, observer.order()[0]);
-  EXPECT_EQ(3, observer.order()[1]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(2u, observer.Order().size());
+  EXPECT_EQ(1, observer.Order()[0]);
+  EXPECT_EQ(3, observer.Order()[1]);
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(3u, observer.order().size());
-  EXPECT_EQ(1, observer.order()[0]);
-  EXPECT_EQ(3, observer.order()[1]);
-  EXPECT_EQ(2, observer.order()[2]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(3u, observer.Order().size());
+  EXPECT_EQ(1, observer.Order()[0]);
+  EXPECT_EQ(3, observer.Order()[1]);
+  EXPECT_EQ(2, observer.Order()[2]);
 }
 
 namespace {
@@ -119,14 +119,14 @@ namespace {
 class RunTaskEventListener final : public EventListener {
  public:
   RunTaskEventListener(std::unique_ptr<WTF::Closure> task)
-      : EventListener(CPPEventListenerType), m_task(std::move(task)) {}
-  void handleEvent(ExecutionContext*, Event*) override { (*m_task)(); }
+      : EventListener(kCPPEventListenerType), task_(std::move(task)) {}
+  void handleEvent(ExecutionContext*, Event*) override { (*task_)(); }
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
 
  private:
-  std::unique_ptr<WTF::Closure> m_task;
+  std::unique_ptr<WTF::Closure> task_;
 };
 
 }  // anonymous namespace
@@ -136,18 +136,18 @@ class RunTaskEventListener final : public EventListener {
 TEST_F(ScriptedAnimationControllerTest, EnqueueTaskAndEvent) {
   TaskOrderObserver observer;
 
-  controller().enqueueTask(observer.createTask(1));
-  document().addEventListener("test",
-                              new RunTaskEventListener(observer.createTask(2)));
-  Event* event = Event::create("test");
-  event->setTarget(&document());
-  controller().enqueueEvent(event);
-  EXPECT_EQ(0u, observer.order().size());
+  Controller().EnqueueTask(observer.CreateTask(1));
+  GetDocument().addEventListener(
+      "test", new RunTaskEventListener(observer.CreateTask(2)));
+  Event* event = Event::Create("test");
+  event->SetTarget(&GetDocument());
+  Controller().EnqueueEvent(event);
+  EXPECT_EQ(0u, observer.Order().size());
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(2u, observer.order().size());
-  EXPECT_EQ(2, observer.order()[0]);
-  EXPECT_EQ(1, observer.order()[1]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(2u, observer.Order().size());
+  EXPECT_EQ(2, observer.Order()[0]);
+  EXPECT_EQ(1, observer.Order()[1]);
 }
 
 namespace {
@@ -155,11 +155,11 @@ namespace {
 class RunTaskCallback final : public FrameRequestCallback {
  public:
   RunTaskCallback(std::unique_ptr<WTF::Closure> task)
-      : m_task(std::move(task)) {}
-  void handleEvent(double) override { (*m_task)(); }
+      : task_(std::move(task)) {}
+  void handleEvent(double) override { (*task_)(); }
 
  private:
-  std::unique_ptr<WTF::Closure> m_task;
+  std::unique_ptr<WTF::Closure> task_;
 };
 
 }  // anonymous namespace
@@ -169,17 +169,17 @@ class RunTaskCallback final : public FrameRequestCallback {
 TEST_F(ScriptedAnimationControllerTest, RegisterCallbackAndEnqueueTask) {
   TaskOrderObserver observer;
 
-  Event* event = Event::create("test");
-  event->setTarget(&document());
+  Event* event = Event::Create("test");
+  event->SetTarget(&GetDocument());
 
-  controller().registerCallback(new RunTaskCallback(observer.createTask(1)));
-  controller().enqueueTask(observer.createTask(2));
-  EXPECT_EQ(0u, observer.order().size());
+  Controller().RegisterCallback(new RunTaskCallback(observer.CreateTask(1)));
+  Controller().EnqueueTask(observer.CreateTask(2));
+  EXPECT_EQ(0u, observer.Order().size());
 
-  controller().serviceScriptedAnimations(0);
-  EXPECT_EQ(2u, observer.order().size());
-  EXPECT_EQ(2, observer.order()[0]);
-  EXPECT_EQ(1, observer.order()[1]);
+  Controller().ServiceScriptedAnimations(0);
+  EXPECT_EQ(2u, observer.Order().size());
+  EXPECT_EQ(2, observer.Order()[0]);
+  EXPECT_EQ(1, observer.Order()[1]);
 }
 
 }  // namespace blink

@@ -35,48 +35,48 @@
 namespace blink {
 
 SQLResultSet::SQLResultSet()
-    : m_rows(SQLResultSetRowList::create()),
-      m_insertId(0),
-      m_rowsAffected(0),
-      m_insertIdSet(false),
-      m_isValid(false) {
-  DCHECK(isMainThread());
+    : rows_(SQLResultSetRowList::Create()),
+      insert_id_(0),
+      rows_affected_(0),
+      insert_id_set_(false),
+      is_valid_(false) {
+  DCHECK(IsMainThread());
 }
 
 DEFINE_TRACE(SQLResultSet) {
-  visitor->trace(m_rows);
+  visitor->Trace(rows_);
 }
 
-int64_t SQLResultSet::insertId(ExceptionState& exceptionState) const {
+int64_t SQLResultSet::insertId(ExceptionState& exception_state) const {
   // 4.11.4 - Return the id of the last row inserted as a result of the query
   // If the query didn't result in any rows being added, raise an
   // InvalidAccessError exception.
-  if (m_insertIdSet)
-    return m_insertId;
+  if (insert_id_set_)
+    return insert_id_;
 
-  exceptionState.throwDOMException(
-      InvalidAccessError, "The query didn't result in any rows being added.");
+  exception_state.ThrowDOMException(
+      kInvalidAccessError, "The query didn't result in any rows being added.");
   return -1;
 }
 
 int SQLResultSet::rowsAffected() const {
-  return m_rowsAffected;
+  return rows_affected_;
 }
 
 SQLResultSetRowList* SQLResultSet::rows() const {
-  return m_rows.get();
+  return rows_.Get();
 }
 
-void SQLResultSet::setInsertId(int64_t id) {
-  ASSERT(!m_insertIdSet);
+void SQLResultSet::SetInsertId(int64_t id) {
+  ASSERT(!insert_id_set_);
 
-  m_insertId = id;
-  m_insertIdSet = true;
+  insert_id_ = id;
+  insert_id_set_ = true;
 }
 
-void SQLResultSet::setRowsAffected(int count) {
-  m_rowsAffected = count;
-  m_isValid = true;
+void SQLResultSet::SetRowsAffected(int count) {
+  rows_affected_ = count;
+  is_valid_ = true;
 }
 
 }  // namespace blink

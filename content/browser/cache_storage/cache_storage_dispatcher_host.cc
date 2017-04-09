@@ -40,24 +40,24 @@ blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
   switch (err) {
     case CACHE_STORAGE_OK:
       NOTREACHED();
-      return blink::WebServiceWorkerCacheErrorNotImplemented;
+      return blink::kWebServiceWorkerCacheErrorNotImplemented;
     case CACHE_STORAGE_ERROR_EXISTS:
-      return blink::WebServiceWorkerCacheErrorExists;
+      return blink::kWebServiceWorkerCacheErrorExists;
     case CACHE_STORAGE_ERROR_STORAGE:
       // TODO(nhiroki): Add WebServiceWorkerCacheError equivalent to
       // CACHE_STORAGE_ERROR_STORAGE.
-      return blink::WebServiceWorkerCacheErrorNotFound;
+      return blink::kWebServiceWorkerCacheErrorNotFound;
     case CACHE_STORAGE_ERROR_NOT_FOUND:
-      return blink::WebServiceWorkerCacheErrorNotFound;
+      return blink::kWebServiceWorkerCacheErrorNotFound;
     case CACHE_STORAGE_ERROR_QUOTA_EXCEEDED:
-      return blink::WebServiceWorkerCacheErrorQuotaExceeded;
+      return blink::kWebServiceWorkerCacheErrorQuotaExceeded;
     case CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND:
-      return blink::WebServiceWorkerCacheErrorCacheNameNotFound;
+      return blink::kWebServiceWorkerCacheErrorCacheNameNotFound;
     case CACHE_STORAGE_ERROR_QUERY_TOO_LARGE:
-      return blink::WebServiceWorkerCacheErrorTooLarge;
+      return blink::kWebServiceWorkerCacheErrorTooLarge;
   }
   NOTREACHED();
-  return blink::WebServiceWorkerCacheErrorNotImplemented;
+  return blink::kWebServiceWorkerCacheErrorNotImplemented;
 }
 
 bool OriginCanAccessCacheStorage(const url::Origin& origin) {
@@ -226,7 +226,7 @@ void CacheStorageDispatcherHost::OnCacheMatch(
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheMatchError(
-        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+        thread_id, request_id, blink::kWebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -250,7 +250,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheMatchError(
-        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+        thread_id, request_id, blink::kWebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -290,7 +290,7 @@ void CacheStorageDispatcherHost::OnCacheKeys(
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheKeysError(
-        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+        thread_id, request_id, blink::kWebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -313,7 +313,7 @@ void CacheStorageDispatcherHost::OnCacheBatch(
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end() || !it->second->value()) {
     Send(new CacheStorageMsg_CacheBatchError(
-        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+        thread_id, request_id, blink::kWebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -344,7 +344,7 @@ void CacheStorageDispatcherHost::OnCacheStorageHasCallback(
   }
   if (!has_cache) {
     Send(new CacheStorageMsg_CacheStorageHasError(
-        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+        thread_id, request_id, blink::kWebServiceWorkerCacheErrorNotFound));
     return;
   }
   Send(new CacheStorageMsg_CacheStorageHasSuccess(thread_id, request_id));

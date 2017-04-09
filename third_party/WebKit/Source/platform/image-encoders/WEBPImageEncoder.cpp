@@ -36,20 +36,20 @@
 
 namespace blink {
 
-static int writeOutput(const uint8_t* data,
+static int WriteOutput(const uint8_t* data,
                        size_t size,
                        const WebPPicture* const picture) {
-  static_cast<Vector<unsigned char>*>(picture->custom_ptr)->append(data, size);
+  static_cast<Vector<unsigned char>*>(picture->custom_ptr)->Append(data, size);
   return 1;
 }
 
-static bool encodePixels(const IntSize& imageSize,
+static bool EncodePixels(const IntSize& image_size,
                          const unsigned char* pixels,
                          int quality,
                          Vector<unsigned char>* output) {
-  if (imageSize.width() <= 0 || imageSize.width() > WEBP_MAX_DIMENSION)
+  if (image_size.Width() <= 0 || image_size.Width() > WEBP_MAX_DIMENSION)
     return false;
-  if (imageSize.height() <= 0 || imageSize.height() > WEBP_MAX_DIMENSION)
+  if (image_size.Height() <= 0 || image_size.Height() > WEBP_MAX_DIMENSION)
     return false;
 
   WebPConfig config;
@@ -59,19 +59,19 @@ static bool encodePixels(const IntSize& imageSize,
   if (!WebPPictureInit(&picture))
     return false;
 
-  picture.width = imageSize.width();
-  picture.height = imageSize.height();
+  picture.width = image_size.Width();
+  picture.height = image_size.Height();
 
-  bool useLosslessEncoding = (quality >= 100);
-  if (useLosslessEncoding)
+  bool use_lossless_encoding = (quality >= 100);
+  if (use_lossless_encoding)
     picture.use_argb = 1;
   if (!WebPPictureImportRGBA(&picture, pixels, picture.width * 4))
     return false;
 
   picture.custom_ptr = output;
-  picture.writer = &writeOutput;
+  picture.writer = &WriteOutput;
 
-  if (useLosslessEncoding) {
+  if (use_lossless_encoding) {
     config.lossless = 1;
     config.quality = 75;
     config.method = 0;
@@ -85,13 +85,13 @@ static bool encodePixels(const IntSize& imageSize,
   return success;
 }
 
-bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData,
+bool WEBPImageEncoder::Encode(const ImageDataBuffer& image_data,
                               int quality,
                               Vector<unsigned char>* output) {
-  if (!imageData.pixels())
+  if (!image_data.Pixels())
     return false;
 
-  return encodePixels(imageData.size(), imageData.pixels(), quality, output);
+  return EncodePixels(image_data.size(), image_data.Pixels(), quality, output);
 }
 
 }  // namespace blink

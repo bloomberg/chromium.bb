@@ -15,15 +15,15 @@ class HTMLLinkElement;
 
 class LinkManifest final : public LinkResource {
  public:
-  static LinkManifest* create(HTMLLinkElement* owner);
+  static LinkManifest* Create(HTMLLinkElement* owner);
 
   ~LinkManifest() override;
 
   // LinkResource
-  void process() override;
-  LinkResourceType type() const override { return Manifest; }
-  bool hasLoaded() const override;
-  void ownerRemoved() override;
+  void Process() override;
+  LinkResourceType GetType() const override { return kManifest; }
+  bool HasLoaded() const override;
+  void OwnerRemoved() override;
 
  private:
   explicit LinkManifest(HTMLLinkElement* owner);

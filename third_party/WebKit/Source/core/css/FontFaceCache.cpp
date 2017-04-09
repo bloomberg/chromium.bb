@@ -40,128 +40,130 @@
 
 namespace blink {
 
-static unsigned s_version = 0;
+static unsigned g_version = 0;
 
-FontFaceCache::FontFaceCache() : m_version(0) {}
+FontFaceCache::FontFaceCache() : version_(0) {}
 
-void FontFaceCache::add(CSSFontSelector* cssFontSelector,
-                        const StyleRuleFontFace* fontFaceRule,
-                        FontFace* fontFace) {
-  if (!m_styleRuleToFontFace.insert(fontFaceRule, fontFace).isNewEntry)
+void FontFaceCache::Add(CSSFontSelector* css_font_selector,
+                        const StyleRuleFontFace* font_face_rule,
+                        FontFace* font_face) {
+  if (!style_rule_to_font_face_.insert(font_face_rule, font_face).is_new_entry)
     return;
-  addFontFace(cssFontSelector, fontFace, true);
+  AddFontFace(css_font_selector, font_face, true);
 }
 
-void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector,
-                                FontFace* fontFace,
-                                bool cssConnected) {
-  FamilyToTraitsMap::AddResult traitsResult =
-      m_fontFaces.insert(fontFace->family(), nullptr);
-  if (!traitsResult.storedValue->value)
-    traitsResult.storedValue->value = new TraitsMap;
+void FontFaceCache::AddFontFace(CSSFontSelector* css_font_selector,
+                                FontFace* font_face,
+                                bool css_connected) {
+  FamilyToTraitsMap::AddResult traits_result =
+      font_faces_.insert(font_face->family(), nullptr);
+  if (!traits_result.stored_value->value)
+    traits_result.stored_value->value = new TraitsMap;
 
-  TraitsMap::AddResult segmentedFontFaceResult =
-      traitsResult.storedValue->value->insert(fontFace->traits().bitfield(),
-                                              nullptr);
-  if (!segmentedFontFaceResult.storedValue->value)
-    segmentedFontFaceResult.storedValue->value =
-        CSSSegmentedFontFace::create(cssFontSelector, fontFace->traits());
+  TraitsMap::AddResult segmented_font_face_result =
+      traits_result.stored_value->value->insert(font_face->Traits().Bitfield(),
+                                                nullptr);
+  if (!segmented_font_face_result.stored_value->value)
+    segmented_font_face_result.stored_value->value =
+        CSSSegmentedFontFace::Create(css_font_selector, font_face->Traits());
 
-  segmentedFontFaceResult.storedValue->value->addFontFace(fontFace,
-                                                          cssConnected);
-  if (cssConnected)
-    m_cssConnectedFontFaces.insert(fontFace);
+  segmented_font_face_result.stored_value->value->AddFontFace(font_face,
+                                                              css_connected);
+  if (css_connected)
+    css_connected_font_faces_.insert(font_face);
 
-  m_fonts.erase(fontFace->family());
-  incrementVersion();
+  fonts_.erase(font_face->family());
+  IncrementVersion();
 }
 
-void FontFaceCache::remove(const StyleRuleFontFace* fontFaceRule) {
-  StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.find(fontFaceRule);
-  if (it != m_styleRuleToFontFace.end()) {
-    removeFontFace(it->value.get(), true);
-    m_styleRuleToFontFace.erase(it);
+void FontFaceCache::Remove(const StyleRuleFontFace* font_face_rule) {
+  StyleRuleToFontFace::iterator it =
+      style_rule_to_font_face_.Find(font_face_rule);
+  if (it != style_rule_to_font_face_.end()) {
+    RemoveFontFace(it->value.Get(), true);
+    style_rule_to_font_face_.erase(it);
   }
 }
 
-void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected) {
-  FamilyToTraitsMap::iterator fontFacesIter =
-      m_fontFaces.find(fontFace->family());
-  if (fontFacesIter == m_fontFaces.end())
+void FontFaceCache::RemoveFontFace(FontFace* font_face, bool css_connected) {
+  FamilyToTraitsMap::iterator font_faces_iter =
+      font_faces_.Find(font_face->family());
+  if (font_faces_iter == font_faces_.end())
     return;
-  TraitsMap* familyFontFaces = fontFacesIter->value.get();
+  TraitsMap* family_font_faces = font_faces_iter->value.Get();
 
-  TraitsMap::iterator familyFontFacesIter =
-      familyFontFaces->find(fontFace->traits().bitfield());
-  if (familyFontFacesIter == familyFontFaces->end())
+  TraitsMap::iterator family_font_faces_iter =
+      family_font_faces->Find(font_face->Traits().Bitfield());
+  if (family_font_faces_iter == family_font_faces->end())
     return;
-  CSSSegmentedFontFace* segmentedFontFace = familyFontFacesIter->value;
+  CSSSegmentedFontFace* segmented_font_face = family_font_faces_iter->value;
 
-  segmentedFontFace->removeFontFace(fontFace);
-  if (segmentedFontFace->isEmpty()) {
-    familyFontFaces->erase(familyFontFacesIter);
-    if (familyFontFaces->isEmpty())
-      m_fontFaces.erase(fontFacesIter);
+  segmented_font_face->RemoveFontFace(font_face);
+  if (segmented_font_face->IsEmpty()) {
+    family_font_faces->erase(family_font_faces_iter);
+    if (family_font_faces->IsEmpty())
+      font_faces_.erase(font_faces_iter);
   }
-  m_fonts.erase(fontFace->family());
-  if (cssConnected)
-    m_cssConnectedFontFaces.erase(fontFace);
+  fonts_.erase(font_face->family());
+  if (css_connected)
+    css_connected_font_faces_.erase(font_face);
 
-  incrementVersion();
+  IncrementVersion();
 }
 
-void FontFaceCache::clearCSSConnected() {
-  for (const auto& item : m_styleRuleToFontFace)
-    removeFontFace(item.value.get(), true);
-  m_styleRuleToFontFace.clear();
+void FontFaceCache::ClearCSSConnected() {
+  for (const auto& item : style_rule_to_font_face_)
+    RemoveFontFace(item.value.Get(), true);
+  style_rule_to_font_face_.Clear();
 }
 
-void FontFaceCache::clearAll() {
-  if (m_fontFaces.isEmpty())
+void FontFaceCache::ClearAll() {
+  if (font_faces_.IsEmpty())
     return;
 
-  m_fontFaces.clear();
-  m_fonts.clear();
-  m_styleRuleToFontFace.clear();
-  m_cssConnectedFontFaces.clear();
-  incrementVersion();
+  font_faces_.Clear();
+  fonts_.Clear();
+  style_rule_to_font_face_.Clear();
+  css_connected_font_faces_.Clear();
+  IncrementVersion();
 }
 
-void FontFaceCache::incrementVersion() {
-  m_version = ++s_version;
+void FontFaceCache::IncrementVersion() {
+  version_ = ++g_version;
 }
 
-CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
-                                         const AtomicString& family) {
-  TraitsMap* familyFontFaces = m_fontFaces.at(family);
-  if (!familyFontFaces || familyFontFaces->isEmpty())
+CSSSegmentedFontFace* FontFaceCache::Get(
+    const FontDescription& font_description,
+    const AtomicString& family) {
+  TraitsMap* family_font_faces = font_faces_.at(family);
+  if (!family_font_faces || family_font_faces->IsEmpty())
     return nullptr;
 
-  FamilyToTraitsMap::AddResult traitsResult = m_fonts.insert(family, nullptr);
-  if (!traitsResult.storedValue->value)
-    traitsResult.storedValue->value = new TraitsMap;
+  FamilyToTraitsMap::AddResult traits_result = fonts_.insert(family, nullptr);
+  if (!traits_result.stored_value->value)
+    traits_result.stored_value->value = new TraitsMap;
 
-  FontTraits traits = fontDescription.traits();
-  TraitsMap::AddResult faceResult =
-      traitsResult.storedValue->value->insert(traits.bitfield(), nullptr);
-  if (!faceResult.storedValue->value) {
-    for (const auto& item : *familyFontFaces) {
-      CSSSegmentedFontFace* candidate = item.value.get();
-      FontStyleMatcher styleMatcher(traits);
-      if (!faceResult.storedValue->value ||
-          styleMatcher.isCandidateBetter(candidate,
-                                         faceResult.storedValue->value.get()))
-        faceResult.storedValue->value = candidate;
+  FontTraits traits = font_description.Traits();
+  TraitsMap::AddResult face_result =
+      traits_result.stored_value->value->insert(traits.Bitfield(), nullptr);
+  if (!face_result.stored_value->value) {
+    for (const auto& item : *family_font_faces) {
+      CSSSegmentedFontFace* candidate = item.value.Get();
+      FontStyleMatcher style_matcher(traits);
+      if (!face_result.stored_value->value ||
+          style_matcher.IsCandidateBetter(
+              candidate, face_result.stored_value->value.Get()))
+        face_result.stored_value->value = candidate;
     }
   }
-  return faceResult.storedValue->value.get();
+  return face_result.stored_value->value.Get();
 }
 
 DEFINE_TRACE(FontFaceCache) {
-  visitor->trace(m_fontFaces);
-  visitor->trace(m_fonts);
-  visitor->trace(m_styleRuleToFontFace);
-  visitor->trace(m_cssConnectedFontFaces);
+  visitor->Trace(font_faces_);
+  visitor->Trace(fonts_);
+  visitor->Trace(style_rule_to_font_face_);
+  visitor->Trace(css_connected_font_faces_);
 }
 
 }  // namespace blink

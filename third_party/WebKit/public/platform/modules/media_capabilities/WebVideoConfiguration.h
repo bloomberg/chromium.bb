@@ -13,7 +13,7 @@ namespace blink {
 // It is created by Blink and passed to consumers that can assume that all
 // required fields are properly set.
 struct WebVideoConfiguration {
-  WebString contentType;
+  WebString content_type;
   unsigned width;
   unsigned height;
   unsigned bitrate;

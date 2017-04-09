@@ -18,7 +18,7 @@ class CORE_EXPORT CustomCompositorAnimationManager
  public:
   CustomCompositorAnimationManager();
   ~CustomCompositorAnimationManager() override;
-  void applyMutations(CompositorMutations*) override;
+  void ApplyMutations(CompositorMutations*) override;
 };
 
 }  // namespace blink

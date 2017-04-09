@@ -28,29 +28,30 @@ unsigned LocalStorageArea::length() {
   return cached_area_->GetLength();
 }
 
-WebString LocalStorageArea::key(unsigned index) {
-  return WebString::fromUTF16(cached_area_->GetKey(index));
+WebString LocalStorageArea::Key(unsigned index) {
+  return WebString::FromUTF16(cached_area_->GetKey(index));
 }
 
-WebString LocalStorageArea::getItem(const WebString& key) {
-  return WebString::fromUTF16(cached_area_->GetItem(key.utf16()));
+WebString LocalStorageArea::GetItem(const WebString& key) {
+  return WebString::FromUTF16(cached_area_->GetItem(key.Utf16()));
 }
 
-void LocalStorageArea::setItem(
-    const WebString& key, const WebString& value, const WebURL& page_url,
-    WebStorageArea::Result& result) {
-  if (!cached_area_->SetItem(key.utf16(), value.utf16(), page_url, id_))
-    result = ResultBlockedByQuota;
+void LocalStorageArea::SetItem(const WebString& key,
+                               const WebString& value,
+                               const WebURL& page_url,
+                               WebStorageArea::Result& result) {
+  if (!cached_area_->SetItem(key.Utf16(), value.Utf16(), page_url, id_))
+    result = kResultBlockedByQuota;
   else
-    result = ResultOK;
+    result = kResultOK;
 }
 
-void LocalStorageArea::removeItem(
-    const WebString& key, const WebURL& page_url) {
-  cached_area_->RemoveItem(key.utf16(), page_url, id_);
+void LocalStorageArea::RemoveItem(const WebString& key,
+                                  const WebURL& page_url) {
+  cached_area_->RemoveItem(key.Utf16(), page_url, id_);
 }
 
-void LocalStorageArea::clear(const WebURL& page_url) {
+void LocalStorageArea::Clear(const WebURL& page_url) {
   cached_area_->Clear(page_url, id_);
 }
 

@@ -16,13 +16,13 @@ class TaskAttributionTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TaskAttributionTiming* create(String type,
-                                       String containerType,
-                                       String containerSrc,
-                                       String containerId,
-                                       String containerName) {
-    return new TaskAttributionTiming(type, containerType, containerSrc,
-                                     containerId, containerName);
+  static TaskAttributionTiming* Create(String type,
+                                       String container_type,
+                                       String container_src,
+                                       String container_id,
+                                       String container_name) {
+    return new TaskAttributionTiming(type, container_type, container_src,
+                                     container_id, container_name);
   }
 
   String containerType() const;
@@ -36,15 +36,15 @@ class TaskAttributionTiming final : public PerformanceEntry {
 
  private:
   TaskAttributionTiming(String type,
-                        String containerType,
-                        String containerSrc,
-                        String containerId,
-                        String containerName);
+                        String container_type,
+                        String container_src,
+                        String container_id,
+                        String container_name);
 
-  String m_containerType;
-  String m_containerSrc;
-  String m_containerId;
-  String m_containerName;
+  String container_type_;
+  String container_src_;
+  String container_id_;
+  String container_name_;
 };
 
 }  // namespace blink

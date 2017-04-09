@@ -50,29 +50,30 @@ class CORE_EXPORT LayoutGeometryMap {
   WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 
  public:
-  LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);
+  LayoutGeometryMap(MapCoordinatesFlags = kUseTransforms);
   ~LayoutGeometryMap();
 
-  MapCoordinatesFlags getMapCoordinatesFlags() const {
-    return m_mapCoordinatesFlags;
+  MapCoordinatesFlags GetMapCoordinatesFlags() const {
+    return map_coordinates_flags_;
   }
 
-  FloatRect absoluteRect(const FloatRect& rect) const {
-    return mapToAncestor(rect, 0).boundingBox();
+  FloatRect AbsoluteRect(const FloatRect& rect) const {
+    return MapToAncestor(rect, 0).BoundingBox();
   }
 
   // Map to an ancestor. Will assert that the ancestor has been pushed onto this
   // map. A null ancestor maps through the LayoutView (including its scale
   // transform, if any). If the ancestor is the LayoutView, the scroll offset is
   // applied, but not the scale.
-  FloatQuad mapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
+  FloatQuad MapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
 
   // Called by code walking the layout or layer trees.
-  void pushMappingsToAncestor(const PaintLayer*,
-                              const PaintLayer* ancestorLayer);
-  void popMappingsToAncestor(const PaintLayer*);
-  void pushMappingsToAncestor(const LayoutObject*,
-                              const LayoutBoxModelObject* ancestorLayoutObject);
+  void PushMappingsToAncestor(const PaintLayer*,
+                              const PaintLayer* ancestor_layer);
+  void PopMappingsToAncestor(const PaintLayer*);
+  void PushMappingsToAncestor(
+      const LayoutObject*,
+      const LayoutBoxModelObject* ancestor_layout_object);
 
   // The following methods should only be called by layoutObjects inside a call
   // to pushMappingsToAncestor().
@@ -80,44 +81,44 @@ class CORE_EXPORT LayoutGeometryMap {
   // Push geometry info between this layoutObject and some ancestor. The
   // ancestor must be its container() or some stacking context between the
   // layoutObject and its container.
-  void push(const LayoutObject*,
+  void Push(const LayoutObject*,
             const LayoutSize&,
             GeometryInfoFlags = 0,
-            LayoutSize offsetForFixedPosition = LayoutSize());
-  void push(const LayoutObject*,
+            LayoutSize offset_for_fixed_position = LayoutSize());
+  void Push(const LayoutObject*,
             const TransformationMatrix&,
             GeometryInfoFlags = 0,
-            LayoutSize offsetForFixedPosition = LayoutSize());
+            LayoutSize offset_for_fixed_position = LayoutSize());
 
  private:
-  void popMappingsToAncestor(const LayoutBoxModelObject*);
-  void mapToAncestor(TransformState&,
+  void PopMappingsToAncestor(const LayoutBoxModelObject*);
+  void MapToAncestor(TransformState&,
                      const LayoutBoxModelObject* ancestor = nullptr) const;
 
-  void stepInserted(const LayoutGeometryMapStep&);
-  void stepRemoved(const LayoutGeometryMapStep&);
+  void StepInserted(const LayoutGeometryMapStep&);
+  void StepRemoved(const LayoutGeometryMapStep&);
 
-  bool hasNonUniformStep() const { return m_nonUniformStepsCount; }
-  bool hasTransformStep() const { return m_transformedStepsCount; }
-  bool hasFixedPositionStep() const { return m_fixedStepsCount; }
+  bool HasNonUniformStep() const { return non_uniform_steps_count_; }
+  bool HasTransformStep() const { return transformed_steps_count_; }
+  bool HasFixedPositionStep() const { return fixed_steps_count_; }
 
 #ifndef NDEBUG
-  void dumpSteps() const;
+  void DumpSteps() const;
 #endif
 
 #if DCHECK_IS_ON()
-  bool isTopmostLayoutView(const LayoutObject*) const;
+  bool IsTopmostLayoutView(const LayoutObject*) const;
 #endif
 
   typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;
 
-  size_t m_insertionPosition;
-  int m_nonUniformStepsCount;
-  int m_transformedStepsCount;
-  int m_fixedStepsCount;
-  LayoutGeometryMapSteps m_mapping;
-  LayoutSize m_accumulatedOffset;
-  MapCoordinatesFlags m_mapCoordinatesFlags;
+  size_t insertion_position_;
+  int non_uniform_steps_count_;
+  int transformed_steps_count_;
+  int fixed_steps_count_;
+  LayoutGeometryMapSteps mapping_;
+  LayoutSize accumulated_offset_;
+  MapCoordinatesFlags map_coordinates_flags_;
 };
 
 }  // namespace blink

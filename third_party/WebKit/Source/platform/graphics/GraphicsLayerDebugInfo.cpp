@@ -25,92 +25,92 @@
 namespace blink {
 
 GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
-    : m_compositingReasons(CompositingReasonNone),
-      m_squashingDisallowedReasons(SquashingDisallowedReasonsNone),
-      m_ownerNodeId(0),
-      m_mainThreadScrollingReasons(0) {}
+    : compositing_reasons_(kCompositingReasonNone),
+      squashing_disallowed_reasons_(kSquashingDisallowedReasonsNone),
+      owner_node_id_(0),
+      main_thread_scrolling_reasons_(0) {}
 
 GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() {}
 
 std::unique_ptr<base::trace_event::TracedValue>
-GraphicsLayerDebugInfo::asTracedValue() const {
-  std::unique_ptr<base::trace_event::TracedValue> tracedValue(
+GraphicsLayerDebugInfo::AsTracedValue() const {
+  std::unique_ptr<base::trace_event::TracedValue> traced_value(
       new base::trace_event::TracedValue());
-  appendAnnotatedInvalidateRects(tracedValue.get());
-  appendCompositingReasons(tracedValue.get());
-  appendSquashingDisallowedReasons(tracedValue.get());
-  appendOwnerNodeId(tracedValue.get());
-  appendMainThreadScrollingReasons(tracedValue.get());
-  return tracedValue;
+  AppendAnnotatedInvalidateRects(traced_value.get());
+  AppendCompositingReasons(traced_value.get());
+  AppendSquashingDisallowedReasons(traced_value.get());
+  AppendOwnerNodeId(traced_value.get());
+  AppendMainThreadScrollingReasons(traced_value.get());
+  return traced_value;
 }
 
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(
-    base::trace_event::TracedValue* tracedValue) const {
-  tracedValue->BeginArray("annotated_invalidation_rects");
-  for (const auto& annotatedRect : m_previousInvalidations) {
-    const FloatRect& rect = annotatedRect.rect;
-    tracedValue->BeginDictionary();
-    tracedValue->BeginArray("geometry_rect");
-    tracedValue->AppendDouble(rect.x());
-    tracedValue->AppendDouble(rect.y());
-    tracedValue->AppendDouble(rect.width());
-    tracedValue->AppendDouble(rect.height());
-    tracedValue->EndArray();
-    tracedValue->SetString(
-        "reason", paintInvalidationReasonToString(annotatedRect.reason));
-    tracedValue->EndDictionary();
+void GraphicsLayerDebugInfo::AppendAnnotatedInvalidateRects(
+    base::trace_event::TracedValue* traced_value) const {
+  traced_value->BeginArray("annotated_invalidation_rects");
+  for (const auto& annotated_rect : previous_invalidations_) {
+    const FloatRect& rect = annotated_rect.rect;
+    traced_value->BeginDictionary();
+    traced_value->BeginArray("geometry_rect");
+    traced_value->AppendDouble(rect.X());
+    traced_value->AppendDouble(rect.Y());
+    traced_value->AppendDouble(rect.Width());
+    traced_value->AppendDouble(rect.Height());
+    traced_value->EndArray();
+    traced_value->SetString(
+        "reason", PaintInvalidationReasonToString(annotated_rect.reason));
+    traced_value->EndDictionary();
   }
-  tracedValue->EndArray();
+  traced_value->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendCompositingReasons(
-    base::trace_event::TracedValue* tracedValue) const {
-  tracedValue->BeginArray("compositing_reasons");
+void GraphicsLayerDebugInfo::AppendCompositingReasons(
+    base::trace_event::TracedValue* traced_value) const {
+  traced_value->BeginArray("compositing_reasons");
   for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-    if (!(m_compositingReasons & kCompositingReasonStringMap[i].reason))
+    if (!(compositing_reasons_ & kCompositingReasonStringMap[i].reason))
       continue;
-    tracedValue->AppendString(kCompositingReasonStringMap[i].description);
+    traced_value->AppendString(kCompositingReasonStringMap[i].description);
   }
-  tracedValue->EndArray();
+  traced_value->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendSquashingDisallowedReasons(
-    base::trace_event::TracedValue* tracedValue) const {
-  tracedValue->BeginArray("squashing_disallowed_reasons");
+void GraphicsLayerDebugInfo::AppendSquashingDisallowedReasons(
+    base::trace_event::TracedValue* traced_value) const {
+  traced_value->BeginArray("squashing_disallowed_reasons");
   for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
-    if (!(m_squashingDisallowedReasons &
+    if (!(squashing_disallowed_reasons_ &
           kSquashingDisallowedReasonStringMap[i].reason))
       continue;
-    tracedValue->AppendString(
+    traced_value->AppendString(
         kSquashingDisallowedReasonStringMap[i].description);
   }
-  tracedValue->EndArray();
+  traced_value->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendOwnerNodeId(
-    base::trace_event::TracedValue* tracedValue) const {
-  if (!m_ownerNodeId)
+void GraphicsLayerDebugInfo::AppendOwnerNodeId(
+    base::trace_event::TracedValue* traced_value) const {
+  if (!owner_node_id_)
     return;
 
-  tracedValue->SetInteger("owner_node", m_ownerNodeId);
+  traced_value->SetInteger("owner_node", owner_node_id_);
 }
 
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(
+void GraphicsLayerDebugInfo::AppendAnnotatedInvalidateRect(
     const FloatRect& rect,
-    PaintInvalidationReason invalidationReason) {
-  AnnotatedInvalidationRect annotatedRect = {rect, invalidationReason};
-  m_invalidations.push_back(annotatedRect);
+    PaintInvalidationReason invalidation_reason) {
+  AnnotatedInvalidationRect annotated_rect = {rect, invalidation_reason};
+  invalidations_.push_back(annotated_rect);
 }
 
-void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects() {
-  m_previousInvalidations.clear();
-  m_previousInvalidations.swap(m_invalidations);
+void GraphicsLayerDebugInfo::ClearAnnotatedInvalidateRects() {
+  previous_invalidations_.Clear();
+  previous_invalidations_.Swap(invalidations_);
 }
 
-void GraphicsLayerDebugInfo::appendMainThreadScrollingReasons(
-    base::trace_event::TracedValue* tracedValue) const {
+void GraphicsLayerDebugInfo::AppendMainThreadScrollingReasons(
+    base::trace_event::TracedValue* traced_value) const {
   MainThreadScrollingReason::mainThreadScrollingReasonsAsTracedValue(
-      m_mainThreadScrollingReasons, tracedValue);
+      main_thread_scrolling_reasons_, traced_value);
 }
 
 }  // namespace blink

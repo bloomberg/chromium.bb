@@ -31,99 +31,100 @@ namespace blink {
 inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document),
       SVGURIReference(this),
-      m_x(SVGAnimatedLength::create(this,
-                                    SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width),
-                                    CSSPropertyX)),
-      m_y(SVGAnimatedLength::create(this,
-                                    SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height),
-                                    CSSPropertyY)),
-      m_width(SVGAnimatedLength::create(this,
-                                        SVGNames::widthAttr,
-                                        SVGLength::create(SVGLengthMode::Width),
-                                        CSSPropertyWidth)),
-      m_height(
-          SVGAnimatedLength::create(this,
+      x_(SVGAnimatedLength::Create(this,
+                                   SVGNames::xAttr,
+                                   SVGLength::Create(SVGLengthMode::kWidth),
+                                   CSSPropertyX)),
+      y_(SVGAnimatedLength::Create(this,
+                                   SVGNames::yAttr,
+                                   SVGLength::Create(SVGLengthMode::kHeight),
+                                   CSSPropertyY)),
+      width_(SVGAnimatedLength::Create(this,
+                                       SVGNames::widthAttr,
+                                       SVGLength::Create(SVGLengthMode::kWidth),
+                                       CSSPropertyWidth)),
+      height_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height),
+                                    SVGLength::Create(SVGLengthMode::kHeight),
                                     CSSPropertyHeight)),
-      m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(
+      preserve_aspect_ratio_(SVGAnimatedPreserveAspectRatio::Create(
           this,
           SVGNames::preserveAspectRatioAttr)),
-      m_imageLoader(SVGImageLoader::create(this)),
-      m_needsLoaderURIUpdate(true) {
-  addToPropertyMap(m_x);
-  addToPropertyMap(m_y);
-  addToPropertyMap(m_width);
-  addToPropertyMap(m_height);
-  addToPropertyMap(m_preserveAspectRatio);
+      image_loader_(SVGImageLoader::Create(this)),
+      needs_loader_uri_update_(true) {
+  AddToPropertyMap(x_);
+  AddToPropertyMap(y_);
+  AddToPropertyMap(width_);
+  AddToPropertyMap(height_);
+  AddToPropertyMap(preserve_aspect_ratio_);
 }
 
 DEFINE_NODE_FACTORY(SVGImageElement)
 
 DEFINE_TRACE(SVGImageElement) {
-  visitor->trace(m_x);
-  visitor->trace(m_y);
-  visitor->trace(m_width);
-  visitor->trace(m_height);
-  visitor->trace(m_preserveAspectRatio);
-  visitor->trace(m_imageLoader);
-  SVGGraphicsElement::trace(visitor);
-  SVGURIReference::trace(visitor);
+  visitor->Trace(x_);
+  visitor->Trace(y_);
+  visitor->Trace(width_);
+  visitor->Trace(height_);
+  visitor->Trace(preserve_aspect_ratio_);
+  visitor->Trace(image_loader_);
+  SVGGraphicsElement::Trace(visitor);
+  SVGURIReference::Trace(visitor);
 }
 
-bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const {
-  if (LayoutSVGImage* layoutSVGImage = toLayoutSVGImage(layoutObject())) {
-    if (layoutSVGImage->imageResource()->hasImage()) {
+bool SVGImageElement::CurrentFrameHasSingleSecurityOrigin() const {
+  if (LayoutSVGImage* layout_svg_image = ToLayoutSVGImage(GetLayoutObject())) {
+    if (layout_svg_image->ImageResource()->HasImage()) {
       if (Image* image =
-              layoutSVGImage->imageResource()->cachedImage()->getImage())
-        return image->currentFrameHasSingleSecurityOrigin();
+              layout_svg_image->ImageResource()->CachedImage()->GetImage())
+        return image->CurrentFrameHasSingleSecurityOrigin();
     }
   }
 
   return true;
 }
 
-void SVGImageElement::collectStyleForPresentationAttribute(
+void SVGImageElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
-  SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_width) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_width->cssValue());
-  } else if (property == m_height) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_height->cssValue());
-  } else if (property == m_x) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_x->cssValue());
-  } else if (property == m_y) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_y->cssValue());
+  SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
+  if (property == width_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            width_->CssValue());
+  } else if (property == height_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            height_->CssValue());
+  } else if (property == x_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            x_->CssValue());
+  } else if (property == y_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            y_->CssValue());
   } else {
-    SVGGraphicsElement::collectStyleForPresentationAttribute(name, value,
+    SVGGraphicsElement::CollectStyleForPresentationAttribute(name, value,
                                                              style);
   }
 }
 
-void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName) {
-  bool isLengthAttribute =
-      attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr;
+void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  bool is_length_attribute =
+      attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
+      attr_name == SVGNames::widthAttr || attr_name == SVGNames::heightAttr;
 
-  if (isLengthAttribute || attrName == SVGNames::preserveAspectRatioAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+  if (is_length_attribute || attr_name == SVGNames::preserveAspectRatioAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    if (isLengthAttribute) {
-      invalidateSVGPresentationAttributeStyle();
-      setNeedsStyleRecalc(LocalStyleChange,
-                          StyleChangeReasonForTracing::fromAttribute(attrName));
-      updateRelativeLengthsInformation();
+    if (is_length_attribute) {
+      InvalidateSVGPresentationAttributeStyle();
+      SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::FromAttribute(attr_name));
+      UpdateRelativeLengthsInformation();
     }
 
-    LayoutObject* object = this->layoutObject();
+    LayoutObject* object = this->GetLayoutObject();
     if (!object)
       return;
 
@@ -131,85 +132,85 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName) {
     // viewport didn't change, however since we don't have the computed
     // style yet we can't use updateBoundingBox/updateImageContainerSize.
     // See http://crbug.com/466200.
-    markForLayoutAndParentResourceInvalidation(object);
+    MarkForLayoutAndParentResourceInvalidation(object);
     return;
   }
 
-  if (SVGURIReference::isKnownAttribute(attrName)) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
     if (isConnected())
-      imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
+      GetImageLoader().UpdateFromElement(
+          ImageLoader::kUpdateIgnorePreviousError);
     else
-      m_needsLoaderURIUpdate = true;
+      needs_loader_uri_update_ = true;
     return;
   }
 
-  SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-bool SVGImageElement::selfHasRelativeLengths() const {
-  return m_x->currentValue()->isRelative() ||
-         m_y->currentValue()->isRelative() ||
-         m_width->currentValue()->isRelative() ||
-         m_height->currentValue()->isRelative();
+bool SVGImageElement::SelfHasRelativeLengths() const {
+  return x_->CurrentValue()->IsRelative() || y_->CurrentValue()->IsRelative() ||
+         width_->CurrentValue()->IsRelative() ||
+         height_->CurrentValue()->IsRelative();
 }
 
-LayoutObject* SVGImageElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGImageElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGImage(this);
 }
 
-bool SVGImageElement::haveLoadedRequiredResources() {
-  return !m_needsLoaderURIUpdate && !imageLoader().hasPendingActivity();
+bool SVGImageElement::HaveLoadedRequiredResources() {
+  return !needs_loader_uri_update_ && !GetImageLoader().HasPendingActivity();
 }
 
-void SVGImageElement::attachLayoutTree(const AttachContext& context) {
-  SVGGraphicsElement::attachLayoutTree(context);
+void SVGImageElement::AttachLayoutTree(const AttachContext& context) {
+  SVGGraphicsElement::AttachLayoutTree(context);
 
-  if (LayoutSVGImage* imageObj = toLayoutSVGImage(layoutObject())) {
-    if (imageObj->imageResource()->hasImage())
+  if (LayoutSVGImage* image_obj = ToLayoutSVGImage(GetLayoutObject())) {
+    if (image_obj->ImageResource()->HasImage())
       return;
 
-    imageObj->imageResource()->setImageResource(imageLoader().image());
+    image_obj->ImageResource()->SetImageResource(GetImageLoader().GetImage());
   }
 }
 
-Node::InsertionNotificationRequest SVGImageElement::insertedInto(
-    ContainerNode* rootParent) {
-  SVGGraphicsElement::insertedInto(rootParent);
-  if (!rootParent->isConnected())
-    return InsertionDone;
+Node::InsertionNotificationRequest SVGImageElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGGraphicsElement::InsertedInto(root_parent);
+  if (!root_parent->isConnected())
+    return kInsertionDone;
 
   // We can only resolve base URIs properly after tree insertion - hence, URI
   // mutations while detached are deferred until this point.
-  if (m_needsLoaderURIUpdate) {
-    imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
-    m_needsLoaderURIUpdate = false;
+  if (needs_loader_uri_update_) {
+    GetImageLoader().UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
+    needs_loader_uri_update_ = false;
   } else {
     // A previous loader update may have failed to actually fetch the image if
     // the document was inactive. In that case, force a re-update (but don't
     // clear previous errors).
-    if (!imageLoader().image())
-      imageLoader().updateFromElement();
+    if (!GetImageLoader().GetImage())
+      GetImageLoader().UpdateFromElement();
   }
 
-  return InsertionDone;
+  return kInsertionDone;
 }
 
-FloatSize SVGImageElement::sourceDefaultObjectSize() {
-  if (layoutObject())
-    return toLayoutSVGImage(layoutObject())->objectBoundingBox().size();
-  SVGLengthContext lengthContext(this);
-  return FloatSize(m_width->currentValue()->value(lengthContext),
-                   m_height->currentValue()->value(lengthContext));
+FloatSize SVGImageElement::SourceDefaultObjectSize() {
+  if (GetLayoutObject())
+    return ToLayoutSVGImage(GetLayoutObject())->ObjectBoundingBox().size();
+  SVGLengthContext length_context(this);
+  return FloatSize(width_->CurrentValue()->Value(length_context),
+                   height_->CurrentValue()->Value(length_context));
 }
 
-const AtomicString SVGImageElement::imageSourceURL() const {
-  return AtomicString(hrefString());
+const AtomicString SVGImageElement::ImageSourceURL() const {
+  return AtomicString(HrefString());
 }
 
-void SVGImageElement::didMoveToNewDocument(Document& oldDocument) {
-  imageLoader().elementDidMoveToNewDocument();
-  SVGGraphicsElement::didMoveToNewDocument(oldDocument);
+void SVGImageElement::DidMoveToNewDocument(Document& old_document) {
+  GetImageLoader().ElementDidMoveToNewDocument();
+  SVGGraphicsElement::DidMoveToNewDocument(old_document);
 }
 
 }  // namespace blink

@@ -56,8 +56,8 @@ namespace blink {
 static const int kLayoutUnitFractionalBits = 6;
 static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 
-const int intMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
-const int intMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
+const int kIntMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
+const int kIntMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
 class PLATFORM_EXPORT LayoutUnit;
@@ -67,54 +67,53 @@ class LayoutUnit {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  LayoutUnit() : m_value(0) {}
-  explicit LayoutUnit(int value) { setValue(value); }
-  explicit LayoutUnit(unsigned short value) { setValue(value); }
-  explicit LayoutUnit(unsigned value) { setValue(value); }
+  LayoutUnit() : value_(0) {}
+  explicit LayoutUnit(int value) { SetValue(value); }
+  explicit LayoutUnit(unsigned short value) { SetValue(value); }
+  explicit LayoutUnit(unsigned value) { SetValue(value); }
   explicit LayoutUnit(unsigned long value) {
-    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
+    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(unsigned long long value) {
-    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
+    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(float value) {
-    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
+    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(double value) {
-    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
+    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
 
-  static LayoutUnit fromFloatCeil(float value) {
+  static LayoutUnit FromFloatCeil(float value) {
     LayoutUnit v;
-    v.m_value =
-        base::saturated_cast<int>(ceilf(value * kFixedPointDenominator));
+    v.value_ = base::saturated_cast<int>(ceilf(value * kFixedPointDenominator));
     return v;
   }
 
-  static LayoutUnit fromFloatFloor(float value) {
+  static LayoutUnit FromFloatFloor(float value) {
     LayoutUnit v;
-    v.m_value =
+    v.value_ =
         base::saturated_cast<int>(floorf(value * kFixedPointDenominator));
     return v;
   }
 
-  static LayoutUnit fromFloatRound(float value) {
+  static LayoutUnit FromFloatRound(float value) {
     LayoutUnit v;
-    v.m_value =
+    v.value_ =
         base::saturated_cast<int>(roundf(value * kFixedPointDenominator));
     return v;
   }
 
-  int toInt() const { return m_value / kFixedPointDenominator; }
-  float toFloat() const {
-    return static_cast<float>(m_value) / kFixedPointDenominator;
+  int ToInt() const { return value_ / kFixedPointDenominator; }
+  float ToFloat() const {
+    return static_cast<float>(value_) / kFixedPointDenominator;
   }
-  double toDouble() const {
-    return static_cast<double>(m_value) / kFixedPointDenominator;
+  double ToDouble() const {
+    return static_cast<double>(value_) / kFixedPointDenominator;
   }
-  unsigned toUnsigned() const {
-    REPORT_OVERFLOW(m_value >= 0);
-    return toInt();
+  unsigned ToUnsigned() const {
+    REPORT_OVERFLOW(value_ >= 0);
+    return ToInt();
   }
 
   // Conversion to int or unsigned is lossy. 'explicit' on these operators won't
@@ -124,131 +123,131 @@ class LayoutUnit {
   operator int() const = delete;
   operator unsigned() const = delete;
 
-  operator double() const { return toDouble(); }
-  operator float() const { return toFloat(); }
-  operator bool() const { return m_value; }
+  operator double() const { return ToDouble(); }
+  operator float() const { return ToFloat(); }
+  operator bool() const { return value_; }
 
   LayoutUnit operator++(int) {
-    m_value += kFixedPointDenominator;
+    value_ += kFixedPointDenominator;
     return *this;
   }
 
-  inline int rawValue() const { return m_value; }
-  inline void setRawValue(int value) { m_value = value; }
-  void setRawValue(long long value) {
+  inline int RawValue() const { return value_; }
+  inline void SetRawValue(int value) { value_ = value; }
+  void SetRawValue(long long value) {
     REPORT_OVERFLOW(value > std::numeric_limits<int>::min() &&
                     value < std::numeric_limits<int>::max());
-    m_value = static_cast<int>(value);
+    value_ = static_cast<int>(value);
   }
 
-  LayoutUnit abs() const {
-    LayoutUnit returnValue;
-    returnValue.setRawValue(::abs(m_value));
-    return returnValue;
+  LayoutUnit Abs() const {
+    LayoutUnit return_value;
+    return_value.SetRawValue(::abs(value_));
+    return return_value;
   }
-  int ceil() const {
-    if (UNLIKELY(m_value >= INT_MAX - kFixedPointDenominator + 1))
-      return intMaxForLayoutUnit;
+  int Ceil() const {
+    if (UNLIKELY(value_ >= INT_MAX - kFixedPointDenominator + 1))
+      return kIntMaxForLayoutUnit;
 
-    if (m_value >= 0)
-      return (m_value + kFixedPointDenominator - 1) / kFixedPointDenominator;
-    return toInt();
+    if (value_ >= 0)
+      return (value_ + kFixedPointDenominator - 1) / kFixedPointDenominator;
+    return ToInt();
   }
-  ALWAYS_INLINE int round() const {
-    return SaturatedAddition(rawValue(), kFixedPointDenominator / 2) >>
+  ALWAYS_INLINE int Round() const {
+    return SaturatedAddition(RawValue(), kFixedPointDenominator / 2) >>
            kLayoutUnitFractionalBits;
   }
 
-  int floor() const {
-    if (UNLIKELY(m_value <= INT_MIN + kFixedPointDenominator - 1))
-      return intMinForLayoutUnit;
+  int Floor() const {
+    if (UNLIKELY(value_ <= INT_MIN + kFixedPointDenominator - 1))
+      return kIntMinForLayoutUnit;
 
-    return m_value >> kLayoutUnitFractionalBits;
+    return value_ >> kLayoutUnitFractionalBits;
   }
 
-  LayoutUnit clampNegativeToZero() const {
+  LayoutUnit ClampNegativeToZero() const {
     return std::max(*this, LayoutUnit());
   }
 
-  LayoutUnit clampPositiveToZero() const {
+  LayoutUnit ClampPositiveToZero() const {
     return std::min(*this, LayoutUnit());
   }
 
-  LayoutUnit fraction() const {
+  LayoutUnit Fraction() const {
     // Add the fraction to the size (as opposed to the full location) to avoid
     // overflows.  Compute fraction using the mod operator to preserve the sign
     // of the value as it may affect rounding.
     LayoutUnit fraction;
-    fraction.setRawValue(rawValue() % kFixedPointDenominator);
+    fraction.SetRawValue(RawValue() % kFixedPointDenominator);
     return fraction;
   }
 
-  bool mightBeSaturated() const {
-    return rawValue() == std::numeric_limits<int>::max() ||
-           rawValue() == std::numeric_limits<int>::min();
+  bool MightBeSaturated() const {
+    return RawValue() == std::numeric_limits<int>::max() ||
+           RawValue() == std::numeric_limits<int>::min();
   }
 
-  static float epsilon() { return 1.0f / kFixedPointDenominator; }
+  static float Epsilon() { return 1.0f / kFixedPointDenominator; }
 
-  static const LayoutUnit max() {
+  static const LayoutUnit Max() {
     LayoutUnit m;
-    m.m_value = std::numeric_limits<int>::max();
+    m.value_ = std::numeric_limits<int>::max();
     return m;
   }
-  static const LayoutUnit min() {
+  static const LayoutUnit Min() {
     LayoutUnit m;
-    m.m_value = std::numeric_limits<int>::min();
+    m.value_ = std::numeric_limits<int>::min();
     return m;
   }
 
   // Versions of max/min that are slightly smaller/larger than max/min() to
   // allow for roinding without overflowing.
-  static const LayoutUnit nearlyMax() {
+  static const LayoutUnit NearlyMax() {
     LayoutUnit m;
-    m.m_value = std::numeric_limits<int>::max() - kFixedPointDenominator / 2;
+    m.value_ = std::numeric_limits<int>::max() - kFixedPointDenominator / 2;
     return m;
   }
-  static const LayoutUnit nearlyMin() {
+  static const LayoutUnit NearlyMin() {
     LayoutUnit m;
-    m.m_value = std::numeric_limits<int>::min() + kFixedPointDenominator / 2;
+    m.value_ = std::numeric_limits<int>::min() + kFixedPointDenominator / 2;
     return m;
   }
 
-  static LayoutUnit clamp(double value) { return fromFloatFloor(value); }
+  static LayoutUnit Clamp(double value) { return FromFloatFloor(value); }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  static bool isInBounds(int value) {
+  static bool IsInBounds(int value) {
     return ::abs(value) <=
            std::numeric_limits<int>::max() / kFixedPointDenominator;
   }
-  static bool isInBounds(unsigned value) {
+  static bool IsInBounds(unsigned value) {
     return value <= static_cast<unsigned>(std::numeric_limits<int>::max()) /
                         kFixedPointDenominator;
   }
-  static bool isInBounds(double value) {
+  static bool IsInBounds(double value) {
     return ::fabs(value) <=
            std::numeric_limits<int>::max() / kFixedPointDenominator;
   }
 
-  ALWAYS_INLINE void setValue(int value) {
-    m_value = SaturatedSet<kLayoutUnitFractionalBits>(value);
+  ALWAYS_INLINE void SetValue(int value) {
+    value_ = SaturatedSet<kLayoutUnitFractionalBits>(value);
   }
 
-  inline void setValue(unsigned value) {
-    m_value = SaturatedSet<kLayoutUnitFractionalBits>(value);
+  inline void SetValue(unsigned value) {
+    value_ = SaturatedSet<kLayoutUnitFractionalBits>(value);
   }
 
-  int m_value;
+  int value_;
 };
 
 inline bool operator<=(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() <= b.rawValue();
+  return a.RawValue() <= b.RawValue();
 }
 
 inline bool operator<=(const LayoutUnit& a, float b) {
-  return a.toFloat() <= b;
+  return a.ToFloat() <= b;
 }
 
 inline bool operator<=(const LayoutUnit& a, int b) {
@@ -256,7 +255,7 @@ inline bool operator<=(const LayoutUnit& a, int b) {
 }
 
 inline bool operator<=(const float a, const LayoutUnit& b) {
-  return a <= b.toFloat();
+  return a <= b.ToFloat();
 }
 
 inline bool operator<=(const int a, const LayoutUnit& b) {
@@ -264,7 +263,7 @@ inline bool operator<=(const int a, const LayoutUnit& b) {
 }
 
 inline bool operator>=(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() >= b.rawValue();
+  return a.RawValue() >= b.RawValue();
 }
 
 inline bool operator>=(const LayoutUnit& a, int b) {
@@ -272,11 +271,11 @@ inline bool operator>=(const LayoutUnit& a, int b) {
 }
 
 inline bool operator>=(const float a, const LayoutUnit& b) {
-  return a >= b.toFloat();
+  return a >= b.ToFloat();
 }
 
 inline bool operator>=(const LayoutUnit& a, float b) {
-  return a.toFloat() >= b;
+  return a.ToFloat() >= b;
 }
 
 inline bool operator>=(const int a, const LayoutUnit& b) {
@@ -284,7 +283,7 @@ inline bool operator>=(const int a, const LayoutUnit& b) {
 }
 
 inline bool operator<(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() < b.rawValue();
+  return a.RawValue() < b.RawValue();
 }
 
 inline bool operator<(const LayoutUnit& a, int b) {
@@ -292,11 +291,11 @@ inline bool operator<(const LayoutUnit& a, int b) {
 }
 
 inline bool operator<(const LayoutUnit& a, float b) {
-  return a.toFloat() < b;
+  return a.ToFloat() < b;
 }
 
 inline bool operator<(const LayoutUnit& a, double b) {
-  return a.toDouble() < b;
+  return a.ToDouble() < b;
 }
 
 inline bool operator<(const int a, const LayoutUnit& b) {
@@ -304,19 +303,19 @@ inline bool operator<(const int a, const LayoutUnit& b) {
 }
 
 inline bool operator<(const float a, const LayoutUnit& b) {
-  return a < b.toFloat();
+  return a < b.ToFloat();
 }
 
 inline bool operator>(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() > b.rawValue();
+  return a.RawValue() > b.RawValue();
 }
 
 inline bool operator>(const LayoutUnit& a, double b) {
-  return a.toDouble() > b;
+  return a.ToDouble() > b;
 }
 
 inline bool operator>(const LayoutUnit& a, float b) {
-  return a.toFloat() > b;
+  return a.ToFloat() > b;
 }
 
 inline bool operator>(const LayoutUnit& a, int b) {
@@ -328,15 +327,15 @@ inline bool operator>(const int a, const LayoutUnit& b) {
 }
 
 inline bool operator>(const float a, const LayoutUnit& b) {
-  return a > b.toFloat();
+  return a > b.ToFloat();
 }
 
 inline bool operator>(const double a, const LayoutUnit& b) {
-  return a > b.toDouble();
+  return a > b.ToDouble();
 }
 
 inline bool operator!=(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() != b.rawValue();
+  return a.RawValue() != b.RawValue();
 }
 
 inline bool operator!=(const LayoutUnit& a, float b) {
@@ -352,7 +351,7 @@ inline bool operator!=(const LayoutUnit& a, int b) {
 }
 
 inline bool operator==(const LayoutUnit& a, const LayoutUnit& b) {
-  return a.rawValue() == b.rawValue();
+  return a.RawValue() == b.RawValue();
 }
 
 inline bool operator==(const LayoutUnit& a, int b) {
@@ -364,43 +363,43 @@ inline bool operator==(const int a, const LayoutUnit& b) {
 }
 
 inline bool operator==(const LayoutUnit& a, float b) {
-  return a.toFloat() == b;
+  return a.ToFloat() == b;
 }
 
 inline bool operator==(const float a, const LayoutUnit& b) {
-  return a == b.toFloat();
+  return a == b.ToFloat();
 }
 
 // For multiplication that's prone to overflow, this bounds it to
 // LayoutUnit::max() and ::min()
-inline LayoutUnit boundedMultiply(const LayoutUnit& a, const LayoutUnit& b) {
-  int64_t result = static_cast<int64_t>(a.rawValue()) *
-                   static_cast<int64_t>(b.rawValue()) / kFixedPointDenominator;
+inline LayoutUnit BoundedMultiply(const LayoutUnit& a, const LayoutUnit& b) {
+  int64_t result = static_cast<int64_t>(a.RawValue()) *
+                   static_cast<int64_t>(b.RawValue()) / kFixedPointDenominator;
   int32_t high = static_cast<int32_t>(result >> 32);
   int32_t low = static_cast<int32_t>(result);
   uint32_t saturated =
-      (static_cast<uint32_t>(a.rawValue() ^ b.rawValue()) >> 31) +
+      (static_cast<uint32_t>(a.RawValue() ^ b.RawValue()) >> 31) +
       std::numeric_limits<int>::max();
   // If the higher 32 bits does not match the lower 32 with sign extension the
   // operation overflowed.
   if (high != low >> 31)
     result = saturated;
 
-  LayoutUnit returnVal;
-  returnVal.setRawValue(static_cast<int>(result));
-  return returnVal;
+  LayoutUnit return_val;
+  return_val.SetRawValue(static_cast<int>(result));
+  return return_val;
 }
 
 inline LayoutUnit operator*(const LayoutUnit& a, const LayoutUnit& b) {
-  return boundedMultiply(a, b);
+  return BoundedMultiply(a, b);
 }
 
 inline double operator*(const LayoutUnit& a, double b) {
-  return a.toDouble() * b;
+  return a.ToDouble() * b;
 }
 
 inline float operator*(const LayoutUnit& a, float b) {
-  return a.toFloat() * b;
+  return a.ToFloat() * b;
 }
 
 inline LayoutUnit operator*(const LayoutUnit& a, int b) {
@@ -444,27 +443,27 @@ inline LayoutUnit operator*(const int a, const LayoutUnit& b) {
 }
 
 inline float operator*(const float a, const LayoutUnit& b) {
-  return a * b.toFloat();
+  return a * b.ToFloat();
 }
 
 inline double operator*(const double a, const LayoutUnit& b) {
-  return a * b.toDouble();
+  return a * b.ToDouble();
 }
 
 inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b) {
-  LayoutUnit returnVal;
-  long long rawVal = static_cast<long long>(kFixedPointDenominator) *
-                     a.rawValue() / b.rawValue();
-  returnVal.setRawValue(base::saturated_cast<int>(rawVal));
-  return returnVal;
+  LayoutUnit return_val;
+  long long raw_val = static_cast<long long>(kFixedPointDenominator) *
+                      a.RawValue() / b.RawValue();
+  return_val.SetRawValue(base::saturated_cast<int>(raw_val));
+  return return_val;
 }
 
 inline float operator/(const LayoutUnit& a, float b) {
-  return a.toFloat() / b;
+  return a.ToFloat() / b;
 }
 
 inline double operator/(const LayoutUnit& a, double b) {
-  return a.toDouble() / b;
+  return a.ToDouble() / b;
 }
 
 inline LayoutUnit operator/(const LayoutUnit& a, int b) {
@@ -488,11 +487,11 @@ inline LayoutUnit operator/(const LayoutUnit& a, unsigned long long b) {
 }
 
 inline float operator/(const float a, const LayoutUnit& b) {
-  return a / b.toFloat();
+  return a / b.ToFloat();
 }
 
 inline double operator/(const double a, const LayoutUnit& b) {
-  return a / b.toDouble();
+  return a / b.ToDouble();
 }
 
 inline LayoutUnit operator/(const int a, const LayoutUnit& b) {
@@ -516,9 +515,9 @@ inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b) {
 }
 
 ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b) {
-  LayoutUnit returnVal;
-  returnVal.setRawValue(SaturatedAddition(a.rawValue(), b.rawValue()));
-  return returnVal;
+  LayoutUnit return_val;
+  return_val.SetRawValue(SaturatedAddition(a.RawValue(), b.RawValue()));
+  return return_val;
 }
 
 inline LayoutUnit operator+(const LayoutUnit& a, int b) {
@@ -526,11 +525,11 @@ inline LayoutUnit operator+(const LayoutUnit& a, int b) {
 }
 
 inline float operator+(const LayoutUnit& a, float b) {
-  return a.toFloat() + b;
+  return a.ToFloat() + b;
 }
 
 inline double operator+(const LayoutUnit& a, double b) {
-  return a.toDouble() + b;
+  return a.ToDouble() + b;
 }
 
 inline LayoutUnit operator+(const int a, const LayoutUnit& b) {
@@ -538,17 +537,17 @@ inline LayoutUnit operator+(const int a, const LayoutUnit& b) {
 }
 
 inline float operator+(const float a, const LayoutUnit& b) {
-  return a + b.toFloat();
+  return a + b.ToFloat();
 }
 
 inline double operator+(const double a, const LayoutUnit& b) {
-  return a + b.toDouble();
+  return a + b.ToDouble();
 }
 
 ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b) {
-  LayoutUnit returnVal;
-  returnVal.setRawValue(SaturatedSubtraction(a.rawValue(), b.rawValue()));
-  return returnVal;
+  LayoutUnit return_val;
+  return_val.SetRawValue(SaturatedSubtraction(a.RawValue(), b.RawValue()));
+  return return_val;
 }
 
 inline LayoutUnit operator-(const LayoutUnit& a, int b) {
@@ -560,11 +559,11 @@ inline LayoutUnit operator-(const LayoutUnit& a, unsigned b) {
 }
 
 inline float operator-(const LayoutUnit& a, float b) {
-  return a.toFloat() - b;
+  return a.ToFloat() - b;
 }
 
 inline double operator-(const LayoutUnit& a, double b) {
-  return a.toDouble() - b;
+  return a.ToDouble() - b;
 }
 
 inline LayoutUnit operator-(const int a, const LayoutUnit& b) {
@@ -572,32 +571,32 @@ inline LayoutUnit operator-(const int a, const LayoutUnit& b) {
 }
 
 inline float operator-(const float a, const LayoutUnit& b) {
-  return a - b.toFloat();
+  return a - b.ToFloat();
 }
 
 inline LayoutUnit operator-(const LayoutUnit& a) {
-  LayoutUnit returnVal;
-  returnVal.setRawValue(SaturatedNegative(a.rawValue()));
-  return returnVal;
+  LayoutUnit return_val;
+  return_val.SetRawValue(SaturatedNegative(a.RawValue()));
+  return return_val;
 }
 
 // For returning the remainder after a division with integer results.
-inline LayoutUnit intMod(const LayoutUnit& a, const LayoutUnit& b) {
+inline LayoutUnit IntMod(const LayoutUnit& a, const LayoutUnit& b) {
   // This calculates the modulo so that: a = static_cast<int>(a / b) * b +
   // intMod(a, b).
-  LayoutUnit returnVal;
-  returnVal.setRawValue(a.rawValue() % b.rawValue());
-  return returnVal;
+  LayoutUnit return_val;
+  return_val.SetRawValue(a.RawValue() % b.RawValue());
+  return return_val;
 }
 
 inline LayoutUnit operator%(const LayoutUnit& a, const LayoutUnit& b) {
   // This calculates the modulo so that: a = (a / b) * b + a % b.
-  LayoutUnit returnVal;
-  long long rawVal =
-      (static_cast<long long>(kFixedPointDenominator) * a.rawValue()) %
-      b.rawValue();
-  returnVal.setRawValue(rawVal / kFixedPointDenominator);
-  return returnVal;
+  LayoutUnit return_val;
+  long long raw_val =
+      (static_cast<long long>(kFixedPointDenominator) * a.RawValue()) %
+      b.RawValue();
+  return_val.SetRawValue(raw_val / kFixedPointDenominator);
+  return return_val;
 }
 
 inline LayoutUnit operator%(const LayoutUnit& a, int b) {
@@ -609,7 +608,7 @@ inline LayoutUnit operator%(int a, const LayoutUnit& b) {
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
-  a.setRawValue(SaturatedAddition(a.rawValue(), b.rawValue()));
+  a.SetRawValue(SaturatedAddition(a.RawValue(), b.RawValue()));
   return a;
 }
 
@@ -634,7 +633,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, int b) {
 }
 
 inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b) {
-  a.setRawValue(SaturatedSubtraction(a.rawValue(), b.rawValue()));
+  a.SetRawValue(SaturatedSubtraction(a.RawValue(), b.RawValue()));
   return a;
 }
 
@@ -678,38 +677,38 @@ inline float& operator/=(float& a, const LayoutUnit& b) {
   return a;
 }
 
-inline int snapSizeToPixel(LayoutUnit size, LayoutUnit location) {
-  LayoutUnit fraction = location.fraction();
-  return (fraction + size).round() - fraction.round();
+inline int SnapSizeToPixel(LayoutUnit size, LayoutUnit location) {
+  LayoutUnit fraction = location.Fraction();
+  return (fraction + size).Round() - fraction.Round();
 }
 
-inline int roundToInt(LayoutUnit value) {
-  return value.round();
+inline int RoundToInt(LayoutUnit value) {
+  return value.Round();
 }
 
-inline int floorToInt(LayoutUnit value) {
-  return value.floor();
+inline int FloorToInt(LayoutUnit value) {
+  return value.Floor();
 }
 
-inline LayoutUnit absoluteValue(const LayoutUnit& value) {
-  return value.abs();
+inline LayoutUnit AbsoluteValue(const LayoutUnit& value) {
+  return value.Abs();
 }
 
-inline LayoutUnit layoutMod(const LayoutUnit& numerator,
+inline LayoutUnit LayoutMod(const LayoutUnit& numerator,
                             const LayoutUnit& denominator) {
   return numerator % denominator;
 }
 
-inline LayoutUnit layoutMod(const LayoutUnit& numerator, int denominator) {
+inline LayoutUnit LayoutMod(const LayoutUnit& numerator, int denominator) {
   return numerator % LayoutUnit(denominator);
 }
 
-inline bool isIntegerValue(const LayoutUnit value) {
-  return value.toInt() == value;
+inline bool IsIntegerValue(const LayoutUnit value) {
+  return value.ToInt() == value;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value) {
-  return stream << value.toString();
+  return stream << value.ToString();
 }
 
 }  // namespace blink

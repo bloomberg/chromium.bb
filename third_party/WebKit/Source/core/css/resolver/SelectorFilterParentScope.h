@@ -20,47 +20,47 @@ class SelectorFilterParentScope final {
   explicit SelectorFilterParentScope(Element& parent);
   ~SelectorFilterParentScope();
 
-  static void ensureParentStackIsPushed();
+  static void EnsureParentStackIsPushed();
 
  private:
-  void pushParentIfNeeded();
+  void PushParentIfNeeded();
 
-  Member<Element> m_parent;
-  bool m_pushed;
-  SelectorFilterParentScope* m_previous;
-  Member<StyleResolver> m_resolver;
+  Member<Element> parent_;
+  bool pushed_;
+  SelectorFilterParentScope* previous_;
+  Member<StyleResolver> resolver_;
 
-  static SelectorFilterParentScope* s_currentScope;
+  static SelectorFilterParentScope* current_scope_;
 };
 
 inline SelectorFilterParentScope::SelectorFilterParentScope(Element& parent)
-    : m_parent(parent),
-      m_pushed(false),
-      m_previous(s_currentScope),
-      m_resolver(parent.document().styleResolver()) {
-  DCHECK(parent.document().inStyleRecalc());
-  s_currentScope = this;
+    : parent_(parent),
+      pushed_(false),
+      previous_(current_scope_),
+      resolver_(parent.GetDocument().GetStyleResolver()) {
+  DCHECK(parent.GetDocument().InStyleRecalc());
+  current_scope_ = this;
 }
 
 inline SelectorFilterParentScope::~SelectorFilterParentScope() {
-  s_currentScope = m_previous;
-  if (!m_pushed)
+  current_scope_ = previous_;
+  if (!pushed_)
     return;
-  m_resolver->selectorFilter().popParent(*m_parent);
+  resolver_->GetSelectorFilter().PopParent(*parent_);
 }
 
-inline void SelectorFilterParentScope::ensureParentStackIsPushed() {
-  if (s_currentScope)
-    s_currentScope->pushParentIfNeeded();
+inline void SelectorFilterParentScope::EnsureParentStackIsPushed() {
+  if (current_scope_)
+    current_scope_->PushParentIfNeeded();
 }
 
-inline void SelectorFilterParentScope::pushParentIfNeeded() {
-  if (m_pushed)
+inline void SelectorFilterParentScope::PushParentIfNeeded() {
+  if (pushed_)
     return;
-  if (m_previous)
-    m_previous->pushParentIfNeeded();
-  m_resolver->selectorFilter().pushParent(*m_parent);
-  m_pushed = true;
+  if (previous_)
+    previous_->PushParentIfNeeded();
+  resolver_->GetSelectorFilter().PushParent(*parent_);
+  pushed_ = true;
 }
 
 }  // namespace blink

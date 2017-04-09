@@ -20,18 +20,18 @@ class TextCheckerClientImpl final
  public:
   explicit TextCheckerClientImpl(WebLocalFrameImpl*);
 
-  void checkSpellingOfString(const String&,
-                             int* misspellingLocation,
-                             int* misspellingLength) final;
-  void requestCheckingOfString(TextCheckingRequest*) final;
-  void cancelAllPendingRequests() final;
+  void CheckSpellingOfString(const String&,
+                             int* misspelling_location,
+                             int* misspelling_length) final;
+  void RequestCheckingOfString(TextCheckingRequest*) final;
+  void CancelAllPendingRequests() final;
 
   DECLARE_TRACE();
 
  private:
-  WebTextCheckClient* webTextCheckClient() const;
+  WebTextCheckClient* GetWebTextCheckClient() const;
 
-  Member<WebLocalFrameImpl> m_webLocalFrame;
+  Member<WebLocalFrameImpl> web_local_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TextCheckerClientImpl);
 };

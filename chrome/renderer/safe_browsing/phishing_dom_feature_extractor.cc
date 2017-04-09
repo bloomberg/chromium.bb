@@ -147,7 +147,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
   ++page_feature_state_->num_iterations;
   base::TimeTicks current_chunk_start_time = clock_->Now();
 
-  if (cur_document_.isNull()) {
+  if (cur_document_.IsNull()) {
     // This will only happen if we weren't able to get the document for the
     // main frame.  We'll treat this as an extraction failure.
     RunCallback(false);
@@ -155,12 +155,12 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
   }
 
   int num_elements = 0;
-  for (; !cur_document_.isNull(); cur_document_ = GetNextDocument()) {
+  for (; !cur_document_.IsNull(); cur_document_ = GetNextDocument()) {
     blink::WebElement cur_element;
     if (cur_frame_data_.get()) {
       // We're resuming traversal of a frame, so just advance to the next
       // element.
-      cur_element = cur_frame_data_->elements.nextItem();
+      cur_element = cur_frame_data_->elements.NextItem();
       // When we resume the traversal, the first call to nextItem() potentially
       // has to walk through the document again from the beginning, if it was
       // modified between our chunks of work.  Log how long this takes, so we
@@ -171,20 +171,20 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
       // We just moved to a new frame, so update our frame state
       // and advance to the first element.
       ResetFrameData();
-      cur_element = cur_frame_data_->elements.firstItem();
+      cur_element = cur_frame_data_->elements.FirstItem();
     }
 
-    for (; !cur_element.isNull();
-         cur_element = cur_frame_data_->elements.nextItem()) {
-      if (cur_element.hasHTMLTagName("a")) {
+    for (; !cur_element.IsNull();
+         cur_element = cur_frame_data_->elements.NextItem()) {
+      if (cur_element.HasHTMLTagName("a")) {
         HandleLink(cur_element);
-      } else if (cur_element.hasHTMLTagName("form")) {
+      } else if (cur_element.HasHTMLTagName("form")) {
         HandleForm(cur_element);
-      } else if (cur_element.hasHTMLTagName("img")) {
+      } else if (cur_element.HasHTMLTagName("img")) {
         HandleImage(cur_element);
-      } else if (cur_element.hasHTMLTagName("input")) {
+      } else if (cur_element.HasHTMLTagName("input")) {
         HandleInput(cur_element);
-      } else if (cur_element.hasHTMLTagName("script")) {
+      } else if (cur_element.HasHTMLTagName("script")) {
         HandleScript(cur_element);
       }
 
@@ -233,13 +233,13 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
 void PhishingDOMFeatureExtractor::HandleLink(
     const blink::WebElement& element) {
   // Count the number of times we link to a different host.
-  if (!element.hasAttribute("href")) {
+  if (!element.HasAttribute("href")) {
     DVLOG(1) << "Skipping anchor tag with no href";
     return;
   }
 
   // Retrieve the link and resolve the link in case it's relative.
-  blink::WebURL full_url = CompleteURL(element, element.getAttribute("href"));
+  blink::WebURL full_url = CompleteURL(element, element.GetAttribute("href"));
 
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
@@ -269,13 +269,13 @@ void PhishingDOMFeatureExtractor::HandleForm(
   ++page_feature_state_->num_forms;
 
   // Record whether the action points to a different domain.
-  if (!element.hasAttribute("action")) {
+  if (!element.HasAttribute("action")) {
     return;
   }
 
-  blink::WebURL full_url = CompleteURL(element, element.getAttribute("action"));
+  blink::WebURL full_url = CompleteURL(element, element.GetAttribute("action"));
 
-  page_feature_state_->page_action_urls.insert(full_url.string().utf8());
+  page_feature_state_->page_action_urls.insert(full_url.GetString().Utf8());
 
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
@@ -292,12 +292,12 @@ void PhishingDOMFeatureExtractor::HandleForm(
 
 void PhishingDOMFeatureExtractor::HandleImage(
     const blink::WebElement& element) {
-  if (!element.hasAttribute("src")) {
+  if (!element.HasAttribute("src")) {
     DVLOG(1) << "Skipping img tag with no src";
   }
 
   // Record whether the image points to a different domain.
-  blink::WebURL full_url = CompleteURL(element, element.getAttribute("src"));
+  blink::WebURL full_url = CompleteURL(element, element.GetAttribute("src"));
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
@@ -319,7 +319,7 @@ void PhishingDOMFeatureExtractor::HandleInput(
   // Note that we use the attribute value rather than
   // WebFormControlElement::formControlType() for consistency with the
   // way the phishing classification model is created.
-  std::string type = base::ToLowerASCII(element.getAttribute("type").utf8());
+  std::string type = base::ToLowerASCII(element.GetAttribute("type").Utf8());
   if (type == "password") {
     ++page_feature_state_->num_pswd_inputs;
   } else if (type == "radio") {
@@ -343,9 +343,9 @@ void PhishingDOMFeatureExtractor::HandleScript(
 void PhishingDOMFeatureExtractor::CheckNoPendingExtraction() {
   DCHECK(done_callback_.is_null());
   DCHECK(!cur_frame_data_.get());
-  DCHECK(cur_document_.isNull());
+  DCHECK(cur_document_.IsNull());
   if (!done_callback_.is_null() || cur_frame_data_.get() ||
-      !cur_document_.isNull()) {
+      !cur_document_.IsNull()) {
     LOG(ERROR) << "Extraction in progress, missing call to "
                << "CancelPendingExtraction";
   }
@@ -369,29 +369,29 @@ void PhishingDOMFeatureExtractor::Clear() {
   features_ = NULL;
   done_callback_.Reset();
   cur_frame_data_.reset(NULL);
-  cur_document_.reset();
+  cur_document_.Reset();
 }
 
 void PhishingDOMFeatureExtractor::ResetFrameData() {
-  DCHECK(!cur_document_.isNull());
+  DCHECK(!cur_document_.IsNull());
   DCHECK(!cur_frame_data_.get());
 
   cur_frame_data_.reset(new FrameData());
-  cur_frame_data_->elements = cur_document_.all();
+  cur_frame_data_->elements = cur_document_.All();
   cur_frame_data_->domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
-          cur_document_.url(),
+          cur_document_.Url(),
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 blink::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
-  DCHECK(!cur_document_.isNull());
-  blink::WebFrame* frame = cur_document_.frame();
+  DCHECK(!cur_document_.IsNull());
+  blink::WebFrame* frame = cur_document_.GetFrame();
   // Advance to the next frame that contains a document, with no wrapping.
   if (frame) {
-    for (frame = frame->traverseNext(); frame; frame = frame->traverseNext()) {
-      if (!frame->document().isNull()) {
-        return frame->document();
+    for (frame = frame->TraverseNext(); frame; frame = frame->TraverseNext()) {
+      if (!frame->GetDocument().IsNull()) {
+        return frame->GetDocument();
       }
     }
   } else {
@@ -426,7 +426,7 @@ bool PhishingDOMFeatureExtractor::IsExternalDomain(const GURL& url,
 blink::WebURL PhishingDOMFeatureExtractor::CompleteURL(
     const blink::WebElement& element,
     const blink::WebString& partial_url) {
-  return element.document().completeURL(partial_url);
+  return element.GetDocument().CompleteURL(partial_url);
 }
 
 void PhishingDOMFeatureExtractor::InsertFeatures() {

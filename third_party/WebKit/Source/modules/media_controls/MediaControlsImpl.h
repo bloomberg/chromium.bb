@@ -50,84 +50,84 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
  public:
   class Factory : public MediaControls::Factory {
    public:
-    MediaControls* create(HTMLMediaElement&, ShadowRoot&) override;
+    MediaControls* Create(HTMLMediaElement&, ShadowRoot&) override;
   };
 
   ~MediaControlsImpl() = default;
 
   // Node override.
-  Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
   // MediaControls implementation.
-  void show() override;
-  void hide() override;
-  void reset() override;
-  void onControlsListUpdated() override;
+  void Show() override;
+  void Hide() override;
+  void Reset() override;
+  void OnControlsListUpdated() override;
   // TODO(mlamouri): this is temporary to notify the controls that an
   // HTMLTrackElement failed to load because there is no web exposed way to
   // be notified on the TextTrack object. See https://crbug.com/669977
-  void onTrackElementFailedToLoad() override { onTextTracksAddedOrRemoved(); }
+  void OnTrackElementFailedToLoad() override { OnTextTracksAddedOrRemoved(); }
   // TODO(mlamouri): the following methods will be able to become private when
   // the controls have to modules/ and have access to RemotePlayback.
-  void onRemotePlaybackAvailabilityChanged() override {
-    refreshCastButtonVisibility();
+  void OnRemotePlaybackAvailabilityChanged() override {
+    RefreshCastButtonVisibility();
   }
-  void onRemotePlaybackConnecting() override { startedCasting(); }
-  void onRemotePlaybackDisconnected() override { stoppedCasting(); }
+  void OnRemotePlaybackConnecting() override { StartedCasting(); }
+  void OnRemotePlaybackDisconnected() override { StoppedCasting(); }
   // TODO(mlamouri): this method is needed in order to notify the controls that
   // the attribute have changed.
-  void onDisableRemotePlaybackAttributeChanged() override {
-    refreshCastButtonVisibility();
+  void OnDisableRemotePlaybackAttributeChanged() override {
+    RefreshCastButtonVisibility();
   }
   // Notify us that the media element's network state has changed.
-  void networkStateChanged() override;
-  LayoutObject* panelLayoutObject() override;
-  LayoutObject* containerLayoutObject() override;
+  void NetworkStateChanged() override;
+  LayoutObject* PanelLayoutObject() override;
+  LayoutObject* ContainerLayoutObject() override;
   // Return the internal elements, which is used by registering clicking
   // EventHandlers from MediaControlsWindowEventListener.
-  MediaControlPanelElement* panelElement() override { return m_panel; }
-  MediaControlTimelineElement* timelineElement() override { return m_timeline; }
-  MediaControlCastButtonElement* castButtonElement() override {
-    return m_castButton;
+  MediaControlPanelElement* PanelElement() override { return panel_; }
+  MediaControlTimelineElement* TimelineElement() override { return timeline_; }
+  MediaControlCastButtonElement* CastButtonElement() override {
+    return cast_button_;
   }
-  MediaControlVolumeSliderElement* volumeSliderElement() override {
-    return m_volumeSlider;
+  MediaControlVolumeSliderElement* VolumeSliderElement() override {
+    return volume_slider_;
   }
-  void beginScrubbing() override;
-  void endScrubbing() override;
-  void updateCurrentTimeDisplay() override;
-  void toggleTextTrackList() override;
-  void showTextTrackAtIndex(unsigned indexToEnable) override;
-  void disableShowingTextTracks() override;
+  void BeginScrubbing() override;
+  void EndScrubbing() override;
+  void UpdateCurrentTimeDisplay() override;
+  void ToggleTextTrackList() override;
+  void ShowTextTrackAtIndex(unsigned index_to_enable) override;
+  void DisableShowingTextTracks() override;
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
-  void enterFullscreen() override;
-  void exitFullscreen() override;
-  void showOverlayCastButtonIfNeeded() override;
-  void toggleOverflowMenu() override;
-  bool overflowMenuVisible() override;
+  void EnterFullscreen() override;
+  void ExitFullscreen() override;
+  void ShowOverlayCastButtonIfNeeded() override;
+  void ToggleOverflowMenu() override;
+  bool OverflowMenuVisible() override;
   // TODO(mlamouri): this method is needed in order to notify the controls that
   // the `MediaControlsEnabled` setting has changed.
-  void onMediaControlsEnabledChange() override {
+  void OnMediaControlsEnabledChange() override {
     // There is no update because only the overlay is expected to change.
-    refreshCastButtonVisibilityWithoutUpdate();
+    RefreshCastButtonVisibilityWithoutUpdate();
   }
   // Methods called by MediaControlsMediaEventListener.
-  void onVolumeChange() override;
-  void onFocusIn() override;
-  void onTimeUpdate() override;
-  void onDurationChange() override;
-  void onPlay() override;
-  void onPlaying() override;
-  void onPause() override;
-  void onTextTracksAddedOrRemoved() override;
-  void onTextTracksChanged() override;
-  void onError() override;
-  void onLoadedMetadata() override;
-  void onEnteredFullscreen() override;
-  void onExitedFullscreen() override;
-  void onPanelKeypress() override;
-  Document& ownerDocument() { return document(); }
+  void OnVolumeChange() override;
+  void OnFocusIn() override;
+  void OnTimeUpdate() override;
+  void OnDurationChange() override;
+  void OnPlay() override;
+  void OnPlaying() override;
+  void OnPause() override;
+  void OnTextTracksAddedOrRemoved() override;
+  void OnTextTracksChanged() override;
+  void OnError() override;
+  void OnLoadedMetadata() override;
+  void OnEnteredFullscreen() override;
+  void OnExitedFullscreen() override;
+  void OnPanelKeypress() override;
+  Document& OwnerDocument() { return GetDocument(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -140,100 +140,100 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   class BatchedControlUpdate;
   class MediaControlsResizeObserverCallback;
 
-  static MediaControlsImpl* create(HTMLMediaElement&, ShadowRoot&);
+  static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
 
-  void invalidate(Element*);
+  void Invalidate(Element*);
 
   // Notify us that our controls enclosure has changed size.
-  void notifyElementSizeChanged(ClientRect* newSize);
+  void NotifyElementSizeChanged(ClientRect* new_size);
 
   explicit MediaControlsImpl(HTMLMediaElement&);
 
-  void initializeControls();
+  void InitializeControls();
 
-  void makeOpaque();
-  void makeTransparent();
-  bool isVisible() const;
+  void MakeOpaque();
+  void MakeTransparent();
+  bool IsVisible() const;
 
-  void updatePlayState();
+  void UpdatePlayState();
 
   enum HideBehaviorFlags {
-    IgnoreNone = 0,
-    IgnoreVideoHover = 1 << 0,
-    IgnoreFocus = 1 << 1,
-    IgnoreControlsHover = 1 << 2,
-    IgnoreWaitForTimer = 1 << 3,
+    kIgnoreNone = 0,
+    kIgnoreVideoHover = 1 << 0,
+    kIgnoreFocus = 1 << 1,
+    kIgnoreControlsHover = 1 << 2,
+    kIgnoreWaitForTimer = 1 << 3,
   };
 
-  bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
-  void hideMediaControlsTimerFired(TimerBase*);
-  void startHideMediaControlsTimer();
-  void stopHideMediaControlsTimer();
-  void resetHideMediaControlsTimer();
+  bool ShouldHideMediaControls(unsigned behavior_flags = 0) const;
+  void HideMediaControlsTimerFired(TimerBase*);
+  void StartHideMediaControlsTimer();
+  void StopHideMediaControlsTimer();
+  void ResetHideMediaControlsTimer();
 
-  void elementSizeChangedTimerFired(TimerBase*);
+  void ElementSizeChangedTimerFired(TimerBase*);
 
-  void hideAllMenus();
+  void HideAllMenus();
 
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_effectiveWidth and m_effectiveHeight are
   // current.
-  void computeWhichControlsFit();
+  void ComputeWhichControlsFit();
 
   // Node
-  bool isMediaControls() const override { return true; }
-  bool willRespondToMouseMoveEvents() override { return true; }
-  void defaultEventHandler(Event*) override;
-  bool containsRelatedTarget(Event*);
+  bool IsMediaControls() const override { return true; }
+  bool WillRespondToMouseMoveEvents() override { return true; }
+  void DefaultEventHandler(Event*) override;
+  bool ContainsRelatedTarget(Event*);
 
   // Internal cast related methods.
-  void startedCasting();
-  void stoppedCasting();
-  void refreshCastButtonVisibility();
-  void refreshCastButtonVisibilityWithoutUpdate();
+  void StartedCasting();
+  void StoppedCasting();
+  void RefreshCastButtonVisibility();
+  void RefreshCastButtonVisibilityWithoutUpdate();
 
   // Media control elements.
-  Member<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
-  Member<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
-  Member<MediaControlCastButtonElement> m_overlayCastButton;
-  Member<MediaControlPanelEnclosureElement> m_enclosure;
-  Member<MediaControlPanelElement> m_panel;
-  Member<MediaControlPlayButtonElement> m_playButton;
-  Member<MediaControlTimelineElement> m_timeline;
-  Member<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
-  Member<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
-  Member<MediaControlMuteButtonElement> m_muteButton;
-  Member<MediaControlVolumeSliderElement> m_volumeSlider;
+  Member<MediaControlOverlayEnclosureElement> overlay_enclosure_;
+  Member<MediaControlOverlayPlayButtonElement> overlay_play_button_;
+  Member<MediaControlCastButtonElement> overlay_cast_button_;
+  Member<MediaControlPanelEnclosureElement> enclosure_;
+  Member<MediaControlPanelElement> panel_;
+  Member<MediaControlPlayButtonElement> play_button_;
+  Member<MediaControlTimelineElement> timeline_;
+  Member<MediaControlCurrentTimeDisplayElement> current_time_display_;
+  Member<MediaControlTimeRemainingDisplayElement> duration_display_;
+  Member<MediaControlMuteButtonElement> mute_button_;
+  Member<MediaControlVolumeSliderElement> volume_slider_;
   Member<MediaControlToggleClosedCaptionsButtonElement>
-      m_toggleClosedCaptionsButton;
-  Member<MediaControlTextTrackListElement> m_textTrackList;
-  Member<MediaControlOverflowMenuButtonElement> m_overflowMenu;
-  Member<MediaControlOverflowMenuListElement> m_overflowList;
+      toggle_closed_captions_button_;
+  Member<MediaControlTextTrackListElement> text_track_list_;
+  Member<MediaControlOverflowMenuButtonElement> overflow_menu_;
+  Member<MediaControlOverflowMenuListElement> overflow_list_;
 
-  Member<MediaControlCastButtonElement> m_castButton;
-  Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
-  Member<MediaControlDownloadButtonElement> m_downloadButton;
+  Member<MediaControlCastButtonElement> cast_button_;
+  Member<MediaControlFullscreenButtonElement> fullscreen_button_;
+  Member<MediaControlDownloadButtonElement> download_button_;
 
-  Member<MediaControlsMediaEventListener> m_mediaEventListener;
-  Member<MediaControlsWindowEventListener> m_windowEventListener;
-  Member<MediaControlsOrientationLockDelegate> m_orientationLockDelegate;
+  Member<MediaControlsMediaEventListener> media_event_listener_;
+  Member<MediaControlsWindowEventListener> window_event_listener_;
+  Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
 
-  TaskRunnerTimer<MediaControlsImpl> m_hideMediaControlsTimer;
-  unsigned m_hideTimerBehaviorFlags;
-  bool m_isMouseOverControls : 1;
-  bool m_isPausedForScrubbing : 1;
+  TaskRunnerTimer<MediaControlsImpl> hide_media_controls_timer_;
+  unsigned hide_timer_behavior_flags_;
+  bool is_mouse_over_controls_ : 1;
+  bool is_paused_for_scrubbing_ : 1;
 
   // Watches the video element for resize and updates media controls as
   // necessary.
-  Member<ResizeObserver> m_resizeObserver;
+  Member<ResizeObserver> resize_observer_;
 
-  TaskRunnerTimer<MediaControlsImpl> m_elementSizeChangedTimer;
-  IntSize m_size;
+  TaskRunnerTimer<MediaControlsImpl> element_size_changed_timer_;
+  IntSize size_;
 
-  bool m_keepShowingUntilTimerFires : 1;
+  bool keep_showing_until_timer_fires_ : 1;
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, isMediaControls());
+DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());
 
 }  // namespace blink
 

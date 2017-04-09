@@ -41,9 +41,9 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
   ~WebContentDecryptionModuleImpl() override;
 
   // blink::WebContentDecryptionModule implementation.
-  blink::WebContentDecryptionModuleSession* createSession() override;
+  blink::WebContentDecryptionModuleSession* CreateSession() override;
 
-  void setServerCertificate(
+  void SetServerCertificate(
       const uint8_t* server_certificate,
       size_t server_certificate_length,
       blink::WebContentDecryptionModuleResult result) override;

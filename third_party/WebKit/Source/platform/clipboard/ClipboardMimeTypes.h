@@ -35,16 +35,16 @@
 
 namespace blink {
 
-PLATFORM_EXPORT extern const char mimeTypeText[];
-PLATFORM_EXPORT extern const char mimeTypeTextPlain[];
-PLATFORM_EXPORT extern const char mimeTypeTextPlainEtc[];
-PLATFORM_EXPORT extern const char mimeTypeTextHTML[];
-PLATFORM_EXPORT extern const char mimeTypeTextRTF[];
-PLATFORM_EXPORT extern const char mimeTypeURL[];
-PLATFORM_EXPORT extern const char mimeTypeTextURIList[];
-PLATFORM_EXPORT extern const char mimeTypeDownloadURL[];
-PLATFORM_EXPORT extern const char mimeTypeFiles[];
-PLATFORM_EXPORT extern const char mimeTypeImagePng[];
+PLATFORM_EXPORT extern const char kMimeTypeText[];
+PLATFORM_EXPORT extern const char kMimeTypeTextPlain[];
+PLATFORM_EXPORT extern const char kMimeTypeTextPlainEtc[];
+PLATFORM_EXPORT extern const char kMimeTypeTextHTML[];
+PLATFORM_EXPORT extern const char kMimeTypeTextRTF[];
+PLATFORM_EXPORT extern const char kMimeTypeURL[];
+PLATFORM_EXPORT extern const char kMimeTypeTextURIList[];
+PLATFORM_EXPORT extern const char kMimeTypeDownloadURL[];
+PLATFORM_EXPORT extern const char kMimeTypeFiles[];
+PLATFORM_EXPORT extern const char kMimeTypeImagePng[];
 
 }  // namespace blink
 

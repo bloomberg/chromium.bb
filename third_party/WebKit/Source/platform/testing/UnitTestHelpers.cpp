@@ -46,7 +46,7 @@ namespace testing {
 
 namespace {
 
-base::FilePath blinkRootFilePath() {
+base::FilePath BlinkRootFilePath() {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return base::MakeAbsoluteFilePath(
@@ -55,58 +55,58 @@ base::FilePath blinkRootFilePath() {
 
 }  // namespace
 
-void runPendingTasks() {
-  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&exitRunLoop));
+void RunPendingTasks() {
+  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop));
 
   // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
   // to run GC with NoHeapPointerOnStack.
-  ThreadState::current()->enterGCForbiddenScope();
-  enterRunLoop();
-  ThreadState::current()->leaveGCForbiddenScope();
+  ThreadState::Current()->EnterGCForbiddenScope();
+  EnterRunLoop();
+  ThreadState::Current()->LeaveGCForbiddenScope();
 }
 
-void runDelayedTasks(double delayMs) {
-  Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
-      BLINK_FROM_HERE, WTF::bind(&exitRunLoop), delayMs);
-  enterRunLoop();
+void RunDelayedTasks(double delay_ms) {
+  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop), delay_ms);
+  EnterRunLoop();
 }
 
-void enterRunLoop() {
+void EnterRunLoop() {
   base::RunLoop().Run();
 }
 
-void exitRunLoop() {
+void ExitRunLoop() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void yieldCurrentThread() {
+void YieldCurrentThread() {
   base::PlatformThread::YieldCurrentThread();
 }
 
-String blinkRootDir() {
-  return FilePathToWebString(blinkRootFilePath());
+String BlinkRootDir() {
+  return FilePathToWebString(BlinkRootFilePath());
 }
 
-String webTestDataPath(const String& relativePath) {
+String WebTestDataPath(const String& relative_path) {
   return FilePathToWebString(
-      blinkRootFilePath()
+      BlinkRootFilePath()
           .Append(FILE_PATH_LITERAL("Source/web/tests/data"))
-          .Append(WebStringToFilePath(relativePath)));
+          .Append(WebStringToFilePath(relative_path)));
 }
 
-String platformTestDataPath(const String& relativePath) {
+String PlatformTestDataPath(const String& relative_path) {
   return FilePathToWebString(
-      blinkRootFilePath()
+      BlinkRootFilePath()
           .Append(FILE_PATH_LITERAL("Source/platform/testing/data"))
-          .Append(WebStringToFilePath(relativePath)));
+          .Append(WebStringToFilePath(relative_path)));
 }
 
-PassRefPtr<SharedBuffer> readFromFile(const String& path) {
-  base::FilePath filePath = blink::WebStringToFilePath(path);
+PassRefPtr<SharedBuffer> ReadFromFile(const String& path) {
+  base::FilePath file_path = blink::WebStringToFilePath(path);
   std::string buffer;
-  base::ReadFileToString(filePath, &buffer);
-  return SharedBuffer::create(buffer.data(), buffer.size());
+  base::ReadFileToString(file_path, &buffer);
+  return SharedBuffer::Create(buffer.data(), buffer.size());
 }
 
 }  // namespace testing

@@ -45,68 +45,68 @@ class CORE_EXPORT TextIteratorTextState {
   explicit TextIteratorTextState(const TextIteratorBehavior&);
   ~TextIteratorTextState() {}
 
-  const String& string() const { return m_text; }
+  const String& GetString() const { return text_; }
 
-  int length() const { return m_textLength; }
-  UChar characterAt(unsigned index) const;
-  String substring(unsigned position, unsigned length) const;
-  void appendTextToStringBuilder(StringBuilder&,
+  int length() const { return text_length_; }
+  UChar CharacterAt(unsigned index) const;
+  String Substring(unsigned position, unsigned length) const;
+  void AppendTextToStringBuilder(StringBuilder&,
                                  unsigned position = 0,
-                                 unsigned maxLength = UINT_MAX) const;
+                                 unsigned max_length = UINT_MAX) const;
 
-  void spliceBuffer(UChar,
-                    Node* textNode,
-                    Node* offsetBaseNode,
-                    int textStartOffset,
-                    int textEndOffset);
-  void emitText(Node* textNode,
-                LayoutText* layoutObject,
-                int textStartOffset,
-                int textEndOffset);
-  void emitAltText(Node*);
-  void updateForReplacedElement(Node* baseNode);
-  void flushPositionOffsets() const;
-  int positionStartOffset() const { return m_positionStartOffset; }
-  int positionEndOffset() const { return m_positionEndOffset; }
-  Node* positionNode() const { return m_positionNode; }
-  bool hasEmitted() const { return m_hasEmitted; }
-  UChar lastCharacter() const { return m_lastCharacter; }
-  int textStartOffset() const { return m_textStartOffset; }
-  void resetRunInformation() {
-    m_positionNode = nullptr;
-    m_textLength = 0;
+  void SpliceBuffer(UChar,
+                    Node* text_node,
+                    Node* offset_base_node,
+                    int text_start_offset,
+                    int text_end_offset);
+  void EmitText(Node* text_node,
+                LayoutText* layout_object,
+                int text_start_offset,
+                int text_end_offset);
+  void EmitAltText(Node*);
+  void UpdateForReplacedElement(Node* base_node);
+  void FlushPositionOffsets() const;
+  int PositionStartOffset() const { return position_start_offset_; }
+  int PositionEndOffset() const { return position_end_offset_; }
+  Node* PositionNode() const { return position_node_; }
+  bool HasEmitted() const { return has_emitted_; }
+  UChar LastCharacter() const { return last_character_; }
+  int TextStartOffset() const { return text_start_offset_; }
+  void ResetRunInformation() {
+    position_node_ = nullptr;
+    text_length_ = 0;
   }
 
-  void appendTextTo(ForwardsTextBuffer* output,
+  void AppendTextTo(ForwardsTextBuffer* output,
                     unsigned position,
-                    unsigned lengthToAppend) const;
+                    unsigned length_to_append) const;
 
  private:
-  int m_textLength;
-  String m_text;
+  int text_length_;
+  String text_;
 
   // Used for whitespace characters that aren't in the DOM, so we can point at
   // them.
   // If non-zero, overrides m_text.
-  UChar m_singleCharacterBuffer;
+  UChar single_character_buffer_;
 
   // The current text and its position, in the form to be returned from the
   // iterator.
-  Member<Node> m_positionNode;
-  mutable Member<Node> m_positionOffsetBaseNode;
-  mutable int m_positionStartOffset;
-  mutable int m_positionEndOffset;
+  Member<Node> position_node_;
+  mutable Member<Node> position_offset_base_node_;
+  mutable int position_start_offset_;
+  mutable int position_end_offset_;
 
   // Used when deciding whether to emit a "positioning" (e.g. newline) before
   // any other content
-  bool m_hasEmitted;
-  UChar m_lastCharacter;
+  bool has_emitted_;
+  UChar last_character_;
 
-  const TextIteratorBehavior m_behavior;
+  const TextIteratorBehavior behavior_;
 
   // Stores the length of :first-letter when we are at the remaining text.
   // Equals to 0 in all other cases.
-  int m_textStartOffset;
+  int text_start_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TextIteratorTextState);
 };

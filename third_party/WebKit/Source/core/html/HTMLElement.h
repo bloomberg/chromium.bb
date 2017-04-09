@@ -36,9 +36,9 @@ class HTMLMenuElement;
 class KeyboardEvent;
 
 enum TranslateAttributeMode {
-  TranslateAttributeYes,
-  TranslateAttributeNo,
-  TranslateAttributeInherit
+  kTranslateAttributeYes,
+  kTranslateAttributeNo,
+  kTranslateAttributeInherit
 };
 
 class CORE_EXPORT HTMLElement : public Element {
@@ -47,8 +47,8 @@ class CORE_EXPORT HTMLElement : public Element {
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
-  bool hasTagName(const HTMLQualifiedName& name) const {
-    return hasLocalName(name.localName());
+  bool HasTagName(const HTMLQualifiedName& name) const {
+    return HasLocalName(name.LocalName());
   }
 
   String title() const final;
@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLElement : public Element {
   void setInnerText(const String&, ExceptionState&);
   void setOuterText(const String&, ExceptionState&);
 
-  virtual bool hasCustomFocusLogic() const;
+  virtual bool HasCustomFocusLogic() const;
 
   String contentEditable() const;
   void setContentEditable(const String&, ExceptionState&);
@@ -80,38 +80,38 @@ class CORE_EXPORT HTMLElement : public Element {
 
   void click();
 
-  void accessKeyAction(bool sendMouseEvents) override;
+  void AccessKeyAction(bool send_mouse_events) override;
 
-  bool shouldSerializeEndTag() const;
+  bool ShouldSerializeEndTag() const;
 
   virtual HTMLFormElement* formOwner() const { return nullptr; }
 
-  HTMLFormElement* findFormAncestor() const;
+  HTMLFormElement* FindFormAncestor() const;
 
-  bool hasDirectionAuto() const;
-  TextDirection directionalityIfhasDirAutoAttribute(bool& isAuto) const;
+  bool HasDirectionAuto() const;
+  TextDirection DirectionalityIfhasDirAutoAttribute(bool& is_auto) const;
 
-  virtual bool isHTMLUnknownElement() const { return false; }
-  virtual bool isPluginElement() const { return false; }
+  virtual bool IsHTMLUnknownElement() const { return false; }
+  virtual bool IsPluginElement() const { return false; }
 
-  virtual bool isLabelable() const { return false; }
+  virtual bool IsLabelable() const { return false; }
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content
-  virtual bool isInteractiveContent() const;
-  void defaultEventHandler(Event*) override;
+  virtual bool IsInteractiveContent() const;
+  void DefaultEventHandler(Event*) override;
 
-  static const AtomicString& eventNameForAttributeName(
-      const QualifiedName& attrName);
+  static const AtomicString& EventNameForAttributeName(
+      const QualifiedName& attr_name);
 
-  bool matchesReadOnlyPseudoClass() const override;
-  bool matchesReadWritePseudoClass() const override;
+  bool MatchesReadOnlyPseudoClass() const override;
+  bool MatchesReadWritePseudoClass() const override;
 
-  static const AtomicString& eventParameterName();
+  static const AtomicString& EventParameterName();
 
-  HTMLMenuElement* assignedContextMenu() const;
+  HTMLMenuElement* AssignedContextMenu() const;
   HTMLMenuElement* contextMenu() const;
   void setContextMenu(HTMLMenuElement*);
 
-  virtual String altText() const { return String(); }
+  virtual String AltText() const { return String(); }
 
   int offsetLeftForBinding();
   int offsetTopForBinding();
@@ -120,81 +120,82 @@ class CORE_EXPORT HTMLElement : public Element {
 
   Element* unclosedOffsetParent();
 
-  virtual FormAssociated* toFormAssociatedOrNull() { return nullptr; };
+  virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; };
 
  protected:
-  HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
+  HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
 
-  enum AllowPercentage { DontAllowPercentageValues, AllowPercentageValues };
-  void addHTMLLengthToStyle(MutableStylePropertySet*,
+  enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
+  void AddHTMLLengthToStyle(MutableStylePropertySet*,
                             CSSPropertyID,
                             const String& value,
-                            AllowPercentage = AllowPercentageValues);
-  void addHTMLColorToStyle(MutableStylePropertySet*,
+                            AllowPercentage = kAllowPercentageValues);
+  void AddHTMLColorToStyle(MutableStylePropertySet*,
                            CSSPropertyID,
                            const String& color);
 
-  void applyAlignmentAttributeToStyle(const AtomicString&,
+  void ApplyAlignmentAttributeToStyle(const AtomicString&,
                                       MutableStylePropertySet*);
-  void applyBorderAttributeToStyle(const AtomicString&,
+  void ApplyBorderAttributeToStyle(const AtomicString&,
                                    MutableStylePropertySet*);
 
-  void attributeChanged(const AttributeModificationParams&) override;
-  void parseAttribute(const AttributeModificationParams&) override;
-  static bool parseColorWithLegacyRules(const String& attributeValue,
-                                        Color& parsedColor);
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void AttributeChanged(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  static bool ParseColorWithLegacyRules(const String& attribute_value,
+                                        Color& parsed_color);
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  unsigned parseBorderWidthAttribute(const AtomicString&) const;
+  unsigned ParseBorderWidthAttribute(const AtomicString&) const;
 
-  void childrenChanged(const ChildrenChange&) override;
-  void calculateAndAdjustDirectionality();
+  void ChildrenChanged(const ChildrenChange&) override;
+  void CalculateAndAdjustDirectionality();
 
  private:
-  String debugNodeName() const final;
+  String DebugNodeName() const final;
   String nodeName() const final;
 
-  bool isHTMLElement() const =
+  bool IsHTMLElement() const =
       delete;  // This will catch anyone doing an unnecessary check.
-  bool isStyledElement() const =
+  bool IsStyledElement() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  void mapLanguageAttributeToLocale(const AtomicString&,
+  void MapLanguageAttributeToLocale(const AtomicString&,
                                     MutableStylePropertySet*);
 
-  DocumentFragment* textToFragment(const String&, ExceptionState&);
+  DocumentFragment* TextToFragment(const String&, ExceptionState&);
 
-  bool selfOrAncestorHasDirAutoAttribute() const;
-  void dirAttributeChanged(const AtomicString&);
-  void adjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
-  void adjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
-  TextDirection directionality(Node** strongDirectionalityTextNode = 0) const;
+  bool SelfOrAncestorHasDirAutoAttribute() const;
+  void DirAttributeChanged(const AtomicString&);
+  void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
+  void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
+  TextDirection Directionality(
+      Node** strong_directionality_text_node = 0) const;
 
-  TranslateAttributeMode translateAttributeMode() const;
+  TranslateAttributeMode GetTranslateAttributeMode() const;
 
-  void handleKeypressEvent(KeyboardEvent*);
+  void HandleKeypressEvent(KeyboardEvent*);
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, isHTMLElement());
+DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, IsHTMLElement());
 
 template <typename T>
-bool isElementOfType(const HTMLElement&);
+bool IsElementOfType(const HTMLElement&);
 template <>
-inline bool isElementOfType<const HTMLElement>(const HTMLElement&) {
+inline bool IsElementOfType<const HTMLElement>(const HTMLElement&) {
   return true;
 }
 
-inline HTMLElement::HTMLElement(const QualifiedName& tagName,
+inline HTMLElement::HTMLElement(const QualifiedName& tag_name,
                                 Document& document,
-                                ConstructionType type = CreateHTMLElement)
-    : Element(tagName, &document, type) {
-  DCHECK(!tagName.localName().isNull());
+                                ConstructionType type = kCreateHTMLElement)
+    : Element(tag_name, &document, type) {
+  DCHECK(!tag_name.LocalName().IsNull());
 }
 
-inline bool Node::hasTagName(const HTMLQualifiedName& name) const {
-  return isHTMLElement() && toHTMLElement(*this).hasTagName(name);
+inline bool Node::HasTagName(const HTMLQualifiedName& name) const {
+  return IsHTMLElement() && ToHTMLElement(*this).HasTagName(name);
 }
 
 // Functor used to match HTMLElements with a specific HTML tag when using the
@@ -203,37 +204,37 @@ class HasHTMLTagName {
   STACK_ALLOCATED();
 
  public:
-  explicit HasHTMLTagName(const HTMLQualifiedName& tagName)
-      : m_tagName(tagName) {}
+  explicit HasHTMLTagName(const HTMLQualifiedName& tag_name)
+      : tag_name_(tag_name) {}
   bool operator()(const HTMLElement& element) const {
-    return element.hasTagName(m_tagName);
+    return element.HasTagName(tag_name_);
   }
 
  private:
-  const HTMLQualifiedName& m_tagName;
+  const HTMLQualifiedName& tag_name_;
 };
 
 // This requires isHTML*Element(const Element&) and isHTML*Element(const
 // HTMLElement&).  When the input element is an HTMLElement, we don't need to
 // check the namespace URI, just the local name.
 #define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)                \
-  inline bool is##thisType(const thisType* element);                         \
-  inline bool is##thisType(const thisType& element);                         \
-  inline bool is##thisType(const HTMLElement* element) {                     \
-    return element && is##thisType(*element);                                \
+  inline bool Is##thisType(const thisType* element);                         \
+  inline bool Is##thisType(const thisType& element);                         \
+  inline bool Is##thisType(const HTMLElement* element) {                     \
+    return element && Is##thisType(*element);                                \
   }                                                                          \
-  inline bool is##thisType(const Node& node) {                               \
-    return node.isHTMLElement() ? is##thisType(toHTMLElement(node)) : false; \
+  inline bool Is##thisType(const Node& node) {                               \
+    return node.IsHTMLElement() ? Is##thisType(ToHTMLElement(node)) : false; \
   }                                                                          \
-  inline bool is##thisType(const Node* node) {                               \
-    return node && is##thisType(*node);                                      \
+  inline bool Is##thisType(const Node* node) {                               \
+    return node && Is##thisType(*node);                                      \
   }                                                                          \
-  inline bool is##thisType(const Element* element) {                         \
-    return element && is##thisType(*element);                                \
+  inline bool Is##thisType(const Element* element) {                         \
+    return element && Is##thisType(*element);                                \
   }                                                                          \
   template <>                                                                \
-  inline bool isElementOfType<const thisType>(const HTMLElement& element) {  \
-    return is##thisType(element);                                            \
+  inline bool IsElementOfType<const thisType>(const HTMLElement& element) {  \
+    return Is##thisType(element);                                            \
   }                                                                          \
   DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 

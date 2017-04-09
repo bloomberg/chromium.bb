@@ -39,60 +39,60 @@
 
 namespace blink {
 
-ScopedEventQueue* ScopedEventQueue::s_instance = nullptr;
+ScopedEventQueue* ScopedEventQueue::instance_ = nullptr;
 
-ScopedEventQueue::ScopedEventQueue() : m_scopingLevel(0) {}
+ScopedEventQueue::ScopedEventQueue() : scoping_level_(0) {}
 
 ScopedEventQueue::~ScopedEventQueue() {
-  DCHECK(!m_scopingLevel);
-  DCHECK(!m_queuedEventDispatchMediators.size());
+  DCHECK(!scoping_level_);
+  DCHECK(!queued_event_dispatch_mediators_.size());
 }
 
-void ScopedEventQueue::initialize() {
-  DCHECK(!s_instance);
+void ScopedEventQueue::Initialize() {
+  DCHECK(!instance_);
   std::unique_ptr<ScopedEventQueue> instance =
-      WTF::wrapUnique(new ScopedEventQueue);
-  s_instance = instance.release();
+      WTF::WrapUnique(new ScopedEventQueue);
+  instance_ = instance.release();
 }
 
-void ScopedEventQueue::enqueueEventDispatchMediator(
+void ScopedEventQueue::EnqueueEventDispatchMediator(
     EventDispatchMediator* mediator) {
-  if (shouldQueueEvents())
-    m_queuedEventDispatchMediators.push_back(mediator);
+  if (ShouldQueueEvents())
+    queued_event_dispatch_mediators_.push_back(mediator);
   else
-    dispatchEvent(mediator);
+    DispatchEvent(mediator);
 }
 
-void ScopedEventQueue::dispatchAllEvents() {
-  HeapVector<Member<EventDispatchMediator>> queuedEventDispatchMediators;
-  queuedEventDispatchMediators.swap(m_queuedEventDispatchMediators);
+void ScopedEventQueue::DispatchAllEvents() {
+  HeapVector<Member<EventDispatchMediator>> queued_event_dispatch_mediators;
+  queued_event_dispatch_mediators.Swap(queued_event_dispatch_mediators_);
 
-  for (auto& mediator : queuedEventDispatchMediators)
-    dispatchEvent(mediator.release());
+  for (auto& mediator : queued_event_dispatch_mediators)
+    DispatchEvent(mediator.Release());
 }
 
-void ScopedEventQueue::dispatchEvent(EventDispatchMediator* mediator) const {
-  DCHECK(mediator->event().target());
-  Node* node = mediator->event().target()->toNode();
-  EventDispatcher::dispatchEvent(*node, mediator);
+void ScopedEventQueue::DispatchEvent(EventDispatchMediator* mediator) const {
+  DCHECK(mediator->GetEvent().target());
+  Node* node = mediator->GetEvent().target()->ToNode();
+  EventDispatcher::DispatchEvent(*node, mediator);
 }
 
-ScopedEventQueue* ScopedEventQueue::instance() {
-  if (!s_instance)
-    initialize();
+ScopedEventQueue* ScopedEventQueue::Instance() {
+  if (!instance_)
+    Initialize();
 
-  return s_instance;
+  return instance_;
 }
 
-void ScopedEventQueue::incrementScopingLevel() {
-  m_scopingLevel++;
+void ScopedEventQueue::IncrementScopingLevel() {
+  scoping_level_++;
 }
 
-void ScopedEventQueue::decrementScopingLevel() {
-  DCHECK(m_scopingLevel);
-  m_scopingLevel--;
-  if (!m_scopingLevel)
-    dispatchAllEvents();
+void ScopedEventQueue::DecrementScopingLevel() {
+  DCHECK(scoping_level_);
+  scoping_level_--;
+  if (!scoping_level_)
+    DispatchAllEvents();
 }
 
 }  // namespace blink

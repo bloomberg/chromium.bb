@@ -24,7 +24,7 @@ using mojom::blink::PermissionStatus;
 
 namespace {
 
-const char uniqueOriginErrorMessage[] =
+const char kUniqueOriginErrorMessage[] =
     "The operation is not supported in this context.";
 
 class EstimateCallbacks final : public StorageQuotaCallbacks {
@@ -32,136 +32,137 @@ class EstimateCallbacks final : public StorageQuotaCallbacks {
 
  public:
   explicit EstimateCallbacks(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
 
   ~EstimateCallbacks() override {}
 
-  void didQueryStorageUsageAndQuota(unsigned long long usageInBytes,
-                                    unsigned long long quotaInBytes) override {
+  void DidQueryStorageUsageAndQuota(
+      unsigned long long usage_in_bytes,
+      unsigned long long quota_in_bytes) override {
     StorageEstimate estimate;
-    estimate.setUsage(usageInBytes);
-    estimate.setQuota(quotaInBytes);
-    m_resolver->resolve(estimate);
+    estimate.setUsage(usage_in_bytes);
+    estimate.setQuota(quota_in_bytes);
+    resolver_->Resolve(estimate);
   }
 
-  void didFail(WebStorageQuotaError error) override {
-    m_resolver->reject(DOMException::create(static_cast<ExceptionCode>(error)));
+  void DidFail(WebStorageQuotaError error) override {
+    resolver_->Reject(DOMException::Create(static_cast<ExceptionCode>(error)));
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_resolver);
-    StorageQuotaCallbacks::trace(visitor);
+    visitor->Trace(resolver_);
+    StorageQuotaCallbacks::Trace(visitor);
   }
 
  private:
-  Member<ScriptPromiseResolver> m_resolver;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace
 
-ScriptPromise StorageManager::persist(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
-  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-  if (securityOrigin->isUnique()) {
-    resolver->reject(V8ThrowException::createTypeError(
-        scriptState->isolate(), uniqueOriginErrorMessage));
+ScriptPromise StorageManager::persist(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
+  SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
+  if (security_origin->IsUnique()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
   }
 
-  ASSERT(executionContext->isDocument());
-  PermissionService* permissionService =
-      getPermissionService(scriptState->getExecutionContext());
-  if (!permissionService) {
-    resolver->reject(DOMException::create(
-        InvalidStateError,
+  ASSERT(execution_context->IsDocument());
+  PermissionService* permission_service =
+      GetPermissionService(script_state->GetExecutionContext());
+  if (!permission_service) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
         "In its current state, the global scope can't request permissions."));
     return promise;
   }
-  permissionService->RequestPermission(
-      createPermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGesture(),
-      convertToBaseCallback(
-          WTF::bind(&StorageManager::permissionRequestComplete,
-                    wrapPersistent(this), wrapPersistent(resolver))));
+  permission_service->RequestPermission(
+      CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      UserGestureIndicator::ProcessingUserGesture(),
+      ConvertToBaseCallback(
+          WTF::Bind(&StorageManager::PermissionRequestComplete,
+                    WrapPersistent(this), WrapPersistent(resolver))));
 
   return promise;
 }
 
-ScriptPromise StorageManager::persisted(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
-  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-  if (securityOrigin->isUnique()) {
-    resolver->reject(V8ThrowException::createTypeError(
-        scriptState->isolate(), uniqueOriginErrorMessage));
+ScriptPromise StorageManager::persisted(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
+  SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
+  if (security_origin->IsUnique()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
   }
 
-  PermissionService* permissionService =
-      getPermissionService(scriptState->getExecutionContext());
-  if (!permissionService) {
-    resolver->reject(DOMException::create(
-        InvalidStateError,
+  PermissionService* permission_service =
+      GetPermissionService(script_state->GetExecutionContext());
+  if (!permission_service) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
         "In its current state, the global scope can't query permissions."));
     return promise;
   }
-  permissionService->HasPermission(
-      createPermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      convertToBaseCallback(
-          WTF::bind(&StorageManager::permissionRequestComplete,
-                    wrapPersistent(this), wrapPersistent(resolver))));
+  permission_service->HasPermission(
+      CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ConvertToBaseCallback(
+          WTF::Bind(&StorageManager::PermissionRequestComplete,
+                    WrapPersistent(this), WrapPersistent(resolver))));
   return promise;
 }
 
-ScriptPromise StorageManager::estimate(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
-  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-  if (securityOrigin->isUnique()) {
-    resolver->reject(V8ThrowException::createTypeError(
-        scriptState->isolate(), uniqueOriginErrorMessage));
+ScriptPromise StorageManager::estimate(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
+  SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
+  if (security_origin->IsUnique()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
   }
 
-  KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-  Platform::current()->queryStorageUsageAndQuota(
-      storagePartition, WebStorageQuotaTypeTemporary,
+  KURL storage_partition = KURL(KURL(), security_origin->ToString());
+  Platform::Current()->QueryStorageUsageAndQuota(
+      storage_partition, kWebStorageQuotaTypeTemporary,
       new EstimateCallbacks(resolver));
   return promise;
 }
 
 DEFINE_TRACE(StorageManager) {}
 
-PermissionService* StorageManager::getPermissionService(
-    ExecutionContext* executionContext) {
-  if (!m_permissionService &&
-      connectToPermissionService(executionContext,
-                                 mojo::MakeRequest(&m_permissionService)))
-    m_permissionService.set_connection_error_handler(convertToBaseCallback(
-        WTF::bind(&StorageManager::permissionServiceConnectionError,
-                  wrapWeakPersistent(this))));
-  return m_permissionService.get();
+PermissionService* StorageManager::GetPermissionService(
+    ExecutionContext* execution_context) {
+  if (!permission_service_ &&
+      ConnectToPermissionService(execution_context,
+                                 mojo::MakeRequest(&permission_service_)))
+    permission_service_.set_connection_error_handler(ConvertToBaseCallback(
+        WTF::Bind(&StorageManager::PermissionServiceConnectionError,
+                  WrapWeakPersistent(this))));
+  return permission_service_.get();
 }
 
-void StorageManager::permissionServiceConnectionError() {
-  m_permissionService.reset();
+void StorageManager::PermissionServiceConnectionError() {
+  permission_service_.reset();
 }
 
-void StorageManager::permissionRequestComplete(ScriptPromiseResolver* resolver,
+void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
                                                PermissionStatus status) {
-  if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
     return;
-  resolver->resolve(status == PermissionStatus::GRANTED);
+  resolver->Resolve(status == PermissionStatus::GRANTED);
 }
 
 }  // namespace blink

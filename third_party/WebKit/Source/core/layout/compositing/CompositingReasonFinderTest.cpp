@@ -17,19 +17,19 @@ namespace blink {
 class CompositingReasonFinderTest : public RenderingTest {
  public:
   CompositingReasonFinderTest()
-      : RenderingTest(EmptyLocalFrameClient::create()) {}
+      : RenderingTest(EmptyLocalFrameClient::Create()) {}
 
  private:
   void SetUp() override {
     RenderingTest::SetUp();
-    enableCompositing();
+    EnableCompositing();
   }
 };
 
 TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
-  ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+  ScopedCompositeFixedPositionForTest composite_fixed_position(true);
 
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='translucent' style='width: 20px; height: 20px; position: "
       "fixed; top: 100px; left: 100px;'></div>"
       "<div id='opaque' style='width: 20px; height: 20px; position: fixed; "
@@ -39,30 +39,30 @@ TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
       "box-shadow: 10px 10px 5px #888888;'></div>"
       "<div id='spacer' style='height: 2000px'></div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The translucent fixed box should not be promoted.
-  Element* element = document().getElementById("translucent");
-  PaintLayer* paintLayer =
-      toLayoutBoxModelObject(element->layoutObject())->layer();
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  Element* element = GetDocument().GetElementById("translucent");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // The opaque fixed box should be promoted and be opaque so that text will be
   // drawn with subpixel anti-aliasing.
-  element = document().getElementById("opaque");
-  paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
-  EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
-  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+  element = GetDocument().GetElementById("opaque");
+  paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // The opaque fixed box with shadow should not be promoted because the layer
   // will include the shadow which is not opaque.
-  element = document().getElementById("opaque-with-shadow");
-  paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  element = GetDocument().GetElementById("opaque-with-shadow");
+  paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
 TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       ".scroller {contain: paint; width: 400px; height: 400px; overflow: auto; "
       "will-change: transform;}"
@@ -72,20 +72,20 @@ TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
       "  <div id='sticky-no-anchor' class='sticky'></div>"
       "  <div style='height: 2000px;'></div>"
       "</div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(PaintsIntoOwnBacking,
-            toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-top"))
-                ->layer()
-                ->compositingState());
-  EXPECT_EQ(NotComposited, toLayoutBoxModelObject(
-                               getLayoutObjectByElementId("sticky-no-anchor"))
-                               ->layer()
-                               ->compositingState());
+  EXPECT_EQ(kPaintsIntoOwnBacking,
+            ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-top"))
+                ->Layer()
+                ->GetCompositingState());
+  EXPECT_EQ(kNotComposited, ToLayoutBoxModelObject(
+                                GetLayoutObjectByElementId("sticky-no-anchor"))
+                                ->Layer()
+                                ->GetCompositingState());
 }
 
 TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>.scroller {width: 400px; height: 400px; overflow: auto; "
       "will-change: transform;}"
       ".sticky { position: sticky; top: 0; width: 10px; height: 10px;}"
@@ -97,27 +97,27 @@ TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
       "<div class='scroller'>"
       "  <div id='sticky-no-scrolling' class='sticky'></div>"
       "</div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(
-      PaintsIntoOwnBacking,
-      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-scrolling"))
-          ->layer()
-          ->compositingState());
+      kPaintsIntoOwnBacking,
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-scrolling"))
+          ->Layer()
+          ->GetCompositingState());
   EXPECT_EQ(
-      NotComposited,
-      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-no-scrolling"))
-          ->layer()
-          ->compositingState());
+      kNotComposited,
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-no-scrolling"))
+          ->Layer()
+          ->GetCompositingState());
 }
 
 // Tests that a transform on the fixed or an ancestor will prevent promotion
 // TODO(flackr): Allow integer transforms as long as all of the ancestor
 // transforms are also integer.
 TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
-  ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+  ScopedCompositeFixedPositionForTest composite_fixed_position(true);
 
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "#fixed { position: fixed; height: 200px; width: 200px; background: "
       "white; top: 0; }"
@@ -127,46 +127,46 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
       "  <div id=\"fixed\"></div>"
       "  <div id=\"spacer\"></div>"
       "</div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = document().getElementById("parent");
-  Element* fixed = document().getElementById("fixed");
-  PaintLayer* paintLayer =
-      toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
-  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+  Element* parent = GetDocument().GetElementById("parent");
+  Element* fixed = GetDocument().GetElementById("fixed");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to have a transform.
   parent->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to have no transform again.
   parent->removeAttribute(HTMLNames::styleAttr);
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
-  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Apply a transform to the fixed directly.
   fixed->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
 // Test that opacity applied to the fixed or an ancestor will cause the
 // scrolling contents layer to not be promoted.
 TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
-  ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+  ScopedCompositeFixedPositionForTest composite_fixed_position(true);
 
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "#fixed { position: fixed; height: 200px; width: 200px; background: "
       "white; top: 0}"
@@ -176,155 +176,155 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
       "  <div id=\"fixed\"></div>"
       "  <div id=\"spacer\"></div>"
       "</div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = document().getElementById("parent");
-  Element* fixed = document().getElementById("fixed");
-  PaintLayer* paintLayer =
-      toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
-  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+  Element* parent = GetDocument().GetElementById("parent");
+  Element* fixed = GetDocument().GetElementById("fixed");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to be partially translucent.
   parent->setAttribute(HTMLNames::styleAttr, "opacity: 0.5;");
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to be opaque again.
   parent->setAttribute(HTMLNames::styleAttr, "opacity: 1;");
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
-  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Make the fixed translucent.
   fixed->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
-  document().view()->updateAllLifecyclePhases();
-  paintLayer = toLayoutBoxModelObject(fixed->layoutObject())->layer();
-  ASSERT_TRUE(paintLayer);
-  EXPECT_EQ(NotComposited, paintLayer->compositingState());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
 TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  style->setSubtreeWillChangeContents(false);
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetSubtreeWillChangeContents(false);
 
-  style->setHasCurrentTransformAnimation(false);
-  style->setIsRunningTransformAnimationOnCompositor(false);
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
-  style->setHasCurrentTransformAnimation(false);
-  style->setIsRunningTransformAnimationOnCompositor(true);
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
-  style->setHasCurrentTransformAnimation(true);
-  style->setIsRunningTransformAnimationOnCompositor(false);
-  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
       *style));
 
-  style->setHasCurrentTransformAnimation(true);
-  style->setIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
       *style));
 
-  style->setSubtreeWillChangeContents(true);
+  style->SetSubtreeWillChangeContents(true);
 
-  style->setHasCurrentTransformAnimation(false);
-  style->setIsRunningTransformAnimationOnCompositor(false);
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
-  style->setHasCurrentTransformAnimation(false);
-  style->setIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
       *style));
 
-  style->setHasCurrentTransformAnimation(true);
-  style->setIsRunningTransformAnimationOnCompositor(false);
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
-  style->setHasCurrentTransformAnimation(true);
-  style->setIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
       *style));
 }
 
 TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
 
-  style->setSubtreeWillChangeContents(false);
+  style->SetSubtreeWillChangeContents(false);
 
   // In the interest of brevity, for each side of subtreeWillChangeContents()
   // code path we only check that any one of the effect related animation flags
   // being set produces true, rather than every permutation.
 
-  style->setHasCurrentOpacityAnimation(false);
-  style->setHasCurrentFilterAnimation(false);
-  style->setHasCurrentBackdropFilterAnimation(false);
+  style->SetHasCurrentOpacityAnimation(false);
+  style->SetHasCurrentFilterAnimation(false);
+  style->SetHasCurrentBackdropFilterAnimation(false);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setHasCurrentOpacityAnimation(true);
-  style->setHasCurrentFilterAnimation(false);
-  style->setHasCurrentBackdropFilterAnimation(false);
+  style->SetHasCurrentOpacityAnimation(true);
+  style->SetHasCurrentFilterAnimation(false);
+  style->SetHasCurrentBackdropFilterAnimation(false);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setHasCurrentOpacityAnimation(false);
-  style->setHasCurrentFilterAnimation(true);
-  style->setHasCurrentBackdropFilterAnimation(false);
+  style->SetHasCurrentOpacityAnimation(false);
+  style->SetHasCurrentFilterAnimation(true);
+  style->SetHasCurrentBackdropFilterAnimation(false);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setHasCurrentOpacityAnimation(false);
-  style->setHasCurrentFilterAnimation(false);
-  style->setHasCurrentBackdropFilterAnimation(true);
+  style->SetHasCurrentOpacityAnimation(false);
+  style->SetHasCurrentFilterAnimation(false);
+  style->SetHasCurrentBackdropFilterAnimation(true);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
   // Check the other side of subtreeWillChangeContents.
-  style->setSubtreeWillChangeContents(true);
-  style->setHasCurrentOpacityAnimation(false);
-  style->setHasCurrentFilterAnimation(false);
-  style->setHasCurrentBackdropFilterAnimation(false);
+  style->SetSubtreeWillChangeContents(true);
+  style->SetHasCurrentOpacityAnimation(false);
+  style->SetHasCurrentFilterAnimation(false);
+  style->SetHasCurrentBackdropFilterAnimation(false);
   EXPECT_FALSE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setIsRunningOpacityAnimationOnCompositor(true);
-  style->setIsRunningFilterAnimationOnCompositor(false);
-  style->setIsRunningBackdropFilterAnimationOnCompositor(false);
+  style->SetIsRunningOpacityAnimationOnCompositor(true);
+  style->SetIsRunningFilterAnimationOnCompositor(false);
+  style->SetIsRunningBackdropFilterAnimationOnCompositor(false);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setIsRunningOpacityAnimationOnCompositor(false);
-  style->setIsRunningFilterAnimationOnCompositor(true);
-  style->setIsRunningBackdropFilterAnimationOnCompositor(false);
+  style->SetIsRunningOpacityAnimationOnCompositor(false);
+  style->SetIsRunningFilterAnimationOnCompositor(true);
+  style->SetIsRunningBackdropFilterAnimationOnCompositor(false);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 
-  style->setIsRunningOpacityAnimationOnCompositor(false);
-  style->setIsRunningFilterAnimationOnCompositor(false);
-  style->setIsRunningBackdropFilterAnimationOnCompositor(true);
+  style->SetIsRunningOpacityAnimationOnCompositor(false);
+  style->SetIsRunningFilterAnimationOnCompositor(false);
+  style->SetIsRunningBackdropFilterAnimationOnCompositor(true);
   EXPECT_TRUE(
-      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+      CompositingReasonFinder::RequiresCompositingForEffectAnimation(*style));
 }
 
 TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
-  ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+  ScopedCompositeFixedPositionForTest composite_fixed_position(true);
 
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>.scroller { overflow: scroll; height: 200px; width: 100px; }"
       ".container { height: 500px; }"
       ".opaque { background-color: white; contain: paint; }"
@@ -337,20 +337,20 @@ TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
       "    </div>"
       "  </div>"
       "</div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* outerSticky = document().getElementById("outerSticky");
-  PaintLayer* outerStickyLayer =
-      toLayoutBoxModelObject(outerSticky->layoutObject())->layer();
-  ASSERT_TRUE(outerStickyLayer);
+  Element* outer_sticky = GetDocument().GetElementById("outerSticky");
+  PaintLayer* outer_sticky_layer =
+      ToLayoutBoxModelObject(outer_sticky->GetLayoutObject())->Layer();
+  ASSERT_TRUE(outer_sticky_layer);
 
-  Element* innerSticky = document().getElementById("innerSticky");
-  PaintLayer* innerStickyLayer =
-      toLayoutBoxModelObject(innerSticky->layoutObject())->layer();
-  ASSERT_TRUE(innerStickyLayer);
+  Element* inner_sticky = GetDocument().GetElementById("innerSticky");
+  PaintLayer* inner_sticky_layer =
+      ToLayoutBoxModelObject(inner_sticky->GetLayoutObject())->Layer();
+  ASSERT_TRUE(inner_sticky_layer);
 
-  EXPECT_EQ(PaintsIntoOwnBacking, outerStickyLayer->compositingState());
-  EXPECT_EQ(PaintsIntoOwnBacking, innerStickyLayer->compositingState());
+  EXPECT_EQ(kPaintsIntoOwnBacking, outer_sticky_layer->GetCompositingState());
+  EXPECT_EQ(kPaintsIntoOwnBacking, inner_sticky_layer->GetCompositingState());
 }
 
 }  // namespace blink

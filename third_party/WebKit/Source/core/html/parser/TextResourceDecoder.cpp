@@ -35,9 +35,9 @@ namespace blink {
 
 using namespace HTMLNames;
 
-const int minimumLengthOfXMLDeclaration = 8;
+const int kMinimumLengthOfXMLDeclaration = 8;
 
-static inline bool bytesEqual(const char* p,
+static inline bool BytesEqual(const char* p,
                               char b0,
                               char b1,
                               char b2,
@@ -46,7 +46,7 @@ static inline bool bytesEqual(const char* p,
   return p[0] == b0 && p[1] == b1 && p[2] == b2 && p[3] == b3 && p[4] == b4;
 }
 
-static inline bool bytesEqual(const char* p,
+static inline bool BytesEqual(const char* p,
                               char b0,
                               char b1,
                               char b2,
@@ -57,7 +57,7 @@ static inline bool bytesEqual(const char* p,
          p[5] == b5;
 }
 
-static inline bool bytesEqual(const char* p,
+static inline bool BytesEqual(const char* p,
                               char b0,
                               char b1,
                               char b2,
@@ -70,7 +70,7 @@ static inline bool bytesEqual(const char* p,
          p[5] == b5 && p[6] == b6 && p[7] == b7;
 }
 
-static inline bool bytesEqual(const char* p,
+static inline bool BytesEqual(const char* p,
                               char b0,
                               char b1,
                               char b2,
@@ -89,13 +89,15 @@ static inline bool bytesEqual(const char* p,
 // the similar functions that operate on UChar, but arguably only the decoder
 // has a reason to process strings of char rather than UChar.
 
-static int find(const char* subject, size_t subjectLength, const char* target) {
-  size_t targetLength = strlen(target);
-  if (targetLength > subjectLength)
+static int Find(const char* subject,
+                size_t subject_length,
+                const char* target) {
+  size_t target_length = strlen(target);
+  if (target_length > subject_length)
     return -1;
-  for (size_t i = 0; i <= subjectLength - targetLength; ++i) {
+  for (size_t i = 0; i <= subject_length - target_length; ++i) {
     bool match = true;
-    for (size_t j = 0; j < targetLength; ++j) {
+    for (size_t j = 0; j < target_length; ++j) {
       if (subject[i + j] != target[j]) {
         match = false;
         break;
@@ -107,69 +109,69 @@ static int find(const char* subject, size_t subjectLength, const char* target) {
   return -1;
 }
 
-static WTF::TextEncoding findTextEncoding(const char* encodingName,
+static WTF::TextEncoding FindTextEncoding(const char* encoding_name,
                                           int length) {
   Vector<char, 64> buffer(length + 1);
-  memcpy(buffer.data(), encodingName, length);
+  memcpy(buffer.Data(), encoding_name, length);
   buffer[length] = '\0';
-  return buffer.data();
+  return buffer.Data();
 }
 
-TextResourceDecoder::ContentType TextResourceDecoder::determineContentType(
-    const String& mimeType) {
-  if (equalIgnoringCase(mimeType, "text/css"))
-    return CSSContent;
-  if (equalIgnoringCase(mimeType, "text/html"))
-    return HTMLContent;
-  if (DOMImplementation::isXMLMIMEType(mimeType))
-    return XMLContent;
-  return PlainTextContent;
+TextResourceDecoder::ContentType TextResourceDecoder::DetermineContentType(
+    const String& mime_type) {
+  if (EqualIgnoringCase(mime_type, "text/css"))
+    return kCSSContent;
+  if (EqualIgnoringCase(mime_type, "text/html"))
+    return kHTMLContent;
+  if (DOMImplementation::IsXMLMIMEType(mime_type))
+    return kXMLContent;
+  return kPlainTextContent;
 }
 
-const WTF::TextEncoding& TextResourceDecoder::defaultEncoding(
-    ContentType contentType,
-    const WTF::TextEncoding& specifiedDefaultEncoding) {
+const WTF::TextEncoding& TextResourceDecoder::DefaultEncoding(
+    ContentType content_type,
+    const WTF::TextEncoding& specified_default_encoding) {
   // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8
   // instead of US-ASCII for text/xml. This matches Firefox.
-  if (contentType == XMLContent)
+  if (content_type == kXMLContent)
     return UTF8Encoding();
-  if (!specifiedDefaultEncoding.isValid())
+  if (!specified_default_encoding.IsValid())
     return Latin1Encoding();
-  return specifiedDefaultEncoding;
+  return specified_default_encoding;
 }
 
 TextResourceDecoder::TextResourceDecoder(
-    const String& mimeType,
-    const WTF::TextEncoding& specifiedDefaultEncoding,
-    EncodingDetectionOption encodingDetectionOption,
-    const KURL& hintUrl)
-    : m_contentType(determineContentType(mimeType)),
-      m_encoding(defaultEncoding(m_contentType, specifiedDefaultEncoding)),
-      m_source(DefaultEncoding),
-      m_hintEncoding(0),
-      m_hintUrl(hintUrl),
-      m_checkedForBOM(false),
-      m_checkedForCSSCharset(false),
-      m_checkedForXMLCharset(false),
-      m_checkedForMetaCharset(false),
-      m_useLenientXMLDecoding(false),
-      m_sawError(false),
-      m_encodingDetectionOption(encodingDetectionOption) {
-  m_hintLanguage[0] = 0;
-  if (m_encodingDetectionOption == AlwaysUseUTF8ForText) {
-    DCHECK(m_contentType == PlainTextContent && m_encoding == UTF8Encoding());
-  } else if (m_encodingDetectionOption == UseAllAutoDetection) {
+    const String& mime_type,
+    const WTF::TextEncoding& specified_default_encoding,
+    EncodingDetectionOption encoding_detection_option,
+    const KURL& hint_url)
+    : content_type_(DetermineContentType(mime_type)),
+      encoding_(DefaultEncoding(content_type_, specified_default_encoding)),
+      source_(kDefaultEncoding),
+      hint_encoding_(0),
+      hint_url_(hint_url),
+      checked_for_bom_(false),
+      checked_for_css_charset_(false),
+      checked_for_xml_charset_(false),
+      checked_for_meta_charset_(false),
+      use_lenient_xml_decoding_(false),
+      saw_error_(false),
+      encoding_detection_option_(encoding_detection_option) {
+  hint_language_[0] = 0;
+  if (encoding_detection_option_ == kAlwaysUseUTF8ForText) {
+    DCHECK(content_type_ == kPlainTextContent && encoding_ == UTF8Encoding());
+  } else if (encoding_detection_option_ == kUseAllAutoDetection) {
     // Checking empty URL helps unit testing. Providing defaultLanguage() is
     // sometimes difficult in tests.
-    if (!hintUrl.isEmpty()) {
+    if (!hint_url.IsEmpty()) {
       // This object is created in the main thread, but used in another thread.
       // We should not share an AtomicString.
-      AtomicString locale = defaultLanguage();
+      AtomicString locale = DefaultLanguage();
       if (locale.length() >= 2) {
         // defaultLanguage() is always an ASCII string.
-        m_hintLanguage[0] = static_cast<char>(locale[0]);
-        m_hintLanguage[1] = static_cast<char>(locale[1]);
-        m_hintLanguage[2] = 0;
+        hint_language_[0] = static_cast<char>(locale[0]);
+        hint_language_[1] = static_cast<char>(locale[1]);
+        hint_language_[2] = 0;
       }
     }
   }
@@ -177,31 +179,31 @@ TextResourceDecoder::TextResourceDecoder(
 
 TextResourceDecoder::~TextResourceDecoder() {}
 
-void TextResourceDecoder::setEncoding(const WTF::TextEncoding& encoding,
+void TextResourceDecoder::SetEncoding(const WTF::TextEncoding& encoding,
                                       EncodingSource source) {
   // In case the encoding didn't exist, we keep the old one (helps some sites
   // specifying invalid encodings).
-  if (!encoding.isValid())
+  if (!encoding.IsValid())
     return;
 
   // When encoding comes from meta tag (i.e. it cannot be XML files sent via
   // XHR), treat x-user-defined as windows-1252 (bug 18270)
-  if (source == EncodingFromMetaTag &&
-      !strcasecmp(encoding.name(), "x-user-defined"))
-    m_encoding = "windows-1252";
-  else if (source == EncodingFromMetaTag || source == EncodingFromXMLHeader ||
-           source == EncodingFromCSSCharset)
-    m_encoding = encoding.closestByteBasedEquivalent();
+  if (source == kEncodingFromMetaTag &&
+      !strcasecmp(encoding.GetName(), "x-user-defined"))
+    encoding_ = "windows-1252";
+  else if (source == kEncodingFromMetaTag || source == kEncodingFromXMLHeader ||
+           source == kEncodingFromCSSCharset)
+    encoding_ = encoding.ClosestByteBasedEquivalent();
   else
-    m_encoding = encoding;
+    encoding_ = encoding;
 
-  m_codec.reset();
-  m_source = source;
+  codec_.reset();
+  source_ = source;
 }
 
 // Returns the position of the encoding string.
-static int findXMLEncoding(const char* str, int len, int& encodingLength) {
-  int pos = find(str, len, "encoding");
+static int FindXMLEncoding(const char* str, int len, int& encoding_length) {
+  int pos = Find(str, len, "encoding");
   if (pos == -1)
     return -1;
   pos += 8;
@@ -222,187 +224,188 @@ static int findXMLEncoding(const char* str, int len, int& encodingLength) {
   // Skip quotation mark.
   if (pos >= len)
     return -1;
-  char quoteMark = str[pos];
-  if (quoteMark != '"' && quoteMark != '\'')
+  char quote_mark = str[pos];
+  if (quote_mark != '"' && quote_mark != '\'')
     return -1;
   ++pos;
 
   // Find the trailing quotation mark.
   int end = pos;
-  while (end < len && str[end] != quoteMark)
+  while (end < len && str[end] != quote_mark)
     ++end;
   if (end >= len)
     return -1;
 
-  encodingLength = end - pos;
+  encoding_length = end - pos;
   return pos;
 }
 
-size_t TextResourceDecoder::checkForBOM(const char* data, size_t len) {
+size_t TextResourceDecoder::CheckForBOM(const char* data, size_t len) {
   // Check for UTF-16/32 or UTF-8 BOM mark at the beginning, which is a sure
   // sign of a Unicode encoding. We let it override even a user-chosen encoding.
-  DCHECK(!m_checkedForBOM);
+  DCHECK(!checked_for_bom_);
 
-  size_t lengthOfBOM = 0;
+  size_t length_of_bom = 0;
 
-  size_t bufferLength = m_buffer.size();
+  size_t buffer_length = buffer_.size();
 
-  size_t buf1Len = bufferLength;
-  size_t buf2Len = len;
+  size_t buf1_len = buffer_length;
+  size_t buf2_len = len;
   const unsigned char* buf1 =
-      reinterpret_cast<const unsigned char*>(m_buffer.data());
+      reinterpret_cast<const unsigned char*>(buffer_.Data());
   const unsigned char* buf2 = reinterpret_cast<const unsigned char*>(data);
   unsigned char c1 =
-      buf1Len ? (--buf1Len, *buf1++) : buf2Len ? (--buf2Len, *buf2++) : 0;
+      buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
   unsigned char c2 =
-      buf1Len ? (--buf1Len, *buf1++) : buf2Len ? (--buf2Len, *buf2++) : 0;
+      buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
   unsigned char c3 =
-      buf1Len ? (--buf1Len, *buf1++) : buf2Len ? (--buf2Len, *buf2++) : 0;
-  unsigned char c4 = buf2Len ? (--buf2Len, *buf2++) : 0;
+      buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
+  unsigned char c4 = buf2_len ? (--buf2_len, *buf2++) : 0;
 
   // Check for the BOM.
   if (c1 == 0xEF && c2 == 0xBB && c3 == 0xBF) {
-    setEncoding(UTF8Encoding(), AutoDetectedEncoding);
-    lengthOfBOM = 3;
-  } else if (m_encodingDetectionOption != AlwaysUseUTF8ForText) {
-    if (c1 == 0xFF && c2 == 0xFE && bufferLength + len >= 4) {
+    SetEncoding(UTF8Encoding(), kAutoDetectedEncoding);
+    length_of_bom = 3;
+  } else if (encoding_detection_option_ != kAlwaysUseUTF8ForText) {
+    if (c1 == 0xFF && c2 == 0xFE && buffer_length + len >= 4) {
       if (c3 || c4) {
-        setEncoding(UTF16LittleEndianEncoding(), AutoDetectedEncoding);
-        lengthOfBOM = 2;
+        SetEncoding(UTF16LittleEndianEncoding(), kAutoDetectedEncoding);
+        length_of_bom = 2;
       } else {
-        setEncoding(UTF32LittleEndianEncoding(), AutoDetectedEncoding);
-        lengthOfBOM = 4;
+        SetEncoding(UTF32LittleEndianEncoding(), kAutoDetectedEncoding);
+        length_of_bom = 4;
       }
     } else if (c1 == 0xFE && c2 == 0xFF) {
-      setEncoding(UTF16BigEndianEncoding(), AutoDetectedEncoding);
-      lengthOfBOM = 2;
+      SetEncoding(UTF16BigEndianEncoding(), kAutoDetectedEncoding);
+      length_of_bom = 2;
     } else if (!c1 && !c2 && c3 == 0xFE && c4 == 0xFF) {
-      setEncoding(UTF32BigEndianEncoding(), AutoDetectedEncoding);
-      lengthOfBOM = 4;
+      SetEncoding(UTF32BigEndianEncoding(), kAutoDetectedEncoding);
+      length_of_bom = 4;
     }
   }
 
-  if (lengthOfBOM || bufferLength + len >= 4)
-    m_checkedForBOM = true;
+  if (length_of_bom || buffer_length + len >= 4)
+    checked_for_bom_ = true;
 
-  return lengthOfBOM;
+  return length_of_bom;
 }
 
-bool TextResourceDecoder::checkForCSSCharset(const char* data,
+bool TextResourceDecoder::CheckForCSSCharset(const char* data,
                                              size_t len,
-                                             bool& movedDataToBuffer) {
-  if (m_source != DefaultEncoding && m_source != EncodingFromParentFrame) {
-    m_checkedForCSSCharset = true;
+                                             bool& moved_data_to_buffer) {
+  if (source_ != kDefaultEncoding && source_ != kEncodingFromParentFrame) {
+    checked_for_css_charset_ = true;
     return true;
   }
 
-  size_t oldSize = m_buffer.size();
-  m_buffer.grow(oldSize + len);
-  memcpy(m_buffer.data() + oldSize, data, len);
+  size_t old_size = buffer_.size();
+  buffer_.Grow(old_size + len);
+  memcpy(buffer_.Data() + old_size, data, len);
 
-  movedDataToBuffer = true;
+  moved_data_to_buffer = true;
 
-  if (m_buffer.size() <= 13)  // strlen('@charset "x";') == 13
+  if (buffer_.size() <= 13)  // strlen('@charset "x";') == 13
     return false;
 
-  const char* dataStart = m_buffer.data();
-  const char* dataEnd = dataStart + m_buffer.size();
+  const char* data_start = buffer_.Data();
+  const char* data_end = data_start + buffer_.size();
 
-  if (bytesEqual(dataStart, '@', 'c', 'h', 'a', 'r', 's', 'e', 't', ' ', '"')) {
-    dataStart += 10;
-    const char* pos = dataStart;
+  if (BytesEqual(data_start, '@', 'c', 'h', 'a', 'r', 's', 'e', 't', ' ',
+                 '"')) {
+    data_start += 10;
+    const char* pos = data_start;
 
-    while (pos < dataEnd && *pos != '"')
+    while (pos < data_end && *pos != '"')
       ++pos;
-    if (pos == dataEnd)
+    if (pos == data_end)
       return false;
 
-    int encodingNameLength = pos - dataStart;
+    int encoding_name_length = pos - data_start;
 
     ++pos;
-    if (pos == dataEnd)
+    if (pos == data_end)
       return false;
 
     if (*pos == ';')
-      setEncoding(findTextEncoding(dataStart, encodingNameLength),
-                  EncodingFromCSSCharset);
+      SetEncoding(FindTextEncoding(data_start, encoding_name_length),
+                  kEncodingFromCSSCharset);
   }
 
-  m_checkedForCSSCharset = true;
+  checked_for_css_charset_ = true;
   return true;
 }
 
-bool TextResourceDecoder::checkForXMLCharset(const char* data,
+bool TextResourceDecoder::CheckForXMLCharset(const char* data,
                                              size_t len,
-                                             bool& movedDataToBuffer) {
-  if (m_source != DefaultEncoding && m_source != EncodingFromParentFrame) {
-    m_checkedForXMLCharset = true;
+                                             bool& moved_data_to_buffer) {
+  if (source_ != kDefaultEncoding && source_ != kEncodingFromParentFrame) {
+    checked_for_xml_charset_ = true;
     return true;
   }
 
   // This is not completely efficient, since the function might go
   // through the HTML head several times.
 
-  size_t oldSize = m_buffer.size();
-  m_buffer.grow(oldSize + len);
-  memcpy(m_buffer.data() + oldSize, data, len);
+  size_t old_size = buffer_.size();
+  buffer_.Grow(old_size + len);
+  memcpy(buffer_.Data() + old_size, data, len);
 
-  movedDataToBuffer = true;
+  moved_data_to_buffer = true;
 
-  const char* ptr = m_buffer.data();
-  const char* pEnd = ptr + m_buffer.size();
+  const char* ptr = buffer_.Data();
+  const char* p_end = ptr + buffer_.size();
 
   // Is there enough data available to check for XML declaration?
-  if (m_buffer.size() < minimumLengthOfXMLDeclaration)
+  if (buffer_.size() < kMinimumLengthOfXMLDeclaration)
     return false;
 
   // Handle XML declaration, which can have encoding in it. This encoding is
   // honored even for HTML documents. It is an error for an XML declaration not
   // to be at the start of an XML document, and it is ignored in HTML documents
   // in such case.
-  if (bytesEqual(ptr, '<', '?', 'x', 'm', 'l')) {
-    const char* xmlDeclarationEnd = ptr;
-    while (xmlDeclarationEnd != pEnd && *xmlDeclarationEnd != '>')
-      ++xmlDeclarationEnd;
-    if (xmlDeclarationEnd == pEnd)
+  if (BytesEqual(ptr, '<', '?', 'x', 'm', 'l')) {
+    const char* xml_declaration_end = ptr;
+    while (xml_declaration_end != p_end && *xml_declaration_end != '>')
+      ++xml_declaration_end;
+    if (xml_declaration_end == p_end)
       return false;
     // No need for +1, because we have an extra "?" to lose at the end of XML
     // declaration.
     int len = 0;
-    int pos = findXMLEncoding(ptr, xmlDeclarationEnd - ptr, len);
+    int pos = FindXMLEncoding(ptr, xml_declaration_end - ptr, len);
     if (pos != -1)
-      setEncoding(findTextEncoding(ptr + pos, len), EncodingFromXMLHeader);
+      SetEncoding(FindTextEncoding(ptr + pos, len), kEncodingFromXMLHeader);
     // continue looking for a charset - it may be specified in an HTTP-Equiv
     // meta
-  } else if (bytesEqual(ptr, '<', 0, '?', 0, 'x', 0)) {
-    setEncoding(UTF16LittleEndianEncoding(), AutoDetectedEncoding);
-  } else if (bytesEqual(ptr, 0, '<', 0, '?', 0, 'x')) {
-    setEncoding(UTF16BigEndianEncoding(), AutoDetectedEncoding);
-  } else if (bytesEqual(ptr, '<', 0, 0, 0, '?', 0, 0, 0)) {
-    setEncoding(UTF32LittleEndianEncoding(), AutoDetectedEncoding);
-  } else if (bytesEqual(ptr, 0, 0, 0, '<', 0, 0, 0, '?')) {
-    setEncoding(UTF32BigEndianEncoding(), AutoDetectedEncoding);
+  } else if (BytesEqual(ptr, '<', 0, '?', 0, 'x', 0)) {
+    SetEncoding(UTF16LittleEndianEncoding(), kAutoDetectedEncoding);
+  } else if (BytesEqual(ptr, 0, '<', 0, '?', 0, 'x')) {
+    SetEncoding(UTF16BigEndianEncoding(), kAutoDetectedEncoding);
+  } else if (BytesEqual(ptr, '<', 0, 0, 0, '?', 0, 0, 0)) {
+    SetEncoding(UTF32LittleEndianEncoding(), kAutoDetectedEncoding);
+  } else if (BytesEqual(ptr, 0, 0, 0, '<', 0, 0, 0, '?')) {
+    SetEncoding(UTF32BigEndianEncoding(), kAutoDetectedEncoding);
   }
 
-  m_checkedForXMLCharset = true;
+  checked_for_xml_charset_ = true;
   return true;
 }
 
-void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length) {
-  if (m_source == EncodingFromHTTPHeader || m_source == AutoDetectedEncoding) {
-    m_checkedForMetaCharset = true;
+void TextResourceDecoder::CheckForMetaCharset(const char* data, size_t length) {
+  if (source_ == kEncodingFromHTTPHeader || source_ == kAutoDetectedEncoding) {
+    checked_for_meta_charset_ = true;
     return;
   }
 
-  if (!m_charsetParser)
-    m_charsetParser = HTMLMetaCharsetParser::create();
+  if (!charset_parser_)
+    charset_parser_ = HTMLMetaCharsetParser::Create();
 
-  if (!m_charsetParser->checkForMetaCharset(data, length))
+  if (!charset_parser_->CheckForMetaCharset(data, length))
     return;
 
-  setEncoding(m_charsetParser->encoding(), EncodingFromMetaTag);
-  m_charsetParser.reset();
-  m_checkedForMetaCharset = true;
+  SetEncoding(charset_parser_->Encoding(), kEncodingFromMetaTag);
+  charset_parser_.reset();
+  checked_for_meta_charset_ = true;
   return;
 }
 
@@ -415,104 +418,105 @@ void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length) {
 //   relationship is compliant to the same-origin policy. If they're from
 //   different domains, |m_source| would not be set to EncodingFromParentFrame
 //   in the first place.
-bool TextResourceDecoder::shouldAutoDetect() const {
+bool TextResourceDecoder::ShouldAutoDetect() const {
   // Just checking m_hintEncoding suffices here because it's only set
   // in setHintEncoding when the source is AutoDetectedEncoding.
-  return m_encodingDetectionOption == UseAllAutoDetection &&
-         (m_source == DefaultEncoding ||
-          (m_source == EncodingFromParentFrame && m_hintEncoding));
+  return encoding_detection_option_ == kUseAllAutoDetection &&
+         (source_ == kDefaultEncoding ||
+          (source_ == kEncodingFromParentFrame && hint_encoding_));
 }
 
-String TextResourceDecoder::decode(const char* data, size_t len) {
-  size_t lengthOfBOM = 0;
-  if (!m_checkedForBOM) {
-    lengthOfBOM = checkForBOM(data, len);
+String TextResourceDecoder::Decode(const char* data, size_t len) {
+  size_t length_of_bom = 0;
+  if (!checked_for_bom_) {
+    length_of_bom = CheckForBOM(data, len);
 
     // BOM check can fail when the available data is not enough.
-    if (!m_checkedForBOM) {
-      DCHECK_EQ(0u, lengthOfBOM);
-      m_buffer.append(data, len);
-      return emptyString;
+    if (!checked_for_bom_) {
+      DCHECK_EQ(0u, length_of_bom);
+      buffer_.Append(data, len);
+      return g_empty_string;
     }
   }
-  DCHECK_LE(lengthOfBOM, m_buffer.size() + len);
+  DCHECK_LE(length_of_bom, buffer_.size() + len);
 
-  bool movedDataToBuffer = false;
+  bool moved_data_to_buffer = false;
 
-  if (m_contentType == CSSContent && !m_checkedForCSSCharset) {
-    if (!checkForCSSCharset(data, len, movedDataToBuffer))
-      return emptyString;
+  if (content_type_ == kCSSContent && !checked_for_css_charset_) {
+    if (!CheckForCSSCharset(data, len, moved_data_to_buffer))
+      return g_empty_string;
   }
 
   // We check XML declaration in HTML content only if there is enough data
   // available
-  if (((m_contentType == HTMLContent && len >= minimumLengthOfXMLDeclaration) ||
-       m_contentType == XMLContent) &&
-      !m_checkedForXMLCharset) {
-    if (!checkForXMLCharset(data, len, movedDataToBuffer))
-      return emptyString;
+  if (((content_type_ == kHTMLContent &&
+        len >= kMinimumLengthOfXMLDeclaration) ||
+       content_type_ == kXMLContent) &&
+      !checked_for_xml_charset_) {
+    if (!CheckForXMLCharset(data, len, moved_data_to_buffer))
+      return g_empty_string;
   }
 
-  const char* dataForDecode = data + lengthOfBOM;
-  size_t lengthForDecode = len - lengthOfBOM;
+  const char* data_for_decode = data + length_of_bom;
+  size_t length_for_decode = len - length_of_bom;
 
-  if (!m_buffer.isEmpty()) {
-    if (!movedDataToBuffer) {
-      size_t oldSize = m_buffer.size();
-      m_buffer.grow(oldSize + len);
-      memcpy(m_buffer.data() + oldSize, data, len);
+  if (!buffer_.IsEmpty()) {
+    if (!moved_data_to_buffer) {
+      size_t old_size = buffer_.size();
+      buffer_.Grow(old_size + len);
+      memcpy(buffer_.Data() + old_size, data, len);
     }
 
-    dataForDecode = m_buffer.data() + lengthOfBOM;
-    lengthForDecode = m_buffer.size() - lengthOfBOM;
+    data_for_decode = buffer_.Data() + length_of_bom;
+    length_for_decode = buffer_.size() - length_of_bom;
   }
 
-  if (m_contentType == HTMLContent && !m_checkedForMetaCharset)
-    checkForMetaCharset(dataForDecode, lengthForDecode);
+  if (content_type_ == kHTMLContent && !checked_for_meta_charset_)
+    CheckForMetaCharset(data_for_decode, length_for_decode);
 
-  if (shouldAutoDetect()) {
-    WTF::TextEncoding detectedEncoding;
-    if (detectTextEncoding(data, len, m_hintEncoding, m_hintUrl, m_hintLanguage,
-                           &detectedEncoding))
-      setEncoding(detectedEncoding, EncodingFromContentSniffing);
+  if (ShouldAutoDetect()) {
+    WTF::TextEncoding detected_encoding;
+    if (DetectTextEncoding(data, len, hint_encoding_, hint_url_, hint_language_,
+                           &detected_encoding))
+      SetEncoding(detected_encoding, kEncodingFromContentSniffing);
   }
 
-  DCHECK(m_encoding.isValid());
+  DCHECK(encoding_.IsValid());
 
-  if (!m_codec)
-    m_codec = newTextCodec(m_encoding);
+  if (!codec_)
+    codec_ = NewTextCodec(encoding_);
 
-  String result = m_codec->decode(
-      dataForDecode, lengthForDecode, WTF::DoNotFlush,
-      m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
+  String result = codec_->Decode(
+      data_for_decode, length_for_decode, WTF::kDoNotFlush,
+      content_type_ == kXMLContent && !use_lenient_xml_decoding_, saw_error_);
 
-  m_buffer.clear();
+  buffer_.Clear();
   return result;
 }
 
-String TextResourceDecoder::flush() {
+String TextResourceDecoder::Flush() {
   // If we can not identify the encoding even after a document is completely
   // loaded, we need to detect the encoding if other conditions for
   // autodetection is satisfied.
-  if (m_buffer.size() && shouldAutoDetect() &&
-      ((!m_checkedForXMLCharset &&
-        (m_contentType == HTMLContent || m_contentType == XMLContent)) ||
-       (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
-    WTF::TextEncoding detectedEncoding;
-    if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding,
-                           m_hintUrl, m_hintLanguage, &detectedEncoding))
-      setEncoding(detectedEncoding, EncodingFromContentSniffing);
+  if (buffer_.size() && ShouldAutoDetect() &&
+      ((!checked_for_xml_charset_ &&
+        (content_type_ == kHTMLContent || content_type_ == kXMLContent)) ||
+       (!checked_for_css_charset_ && (content_type_ == kCSSContent)))) {
+    WTF::TextEncoding detected_encoding;
+    if (DetectTextEncoding(buffer_.Data(), buffer_.size(), hint_encoding_,
+                           hint_url_, hint_language_, &detected_encoding))
+      SetEncoding(detected_encoding, kEncodingFromContentSniffing);
   }
 
-  if (!m_codec)
-    m_codec = newTextCodec(m_encoding);
+  if (!codec_)
+    codec_ = NewTextCodec(encoding_);
 
-  String result = m_codec->decode(
-      m_buffer.data(), m_buffer.size(), WTF::FetchEOF,
-      m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
-  m_buffer.clear();
-  m_codec.reset();
-  m_checkedForBOM = false;  // Skip BOM again when re-decoding.
+  String result = codec_->Decode(
+      buffer_.Data(), buffer_.size(), WTF::kFetchEOF,
+      content_type_ == kXMLContent && !use_lenient_xml_decoding_, saw_error_);
+  buffer_.Clear();
+  codec_.reset();
+  checked_for_bom_ = false;  // Skip BOM again when re-decoding.
   return result;
 }
 

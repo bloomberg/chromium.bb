@@ -16,72 +16,72 @@
 
 namespace blink {
 
-bool SVGMaskPainter::prepareEffect(const LayoutObject& object,
+bool SVGMaskPainter::PrepareEffect(const LayoutObject& object,
                                    GraphicsContext& context) {
-  DCHECK(m_mask.style());
-  SECURITY_DCHECK(!m_mask.needsLayout());
+  DCHECK(mask_.Style());
+  SECURITY_DCHECK(!mask_.NeedsLayout());
 
-  m_mask.clearInvalidationMask();
+  mask_.ClearInvalidationMask();
 
-  FloatRect visualRect = object.visualRectInLocalSVGCoordinates();
-  if (visualRect.isEmpty() || !m_mask.element()->hasChildren())
+  FloatRect visual_rect = object.VisualRectInLocalSVGCoordinates();
+  if (visual_rect.IsEmpty() || !mask_.GetElement()->HasChildren())
     return false;
 
-  context.getPaintController().createAndAppend<BeginCompositingDisplayItem>(
-      object, SkBlendMode::kSrcOver, 1, &visualRect);
+  context.GetPaintController().CreateAndAppend<BeginCompositingDisplayItem>(
+      object, SkBlendMode::kSrcOver, 1, &visual_rect);
   return true;
 }
 
-void SVGMaskPainter::finishEffect(const LayoutObject& object,
+void SVGMaskPainter::FinishEffect(const LayoutObject& object,
                                   GraphicsContext& context) {
-  DCHECK(m_mask.style());
-  SECURITY_DCHECK(!m_mask.needsLayout());
+  DCHECK(mask_.Style());
+  SECURITY_DCHECK(!mask_.NeedsLayout());
 
-  FloatRect visualRect = object.visualRectInLocalSVGCoordinates();
+  FloatRect visual_rect = object.VisualRectInLocalSVGCoordinates();
   {
-    ColorFilter maskLayerFilter =
-        m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
-            ? ColorFilterLuminanceToAlpha
-            : ColorFilterNone;
-    CompositingRecorder maskCompositing(context, object, SkBlendMode::kDstIn, 1,
-                                        &visualRect, maskLayerFilter);
-    Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+    ColorFilter mask_layer_filter =
+        mask_.Style()->SvgStyle().MaskType() == MT_LUMINANCE
+            ? kColorFilterLuminanceToAlpha
+            : kColorFilterNone;
+    CompositingRecorder mask_compositing(context, object, SkBlendMode::kDstIn,
+                                         1, &visual_rect, mask_layer_filter);
+    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      const auto* objectPaintProperties = object.paintProperties();
-      DCHECK(objectPaintProperties && objectPaintProperties->mask());
+      const auto* object_paint_properties = object.PaintProperties();
+      DCHECK(object_paint_properties && object_paint_properties->Mask());
       PaintChunkProperties properties(
-          context.getPaintController().currentPaintChunkProperties());
-      properties.propertyTreeState.setEffect(objectPaintProperties->mask());
-      scopedPaintChunkProperties.emplace(context.getPaintController(), object,
-                                         properties);
+          context.GetPaintController().CurrentPaintChunkProperties());
+      properties.property_tree_state.SetEffect(object_paint_properties->Mask());
+      scoped_paint_chunk_properties.emplace(context.GetPaintController(),
+                                            object, properties);
     }
 
-    drawMaskForLayoutObject(context, object, object.objectBoundingBox(),
-                            visualRect);
+    DrawMaskForLayoutObject(context, object, object.ObjectBoundingBox(),
+                            visual_rect);
   }
 
-  context.getPaintController().endItem<EndCompositingDisplayItem>(object);
+  context.GetPaintController().EndItem<EndCompositingDisplayItem>(object);
 }
 
-void SVGMaskPainter::drawMaskForLayoutObject(
+void SVGMaskPainter::DrawMaskForLayoutObject(
     GraphicsContext& context,
-    const LayoutObject& layoutObject,
-    const FloatRect& targetBoundingBox,
-    const FloatRect& targetVisualRect) {
-  AffineTransform contentTransformation;
-  sk_sp<const PaintRecord> record = m_mask.createPaintRecord(
-      contentTransformation, targetBoundingBox, context);
+    const LayoutObject& layout_object,
+    const FloatRect& target_bounding_box,
+    const FloatRect& target_visual_rect) {
+  AffineTransform content_transformation;
+  sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
+      content_transformation, target_bounding_box, context);
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, layoutObject, DisplayItem::kSVGMask))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_object, DisplayItem::kSVGMask))
     return;
 
-  LayoutObjectDrawingRecorder drawingRecorder(
-      context, layoutObject, DisplayItem::kSVGMask, targetVisualRect);
-  context.save();
-  context.concatCTM(contentTransformation);
-  context.drawRecord(std::move(record));
-  context.restore();
+  LayoutObjectDrawingRecorder drawing_recorder(
+      context, layout_object, DisplayItem::kSVGMask, target_visual_rect);
+  context.Save();
+  context.ConcatCTM(content_transformation);
+  context.DrawRecord(std::move(record));
+  context.Restore();
 }
 
 }  // namespace blink

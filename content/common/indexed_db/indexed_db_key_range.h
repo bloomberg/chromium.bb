@@ -31,8 +31,8 @@ class CONTENT_EXPORT IndexedDBKeyRange {
   bool IsEmpty() const;
 
  private:
-  IndexedDBKey lower_ = IndexedDBKey(blink::WebIDBKeyTypeNull);
-  IndexedDBKey upper_ = IndexedDBKey(blink::WebIDBKeyTypeNull);
+  IndexedDBKey lower_ = IndexedDBKey(blink::kWebIDBKeyTypeNull);
+  IndexedDBKey upper_ = IndexedDBKey(blink::kWebIDBKeyTypeNull);
   bool lower_open_ = false;
   bool upper_open_ = false;
 };

@@ -32,7 +32,7 @@ class MODULES_EXPORT BackgroundFetchManager final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchManager* create(
+  static BackgroundFetchManager* Create(
       ServiceWorkerRegistration* registration) {
     return new BackgroundFetchManager(registration);
   }
@@ -56,23 +56,23 @@ class MODULES_EXPORT BackgroundFetchManager final
 
   // Creates a vector of WebServiceWorkerRequest objects for the given set of
   // |requests|, which can be either Request objects or URL strings.
-  static Vector<WebServiceWorkerRequest> createWebRequestVector(
+  static Vector<WebServiceWorkerRequest> CreateWebRequestVector(
       ScriptState*,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       ExceptionState&);
 
-  void didFetch(ScriptPromiseResolver*,
+  void DidFetch(ScriptPromiseResolver*,
                 mojom::blink::BackgroundFetchError,
                 BackgroundFetchRegistration*);
-  void didGetRegistration(ScriptPromiseResolver*,
+  void DidGetRegistration(ScriptPromiseResolver*,
                           mojom::blink::BackgroundFetchError,
                           BackgroundFetchRegistration*);
-  void didGetTags(ScriptPromiseResolver*,
+  void DidGetTags(ScriptPromiseResolver*,
                   mojom::blink::BackgroundFetchError,
                   const Vector<String>& tags);
 
-  Member<ServiceWorkerRegistration> m_registration;
-  Member<BackgroundFetchBridge> m_bridge;
+  Member<ServiceWorkerRegistration> registration_;
+  Member<BackgroundFetchBridge> bridge_;
 };
 
 }  // namespace blink

@@ -16,9 +16,9 @@ class ScriptState;
 // This is called separately from other objects so that attributes and
 // interfaces which need to be visible on the global object are installed even
 // when the V8 context is reused (i.e., after navigation)
-CORE_EXPORT void installConditionalFeaturesOnWindow(const ScriptState*);
+CORE_EXPORT void InstallConditionalFeaturesOnWindow(const ScriptState*);
 
-CORE_EXPORT void registerInstallConditionalFeaturesForCore();
+CORE_EXPORT void RegisterInstallConditionalFeaturesForCore();
 
 }  // namespace blink
 

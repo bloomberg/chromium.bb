@@ -41,9 +41,9 @@ class CONTENT_EXPORT DevToolsClient
   void OnDestruct() override;
 
   // WebDevToolsFrontendClient implementation.
-  void sendMessageToEmbedder(const blink::WebString&) override;
+  void SendMessageToEmbedder(const blink::WebString&) override;
 
-  bool isUnderTest() override;
+  bool IsUnderTest() override;
 
   void OnDispatchOnInspectorFrontend(const std::string& message,
                                      uint32_t total_size);

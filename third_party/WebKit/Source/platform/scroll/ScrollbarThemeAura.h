@@ -38,48 +38,48 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
  public:
-  int scrollbarThickness(ScrollbarControlSize) override;
+  int ScrollbarThickness(ScrollbarControlSize) override;
 
  protected:
-  bool hasButtons(const ScrollbarThemeClient&) override { return true; }
-  bool hasThumb(const ScrollbarThemeClient&) override;
+  bool HasButtons(const ScrollbarThemeClient&) override { return true; }
+  bool HasThumb(const ScrollbarThemeClient&) override;
 
-  IntRect backButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const ScrollbarThemeClient&,
                          ScrollbarPart,
                          bool painting = false) override;
-  IntRect forwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
                             ScrollbarPart,
                             bool painting = false) override;
-  IntRect trackRect(const ScrollbarThemeClient&,
+  IntRect TrackRect(const ScrollbarThemeClient&,
                     bool painting = false) override;
-  int minimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const ScrollbarThemeClient&) override;
 
-  void paintTrackBackground(GraphicsContext&,
+  void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
                             const IntRect&) override;
-  void paintTrackPiece(GraphicsContext&,
+  void PaintTrackPiece(GraphicsContext&,
                        const Scrollbar&,
                        const IntRect&,
                        ScrollbarPart) override;
-  void paintButton(GraphicsContext&,
+  void PaintButton(GraphicsContext&,
                    const Scrollbar&,
                    const IntRect&,
                    ScrollbarPart) override;
-  void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
-  bool shouldRepaintAllPartsOnInvalidation() const override;
-  ScrollbarPart invalidateOnThumbPositionChange(
+  bool ShouldRepaintAllPartsOnInvalidation() const override;
+  ScrollbarPart InvalidateOnThumbPositionChange(
       const ScrollbarThemeClient&,
-      float oldPosition,
-      float newPosition) const override;
+      float old_position,
+      float new_position) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeHorizontal);
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeVertical);
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, NoButtonsReturnsSize0);
 
-  virtual bool hasScrollbarButtons(ScrollbarOrientation) const;
-  IntSize buttonSize(const ScrollbarThemeClient&);
+  virtual bool HasScrollbarButtons(ScrollbarOrientation) const;
+  IntSize ButtonSize(const ScrollbarThemeClient&);
 };
 
 }  // namespace blink

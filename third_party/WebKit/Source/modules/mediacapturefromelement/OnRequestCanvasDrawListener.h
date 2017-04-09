@@ -20,9 +20,9 @@ class OnRequestCanvasDrawListener final
 
  public:
   ~OnRequestCanvasDrawListener();
-  static OnRequestCanvasDrawListener* create(
+  static OnRequestCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
-  void sendNewFrame(sk_sp<SkImage>) override;
+  void SendNewFrame(sk_sp<SkImage>) override;
 
   DEFINE_INLINE_TRACE() {}
 

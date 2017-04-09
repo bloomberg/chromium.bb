@@ -33,16 +33,16 @@ namespace blink {
 // This is only for the inspector and shouldn't be used elsewhere.
 class CSSParserObserver {
  public:
-  virtual void startRuleHeader(StyleRule::RuleType, unsigned offset) = 0;
-  virtual void endRuleHeader(unsigned offset) = 0;
-  virtual void observeSelector(unsigned startOffset, unsigned endOffset) = 0;
-  virtual void startRuleBody(unsigned offset) = 0;
-  virtual void endRuleBody(unsigned offset) = 0;
-  virtual void observeProperty(unsigned startOffset,
-                               unsigned endOffset,
-                               bool isImportant,
-                               bool isParsed) = 0;
-  virtual void observeComment(unsigned startOffset, unsigned endOffset) = 0;
+  virtual void StartRuleHeader(StyleRule::RuleType, unsigned offset) = 0;
+  virtual void EndRuleHeader(unsigned offset) = 0;
+  virtual void ObserveSelector(unsigned start_offset, unsigned end_offset) = 0;
+  virtual void StartRuleBody(unsigned offset) = 0;
+  virtual void EndRuleBody(unsigned offset) = 0;
+  virtual void ObserveProperty(unsigned start_offset,
+                               unsigned end_offset,
+                               bool is_important,
+                               bool is_parsed) = 0;
+  virtual void ObserveComment(unsigned start_offset, unsigned end_offset) = 0;
 };
 
 }  // namespace blink

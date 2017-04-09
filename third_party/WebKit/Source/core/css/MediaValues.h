@@ -24,78 +24,78 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   virtual ~MediaValues() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  static MediaValues* createDynamicIfFrameExists(LocalFrame*);
-  virtual MediaValues* copy() const = 0;
+  static MediaValues* CreateDynamicIfFrameExists(LocalFrame*);
+  virtual MediaValues* Copy() const = 0;
 
-  static bool computeLengthImpl(double value,
+  static bool ComputeLengthImpl(double value,
                                 CSSPrimitiveValue::UnitType,
-                                unsigned defaultFontSize,
-                                double viewportWidth,
-                                double viewportHeight,
+                                unsigned default_font_size,
+                                double viewport_width,
+                                double viewport_height,
                                 double& result);
   template <typename T>
-  static bool computeLength(double value,
+  static bool ComputeLength(double value,
                             CSSPrimitiveValue::UnitType type,
-                            unsigned defaultFontSize,
-                            double viewportWidth,
-                            double viewportHeight,
+                            unsigned default_font_size,
+                            double viewport_width,
+                            double viewport_height,
                             T& result) {
-    double tempResult;
-    if (!computeLengthImpl(value, type, defaultFontSize, viewportWidth,
-                           viewportHeight, tempResult))
+    double temp_result;
+    if (!ComputeLengthImpl(value, type, default_font_size, viewport_width,
+                           viewport_height, temp_result))
       return false;
-    result = clampTo<T>(tempResult);
+    result = clampTo<T>(temp_result);
     return true;
   }
-  virtual bool computeLength(double value,
+  virtual bool ComputeLength(double value,
                              CSSPrimitiveValue::UnitType,
                              int& result) const = 0;
-  virtual bool computeLength(double value,
+  virtual bool ComputeLength(double value,
                              CSSPrimitiveValue::UnitType,
                              double& result) const = 0;
 
-  virtual double viewportWidth() const = 0;
-  virtual double viewportHeight() const = 0;
-  virtual int deviceWidth() const = 0;
-  virtual int deviceHeight() const = 0;
-  virtual float devicePixelRatio() const = 0;
-  virtual int colorBitsPerComponent() const = 0;
-  virtual int monochromeBitsPerComponent() const = 0;
-  virtual PointerType primaryPointerType() const = 0;
-  virtual int availablePointerTypes() const = 0;
-  virtual HoverType primaryHoverType() const = 0;
-  virtual int availableHoverTypes() const = 0;
-  virtual bool threeDEnabled() const = 0;
-  virtual const String mediaType() const = 0;
-  virtual WebDisplayMode displayMode() const = 0;
-  virtual bool strictMode() const = 0;
-  virtual Document* document() const = 0;
-  virtual bool hasValues() const = 0;
+  virtual double ViewportWidth() const = 0;
+  virtual double ViewportHeight() const = 0;
+  virtual int DeviceWidth() const = 0;
+  virtual int DeviceHeight() const = 0;
+  virtual float DevicePixelRatio() const = 0;
+  virtual int ColorBitsPerComponent() const = 0;
+  virtual int MonochromeBitsPerComponent() const = 0;
+  virtual PointerType PrimaryPointerType() const = 0;
+  virtual int AvailablePointerTypes() const = 0;
+  virtual HoverType PrimaryHoverType() const = 0;
+  virtual int AvailableHoverTypes() const = 0;
+  virtual bool ThreeDEnabled() const = 0;
+  virtual const String MediaType() const = 0;
+  virtual WebDisplayMode DisplayMode() const = 0;
+  virtual bool StrictMode() const = 0;
+  virtual Document* GetDocument() const = 0;
+  virtual bool HasValues() const = 0;
 
-  virtual void overrideViewportDimensions(double width, double height) = 0;
-  virtual DisplayShape displayShape() const = 0;
-  virtual ColorSpaceGamut colorGamut() const = 0;
+  virtual void OverrideViewportDimensions(double width, double height) = 0;
+  virtual DisplayShape GetDisplayShape() const = 0;
+  virtual ColorSpaceGamut ColorGamut() const = 0;
 
  protected:
-  static double calculateViewportWidth(LocalFrame*);
-  static double calculateViewportHeight(LocalFrame*);
-  static int calculateDeviceWidth(LocalFrame*);
-  static int calculateDeviceHeight(LocalFrame*);
-  static bool calculateStrictMode(LocalFrame*);
-  static float calculateDevicePixelRatio(LocalFrame*);
-  static int calculateColorBitsPerComponent(LocalFrame*);
-  static int calculateMonochromeBitsPerComponent(LocalFrame*);
-  static int calculateDefaultFontSize(LocalFrame*);
-  static const String calculateMediaType(LocalFrame*);
-  static WebDisplayMode calculateDisplayMode(LocalFrame*);
-  static bool calculateThreeDEnabled(LocalFrame*);
-  static PointerType calculatePrimaryPointerType(LocalFrame*);
-  static int calculateAvailablePointerTypes(LocalFrame*);
-  static HoverType calculatePrimaryHoverType(LocalFrame*);
-  static int calculateAvailableHoverTypes(LocalFrame*);
-  static DisplayShape calculateDisplayShape(LocalFrame*);
-  static ColorSpaceGamut calculateColorGamut(LocalFrame*);
-  static LocalFrame* frameFrom(Document&);
+  static double CalculateViewportWidth(LocalFrame*);
+  static double CalculateViewportHeight(LocalFrame*);
+  static int CalculateDeviceWidth(LocalFrame*);
+  static int CalculateDeviceHeight(LocalFrame*);
+  static bool CalculateStrictMode(LocalFrame*);
+  static float CalculateDevicePixelRatio(LocalFrame*);
+  static int CalculateColorBitsPerComponent(LocalFrame*);
+  static int CalculateMonochromeBitsPerComponent(LocalFrame*);
+  static int CalculateDefaultFontSize(LocalFrame*);
+  static const String CalculateMediaType(LocalFrame*);
+  static WebDisplayMode CalculateDisplayMode(LocalFrame*);
+  static bool CalculateThreeDEnabled(LocalFrame*);
+  static PointerType CalculatePrimaryPointerType(LocalFrame*);
+  static int CalculateAvailablePointerTypes(LocalFrame*);
+  static HoverType CalculatePrimaryHoverType(LocalFrame*);
+  static int CalculateAvailableHoverTypes(LocalFrame*);
+  static DisplayShape CalculateDisplayShape(LocalFrame*);
+  static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
+  static LocalFrame* FrameFrom(Document&);
 };
 
 }  // namespace blink

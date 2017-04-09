@@ -20,14 +20,14 @@
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationPortraitPrimary,
-                   blink::WebScreenOrientationLockPortraitPrimary);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationPortraitSecondary,
-                   blink::WebScreenOrientationLockPortraitSecondary);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLandscapePrimary,
-                   blink::WebScreenOrientationLockLandscapePrimary);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLandscapeSecondary,
-                   blink::WebScreenOrientationLockLandscapeSecondary);
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitPrimary,
+                   blink::kWebScreenOrientationLockPortraitPrimary);
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitSecondary,
+                   blink::kWebScreenOrientationLockPortraitSecondary);
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLandscapePrimary,
+                   blink::kWebScreenOrientationLockLandscapePrimary);
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLandscapeSecondary,
+                   blink::kWebScreenOrientationLockLandscapeSecondary);
 
 namespace blink {
 
@@ -36,73 +36,73 @@ struct ScreenOrientationInfo {
   unsigned orientation;
 };
 
-static ScreenOrientationInfo* orientationsMap(unsigned& length) {
-  DEFINE_STATIC_LOCAL(const AtomicString, portraitPrimary,
+static ScreenOrientationInfo* OrientationsMap(unsigned& length) {
+  DEFINE_STATIC_LOCAL(const AtomicString, portrait_primary,
                       ("portrait-primary"));
-  DEFINE_STATIC_LOCAL(const AtomicString, portraitSecondary,
+  DEFINE_STATIC_LOCAL(const AtomicString, portrait_secondary,
                       ("portrait-secondary"));
-  DEFINE_STATIC_LOCAL(const AtomicString, landscapePrimary,
+  DEFINE_STATIC_LOCAL(const AtomicString, landscape_primary,
                       ("landscape-primary"));
-  DEFINE_STATIC_LOCAL(const AtomicString, landscapeSecondary,
+  DEFINE_STATIC_LOCAL(const AtomicString, landscape_secondary,
                       ("landscape-secondary"));
   DEFINE_STATIC_LOCAL(const AtomicString, any, ("any"));
   DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait"));
   DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape"));
   DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural"));
 
-  static ScreenOrientationInfo orientationMap[] = {
-      {portraitPrimary, WebScreenOrientationLockPortraitPrimary},
-      {portraitSecondary, WebScreenOrientationLockPortraitSecondary},
-      {landscapePrimary, WebScreenOrientationLockLandscapePrimary},
-      {landscapeSecondary, WebScreenOrientationLockLandscapeSecondary},
-      {any, WebScreenOrientationLockAny},
-      {portrait, WebScreenOrientationLockPortrait},
-      {landscape, WebScreenOrientationLockLandscape},
-      {natural, WebScreenOrientationLockNatural}};
-  length = WTF_ARRAY_LENGTH(orientationMap);
+  static ScreenOrientationInfo orientation_map[] = {
+      {portrait_primary, kWebScreenOrientationLockPortraitPrimary},
+      {portrait_secondary, kWebScreenOrientationLockPortraitSecondary},
+      {landscape_primary, kWebScreenOrientationLockLandscapePrimary},
+      {landscape_secondary, kWebScreenOrientationLockLandscapeSecondary},
+      {any, kWebScreenOrientationLockAny},
+      {portrait, kWebScreenOrientationLockPortrait},
+      {landscape, kWebScreenOrientationLockLandscape},
+      {natural, kWebScreenOrientationLockNatural}};
+  length = WTF_ARRAY_LENGTH(orientation_map);
 
-  return orientationMap;
+  return orientation_map;
 }
 
-const AtomicString& ScreenOrientation::orientationTypeToString(
+const AtomicString& ScreenOrientation::OrientationTypeToString(
     WebScreenOrientationType orientation) {
   unsigned length = 0;
-  ScreenOrientationInfo* orientationMap = orientationsMap(length);
+  ScreenOrientationInfo* orientation_map = OrientationsMap(length);
   for (unsigned i = 0; i < length; ++i) {
-    if (static_cast<unsigned>(orientation) == orientationMap[i].orientation)
-      return orientationMap[i].name;
+    if (static_cast<unsigned>(orientation) == orientation_map[i].orientation)
+      return orientation_map[i].name;
   }
 
   ASSERT_NOT_REACHED();
-  return nullAtom;
+  return g_null_atom;
 }
 
-static WebScreenOrientationLockType stringToOrientationLock(
-    const AtomicString& orientationLockString) {
+static WebScreenOrientationLockType StringToOrientationLock(
+    const AtomicString& orientation_lock_string) {
   unsigned length = 0;
-  ScreenOrientationInfo* orientationMap = orientationsMap(length);
+  ScreenOrientationInfo* orientation_map = OrientationsMap(length);
   for (unsigned i = 0; i < length; ++i) {
-    if (orientationMap[i].name == orientationLockString)
+    if (orientation_map[i].name == orientation_lock_string)
       return static_cast<WebScreenOrientationLockType>(
-          orientationMap[i].orientation);
+          orientation_map[i].orientation);
   }
 
   ASSERT_NOT_REACHED();
-  return WebScreenOrientationLockDefault;
+  return kWebScreenOrientationLockDefault;
 }
 
 // static
-ScreenOrientation* ScreenOrientation::create(LocalFrame* frame) {
+ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
   ASSERT(frame);
 
   // Check if the ScreenOrientationController is supported for the
   // frame. It will not be for all LocalFrames, or the frame may
   // have been detached.
-  if (!ScreenOrientationControllerImpl::from(*frame))
+  if (!ScreenOrientationControllerImpl::From(*frame))
     return nullptr;
 
   ScreenOrientation* orientation = new ScreenOrientation(frame);
-  ASSERT(orientation->controller());
+  ASSERT(orientation->Controller());
   // FIXME: ideally, we would like to provide the ScreenOrientationController
   // the case where it is not defined but for the moment, it is eagerly
   // created when the LocalFrame is created so we shouldn't be in that
@@ -110,86 +110,87 @@ ScreenOrientation* ScreenOrientation::create(LocalFrame* frame) {
   // In order to create the ScreenOrientationController lazily, we would need
   // to be able to access WebFrameClient from modules/.
 
-  orientation->controller()->setOrientation(orientation);
+  orientation->Controller()->SetOrientation(orientation);
   return orientation;
 }
 
 ScreenOrientation::ScreenOrientation(LocalFrame* frame)
-    : ContextClient(frame), m_type(WebScreenOrientationUndefined), m_angle(0) {}
+    : ContextClient(frame), type_(kWebScreenOrientationUndefined), angle_(0) {}
 
 ScreenOrientation::~ScreenOrientation() {}
 
-const WTF::AtomicString& ScreenOrientation::interfaceName() const {
+const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
   return EventTargetNames::ScreenOrientation;
 }
 
-ExecutionContext* ScreenOrientation::getExecutionContext() const {
-  if (!frame())
+ExecutionContext* ScreenOrientation::GetExecutionContext() const {
+  if (!GetFrame())
     return 0;
-  return frame()->document();
+  return GetFrame()->GetDocument();
 }
 
 String ScreenOrientation::type() const {
-  return orientationTypeToString(m_type);
+  return OrientationTypeToString(type_);
 }
 
 unsigned short ScreenOrientation::angle() const {
-  return m_angle;
+  return angle_;
 }
 
-void ScreenOrientation::setType(WebScreenOrientationType type) {
-  m_type = type;
+void ScreenOrientation::SetType(WebScreenOrientationType type) {
+  type_ = type;
 }
 
-void ScreenOrientation::setAngle(unsigned short angle) {
-  m_angle = angle;
+void ScreenOrientation::SetAngle(unsigned short angle) {
+  angle_ = angle;
 }
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
-                                      const AtomicString& lockString) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(state);
-  ScriptPromise promise = resolver->promise();
+                                      const AtomicString& lock_string) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(state);
+  ScriptPromise promise = resolver->Promise();
 
-  Document* document = frame() ? frame()->document() : 0;
+  Document* document = GetFrame() ? GetFrame()->GetDocument() : 0;
 
-  if (!document || !controller()) {
-    DOMException* exception = DOMException::create(
-        InvalidStateError, "The object is no longer associated to a document.");
-    resolver->reject(exception);
+  if (!document || !Controller()) {
+    DOMException* exception = DOMException::Create(
+        kInvalidStateError,
+        "The object is no longer associated to a document.");
+    resolver->Reject(exception);
     return promise;
   }
 
-  if (document->isSandboxed(SandboxOrientationLock)) {
+  if (document->IsSandboxed(kSandboxOrientationLock)) {
     DOMException* exception =
-        DOMException::create(SecurityError,
+        DOMException::Create(kSecurityError,
                              "The document is sandboxed and lacks the "
                              "'allow-orientation-lock' flag.");
-    resolver->reject(exception);
+    resolver->Reject(exception);
     return promise;
   }
 
-  controller()->lock(stringToOrientationLock(lockString),
-                     WTF::makeUnique<LockOrientationCallback>(resolver));
+  Controller()->lock(StringToOrientationLock(lock_string),
+                     WTF::MakeUnique<LockOrientationCallback>(resolver));
   return promise;
 }
 
 void ScreenOrientation::unlock() {
-  if (!controller())
+  if (!Controller())
     return;
 
-  controller()->unlock();
+  Controller()->unlock();
 }
 
-ScreenOrientationControllerImpl* ScreenOrientation::controller() {
-  if (!frame())
+ScreenOrientationControllerImpl* ScreenOrientation::Controller() {
+  if (!GetFrame())
     return 0;
 
-  return ScreenOrientationControllerImpl::from(*frame());
+  return ScreenOrientationControllerImpl::From(*GetFrame());
 }
 
 DEFINE_TRACE(ScreenOrientation) {
-  EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

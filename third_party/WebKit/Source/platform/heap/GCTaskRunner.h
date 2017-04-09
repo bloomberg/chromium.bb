@@ -45,30 +45,30 @@ class GCTaskObserver final : public WebThread::TaskObserver {
   USING_FAST_MALLOC(GCTaskObserver);
 
  public:
-  GCTaskObserver() : m_nesting(0) {}
+  GCTaskObserver() : nesting_(0) {}
 
   ~GCTaskObserver() {
     // m_nesting can be 1 if this was unregistered in a task and
     // didProcessTask was not called.
-    ASSERT(!m_nesting || m_nesting == 1);
+    ASSERT(!nesting_ || nesting_ == 1);
   }
 
-  virtual void willProcessTask() { m_nesting++; }
+  virtual void WillProcessTask() { nesting_++; }
 
-  virtual void didProcessTask() {
+  virtual void DidProcessTask() {
     // In the production code WebKit::initialize is called from inside the
     // message loop so we can get didProcessTask() without corresponding
     // willProcessTask once. This is benign.
-    if (m_nesting)
-      m_nesting--;
+    if (nesting_)
+      nesting_--;
 
-    ThreadState::current()->safePoint(m_nesting
-                                          ? BlinkGC::HeapPointersOnStack
-                                          : BlinkGC::NoHeapPointersOnStack);
+    ThreadState::Current()->SafePoint(nesting_
+                                          ? BlinkGC::kHeapPointersOnStack
+                                          : BlinkGC::kNoHeapPointersOnStack);
   }
 
  private:
-  int m_nesting;
+  int nesting_;
 };
 
 class GCTaskRunner final {
@@ -76,16 +76,16 @@ class GCTaskRunner final {
 
  public:
   explicit GCTaskRunner(WebThread* thread)
-      : m_gcTaskObserver(WTF::wrapUnique(new GCTaskObserver)),
-        m_thread(thread) {
-    m_thread->addTaskObserver(m_gcTaskObserver.get());
+      : gc_task_observer_(WTF::WrapUnique(new GCTaskObserver)),
+        thread_(thread) {
+    thread_->AddTaskObserver(gc_task_observer_.get());
   }
 
-  ~GCTaskRunner() { m_thread->removeTaskObserver(m_gcTaskObserver.get()); }
+  ~GCTaskRunner() { thread_->RemoveTaskObserver(gc_task_observer_.get()); }
 
  private:
-  std::unique_ptr<GCTaskObserver> m_gcTaskObserver;
-  WebThread* m_thread;
+  std::unique_ptr<GCTaskObserver> gc_task_observer_;
+  WebThread* thread_;
 };
 
 }  // namespace blink

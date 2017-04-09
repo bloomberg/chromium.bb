@@ -40,9 +40,9 @@ class CORE_EXPORT TypeAheadDataSource {
  public:
   virtual ~TypeAheadDataSource() {}
 
-  virtual int indexOfSelectedOption() const = 0;
-  virtual int optionCount() const = 0;
-  virtual String optionAtIndex(int index) const = 0;
+  virtual int IndexOfSelectedOption() const = 0;
+  virtual int OptionCount() const = 0;
+  virtual String OptionAtIndex(int index) const = 0;
 };
 
 class TypeAhead {
@@ -52,23 +52,23 @@ class TypeAhead {
   TypeAhead(TypeAheadDataSource*);
 
   enum ModeFlag {
-    MatchPrefix = 1 << 0,
-    CycleFirstChar = 1 << 1,
-    MatchIndex = 1 << 2,
+    kMatchPrefix = 1 << 0,
+    kCycleFirstChar = 1 << 1,
+    kMatchIndex = 1 << 2,
   };
   using MatchModeFlags = unsigned;
 
   // Returns the index for the matching option.
-  int handleEvent(KeyboardEvent*, MatchModeFlags);
-  bool hasActiveSession(KeyboardEvent*);
-  void resetSession();
+  int HandleEvent(KeyboardEvent*, MatchModeFlags);
+  bool HasActiveSession(KeyboardEvent*);
+  void ResetSession();
 
  private:
-  TypeAheadDataSource* m_dataSource;
+  TypeAheadDataSource* data_source_;
   // platform timestamp of last keyboard event in seconds
-  TimeTicks m_lastTypeTime;
-  UChar m_repeatingChar;
-  StringBuilder m_buffer;
+  TimeTicks last_type_time_;
+  UChar repeating_char_;
+  StringBuilder buffer_;
 };
 
 }  // namespace blink

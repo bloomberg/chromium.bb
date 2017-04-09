@@ -39,15 +39,15 @@ class WebMIDIAccessor {
  public:
   virtual ~WebMIDIAccessor() {}
 
-  virtual void startSession() {}
-  virtual void open(unsigned portIndex) {}
+  virtual void StartSession() {}
+  virtual void Open(unsigned port_index) {}
   // |timeStamp| is measured in milliseconds as Web MIDI spec defines.
-  virtual void sendMIDIData(unsigned portIndex,
+  virtual void SendMIDIData(unsigned port_index,
                             const unsigned char* data,
                             size_t length,
-                            double timeStamp) {}
-  virtual void clear(unsigned portIndex) {}
-  virtual void close(unsigned portIndex) {}
+                            double time_stamp) {}
+  virtual void Clear(unsigned port_index) {}
+  virtual void Close(unsigned port_index) {}
 };
 
 }  // namespace blink

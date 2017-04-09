@@ -6,7 +6,9 @@
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
     {% for entry in entries %}
-    macro({{entry|symbol}}){% if not loop.last %} \
+    {% set constant_prefix = entry | symbol %}
+    {% set method_prefix = constant_prefix | upper_first_letter %}
+    macro({{constant_prefix}}, {{method_prefix}}){% if not loop.last %} \
     {% endif %}
     {% endfor %}
 

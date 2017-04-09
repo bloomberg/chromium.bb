@@ -41,20 +41,20 @@ class SVGDiscardElement final : public SVGSMILElement {
  public:
   DECLARE_NODE_FACTORY(SVGDiscardElement);
 
-  bool isSVGDiscardElement() const override { return true; }
+  bool IsSVGDiscardElement() const override { return true; }
 
  private:
   explicit SVGDiscardElement(Document&);
 
-  void resetAnimatedType() override {}
-  void clearAnimatedType() override {}
-  void applyResultsToTarget() override {}
-  void animationAttributeChanged() override {}
+  void ResetAnimatedType() override {}
+  void ClearAnimatedType() override {}
+  void ApplyResultsToTarget() override {}
+  void AnimationAttributeChanged() override {}
 
-  void startedActiveInterval() override {}
-  void updateAnimation(float percent,
+  void StartedActiveInterval() override {}
+  void UpdateAnimation(float percent,
                        unsigned repeat,
-                       SVGSMILElement* resultElement) override {}
+                       SVGSMILElement* result_element) override {}
 };
 
 }  // namespace blink

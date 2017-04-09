@@ -41,37 +41,38 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
 
   // Called after child nodes changed.
-  virtual void didChangeChildren(const ContainerNode&);
+  virtual void DidChangeChildren(const ContainerNode&);
 
   // Called after characters in |nodeToBeRemoved| is appended into |mergedNode|.
   // |oldLength| holds length of |mergedNode| before merge.
-  virtual void didMergeTextNodes(const Text& mergedNode,
-                                 const NodeWithIndex& nodeToBeRemovedWithIndex,
-                                 unsigned oldLength);
+  virtual void DidMergeTextNodes(
+      const Text& merged_node,
+      const NodeWithIndex& node_to_be_removed_with_index,
+      unsigned old_length);
 
   // Called just after node tree |root| is moved to new document.
-  virtual void didMoveTreeToNewDocument(const Node& root);
+  virtual void DidMoveTreeToNewDocument(const Node& root);
 
   // Called when |Text| node is split, next sibling |oldNode| contains
   // characters after split point.
-  virtual void didSplitTextNode(const Text& oldNode);
+  virtual void DidSplitTextNode(const Text& old_node);
 
   // Called when |CharacterData| is updated at |offset|, |oldLength| is a
   // number of deleted character and |newLength| is a number of added
   // characters.
-  virtual void didUpdateCharacterData(CharacterData*,
+  virtual void DidUpdateCharacterData(CharacterData*,
                                       unsigned offset,
-                                      unsigned oldLength,
-                                      unsigned newLength);
+                                      unsigned old_length,
+                                      unsigned new_length);
 
   // Called before removing container node.
-  virtual void nodeChildrenWillBeRemoved(ContainerNode&);
+  virtual void NodeChildrenWillBeRemoved(ContainerNode&);
 
   // Called before removing node.
-  virtual void nodeWillBeRemoved(Node&);
+  virtual void NodeWillBeRemoved(Node&);
 
   // Called when detaching document.
-  virtual void contextDestroyed(Document*) {}
+  virtual void ContextDestroyed(Document*) {}
 
  protected:
   SynchronousMutationObserver();

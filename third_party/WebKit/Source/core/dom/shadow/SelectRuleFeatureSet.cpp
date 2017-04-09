@@ -37,66 +37,66 @@
 
 namespace blink {
 
-void SelectRuleFeatureSet::collectFeaturesFromSelectorList(
+void SelectRuleFeatureSet::CollectFeaturesFromSelectorList(
     const CSSSelectorList& list) {
-  for (const CSSSelector* selector = list.first(); selector;
-       selector = CSSSelectorList::next(*selector)) {
+  for (const CSSSelector* selector = list.First(); selector;
+       selector = CSSSelectorList::Next(*selector)) {
     for (const CSSSelector* component = selector; component;
-         component = component->tagHistory()) {
-      if (invalidationSetForSimpleSelector(*component, InvalidateDescendants))
+         component = component->TagHistory()) {
+      if (InvalidationSetForSimpleSelector(*component, kInvalidateDescendants))
         continue;
 
-      if (component->selectorList())
-        collectFeaturesFromSelectorList(*component->selectorList());
+      if (component->SelectorList())
+        CollectFeaturesFromSelectorList(*component->SelectorList());
     }
   }
 }
 
-bool SelectRuleFeatureSet::checkSelectorsForClassChange(
-    const SpaceSplitString& changedClasses) const {
-  unsigned changedSize = changedClasses.size();
-  for (unsigned i = 0; i < changedSize; ++i) {
-    if (hasSelectorForClass(changedClasses[i]))
+bool SelectRuleFeatureSet::CheckSelectorsForClassChange(
+    const SpaceSplitString& changed_classes) const {
+  unsigned changed_size = changed_classes.size();
+  for (unsigned i = 0; i < changed_size; ++i) {
+    if (HasSelectorForClass(changed_classes[i]))
       return true;
   }
   return false;
 }
 
-bool SelectRuleFeatureSet::checkSelectorsForClassChange(
-    const SpaceSplitString& oldClasses,
-    const SpaceSplitString& newClasses) const {
-  if (!oldClasses.size())
-    return checkSelectorsForClassChange(newClasses);
+bool SelectRuleFeatureSet::CheckSelectorsForClassChange(
+    const SpaceSplitString& old_classes,
+    const SpaceSplitString& new_classes) const {
+  if (!old_classes.size())
+    return CheckSelectorsForClassChange(new_classes);
 
   // Class vectors tend to be very short. This is faster than using a hash
   // table.
-  BitVector remainingClassBits;
-  remainingClassBits.ensureSize(oldClasses.size());
+  BitVector remaining_class_bits;
+  remaining_class_bits.EnsureSize(old_classes.size());
 
-  for (unsigned i = 0; i < newClasses.size(); ++i) {
+  for (unsigned i = 0; i < new_classes.size(); ++i) {
     bool found = false;
-    for (unsigned j = 0; j < oldClasses.size(); ++j) {
-      if (newClasses[i] == oldClasses[j]) {
+    for (unsigned j = 0; j < old_classes.size(); ++j) {
+      if (new_classes[i] == old_classes[j]) {
         // Mark each class that is still in the newClasses so we can skip doing
         // an n^2 search below when looking for removals. We can't break from
         // this loop early since a class can appear more than once.
-        remainingClassBits.quickSet(j);
+        remaining_class_bits.QuickSet(j);
         found = true;
       }
     }
     // Class was added.
     if (!found) {
-      if (hasSelectorForClass(newClasses[i]))
+      if (HasSelectorForClass(new_classes[i]))
         return true;
     }
   }
 
-  for (unsigned i = 0; i < oldClasses.size(); ++i) {
-    if (remainingClassBits.quickGet(i))
+  for (unsigned i = 0; i < old_classes.size(); ++i) {
+    if (remaining_class_bits.QuickGet(i))
       continue;
 
     // Class was removed.
-    if (hasSelectorForClass(oldClasses[i]))
+    if (HasSelectorForClass(old_classes[i]))
       return true;
   }
   return false;

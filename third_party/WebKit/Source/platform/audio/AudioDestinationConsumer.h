@@ -40,8 +40,8 @@ class AudioBus;
 
 class PLATFORM_EXPORT AudioDestinationConsumer {
  public:
-  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
-  virtual void consumeAudio(AudioBus*, size_t numberOfFrames) = 0;
+  virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
+  virtual void ConsumeAudio(AudioBus*, size_t number_of_frames) = 0;
 };
 
 }  // namespace blink

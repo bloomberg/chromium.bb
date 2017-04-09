@@ -42,43 +42,43 @@ class SQLiteStatement {
   SQLiteStatement(SQLiteDatabase&, const String&);
   ~SQLiteStatement();
 
-  int prepare();
-  int bindText(int index, const String&);
-  int bindDouble(int index, double);
-  int bindNull(int index);
-  int bindValue(int index, const SQLValue&);
-  unsigned bindParameterCount() const;
+  int Prepare();
+  int BindText(int index, const String&);
+  int BindDouble(int index, double);
+  int BindNull(int index);
+  int BindValue(int index, const SQLValue&);
+  unsigned BindParameterCount() const;
 
-  int step();
-  int finalize();
+  int Step();
+  int Finalize();
 
-  int prepareAndStep() {
-    if (int error = prepare())
+  int PrepareAndStep() {
+    if (int error = Prepare())
       return error;
-    return step();
+    return Step();
   }
 
   // prepares, steps, and finalizes the query.
   // returns true if all 3 steps succeed with step() returning SQLITE_DONE
   // returns false otherwise
-  bool executeCommand();
+  bool ExecuteCommand();
 
   // Returns -1 on last-step failing.  Otherwise, returns number of rows
   // returned in the last step()
-  int columnCount();
+  int ColumnCount();
 
-  String getColumnName(int col);
-  SQLValue getColumnValue(int col);
-  String getColumnText(int col);
-  int getColumnInt(int col);
-  int64_t getColumnInt64(int col);
+  String GetColumnName(int col);
+  SQLValue GetColumnValue(int col);
+  String GetColumnText(int col);
+  int GetColumnInt(int col);
+  int64_t GetColumnInt64(int col);
 
  private:
-  SQLiteDatabase& m_database;
-  String m_query;
-  sqlite3_stmt* m_statement;
+  SQLiteDatabase& database_;
+  String query_;
+  sqlite3_stmt* statement_;
 #if DCHECK_IS_ON()
-  bool m_isPrepared = false;
+  bool is_prepared_ = false;
 #endif
 };
 

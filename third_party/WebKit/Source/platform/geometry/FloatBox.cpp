@@ -8,9 +8,9 @@
 
 namespace blink {
 
-String FloatBox::toString() const {
-  return String::format("%lg,%lg,%lg %lgx%lgx%lg", x(), y(), z(), width(),
-                        height(), depth());
+String FloatBox::ToString() const {
+  return String::Format("%lg,%lg,%lg %lgx%lgx%lg", X(), Y(), Z(), Width(),
+                        Height(), Depth());
 }
 
 }  // namespace blink

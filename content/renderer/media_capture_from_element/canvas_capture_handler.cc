@@ -153,12 +153,12 @@ CanvasCaptureHandler* CanvasCaptureHandler::CreateCanvasCaptureHandler(
   return new CanvasCaptureHandler(size, frame_rate, io_task_runner, track);
 }
 
-void CanvasCaptureHandler::sendNewFrame(const SkImage* image) {
+void CanvasCaptureHandler::SendNewFrame(const SkImage* image) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   CreateNewFrame(image);
 }
 
-bool CanvasCaptureHandler::needsNewFrame() const {
+bool CanvasCaptureHandler::NeedsNewFrame() const {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   return ask_for_new_frame_;
 }
@@ -255,17 +255,17 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
     blink::WebMediaStreamTrack* web_track) {
   std::string str_track_id;
   base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
-  const blink::WebString track_id = blink::WebString::fromASCII(str_track_id);
+  const blink::WebString track_id = blink::WebString::FromASCII(str_track_id);
   blink::WebMediaStreamSource webkit_source;
   std::unique_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
           MediaStreamSource::SourceStoppedCallback(), std::move(source)));
-  webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
+  webkit_source.Initialize(track_id, blink::WebMediaStreamSource::kTypeVideo,
                            track_id, false);
-  webkit_source.setExtraData(media_stream_source.get());
+  webkit_source.SetExtraData(media_stream_source.get());
 
-  web_track->initialize(webkit_source);
-  web_track->setTrackData(new MediaStreamVideoTrack(
+  web_track->Initialize(webkit_source);
+  web_track->SetTrackData(new MediaStreamVideoTrack(
       media_stream_source.release(),
       MediaStreamVideoSource::ConstraintsCallback(), true));
 }

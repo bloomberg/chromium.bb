@@ -28,104 +28,104 @@ namespace blink {
 
 inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document),
-      m_cx(SVGAnimatedLength::create(this,
-                                     SVGNames::cxAttr,
-                                     SVGLength::create(SVGLengthMode::Width),
-                                     CSSPropertyCx)),
-      m_cy(SVGAnimatedLength::create(this,
-                                     SVGNames::cyAttr,
-                                     SVGLength::create(SVGLengthMode::Height),
-                                     CSSPropertyCy)),
-      m_r(SVGAnimatedLength::create(this,
-                                    SVGNames::rAttr,
-                                    SVGLength::create(SVGLengthMode::Other),
-                                    CSSPropertyR)) {
-  addToPropertyMap(m_cx);
-  addToPropertyMap(m_cy);
-  addToPropertyMap(m_r);
+      cx_(SVGAnimatedLength::Create(this,
+                                    SVGNames::cxAttr,
+                                    SVGLength::Create(SVGLengthMode::kWidth),
+                                    CSSPropertyCx)),
+      cy_(SVGAnimatedLength::Create(this,
+                                    SVGNames::cyAttr,
+                                    SVGLength::Create(SVGLengthMode::kHeight),
+                                    CSSPropertyCy)),
+      r_(SVGAnimatedLength::Create(this,
+                                   SVGNames::rAttr,
+                                   SVGLength::Create(SVGLengthMode::kOther),
+                                   CSSPropertyR)) {
+  AddToPropertyMap(cx_);
+  AddToPropertyMap(cy_);
+  AddToPropertyMap(r_);
 }
 
 DEFINE_TRACE(SVGCircleElement) {
-  visitor->trace(m_cx);
-  visitor->trace(m_cy);
-  visitor->trace(m_r);
-  SVGGeometryElement::trace(visitor);
+  visitor->Trace(cx_);
+  visitor->Trace(cy_);
+  visitor->Trace(r_);
+  SVGGeometryElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGCircleElement)
 
-Path SVGCircleElement::asPath() const {
+Path SVGCircleElement::AsPath() const {
   Path path;
 
-  SVGLengthContext lengthContext(this);
-  DCHECK(layoutObject());
-  const ComputedStyle& style = layoutObject()->styleRef();
-  const SVGComputedStyle& svgStyle = style.svgStyle();
+  SVGLengthContext length_context(this);
+  DCHECK(GetLayoutObject());
+  const ComputedStyle& style = GetLayoutObject()->StyleRef();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  float r =
-      lengthContext.valueForLength(svgStyle.r(), style, SVGLengthMode::Other);
+  float r = length_context.ValueForLength(svg_style.R(), style,
+                                          SVGLengthMode::kOther);
   if (r > 0) {
-    path.addEllipse(FloatRect(lengthContext.valueForLength(
-                                  svgStyle.cx(), style, SVGLengthMode::Width) -
-                                  r,
-                              lengthContext.valueForLength(
-                                  svgStyle.cy(), style, SVGLengthMode::Height) -
-                                  r,
-                              r * 2, r * 2));
+    path.AddEllipse(
+        FloatRect(length_context.ValueForLength(svg_style.Cx(), style,
+                                                SVGLengthMode::kWidth) -
+                      r,
+                  length_context.ValueForLength(svg_style.Cy(), style,
+                                                SVGLengthMode::kHeight) -
+                      r,
+                  r * 2, r * 2));
   }
 
   return path;
 }
 
-void SVGCircleElement::collectStyleForPresentationAttribute(
+void SVGCircleElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
-  SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_cx) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_cx->cssValue());
-  } else if (property == m_cy) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_cy->cssValue());
-  } else if (property == m_r) {
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            m_r->cssValue());
+  SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
+  if (property == cx_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            cx_->CssValue());
+  } else if (property == cy_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            cy_->CssValue());
+  } else if (property == r_) {
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            r_->CssValue());
   } else {
-    SVGGeometryElement::collectStyleForPresentationAttribute(name, value,
+    SVGGeometryElement::CollectStyleForPresentationAttribute(name, value,
                                                              style);
   }
 }
 
-void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::rAttr || attrName == SVGNames::cxAttr ||
-      attrName == SVGNames::cyAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGCircleElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::rAttr || attr_name == SVGNames::cxAttr ||
+      attr_name == SVGNames::cyAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-                        StyleChangeReasonForTracing::fromAttribute(attrName));
-    updateRelativeLengthsInformation();
+    InvalidateSVGPresentationAttributeStyle();
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::FromAttribute(attr_name));
+    UpdateRelativeLengthsInformation();
 
-    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-    if (!layoutObject)
+    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
+    if (!layout_object)
       return;
 
-    layoutObject->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(layoutObject);
+    layout_object->SetNeedsShapeUpdate();
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
     return;
   }
 
-  SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-bool SVGCircleElement::selfHasRelativeLengths() const {
-  return m_cx->currentValue()->isRelative() ||
-         m_cy->currentValue()->isRelative() ||
-         m_r->currentValue()->isRelative();
+bool SVGCircleElement::SelfHasRelativeLengths() const {
+  return cx_->CurrentValue()->IsRelative() ||
+         cy_->CurrentValue()->IsRelative() || r_->CurrentValue()->IsRelative();
 }
 
-LayoutObject* SVGCircleElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGCircleElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGEllipse(this);
 }
 

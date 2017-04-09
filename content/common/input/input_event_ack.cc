@@ -51,7 +51,7 @@ InputEventAck::InputEventAck(InputEventAckSource source,
 
 InputEventAck::InputEventAck()
     : InputEventAck(InputEventAckSource::UNKNOWN,
-                    blink::WebInputEvent::Undefined,
+                    blink::WebInputEvent::kUndefined,
                     INPUT_EVENT_ACK_STATE_UNKNOWN) {}
 
 InputEventAck::~InputEventAck() {

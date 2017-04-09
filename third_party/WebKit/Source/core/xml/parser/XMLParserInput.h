@@ -41,34 +41,34 @@ class XMLParserInput {
 
  public:
   explicit XMLParserInput(const String& source)
-      : m_source(source), m_encoding(0), m_data(0), m_size(0) {
-    if (m_source.isEmpty())
+      : source_(source), encoding_(0), data_(0), size_(0) {
+    if (source_.IsEmpty())
       return;
 
-    const UChar BOM = 0xFEFF;
-    const unsigned char BOMHighByte =
-        *reinterpret_cast<const unsigned char*>(&BOM);
+    const UChar kBOM = 0xFEFF;
+    const unsigned char bom_high_byte =
+        *reinterpret_cast<const unsigned char*>(&kBOM);
 
-    if (m_source.is8Bit()) {
-      m_encoding = "iso-8859-1";
-      m_data = reinterpret_cast<const char*>(m_source.characters8());
-      m_size = m_source.length() * sizeof(LChar);
+    if (source_.Is8Bit()) {
+      encoding_ = "iso-8859-1";
+      data_ = reinterpret_cast<const char*>(source_.Characters8());
+      size_ = source_.length() * sizeof(LChar);
     } else {
-      m_encoding = BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE";
-      m_data = reinterpret_cast<const char*>(m_source.characters16());
-      m_size = m_source.length() * sizeof(UChar);
+      encoding_ = bom_high_byte == 0xFF ? "UTF-16LE" : "UTF-16BE";
+      data_ = reinterpret_cast<const char*>(source_.Characters16());
+      size_ = source_.length() * sizeof(UChar);
     }
   }
 
-  const char* encoding() const { return m_encoding; }
-  const char* data() const { return m_data; }
-  int size() const { return m_size; }
+  const char* Encoding() const { return encoding_; }
+  const char* Data() const { return data_; }
+  int size() const { return size_; }
 
  private:
-  String m_source;
-  const char* m_encoding;
-  const char* m_data;
-  int m_size;
+  String source_;
+  const char* encoding_;
+  const char* data_;
+  int size_;
 };
 
 }  // namespace blink

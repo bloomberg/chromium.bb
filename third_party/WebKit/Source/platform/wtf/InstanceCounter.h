@@ -33,7 +33,7 @@
 namespace WTF {
 
 class String;
-WTF_EXPORT String dumpRefCountedInstanceCounts();
+WTF_EXPORT String DumpRefCountedInstanceCounts();
 
 #if ENABLE(INSTANCE_COUNTER)
 WTF_EXPORT void incrementInstanceCount(const char* stringWithTypeName,

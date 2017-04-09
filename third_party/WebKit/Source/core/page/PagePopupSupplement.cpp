@@ -36,47 +36,47 @@ namespace blink {
 
 PagePopupSupplement::PagePopupSupplement(LocalFrame& frame,
                                          PagePopup& popup,
-                                         PagePopupClient* popupClient)
+                                         PagePopupClient* popup_client)
     : Supplement<LocalFrame>(frame),
-      m_controller(PagePopupController::create(popup, popupClient)) {
-  DCHECK(popupClient);
+      controller_(PagePopupController::Create(popup, popup_client)) {
+  DCHECK(popup_client);
 }
 
-const char* PagePopupSupplement::supplementName() {
+const char* PagePopupSupplement::SupplementName() {
   return "PagePopupSupplement";
 }
 
-PagePopupSupplement& PagePopupSupplement::from(LocalFrame& frame) {
+PagePopupSupplement& PagePopupSupplement::From(LocalFrame& frame) {
   PagePopupSupplement* supplement = static_cast<PagePopupSupplement*>(
-      Supplement<LocalFrame>::from(&frame, supplementName()));
+      Supplement<LocalFrame>::From(&frame, SupplementName()));
   DCHECK(supplement);
   return *supplement;
 }
 
-PagePopupController* PagePopupSupplement::pagePopupController() const {
-  return m_controller;
+PagePopupController* PagePopupSupplement::GetPagePopupController() const {
+  return controller_;
 }
 
-void PagePopupSupplement::dispose() {
-  m_controller->clearPagePopupClient();
+void PagePopupSupplement::Dispose() {
+  controller_->ClearPagePopupClient();
 }
 
-void PagePopupSupplement::install(LocalFrame& frame,
+void PagePopupSupplement::Install(LocalFrame& frame,
                                   PagePopup& popup,
-                                  PagePopupClient* popupClient) {
-  ASSERT(popupClient);
-  provideTo(frame, supplementName(),
-            new PagePopupSupplement(frame, popup, popupClient));
+                                  PagePopupClient* popup_client) {
+  ASSERT(popup_client);
+  ProvideTo(frame, SupplementName(),
+            new PagePopupSupplement(frame, popup, popup_client));
 }
 
-void PagePopupSupplement::uninstall(LocalFrame& frame) {
-  PagePopupSupplement::from(frame).dispose();
-  frame.removeSupplement(supplementName());
+void PagePopupSupplement::Uninstall(LocalFrame& frame) {
+  PagePopupSupplement::From(frame).Dispose();
+  frame.RemoveSupplement(SupplementName());
 }
 
 DEFINE_TRACE(PagePopupSupplement) {
-  visitor->trace(m_controller);
-  Supplement<LocalFrame>::trace(visitor);
+  visitor->Trace(controller_);
+  Supplement<LocalFrame>::Trace(visitor);
 }
 
 }  // namespace blink

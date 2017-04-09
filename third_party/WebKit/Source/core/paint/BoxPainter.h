@@ -33,39 +33,39 @@ class BoxPainter {
   STACK_ALLOCATED();
 
  public:
-  BoxPainter(const LayoutBox& layoutBox) : m_layoutBox(layoutBox) {}
-  void paint(const PaintInfo&, const LayoutPoint&);
+  BoxPainter(const LayoutBox& layout_box) : layout_box_(layout_box) {}
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
-  void paintChildren(const PaintInfo&, const LayoutPoint&);
-  void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void paintMask(const PaintInfo&, const LayoutPoint&);
-  void paintClippingMask(const PaintInfo&, const LayoutPoint&);
+  void PaintChildren(const PaintInfo&, const LayoutPoint&);
+  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+  void PaintMask(const PaintInfo&, const LayoutPoint&);
+  void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
 
   typedef Vector<const FillLayer*, 8> FillLayerOcclusionOutputList;
   // Returns true if the result fill layers have non-associative blending or
   // compositing mode.  (i.e. The rendering will be different without creating
   // isolation group by context.saveLayer().) Note that the output list will be
   // in top-bottom order.
-  bool calculateFillLayerOcclusionCulling(
-      FillLayerOcclusionOutputList& reversedPaintList,
+  bool CalculateFillLayerOcclusionCulling(
+      FillLayerOcclusionOutputList& reversed_paint_list,
       const FillLayer&);
 
   // Returns true if the fill layer will certainly occlude anything painted
   // behind it.
-  static bool isFillLayerOpaque(const FillLayer&, const LayoutObject&);
+  static bool IsFillLayerOpaque(const FillLayer&, const LayoutObject&);
 
-  void paintFillLayers(const PaintInfo&,
+  void PaintFillLayers(const PaintInfo&,
                        const Color&,
                        const FillLayer&,
                        const LayoutRect&,
-                       BackgroundBleedAvoidance = BackgroundBleedNone,
+                       BackgroundBleedAvoidance = kBackgroundBleedNone,
                        SkBlendMode = SkBlendMode::kSrcOver,
-                       const LayoutObject* backgroundObject = nullptr);
-  void paintMaskImages(const PaintInfo&, const LayoutRect&);
-  void paintBoxDecorationBackgroundWithRect(const PaintInfo&,
+                       const LayoutObject* background_object = nullptr);
+  void PaintMaskImages(const PaintInfo&, const LayoutRect&);
+  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const LayoutPoint&,
                                             const LayoutRect&);
-  static void paintFillLayer(const LayoutBoxModelObject&,
+  static void PaintFillLayer(const LayoutBoxModelObject&,
                              const PaintInfo&,
                              const Color&,
                              const FillLayer&,
@@ -74,61 +74,62 @@ class BoxPainter {
                              const InlineFlowBox* = nullptr,
                              const LayoutSize& = LayoutSize(),
                              SkBlendMode = SkBlendMode::kSrcOver,
-                             const LayoutObject* backgroundObject = nullptr);
-  static InterpolationQuality chooseInterpolationQuality(const LayoutObject&,
+                             const LayoutObject* background_object = nullptr);
+  static InterpolationQuality ChooseInterpolationQuality(const LayoutObject&,
                                                          Image*,
                                                          const void*,
                                                          const LayoutSize&);
-  static bool paintNinePieceImage(const LayoutBoxModelObject&,
+  static bool PaintNinePieceImage(const LayoutBoxModelObject&,
                                   GraphicsContext&,
                                   const LayoutRect&,
                                   const ComputedStyle&,
                                   const NinePieceImage&,
                                   SkBlendMode = SkBlendMode::kSrcOver);
-  static void paintBorder(const LayoutBoxModelObject&,
+  static void PaintBorder(const LayoutBoxModelObject&,
                           const PaintInfo&,
                           const LayoutRect&,
                           const ComputedStyle&,
-                          BackgroundBleedAvoidance = BackgroundBleedNone,
-                          bool includeLogicalLeftEdge = true,
-                          bool includeLogicalRightEdge = true);
-  static void paintNormalBoxShadow(const PaintInfo&,
+                          BackgroundBleedAvoidance = kBackgroundBleedNone,
+                          bool include_logical_left_edge = true,
+                          bool include_logical_right_edge = true);
+  static void PaintNormalBoxShadow(const PaintInfo&,
                                    const LayoutRect&,
                                    const ComputedStyle&,
-                                   bool includeLogicalLeftEdge = true,
-                                   bool includeLogicalRightEdge = true);
+                                   bool include_logical_left_edge = true,
+                                   bool include_logical_right_edge = true);
   // The input rect should be the border rect. The outer bounds of the shadow
   // will be inset by border widths.
-  static void paintInsetBoxShadow(const PaintInfo&,
+  static void PaintInsetBoxShadow(const PaintInfo&,
                                   const LayoutRect&,
                                   const ComputedStyle&,
-                                  bool includeLogicalLeftEdge = true,
-                                  bool includeLogicalRightEdge = true);
+                                  bool include_logical_left_edge = true,
+                                  bool include_logical_right_edge = true);
   // This form is used by callers requiring special computation of the outer
   // bounds of the shadow. For example, TableCellPainter insets the bounds by
   // half widths of collapsed borders instead of the default whole widths.
-  static void paintInsetBoxShadowInBounds(const PaintInfo&,
-                                          const FloatRoundedRect& bounds,
-                                          const ComputedStyle&,
-                                          bool includeLogicalLeftEdge = true,
-                                          bool includeLogicalRightEdge = true);
-  static bool shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&,
+  static void PaintInsetBoxShadowInBounds(
+      const PaintInfo&,
+      const FloatRoundedRect& bounds,
+      const ComputedStyle&,
+      bool include_logical_left_edge = true,
+      bool include_logical_right_edge = true);
+  static bool ShouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&,
                                                         const Document&);
 
-  LayoutRect boundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjustedPaintOffset);
+  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
+                                      const LayoutPoint& adjusted_paint_offset);
 
-  static bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+  static bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
       const LayoutBoxModelObject*,
       const PaintInfo&);
 
  private:
-  void paintBackground(const PaintInfo&,
+  void PaintBackground(const PaintInfo&,
                        const LayoutRect&,
-                       const Color& backgroundColor,
-                       BackgroundBleedAvoidance = BackgroundBleedNone);
+                       const Color& background_color,
+                       BackgroundBleedAvoidance = kBackgroundBleedNone);
 
-  const LayoutBox& m_layoutBox;
+  const LayoutBox& layout_box_;
 };
 
 }  // namespace blink

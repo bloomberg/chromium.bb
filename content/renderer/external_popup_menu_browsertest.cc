@@ -39,7 +39,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
   void SetUp() override {
     RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
-    blink::WebView::setUseExternalPopupMenus(true);
+    blink::WebView::SetUseExternalPopupMenus(true);
 
     std::string html = "<select id='mySelect' onchange='selectChanged(this)'>"
                        "  <option>zero</option>"
@@ -60,8 +60,8 @@ class ExternalPopupMenuTest : public RenderViewTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->GetWebWidget()->resize(blink::WebSize(500, 500));
-    view()->GetWidget()->GetWebWidget()->setFocus(true);
+    view()->GetWidget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
+    view()->GetWidget()->GetWebWidget()->SetFocus(true);
   }
 
   int GetSelectedIndex() {
@@ -160,7 +160,7 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
   void SetUp() override {
     RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
-    blink::WebView::setUseExternalPopupMenus(true);
+    blink::WebView::SetUseExternalPopupMenus(true);
 
     std::string html = "<select id='mySelect'>"
                        "  <option value='zero'>zero</option>"
@@ -176,8 +176,8 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->GetWebWidget()->resize(blink::WebSize(500, 500));
-    view()->GetWidget()->GetWebWidget()->setFocus(true);
+    view()->GetWidget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
+    view()->GetWidget()->GetWebWidget()->SetFocus(true);
   }
 
 };

@@ -42,7 +42,7 @@ class Length;
 // 44.99998. We need to go ahead and round if we're really close to the next
 // integer value.
 template <typename T>
-inline T roundForImpreciseConversion(double value) {
+inline T RoundForImpreciseConversion(double value) {
   value += (value < 0) ? -0.01 : +0.01;
   return ((value > std::numeric_limits<T>::max()) ||
           (value < std::numeric_limits<T>::min()))
@@ -51,12 +51,12 @@ inline T roundForImpreciseConversion(double value) {
 }
 
 template <>
-inline float roundForImpreciseConversion(double value) {
-  double ceiledValue = ceil(value);
-  double proximityToNextInt = ceiledValue - value;
-  if (proximityToNextInt <= 0.01 && value > 0)
-    return static_cast<float>(ceiledValue);
-  if (proximityToNextInt >= 0.99 && value < 0)
+inline float RoundForImpreciseConversion(double value) {
+  double ceiled_value = ceil(value);
+  double proximity_to_next_int = ceiled_value - value;
+  if (proximity_to_next_int <= 0.01 && value > 0)
+    return static_cast<float>(ceiled_value);
+  if (proximity_to_next_int >= 0.99 && value < 0)
     return static_cast<float>(floor(value));
   return static_cast<float>(value);
 }
@@ -68,47 +68,47 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   // These units are iterated through, so be careful when adding or changing the
   // order.
   enum class UnitType {
-    Unknown,
-    Number,
-    Percentage,
+    kUnknown,
+    kNumber,
+    kPercentage,
     // Length units
-    Ems,
-    Exs,
-    Pixels,
-    Centimeters,
-    Millimeters,
-    Inches,
-    Points,
-    Picas,
-    ViewportWidth,
-    ViewportHeight,
-    ViewportMin,
-    ViewportMax,
-    Rems,
-    Chs,
-    UserUnits,  // The SVG term for unitless lengths
+    kEms,
+    kExs,
+    kPixels,
+    kCentimeters,
+    kMillimeters,
+    kInches,
+    kPoints,
+    kPicas,
+    kViewportWidth,
+    kViewportHeight,
+    kViewportMin,
+    kViewportMax,
+    kRems,
+    kChs,
+    kUserUnits,  // The SVG term for unitless lengths
     // Angle units
-    Degrees,
-    Radians,
-    Gradians,
-    Turns,
+    kDegrees,
+    kRadians,
+    kGradians,
+    kTurns,
     // Time units
-    Milliseconds,
-    Seconds,
-    Hertz,
-    Kilohertz,
+    kMilliseconds,
+    kSeconds,
+    kHertz,
+    kKilohertz,
     // Resolution
-    DotsPerPixel,
-    DotsPerInch,
-    DotsPerCentimeter,
+    kDotsPerPixel,
+    kDotsPerInch,
+    kDotsPerCentimeter,
     // Other units
-    Fraction,
-    Integer,
-    Calc,
-    CalcPercentageWithNumber,
-    CalcPercentageWithLength,
-    CalcLengthWithNumber,
-    CalcPercentageWithLengthAndNumber,
+    kFraction,
+    kInteger,
+    kCalc,
+    kCalcPercentageWithNumber,
+    kCalcPercentageWithLength,
+    kCalcLengthWithNumber,
+    kCalcPercentageWithLengthAndNumber,
 
     // This value is used to handle quirky margins in reflow roots (body, td,
     // and th) like WinIE. The basic idea is that a stylesheet can use the value
@@ -116,167 +116,167 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     // you're in quirks mode, the margin will collapse away inside a table cell.
     // This quirk is specified in the HTML spec but our impl is different.
     // TODO: Remove this. crbug.com/443952
-    QuirkyEms,
+    kQuirkyEms,
   };
 
   enum LengthUnitType {
-    UnitTypePixels = 0,
-    UnitTypePercentage,
-    UnitTypeFontSize,
-    UnitTypeFontXSize,
-    UnitTypeRootFontSize,
-    UnitTypeZeroCharacterWidth,
-    UnitTypeViewportWidth,
-    UnitTypeViewportHeight,
-    UnitTypeViewportMin,
-    UnitTypeViewportMax,
+    kUnitTypePixels = 0,
+    kUnitTypePercentage,
+    kUnitTypeFontSize,
+    kUnitTypeFontXSize,
+    kUnitTypeRootFontSize,
+    kUnitTypeZeroCharacterWidth,
+    kUnitTypeViewportWidth,
+    kUnitTypeViewportHeight,
+    kUnitTypeViewportMin,
+    kUnitTypeViewportMax,
 
     // This value must come after the last length unit type to enable iteration
     // over the length unit types.
-    LengthUnitTypeCount,
+    kLengthUnitTypeCount,
   };
 
   struct CSSLengthArray {
-    CSSLengthArray() : values(LengthUnitTypeCount) {
-      typeFlags.resize(LengthUnitTypeCount);
+    CSSLengthArray() : values(kLengthUnitTypeCount) {
+      type_flags.Resize(kLengthUnitTypeCount);
     }
 
-    Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> values;
-    BitVector typeFlags;
+    Vector<double, CSSPrimitiveValue::kLengthUnitTypeCount> values;
+    BitVector type_flags;
   };
 
-  void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
+  void AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
 
   enum UnitCategory {
-    UNumber,
-    UPercent,
-    ULength,
-    UAngle,
-    UTime,
-    UFrequency,
-    UResolution,
-    UOther
+    kUNumber,
+    kUPercent,
+    kULength,
+    kUAngle,
+    kUTime,
+    kUFrequency,
+    kUResolution,
+    kUOther
   };
-  static UnitCategory unitTypeToUnitCategory(UnitType);
-  static float clampToCSSLengthRange(double);
+  static UnitCategory UnitTypeToUnitCategory(UnitType);
+  static float ClampToCSSLengthRange(double);
 
-  static bool isAngle(UnitType unit) {
-    return unit == UnitType::Degrees || unit == UnitType::Radians ||
-           unit == UnitType::Gradians || unit == UnitType::Turns;
+  static bool IsAngle(UnitType unit) {
+    return unit == UnitType::kDegrees || unit == UnitType::kRadians ||
+           unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
-  bool isAngle() const { return isAngle(type()); }
-  bool isFontRelativeLength() const {
-    return type() == UnitType::QuirkyEms || type() == UnitType::Ems ||
-           type() == UnitType::Exs || type() == UnitType::Rems ||
-           type() == UnitType::Chs;
+  bool IsAngle() const { return IsAngle(GetType()); }
+  bool IsFontRelativeLength() const {
+    return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
+           GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
+           GetType() == UnitType::kChs;
   }
-  bool isQuirkyEms() const { return type() == UnitType::QuirkyEms; }
-  bool isViewportPercentageLength() const {
-    return isViewportPercentageLength(type());
+  bool IsQuirkyEms() const { return GetType() == UnitType::kQuirkyEms; }
+  bool IsViewportPercentageLength() const {
+    return IsViewportPercentageLength(GetType());
   }
-  static bool isViewportPercentageLength(UnitType type) {
-    return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax;
+  static bool IsViewportPercentageLength(UnitType type) {
+    return type >= UnitType::kViewportWidth && type <= UnitType::kViewportMax;
   }
-  static bool isLength(UnitType type) {
-    return (type >= UnitType::Ems && type <= UnitType::UserUnits) ||
-           type == UnitType::QuirkyEms;
+  static bool IsLength(UnitType type) {
+    return (type >= UnitType::kEms && type <= UnitType::kUserUnits) ||
+           type == UnitType::kQuirkyEms;
   }
-  static inline bool isRelativeUnit(UnitType type) {
-    return type == UnitType::Percentage || type == UnitType::Ems ||
-           type == UnitType::Exs || type == UnitType::Rems ||
-           type == UnitType::Chs || isViewportPercentageLength(type);
+  static inline bool IsRelativeUnit(UnitType type) {
+    return type == UnitType::kPercentage || type == UnitType::kEms ||
+           type == UnitType::kExs || type == UnitType::kRems ||
+           type == UnitType::kChs || IsViewportPercentageLength(type);
   }
-  bool isLength() const { return isLength(typeWithCalcResolved()); }
-  bool isNumber() const {
-    return typeWithCalcResolved() == UnitType::Number ||
-           typeWithCalcResolved() == UnitType::Integer;
+  bool IsLength() const { return IsLength(TypeWithCalcResolved()); }
+  bool IsNumber() const {
+    return TypeWithCalcResolved() == UnitType::kNumber ||
+           TypeWithCalcResolved() == UnitType::kInteger;
   }
-  bool isPercentage() const {
-    return typeWithCalcResolved() == UnitType::Percentage;
+  bool IsPercentage() const {
+    return TypeWithCalcResolved() == UnitType::kPercentage;
   }
-  bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
-  static bool isTime(UnitType unit) {
-    return unit == UnitType::Seconds || unit == UnitType::Milliseconds;
+  bool IsPx() const { return TypeWithCalcResolved() == UnitType::kPixels; }
+  static bool IsTime(UnitType unit) {
+    return unit == UnitType::kSeconds || unit == UnitType::kMilliseconds;
   }
-  bool isTime() const { return isTime(type()); }
-  static bool isFrequency(UnitType unit) {
-    return unit == UnitType::Hertz || unit == UnitType::Kilohertz;
+  bool IsTime() const { return IsTime(GetType()); }
+  static bool IsFrequency(UnitType unit) {
+    return unit == UnitType::kHertz || unit == UnitType::kKilohertz;
   }
-  bool isCalculated() const { return type() == UnitType::Calc; }
-  bool isCalculatedPercentageWithNumber() const {
-    return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber;
+  bool IsCalculated() const { return GetType() == UnitType::kCalc; }
+  bool IsCalculatedPercentageWithNumber() const {
+    return TypeWithCalcResolved() == UnitType::kCalcPercentageWithNumber;
   }
-  bool isCalculatedPercentageWithLength() const {
-    return typeWithCalcResolved() == UnitType::CalcPercentageWithLength;
+  bool IsCalculatedPercentageWithLength() const {
+    return TypeWithCalcResolved() == UnitType::kCalcPercentageWithLength;
   }
-  static bool isResolution(UnitType type) {
-    return type >= UnitType::DotsPerPixel &&
-           type <= UnitType::DotsPerCentimeter;
+  static bool IsResolution(UnitType type) {
+    return type >= UnitType::kDotsPerPixel &&
+           type <= UnitType::kDotsPerCentimeter;
   }
-  static bool isFlex(UnitType unit) { return unit == UnitType::Fraction; }
-  bool isFlex() const { return isFlex(type()); }
+  static bool IsFlex(UnitType unit) { return unit == UnitType::kFraction; }
+  bool IsFlex() const { return IsFlex(GetType()); }
 
-  static CSSPrimitiveValue* create(double value, UnitType);
-  static CSSPrimitiveValue* create(const Length& value, float zoom) {
+  static CSSPrimitiveValue* Create(double value, UnitType);
+  static CSSPrimitiveValue* Create(const Length& value, float zoom) {
     return new CSSPrimitiveValue(value, zoom);
   }
 
   // TODO(sashab): Remove this.
   template <typename T>
-  static CSSPrimitiveValue* create(T value) {
+  static CSSPrimitiveValue* Create(T value) {
     return new CSSPrimitiveValue(value);
   }
 
   ~CSSPrimitiveValue();
 
-  UnitType typeWithCalcResolved() const;
+  UnitType TypeWithCalcResolved() const;
 
-  double computeDegrees() const;
-  double computeSeconds() const;
+  double ComputeDegrees() const;
+  double ComputeSeconds() const;
 
   // Computes a length in pixels, resolving relative lengths
   template <typename T>
-  T computeLength(const CSSToLengthConversionData&) const;
+  T ComputeLength(const CSSToLengthConversionData&) const;
 
   // Converts to a Length (Fixed, Percent or Calculated)
-  Length convertToLength(const CSSToLengthConversionData&) const;
+  Length ConvertToLength(const CSSToLengthConversionData&) const;
 
-  double getDoubleValue() const;
-  float getFloatValue() const { return getValue<float>(); }
-  int getIntValue() const { return getValue<int>(); }
+  double GetDoubleValue() const;
+  float GetFloatValue() const { return GetValue<float>(); }
+  int GetIntValue() const { return GetValue<int>(); }
   template <typename T>
-  inline T getValue() const {
-    return clampTo<T>(getDoubleValue());
+  inline T GetValue() const {
+    return clampTo<T>(GetDoubleValue());
   }
 
-  CSSCalcValue* cssCalcValue() const {
-    DCHECK(isCalculated());
-    return m_value.calc;
+  CSSCalcValue* CssCalcValue() const {
+    DCHECK(IsCalculated());
+    return value_.calc;
   }
 
   template <typename T>
-  inline T convertTo() const;  // Defined in CSSPrimitiveValueMappings.h
+  inline T ConvertTo() const;  // Defined in CSSPrimitiveValueMappings.h
 
-  static const char* unitTypeToString(UnitType);
-  static UnitType stringToUnitType(StringView string) {
-    if (string.is8Bit())
-      return stringToUnitType(string.characters8(), string.length());
-    return stringToUnitType(string.characters16(), string.length());
+  static const char* UnitTypeToString(UnitType);
+  static UnitType StringToUnitType(StringView string) {
+    if (string.Is8Bit())
+      return StringToUnitType(string.Characters8(), string.length());
+    return StringToUnitType(string.Characters16(), string.length());
   }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSPrimitiveValue&) const;
+  bool Equals(const CSSPrimitiveValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
-  static UnitType canonicalUnitTypeForCategory(UnitCategory);
-  static double conversionToCanonicalUnitsScaleFactor(UnitType);
+  static UnitType CanonicalUnitTypeForCategory(UnitCategory);
+  static double ConversionToCanonicalUnitsScaleFactor(UnitType);
 
   // Returns true and populates lengthUnitType, if unitType is a length unit.
   // Otherwise, returns false.
-  static bool unitTypeToLengthUnitType(UnitType, LengthUnitType&);
-  static UnitType lengthUnitTypeToUnitType(LengthUnitType);
+  static bool UnitTypeToLengthUnitType(UnitType, LengthUnitType&);
+  static UnitType LengthUnitTypeToUnitType(LengthUnitType);
 
  private:
   CSSPrimitiveValue(const Length&, float zoom);
@@ -286,27 +286,27 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   CSSPrimitiveValue(T);  // Defined in CSSPrimitiveValueMappings.h
 
   template <typename T>
-  CSSPrimitiveValue(T* val) : CSSValue(PrimitiveClass) {
-    init(val);
+  CSSPrimitiveValue(T* val) : CSSValue(kPrimitiveClass) {
+    Init(val);
   }
 
-  static void create(int);       // compile-time guard
-  static void create(unsigned);  // compile-time guard
+  static void Create(int);       // compile-time guard
+  static void Create(unsigned);  // compile-time guard
   template <typename T>
   operator T*();  // compile-time guard
 
   // Code generated by CSSPrimitiveValueUnitTrie.cpp.tmpl
-  static UnitType stringToUnitType(const LChar*, unsigned length);
-  static UnitType stringToUnitType(const UChar*, unsigned length);
+  static UnitType StringToUnitType(const LChar*, unsigned length);
+  static UnitType StringToUnitType(const UChar*, unsigned length);
 
-  void init(UnitType);
-  void init(const Length&);
-  void init(CSSCalcValue*);
+  void Init(UnitType);
+  void Init(const Length&);
+  void Init(CSSCalcValue*);
 
-  double computeLengthDouble(const CSSToLengthConversionData&) const;
+  double ComputeLengthDouble(const CSSToLengthConversionData&) const;
 
-  inline UnitType type() const {
-    return static_cast<UnitType>(m_primitiveUnitType);
+  inline UnitType GetType() const {
+    return static_cast<UnitType>(primitive_unit_type_);
   }
 
   union {
@@ -314,31 +314,31 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     // FIXME: oilpan: Should be a member, but no support for members in unions.
     // Just trace the raw ptr for now.
     CSSCalcValue* calc;
-  } m_value;
+  } value_;
 };
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, IsPrimitiveValue());
 
 template <>
-int CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+int CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 
 template <>
-Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+Length CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 
 template <>
-unsigned CSSPrimitiveValue::computeLength(
+unsigned CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData&) const;
 
 template <>
-short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+short CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 
 template <>
-float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+float CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 
 template <>
-double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+double CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 }  // namespace blink
 
 #endif  // CSSPrimitiveValue_h

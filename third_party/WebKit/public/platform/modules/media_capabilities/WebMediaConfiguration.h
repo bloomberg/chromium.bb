@@ -12,8 +12,8 @@
 namespace blink {
 
 enum class MediaConfigurationType {
-  File,
-  MediaSource,
+  kFile,
+  kMediaSource,
 };
 
 // Represents a MediaConfiguration dictionary to be used outside of Blink. At
@@ -23,8 +23,8 @@ enum class MediaConfigurationType {
 struct WebMediaConfiguration {
   MediaConfigurationType type;
 
-  base::Optional<WebAudioConfiguration> audioConfiguration;
-  base::Optional<WebVideoConfiguration> videoConfiguration;
+  base::Optional<WebAudioConfiguration> audio_configuration;
+  base::Optional<WebVideoConfiguration> video_configuration;
 };
 
 }  // namespace blink

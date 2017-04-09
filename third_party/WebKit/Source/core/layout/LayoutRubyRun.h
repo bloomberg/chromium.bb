@@ -47,48 +47,48 @@ class LayoutRubyRun final : public LayoutBlockFlow {
  public:
   ~LayoutRubyRun() override;
 
-  bool hasRubyText() const;
-  bool hasRubyBase() const;
-  LayoutRubyText* rubyText() const;
-  LayoutRubyBase* rubyBase() const;
+  bool HasRubyText() const;
+  bool HasRubyBase() const;
+  LayoutRubyText* RubyText() const;
+  LayoutRubyBase* RubyBase() const;
   LayoutRubyBase*
-  rubyBaseSafe();  // creates the base if it doesn't already exist
+  RubyBaseSafe();  // creates the base if it doesn't already exist
 
-  LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
+  LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
-  void layout() override;
+  void GetLayout() override;
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
-  void addChild(LayoutObject* child,
-                LayoutObject* beforeChild = nullptr) override;
-  void removeChild(LayoutObject* child) override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  void AddChild(LayoutObject* child,
+                LayoutObject* before_child = nullptr) override;
+  void RemoveChild(LayoutObject* child) override;
 
-  void getOverhang(bool firstLine,
-                   LayoutObject* startLayoutObject,
-                   LayoutObject* endLayoutObject,
-                   int& startOverhang,
-                   int& endOverhang) const;
+  void GetOverhang(bool first_line,
+                   LayoutObject* start_layout_object,
+                   LayoutObject* end_layout_object,
+                   int& start_overhang,
+                   int& end_overhang) const;
 
-  static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
+  static LayoutRubyRun* StaticCreateRubyRun(const LayoutObject* parent_ruby);
 
-  bool canBreakBefore(const LazyLineBreakIterator&) const;
+  bool CanBreakBefore(const LazyLineBreakIterator&) const;
 
-  const char* name() const override { return "LayoutRubyRun"; }
+  const char* GetName() const override { return "LayoutRubyRun"; }
 
  protected:
-  LayoutRubyBase* createRubyBase() const;
+  LayoutRubyBase* CreateRubyBase() const;
 
  private:
   LayoutRubyRun();
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectRubyRun || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectRubyRun || LayoutBlockFlow::IsOfType(type);
   }
-  bool createsAnonymousWrapper() const override { return true; }
-  void removeLeftoverAnonymousBlock(LayoutBlock*) override {}
+  bool CreatesAnonymousWrapper() const override { return true; }
+  void RemoveLeftoverAnonymousBlock(LayoutBlock*) override {}
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, isRubyRun());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, IsRubyRun());
 
 }  // namespace blink
 

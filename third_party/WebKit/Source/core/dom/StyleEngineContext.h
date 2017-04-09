@@ -13,13 +13,13 @@ class CORE_EXPORT StyleEngineContext {
  public:
   StyleEngineContext();
   ~StyleEngineContext() {}
-  bool addedPendingSheetBeforeBody() const {
-    return m_addedPendingSheetBeforeBody;
+  bool AddedPendingSheetBeforeBody() const {
+    return added_pending_sheet_before_body_;
   }
-  void addingPendingSheet(const Document&);
+  void AddingPendingSheet(const Document&);
 
  private:
-  bool m_addedPendingSheetBeforeBody : 1;
+  bool added_pending_sheet_before_body_ : 1;
 };
 
 }  // namespace blink

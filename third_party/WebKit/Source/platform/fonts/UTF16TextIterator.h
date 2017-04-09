@@ -39,37 +39,37 @@ class PLATFORM_EXPORT UTF16TextIterator {
   // 'endOffset'.
   UTF16TextIterator(const UChar*, int length);
 
-  inline bool consume(UChar32& character) {
-    if (m_offset >= m_length)
+  inline bool Consume(UChar32& character) {
+    if (offset_ >= length_)
       return false;
 
-    character = *m_characters;
-    m_currentGlyphLength = 1;
+    character = *characters_;
+    current_glyph_length_ = 1;
     if (!U16_IS_SURROGATE(character))
       return true;
 
-    return consumeSurrogatePair(character);
+    return ConsumeSurrogatePair(character);
   }
 
-  void advance() {
-    m_characters += m_currentGlyphLength;
-    m_offset += m_currentGlyphLength;
+  void Advance() {
+    characters_ += current_glyph_length_;
+    offset_ += current_glyph_length_;
   }
 
-  int offset() const { return m_offset; }
-  const UChar* characters() const { return m_characters; }
-  const UChar* glyphEnd() const { return m_characters + m_currentGlyphLength; }
+  int Offset() const { return offset_; }
+  const UChar* Characters() const { return characters_; }
+  const UChar* GlyphEnd() const { return characters_ + current_glyph_length_; }
 
  private:
-  bool isValidSurrogatePair(UChar32&);
-  bool consumeSurrogatePair(UChar32&);
-  void consumeMultipleUChar();
+  bool IsValidSurrogatePair(UChar32&);
+  bool ConsumeSurrogatePair(UChar32&);
+  void ConsumeMultipleUChar();
 
-  const UChar* m_characters;
-  const UChar* m_charactersEnd;
-  int m_offset;
-  int m_length;
-  unsigned m_currentGlyphLength;
+  const UChar* characters_;
+  const UChar* characters_end_;
+  int offset_;
+  int length_;
+  unsigned current_glyph_length_;
 };
 
 }  // namespace blink

@@ -13,30 +13,30 @@ namespace blink {
 
 class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
-  FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl) : m_gl(gl) {
-    sk_sp<const GrGLInterface> glInterface(GrGLCreateNullInterface());
-    m_grContext.reset(GrContext::Create(
+  FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl) : gl_(gl) {
+    sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+    gr_context_.reset(GrContext::Create(
         kOpenGL_GrBackend,
-        reinterpret_cast<GrBackendContext>(glInterface.get())));
+        reinterpret_cast<GrBackendContext>(gl_interface.get())));
   }
 
-  GrContext* grContext() override { return m_grContext.get(); }
+  GrContext* GetGrContext() override { return gr_context_.get(); }
 
-  gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
+  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
 
-  bool isSoftwareRendering() const override { return false; }
+  bool IsSoftwareRendering() const override { return false; }
 
-  gpu::gles2::GLES2Interface* contextGL() override { return m_gl; }
+  gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
 
-  bool bindToCurrentThread() override { return false; }
-  void setLostContextCallback(const base::Closure&) override {}
-  void setErrorMessageCallback(
+  bool BindToCurrentThread() override { return false; }
+  void SetLostContextCallback(const base::Closure&) override {}
+  void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
-  void signalQuery(uint32_t, const base::Closure&) override {}
+  void SignalQuery(uint32_t, const base::Closure&) override {}
 
  private:
-  gpu::gles2::GLES2Interface* m_gl;
-  sk_sp<GrContext> m_grContext;
+  gpu::gles2::GLES2Interface* gl_;
+  sk_sp<GrContext> gr_context_;
 };
 
 }  // namespace blink

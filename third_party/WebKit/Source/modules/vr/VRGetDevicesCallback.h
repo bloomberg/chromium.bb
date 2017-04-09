@@ -23,11 +23,11 @@ class VRGetDevicesCallback final : public WebVRGetDisplaysCallback {
   VRGetDevicesCallback(ScriptPromiseResolver*);
   ~VRGetDevicesCallback() override;
 
-  void onSuccess(VRDisplayVector) override;
-  void onError() override;
+  void OnSuccess(VRDisplayVector) override;
+  void OnError() override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

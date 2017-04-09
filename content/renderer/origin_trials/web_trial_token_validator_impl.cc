@@ -12,15 +12,15 @@ namespace content {
 WebTrialTokenValidatorImpl::WebTrialTokenValidatorImpl() {}
 WebTrialTokenValidatorImpl::~WebTrialTokenValidatorImpl() {}
 
-blink::WebOriginTrialTokenStatus WebTrialTokenValidatorImpl::validateToken(
+blink::WebOriginTrialTokenStatus WebTrialTokenValidatorImpl::ValidateToken(
     const blink::WebString& token,
     const blink::WebSecurityOrigin& origin,
     blink::WebString* feature_name) {
   std::string feature;
   blink::WebOriginTrialTokenStatus status =
-      TrialTokenValidator::ValidateToken(token.utf8(), origin, &feature);
-  if (status == blink::WebOriginTrialTokenStatus::Success)
-    *feature_name = blink::WebString::fromUTF8(feature);
+      TrialTokenValidator::ValidateToken(token.Utf8(), origin, &feature);
+  if (status == blink::WebOriginTrialTokenStatus::kSuccess)
+    *feature_name = blink::WebString::FromUTF8(feature);
   return status;
 }
 

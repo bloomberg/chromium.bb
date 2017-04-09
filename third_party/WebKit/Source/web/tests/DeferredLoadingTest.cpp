@@ -13,501 +13,541 @@
 
 namespace blink {
 
-static const char* kHistogramName =
+static const char* g_k_histogram_name =
     "Navigation.DeferredDocumentLoading.StatesV4";
 
 class DeferredLoadingTest : public SimTest {
  protected:
-  DeferredLoadingTest() { webView().resize(WebSize(640, 480)); }
-  void compositeFrame() {
-    while (compositor().needsBeginFrame()) {
-      compositor().beginFrame();
-      testing::runPendingTasks();
+  DeferredLoadingTest() { WebView().Resize(WebSize(640, 480)); }
+  void CompositeFrame() {
+    while (Compositor().NeedsBeginFrame()) {
+      Compositor().BeginFrame();
+      testing::RunPendingTasks();
     }
   }
 
-  std::unique_ptr<SimRequest> createMainResource() {
-    std::unique_ptr<SimRequest> mainResource =
-        WTF::wrapUnique(new SimRequest("https://example.com/", "text/html"));
-    loadURL("https://example.com/");
-    return mainResource;
+  std::unique_ptr<SimRequest> CreateMainResource() {
+    std::unique_ptr<SimRequest> main_resource =
+        WTF::WrapUnique(new SimRequest("https://example.com/", "text/html"));
+    LoadURL("https://example.com/");
+    return main_resource;
   }
 };
 
 TEST_F(DeferredLoadingTest, Visible) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete("<iframe sandbox></iframe>");
+  main_resource->Complete("<iframe sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, Right) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; left:105vw;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 1);
 }
 
 TEST_F(DeferredLoadingTest, TwoScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:205vh;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 3);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 3);
 }
 
 TEST_F(DeferredLoadingTest, Above) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:-10000px;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, Left) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; left:-10000px;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, AboveAndLeft) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; left:-10000px; top:-10000px' sandbox>"
       "</iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, ZeroByZero) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='height:0px;width:0px;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
 }
 
 TEST_F(DeferredLoadingTest, DisplayNone) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete("<iframe style='display:none' sandbox></iframe>");
+  main_resource->Complete("<iframe style='display:none' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadNoParent, 1);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadNoParent, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 }
 
 TEST_F(DeferredLoadingTest, DisplayNoneIn2ScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:205vh' "
       "src='iframe.html' sandbox></iframe>");
-  frameResource.complete("<iframe style='display:none' sandbox></iframe>");
+  frame_resource.Complete("<iframe style='display:none' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadNoParent, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 2);
-  histogramTester.expectTotalCount(kHistogramName, 9);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadNoParent, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     2);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 9);
 }
 
 TEST_F(DeferredLoadingTest, LeftNestedInBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:105vh;' src='iframe.html' "
       "sandbox></iframe>");
-  frameResource.complete(
+  frame_resource.Complete(
       "<iframe style='position:absolute; left:-10000px;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 2);
-  histogramTester.expectTotalCount(kHistogramName, 8);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     2);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 8);
 }
 
 TEST_F(DeferredLoadingTest, OneScreenBelowThenScriptedVisible) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->start();
-  mainResource->write(
+  main_resource->Start();
+  main_resource->Write(
       "<iframe id='theFrame' style='position:absolute; top:105vh;' "
       "sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectTotalCount(kHistogramName, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 4);
 
-  mainResource->write("<script>theFrame.style.top='10px'</script>");
-  mainResource->finish();
+  main_resource->Write("<script>theFrame.style.top='10px'</script>");
+  main_resource->Finish();
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, OneScreenBelowThenScrolledVisible) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe id='theFrame' style='position:absolute; top:105vh; height:10px' "
       "sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 4);
 
-  mainFrame().setScrollOffset(WebSize(0, 50));
+  MainFrame().SetScrollOffset(WebSize(0, 50));
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, DisplayNoneThenTwoScreensAway) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->start();
-  mainResource->write(
+  main_resource->Start();
+  main_resource->Write(
       "<iframe id='theFrame' style='display:none' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 
-  mainResource->write(
+  main_resource->Write(
       "<script>theFrame.style.top='200vh';"
       "theFrame.style.position='absolute';"
       "theFrame.style.display='block';</script>");
-  mainResource->finish();
+  main_resource->Finish();
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadNoParent, 1);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadNoParent, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 }
 
 TEST_F(DeferredLoadingTest, DisplayNoneAsync) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->start();
-  mainResource->write("some stuff");
+  main_resource->Start();
+  main_resource->Write("some stuff");
 
-  compositeFrame();
+  CompositeFrame();
 
-  mainResource->write(
+  main_resource->Write(
       "<script>frame = document.createElement('iframe');"
       "frame.setAttribute('sandbox', true);"
       "frame.style.display = 'none';"
       "document.body.appendChild(frame);"
       "</script>");
-  mainResource->finish();
+  main_resource->Finish();
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadNoParent, 1);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadNoParent, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 }
 
 TEST_F(DeferredLoadingTest, TwoScreensAwayThenDisplayNoneThenNew) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->start();
-  mainResource->write(
+  main_resource->Start();
+  main_resource->Write(
       "<iframe id='theFrame' style='position:absolute; top:205vh' sandbox>"
       "</iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 3);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 3);
 
-  mainResource->write("<script>theFrame.style.display='none'</script>");
+  main_resource->Write("<script>theFrame.style.display='none'</script>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 
-  mainResource->write(
+  main_resource->Write(
       "<script>document.body.appendChild(document.createElement"
       "('iframe'));</script>");
-  mainResource->finish();
+  main_resource->Finish();
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadNoParent, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadNoParent, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 }
 
 TEST_F(DeferredLoadingTest, SameOriginNotCounted) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete("<iframe src='iframe.html'></iframe>");
-  frameResource.complete("<iframe></iframe>");
-  compositeFrame();
+  main_resource->Complete("<iframe src='iframe.html'></iframe>");
+  frame_resource.Complete("<iframe></iframe>");
+  CompositeFrame();
 
-  histogramTester.expectTotalCount(kHistogramName, 0);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 0);
 }
 
 TEST_F(DeferredLoadingTest, AboveNestedInThreeScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:300vh' src='iframe.html' "
       "sandbox></iframe>");
-  frameResource.complete(
+  frame_resource.Complete(
       "<iframe style='position:absolute; top:-10000px;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 2);
-  histogramTester.expectTotalCount(kHistogramName, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     2);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 4);
 }
 
 TEST_F(DeferredLoadingTest, VisibleNestedInTwoScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:205vh' src='iframe.html' "
       "sandbox></iframe>");
-  frameResource.complete("<iframe sandbox></iframe>");
+  frame_resource.Complete("<iframe sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 2);
-  histogramTester.expectTotalCount(kHistogramName, 6);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     2);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 6);
 }
 
 TEST_F(DeferredLoadingTest, ThreeScreensBelowNestedInTwoScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:205vh' src='iframe.html' "
       "sandbox></iframe>");
-  frameResource.complete(
+  frame_resource.Complete(
       "<iframe style='position:absolute; top:305vh' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 4);
 }
 
 TEST_F(DeferredLoadingTest, TriplyNested) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
-  SimRequest frameResource2("https://example.com/iframe2.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  SimRequest frame_resource2("https://example.com/iframe2.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:300vh' src='iframe.html' "
       "sandbox></iframe>");
-  frameResource.complete(
+  frame_resource.Complete(
       "<iframe style='position:absolute; top:200vh' src='iframe2.html' "
       "sandbox></iframe>");
-  frameResource2.complete(
+  frame_resource2.Complete(
       "<iframe style='position:absolute; top:100vh' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 3);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 3);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 4);
 }
 
 TEST_F(DeferredLoadingTest, NestedFramesOfVariousSizes) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
-  SimRequest frameResource2("https://example.com/iframe2.html", "text/html");
-  SimRequest frameResource3("https://example.com/iframe3.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  SimRequest frame_resource2("https://example.com/iframe2.html", "text/html");
+  SimRequest frame_resource3("https://example.com/iframe3.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:50vh; height:10px;'"
       "src='iframe.html' sandbox></iframe>");
-  frameResource.complete(
+  frame_resource.Complete(
       "<iframe style='position:absolute; top:200vh; height:100px;'"
       "src='iframe2.html' sandbox></iframe>");
-  frameResource2.complete(
+  frame_resource2.Complete(
       "<iframe style='position:absolute; top:100vh; height:50px;'"
       "src='iframe3.html' sandbox></iframe>");
-  frameResource3.complete(
+  frame_resource3.Complete(
       "<iframe style='position:absolute; top:100vh' sandbox></iframe>");
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 4);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 2);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 3);
-  histogramTester.expectTotalCount(kHistogramName, 11);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 4);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     2);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     3);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 11);
 }
 
 TEST_F(DeferredLoadingTest, FourScreensBelow) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:405vh;' sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 1);
 }
 
 TEST_F(DeferredLoadingTest, TallIFrameStartsAbove) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:-150vh; height:200vh;' sandbox>"
       "</iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 TEST_F(DeferredLoadingTest, OneDownAndOneRight) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; left:100vw; top:100vh' sandbox>"
       "</iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 1);
 }
 
 TEST_F(DeferredLoadingTest, VisibleCrossOriginNestedInBelowFoldSameOrigin) {
-  HistogramTester histogramTester;
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  HistogramTester histogram_tester;
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
-  mainResource->complete(
+  main_resource->Complete(
       "<iframe style='position:absolute; top:105vh' src='iframe.html'>"
       "</iframe>");
-  frameResource.complete("<iframe sandbox></iframe>");
+  frame_resource.Complete("<iframe sandbox></iframe>");
 
-  compositeFrame();
+  CompositeFrame();
 
-  histogramTester.expectBucketCount(kHistogramName, Created, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoadVisible, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad1ScreenAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad2ScreensAway, 1);
-  histogramTester.expectBucketCount(kHistogramName, WouldLoad3ScreensAway, 1);
-  histogramTester.expectTotalCount(kHistogramName, 5);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kCreated, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoadVisible, 1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad1ScreenAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad2ScreensAway,
+                                     1);
+  histogram_tester.ExpectBucketCount(g_k_histogram_name, kWouldLoad3ScreensAway,
+                                     1);
+  histogram_tester.ExpectTotalCount(g_k_histogram_name, 5);
 }
 
 }  // namespace blink

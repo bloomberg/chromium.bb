@@ -35,35 +35,35 @@ class CORE_EXPORT SVGPathStringSource {
  public:
   explicit SVGPathStringSource(const String&);
 
-  bool hasMoreData() const {
-    if (m_is8BitSource)
-      return m_current.m_character8 < m_end.m_character8;
-    return m_current.m_character16 < m_end.m_character16;
+  bool HasMoreData() const {
+    if (is8_bit_source_)
+      return current_.character8_ < end_.character8_;
+    return current_.character16_ < end_.character16_;
   }
-  PathSegmentData parseSegment();
+  PathSegmentData ParseSegment();
 
-  SVGParsingError parseError() const { return m_error; }
+  SVGParsingError ParseError() const { return error_; }
 
  private:
-  void eatWhitespace();
-  float parseNumberWithError();
-  bool parseArcFlagWithError();
-  void setErrorMark(SVGParseStatus);
+  void EatWhitespace();
+  float ParseNumberWithError();
+  bool ParseArcFlagWithError();
+  void SetErrorMark(SVGParseStatus);
 
-  bool m_is8BitSource;
+  bool is8_bit_source_;
 
   union {
-    const LChar* m_character8;
-    const UChar* m_character16;
-  } m_current;
+    const LChar* character8_;
+    const UChar* character16_;
+  } current_;
   union {
-    const LChar* m_character8;
-    const UChar* m_character16;
-  } m_end;
+    const LChar* character8_;
+    const UChar* character16_;
+  } end_;
 
-  SVGPathSegType m_previousCommand;
-  SVGParsingError m_error;
-  String m_string;
+  SVGPathSegType previous_command_;
+  SVGParsingError error_;
+  String string_;
 };
 
 }  // namespace blink

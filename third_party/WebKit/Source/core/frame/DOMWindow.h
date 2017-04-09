@@ -30,7 +30,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
  public:
   ~DOMWindow() override;
 
-  Frame* frame() const {
+  Frame* GetFrame() const {
     // A Frame is typically reused for navigations. If |m_frame| is not null,
     // two conditions must always be true:
     // - |m_frame->domWindow()| must point back to this DOMWindow. If it does
@@ -41,28 +41,28 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
     //   detached but |m_frame| was not set to null. This bug can lead to
     //   issues where executing script incorrectly schedules work on a detached
     //   frame.
-    SECURITY_DCHECK(!m_frame ||
-                    (m_frame->domWindow() == this && m_frame->page()));
-    return m_frame;
+    SECURITY_DCHECK(!frame_ ||
+                    (frame_->DomWindow() == this && frame_->GetPage()));
+    return frame_;
   }
 
   // GarbageCollectedFinalized overrides:
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool isLocalDOMWindow() const = 0;
-  virtual bool isRemoteDOMWindow() const = 0;
+  virtual bool IsLocalDOMWindow() const = 0;
+  virtual bool IsRemoteDOMWindow() const = 0;
 
   // ScriptWrappable overrides:
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) final;
-  v8::Local<v8::Object> associateWithWrapper(
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) final;
+  v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) final;
 
   // EventTarget overrides:
-  const AtomicString& interfaceName() const override;
-  const DOMWindow* toDOMWindow() const override;
+  const AtomicString& InterfaceName() const override;
+  const DOMWindow* ToDOMWindow() const override;
 
   // Cross-origin DOM Level 0
   Location* location() const;
@@ -85,52 +85,51 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   // FIXME: This handles both window[index] and window.frames[index]. However,
   // the spec exposes window.frames[index] across origins but not
   // window[index]...
-  DOMWindow* anonymousIndexedGetter(uint32_t) const;
+  DOMWindow* AnonymousIndexedGetter(uint32_t) const;
 
   void postMessage(PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
-                   const String& targetOrigin,
+                   const String& target_origin,
                    LocalDOMWindow* source,
                    ExceptionState&);
 
-  String sanitizedCrossDomainAccessErrorMessage(
-      const LocalDOMWindow* callingWindow) const;
-  String crossDomainAccessErrorMessage(
-      const LocalDOMWindow* callingWindow) const;
-  bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const KURL&);
+  String SanitizedCrossDomainAccessErrorMessage(
+      const LocalDOMWindow* calling_window) const;
+  String CrossDomainAccessErrorMessage(
+      const LocalDOMWindow* calling_window) const;
+  bool IsInsecureScriptAccess(LocalDOMWindow& calling_window, const KURL&);
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its
   // frame), we would like to zero out m_frame to avoid being confused
   // by the document that is currently active in m_frame.
   // See https://bugs.webkit.org/show_bug.cgi?id=62054
-  bool isCurrentlyDisplayedInFrame() const;
+  bool IsCurrentlyDisplayedInFrame() const;
 
   bool isSecureContext() const;
 
-  InputDeviceCapabilitiesConstants* getInputDeviceCapabilities();
+  InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 
  protected:
   explicit DOMWindow(Frame&);
 
-  virtual void schedulePostMessage(MessageEvent*,
+  virtual void SchedulePostMessage(MessageEvent*,
                                    PassRefPtr<SecurityOrigin> target,
                                    Document* source) = 0;
 
-  void disconnectFromFrame() { m_frame = nullptr; }
+  void DisconnectFromFrame() { frame_ = nullptr; }
 
  private:
-  Member<Frame> m_frame;
-  Member<InputDeviceCapabilitiesConstants> m_inputCapabilities;
-  mutable Member<Location> m_location;
+  Member<Frame> frame_;
+  Member<InputDeviceCapabilitiesConstants> input_capabilities_;
+  mutable Member<Location> location_;
 
   // Set to true when close() has been called. Needed for
   // |window.closed| determinism; having it return 'true'
   // only after the layout widget's deferred window close
   // operation has been performed, exposes (confusing)
   // implementation details to scripts.
-  bool m_windowIsClosing;
-
+  bool window_is_closing_;
 };
 
 }  // namespace blink

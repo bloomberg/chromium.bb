@@ -38,9 +38,9 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   explicit V8ScriptValueSerializer(RefPtr<ScriptState>,
                                    const Options& = Options());
 
-  void setInlineWasm(bool inlineWasm) { m_inlineWasm = inlineWasm; }
+  void SetInlineWasm(bool inline_wasm) { inline_wasm_ = inline_wasm; }
 
-  RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>,
+  RefPtr<SerializedScriptValue> Serialize(v8::Local<v8::Value>,
                                           ExceptionState&);
 
   static const uint32_t kLatestVersion;
@@ -49,19 +49,19 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   // Returns true if the DOM object was successfully written.
   // If false is returned and no more specific exception is thrown, a generic
   // DataCloneError message will be used.
-  virtual bool writeDOMObject(ScriptWrappable*, ExceptionState&);
+  virtual bool WriteDOMObject(ScriptWrappable*, ExceptionState&);
 
-  void writeTag(SerializationTag tag) {
-    uint8_t tagByte = tag;
-    m_serializer.WriteRawBytes(&tagByte, 1);
+  void WriteTag(SerializationTag tag) {
+    uint8_t tag_byte = tag;
+    serializer_.WriteRawBytes(&tag_byte, 1);
   }
-  void writeUint32(uint32_t value) { m_serializer.WriteUint32(value); }
-  void writeUint64(uint64_t value) { m_serializer.WriteUint64(value); }
-  void writeDouble(double value) { m_serializer.WriteDouble(value); }
-  void writeRawBytes(const void* data, size_t size) {
-    m_serializer.WriteRawBytes(data, size);
+  void WriteUint32(uint32_t value) { serializer_.WriteUint32(value); }
+  void WriteUint64(uint64_t value) { serializer_.WriteUint64(value); }
+  void WriteDouble(double value) { serializer_.WriteDouble(value); }
+  void WriteRawBytes(const void* data, size_t size) {
+    serializer_.WriteRawBytes(data, size);
   }
-  void writeUTF8String(const String&);
+  void WriteUTF8String(const String&);
 
  private:
   // Transfer is split into two phases: scanning the transferables so that we
@@ -69,11 +69,11 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   // neuter objects in the source context).
   // This separation is required by the spec (it prevents neutering from
   // happening if there's a failure earlier in serialization).
-  void prepareTransfer(ExceptionState&);
-  void finalizeTransfer(ExceptionState&);
+  void PrepareTransfer(ExceptionState&);
+  void FinalizeTransfer(ExceptionState&);
 
   // Shared between File and FileList logic; does not write a leading tag.
-  bool writeFile(File*, ExceptionState&);
+  bool WriteFile(File*, ExceptionState&);
 
   // v8::ValueSerializer::Delegate
   void ThrowDataCloneError(v8::Local<v8::String> message) override;
@@ -86,21 +86,21 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   v8::Maybe<uint32_t> GetWasmModuleTransferId(
       v8::Isolate*,
       v8::Local<v8::WasmCompiledModule>) override;
-  void* ReallocateBufferMemory(void* oldBuffer,
+  void* ReallocateBufferMemory(void* old_buffer,
                                size_t,
-                               size_t* actualSize) override;
+                               size_t* actual_size) override;
   void FreeBufferMemory(void* buffer) override;
 
-  RefPtr<ScriptState> m_scriptState;
-  RefPtr<SerializedScriptValue> m_serializedScriptValue;
-  v8::ValueSerializer m_serializer;
-  const Transferables* m_transferables = nullptr;
-  const ExceptionState* m_exceptionState = nullptr;
-  WebBlobInfoArray* m_blobInfoArray = nullptr;
-  ArrayBufferArray m_sharedArrayBuffers;
-  bool m_inlineWasm = false;
+  RefPtr<ScriptState> script_state_;
+  RefPtr<SerializedScriptValue> serialized_script_value_;
+  v8::ValueSerializer serializer_;
+  const Transferables* transferables_ = nullptr;
+  const ExceptionState* exception_state_ = nullptr;
+  WebBlobInfoArray* blob_info_array_ = nullptr;
+  ArrayBufferArray shared_array_buffers_;
+  bool inline_wasm_ = false;
 #if DCHECK_IS_ON()
-  bool m_serializeInvoked = false;
+  bool serialize_invoked_ = false;
 #endif
 };
 

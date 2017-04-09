@@ -123,7 +123,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   }
 
   WebSerializedScriptValue serialized_val =
-      WebSerializedScriptValue::serialize(isolate, v8_val);
+      WebSerializedScriptValue::Serialize(isolate, v8_val);
 
   if (js_message_queue_state_ != SEND_DIRECTLY) {
     // We can't just PostTask here; the messages would arrive out of
@@ -364,7 +364,7 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
   //                      policy (see crbug.com/81537)
   WebDOMMessageEvent msg_event(message_data);
-  container->enqueueMessageEvent(msg_event);
+  container->EnqueueMessageEvent(msg_event);
 }
 
 PluginObject* MessageChannel::GetPluginObject(v8::Isolate* isolate) {

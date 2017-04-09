@@ -95,11 +95,11 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   if (!main_frame)
     return;
 
-  WebDocument document = main_frame->document();
+  WebDocument document = main_frame->GetDocument();
   WebLanguageDetectionDetails web_detection_details =
-      WebLanguageDetectionDetails::collectLanguageDetectionDetails(document);
-  std::string content_language = web_detection_details.contentLanguage.utf8();
-  std::string html_lang = web_detection_details.htmlLanguage.utf8();
+      WebLanguageDetectionDetails::CollectLanguageDetectionDetails(document);
+  std::string content_language = web_detection_details.content_language.Utf8();
+  std::string html_lang = web_detection_details.html_language.Utf8();
   std::string cld_language;
   bool is_cld_reliable;
   std::string language = DeterminePageLanguage(
@@ -116,7 +116,7 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   details.content_language = content_language;
   details.cld_language = cld_language;
   details.is_cld_reliable = is_cld_reliable;
-  details.has_notranslate = web_detection_details.hasNoTranslateMeta;
+  details.has_notranslate = web_detection_details.has_no_translate_meta;
   details.html_root_language = html_lang;
   details.adopted_language = language;
 
@@ -188,8 +188,8 @@ void TranslateHelper::ExecuteScript(const std::string& script) {
   if (!main_frame)
     return;
 
-  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
-  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1);
+  WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
+  main_frame->ExecuteScriptInIsolatedWorld(world_id_, &source, 1);
 }
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
@@ -200,8 +200,8 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
-  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
+  WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
+  main_frame->ExecuteScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsBoolean()) {
     NOTREACHED();
     return fallback;
@@ -218,8 +218,8 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
-  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
+  WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
+  main_frame->ExecuteScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsString()) {
     NOTREACHED();
     return std::string();
@@ -240,8 +240,8 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
-  WebScriptSource source = WebScriptSource(WebString::fromASCII(script));
-  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
+  WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
+  main_frame->ExecuteScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
     NOTREACHED();
     return 0.0;
@@ -283,17 +283,17 @@ void TranslateHelper::Translate(const std::string& translate_script,
 
   ReportUserActionDuration(language_determined_time_, base::TimeTicks::Now());
 
-  GURL url(main_frame->document().url());
+  GURL url(main_frame->GetDocument().Url());
   ReportPageScheme(url.scheme());
 
   // Set up v8 isolated world with proper content-security-policy and
   // security-origin.
-  main_frame->setIsolatedWorldContentSecurityPolicy(
-      world_id_, WebString::fromUTF8(kContentSecurityPolicy));
+  main_frame->SetIsolatedWorldContentSecurityPolicy(
+      world_id_, WebString::FromUTF8(kContentSecurityPolicy));
 
   GURL security_origin = GetTranslateSecurityOrigin();
-  main_frame->setIsolatedWorldSecurityOrigin(
-      world_id_, WebSecurityOrigin::create(security_origin));
+  main_frame->SetIsolatedWorldSecurityOrigin(
+      world_id_, WebSecurityOrigin::Create(security_origin));
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global

@@ -59,90 +59,90 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
  public:
-  static MessagePort* create(ExecutionContext&);
+  static MessagePort* Create(ExecutionContext&);
   ~MessagePort() override;
 
   void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool canTransferArrayBuffersAndImageBitmaps() { return false; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
   void start();
   void close();
 
-  void entangle(std::unique_ptr<WebMessagePortChannel>);
-  std::unique_ptr<WebMessagePortChannel> disentangle();
+  void Entangle(std::unique_ptr<WebMessagePortChannel>);
+  std::unique_ptr<WebMessagePortChannel> Disentangle();
 
-  static WebMessagePortChannelArray toWebMessagePortChannelArray(
+  static WebMessagePortChannelArray ToWebMessagePortChannelArray(
       MessagePortChannelArray);
 
   // Returns an empty array if the passed array is empty.
-  static MessagePortArray* toMessagePortArray(ExecutionContext*,
+  static MessagePortArray* ToMessagePortArray(ExecutionContext*,
                                               WebMessagePortChannelArray);
 
   // Returns an empty array if there is an exception, or if the passed array is
   // nullptr/empty.
-  static MessagePortChannelArray disentanglePorts(ExecutionContext*,
+  static MessagePortChannelArray DisentanglePorts(ExecutionContext*,
                                                   const MessagePortArray&,
                                                   ExceptionState&);
 
   // Returns an empty array if the passed array is empty.
-  static MessagePortArray* entanglePorts(ExecutionContext&,
+  static MessagePortArray* EntanglePorts(ExecutionContext&,
                                          MessagePortChannelArray);
 
-  bool started() const { return m_started; }
+  bool Started() const { return started_; }
 
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
-  MessagePort* toMessagePort() override { return this; }
+  MessagePort* ToMessagePort() override { return this; }
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver implementation.
-  void contextDestroyed(ExecutionContext*) override { close(); }
+  void ContextDestroyed(ExecutionContext*) override { close(); }
 
   void setOnmessage(EventListener* listener) {
-    setAttributeEventListener(EventTypeNames::message, listener);
+    SetAttributeEventListener(EventTypeNames::message, listener);
     start();
   }
   EventListener* onmessage() {
-    return getAttributeEventListener(EventTypeNames::message);
+    return GetAttributeEventListener(EventTypeNames::message);
   }
 
   // A port starts out its life entangled, and remains entangled until it is
   // closed or is cloned.
-  bool isEntangled() const { return !m_closed && !isNeutered(); }
+  bool IsEntangled() const { return !closed_ && !IsNeutered(); }
 
   // A port gets neutered when it is transferred to a new owner via
   // postMessage().
-  bool isNeutered() const { return !m_entangledChannel; }
+  bool IsNeutered() const { return !entangled_channel_; }
 
   // For testing only: allows inspection of the entangled channel.
-  WebMessagePortChannel* entangledChannelForTesting() const {
-    return m_entangledChannel.get();
+  WebMessagePortChannel* EntangledChannelForTesting() const {
+    return entangled_channel_.get();
   }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit MessagePort(ExecutionContext&);
-  bool tryGetMessage(RefPtr<SerializedScriptValue>& message,
+  bool TryGetMessage(RefPtr<SerializedScriptValue>& message,
                      MessagePortChannelArray& channels);
 
  private:
   // WebMessagePortChannelClient implementation.
-  void messageAvailable() override;
-  void dispatchMessages();
+  void MessageAvailable() override;
+  void DispatchMessages();
 
-  std::unique_ptr<WebMessagePortChannel> m_entangledChannel;
+  std::unique_ptr<WebMessagePortChannel> entangled_channel_;
 
-  int m_pendingDispatchTask;
-  bool m_started;
-  bool m_closed;
+  int pending_dispatch_task_;
+  bool started_;
+  bool closed_;
 };
 
 }  // namespace blink

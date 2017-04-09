@@ -51,31 +51,31 @@ namespace blink {
 class MediaKeys::PendingAction final
     : public GarbageCollected<MediaKeys::PendingAction> {
  public:
-  const Persistent<ContentDecryptionModuleResult> result() const {
-    return m_result;
+  const Persistent<ContentDecryptionModuleResult> Result() const {
+    return result_;
   }
 
-  DOMArrayBuffer* data() const { return m_data; }
+  DOMArrayBuffer* Data() const { return data_; }
 
   static PendingAction* CreatePendingSetServerCertificate(
       ContentDecryptionModuleResult* result,
-      DOMArrayBuffer* serverCertificate) {
+      DOMArrayBuffer* server_certificate) {
     DCHECK(result);
-    DCHECK(serverCertificate);
-    return new PendingAction(result, serverCertificate);
+    DCHECK(server_certificate);
+    return new PendingAction(result, server_certificate);
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_result);
-    visitor->trace(m_data);
+    visitor->Trace(result_);
+    visitor->Trace(data_);
   }
 
  private:
   PendingAction(ContentDecryptionModuleResult* result, DOMArrayBuffer* data)
-      : m_result(result), m_data(data) {}
+      : result_(result), data_(data) {}
 
-  const Member<ContentDecryptionModuleResult> m_result;
-  const Member<DOMArrayBuffer> m_data;
+  const Member<ContentDecryptionModuleResult> result_;
+  const Member<DOMArrayBuffer> data_;
 };
 
 // This class wraps the promise resolver used when setting the certificate
@@ -86,80 +86,81 @@ class MediaKeys::PendingAction final
 class SetCertificateResultPromise
     : public ContentDecryptionModuleResultPromise {
  public:
-  SetCertificateResultPromise(ScriptState* scriptState, MediaKeys* mediaKeys)
-      : ContentDecryptionModuleResultPromise(scriptState),
-        m_mediaKeys(mediaKeys) {}
+  SetCertificateResultPromise(ScriptState* script_state, MediaKeys* media_keys)
+      : ContentDecryptionModuleResultPromise(script_state),
+        media_keys_(media_keys) {}
 
   ~SetCertificateResultPromise() override {}
 
   // ContentDecryptionModuleResult implementation.
-  void complete() override {
-    if (!isValidToFulfillPromise())
+  void Complete() override {
+    if (!IsValidToFulfillPromise())
       return;
 
-    resolve(true);
+    Resolve(true);
   }
 
-  void completeWithError(WebContentDecryptionModuleException exceptionCode,
-                         unsigned long systemCode,
-                         const WebString& errorMessage) override {
-    if (!isValidToFulfillPromise())
+  void CompleteWithError(WebContentDecryptionModuleException exception_code,
+                         unsigned long system_code,
+                         const WebString& error_message) override {
+    if (!IsValidToFulfillPromise())
       return;
 
     // The EME spec specifies that "If the Key System implementation does
     // not support server certificates, return a promise resolved with
     // false." So convert any NOTSUPPORTEDERROR into resolving with false.
-    if (exceptionCode == WebContentDecryptionModuleExceptionNotSupportedError) {
-      resolve(false);
+    if (exception_code ==
+        kWebContentDecryptionModuleExceptionNotSupportedError) {
+      Resolve(false);
       return;
     }
 
-    ContentDecryptionModuleResultPromise::completeWithError(
-        exceptionCode, systemCode, errorMessage);
+    ContentDecryptionModuleResultPromise::CompleteWithError(
+        exception_code, system_code, error_message);
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_mediaKeys);
-    ContentDecryptionModuleResultPromise::trace(visitor);
+    visitor->Trace(media_keys_);
+    ContentDecryptionModuleResultPromise::Trace(visitor);
   }
 
  private:
-  Member<MediaKeys> m_mediaKeys;
+  Member<MediaKeys> media_keys_;
 };
 
-MediaKeys* MediaKeys::create(
+MediaKeys* MediaKeys::Create(
     ExecutionContext* context,
-    const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
+    const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
     std::unique_ptr<WebContentDecryptionModule> cdm) {
-  return new MediaKeys(context, supportedSessionTypes, std::move(cdm));
+  return new MediaKeys(context, supported_session_types, std::move(cdm));
 }
 
 MediaKeys::MediaKeys(
     ExecutionContext* context,
-    const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
+    const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
     std::unique_ptr<WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context),
-      m_supportedSessionTypes(supportedSessionTypes),
-      m_cdm(std::move(cdm)),
-      m_mediaElement(nullptr),
-      m_reservedForMediaElement(false),
-      m_timer(TaskRunnerHelper::get(TaskType::MiscPlatformAPI, context),
-              this,
-              &MediaKeys::timerFired) {
+      supported_session_types_(supported_session_types),
+      cdm_(std::move(cdm)),
+      media_element_(nullptr),
+      reserved_for_media_element_(false),
+      timer_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, context),
+             this,
+             &MediaKeys::TimerFired) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
-  InstanceCounters::incrementCounter(InstanceCounters::MediaKeysCounter);
+  InstanceCounters::IncrementCounter(InstanceCounters::kMediaKeysCounter);
 }
 
 MediaKeys::~MediaKeys() {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
-  InstanceCounters::decrementCounter(InstanceCounters::MediaKeysCounter);
+  InstanceCounters::DecrementCounter(InstanceCounters::kMediaKeysCounter);
 }
 
-MediaKeySession* MediaKeys::createSession(ScriptState* scriptState,
-                                          const String& sessionTypeString,
-                                          ExceptionState& exceptionState) {
-  DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ") "
-                              << sessionTypeString;
+MediaKeySession* MediaKeys::createSession(ScriptState* script_state,
+                                          const String& session_type_string,
+                                          ExceptionState& exception_state) {
+  DVLOG(MEDIA_KEYS_LOG_LEVEL)
+      << __func__ << "(" << this << ") " << session_type_string;
 
   // From http://w3c.github.io/encrypted-media/#createSession
 
@@ -172,11 +173,11 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState,
   // 2. If the Key System implementation represented by this object's cdm
   //    implementation value does not support sessionType, throw a new
   //    DOMException whose name is NotSupportedError.
-  WebEncryptedMediaSessionType sessionType =
-      EncryptedMediaUtils::convertToSessionType(sessionTypeString);
-  if (!sessionTypeSupported(sessionType)) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Unsupported session type.");
+  WebEncryptedMediaSessionType session_type =
+      EncryptedMediaUtils::ConvertToSessionType(session_type_string);
+  if (!SessionTypeSupported(session_type)) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Unsupported session type.");
     return nullptr;
   }
 
@@ -184,12 +185,12 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState,
   //    follows:
   //    (Initialization is performed in the constructor.)
   // 4. Return session.
-  return MediaKeySession::create(scriptState, this, sessionType);
+  return MediaKeySession::Create(script_state, this, session_type);
 }
 
 ScriptPromise MediaKeys::setServerCertificate(
-    ScriptState* scriptState,
-    const DOMArrayPiece& serverCertificate) {
+    ScriptState* script_state,
+    const DOMArrayPiece& server_certificate) {
   // From https://w3c.github.io/encrypted-media/#setServerCertificate
   // The setServerCertificate(serverCertificate) method provides a server
   // certificate to be used to encrypt messages to the license server.
@@ -202,85 +203,86 @@ ScriptPromise MediaKeys::setServerCertificate(
   //
   // 2. If serverCertificate is an empty array, return a promise rejected
   //    with a new a newly created TypeError.
-  if (!serverCertificate.byteLength()) {
-    return ScriptPromise::reject(
-        scriptState, V8ThrowException::createTypeError(
-                         scriptState->isolate(),
-                         "The serverCertificate parameter is empty."));
+  if (!server_certificate.ByteLength()) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The serverCertificate parameter is empty."));
   }
 
   // 3. Let certificate be a copy of the contents of the serverCertificate
   //    parameter.
-  DOMArrayBuffer* serverCertificateBuffer = DOMArrayBuffer::create(
-      serverCertificate.data(), serverCertificate.byteLength());
+  DOMArrayBuffer* server_certificate_buffer = DOMArrayBuffer::Create(
+      server_certificate.Data(), server_certificate.ByteLength());
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =
-      new SetCertificateResultPromise(scriptState, this);
-  ScriptPromise promise = result->promise();
+      new SetCertificateResultPromise(script_state, this);
+  ScriptPromise promise = result->Promise();
 
   // 5. Run the following steps asynchronously (documented in timerFired()).
-  m_pendingActions.push_back(PendingAction::CreatePendingSetServerCertificate(
-      result, serverCertificateBuffer));
-  if (!m_timer.isActive())
-    m_timer.startOneShot(0, BLINK_FROM_HERE);
+  pending_actions_.push_back(PendingAction::CreatePendingSetServerCertificate(
+      result, server_certificate_buffer));
+  if (!timer_.IsActive())
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
 
   // 6. Return promise.
   return promise;
 }
 
-bool MediaKeys::reserveForMediaElement(HTMLMediaElement* mediaElement) {
+bool MediaKeys::ReserveForMediaElement(HTMLMediaElement* media_element) {
   // If some other HtmlMediaElement already has a reference to us, fail.
-  if (m_mediaElement)
+  if (media_element_)
     return false;
 
-  m_mediaElement = mediaElement;
-  m_reservedForMediaElement = true;
+  media_element_ = media_element;
+  reserved_for_media_element_ = true;
   return true;
 }
 
-void MediaKeys::acceptReservation() {
-  m_reservedForMediaElement = false;
+void MediaKeys::AcceptReservation() {
+  reserved_for_media_element_ = false;
 }
 
-void MediaKeys::cancelReservation() {
-  m_reservedForMediaElement = false;
-  m_mediaElement.clear();
+void MediaKeys::CancelReservation() {
+  reserved_for_media_element_ = false;
+  media_element_.Clear();
 }
 
-void MediaKeys::clearMediaElement() {
-  DCHECK(m_mediaElement);
-  m_mediaElement.clear();
+void MediaKeys::ClearMediaElement() {
+  DCHECK(media_element_);
+  media_element_.Clear();
 }
 
-bool MediaKeys::sessionTypeSupported(WebEncryptedMediaSessionType sessionType) {
-  for (size_t i = 0; i < m_supportedSessionTypes.size(); i++) {
-    if (m_supportedSessionTypes[i] == sessionType)
+bool MediaKeys::SessionTypeSupported(
+    WebEncryptedMediaSessionType session_type) {
+  for (size_t i = 0; i < supported_session_types_.size(); i++) {
+    if (supported_session_types_[i] == session_type)
       return true;
   }
 
   return false;
 }
 
-void MediaKeys::timerFired(TimerBase*) {
-  DCHECK(m_pendingActions.size());
+void MediaKeys::TimerFired(TimerBase*) {
+  DCHECK(pending_actions_.size());
 
   // Swap the queue to a local copy to avoid problems if resolving promises
   // run synchronously.
-  HeapDeque<Member<PendingAction>> pendingActions;
-  pendingActions.swap(m_pendingActions);
+  HeapDeque<Member<PendingAction>> pending_actions;
+  pending_actions.Swap(pending_actions_);
 
-  while (!pendingActions.isEmpty()) {
-    PendingAction* action = pendingActions.takeFirst();
+  while (!pending_actions.IsEmpty()) {
+    PendingAction* action = pending_actions.TakeFirst();
     DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ") Certificate";
 
     // 5.1 Let cdm be the cdm during the initialization of this object.
-    WebContentDecryptionModule* cdm = contentDecryptionModule();
+    WebContentDecryptionModule* cdm = ContentDecryptionModule();
 
     // 5.2 Use the cdm to process certificate.
-    cdm->setServerCertificate(
-        static_cast<unsigned char*>(action->data()->data()),
-        action->data()->byteLength(), action->result()->result());
+    cdm->SetServerCertificate(
+        static_cast<unsigned char*>(action->Data()->Data()),
+        action->Data()->ByteLength(), action->Result()->Result());
     // 5.3 If any of the preceding steps failed, reject promise with a
     //     new DOMException whose name is the appropriate error name.
     // 5.4 Resolve promise.
@@ -288,33 +290,33 @@ void MediaKeys::timerFired(TimerBase*) {
   }
 }
 
-WebContentDecryptionModule* MediaKeys::contentDecryptionModule() {
-  return m_cdm.get();
+WebContentDecryptionModule* MediaKeys::ContentDecryptionModule() {
+  return cdm_.get();
 }
 
 DEFINE_TRACE(MediaKeys) {
-  visitor->trace(m_pendingActions);
-  visitor->trace(m_mediaElement);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(pending_actions_);
+  visitor->Trace(media_element_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-void MediaKeys::contextDestroyed(ExecutionContext*) {
-  m_timer.stop();
-  m_pendingActions.clear();
+void MediaKeys::ContextDestroyed(ExecutionContext*) {
+  timer_.Stop();
+  pending_actions_.Clear();
 
   // We don't need the CDM anymore. Only destroyed after all related
   // ContextLifecycleObservers have been stopped.
-  m_cdm.reset();
+  cdm_.reset();
 }
 
-bool MediaKeys::hasPendingActivity() const {
+bool MediaKeys::HasPendingActivity() const {
   // Remain around if there are pending events.
   DVLOG(MEDIA_KEYS_LOG_LEVEL)
       << __func__ << "(" << this << ")"
-      << (!m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "")
-      << (m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
+      << (!pending_actions_.IsEmpty() ? " !m_pendingActions.isEmpty()" : "")
+      << (reserved_for_media_element_ ? " m_reservedForMediaElement" : "");
 
-  return !m_pendingActions.isEmpty() || m_reservedForMediaElement;
+  return !pending_actions_.IsEmpty() || reserved_for_media_element_;
 }
 
 }  // namespace blink

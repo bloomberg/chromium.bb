@@ -20,20 +20,20 @@ class USBIsochronousInTransferResult final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBIsochronousInTransferResult* create(
+  static USBIsochronousInTransferResult* Create(
       DOMArrayBuffer* data,
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
-    DOMDataView* dataView = DOMDataView::create(data, 0, data->byteLength());
-    return new USBIsochronousInTransferResult(dataView, packets);
+    DOMDataView* data_view = DOMDataView::Create(data, 0, data->ByteLength());
+    return new USBIsochronousInTransferResult(data_view, packets);
   }
 
-  static USBIsochronousInTransferResult* create(
+  static USBIsochronousInTransferResult* Create(
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets,
       DOMDataView* data) {
     return new USBIsochronousInTransferResult(data, packets);
   }
 
-  static USBIsochronousInTransferResult* create(
+  static USBIsochronousInTransferResult* Create(
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
     return new USBIsochronousInTransferResult(nullptr, packets);
   }
@@ -41,23 +41,23 @@ class USBIsochronousInTransferResult final
   USBIsochronousInTransferResult(
       DOMDataView* data,
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
-      : m_data(data), m_packets(packets) {}
+      : data_(data), packets_(packets) {}
 
   virtual ~USBIsochronousInTransferResult() {}
 
-  DOMDataView* data() const { return m_data; }
+  DOMDataView* data() const { return data_; }
   const HeapVector<Member<USBIsochronousInTransferPacket>>& packets() const {
-    return m_packets;
+    return packets_;
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_data);
-    visitor->trace(m_packets);
+    visitor->Trace(data_);
+    visitor->Trace(packets_);
   }
 
  private:
-  Member<DOMDataView> m_data;
-  const HeapVector<Member<USBIsochronousInTransferPacket>> m_packets;
+  Member<DOMDataView> data_;
+  const HeapVector<Member<USBIsochronousInTransferPacket>> packets_;
 };
 
 }  // namespace blink

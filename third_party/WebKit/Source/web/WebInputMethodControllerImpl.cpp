@@ -26,53 +26,54 @@
 namespace blink {
 
 WebInputMethodControllerImpl::WebInputMethodControllerImpl(
-    WebLocalFrameImpl* webLocalFrame)
-    : m_webLocalFrame(webLocalFrame), m_suppressNextKeypressEvent(false) {}
+    WebLocalFrameImpl* web_local_frame)
+    : web_local_frame_(web_local_frame), suppress_next_keypress_event_(false) {}
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}
 
 // static
-WebInputMethodControllerImpl* WebInputMethodControllerImpl::fromFrame(
+WebInputMethodControllerImpl* WebInputMethodControllerImpl::FromFrame(
     LocalFrame* frame) {
-  WebLocalFrameImpl* webLocalFrameImpl = WebLocalFrameImpl::fromFrame(frame);
-  return webLocalFrameImpl ? webLocalFrameImpl->inputMethodController()
-                           : nullptr;
+  WebLocalFrameImpl* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame);
+  return web_local_frame_impl ? web_local_frame_impl->GetInputMethodController()
+                              : nullptr;
 }
 
 DEFINE_TRACE(WebInputMethodControllerImpl) {
-  visitor->trace(m_webLocalFrame);
+  visitor->Trace(web_local_frame_);
 }
 
-bool WebInputMethodControllerImpl::setComposition(
+bool WebInputMethodControllerImpl::SetComposition(
     const WebString& text,
     const WebVector<WebCompositionUnderline>& underlines,
-    const WebRange& replacementRange,
-    int selectionStart,
-    int selectionEnd) {
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
-    return plugin->setComposition(text, underlines, replacementRange,
-                                  selectionStart, selectionEnd);
+    const WebRange& replacement_range,
+    int selection_start,
+    int selection_end) {
+  if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported()) {
+    return plugin->SetComposition(text, underlines, replacement_range,
+                                  selection_start, selection_end);
   }
 
   // We should use this |editor| object only to complete the ongoing
   // composition.
-  if (!frame()->editor().canEdit() && !inputMethodController().hasComposition())
+  if (!GetFrame()->GetEditor().CanEdit() &&
+      !GetInputMethodController().HasComposition())
     return false;
 
   // Select the range to be replaced with the composition later.
-  if (!replacementRange.isNull())
-    m_webLocalFrame->selectRange(replacementRange);
+  if (!replacement_range.IsNull())
+    web_local_frame_->SelectRange(replacement_range);
 
   // We should verify the parent node of this IME composition node are
   // editable because JavaScript may delete a parent node of the composition
   // node. In this case, WebKit crashes while deleting texts from the parent
   // node, which doesn't exist any longer.
   const EphemeralRange range =
-      inputMethodController().compositionEphemeralRange();
-  if (range.isNotNull()) {
-    Node* node = range.startPosition().computeContainerNode();
-    frame()->document()->updateStyleAndLayoutTree();
-    if (!node || !hasEditableStyle(*node))
+      GetInputMethodController().CompositionEphemeralRange();
+  if (range.IsNotNull()) {
+    Node* node = range.StartPosition().ComputeContainerNode();
+    GetFrame()->GetDocument()->UpdateStyleAndLayoutTree();
+    if (!node || !HasEditableStyle(*node))
       return false;
   }
 
@@ -81,25 +82,26 @@ bool WebInputMethodControllerImpl::setComposition(
   // In this case we ignore the cancellation and continue; otherwise (no
   // ongoing composition) we exit and signal success only for attempts to
   // clear the composition.
-  if (m_suppressNextKeypressEvent && !inputMethodController().hasComposition())
-    return text.isEmpty();
+  if (suppress_next_keypress_event_ &&
+      !GetInputMethodController().HasComposition())
+    return text.IsEmpty();
 
-  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
-      frame()->document(), UserGestureToken::NewGesture));
+  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+      GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
 
   // When the range of composition underlines overlap with the range between
   // selectionStart and selectionEnd, WebKit somehow won't paint the selection
   // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).
   // But the selection range actually takes effect.
-  inputMethodController().setComposition(
+  GetInputMethodController().SetComposition(
       String(text), CompositionUnderlineVectorBuilder(underlines),
-      selectionStart, selectionEnd);
+      selection_start, selection_end);
 
-  return text.isEmpty() || inputMethodController().hasComposition();
+  return text.IsEmpty() || GetInputMethodController().HasComposition();
 }
 
-bool WebInputMethodControllerImpl::finishComposingText(
-    ConfirmCompositionBehavior selectionBehavior) {
+bool WebInputMethodControllerImpl::FinishComposingText(
+    ConfirmCompositionBehavior selection_behavior) {
   // TODO(ekaramad): Here and in other IME calls we should expect the
   // call to be made when our frame is focused. This, however, is not the case
   // all the time. For instance, resetInputMethod call on RenderViewImpl could
@@ -107,68 +109,68 @@ bool WebInputMethodControllerImpl::finishComposingText(
   // in WebViewImpl::focusedLocalFrameInWidget(), we will reach here with
   // |m_webLocalFrame| not focused on page.
 
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported())
-    return plugin->finishComposingText(selectionBehavior);
+  if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported())
+    return plugin->FinishComposingText(selection_behavior);
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  return inputMethodController().finishComposingText(
-      selectionBehavior == WebInputMethodController::KeepSelection
-          ? InputMethodController::KeepSelection
-          : InputMethodController::DoNotKeepSelection);
+  return GetInputMethodController().FinishComposingText(
+      selection_behavior == WebInputMethodController::kKeepSelection
+          ? InputMethodController::kKeepSelection
+          : InputMethodController::kDoNotKeepSelection);
 }
 
-bool WebInputMethodControllerImpl::commitText(
+bool WebInputMethodControllerImpl::CommitText(
     const WebString& text,
     const WebVector<WebCompositionUnderline>& underlines,
-    const WebRange& replacementRange,
-    int relativeCaretPosition) {
-  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
-      frame()->document(), UserGestureToken::NewGesture));
+    const WebRange& replacement_range,
+    int relative_caret_position) {
+  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+      GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
 
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
-    return plugin->commitText(text, underlines, replacementRange,
-                              relativeCaretPosition);
+  if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported()) {
+    return plugin->CommitText(text, underlines, replacement_range,
+                              relative_caret_position);
   }
 
   // Select the range to be replaced with the composition later.
-  if (!replacementRange.isNull())
-    m_webLocalFrame->selectRange(replacementRange);
+  if (!replacement_range.IsNull())
+    web_local_frame_->SelectRange(replacement_range);
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  return inputMethodController().commitText(
+  return GetInputMethodController().CommitText(
       text, CompositionUnderlineVectorBuilder(underlines),
-      relativeCaretPosition);
+      relative_caret_position);
 }
 
-WebTextInputInfo WebInputMethodControllerImpl::textInputInfo() {
-  return frame()->inputMethodController().textInputInfo();
+WebTextInputInfo WebInputMethodControllerImpl::TextInputInfo() {
+  return GetFrame()->GetInputMethodController().TextInputInfo();
 }
 
-WebTextInputType WebInputMethodControllerImpl::textInputType() {
-  return frame()->inputMethodController().textInputType();
+WebTextInputType WebInputMethodControllerImpl::TextInputType() {
+  return GetFrame()->GetInputMethodController().TextInputType();
 }
 
-LocalFrame* WebInputMethodControllerImpl::frame() const {
-  return m_webLocalFrame->frame();
+LocalFrame* WebInputMethodControllerImpl::GetFrame() const {
+  return web_local_frame_->GetFrame();
 }
 
-InputMethodController& WebInputMethodControllerImpl::inputMethodController()
+InputMethodController& WebInputMethodControllerImpl::GetInputMethodController()
     const {
-  return frame()->inputMethodController();
+  return GetFrame()->GetInputMethodController();
 }
 
-WebPlugin* WebInputMethodControllerImpl::focusedPluginIfInputMethodSupported()
+WebPlugin* WebInputMethodControllerImpl::FocusedPluginIfInputMethodSupported()
     const {
   WebPluginContainerImpl* container =
-      WebLocalFrameImpl::currentPluginContainer(frame());
-  if (container && container->supportsInputMethod())
-    return container->plugin();
+      WebLocalFrameImpl::CurrentPluginContainer(GetFrame());
+  if (container && container->SupportsInputMethod())
+    return container->Plugin();
   return nullptr;
 }
 

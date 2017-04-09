@@ -84,11 +84,11 @@ class Internals final : public GarbageCollected<Internals>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Internals* create(ExecutionContext* context) {
+  static Internals* Create(ExecutionContext* context) {
     return new Internals(context);
   }
 
-  static void resetToConsistentState(Page*);
+  static void ResetToConsistentState(Page*);
 
   String elementLayoutTreeAsText(Element*, ExceptionState&);
 
@@ -118,7 +118,7 @@ class Internals final : public GarbageCollected<Internals>,
   const AtomicString& shadowPseudoId(Element*);
 
   // Animation testing.
-  void pauseAnimations(double pauseTime, ExceptionState&);
+  void pauseAnimations(double pause_time, ExceptionState&);
   bool isCompositedAnimation(Animation*);
   void disableCompositedAnimation(Animation*);
   void disableCSSAdditiveAnimations();
@@ -126,7 +126,7 @@ class Internals final : public GarbageCollected<Internals>,
   // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame
   // time for testing whether animated images work properly.
   void advanceTimeForImage(Element* image,
-                           double deltaTimeInSeconds,
+                           double delta_time_in_seconds,
                            ExceptionState&);
 
   // Advances an animated image. For BitmapImage (e.g., animated gifs) this
@@ -134,7 +134,7 @@ class Internals final : public GarbageCollected<Internals>,
   // animation update for CSS and advance the SMIL timeline by one frame.
   void advanceImageAnimation(Element* image, ExceptionState&);
 
-  bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
+  bool isValidContentSelect(Element* insertion_point, ExceptionState&);
   Node* treeScopeRootNode(Node*);
   Node* parentTreeScope(Node*);
   unsigned short compareTreeScopePosition(const Node*,
@@ -154,13 +154,13 @@ class Internals final : public GarbageCollected<Internals>,
   Element* elementFromPoint(Document*,
                             double x,
                             double y,
-                            bool ignoreClipping,
-                            bool allowChildFrameContent,
+                            bool ignore_clipping,
+                            bool allow_child_frame_content,
                             ExceptionState&) const;
   void clearHitTestCache(Document*, ExceptionState&) const;
 
   String visiblePlaceholder(Element*);
-  void selectColorInColorChooser(Element*, const String& colorValue);
+  void selectColorInColorChooser(Element*, const String& color_value);
   void endColorChooser(Element*);
   bool hasAutofocusRequest(Document*);
   bool hasAutofocusRequest();
@@ -176,40 +176,43 @@ class Internals final : public GarbageCollected<Internals>,
   unsigned markerCountForNode(Node*, const String&, ExceptionState&);
   unsigned activeMarkerCountForNode(Node*);
   Range* markerRangeForNode(Node*,
-                            const String& markerType,
+                            const String& marker_type,
                             unsigned index,
                             ExceptionState&);
   String markerDescriptionForNode(Node*,
-                                  const String& markerType,
+                                  const String& marker_type,
                                   unsigned index,
                                   ExceptionState&);
   void addTextMatchMarker(const Range*,
-                          const String& matchStatus,
+                          const String& match_status,
                           ExceptionState&);
   void addCompositionMarker(const Range*,
-                            const String& underlineColorValue,
+                            const String& underline_color_value,
                             bool thick,
-                            const String& backgroundColorValue,
+                            const String& background_color_value,
                             ExceptionState&);
-  void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
+  void setMarkersActive(Node*,
+                        unsigned start_offset,
+                        unsigned end_offset,
+                        bool);
   void setMarkedTextMatchesAreHighlighted(Document*, bool);
 
   void setFrameViewPosition(Document*, long x, long y, ExceptionState&);
   String viewportAsText(Document*,
-                        float devicePixelRatio,
-                        int availableWidth,
-                        int availableHeight,
+                        float device_pixel_ratio,
+                        int available_width,
+                        int available_height,
                         ExceptionState&);
 
-  bool elementShouldAutoComplete(Element* inputElement, ExceptionState&);
+  bool elementShouldAutoComplete(Element* input_element, ExceptionState&);
   String suggestedValue(Element*, ExceptionState&);
   void setSuggestedValue(Element*, const String&, ExceptionState&);
-  void setEditingValue(Element* inputElement, const String&, ExceptionState&);
+  void setEditingValue(Element* input_element, const String&, ExceptionState&);
   void setAutofilled(Element*, bool enabled, ExceptionState&);
 
   Range* rangeFromLocationAndLength(Element* scope,
-                                    int rangeLocation,
-                                    int rangeLength);
+                                    int range_location,
+                                    int range_length);
   unsigned locationFromRange(Element* scope, const Range*);
   unsigned lengthFromRange(Element* scope, const Range*);
   String rangeAsText(const Range*);
@@ -277,12 +280,12 @@ class Internals final : public GarbageCollected<Internals>,
   StaticNodeList* nodesFromRect(Document*,
                                 int x,
                                 int y,
-                                unsigned topPadding,
-                                unsigned rightPadding,
-                                unsigned bottomPadding,
-                                unsigned leftPadding,
-                                bool ignoreClipping,
-                                bool allowChildFrameContent,
+                                unsigned top_padding,
+                                unsigned right_padding,
+                                unsigned bottom_padding,
+                                unsigned left_padding,
+                                bool ignore_clipping,
+                                bool allow_child_frame_content,
                                 ExceptionState&) const;
 
   bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
@@ -298,14 +301,14 @@ class Internals final : public GarbageCollected<Internals>,
 
   unsigned numberOfScrollableAreas(Document*);
 
-  bool isPageBoxVisible(Document*, int pageNumber);
+  bool isPageBoxVisible(Document*, int page_number);
 
   InternalSettings* settings() const;
   InternalRuntimeFlags* runtimeFlags() const;
   unsigned workerThreadCount() const;
 
-  void setDeviceProximity(Document*,
-                          const String& eventType,
+  void SetDeviceProximity(Document*,
+                          const String& event_type,
                           double value,
                           double min,
                           double max,
@@ -329,17 +332,20 @@ class Internals final : public GarbageCollected<Internals>,
   unsigned numberOfLiveNodes() const;
   unsigned numberOfLiveDocuments() const;
   String dumpRefCountedInstanceCounts() const;
-  LocalDOMWindow* openDummyInspectorFrontend(const String& url);
-  void closeDummyInspectorFrontend();
+  LocalDOMWindow* OpenDummyInspectorFrontend(const String& url);
+  void CloseDummyInspectorFrontend();
 
   String counterValue(Element*);
 
-  int pageNumber(Element*, float pageWidth, float pageHeight, ExceptionState&);
+  int pageNumber(Element*,
+                 float page_width,
+                 float page_height,
+                 ExceptionState&);
   Vector<String> shortcutIconURLs(Document*) const;
   Vector<String> allIconURLs(Document*) const;
 
-  int numberOfPages(float pageWidthInPixels,
-                    float pageHeightInPixels,
+  int numberOfPages(float page_width_in_pixels,
+                    float page_height_in_pixels,
                     ExceptionState&);
   String pageProperty(String, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
   String pageSizeAndMarginsInPixels(
@@ -353,9 +359,9 @@ class Internals final : public GarbageCollected<Internals>,
       ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
   float pageScaleFactor(ExceptionState&);
-  void setPageScaleFactor(float scaleFactor, ExceptionState&);
-  void setPageScaleFactorLimits(float minScaleFactor,
-                                float maxScaleFactor,
+  void setPageScaleFactor(float scale_factor, ExceptionState&);
+  void setPageScaleFactorLimits(float min_scale_factor,
+                                float max_scale_factor,
                                 ExceptionState&);
 
   bool magnifyScaleAroundAnchor(float factor, float x, float y);
@@ -371,7 +377,7 @@ class Internals final : public GarbageCollected<Internals>,
   void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
   void registerURLSchemeAsBypassingContentSecurityPolicy(
       const String& scheme,
-      const Vector<String>& policyAreas);
+      const Vector<String>& policy_areas);
   void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
       const String& scheme);
 
@@ -410,7 +416,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   String markerTextForListItem(Element*);
 
-  void forceReload(bool bypassCache);
+  void forceReload(bool bypass_cache);
 
   String getImageSourceURL(Element*);
 
@@ -458,7 +464,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   void setValueForUser(HTMLInputElement*, const String&);
 
-  String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);
+  String textSurroundingNode(Node*, int x, int y, unsigned long max_length);
 
   void setFocused(bool);
   void setInitialFocus(bool);
@@ -467,7 +473,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   void setNetworkConnectionInfoOverride(bool,
                                         const String&,
-                                        double downlinkMaxMbps,
+                                        double downlink_max_mbps,
                                         ExceptionState&);
   void clearNetworkConnectionInfoOverride();
 
@@ -509,7 +515,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   // Used by the iterable<>.
   unsigned length() const { return 5; }
-  int anonymousIndexedGetter(uint32_t index) const { return index * index; }
+  int AnonymousIndexedGetter(uint32_t index) const { return index * index; }
 
   String unscopableAttribute();
   String unscopableMethod();
@@ -546,17 +552,17 @@ class Internals final : public GarbageCollected<Internals>,
 
  private:
   explicit Internals(ExecutionContext*);
-  Document* contextDocument() const;
-  LocalFrame* frame() const;
-  Vector<String> iconURLs(Document*, int iconTypesMask) const;
-  ClientRectList* annotatedRegions(Document*, bool draggable, ExceptionState&);
+  Document* ContextDocument() const;
+  LocalFrame* GetFrame() const;
+  Vector<String> IconURLs(Document*, int icon_types_mask) const;
+  ClientRectList* AnnotatedRegions(Document*, bool draggable, ExceptionState&);
 
-  DocumentMarker* markerAt(Node*,
-                           const String& markerType,
+  DocumentMarker* MarkerAt(Node*,
+                           const String& marker_type,
                            unsigned index,
                            ExceptionState&);
-  Member<InternalRuntimeFlags> m_runtimeFlags;
-  Member<Document> m_document;
+  Member<InternalRuntimeFlags> runtime_flags_;
+  Member<Document> document_;
 };
 
 }  // namespace blink

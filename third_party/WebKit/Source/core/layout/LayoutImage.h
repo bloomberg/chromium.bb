@@ -48,83 +48,84 @@ class HTMLMapElement;
 class CORE_EXPORT LayoutImage : public LayoutReplaced {
  public:
   // These are the paddings to use when displaying either alt text or an image.
-  static const unsigned short paddingWidth = 4;
-  static const unsigned short paddingHeight = 4;
+  static const unsigned short kPaddingWidth = 4;
+  static const unsigned short kPaddingHeight = 4;
 
   LayoutImage(Element*);
   ~LayoutImage() override;
 
-  static LayoutImage* createAnonymous(PseudoElement&);
+  static LayoutImage* CreateAnonymous(PseudoElement&);
 
-  void setImageResource(LayoutImageResource*);
+  void SetImageResource(LayoutImageResource*);
 
-  LayoutImageResource* imageResource() { return m_imageResource.get(); }
-  const LayoutImageResource* imageResource() const {
-    return m_imageResource.get();
+  LayoutImageResource* ImageResource() { return image_resource_.Get(); }
+  const LayoutImageResource* ImageResource() const {
+    return image_resource_.Get();
   }
-  ImageResourceContent* cachedImage() const {
-    return m_imageResource ? m_imageResource->cachedImage() : 0;
-  }
-
-  HTMLMapElement* imageMap() const;
-  void areaElementFocusChanged(HTMLAreaElement*);
-
-  void setIsGeneratedContent(bool generated = true) {
-    m_isGeneratedContent = generated;
+  ImageResourceContent* CachedImage() const {
+    return image_resource_ ? image_resource_->CachedImage() : 0;
   }
 
-  bool isGeneratedContent() const { return m_isGeneratedContent; }
+  HTMLMapElement* ImageMap() const;
+  void AreaElementFocusChanged(HTMLAreaElement*);
 
-  inline void setImageDevicePixelRatio(float factor) {
-    m_imageDevicePixelRatio = factor;
-  }
-  float imageDevicePixelRatio() const { return m_imageDevicePixelRatio; }
-
-  void intrinsicSizeChanged() override {
-    if (m_imageResource)
-      imageChanged(m_imageResource->imagePtr());
+  void SetIsGeneratedContent(bool generated = true) {
+    is_generated_content_ = generated;
   }
 
-  const char* name() const override { return "LayoutImage"; }
+  bool IsGeneratedContent() const { return is_generated_content_; }
+
+  inline void SetImageDevicePixelRatio(float factor) {
+    image_device_pixel_ratio_ = factor;
+  }
+  float ImageDevicePixelRatio() const { return image_device_pixel_ratio_; }
+
+  void IntrinsicSizeChanged() override {
+    if (image_resource_)
+      ImageChanged(image_resource_->ImagePtr());
+  }
+
+  const char* GetName() const override { return "LayoutImage"; }
 
  protected:
-  bool needsPreferredWidthsRecalculation() const final;
-  LayoutReplaced* embeddedReplacedContent() const final;
-  void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
+  bool NeedsPreferredWidthsRecalculation() const final;
+  LayoutReplaced* EmbeddedReplacedContent() const final;
+  void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 
-  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-  void paint(const PaintInfo&, const LayoutPoint&) const final;
+  void Paint(const PaintInfo&, const LayoutPoint&) const final;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectLayoutImage || LayoutReplaced::IsOfType(type);
   }
 
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
  private:
-  bool isImage() const override { return true; }
+  bool IsImage() const override { return true; }
 
-  void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
-  bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
-                                         unsigned maxDepthToTest) const final;
-  bool computeBackgroundIsKnownToBeObscured() const final;
+  bool ForegroundIsKnownToBeOpaqueInRect(
+      const LayoutRect& local_rect,
+      unsigned max_depth_to_test) const final;
+  bool ComputeBackgroundIsKnownToBeObscured() const final;
 
-  bool backgroundShouldAlwaysBeClipped() const override { return true; }
+  bool BackgroundShouldAlwaysBeClipped() const override { return true; }
 
-  LayoutUnit minimumReplacedHeight() const override;
+  LayoutUnit MinimumReplacedHeight() const override;
 
-  void imageNotifyFinished(ImageResourceContent*) final;
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
+  void ImageNotifyFinished(ImageResourceContent*) final;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
 
-  void invalidatePaintAndMarkForLayoutIfNeeded();
-  void updateIntrinsicSizeIfNeeded(const LayoutSize&);
+  void InvalidatePaintAndMarkForLayoutIfNeeded();
+  void UpdateIntrinsicSizeIfNeeded(const LayoutSize&);
 
   // This member wraps the associated decoded image.
   //
@@ -135,15 +136,15 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // * For generated content, the resource is loaded during style resolution
   // and thus is stored in ComputedStyle (see ContentData::image) that gets
   // propagated to the anonymous LayoutImage in LayoutObject::createObject.
-  Persistent<LayoutImageResource> m_imageResource;
-  bool m_didIncrementVisuallyNonEmptyPixelCount;
+  Persistent<LayoutImageResource> image_resource_;
+  bool did_increment_visually_non_empty_pixel_count_;
 
   // This field stores whether this image is generated with 'content'.
-  bool m_isGeneratedContent;
-  float m_imageDevicePixelRatio;
+  bool is_generated_content_;
+  float image_device_pixel_ratio_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, isLayoutImage());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, IsLayoutImage());
 
 }  // namespace blink
 

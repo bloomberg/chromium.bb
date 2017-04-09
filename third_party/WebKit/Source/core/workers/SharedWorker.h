@@ -50,28 +50,28 @@ class CORE_EXPORT SharedWorker final
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 
  public:
-  static SharedWorker* create(ExecutionContext*,
+  static SharedWorker* Create(ExecutionContext*,
                               const String& url,
                               const String& name,
                               ExceptionState&);
   ~SharedWorker() override;
 
-  MessagePort* port() const { return m_port.get(); }
+  MessagePort* port() const { return port_.Get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
-  bool isBeingConnected() { return m_isBeingConnected; }
+  void SetIsBeingConnected(bool b) { is_being_connected_ = b; }
+  bool IsBeingConnected() { return is_being_connected_; }
 
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SharedWorker(ExecutionContext*);
 
-  Member<MessagePort> m_port;
-  bool m_isBeingConnected;
+  Member<MessagePort> port_;
+  bool is_being_connected_;
 };
 
 }  // namespace blink

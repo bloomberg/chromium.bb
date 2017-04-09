@@ -39,29 +39,29 @@
 
 namespace blink {
 
-WebPlugin* WebPluginDocument::plugin() {
-  if (!isPluginDocument())
+WebPlugin* WebPluginDocument::Plugin() {
+  if (!IsPluginDocument())
     return 0;
-  PluginDocument* doc = unwrap<PluginDocument>();
+  PluginDocument* doc = Unwrap<PluginDocument>();
   WebPluginContainerImpl* container =
-      toWebPluginContainerImpl(doc->pluginView());
-  return container ? container->plugin() : 0;
+      ToWebPluginContainerImpl(doc->GetPluginView());
+  return container ? container->Plugin() : 0;
 }
 
 WebPluginDocument::WebPluginDocument(PluginDocument* elem)
     : WebDocument(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebPluginDocument,
-                           isDocumentNode() &&
-                               constUnwrap<Document>()->isPluginDocument());
+                           IsDocumentNode() &&
+                               ConstUnwrap<Document>()->IsPluginDocument());
 
 WebPluginDocument& WebPluginDocument::operator=(PluginDocument* elem) {
-  m_private = elem;
+  private_ = elem;
   return *this;
 }
 
 WebPluginDocument::operator PluginDocument*() const {
-  return static_cast<PluginDocument*>(m_private.get());
+  return static_cast<PluginDocument*>(private_.Get());
 }
 
 }  // namespace blink

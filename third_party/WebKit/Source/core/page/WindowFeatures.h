@@ -42,40 +42,40 @@ struct CORE_EXPORT WindowFeatures {
   DISALLOW_NEW();
   WindowFeatures()
       : x(0),
-        xSet(false),
+        x_set(false),
         y(0),
-        ySet(false),
+        y_set(false),
         width(0),
-        widthSet(false),
+        width_set(false),
         height(0),
-        heightSet(false),
-        menuBarVisible(true),
-        statusBarVisible(true),
-        toolBarVisible(true),
-        locationBarVisible(true),
-        scrollbarsVisible(true),
+        height_set(false),
+        menu_bar_visible(true),
+        status_bar_visible(true),
+        tool_bar_visible(true),
+        location_bar_visible(true),
+        scrollbars_visible(true),
         resizable(true),
         fullscreen(false),
         dialog(false),
         noopener(false) {}
-  explicit WindowFeatures(const String& windowFeaturesString);
-  WindowFeatures(const String& dialogFeaturesString,
-                 const IntRect& screenAvailableRect);
+  explicit WindowFeatures(const String& window_features_string);
+  WindowFeatures(const String& dialog_features_string,
+                 const IntRect& screen_available_rect);
 
   int x;
-  bool xSet;
+  bool x_set;
   int y;
-  bool ySet;
+  bool y_set;
   int width;
-  bool widthSet;
+  bool width_set;
   int height;
-  bool heightSet;
+  bool height_set;
 
-  bool menuBarVisible;
-  bool statusBarVisible;
-  bool toolBarVisible;
-  bool locationBarVisible;
-  bool scrollbarsVisible;
+  bool menu_bar_visible;
+  bool status_bar_visible;
+  bool tool_bar_visible;
+  bool location_bar_visible;
+  bool scrollbars_visible;
   bool resizable;
 
   bool fullscreen;
@@ -83,20 +83,20 @@ struct CORE_EXPORT WindowFeatures {
 
   bool noopener;
 
-  Vector<String> additionalFeatures;
+  Vector<String> additional_features;
 
  private:
   using DialogFeaturesMap = HashMap<String, String>;
-  static void parseDialogFeatures(const String&, HashMap<String, String>&);
-  static bool boolFeature(const DialogFeaturesMap&,
+  static void ParseDialogFeatures(const String&, HashMap<String, String>&);
+  static bool BoolFeature(const DialogFeaturesMap&,
                           const char* key,
-                          bool defaultValue = false);
-  static int intFeature(const DialogFeaturesMap&,
+                          bool default_value = false);
+  static int IntFeature(const DialogFeaturesMap&,
                         const char* key,
                         int min,
                         int max,
-                        int defaultValue);
-  void setWindowFeature(const String& keyString, const String& valueString);
+                        int default_value);
+  void SetWindowFeature(const String& key_string, const String& value_string);
 };
 
 }  // namespace blink

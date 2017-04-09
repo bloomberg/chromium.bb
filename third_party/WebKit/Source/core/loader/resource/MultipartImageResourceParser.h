@@ -57,44 +57,44 @@ class CORE_EXPORT MultipartImageResourceParser final
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() = default;
-    virtual void onePartInMultipartReceived(const ResourceResponse&) = 0;
-    virtual void multipartDataReceived(const char* bytes, size_t) = 0;
+    virtual void OnePartInMultipartReceived(const ResourceResponse&) = 0;
+    virtual void MultipartDataReceived(const char* bytes, size_t) = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
   MultipartImageResourceParser(const ResourceResponse&,
                                const Vector<char>& boundary,
                                Client*);
-  void appendData(const char* bytes, size_t);
-  void finish();
-  void cancel() { m_isCancelled = true; }
+  void AppendData(const char* bytes, size_t);
+  void Finish();
+  void Cancel() { is_cancelled_ = true; }
 
   DECLARE_TRACE();
 
-  static size_t skippableLengthForTest(const Vector<char>& data, size_t size) {
-    return skippableLength(data, size);
+  static size_t SkippableLengthForTest(const Vector<char>& data, size_t size) {
+    return SkippableLength(data, size);
   }
-  static size_t findBoundaryForTest(const Vector<char>& data,
+  static size_t FindBoundaryForTest(const Vector<char>& data,
                                     Vector<char>* boundary) {
-    return findBoundary(data, boundary);
+    return FindBoundary(data, boundary);
   }
 
  private:
-  bool parseHeaders();
-  bool isCancelled() const { return m_isCancelled; }
-  static size_t skippableLength(const Vector<char>&, size_t);
+  bool ParseHeaders();
+  bool IsCancelled() const { return is_cancelled_; }
+  static size_t SkippableLength(const Vector<char>&, size_t);
   // This function updates |*boundary|.
-  static size_t findBoundary(const Vector<char>& data, Vector<char>* boundary);
+  static size_t FindBoundary(const Vector<char>& data, Vector<char>* boundary);
 
-  const ResourceResponse m_originalResponse;
-  Vector<char> m_boundary;
-  Member<Client> m_client;
+  const ResourceResponse original_response_;
+  Vector<char> boundary_;
+  Member<Client> client_;
 
-  Vector<char> m_data;
-  bool m_isParsingTop = true;
-  bool m_isParsingHeaders = false;
-  bool m_sawLastBoundary = false;
-  bool m_isCancelled = false;
+  Vector<char> data_;
+  bool is_parsing_top_ = true;
+  bool is_parsing_headers_ = false;
+  bool saw_last_boundary_ = false;
+  bool is_cancelled_ = false;
 };
 
 }  // namespace blink

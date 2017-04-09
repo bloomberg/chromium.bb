@@ -64,25 +64,24 @@ class NodeFilter final : public GarbageCollected<NodeFilter>,
     kShowNotation = 0x00000800
   };
 
-  static NodeFilter* create(NodeFilterCondition* condition) {
+  static NodeFilter* Create(NodeFilterCondition* condition) {
     return new NodeFilter(condition);
   }
 
-  static NodeFilter* create() { return new NodeFilter(); }
+  static NodeFilter* Create() { return new NodeFilter(); }
 
   unsigned acceptNode(Node*, ExceptionState&) const;
 
-  void setCondition(NodeFilterCondition* condition) { m_condition = condition; }
+  void SetCondition(NodeFilterCondition* condition) { condition_ = condition; }
 
   DECLARE_TRACE();
 
  private:
-  explicit NodeFilter(NodeFilterCondition* condition)
-      : m_condition(condition) {}
+  explicit NodeFilter(NodeFilterCondition* condition) : condition_(condition) {}
 
   NodeFilter() {}
 
-  Member<NodeFilterCondition> m_condition;
+  Member<NodeFilterCondition> condition_;
 };
 
 }  // namespace blink

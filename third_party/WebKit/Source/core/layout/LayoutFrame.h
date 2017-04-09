@@ -34,21 +34,21 @@ class LayoutFrame final : public LayoutPart {
  public:
   explicit LayoutFrame(HTMLFrameElement*);
 
-  FrameEdgeInfo edgeInfo() const;
+  FrameEdgeInfo EdgeInfo() const;
 
-  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-  const char* name() const override { return "LayoutFrame"; }
+  const char* GetName() const override { return "LayoutFrame"; }
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectFrame || LayoutPart::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectFrame || LayoutPart::IsOfType(type);
   }
 
-  void updateFromElement() override;
+  void UpdateFromElement() override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, isFrame());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, IsFrame());
 
 }  // namespace blink
 

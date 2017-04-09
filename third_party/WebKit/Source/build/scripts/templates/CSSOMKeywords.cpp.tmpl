@@ -23,7 +23,7 @@ KeywordTable createKeywordTable() {
     {% for keywordValueID in property.keywordIDs %}
     {{property.lower_camel_name}}Keywords.push_back({{keywordValueID}});
     {% endfor %}
-    table.set({{property_id}}, {{property.lower_camel_name}}Keywords);
+    table.Set({{property_id}}, {{property.lower_camel_name}}Keywords);
   }
   {% endfor %}
   return table;
@@ -36,9 +36,9 @@ KeywordTable& keywordTable() {
 
 } // namespace
 
-bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id,
+bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
                                             const CSSKeywordValue& keyword) {
-  CSSValueID valueID = keyword.keywordValueID();
+  CSSValueID valueID = keyword.KeywordValueID();
   if (valueID == CSSValueInvalid) {
     return false;
   }
@@ -49,12 +49,12 @@ bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id,
     return true;
   }
 
-  const KeywordTable::iterator tableIterator = keywordTable().find(id);
+  const KeywordTable::iterator tableIterator = keywordTable().Find(id);
   if (tableIterator == keywordTable().end()) {
     return false;
   }
 
-  return tableIterator->value.contains(valueID);
+  return tableIterator->value.Contains(valueID);
 }
 
 } // namespace blink

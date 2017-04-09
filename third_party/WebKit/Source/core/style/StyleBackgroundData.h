@@ -38,19 +38,19 @@ namespace blink {
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleBackgroundData : public RefCounted<StyleBackgroundData> {
  public:
-  static PassRefPtr<StyleBackgroundData> create() {
-    return adoptRef(new StyleBackgroundData);
+  static PassRefPtr<StyleBackgroundData> Create() {
+    return AdoptRef(new StyleBackgroundData);
   }
-  PassRefPtr<StyleBackgroundData> copy() const {
-    return adoptRef(new StyleBackgroundData(*this));
+  PassRefPtr<StyleBackgroundData> Copy() const {
+    return AdoptRef(new StyleBackgroundData(*this));
   }
   ~StyleBackgroundData() {}
 
   bool operator==(const StyleBackgroundData&) const;
   bool operator!=(const StyleBackgroundData& o) const { return !(*this == o); }
 
-  const FillLayer& background() const { return m_background; }
-  const StyleColor& color() const { return m_color; }
+  const FillLayer& Background() const { return background_; }
+  const StyleColor& GetColor() const { return color_; }
 
  private:
   friend class ComputedStyle;
@@ -58,8 +58,8 @@ class CORE_EXPORT StyleBackgroundData : public RefCounted<StyleBackgroundData> {
   StyleBackgroundData();
   StyleBackgroundData(const StyleBackgroundData&);
 
-  FillLayer m_background;
-  StyleColor m_color;
+  FillLayer background_;
+  StyleColor color_;
 };
 
 }  // namespace blink

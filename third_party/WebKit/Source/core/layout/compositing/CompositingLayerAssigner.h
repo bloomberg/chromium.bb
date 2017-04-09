@@ -45,71 +45,71 @@ class CompositingLayerAssigner {
   explicit CompositingLayerAssigner(PaintLayerCompositor*);
   ~CompositingLayerAssigner();
 
-  void assign(PaintLayer* updateRoot,
-              Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+  void Assign(PaintLayer* update_root,
+              Vector<PaintLayer*>& layers_needing_paint_invalidation);
 
-  bool layersChanged() const { return m_layersChanged; }
+  bool LayersChanged() const { return layers_changed_; }
 
   // FIXME: This function should be private. We should remove the one caller
   // once we've fixed the compositing chicken/egg issues.
-  CompositingStateTransitionType computeCompositedLayerUpdate(PaintLayer*);
+  CompositingStateTransitionType ComputeCompositedLayerUpdate(PaintLayer*);
 
  private:
   struct SquashingState {
     SquashingState()
-        : mostRecentMapping(nullptr),
-          hasMostRecentMapping(false),
-          haveAssignedBackingsToEntireSquashingLayerSubtree(false),
-          nextSquashedLayerIndex(0),
-          totalAreaOfSquashedRects(0) {}
+        : most_recent_mapping(nullptr),
+          has_most_recent_mapping(false),
+          have_assigned_backings_to_entire_squashing_layer_subtree(false),
+          next_squashed_layer_index(0),
+          total_area_of_squashed_rects(0) {}
 
-    void updateSquashingStateForNewMapping(
+    void UpdateSquashingStateForNewMapping(
         CompositedLayerMapping*,
-        bool hasNewCompositedPaintLayerMapping,
-        Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+        bool has_new_composited_paint_layer_mapping,
+        Vector<PaintLayer*>& layers_needing_paint_invalidation);
 
     // The most recent composited backing that the layer should squash onto if
     // needed.
-    CompositedLayerMapping* mostRecentMapping;
-    bool hasMostRecentMapping;
+    CompositedLayerMapping* most_recent_mapping;
+    bool has_most_recent_mapping;
 
     // Whether all Layers in the stacking subtree rooted at the most recent
     // mapping's owning layer have had CompositedLayerMappings assigned. Layers
     // cannot squash into a CompositedLayerMapping owned by a stacking ancestor,
     // since this changes paint order.
-    bool haveAssignedBackingsToEntireSquashingLayerSubtree;
+    bool have_assigned_backings_to_entire_squashing_layer_subtree;
 
     // Counter that tracks what index the next Layer would be if it gets
     // squashed to the current squashing layer.
-    size_t nextSquashedLayerIndex;
+    size_t next_squashed_layer_index;
 
     // The absolute bounding rect of all the squashed layers.
-    IntRect boundingRect;
+    IntRect bounding_rect;
 
     // This is simply the sum of the areas of the squashed rects. This can be
     // very skewed if the rects overlap, but should be close enough to drive a
     // heuristic.
-    uint64_t totalAreaOfSquashedRects;
+    uint64_t total_area_of_squashed_rects;
   };
 
-  void assignLayersToBackingsInternal(
+  void AssignLayersToBackingsInternal(
       PaintLayer*,
       SquashingState&,
-      Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-  SquashingDisallowedReasons getReasonsPreventingSquashing(
+      Vector<PaintLayer*>& layers_needing_paint_invalidation);
+  SquashingDisallowedReasons GetReasonsPreventingSquashing(
       const PaintLayer*,
       const SquashingState&);
-  bool squashingWouldExceedSparsityTolerance(const PaintLayer* candidate,
+  bool SquashingWouldExceedSparsityTolerance(const PaintLayer* candidate,
                                              const SquashingState&);
-  void updateSquashingAssignment(
+  void UpdateSquashingAssignment(
       PaintLayer*,
       SquashingState&,
       CompositingStateTransitionType,
-      Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-  bool needsOwnBacking(const PaintLayer*) const;
+      Vector<PaintLayer*>& layers_needing_paint_invalidation);
+  bool NeedsOwnBacking(const PaintLayer*) const;
 
-  PaintLayerCompositor* m_compositor;
-  bool m_layersChanged;
+  PaintLayerCompositor* compositor_;
+  bool layers_changed_;
 };
 
 }  // namespace blink

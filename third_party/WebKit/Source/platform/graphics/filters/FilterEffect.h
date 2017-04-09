@@ -42,10 +42,10 @@ class TextStream;
 typedef HeapVector<Member<FilterEffect>> FilterEffectVector;
 
 enum FilterEffectType {
-  FilterEffectTypeUnknown,
-  FilterEffectTypeImage,
-  FilterEffectTypeTile,
-  FilterEffectTypeSourceInput
+  kFilterEffectTypeUnknown,
+  kFilterEffectTypeImage,
+  kFilterEffectTypeTile,
+  kFilterEffectTypeSourceInput
 };
 
 class PLATFORM_EXPORT FilterEffect
@@ -56,93 +56,94 @@ class PLATFORM_EXPORT FilterEffect
   virtual ~FilterEffect();
   DECLARE_VIRTUAL_TRACE();
 
-  void clearResult();
+  void ClearResult();
 
-  FilterEffectVector& inputEffects() { return m_inputEffects; }
-  FilterEffect* inputEffect(unsigned) const;
-  unsigned numberOfEffectInputs() const { return m_inputEffects.size(); }
+  FilterEffectVector& InputEffects() { return input_effects_; }
+  FilterEffect* InputEffect(unsigned) const;
+  unsigned NumberOfEffectInputs() const { return input_effects_.size(); }
 
-  inline bool hasImageFilter() const {
-    return m_imageFilters[0] || m_imageFilters[1] || m_imageFilters[2] ||
-           m_imageFilters[3];
+  inline bool HasImageFilter() const {
+    return image_filters_[0] || image_filters_[1] || image_filters_[2] ||
+           image_filters_[3];
   }
 
   // Clipped primitive subregion in the coordinate space of the target.
-  FloatRect absoluteBounds() const;
+  FloatRect AbsoluteBounds() const;
 
   // Mapping a rect forwards to determine which which destination pixels a
   // given source rect would affect.
-  FloatRect mapRect(const FloatRect&) const;
+  FloatRect MapRect(const FloatRect&) const;
 
-  virtual sk_sp<SkImageFilter> createImageFilter();
-  virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation();
+  virtual sk_sp<SkImageFilter> CreateImageFilter();
+  virtual sk_sp<SkImageFilter> CreateImageFilterWithoutValidation();
 
-  virtual FilterEffectType getFilterEffectType() const {
-    return FilterEffectTypeUnknown;
+  virtual FilterEffectType GetFilterEffectType() const {
+    return kFilterEffectTypeUnknown;
   }
 
-  virtual TextStream& externalRepresentation(TextStream&,
+  virtual TextStream& ExternalRepresentation(TextStream&,
                                              int indention = 0) const;
 
-  FloatRect filterPrimitiveSubregion() const {
-    return m_filterPrimitiveSubregion;
+  FloatRect FilterPrimitiveSubregion() const {
+    return filter_primitive_subregion_;
   }
-  void setFilterPrimitiveSubregion(const FloatRect& filterPrimitiveSubregion) {
-    m_filterPrimitiveSubregion = filterPrimitiveSubregion;
-  }
-
-  Filter* getFilter() { return m_filter; }
-  const Filter* getFilter() const { return m_filter; }
-
-  bool clipsToBounds() const { return m_clipsToBounds; }
-  void setClipsToBounds(bool value) { m_clipsToBounds = value; }
-
-  ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
-  virtual void setOperatingColorSpace(ColorSpace colorSpace) {
-    m_operatingColorSpace = colorSpace;
+  void SetFilterPrimitiveSubregion(
+      const FloatRect& filter_primitive_subregion) {
+    filter_primitive_subregion_ = filter_primitive_subregion;
   }
 
-  virtual bool affectsTransparentPixels() const { return false; }
+  Filter* GetFilter() { return filter_; }
+  const Filter* GetFilter() const { return filter_; }
+
+  bool ClipsToBounds() const { return clips_to_bounds_; }
+  void SetClipsToBounds(bool value) { clips_to_bounds_ = value; }
+
+  ColorSpace OperatingColorSpace() const { return operating_color_space_; }
+  virtual void SetOperatingColorSpace(ColorSpace color_space) {
+    operating_color_space_ = color_space;
+  }
+
+  virtual bool AffectsTransparentPixels() const { return false; }
 
   // Return false if the filter will only operate correctly on valid RGBA
   // values, with alpha in [0,255] and each color component in [0, alpha].
-  virtual bool mayProduceInvalidPreMultipliedPixels() { return false; }
+  virtual bool MayProduceInvalidPreMultipliedPixels() { return false; }
 
-  SkImageFilter* getImageFilter(ColorSpace,
-                                bool requiresPMColorValidation) const;
-  void setImageFilter(ColorSpace,
-                      bool requiresPMColorValidation,
+  SkImageFilter* GetImageFilter(ColorSpace,
+                                bool requires_pm_color_validation) const;
+  void SetImageFilter(ColorSpace,
+                      bool requires_pm_color_validation,
                       sk_sp<SkImageFilter>);
 
-  bool originTainted() const { return m_originTainted; }
-  void setOriginTainted() { m_originTainted = true; }
+  bool OriginTainted() const { return origin_tainted_; }
+  void SetOriginTainted() { origin_tainted_ = true; }
 
-  bool inputsTaintOrigin() const;
+  bool InputsTaintOrigin() const;
 
  protected:
   FilterEffect(Filter*);
 
   // Determine the contribution from the filter effect's inputs.
-  virtual FloatRect mapInputs(const FloatRect&) const;
+  virtual FloatRect MapInputs(const FloatRect&) const;
 
   // Apply the contribution from the filter effect's itself. (Like
   // expanding with the blur radius etc.)
-  virtual FloatRect mapEffect(const FloatRect&) const;
+  virtual FloatRect MapEffect(const FloatRect&) const;
 
   // Apply the clip bounds and factor in the effect of
   // affectsTransparentPixels().
-  FloatRect applyBounds(const FloatRect&) const;
+  FloatRect ApplyBounds(const FloatRect&) const;
 
-  sk_sp<SkImageFilter> createTransparentBlack() const;
+  sk_sp<SkImageFilter> CreateTransparentBlack() const;
 
-  Color adaptColorToOperatingColorSpace(const Color& deviceColor);
+  Color AdaptColorToOperatingColorSpace(const Color& device_color);
 
-  SkImageFilter::CropRect getCropRect() const;
+  SkImageFilter::CropRect GetCropRect() const;
 
  private:
-  FilterEffectVector m_inputEffects;
+  FilterEffectVector input_effects_;
 
-  Member<Filter> m_filter;
+  Member<Filter> filter_;
 
   // The following member variables are SVG specific and will move to
   // LayoutSVGResourceFilterPrimitive.
@@ -150,17 +151,17 @@ class PLATFORM_EXPORT FilterEffect
 
   // The subregion of a filter primitive according to the SVG Filter
   // specification in local coordinates.
-  FloatRect m_filterPrimitiveSubregion;
+  FloatRect filter_primitive_subregion_;
 
   // Whether the effect should clip to its primitive region, or expand to use
   // the combined region of its inputs.
-  bool m_clipsToBounds;
+  bool clips_to_bounds_;
 
-  bool m_originTainted;
+  bool origin_tainted_;
 
-  ColorSpace m_operatingColorSpace;
+  ColorSpace operating_color_space_;
 
-  sk_sp<SkImageFilter> m_imageFilters[4];
+  sk_sp<SkImageFilter> image_filters_[4];
 };
 
 }  // namespace blink

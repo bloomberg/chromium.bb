@@ -37,35 +37,35 @@ namespace blink {
 
 WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto() {}
 
-const char* WorkerGlobalScopeCrypto::supplementName() {
+const char* WorkerGlobalScopeCrypto::SupplementName() {
   return "WorkerGlobalScopeCrypto";
 }
 
-WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(
+WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::From(
     Supplementable<WorkerGlobalScope>& context) {
   WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(
-      Supplement<WorkerGlobalScope>::from(context, supplementName()));
+      Supplement<WorkerGlobalScope>::From(context, SupplementName()));
   if (!supplement) {
     supplement = new WorkerGlobalScopeCrypto;
-    provideTo(context, supplementName(), supplement);
+    ProvideTo(context, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 Crypto* WorkerGlobalScopeCrypto::crypto(
     Supplementable<WorkerGlobalScope>& context) {
-  return WorkerGlobalScopeCrypto::from(context).crypto();
+  return WorkerGlobalScopeCrypto::From(context).crypto();
 }
 
 Crypto* WorkerGlobalScopeCrypto::crypto() const {
-  if (!m_crypto)
-    m_crypto = Crypto::create();
-  return m_crypto.get();
+  if (!crypto_)
+    crypto_ = Crypto::Create();
+  return crypto_.Get();
 }
 
 DEFINE_TRACE(WorkerGlobalScopeCrypto) {
-  visitor->trace(m_crypto);
-  Supplement<WorkerGlobalScope>::trace(visitor);
+  visitor->Trace(crypto_);
+  Supplement<WorkerGlobalScope>::Trace(visitor);
 }
 
 }  // namespace blink

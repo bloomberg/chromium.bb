@@ -12,17 +12,17 @@ namespace blink {
 const CSSValue* CSSPropertyAPIFontVariantLigatures::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (range.Peek().Id() == CSSValueNormal || range.Peek().Id() == CSSValueNone)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  FontVariantLigaturesParser ligaturesParser;
+  FontVariantLigaturesParser ligatures_parser;
   do {
-    if (ligaturesParser.consumeLigature(range) !=
-        FontVariantLigaturesParser::ParseResult::ConsumedValue)
+    if (ligatures_parser.ConsumeLigature(range) !=
+        FontVariantLigaturesParser::ParseResult::kConsumedValue)
       return nullptr;
-  } while (!range.atEnd());
+  } while (!range.AtEnd());
 
-  return ligaturesParser.finalizeValue();
+  return ligatures_parser.FinalizeValue();
 }
 
 }  // namespace blink

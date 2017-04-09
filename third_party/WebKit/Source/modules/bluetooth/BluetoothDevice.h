@@ -41,26 +41,26 @@ class BluetoothDevice final : public EventTargetWithInlineData,
                   Bluetooth*);
 
   // Interface required by CallbackPromiseAdapter:
-  static BluetoothDevice* take(ScriptPromiseResolver*,
+  static BluetoothDevice* Take(ScriptPromiseResolver*,
                                mojom::blink::WebBluetoothDevicePtr,
                                Bluetooth*);
 
   BluetoothRemoteGATTService* GetOrCreateRemoteGATTService(
       mojom::blink::WebBluetoothRemoteGATTServicePtr,
-      bool isPrimary,
-      const String& deviceInstanceId);
-  bool IsValidService(const String& serviceInstanceId);
+      bool is_primary,
+      const String& device_instance_id);
+  bool IsValidService(const String& service_instance_id);
 
   BluetoothRemoteGATTCharacteristic* GetOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
-  bool IsValidCharacteristic(const String& characteristicInstanceId);
+  bool IsValidCharacteristic(const String& characteristic_instance_id);
 
   BluetoothRemoteGATTDescriptor* GetOrCreateBluetoothRemoteGATTDescriptor(
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
-  bool IsValidDescriptor(const String& descriptorInstanceId);
+  bool IsValidDescriptor(const String& descriptor_instance_id);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.
@@ -76,28 +76,28 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   void ClearAttributeInstanceMapAndFireEvent();
 
   // EventTarget methods:
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
-  Bluetooth* bluetooth() { return m_bluetooth; }
+  Bluetooth* GetBluetooth() { return bluetooth_; }
 
   // Interface required by Garbage Collection:
   DECLARE_VIRTUAL_TRACE();
 
   // IDL exposed interface:
-  String id() { return m_device->id; }
-  String name() { return m_device->name; }
-  BluetoothRemoteGATTServer* gatt() { return m_gatt; }
+  String id() { return device_->id; }
+  String name() { return device_->name; }
+  BluetoothRemoteGATTServer* gatt() { return gatt_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 
  private:
   // Holds all GATT Attributes associated with this BluetoothDevice.
-  Member<BluetoothAttributeInstanceMap> m_attributeInstanceMap;
+  Member<BluetoothAttributeInstanceMap> attribute_instance_map_;
 
-  mojom::blink::WebBluetoothDevicePtr m_device;
-  Member<BluetoothRemoteGATTServer> m_gatt;
-  Member<Bluetooth> m_bluetooth;
+  mojom::blink::WebBluetoothDevicePtr device_;
+  Member<BluetoothRemoteGATTServer> gatt_;
+  Member<Bluetooth> bluetooth_;
 };
 
 }  // namespace blink

@@ -32,7 +32,7 @@ namespace WTF {
 
 // Returns a string that contains the type name of |T| as a substring.
 template <typename T>
-inline const char* getStringWithTypeName() {
+inline const char* GetStringWithTypeName() {
   return WTF_PRETTY_FUNCTION;
 }
 
@@ -42,8 +42,8 @@ struct IsWeak {
 };
 
 enum WeakHandlingFlag {
-  NoWeakHandlingInCollections,
-  WeakHandlingInCollections
+  kNoWeakHandlingInCollections,
+  kWeakHandlingInCollections
 };
 
 template <typename T, typename From>
@@ -56,13 +56,13 @@ class IsAssignable {
   template <typename T2,
             typename From2,
             typename = decltype(std::declval<T2&>() = std::declval<From2>())>
-  static YesType checkAssignability(int);
+  static YesType CheckAssignability(int);
   template <typename T2, typename From2>
-  static NoType checkAssignability(...);
+  static NoType CheckAssignability(...);
 
  public:
   static const bool value =
-      sizeof(checkAssignability<T, From>(0)) == sizeof(YesType);
+      sizeof(CheckAssignability<T, From>(0)) == sizeof(YesType);
 };
 
 template <typename T>
@@ -105,13 +105,13 @@ class IsDestructible {
   };
 
   template <typename T2, typename = decltype(std::declval<T2>().~T2())>
-  static YesType checkDestructibility(int);
+  static YesType CheckDestructibility(int);
   template <typename T2>
-  static NoType checkDestructibility(...);
+  static NoType CheckDestructibility(...);
 
  public:
   static const bool value =
-      sizeof(checkDestructibility<T>(0)) == sizeof(YesType);
+      sizeof(CheckDestructibility<T>(0)) == sizeof(YesType);
 };
 
 template <typename T>
@@ -134,12 +134,12 @@ struct IsSubclass {
     char padding[8];
   };
 
-  static YesType subclassCheck(U*);
-  static NoType subclassCheck(...);
-  static T* t;
+  static YesType SubclassCheck(U*);
+  static NoType SubclassCheck(...);
+  static T* t_;
 
  public:
-  static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+  static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
 };
 
 template <typename T, template <typename... V> class U>
@@ -151,12 +151,12 @@ struct IsSubclassOfTemplate {
   };
 
   template <typename... W>
-  static YesType subclassCheck(U<W...>*);
-  static NoType subclassCheck(...);
-  static T* t;
+  static YesType SubclassCheck(U<W...>*);
+  static NoType SubclassCheck(...);
+  static T* t_;
 
  public:
-  static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+  static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
 };
 
 template <typename T, template <typename V, size_t W> class U>
@@ -168,12 +168,12 @@ struct IsSubclassOfTemplateTypenameSize {
   };
 
   template <typename X, size_t Y>
-  static YesType subclassCheck(U<X, Y>*);
-  static NoType subclassCheck(...);
-  static T* t;
+  static YesType SubclassCheck(U<X, Y>*);
+  static NoType SubclassCheck(...);
+  static T* t_;
 
  public:
-  static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+  static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
 };
 
 template <typename T, template <typename V, size_t W, typename X> class U>
@@ -185,12 +185,12 @@ struct IsSubclassOfTemplateTypenameSizeTypename {
   };
 
   template <typename Y, size_t Z, typename A>
-  static YesType subclassCheck(U<Y, Z, A>*);
-  static NoType subclassCheck(...);
-  static T* t;
+  static YesType SubclassCheck(U<Y, Z, A>*);
+  static NoType SubclassCheck(...);
+  static T* t_;
 
  public:
-  static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+  static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
 };
 
 template <typename T, template <class V> class OuterTemplate>
@@ -252,20 +252,20 @@ class IsTraceable {
 
   // Note that this also checks if a superclass of V has a trace method.
   template <typename V>
-  static YesType checkHasTraceMethod(
+  static YesType CheckHasTraceMethod(
       V* v,
       blink::Visitor* p = nullptr,
       typename std::enable_if<
-          std::is_same<decltype(v->trace(p)), void>::value>::type* g = nullptr);
+          std::is_same<decltype(v->Trace(p)), void>::value>::type* g = nullptr);
   template <typename V>
-  static NoType checkHasTraceMethod(...);
+  static NoType CheckHasTraceMethod(...);
 
  public:
   // We add sizeof(T) to both sides here, because we want it to fail for
   // incomplete types. Otherwise it just assumes that incomplete types do not
   // have a trace method, which may not be true.
   static const bool value = sizeof(YesType) + sizeof(T) ==
-                            sizeof(checkHasTraceMethod<T>(nullptr)) + sizeof(T);
+                            sizeof(CheckHasTraceMethod<T>(nullptr)) + sizeof(T);
 };
 
 // Convenience template wrapping the IsTraceableInCollection template in
@@ -292,12 +292,12 @@ struct AllowsOnlyPlacementNew {
   };
 
   template <typename U>
-  static YesType checkMarker(typename U::IsAllowOnlyPlacementNew*);
+  static YesType CheckMarker(typename U::IsAllowOnlyPlacementNew*);
   template <typename U>
-  static NoType checkMarker(...);
+  static NoType CheckMarker(...);
 
  public:
-  static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+  static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
 };
 
 template <typename T>
@@ -309,10 +309,10 @@ class IsGarbageCollectedType {
 
   using NonConstType = typename std::remove_const<T>::type;
   template <typename U>
-  static YesType checkGarbageCollectedType(
+  static YesType CheckGarbageCollectedType(
       typename U::IsGarbageCollectedTypeMarker*);
   template <typename U>
-  static NoType checkGarbageCollectedType(...);
+  static NoType CheckGarbageCollectedType(...);
 
   // Separately check for GarbageCollectedMixin, which declares a different
   // marker typedef, to avoid resolution ambiguity for cases like
@@ -325,17 +325,17 @@ class IsGarbageCollectedType {
   //    class B : public A, public GarbageCollectedMixin { ... };
   //
   template <typename U>
-  static YesType checkGarbageCollectedMixinType(
+  static YesType CheckGarbageCollectedMixinType(
       typename U::IsGarbageCollectedMixinMarker*);
   template <typename U>
-  static NoType checkGarbageCollectedMixinType(...);
+  static NoType CheckGarbageCollectedMixinType(...);
 
  public:
   static const bool value =
       (sizeof(YesType) ==
-       sizeof(checkGarbageCollectedType<NonConstType>(nullptr))) ||
+       sizeof(CheckGarbageCollectedType<NonConstType>(nullptr))) ||
       (sizeof(YesType) ==
-       sizeof(checkGarbageCollectedMixinType<NonConstType>(nullptr)));
+       sizeof(CheckGarbageCollectedMixinType<NonConstType>(nullptr)));
 };
 
 template <>
@@ -350,14 +350,14 @@ class IsPersistentReferenceType {
   typedef struct NoType { char padding[8]; } NoType;
 
   template <typename U>
-  static YesType checkPersistentReferenceType(
+  static YesType CheckPersistentReferenceType(
       typename U::IsPersistentReferenceTypeMarker*);
   template <typename U>
-  static NoType checkPersistentReferenceType(...);
+  static NoType CheckPersistentReferenceType(...);
 
  public:
   static const bool value =
-      (sizeof(YesType) == sizeof(checkPersistentReferenceType<T>(nullptr)));
+      (sizeof(YesType) == sizeof(CheckPersistentReferenceType<T>(nullptr)));
 };
 
 template <typename T,

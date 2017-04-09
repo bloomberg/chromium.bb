@@ -10,15 +10,15 @@ namespace content {
 
 std::string WebDisplayModeToString(blink::WebDisplayMode display) {
   switch (display) {
-    case blink::WebDisplayModeUndefined:
+    case blink::kWebDisplayModeUndefined:
       return "";
-    case blink::WebDisplayModeBrowser:
+    case blink::kWebDisplayModeBrowser:
       return "browser";
-    case blink::WebDisplayModeMinimalUi:
+    case blink::kWebDisplayModeMinimalUi:
       return "minimal-ui";
-    case blink::WebDisplayModeStandalone:
+    case blink::kWebDisplayModeStandalone:
       return "standalone";
-    case blink::WebDisplayModeFullscreen:
+    case blink::kWebDisplayModeFullscreen:
       return "fullscreen";
   }
   return "";
@@ -26,36 +26,36 @@ std::string WebDisplayModeToString(blink::WebDisplayMode display) {
 
 blink::WebDisplayMode WebDisplayModeFromString(const std::string& display) {
   if (base::LowerCaseEqualsASCII(display, "browser"))
-    return blink::WebDisplayModeBrowser;
+    return blink::kWebDisplayModeBrowser;
   else if (base::LowerCaseEqualsASCII(display, "minimal-ui"))
-    return blink::WebDisplayModeMinimalUi;
+    return blink::kWebDisplayModeMinimalUi;
   else if (base::LowerCaseEqualsASCII(display, "standalone"))
-    return blink::WebDisplayModeStandalone;
+    return blink::kWebDisplayModeStandalone;
   else if (base::LowerCaseEqualsASCII(display, "fullscreen"))
-    return blink::WebDisplayModeFullscreen;
-  return blink::WebDisplayModeUndefined;
+    return blink::kWebDisplayModeFullscreen;
+  return blink::kWebDisplayModeUndefined;
 }
 
 std::string WebScreenOrientationLockTypeToString(
     blink::WebScreenOrientationLockType orientation) {
   switch (orientation) {
-    case blink::WebScreenOrientationLockDefault:
+    case blink::kWebScreenOrientationLockDefault:
       return "";
-    case blink::WebScreenOrientationLockPortraitPrimary:
+    case blink::kWebScreenOrientationLockPortraitPrimary:
       return "portrait-primary";
-    case blink::WebScreenOrientationLockPortraitSecondary:
+    case blink::kWebScreenOrientationLockPortraitSecondary:
       return "portrait-secondary";
-    case blink::WebScreenOrientationLockLandscapePrimary:
+    case blink::kWebScreenOrientationLockLandscapePrimary:
       return "landscape-primary";
-    case blink::WebScreenOrientationLockLandscapeSecondary:
+    case blink::kWebScreenOrientationLockLandscapeSecondary:
       return "landscape-secondary";
-    case blink::WebScreenOrientationLockAny:
+    case blink::kWebScreenOrientationLockAny:
       return "any";
-    case blink::WebScreenOrientationLockLandscape:
+    case blink::kWebScreenOrientationLockLandscape:
       return "landscape";
-    case blink::WebScreenOrientationLockPortrait:
+    case blink::kWebScreenOrientationLockPortrait:
       return "portrait";
-    case blink::WebScreenOrientationLockNatural:
+    case blink::kWebScreenOrientationLockNatural:
       return "natural";
   }
   return "";
@@ -64,22 +64,22 @@ std::string WebScreenOrientationLockTypeToString(
 blink::WebScreenOrientationLockType
 WebScreenOrientationLockTypeFromString(const std::string& orientation) {
   if (base::LowerCaseEqualsASCII(orientation, "portrait-primary"))
-    return blink::WebScreenOrientationLockPortraitPrimary;
+    return blink::kWebScreenOrientationLockPortraitPrimary;
   else if (base::LowerCaseEqualsASCII(orientation, "portrait-secondary"))
-    return blink::WebScreenOrientationLockPortraitSecondary;
+    return blink::kWebScreenOrientationLockPortraitSecondary;
   else if (base::LowerCaseEqualsASCII(orientation, "landscape-primary"))
-    return blink::WebScreenOrientationLockLandscapePrimary;
+    return blink::kWebScreenOrientationLockLandscapePrimary;
   else if (base::LowerCaseEqualsASCII(orientation, "landscape-secondary"))
-    return blink::WebScreenOrientationLockLandscapeSecondary;
+    return blink::kWebScreenOrientationLockLandscapeSecondary;
   else if (base::LowerCaseEqualsASCII(orientation, "any"))
-    return blink::WebScreenOrientationLockAny;
+    return blink::kWebScreenOrientationLockAny;
   else if (base::LowerCaseEqualsASCII(orientation, "landscape"))
-    return blink::WebScreenOrientationLockLandscape;
+    return blink::kWebScreenOrientationLockLandscape;
   else if (base::LowerCaseEqualsASCII(orientation, "portrait"))
-    return blink::WebScreenOrientationLockPortrait;
+    return blink::kWebScreenOrientationLockPortrait;
   else if (base::LowerCaseEqualsASCII(orientation, "natural"))
-    return blink::WebScreenOrientationLockNatural;
-  return blink::WebScreenOrientationLockDefault;
+    return blink::kWebScreenOrientationLockNatural;
+  return blink::kWebScreenOrientationLockDefault;
 }
 
 }  // namespace content

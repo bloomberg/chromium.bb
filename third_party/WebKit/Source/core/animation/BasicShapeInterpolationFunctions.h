@@ -16,13 +16,13 @@ class CSSToLengthConversionData;
 
 namespace BasicShapeInterpolationFunctions {
 
-InterpolationValue maybeConvertCSSValue(const CSSValue&);
-InterpolationValue maybeConvertBasicShape(const BasicShape*, double zoom);
-std::unique_ptr<InterpolableValue> createNeutralValue(
+InterpolationValue MaybeConvertCSSValue(const CSSValue&);
+InterpolationValue MaybeConvertBasicShape(const BasicShape*, double zoom);
+std::unique_ptr<InterpolableValue> CreateNeutralValue(
     const NonInterpolableValue&);
-bool shapesAreCompatible(const NonInterpolableValue&,
+bool ShapesAreCompatible(const NonInterpolableValue&,
                          const NonInterpolableValue&);
-PassRefPtr<BasicShape> createBasicShape(const InterpolableValue&,
+PassRefPtr<BasicShape> CreateBasicShape(const InterpolableValue&,
                                         const NonInterpolableValue&,
                                         const CSSToLengthConversionData&);
 

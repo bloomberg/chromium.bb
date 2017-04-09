@@ -16,16 +16,16 @@ class PLATFORM_EXPORT CompositorAnimationDelegate {
  public:
   virtual ~CompositorAnimationDelegate() {}
 
-  virtual void notifyAnimationStarted(double monotonicTime, int group) = 0;
-  virtual void notifyAnimationFinished(double monotonicTime, int group) = 0;
-  virtual void notifyAnimationAborted(double monotonicTime, int group) = 0;
+  virtual void NotifyAnimationStarted(double monotonic_time, int group) = 0;
+  virtual void NotifyAnimationFinished(double monotonic_time, int group) = 0;
+  virtual void NotifyAnimationAborted(double monotonic_time, int group) = 0;
   // In the current state of things, notifyAnimationTakeover only applies to
   // scroll offset animations since main thread scrolling reasons can be added
   // while the compositor is animating. Keeping this non-pure virtual since
   // it doesn't apply to CSS animations.
-  virtual void notifyAnimationTakeover(
-      double monotonicTime,
-      double animationStartTime,
+  virtual void NotifyAnimationTakeover(
+      double monotonic_time,
+      double animation_start_time,
       std::unique_ptr<cc::AnimationCurve> curve) {}
 };
 

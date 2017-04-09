@@ -32,23 +32,23 @@ class MODULES_EXPORT MediaRecorder final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class State { Inactive = 0, Recording, Paused };
+  enum class State { kInactive = 0, kRecording, kPaused };
 
-  static MediaRecorder* create(ExecutionContext*,
+  static MediaRecorder* Create(ExecutionContext*,
                                MediaStream*,
                                ExceptionState&);
-  static MediaRecorder* create(ExecutionContext*,
+  static MediaRecorder* Create(ExecutionContext*,
                                MediaStream*,
                                const MediaRecorderOptions&,
                                ExceptionState&);
 
   virtual ~MediaRecorder() {}
 
-  MediaStream* stream() const { return m_stream.get(); }
-  const String& mimeType() const { return m_mimeType; }
+  MediaStream* stream() const { return stream_.Get(); }
+  const String& mimeType() const { return mime_type_; }
   String state() const;
-  unsigned long videoBitsPerSecond() const { return m_videoBitsPerSecond; }
-  unsigned long audioBitsPerSecond() const { return m_audioBitsPerSecond; }
+  unsigned long videoBitsPerSecond() const { return video_bits_per_second_; }
+  unsigned long audioBitsPerSecond() const { return audio_bits_per_second_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(stop);
@@ -58,7 +58,7 @@ class MODULES_EXPORT MediaRecorder final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
   void start(ExceptionState&);
-  void start(int timeSlice, ExceptionState&);
+  void start(int time_slice, ExceptionState&);
   void stop(ExceptionState&);
   void pause(ExceptionState&);
   void resume(ExceptionState&);
@@ -67,23 +67,23 @@ class MODULES_EXPORT MediaRecorder final
   static bool isTypeSupported(const String& type);
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // SuspendableObject
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final { return !m_stopped; }
+  bool HasPendingActivity() const final { return !stopped_; }
 
   // WebMediaRecorderHandlerClient
-  void writeData(const char* data,
+  void WriteData(const char* data,
                  size_t length,
-                 bool lastInSlice,
+                 bool last_in_slice,
                  double timecode) override;
-  void onError(const WebString& message) override;
+  void OnError(const WebString& message) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -93,26 +93,26 @@ class MODULES_EXPORT MediaRecorder final
                 const MediaRecorderOptions&,
                 ExceptionState&);
 
-  void createBlobEvent(Blob*, double);
+  void CreateBlobEvent(Blob*, double);
 
-  void stopRecording();
-  void scheduleDispatchEvent(Event*);
-  void dispatchScheduledEvent();
+  void StopRecording();
+  void ScheduleDispatchEvent(Event*);
+  void DispatchScheduledEvent();
 
-  Member<MediaStream> m_stream;
-  String m_mimeType;
-  bool m_stopped;
-  int m_audioBitsPerSecond;
-  int m_videoBitsPerSecond;
+  Member<MediaStream> stream_;
+  String mime_type_;
+  bool stopped_;
+  int audio_bits_per_second_;
+  int video_bits_per_second_;
 
-  State m_state;
+  State state_;
 
-  std::unique_ptr<BlobData> m_blobData;
+  std::unique_ptr<BlobData> blob_data_;
 
-  std::unique_ptr<WebMediaRecorderHandler> m_recorderHandler;
+  std::unique_ptr<WebMediaRecorderHandler> recorder_handler_;
 
-  Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
-  HeapVector<Member<Event>> m_scheduledEvents;
+  Member<AsyncMethodRunner<MediaRecorder>> dispatch_scheduled_event_runner_;
+  HeapVector<Member<Event>> scheduled_events_;
 };
 
 }  // namespace blink

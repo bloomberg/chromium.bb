@@ -16,10 +16,10 @@ namespace blink {
 namespace {
 
 // An image of size 50x50.
-Vector<unsigned char> jpegImage() {
+Vector<unsigned char> JpegImage() {
   Vector<unsigned char> jpeg;
 
-  static const unsigned char data[] = {
+  static const unsigned char kData[] = {
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
       0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
       0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -47,7 +47,7 @@ Vector<unsigned char> jpegImage() {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x03, 0xff, 0xd9};
 
-  jpeg.append(data, sizeof(data));
+  jpeg.Append(kData, sizeof(kData));
   return jpeg;
 }
 }
@@ -55,154 +55,154 @@ Vector<unsigned char> jpegImage() {
 class WindowToViewportScalingChromeClient : public EmptyChromeClient {
  public:
   WindowToViewportScalingChromeClient()
-      : EmptyChromeClient(), m_scaleFactor(1.f) {}
+      : EmptyChromeClient(), scale_factor_(1.f) {}
 
-  void setScalingFactor(float s) { m_scaleFactor = s; }
-  float windowToViewportScalar(const float s) const override {
-    return s * m_scaleFactor;
+  void SetScalingFactor(float s) { scale_factor_ = s; }
+  float WindowToViewportScalar(const float s) const override {
+    return s * scale_factor_;
   }
 
  private:
-  float m_scaleFactor;
+  float scale_factor_;
 };
 
 class ImageDocumentTest : public ::testing::Test {
  protected:
-  void TearDown() override { ThreadState::current()->collectAllGarbage(); }
+  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  void createDocumentWithoutLoadingImage(int viewWidth, int viewHeight);
-  void createDocument(int viewWidth, int viewHeight);
-  void loadImage();
+  void CreateDocumentWithoutLoadingImage(int view_width, int view_height);
+  void CreateDocument(int view_width, int view_height);
+  void LoadImage();
 
-  ImageDocument& document() const;
+  ImageDocument& GetDocument() const;
 
-  int imageWidth() const { return document().imageElement()->width(); }
-  int imageHeight() const { return document().imageElement()->height(); }
+  int ImageWidth() const { return GetDocument().ImageElement()->width(); }
+  int ImageHeight() const { return GetDocument().ImageElement()->height(); }
 
-  void setPageZoom(float);
-  void setWindowToViewportScalingFactor(float);
+  void SetPageZoom(float);
+  void SetWindowToViewportScalingFactor(float);
 
  private:
-  Persistent<WindowToViewportScalingChromeClient> m_chromeClient;
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  Persistent<WindowToViewportScalingChromeClient> chrome_client_;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
-void ImageDocumentTest::createDocumentWithoutLoadingImage(int viewWidth,
-                                                          int viewHeight) {
-  Page::PageClients pageClients;
-  fillWithEmptyClients(pageClients);
-  m_chromeClient = new WindowToViewportScalingChromeClient();
-  pageClients.chromeClient = m_chromeClient;
-  m_dummyPageHolder =
-      DummyPageHolder::create(IntSize(viewWidth, viewHeight), &pageClients);
+void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
+                                                          int view_height) {
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  chrome_client_ = new WindowToViewportScalingChromeClient();
+  page_clients.chrome_client = chrome_client_;
+  dummy_page_holder_ =
+      DummyPageHolder::Create(IntSize(view_width, view_height), &page_clients);
 
-  LocalFrame& frame = m_dummyPageHolder->frame();
-  frame.document()->shutdown();
+  LocalFrame& frame = dummy_page_holder_->GetFrame();
+  frame.GetDocument()->Shutdown();
   DocumentInit init(KURL(), &frame);
-  frame.domWindow()->installNewDocument("image/jpeg", init);
+  frame.DomWindow()->InstallNewDocument("image/jpeg", init);
 }
 
-void ImageDocumentTest::createDocument(int viewWidth, int viewHeight) {
-  createDocumentWithoutLoadingImage(viewWidth, viewHeight);
-  loadImage();
+void ImageDocumentTest::CreateDocument(int view_width, int view_height) {
+  CreateDocumentWithoutLoadingImage(view_width, view_height);
+  LoadImage();
 }
 
-ImageDocument& ImageDocumentTest::document() const {
-  Document* document = m_dummyPageHolder->frame().domWindow()->document();
-  ImageDocument* imageDocument = static_cast<ImageDocument*>(document);
-  return *imageDocument;
+ImageDocument& ImageDocumentTest::GetDocument() const {
+  Document* document = dummy_page_holder_->GetFrame().DomWindow()->document();
+  ImageDocument* image_document = static_cast<ImageDocument*>(document);
+  return *image_document;
 }
 
-void ImageDocumentTest::loadImage() {
-  DocumentParser* parser = document().implicitOpen(
-      ParserSynchronizationPolicy::ForceSynchronousParsing);
-  const Vector<unsigned char>& data = jpegImage();
-  parser->appendBytes(reinterpret_cast<const char*>(data.data()), data.size());
-  parser->finish();
+void ImageDocumentTest::LoadImage() {
+  DocumentParser* parser = GetDocument().ImplicitOpen(
+      ParserSynchronizationPolicy::kForceSynchronousParsing);
+  const Vector<unsigned char>& data = JpegImage();
+  parser->AppendBytes(reinterpret_cast<const char*>(data.Data()), data.size());
+  parser->Finish();
 }
 
-void ImageDocumentTest::setPageZoom(float factor) {
-  m_dummyPageHolder->frame().setPageZoomFactor(factor);
+void ImageDocumentTest::SetPageZoom(float factor) {
+  dummy_page_holder_->GetFrame().SetPageZoomFactor(factor);
 }
 
-void ImageDocumentTest::setWindowToViewportScalingFactor(float factor) {
-  m_chromeClient->setScalingFactor(factor);
+void ImageDocumentTest::SetWindowToViewportScalingFactor(float factor) {
+  chrome_client_->SetScalingFactor(factor);
 }
 
 TEST_F(ImageDocumentTest, ImageLoad) {
-  createDocument(50, 50);
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocument(50, 50);
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, LargeImageScalesDown) {
-  createDocument(25, 30);
-  EXPECT_EQ(25, imageWidth());
-  EXPECT_EQ(25, imageHeight());
+  CreateDocument(25, 30);
+  EXPECT_EQ(25, ImageWidth());
+  EXPECT_EQ(25, ImageHeight());
 
-  createDocument(35, 20);
-  EXPECT_EQ(20, imageWidth());
-  EXPECT_EQ(20, imageHeight());
+  CreateDocument(35, 20);
+  EXPECT_EQ(20, ImageWidth());
+  EXPECT_EQ(20, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, RestoreImageOnClick) {
-  createDocument(30, 40);
-  document().imageClicked(4, 4);
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocument(30, 40);
+  GetDocument().ImageClicked(4, 4);
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, InitialZoomDoesNotAffectScreenFit) {
-  createDocumentWithoutLoadingImage(20, 10);
-  setPageZoom(2.f);
-  loadImage();
-  EXPECT_EQ(10, imageWidth());
-  EXPECT_EQ(10, imageHeight());
-  document().imageClicked(4, 4);
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocumentWithoutLoadingImage(20, 10);
+  SetPageZoom(2.f);
+  LoadImage();
+  EXPECT_EQ(10, ImageWidth());
+  EXPECT_EQ(10, ImageHeight());
+  GetDocument().ImageClicked(4, 4);
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, ZoomingDoesNotChangeRelativeSize) {
-  createDocument(75, 75);
-  setPageZoom(0.5f);
-  document().windowSizeChanged();
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
-  setPageZoom(2.f);
-  document().windowSizeChanged();
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocument(75, 75);
+  SetPageZoom(0.5f);
+  GetDocument().WindowSizeChanged();
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
+  SetPageZoom(2.f);
+  GetDocument().WindowSizeChanged();
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, ImageScalesDownWithDsf) {
-  createDocumentWithoutLoadingImage(20, 30);
-  setWindowToViewportScalingFactor(2.f);
-  loadImage();
-  EXPECT_EQ(10, imageWidth());
-  EXPECT_EQ(10, imageHeight());
+  CreateDocumentWithoutLoadingImage(20, 30);
+  SetWindowToViewportScalingFactor(2.f);
+  LoadImage();
+  EXPECT_EQ(10, ImageWidth());
+  EXPECT_EQ(10, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, ImageNotCenteredWithForceZeroLayoutHeight) {
-  createDocumentWithoutLoadingImage(80, 70);
-  document().page()->settings().setForceZeroLayoutHeight(true);
-  loadImage();
-  EXPECT_FALSE(document().shouldShrinkToFit());
-  EXPECT_EQ(0, document().imageElement()->offsetLeft());
-  EXPECT_EQ(0, document().imageElement()->offsetTop());
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocumentWithoutLoadingImage(80, 70);
+  GetDocument().GetPage()->GetSettings().SetForceZeroLayoutHeight(true);
+  LoadImage();
+  EXPECT_FALSE(GetDocument().ShouldShrinkToFit());
+  EXPECT_EQ(0, GetDocument().ImageElement()->OffsetLeft());
+  EXPECT_EQ(0, GetDocument().ImageElement()->OffsetTop());
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
-  createDocumentWithoutLoadingImage(80, 70);
-  document().page()->settings().setForceZeroLayoutHeight(false);
-  loadImage();
-  EXPECT_TRUE(document().shouldShrinkToFit());
-  EXPECT_EQ(15, document().imageElement()->offsetLeft());
-  EXPECT_EQ(10, document().imageElement()->offsetTop());
-  EXPECT_EQ(50, imageWidth());
-  EXPECT_EQ(50, imageHeight());
+  CreateDocumentWithoutLoadingImage(80, 70);
+  GetDocument().GetPage()->GetSettings().SetForceZeroLayoutHeight(false);
+  LoadImage();
+  EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
+  EXPECT_EQ(15, GetDocument().ImageElement()->OffsetLeft());
+  EXPECT_EQ(10, GetDocument().ImageElement()->OffsetTop());
+  EXPECT_EQ(50, ImageWidth());
+  EXPECT_EQ(50, ImageHeight());
 }
 
 }  // namespace blink

@@ -37,39 +37,39 @@ class SVGPathByteStream {
   USING_FAST_MALLOC(SVGPathByteStream);
 
  public:
-  static std::unique_ptr<SVGPathByteStream> create() {
-    return WTF::wrapUnique(new SVGPathByteStream);
+  static std::unique_ptr<SVGPathByteStream> Create() {
+    return WTF::WrapUnique(new SVGPathByteStream);
   }
 
-  std::unique_ptr<SVGPathByteStream> clone() const {
-    return WTF::wrapUnique(new SVGPathByteStream(m_data));
+  std::unique_ptr<SVGPathByteStream> Clone() const {
+    return WTF::WrapUnique(new SVGPathByteStream(data_));
   }
 
   typedef Vector<unsigned char> Data;
   typedef Data::const_iterator DataIterator;
 
-  DataIterator begin() const { return m_data.begin(); }
-  DataIterator end() const { return m_data.end(); }
-  void append(const unsigned char* data, size_t dataSize) {
-    m_data.append(data, dataSize);
+  DataIterator begin() const { return data_.begin(); }
+  DataIterator end() const { return data_.end(); }
+  void Append(const unsigned char* data, size_t data_size) {
+    data_.Append(data, data_size);
   }
-  void clear() { m_data.clear(); }
-  void reserveInitialCapacity(size_t size) {
-    m_data.reserveInitialCapacity(size);
+  void Clear() { data_.Clear(); }
+  void ReserveInitialCapacity(size_t size) {
+    data_.ReserveInitialCapacity(size);
   }
-  void shrinkToFit() { m_data.shrinkToFit(); }
-  bool isEmpty() const { return m_data.isEmpty(); }
-  unsigned size() const { return m_data.size(); }
+  void ShrinkToFit() { data_.ShrinkToFit(); }
+  bool IsEmpty() const { return data_.IsEmpty(); }
+  unsigned size() const { return data_.size(); }
 
   bool operator==(const SVGPathByteStream& other) const {
-    return m_data == other.m_data;
+    return data_ == other.data_;
   }
 
  private:
   SVGPathByteStream() {}
-  SVGPathByteStream(const Data& data) : m_data(data) {}
+  SVGPathByteStream(const Data& data) : data_(data) {}
 
-  Data m_data;
+  Data data_;
 };
 
 }  // namespace blink

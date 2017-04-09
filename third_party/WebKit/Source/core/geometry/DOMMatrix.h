@@ -15,68 +15,68 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMMatrix* create(ExceptionState&);
-  static DOMMatrix* create(DOMMatrixReadOnly*,
+  static DOMMatrix* Create(ExceptionState&);
+  static DOMMatrix* Create(DOMMatrixReadOnly*,
                            ExceptionState& = ASSERT_NO_EXCEPTION);
-  static DOMMatrix* create(const SkMatrix44&, ExceptionState&);
-  static DOMMatrix* create(const String&, ExceptionState&);
-  static DOMMatrix* create(Vector<double>, ExceptionState&);
+  static DOMMatrix* Create(const SkMatrix44&, ExceptionState&);
+  static DOMMatrix* Create(const String&, ExceptionState&);
+  static DOMMatrix* Create(Vector<double>, ExceptionState&);
   static DOMMatrix* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
   static DOMMatrix* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
   static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
 
-  void setA(double value) { m_matrix->setM11(value); }
-  void setB(double value) { m_matrix->setM12(value); }
-  void setC(double value) { m_matrix->setM21(value); }
-  void setD(double value) { m_matrix->setM22(value); }
-  void setE(double value) { m_matrix->setM41(value); }
-  void setF(double value) { m_matrix->setM42(value); }
+  void setA(double value) { matrix_->SetM11(value); }
+  void setB(double value) { matrix_->SetM12(value); }
+  void setC(double value) { matrix_->SetM21(value); }
+  void setD(double value) { matrix_->SetM22(value); }
+  void setE(double value) { matrix_->SetM41(value); }
+  void setF(double value) { matrix_->SetM42(value); }
 
-  void setM11(double value) { m_matrix->setM11(value); }
-  void setM12(double value) { m_matrix->setM12(value); }
+  void setM11(double value) { matrix_->SetM11(value); }
+  void setM12(double value) { matrix_->SetM12(value); }
   void setM13(double value) {
-    m_matrix->setM13(value);
-    setIs2D(!value);
+    matrix_->SetM13(value);
+    SetIs2D(!value);
   }
   void setM14(double value) {
-    m_matrix->setM14(value);
-    setIs2D(!value);
+    matrix_->SetM14(value);
+    SetIs2D(!value);
   }
-  void setM21(double value) { m_matrix->setM21(value); }
-  void setM22(double value) { m_matrix->setM22(value); }
+  void setM21(double value) { matrix_->SetM21(value); }
+  void setM22(double value) { matrix_->SetM22(value); }
   void setM23(double value) {
-    m_matrix->setM23(value);
-    setIs2D(!value);
+    matrix_->SetM23(value);
+    SetIs2D(!value);
   }
   void setM24(double value) {
-    m_matrix->setM24(value);
-    setIs2D(!value);
+    matrix_->SetM24(value);
+    SetIs2D(!value);
   }
   void setM31(double value) {
-    m_matrix->setM31(value);
-    setIs2D(!value);
+    matrix_->SetM31(value);
+    SetIs2D(!value);
   }
   void setM32(double value) {
-    m_matrix->setM32(value);
-    setIs2D(!value);
+    matrix_->SetM32(value);
+    SetIs2D(!value);
   }
   void setM33(double value) {
-    m_matrix->setM33(value);
-    setIs2D(value != 1);
+    matrix_->SetM33(value);
+    SetIs2D(value != 1);
   }
   void setM34(double value) {
-    m_matrix->setM34(value);
-    setIs2D(!value);
+    matrix_->SetM34(value);
+    SetIs2D(!value);
   }
-  void setM41(double value) { m_matrix->setM41(value); }
-  void setM42(double value) { m_matrix->setM42(value); }
+  void setM41(double value) { matrix_->SetM41(value); }
+  void setM42(double value) { matrix_->SetM42(value); }
   void setM43(double value) {
-    m_matrix->setM43(value);
-    setIs2D(!value);
+    matrix_->SetM43(value);
+    SetIs2D(!value);
   }
   void setM44(double value) {
-    m_matrix->setM44(value);
-    setIs2D(value != 1);
+    matrix_->SetM44(value);
+    SetIs2D(value != 1);
   }
 
   DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
@@ -93,9 +93,9 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                          double ox = 0,
                          double oy = 0,
                          double oz = 0);
-  DOMMatrix* rotateSelf(double rotX);
-  DOMMatrix* rotateSelf(double rotX, double rotY);
-  DOMMatrix* rotateSelf(double rotX, double rotY, double rotZ);
+  DOMMatrix* rotateSelf(double rot_x);
+  DOMMatrix* rotateSelf(double rot_x, double rot_y);
+  DOMMatrix* rotateSelf(double rot_x, double rot_y, double rot_z);
   DOMMatrix* rotateFromVectorSelf(double x, double y);
   DOMMatrix* rotateAxisAngleSelf(double x = 0,
                                  double y = 0,
@@ -108,12 +108,12 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DOMMatrix* setMatrixValue(const String&, ExceptionState&);
 
  private:
-  DOMMatrix(const TransformationMatrix&, bool is2D = true);
+  DOMMatrix(const TransformationMatrix&, bool is2d = true);
   template <typename T>
   DOMMatrix(T sequence, int size);
 
-  void setIs2D(bool value);
-  void setNAN();
+  void SetIs2D(bool value);
+  void SetNAN();
 };
 
 }  // namespace blink

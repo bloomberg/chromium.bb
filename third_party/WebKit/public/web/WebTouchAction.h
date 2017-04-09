@@ -36,18 +36,19 @@ namespace blink {
 // Flags for permitted touch actions, specified in
 // http://w3c.github.io/pointerevents/#the-touch-action-css-property.
 enum WebTouchAction {
-  WebTouchActionNone = 0x0,
-  WebTouchActionPanLeft = 0x1,
-  WebTouchActionPanRight = 0x2,
-  WebTouchActionPanX = WebTouchActionPanLeft | WebTouchActionPanRight,
-  WebTouchActionPanUp = 0x4,
-  WebTouchActionPanDown = 0x8,
-  WebTouchActionPanY = WebTouchActionPanUp | WebTouchActionPanDown,
-  WebTouchActionPan = WebTouchActionPanX | WebTouchActionPanY,
-  WebTouchActionPinchZoom = 0x10,
-  WebTouchActionManipulation = WebTouchActionPan | WebTouchActionPinchZoom,
-  WebTouchActionDoubleTapZoom = 0x20,
-  WebTouchActionAuto = WebTouchActionManipulation | WebTouchActionDoubleTapZoom
+  kWebTouchActionNone = 0x0,
+  kWebTouchActionPanLeft = 0x1,
+  kWebTouchActionPanRight = 0x2,
+  kWebTouchActionPanX = kWebTouchActionPanLeft | kWebTouchActionPanRight,
+  kWebTouchActionPanUp = 0x4,
+  kWebTouchActionPanDown = 0x8,
+  kWebTouchActionPanY = kWebTouchActionPanUp | kWebTouchActionPanDown,
+  kWebTouchActionPan = kWebTouchActionPanX | kWebTouchActionPanY,
+  kWebTouchActionPinchZoom = 0x10,
+  kWebTouchActionManipulation = kWebTouchActionPan | kWebTouchActionPinchZoom,
+  kWebTouchActionDoubleTapZoom = 0x20,
+  kWebTouchActionAuto =
+      kWebTouchActionManipulation | kWebTouchActionDoubleTapZoom
 };
 inline WebTouchAction operator|(WebTouchAction a, WebTouchAction b) {
   return static_cast<WebTouchAction>(int(a) | int(b));

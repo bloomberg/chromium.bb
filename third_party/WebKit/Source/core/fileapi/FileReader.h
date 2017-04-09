@@ -57,7 +57,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 
  public:
-  static FileReader* create(ExecutionContext*);
+  static FileReader* Create(ExecutionContext*);
 
   ~FileReader() override;
 
@@ -70,27 +70,27 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void readAsDataURL(Blob*, ExceptionState&);
   void abort();
 
-  ReadyState getReadyState() const { return m_state; }
-  DOMException* error() { return m_error; }
-  void result(StringOrArrayBuffer& resultAttribute) const;
+  ReadyState getReadyState() const { return state_; }
+  DOMException* error() { return error_; }
+  void result(StringOrArrayBuffer& result_attribute) const;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
 
   // FileReaderLoaderClient
-  void didStartLoading() override;
-  void didReceiveData() override;
-  void didFinishLoading() override;
-  void didFail(FileError::ErrorCode) override;
+  void DidStartLoading() override;
+  void DidReceiveData() override;
+  void DidFinishLoading() override;
+  void DidFail(FileError::ErrorCode) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
@@ -106,33 +106,33 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
 
   explicit FileReader(ExecutionContext*);
 
-  void terminate();
-  void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
-  void fireEvent(const AtomicString& type);
+  void Terminate();
+  void ReadInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
+  void FireEvent(const AtomicString& type);
 
-  void executePendingRead();
+  void ExecutePendingRead();
 
-  ReadyState m_state;
+  ReadyState state_;
 
   // Internal loading state, which could differ from ReadyState as it's
   // for script-visible state while this one's for internal state.
   enum LoadingState {
-    LoadingStateNone,
-    LoadingStatePending,
-    LoadingStateLoading,
-    LoadingStateAborted
+    kLoadingStateNone,
+    kLoadingStatePending,
+    kLoadingStateLoading,
+    kLoadingStateAborted
   };
-  LoadingState m_loadingState;
-  bool m_stillFiringEvents;
+  LoadingState loading_state_;
+  bool still_firing_events_;
 
-  String m_blobType;
-  RefPtr<BlobDataHandle> m_blobDataHandle;
-  FileReaderLoader::ReadType m_readType;
-  String m_encoding;
+  String blob_type_;
+  RefPtr<BlobDataHandle> blob_data_handle_;
+  FileReaderLoader::ReadType read_type_;
+  String encoding_;
 
-  std::unique_ptr<FileReaderLoader> m_loader;
-  Member<DOMException> m_error;
-  double m_lastProgressNotificationTimeMS;
+  std::unique_ptr<FileReaderLoader> loader_;
+  Member<DOMException> error_;
+  double last_progress_notification_time_ms_;
 };
 
 }  // namespace blink

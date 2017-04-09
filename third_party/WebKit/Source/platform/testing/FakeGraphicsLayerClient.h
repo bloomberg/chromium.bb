@@ -13,26 +13,26 @@ namespace blink {
 class FakeGraphicsLayerClient : public GraphicsLayerClient {
  public:
   // GraphicsLayerClient implementation.
-  IntRect computeInterestRect(const GraphicsLayer*,
+  IntRect ComputeInterestRect(const GraphicsLayer*,
                               const IntRect&) const override {
     return IntRect();
   }
-  String debugName(const GraphicsLayer*) const override { return String(); }
-  bool isTrackingRasterInvalidations() const override {
-    return m_isTrackingRasterInvalidations;
+  String DebugName(const GraphicsLayer*) const override { return String(); }
+  bool IsTrackingRasterInvalidations() const override {
+    return is_tracking_raster_invalidations_;
   }
-  bool needsRepaint(const GraphicsLayer&) const override { return true; }
-  void paintContents(const GraphicsLayer*,
+  bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
+  void PaintContents(const GraphicsLayer*,
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,
                      const IntRect&) const override {}
 
-  void setIsTrackingRasterInvalidations(bool isTrackingRasterInvalidations) {
-    m_isTrackingRasterInvalidations = isTrackingRasterInvalidations;
+  void SetIsTrackingRasterInvalidations(bool is_tracking_raster_invalidations) {
+    is_tracking_raster_invalidations_ = is_tracking_raster_invalidations;
   }
 
  private:
-  bool m_isTrackingRasterInvalidations = false;
+  bool is_tracking_raster_invalidations_ = false;
 };
 
 }  // namespace blink

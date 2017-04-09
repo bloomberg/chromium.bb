@@ -36,16 +36,16 @@ namespace blink {
 class ContextMenu;
 
 enum ContextMenuAction {
-  ContextMenuItemBaseCustomTag = 5000,
-  ContextMenuItemCustomTagNoAction = 5998,
-  ContextMenuItemLastCustomTag = 5999
+  kContextMenuItemBaseCustomTag = 5000,
+  kContextMenuItemCustomTagNoAction = 5998,
+  kContextMenuItemLastCustomTag = 5999
 };
 
 enum ContextMenuItemType {
-  ActionType,
-  CheckableActionType,
-  SeparatorType,
-  SubmenuType
+  kActionType,
+  kCheckableActionType,
+  kSeparatorType,
+  kSubmenuType
 };
 
 class PLATFORM_EXPORT ContextMenuItem {
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ContextMenuItem {
                   ContextMenuAction,
                   const String& title,
                   const String& icon,
-                  ContextMenu* subMenu = 0);
+                  ContextMenu* sub_menu = 0);
   ContextMenuItem(ContextMenuItemType,
                   ContextMenuAction,
                   const String& title,
@@ -66,42 +66,44 @@ class PLATFORM_EXPORT ContextMenuItem {
 
   ~ContextMenuItem();
 
-  void setType(ContextMenuItemType);
-  ContextMenuItemType type() const;
+  void SetType(ContextMenuItemType);
+  ContextMenuItemType GetType() const;
 
-  void setAction(ContextMenuAction);
-  ContextMenuAction action() const;
+  void SetAction(ContextMenuAction);
+  ContextMenuAction Action() const;
 
-  void setChecked(bool = true);
-  bool checked() const;
+  void SetChecked(bool = true);
+  bool Checked() const;
 
-  void setEnabled(bool = true);
-  bool enabled() const;
+  void SetEnabled(bool = true);
+  bool Enabled() const;
 
-  void setSubMenu(ContextMenu*);
+  void SetSubMenu(ContextMenu*);
 
   ContextMenuItem(ContextMenuAction,
                   const String&,
                   bool enabled,
                   bool checked,
-                  const Vector<ContextMenuItem>& subMenuItems);
+                  const Vector<ContextMenuItem>& sub_menu_items);
 
-  void setTitle(const String& title) { m_title = title; }
-  const String& title() const { return m_title; }
+  void SetTitle(const String& title) { title_ = title; }
+  const String& Title() const { return title_; }
 
-  void setIcon(const String& icon) { m_icon = icon; }
-  const String& icon() const { return m_icon; }
+  void SetIcon(const String& icon) { icon_ = icon; }
+  const String& Icon() const { return icon_; }
 
-  const Vector<ContextMenuItem>& subMenuItems() const { return m_subMenuItems; }
+  const Vector<ContextMenuItem>& SubMenuItems() const {
+    return sub_menu_items_;
+  }
 
  private:
-  ContextMenuItemType m_type;
-  ContextMenuAction m_action;
-  String m_title;
-  String m_icon;
-  bool m_enabled;
-  bool m_checked;
-  Vector<ContextMenuItem> m_subMenuItems;
+  ContextMenuItemType type_;
+  ContextMenuAction action_;
+  String title_;
+  String icon_;
+  bool enabled_;
+  bool checked_;
+  Vector<ContextMenuItem> sub_menu_items_;
 };
 
 }  // namespace blink

@@ -12,67 +12,67 @@ namespace blink {
 CompositorMutableState::CompositorMutableState(CompositorMutation* mutation,
                                                cc::LayerImpl* main,
                                                cc::LayerImpl* scroll)
-    : m_mutation(mutation), m_mainLayer(main), m_scrollLayer(scroll) {}
+    : mutation_(mutation), main_layer_(main), scroll_layer_(scroll) {}
 
 CompositorMutableState::~CompositorMutableState() {}
 
-double CompositorMutableState::opacity() const {
-  return m_mainLayer->Opacity();
+double CompositorMutableState::Opacity() const {
+  return main_layer_->Opacity();
 }
 
-void CompositorMutableState::setOpacity(double opacity) {
-  if (!m_mainLayer)
+void CompositorMutableState::SetOpacity(double opacity) {
+  if (!main_layer_)
     return;
-  m_mainLayer->layer_tree_impl()->SetOpacityMutated(m_mainLayer->element_id(),
+  main_layer_->layer_tree_impl()->SetOpacityMutated(main_layer_->element_id(),
                                                     opacity);
-  m_mutation->setOpacity(opacity);
+  mutation_->SetOpacity(opacity);
 }
 
-const SkMatrix44& CompositorMutableState::transform() const {
-  return m_mainLayer ? m_mainLayer->Transform().matrix() : SkMatrix44::I();
+const SkMatrix44& CompositorMutableState::Transform() const {
+  return main_layer_ ? main_layer_->Transform().matrix() : SkMatrix44::I();
 }
 
-void CompositorMutableState::setTransform(const SkMatrix44& matrix) {
-  if (!m_mainLayer)
+void CompositorMutableState::SetTransform(const SkMatrix44& matrix) {
+  if (!main_layer_)
     return;
-  m_mainLayer->layer_tree_impl()->SetTransformMutated(m_mainLayer->element_id(),
+  main_layer_->layer_tree_impl()->SetTransformMutated(main_layer_->element_id(),
                                                       gfx::Transform(matrix));
-  m_mutation->setTransform(matrix);
+  mutation_->SetTransform(matrix);
 }
 
-float CompositorMutableState::scrollLeft() const {
-  return m_scrollLayer ? m_scrollLayer->CurrentScrollOffset().x() : 0.0;
+float CompositorMutableState::ScrollLeft() const {
+  return scroll_layer_ ? scroll_layer_->CurrentScrollOffset().x() : 0.0;
 }
 
-void CompositorMutableState::setScrollLeft(float scrollLeft) {
-  if (!m_scrollLayer)
+void CompositorMutableState::SetScrollLeft(float scroll_left) {
+  if (!scroll_layer_)
     return;
 
-  gfx::ScrollOffset offset = m_scrollLayer->CurrentScrollOffset();
-  offset.set_x(scrollLeft);
-  m_scrollLayer->layer_tree_impl()
+  gfx::ScrollOffset offset = scroll_layer_->CurrentScrollOffset();
+  offset.set_x(scroll_left);
+  scroll_layer_->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.OnScrollOffsetAnimated(
-          m_scrollLayer->id(), m_scrollLayer->scroll_tree_index(), offset,
-          m_scrollLayer->layer_tree_impl());
-  m_mutation->setScrollLeft(scrollLeft);
+          scroll_layer_->id(), scroll_layer_->scroll_tree_index(), offset,
+          scroll_layer_->layer_tree_impl());
+  mutation_->SetScrollLeft(scroll_left);
 }
 
-float CompositorMutableState::scrollTop() const {
-  return m_scrollLayer ? m_scrollLayer->CurrentScrollOffset().y() : 0.0;
+float CompositorMutableState::ScrollTop() const {
+  return scroll_layer_ ? scroll_layer_->CurrentScrollOffset().y() : 0.0;
 }
 
-void CompositorMutableState::setScrollTop(float scrollTop) {
-  if (!m_scrollLayer)
+void CompositorMutableState::SetScrollTop(float scroll_top) {
+  if (!scroll_layer_)
     return;
-  gfx::ScrollOffset offset = m_scrollLayer->CurrentScrollOffset();
-  offset.set_y(scrollTop);
-  m_scrollLayer->layer_tree_impl()
+  gfx::ScrollOffset offset = scroll_layer_->CurrentScrollOffset();
+  offset.set_y(scroll_top);
+  scroll_layer_->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.OnScrollOffsetAnimated(
-          m_scrollLayer->id(), m_scrollLayer->scroll_tree_index(), offset,
-          m_scrollLayer->layer_tree_impl());
-  m_mutation->setScrollTop(scrollTop);
+          scroll_layer_->id(), scroll_layer_->scroll_tree_index(), offset,
+          scroll_layer_->layer_tree_impl());
+  mutation_->SetScrollTop(scroll_top);
 }
 
 }  // namespace blink

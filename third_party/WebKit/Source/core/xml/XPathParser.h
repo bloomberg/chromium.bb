@@ -66,53 +66,53 @@ class Parser {
   Parser();
   ~Parser();
 
-  XPathNSResolver* resolver() const { return m_resolver.get(); }
-  bool expandQName(const String& qName,
-                   AtomicString& localName,
-                   AtomicString& namespaceURI);
+  XPathNSResolver* Resolver() const { return resolver_.Get(); }
+  bool ExpandQName(const String& q_name,
+                   AtomicString& local_name,
+                   AtomicString& namespace_uri);
 
-  Expression* parseStatement(const String& statement,
+  Expression* ParseStatement(const String& statement,
                              XPathNSResolver*,
                              ExceptionState&);
 
-  static Parser* current() { return currentParser; }
+  static Parser* Current() { return current_parser_; }
 
-  int lex(void* yylval);
+  int Lex(void* yylval);
 
-  Member<Expression> m_topExpr;
-  bool m_gotNamespaceError;
+  Member<Expression> top_expr_;
+  bool got_namespace_error_;
 
-  void registerString(String*);
-  void deleteString(String*);
+  void RegisterString(String*);
+  void DeleteString(String*);
 
  private:
-  bool isBinaryOperatorContext() const;
+  bool IsBinaryOperatorContext() const;
 
-  void skipWS();
-  Token makeTokenAndAdvance(int type, int advance = 1);
-  Token makeTokenAndAdvance(int type, NumericOp::Opcode, int advance = 1);
-  Token makeTokenAndAdvance(int type, EqTestOp::Opcode, int advance = 1);
-  char peekAheadHelper();
-  char peekCurHelper();
+  void SkipWS();
+  Token MakeTokenAndAdvance(int type, int advance = 1);
+  Token MakeTokenAndAdvance(int type, NumericOp::Opcode, int advance = 1);
+  Token MakeTokenAndAdvance(int type, EqTestOp::Opcode, int advance = 1);
+  char PeekAheadHelper();
+  char PeekCurHelper();
 
-  Token lexString();
-  Token lexNumber();
-  bool lexNCName(String&);
-  bool lexQName(String&);
+  Token LexString();
+  Token LexNumber();
+  bool LexNCName(String&);
+  bool LexQName(String&);
 
-  Token nextToken();
-  Token nextTokenInternal();
+  Token NextToken();
+  Token NextTokenInternal();
 
-  void reset(const String& data);
+  void Reset(const String& data);
 
-  static Parser* currentParser;
+  static Parser* current_parser_;
 
-  unsigned m_nextPos;
-  String m_data;
-  int m_lastTokenType;
-  Member<XPathNSResolver> m_resolver;
+  unsigned next_pos_;
+  String data_;
+  int last_token_type_;
+  Member<XPathNSResolver> resolver_;
 
-  HashSet<std::unique_ptr<String>> m_strings;
+  HashSet<std::unique_ptr<String>> strings_;
 };
 
 }  // namespace XPath

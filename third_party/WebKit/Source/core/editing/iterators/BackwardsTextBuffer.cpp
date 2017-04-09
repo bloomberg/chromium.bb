@@ -6,20 +6,20 @@
 
 namespace blink {
 
-const UChar* BackwardsTextBuffer::data() const {
-  return bufferEnd() - size();
+const UChar* BackwardsTextBuffer::Data() const {
+  return BufferEnd() - size();
 }
 
-UChar* BackwardsTextBuffer::calcDestination(size_t length) {
-  DCHECK_LE(size() + length, capacity());
-  return bufferEnd() - size() - length;
+UChar* BackwardsTextBuffer::CalcDestination(size_t length) {
+  DCHECK_LE(size() + length, Capacity());
+  return BufferEnd() - size() - length;
 }
 
-void BackwardsTextBuffer::shiftData(size_t oldCapacity) {
-  DCHECK_LE(oldCapacity, capacity());
-  DCHECK_LE(size(), oldCapacity);
-  std::copy_backward(bufferBegin() + oldCapacity - size(),
-                     bufferBegin() + oldCapacity, bufferEnd());
+void BackwardsTextBuffer::ShiftData(size_t old_capacity) {
+  DCHECK_LE(old_capacity, Capacity());
+  DCHECK_LE(size(), old_capacity);
+  std::copy_backward(BufferBegin() + old_capacity - size(),
+                     BufferBegin() + old_capacity, BufferEnd());
 }
 
 }  // namespace blink

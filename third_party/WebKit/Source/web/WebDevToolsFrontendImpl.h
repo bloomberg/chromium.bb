@@ -51,26 +51,26 @@ class WebDevToolsFrontendImpl final : public WebDevToolsFrontend,
   WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
   ~WebDevToolsFrontendImpl() override;
 
-  void didClearWindowObject(WebLocalFrameImpl*);
+  void DidClearWindowObject(WebLocalFrameImpl*);
 
-  void sendMessageToEmbedder(const WTF::String&) override;
+  void SendMessageToEmbedder(const WTF::String&) override;
 
-  bool isUnderTest() override;
+  bool IsUnderTest() override;
 
-  void showContextMenu(LocalFrame*,
+  void ShowContextMenu(LocalFrame*,
                        float x,
                        float y,
                        ContextMenuProvider*) override;
 
-  void setInjectedScriptForOrigin(const String& origin,
+  void SetInjectedScriptForOrigin(const String& origin,
                                   const String& source) override;
 
  private:
-  Persistent<WebLocalFrameImpl> m_webFrame;
-  WebDevToolsFrontendClient* m_client;
-  Persistent<DevToolsHost> m_devtoolsHost;
+  Persistent<WebLocalFrameImpl> web_frame_;
+  WebDevToolsFrontendClient* client_;
+  Persistent<DevToolsHost> devtools_host_;
   typedef HashMap<String, String> InjectedScriptForOriginMap;
-  InjectedScriptForOriginMap m_injectedScriptForOrigin;
+  InjectedScriptForOriginMap injected_script_for_origin_;
 };
 
 }  // namespace blink

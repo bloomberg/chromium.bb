@@ -2995,7 +2995,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
     WmWindow* wm_window_a = WmWindow::Get(window_a);
     wm_window_a->SetAppType(static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_a, blink::WebScreenOrientationLockAny,
+        wm_window_a, blink::kWebScreenOrientationLockAny,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   aura::Window* window_p = CreateTestWindowInShellWithId(0);
@@ -3003,7 +3003,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
     WmWindow* wm_window_p = WmWindow::Get(window_p);
     wm_window_p->SetAppType(static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_p, blink::WebScreenOrientationLockPortrait,
+        wm_window_p, blink::kWebScreenOrientationLockPortrait,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   aura::Window* window_l = CreateTestWindowInShellWithId(0);
@@ -3011,7 +3011,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
     WmWindow* wm_window_l = WmWindow::Get(window_l);
     wm_window_l->SetAppType(static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_l, blink::WebScreenOrientationLockLandscape,
+        wm_window_l, blink::kWebScreenOrientationLockLandscape,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
 
@@ -3035,7 +3035,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
 
   EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
   EXPECT_FALSE(display_manager->registered_internal_display_rotation_lock());
-  EXPECT_EQ(blink::WebScreenOrientationLockLandscapePrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
             test_api.GetCurrentOrientation());
 
   // Enable lock at 0.
@@ -3053,7 +3053,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_0,
             display_manager->registered_internal_display_rotation());
   EXPECT_EQ(0, test_observer.countAndReset());
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitPrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             test_api.GetCurrentOrientation());
 
   // Any will rotate to the locked rotation.
@@ -3129,7 +3129,7 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
       true);
 
   orientation_controller->LockOrientationForWindow(
-      wm_window, blink::WebScreenOrientationLockPortrait,
+      wm_window, blink::kWebScreenOrientationLockPortrait,
       ScreenOrientationController::LockCompletionBehavior::None);
   EXPECT_EQ(display::Display::ROTATE_90,
             screen->GetPrimaryDisplay().rotation());
@@ -3169,7 +3169,7 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
     WmWindow* wm_window_a = WmWindow::Get(window_a);
     wm_window_a->SetAppType(static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_a, blink::WebScreenOrientationLockAny,
+        wm_window_a, blink::kWebScreenOrientationLockAny,
         ScreenOrientationController::LockCompletionBehavior::None);
   }
   wm::ActivateWindow(window_a);
@@ -3178,7 +3178,7 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
 
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitPrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             test_api.GetCurrentOrientation());
 
   orientation_controller->OnAccelerometerUpdated(portrait_secondary);
@@ -3188,30 +3188,30 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
     WmWindow* wm_window_ps = WmWindow::Get(window_ps);
     wm_window_ps->SetAppType(static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        wm_window_ps, blink::WebScreenOrientationLockPortrait,
+        wm_window_ps, blink::kWebScreenOrientationLockPortrait,
         ScreenOrientationController::LockCompletionBehavior::DisableSensor);
     wm::ActivateWindow(window_ps);
   }
 
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             test_api.GetCurrentOrientation());
 
   // The orientation should stay portrait secondary.
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             test_api.GetCurrentOrientation());
 
   wm::ActivateWindow(window_a);
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
 
   // Swtching to |window_a| enables rotation.
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitPrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             test_api.GetCurrentOrientation());
 
   // The orientation has alraedy been locked to secondary once, so
   // it should swtich back to the portrait secondary.
   wm::ActivateWindow(window_ps);
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             test_api.GetCurrentOrientation());
 }
 

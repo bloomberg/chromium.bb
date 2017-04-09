@@ -17,15 +17,15 @@ class HTMLCanvasPaintInvalidator {
   STACK_ALLOCATED();
 
  public:
-  HTMLCanvasPaintInvalidator(const LayoutHTMLCanvas& htmlCanvas,
+  HTMLCanvasPaintInvalidator(const LayoutHTMLCanvas& html_canvas,
                              const PaintInvalidatorContext& context)
-      : m_htmlCanvas(htmlCanvas), m_context(context) {}
+      : html_canvas_(html_canvas), context_(context) {}
 
-  PaintInvalidationReason invalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaintIfNeeded();
 
  private:
-  const LayoutHTMLCanvas& m_htmlCanvas;
-  const PaintInvalidatorContext& m_context;
+  const LayoutHTMLCanvas& html_canvas_;
+  const PaintInvalidatorContext& context_;
 };
 
 }  // namespace blink

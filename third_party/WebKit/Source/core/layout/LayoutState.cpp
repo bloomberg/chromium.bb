@@ -32,66 +32,67 @@
 namespace blink {
 
 LayoutState::LayoutState(LayoutView& view)
-    : m_isPaginated(view.pageLogicalHeight()),
-      m_containingBlockLogicalWidthChanged(false),
-      m_paginationStateChanged(false),
-      m_flowThread(nullptr),
-      m_next(nullptr),
-      m_layoutObject(view) {
-  DCHECK(!view.layoutState());
-  view.pushLayoutState(*this);
+    : is_paginated_(view.PageLogicalHeight()),
+      containing_block_logical_width_changed_(false),
+      pagination_state_changed_(false),
+      flow_thread_(nullptr),
+      next_(nullptr),
+      layout_object_(view) {
+  DCHECK(!view.GetLayoutState());
+  view.PushLayoutState(*this);
 }
 
-LayoutState::LayoutState(LayoutBox& layoutObject,
-                         bool containingBlockLogicalWidthChanged)
-    : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged),
-      m_next(layoutObject.view()->layoutState()),
-      m_layoutObject(layoutObject) {
-  if (layoutObject.isLayoutFlowThread())
-    m_flowThread = toLayoutFlowThread(&layoutObject);
+LayoutState::LayoutState(LayoutBox& layout_object,
+                         bool containing_block_logical_width_changed)
+    : containing_block_logical_width_changed_(
+          containing_block_logical_width_changed),
+      next_(layout_object.View()->GetLayoutState()),
+      layout_object_(layout_object) {
+  if (layout_object.IsLayoutFlowThread())
+    flow_thread_ = ToLayoutFlowThread(&layout_object);
   else
-    m_flowThread = m_next->flowThread();
-  m_paginationStateChanged = m_next->m_paginationStateChanged;
-  layoutObject.view()->pushLayoutState(*this);
+    flow_thread_ = next_->FlowThread();
+  pagination_state_changed_ = next_->pagination_state_changed_;
+  layout_object.View()->PushLayoutState(*this);
 
-  if (layoutObject.isLayoutFlowThread()) {
+  if (layout_object.IsLayoutFlowThread()) {
     // Entering a new pagination context.
-    m_paginationOffset = LayoutSize();
-    m_isPaginated = true;
+    pagination_offset_ = LayoutSize();
+    is_paginated_ = true;
     return;
   }
 
   // Disable pagination for objects we don't support. For now this includes
   // overflow:scroll/auto, inline blocks and writing mode roots. Additionally,
   // pagination inside SVG is not allowed.
-  if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks ||
-      m_layoutObject.isSVGChild()) {
-    m_flowThread = nullptr;
-    m_isPaginated = false;
+  if (layout_object.GetPaginationBreakability() == LayoutBox::kForbidBreaks ||
+      layout_object_.IsSVGChild()) {
+    flow_thread_ = nullptr;
+    is_paginated_ = false;
     return;
   }
 
-  m_isPaginated = m_next->m_isPaginated;
-  if (!m_isPaginated)
+  is_paginated_ = next_->is_paginated_;
+  if (!is_paginated_)
     return;
 
   // Now adjust the pagination offset, so that we can easily figure out how far
   // away we are from the start of the pagination context.
-  m_paginationOffset = m_next->m_paginationOffset;
-  bool fixed = layoutObject.isOutOfFlowPositioned() &&
-               layoutObject.style()->position() == EPosition::kFixed;
+  pagination_offset_ = next_->pagination_offset_;
+  bool fixed = layout_object.IsOutOfFlowPositioned() &&
+               layout_object.Style()->GetPosition() == EPosition::kFixed;
   if (fixed)
     return;
-  m_paginationOffset =
-      m_next->m_paginationOffset + layoutObject.locationOffset();
-  if (!layoutObject.isOutOfFlowPositioned())
+  pagination_offset_ =
+      next_->pagination_offset_ + layout_object.LocationOffset();
+  if (!layout_object.IsOutOfFlowPositioned())
     return;
-  if (LayoutObject* container = layoutObject.container()) {
-    if (container->style()->hasInFlowPosition() &&
-        container->isLayoutInline()) {
-      m_paginationOffset +=
-          toLayoutInline(container)->offsetForInFlowPositionedInline(
-              layoutObject);
+  if (LayoutObject* container = layout_object.Container()) {
+    if (container->Style()->HasInFlowPosition() &&
+        container->IsLayoutInline()) {
+      pagination_offset_ +=
+          ToLayoutInline(container)->OffsetForInFlowPositionedInline(
+              layout_object);
     }
   }
 
@@ -100,30 +101,30 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
 }
 
 LayoutState::LayoutState(LayoutObject& root)
-    : m_isPaginated(false),
-      m_containingBlockLogicalWidthChanged(false),
-      m_paginationStateChanged(false),
-      m_flowThread(nullptr),
-      m_next(root.view()->layoutState()),
-      m_layoutObject(root) {
-  DCHECK(!m_next);
-  DCHECK(!root.isLayoutView());
-  root.view()->pushLayoutState(*this);
+    : is_paginated_(false),
+      containing_block_logical_width_changed_(false),
+      pagination_state_changed_(false),
+      flow_thread_(nullptr),
+      next_(root.View()->GetLayoutState()),
+      layout_object_(root) {
+  DCHECK(!next_);
+  DCHECK(!root.IsLayoutView());
+  root.View()->PushLayoutState(*this);
 }
 
 LayoutState::~LayoutState() {
-  if (m_layoutObject.view()->layoutState()) {
-    DCHECK_EQ(m_layoutObject.view()->layoutState(), this);
-    m_layoutObject.view()->popLayoutState();
+  if (layout_object_.View()->GetLayoutState()) {
+    DCHECK_EQ(layout_object_.View()->GetLayoutState(), this);
+    layout_object_.View()->PopLayoutState();
   }
 }
 
-LayoutUnit LayoutState::pageLogicalOffset(
+LayoutUnit LayoutState::PageLogicalOffset(
     const LayoutBox& child,
-    const LayoutUnit& childLogicalOffset) const {
-  if (child.isHorizontalWritingMode())
-    return m_paginationOffset.height() + childLogicalOffset;
-  return m_paginationOffset.width() + childLogicalOffset;
+    const LayoutUnit& child_logical_offset) const {
+  if (child.IsHorizontalWritingMode())
+    return pagination_offset_.Height() + child_logical_offset;
+  return pagination_offset_.Width() + child_logical_offset;
 }
 
 }  // namespace blink

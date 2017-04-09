@@ -16,24 +16,24 @@ class SVGTransformListInterpolationType : public SVGInterpolationType {
       : SVGInterpolationType(attribute) {}
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue&,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertSVGValue(
-      const SVGPropertyBase& svgValue) const final;
-  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
+  InterpolationValue MaybeConvertSVGValue(
+      const SVGPropertyBase& svg_value) const final;
+  InterpolationValue MaybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
-  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+  SVGPropertyBase* AppliedSVGValue(const InterpolableValue&,
                                    const NonInterpolableValue*) const final;
 
-  PairwiseInterpolationValue maybeMergeSingles(
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
+                 double interpolation_fraction) const final;
 };
 
 }  // namespace blink

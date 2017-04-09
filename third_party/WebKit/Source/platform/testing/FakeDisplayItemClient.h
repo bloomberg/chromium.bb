@@ -14,22 +14,22 @@ namespace blink {
 class FakeDisplayItemClient : public DisplayItemClient {
  public:
   FakeDisplayItemClient(const String& name = "FakeDisplayItemClient",
-                        const LayoutRect& visualRect = LayoutRect())
-      : m_name(name), m_visualRect(visualRect) {}
+                        const LayoutRect& visual_rect = LayoutRect())
+      : name_(name), visual_rect_(visual_rect) {}
 
-  String debugName() const final { return m_name; }
-  LayoutRect visualRect() const override { return m_visualRect; }
+  String DebugName() const final { return name_; }
+  LayoutRect VisualRect() const override { return visual_rect_; }
 
-  void setVisualRect(const LayoutRect& r) { m_visualRect = r; }
+  void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
 
   // This simulates a paint without needing a PaintController.
-  void updateCacheGeneration() {
-    setDisplayItemsCached(CacheGenerationOrInvalidationReason::next());
+  void UpdateCacheGeneration() {
+    SetDisplayItemsCached(CacheGenerationOrInvalidationReason::Next());
   }
 
  private:
-  String m_name;
-  LayoutRect m_visualRect;
+  String name_;
+  LayoutRect visual_rect_;
 };
 
 }  // namespace blink

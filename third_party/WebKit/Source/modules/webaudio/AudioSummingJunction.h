@@ -44,31 +44,31 @@ class AudioSummingJunction {
   virtual ~AudioSummingJunction();
 
   // Can be called from any thread.
-  DeferredTaskHandler& deferredTaskHandler() const {
-    return *m_deferredTaskHandler;
+  DeferredTaskHandler& GetDeferredTaskHandler() const {
+    return *deferred_task_handler_;
   }
 
   // This must be called whenever we modify m_outputs.
-  void changedOutputs();
+  void ChangedOutputs();
 
   // This copies m_outputs to m_renderingOutputs. Please see comments for these
   // lists below.  This must be called when we own the context's graph lock in
   // the audio thread at the very start or end of the render quantum.
-  void updateRenderingState();
+  void UpdateRenderingState();
 
   // Rendering code accesses its version of the current connections here.
-  unsigned numberOfRenderingConnections() const {
-    return m_renderingOutputs.size();
+  unsigned NumberOfRenderingConnections() const {
+    return rendering_outputs_.size();
   }
-  AudioNodeOutput* renderingOutput(unsigned i) { return m_renderingOutputs[i]; }
-  bool isConnected() const { return numberOfRenderingConnections() > 0; }
+  AudioNodeOutput* RenderingOutput(unsigned i) { return rendering_outputs_[i]; }
+  bool IsConnected() const { return NumberOfRenderingConnections() > 0; }
 
-  virtual void didUpdate() = 0;
+  virtual void DidUpdate() = 0;
 
  protected:
   explicit AudioSummingJunction(DeferredTaskHandler&);
 
-  RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
+  RefPtr<DeferredTaskHandler> deferred_task_handler_;
 
   // m_outputs contains the AudioNodeOutputs representing current connections
   // which are not disabled.  The rendering code should never use this
@@ -76,7 +76,7 @@ class AudioSummingJunction {
   // These raw pointers are safe. Owner AudioNodes of these AudioNodeOutputs
   // manage their lifetime, and AudioNode::dispose() disconnects all of
   // connections.
-  HashSet<AudioNodeOutput*> m_outputs;
+  HashSet<AudioNodeOutput*> outputs_;
 
   // m_renderingOutputs is a copy of m_outputs which will never be modified
   // during the graph rendering on the audio thread.  This is the list which
@@ -86,10 +86,10 @@ class AudioSummingJunction {
   // time, m_renderingOutputs is identical to m_outputs.
   // These raw pointers are safe. Owner of this AudioSummingJunction has
   // strong references to owners of these AudioNodeOutput.
-  Vector<AudioNodeOutput*> m_renderingOutputs;
+  Vector<AudioNodeOutput*> rendering_outputs_;
 
   // m_renderingStateNeedUpdating keeps track if m_outputs is modified.
-  bool m_renderingStateNeedUpdating;
+  bool rendering_state_need_updating_;
 };
 
 }  // namespace blink

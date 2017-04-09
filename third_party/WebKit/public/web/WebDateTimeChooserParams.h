@@ -40,10 +40,10 @@ struct WebDateTimeChooserParams {
   // The type of chooser to show.
   WebDateTimeInputType type;
   // Bounding rectangle of the requester element.
-  WebRect anchorRectInScreen;
+  WebRect anchor_rect_in_screen;
   // The current value of the requester element as a double.
   // NaN means empty value. Should not be infinity.
-  double doubleValue;
+  double double_value;
   // <datalist> option suggestions associated to the requester element. The
   // vector size might be 0.
   WebVector<WebDateTimeSuggestion> suggestions;
@@ -58,19 +58,19 @@ struct WebDateTimeChooserParams {
   // represetnted in months for month type.
   double step;
   // Step-base value represeted in milliseconds, or months.
-  double stepBase;
+  double step_base;
   // True if the requester element has required attribute.
-  bool isRequired;
+  bool is_required;
   // True if the requester element is rendered in rtl direction.
-  bool isAnchorElementRTL;
+  bool is_anchor_element_rtl;
 
   WebDateTimeChooserParams()
       : minimum(0),
         maximum(0),
         step(0),
-        stepBase(0),
-        isRequired(false),
-        isAnchorElementRTL(false) {}
+        step_base(0),
+        is_required(false),
+        is_anchor_element_rtl(false) {}
 };
 
 }  // namespace blink

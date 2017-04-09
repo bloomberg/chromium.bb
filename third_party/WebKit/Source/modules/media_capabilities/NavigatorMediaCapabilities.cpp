@@ -12,33 +12,33 @@ namespace blink {
 MediaCapabilities* NavigatorMediaCapabilities::mediaCapabilities(
     Navigator& navigator) {
   NavigatorMediaCapabilities& self =
-      NavigatorMediaCapabilities::from(navigator);
-  if (!self.m_capabilities)
-    self.m_capabilities = new MediaCapabilities();
-  return self.m_capabilities.get();
+      NavigatorMediaCapabilities::From(navigator);
+  if (!self.capabilities_)
+    self.capabilities_ = new MediaCapabilities();
+  return self.capabilities_.Get();
 }
 
 DEFINE_TRACE(NavigatorMediaCapabilities) {
-  visitor->trace(m_capabilities);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(capabilities_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorMediaCapabilities::NavigatorMediaCapabilities(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-NavigatorMediaCapabilities& NavigatorMediaCapabilities::from(
+NavigatorMediaCapabilities& NavigatorMediaCapabilities::From(
     Navigator& navigator) {
   NavigatorMediaCapabilities* supplement =
       static_cast<NavigatorMediaCapabilities*>(
-          Supplement<Navigator>::from(navigator, supplementName()));
+          Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorMediaCapabilities(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-const char* NavigatorMediaCapabilities::supplementName() {
+const char* NavigatorMediaCapabilities::SupplementName() {
   return "NavigatorMediaCapabilities";
 }
 

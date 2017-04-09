@@ -44,12 +44,12 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
 
   // Called by MediaControls when the HTMLMediaElement is added to a document
   // document. All event listeners should be added.
-  void attach();
+  void Attach();
 
   // Called by MediaControls when the HTMLMediaElement is no longer in the
   // document. All event listeners should be removed in order to prepare the
   // object to be garbage collected.
-  void detach();
+  void Detach();
 
   // EventListener implementation.
   bool operator==(const EventListener&) const override;
@@ -60,40 +60,40 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   friend class MediaControlsOrientationLockDelegateTest;
 
   enum class State {
-    PendingFullscreen,
-    PendingMetadata,
-    MaybeLockedFullscreen,
+    kPendingFullscreen,
+    kPendingMetadata,
+    kMaybeLockedFullscreen,
   };
 
   // EventListener implementation.
   void handleEvent(ExecutionContext*, Event*) override;
 
-  HTMLVideoElement& videoElement() const;
-  Document& document() const;
+  HTMLVideoElement& VideoElement() const;
+  Document& GetDocument() const;
 
   // Returns the orientation in which the video should be locked based on its
   // size.
-  MODULES_EXPORT WebScreenOrientationLockType computeOrientationLock() const;
+  MODULES_EXPORT WebScreenOrientationLockType ComputeOrientationLock() const;
 
   // Locks the screen orientation if the video has metadata information
   // available. Delays locking orientation until metadata are available
   // otherwise.
-  void maybeLockOrientation();
+  void MaybeLockOrientation();
 
   // Unlocks the screen orientation if the screen orientation was previously
   // locked.
-  void maybeUnlockOrientation();
+  void MaybeUnlockOrientation();
 
   // Current state of the object. See comment at the top of the file for a
   // detailed description.
-  State m_state = State::PendingFullscreen;
+  State state_ = State::kPendingFullscreen;
 
   // Whether the controls should unlock the screen orientation when possible.
   // In other words, whether the orientation was locked.
-  bool m_shouldUnlockOrientation = false;
+  bool should_unlock_orientation_ = false;
 
   // `m_videoElement` owns MediaControls that owns |this|.
-  Member<HTMLVideoElement> m_videoElement;
+  Member<HTMLVideoElement> video_element_;
 };
 
 }  // namespace blink

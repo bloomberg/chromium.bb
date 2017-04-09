@@ -58,167 +58,167 @@ enum class AOMStringProperty;
 typedef unsigned AXID;
 
 enum AccessibilityRole {
-  UnknownRole = 0,
-  AbbrRole,  // No mapping to ARIA role.
-  AlertDialogRole,
-  AlertRole,
-  AnchorRole,      // No mapping to ARIA role.
-  AnnotationRole,  // No mapping to ARIA role.
-  ApplicationRole,
-  ArticleRole,
-  AudioRole,  // No mapping to ARIA role.
-  BannerRole,
-  BlockquoteRole,     // No mapping to ARIA role.
-  BusyIndicatorRole,  // No mapping to ARIA role.
-  ButtonRole,
-  CanvasRole,   // No mapping to ARIA role.
-  CaptionRole,  // No mapping to ARIA role.
-  CellRole,
-  CheckBoxRole,
-  ColorWellRole,  // No mapping to ARIA role.
-  ColumnHeaderRole,
-  ColumnRole,  // No mapping to ARIA role.
-  ComboBoxRole,
-  ComplementaryRole,
-  ContentInfoRole,
-  DateRole,      // No mapping to ARIA role.
-  DateTimeRole,  // No mapping to ARIA role.
-  DefinitionRole,
-  DescriptionListDetailRole,  // No mapping to ARIA role.
-  DescriptionListRole,        // No mapping to ARIA role.
-  DescriptionListTermRole,    // No mapping to ARIA role.
-  DetailsRole,                // No mapping to ARIA role.
-  DialogRole,
-  DirectoryRole,
-  DisclosureTriangleRole,  // No mapping to ARIA role.
-  DivRole,                 // No mapping to ARIA role.
-  DocumentRole,
-  EmbeddedObjectRole,  // No mapping to ARIA role.
-  FeedRole,
-  FigcaptionRole,  // No mapping to ARIA role.
-  FigureRole,
-  FooterRole,
-  FormRole,
-  GridRole,
-  GroupRole,
-  HeadingRole,
-  IframePresentationalRole,  // No mapping to ARIA role.
-  IframeRole,                // No mapping to ARIA role.
-  IgnoredRole,               // No mapping to ARIA role.
-  ImageMapLinkRole,          // No mapping to ARIA role.
-  ImageMapRole,              // No mapping to ARIA role.
-  ImageRole,
-  InlineTextBoxRole,  // No mapping to ARIA role.
-  InputTimeRole,      // No mapping to ARIA role.
-  LabelRole,
-  LegendRole,     // No mapping to ARIA role.
-  LineBreakRole,  // No mapping to ARIA role.
-  LinkRole,
-  ListBoxOptionRole,
-  ListBoxRole,
-  ListItemRole,
-  ListMarkerRole,  // No mapping to ARIA role.
-  ListRole,
-  LogRole,
-  MainRole,
-  MarkRole,  // No mapping to ARIA role.
-  MarqueeRole,
-  MathRole,
-  MenuBarRole,
-  MenuButtonRole,
-  MenuItemRole,
-  MenuItemCheckBoxRole,
-  MenuItemRadioRole,
-  MenuListOptionRole,
-  MenuListPopupRole,
-  MenuRole,
-  MeterRole,
-  NavigationRole,
-  NoneRole,  // No mapping to ARIA role.
-  NoteRole,
-  OutlineRole,    // No mapping to ARIA role.
-  ParagraphRole,  // No mapping to ARIA role.
-  PopUpButtonRole,
-  PreRole,  // No mapping to ARIA role.
-  PresentationalRole,
-  ProgressIndicatorRole,
-  RadioButtonRole,
-  RadioGroupRole,
-  RegionRole,
-  RootWebAreaRole,  // No mapping to ARIA role.
-  RowHeaderRole,
-  RowRole,
-  RubyRole,        // No mapping to ARIA role.
-  RulerRole,       // No mapping to ARIA role.
-  SVGRootRole,     // No mapping to ARIA role.
-  ScrollAreaRole,  // No mapping to ARIA role.
-  ScrollBarRole,
-  SeamlessWebAreaRole,  // No mapping to ARIA role.
-  SearchRole,
-  SearchBoxRole,
-  SliderRole,
-  SliderThumbRole,     // No mapping to ARIA role.
-  SpinButtonPartRole,  // No mapping to ARIA role.
-  SpinButtonRole,
-  SplitterRole,
-  StaticTextRole,  // No mapping to ARIA role.
-  StatusRole,
-  SwitchRole,
-  TabGroupRole,  // No mapping to ARIA role.
-  TabListRole,
-  TabPanelRole,
-  TabRole,
-  TableHeaderContainerRole,  // No mapping to ARIA role.
-  TableRole,
-  TermRole,
-  TextFieldRole,
-  TimeRole,  // No mapping to ARIA role.
-  TimerRole,
-  ToggleButtonRole,
-  ToolbarRole,
-  TreeGridRole,
-  TreeItemRole,
-  TreeRole,
-  UserInterfaceTooltipRole,
-  VideoRole,    // No mapping to ARIA role.
-  WebAreaRole,  // No mapping to ARIA role.
-  WindowRole,   // No mapping to ARIA role.
-  NumRoles
+  kUnknownRole = 0,
+  kAbbrRole,  // No mapping to ARIA role.
+  kAlertDialogRole,
+  kAlertRole,
+  kAnchorRole,      // No mapping to ARIA role.
+  kAnnotationRole,  // No mapping to ARIA role.
+  kApplicationRole,
+  kArticleRole,
+  kAudioRole,  // No mapping to ARIA role.
+  kBannerRole,
+  kBlockquoteRole,     // No mapping to ARIA role.
+  kBusyIndicatorRole,  // No mapping to ARIA role.
+  kButtonRole,
+  kCanvasRole,   // No mapping to ARIA role.
+  kCaptionRole,  // No mapping to ARIA role.
+  kCellRole,
+  kCheckBoxRole,
+  kColorWellRole,  // No mapping to ARIA role.
+  kColumnHeaderRole,
+  kColumnRole,  // No mapping to ARIA role.
+  kComboBoxRole,
+  kComplementaryRole,
+  kContentInfoRole,
+  kDateRole,      // No mapping to ARIA role.
+  kDateTimeRole,  // No mapping to ARIA role.
+  kDefinitionRole,
+  kDescriptionListDetailRole,  // No mapping to ARIA role.
+  kDescriptionListRole,        // No mapping to ARIA role.
+  kDescriptionListTermRole,    // No mapping to ARIA role.
+  kDetailsRole,                // No mapping to ARIA role.
+  kDialogRole,
+  kDirectoryRole,
+  kDisclosureTriangleRole,  // No mapping to ARIA role.
+  kDivRole,                 // No mapping to ARIA role.
+  kDocumentRole,
+  kEmbeddedObjectRole,  // No mapping to ARIA role.
+  kFeedRole,
+  kFigcaptionRole,  // No mapping to ARIA role.
+  kFigureRole,
+  kFooterRole,
+  kFormRole,
+  kGridRole,
+  kGroupRole,
+  kHeadingRole,
+  kIframePresentationalRole,  // No mapping to ARIA role.
+  kIframeRole,                // No mapping to ARIA role.
+  kIgnoredRole,               // No mapping to ARIA role.
+  kImageMapLinkRole,          // No mapping to ARIA role.
+  kImageMapRole,              // No mapping to ARIA role.
+  kImageRole,
+  kInlineTextBoxRole,  // No mapping to ARIA role.
+  kInputTimeRole,      // No mapping to ARIA role.
+  kLabelRole,
+  kLegendRole,     // No mapping to ARIA role.
+  kLineBreakRole,  // No mapping to ARIA role.
+  kLinkRole,
+  kListBoxOptionRole,
+  kListBoxRole,
+  kListItemRole,
+  kListMarkerRole,  // No mapping to ARIA role.
+  kListRole,
+  kLogRole,
+  kMainRole,
+  kMarkRole,  // No mapping to ARIA role.
+  kMarqueeRole,
+  kMathRole,
+  kMenuBarRole,
+  kMenuButtonRole,
+  kMenuItemRole,
+  kMenuItemCheckBoxRole,
+  kMenuItemRadioRole,
+  kMenuListOptionRole,
+  kMenuListPopupRole,
+  kMenuRole,
+  kMeterRole,
+  kNavigationRole,
+  kNoneRole,  // No mapping to ARIA role.
+  kNoteRole,
+  kOutlineRole,    // No mapping to ARIA role.
+  kParagraphRole,  // No mapping to ARIA role.
+  kPopUpButtonRole,
+  kPreRole,  // No mapping to ARIA role.
+  kPresentationalRole,
+  kProgressIndicatorRole,
+  kRadioButtonRole,
+  kRadioGroupRole,
+  kRegionRole,
+  kRootWebAreaRole,  // No mapping to ARIA role.
+  kRowHeaderRole,
+  kRowRole,
+  kRubyRole,        // No mapping to ARIA role.
+  kRulerRole,       // No mapping to ARIA role.
+  kSVGRootRole,     // No mapping to ARIA role.
+  kScrollAreaRole,  // No mapping to ARIA role.
+  kScrollBarRole,
+  kSeamlessWebAreaRole,  // No mapping to ARIA role.
+  kSearchRole,
+  kSearchBoxRole,
+  kSliderRole,
+  kSliderThumbRole,     // No mapping to ARIA role.
+  kSpinButtonPartRole,  // No mapping to ARIA role.
+  kSpinButtonRole,
+  kSplitterRole,
+  kStaticTextRole,  // No mapping to ARIA role.
+  kStatusRole,
+  kSwitchRole,
+  kTabGroupRole,  // No mapping to ARIA role.
+  kTabListRole,
+  kTabPanelRole,
+  kTabRole,
+  kTableHeaderContainerRole,  // No mapping to ARIA role.
+  kTableRole,
+  kTermRole,
+  kTextFieldRole,
+  kTimeRole,  // No mapping to ARIA role.
+  kTimerRole,
+  kToggleButtonRole,
+  kToolbarRole,
+  kTreeGridRole,
+  kTreeItemRole,
+  kTreeRole,
+  kUserInterfaceTooltipRole,
+  kVideoRole,    // No mapping to ARIA role.
+  kWebAreaRole,  // No mapping to ARIA role.
+  kWindowRole,   // No mapping to ARIA role.
+  kNumRoles
 };
 
 enum AccessibilityTextSource {
-  AlternativeText,
-  ChildrenText,
-  SummaryText,
-  HelpText,
-  VisibleText,
-  TitleTagText,
-  PlaceholderText,
-  LabelByElementText,
+  kAlternativeText,
+  kChildrenText,
+  kSummaryText,
+  kHelpText,
+  kVisibleText,
+  kTitleTagText,
+  kPlaceholderText,
+  kLabelByElementText,
 };
 
 enum AccessibilityState {
-  AXBusyState,
-  AXCheckedState,
-  AXEnabledState,
-  AXExpandedState,
-  AXFocusableState,
-  AXFocusedState,
-  AXHaspopupState,
-  AXHoveredState,
-  AXInvisibleState,
-  AXLinkedState,
-  AXMultilineState,
-  AXMultiselectableState,
-  AXOffscreenState,
-  AXPressedState,
-  AXProtectedState,
-  AXReadonlyState,
-  AXRequiredState,
-  AXSelectableState,
-  AXSelectedState,
-  AXVerticalState,
-  AXVisitedState
+  kAXBusyState,
+  kAXCheckedState,
+  kAXEnabledState,
+  kAXExpandedState,
+  kAXFocusableState,
+  kAXFocusedState,
+  kAXHaspopupState,
+  kAXHoveredState,
+  kAXInvisibleState,
+  kAXLinkedState,
+  kAXMultilineState,
+  kAXMultiselectableState,
+  kAXOffscreenState,
+  kAXPressedState,
+  kAXProtectedState,
+  kAXReadonlyState,
+  kAXRequiredState,
+  kAXSelectableState,
+  kAXSelectedState,
+  kAXVerticalState,
+  kAXVisitedState
 };
 
 class AccessibilityText final
@@ -226,133 +226,133 @@ class AccessibilityText final
   WTF_MAKE_NONCOPYABLE(AccessibilityText);
 
  public:
-  DEFINE_INLINE_TRACE() { visitor->trace(m_textElement); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(text_element_); }
 
  private:
   AccessibilityText(const String& text,
                     const AccessibilityTextSource& source,
                     AXObject* element)
-      : m_text(text), m_textElement(element) {}
+      : text_(text), text_element_(element) {}
 
-  String m_text;
-  Member<AXObject> m_textElement;
+  String text_;
+  Member<AXObject> text_element_;
 };
 
 enum AccessibilityOrientation {
-  AccessibilityOrientationUndefined = 0,
-  AccessibilityOrientationVertical,
-  AccessibilityOrientationHorizontal,
+  kAccessibilityOrientationUndefined = 0,
+  kAccessibilityOrientationVertical,
+  kAccessibilityOrientationHorizontal,
 };
 
 enum AXObjectInclusion {
-  IncludeObject,
-  IgnoreObject,
-  DefaultBehavior,
+  kIncludeObject,
+  kIgnoreObject,
+  kDefaultBehavior,
 };
 
 enum class AXSupportedAction {
-  None = 0,
-  Activate,
-  Check,
-  Click,
-  Jump,
-  Open,
-  Press,
-  Select,
-  Uncheck
+  kNone = 0,
+  kActivate,
+  kCheck,
+  kClick,
+  kJump,
+  kOpen,
+  kPress,
+  kSelect,
+  kUncheck
 };
 
 enum AccessibilityButtonState {
-  ButtonStateOff = 0,
-  ButtonStateOn,
-  ButtonStateMixed,
+  kButtonStateOff = 0,
+  kButtonStateOn,
+  kButtonStateMixed,
 };
 
 enum AccessibilityTextDirection {
-  AccessibilityTextDirectionLTR,
-  AccessibilityTextDirectionRTL,
-  AccessibilityTextDirectionTTB,
-  AccessibilityTextDirectionBTT
+  kAccessibilityTextDirectionLTR,
+  kAccessibilityTextDirectionRTL,
+  kAccessibilityTextDirectionTTB,
+  kAccessibilityTextDirectionBTT
 };
 
 enum SortDirection {
-  SortDirectionUndefined = 0,
-  SortDirectionNone,
-  SortDirectionAscending,
-  SortDirectionDescending,
-  SortDirectionOther
+  kSortDirectionUndefined = 0,
+  kSortDirectionNone,
+  kSortDirectionAscending,
+  kSortDirectionDescending,
+  kSortDirectionOther
 };
 
 enum AccessibilityExpanded {
-  ExpandedUndefined = 0,
-  ExpandedCollapsed,
-  ExpandedExpanded,
+  kExpandedUndefined = 0,
+  kExpandedCollapsed,
+  kExpandedExpanded,
 };
 
 enum AccessibilityOptionalBool {
-  OptionalBoolUndefined = 0,
-  OptionalBoolTrue,
-  OptionalBoolFalse
+  kOptionalBoolUndefined = 0,
+  kOptionalBoolTrue,
+  kOptionalBoolFalse
 };
 
 enum AriaCurrentState {
-  AriaCurrentStateUndefined = 0,
-  AriaCurrentStateFalse,
-  AriaCurrentStateTrue,
-  AriaCurrentStatePage,
-  AriaCurrentStateStep,
-  AriaCurrentStateLocation,
-  AriaCurrentStateDate,
-  AriaCurrentStateTime
+  kAriaCurrentStateUndefined = 0,
+  kAriaCurrentStateFalse,
+  kAriaCurrentStateTrue,
+  kAriaCurrentStatePage,
+  kAriaCurrentStateStep,
+  kAriaCurrentStateLocation,
+  kAriaCurrentStateDate,
+  kAriaCurrentStateTime
 };
 
 enum InvalidState {
-  InvalidStateUndefined = 0,
-  InvalidStateFalse,
-  InvalidStateTrue,
-  InvalidStateSpelling,
-  InvalidStateGrammar,
-  InvalidStateOther
+  kInvalidStateUndefined = 0,
+  kInvalidStateFalse,
+  kInvalidStateTrue,
+  kInvalidStateSpelling,
+  kInvalidStateGrammar,
+  kInvalidStateOther
 };
 
 enum TextStyle {
-  TextStyleNone = 0,
-  TextStyleBold = 1 << 0,
-  TextStyleItalic = 1 << 1,
-  TextStyleUnderline = 1 << 2,
-  TextStyleLineThrough = 1 << 3
+  kTextStyleNone = 0,
+  kTextStyleBold = 1 << 0,
+  kTextStyleItalic = 1 << 1,
+  kTextStyleUnderline = 1 << 2,
+  kTextStyleLineThrough = 1 << 3
 };
 
 enum TextUnderElementMode {
-  TextUnderElementAll,
-  TextUnderElementAny  // If the text is unimportant, just whether or not it's
-                       // present
+  kTextUnderElementAll,
+  kTextUnderElementAny  // If the text is unimportant, just whether or not it's
+                        // present
 };
 
 enum class AXBoolAttribute {};
 
 enum class AXStringAttribute {
-  AriaKeyShortcuts,
-  AriaRoleDescription,
+  kAriaKeyShortcuts,
+  kAriaRoleDescription,
 };
 
 enum class AXObjectAttribute {
-  AriaActiveDescendant,
-  AriaErrorMessage,
+  kAriaActiveDescendant,
+  kAriaErrorMessage,
 };
 
 enum class AXObjectVectorAttribute {
-  AriaControls,
-  AriaDetails,
-  AriaFlowTo,
+  kAriaControls,
+  kAriaDetails,
+  kAriaFlowTo,
 };
 
 class AXSparseAttributeClient {
  public:
-  virtual void addBoolAttribute(AXBoolAttribute, bool) = 0;
-  virtual void addStringAttribute(AXStringAttribute, const String&) = 0;
-  virtual void addObjectAttribute(AXObjectAttribute, AXObject&) = 0;
-  virtual void addObjectVectorAttribute(AXObjectVectorAttribute,
+  virtual void AddBoolAttribute(AXBoolAttribute, bool) = 0;
+  virtual void AddStringAttribute(AXStringAttribute, const String&) = 0;
+  virtual void AddObjectAttribute(AXObjectAttribute, AXObject&) = 0;
+  virtual void AddObjectVectorAttribute(AXObjectVectorAttribute,
                                         HeapVector<Member<AXObject>>&) = 0;
 };
 
@@ -360,58 +360,58 @@ class AXSparseAttributeClient {
 // because on some platforms this determines how the accessible name
 // is exposed.
 enum AXNameFrom {
-  AXNameFromUninitialized = -1,
-  AXNameFromAttribute = 0,
-  AXNameFromCaption,
-  AXNameFromContents,
-  AXNameFromPlaceholder,
-  AXNameFromRelatedElement,
-  AXNameFromValue,
-  AXNameFromTitle,
+  kAXNameFromUninitialized = -1,
+  kAXNameFromAttribute = 0,
+  kAXNameFromCaption,
+  kAXNameFromContents,
+  kAXNameFromPlaceholder,
+  kAXNameFromRelatedElement,
+  kAXNameFromValue,
+  kAXNameFromTitle,
 };
 
 // The potential native HTML-based text (name, description or placeholder)
 // sources for an element.  See
 // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 enum AXTextFromNativeHTML {
-  AXTextFromNativeHTMLUninitialized = -1,
-  AXTextFromNativeHTMLFigcaption,
-  AXTextFromNativeHTMLLabel,
-  AXTextFromNativeHTMLLabelFor,
-  AXTextFromNativeHTMLLabelWrapped,
-  AXTextFromNativeHTMLLegend,
-  AXTextFromNativeHTMLTableCaption,
-  AXTextFromNativeHTMLTitleElement,
+  kAXTextFromNativeHTMLUninitialized = -1,
+  kAXTextFromNativeHTMLFigcaption,
+  kAXTextFromNativeHTMLLabel,
+  kAXTextFromNativeHTMLLabelFor,
+  kAXTextFromNativeHTMLLabelWrapped,
+  kAXTextFromNativeHTMLLegend,
+  kAXTextFromNativeHTMLTableCaption,
+  kAXTextFromNativeHTMLTitleElement,
 };
 
 // The source of the accessible description of an element. This is needed
 // because on some platforms this determines how the accessible description
 // is exposed.
 enum AXDescriptionFrom {
-  AXDescriptionFromUninitialized = -1,
-  AXDescriptionFromAttribute = 0,
-  AXDescriptionFromContents,
-  AXDescriptionFromRelatedElement,
+  kAXDescriptionFromUninitialized = -1,
+  kAXDescriptionFromAttribute = 0,
+  kAXDescriptionFromContents,
+  kAXDescriptionFromRelatedElement,
 };
 
 enum AXIgnoredReason {
-  AXActiveModalDialog,
-  AXAncestorDisallowsChild,
-  AXAncestorIsLeafNode,
-  AXAriaHidden,
-  AXAriaHiddenRoot,
-  AXEmptyAlt,
-  AXEmptyText,
-  AXInert,
-  AXInheritsPresentation,
-  AXLabelContainer,
-  AXLabelFor,
-  AXNotRendered,
-  AXNotVisible,
-  AXPresentationalRole,
-  AXProbablyPresentational,
-  AXStaticTextUsedAsNameFor,
-  AXUninteresting
+  kAXActiveModalDialog,
+  kAXAncestorDisallowsChild,
+  kAXAncestorIsLeafNode,
+  kAXAriaHidden,
+  kAXAriaHiddenRoot,
+  kAXEmptyAlt,
+  kAXEmptyText,
+  kAXInert,
+  kAXInheritsPresentation,
+  kAXLabelContainer,
+  kAXLabelFor,
+  kAXNotRendered,
+  kAXNotVisible,
+  kAXPresentationalRole,
+  kAXProbablyPresentational,
+  kAXStaticTextUsedAsNameFor,
+  kAXUninteresting
 };
 
 class IgnoredReason {
@@ -419,15 +419,15 @@ class IgnoredReason {
 
  public:
   AXIgnoredReason reason;
-  Member<const AXObject> relatedObject;
+  Member<const AXObject> related_object;
 
   explicit IgnoredReason(AXIgnoredReason reason)
-      : reason(reason), relatedObject(nullptr) {}
+      : reason(reason), related_object(nullptr) {}
 
   IgnoredReason(AXIgnoredReason r, const AXObject* obj)
-      : reason(r), relatedObject(obj) {}
+      : reason(r), related_object(obj) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(relatedObject); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(related_object); }
 };
 
 class NameSourceRelatedObject
@@ -441,7 +441,7 @@ class NameSourceRelatedObject
   NameSourceRelatedObject(AXObject* object, String text)
       : object(object), text(text) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(object); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(object); }
 };
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
@@ -452,19 +452,19 @@ class NameSource {
   String text;
   bool superseded = false;
   bool invalid = false;
-  AXNameFrom type = AXNameFromUninitialized;
+  AXNameFrom type = kAXNameFromUninitialized;
   const QualifiedName& attribute;
-  AtomicString attributeValue;
-  AXTextFromNativeHTML nativeSource = AXTextFromNativeHTMLUninitialized;
-  AXRelatedObjectVector relatedObjects;
+  AtomicString attribute_value;
+  AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
+  AXRelatedObjectVector related_objects;
 
   NameSource(bool superseded, const QualifiedName& attr)
       : superseded(superseded), attribute(attr) {}
 
   explicit NameSource(bool superseded)
-      : superseded(superseded), attribute(QualifiedName::null()) {}
+      : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(relatedObjects); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(related_objects); }
 };
 
 class DescriptionSource {
@@ -474,19 +474,19 @@ class DescriptionSource {
   String text;
   bool superseded = false;
   bool invalid = false;
-  AXDescriptionFrom type = AXDescriptionFromUninitialized;
+  AXDescriptionFrom type = kAXDescriptionFromUninitialized;
   const QualifiedName& attribute;
-  AtomicString attributeValue;
-  AXTextFromNativeHTML nativeSource = AXTextFromNativeHTMLUninitialized;
-  AXRelatedObjectVector relatedObjects;
+  AtomicString attribute_value;
+  AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
+  AXRelatedObjectVector related_objects;
 
   DescriptionSource(bool superseded, const QualifiedName& attr)
       : superseded(superseded), attribute(attr) {}
 
   explicit DescriptionSource(bool superseded)
-      : superseded(superseded), attribute(QualifiedName::null()) {}
+      : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(relatedObjects); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(related_objects); }
 };
 
 }  // namespace blink
@@ -507,65 +507,65 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     // The deepest descendant in which the range starts.
     // (nullptr means the current object.)
-    Persistent<AXObject> anchorObject;
+    Persistent<AXObject> anchor_object;
     // The number of characters and child objects in the anchor object
     // before the range starts.
-    int anchorOffset;
+    int anchor_offset;
     // When the same character offset could correspond to two possible
     // cursor positions, upstream means it's on the previous line rather
     // than the next line.
-    TextAffinity anchorAffinity;
+    TextAffinity anchor_affinity;
 
     // The deepest descendant in which the range ends.
     // (nullptr means the current object.)
-    Persistent<AXObject> focusObject;
+    Persistent<AXObject> focus_object;
     // The number of characters and child objects in the focus object
     // before the range ends.
-    int focusOffset;
+    int focus_offset;
     // When the same character offset could correspond to two possible
     // cursor positions, upstream means it's on the previous line rather
     // than the next line.
-    TextAffinity focusAffinity;
+    TextAffinity focus_affinity;
 
     AXRange()
-        : anchorObject(nullptr),
-          anchorOffset(-1),
-          anchorAffinity(TextAffinity::Upstream),
-          focusObject(nullptr),
-          focusOffset(-1),
-          focusAffinity(TextAffinity::Downstream) {}
+        : anchor_object(nullptr),
+          anchor_offset(-1),
+          anchor_affinity(TextAffinity::kUpstream),
+          focus_object(nullptr),
+          focus_offset(-1),
+          focus_affinity(TextAffinity::kDownstream) {}
 
-    AXRange(int startOffset, int endOffset)
-        : anchorObject(nullptr),
-          anchorOffset(startOffset),
-          anchorAffinity(TextAffinity::Upstream),
-          focusObject(nullptr),
-          focusOffset(endOffset),
-          focusAffinity(TextAffinity::Downstream) {}
+    AXRange(int start_offset, int end_offset)
+        : anchor_object(nullptr),
+          anchor_offset(start_offset),
+          anchor_affinity(TextAffinity::kUpstream),
+          focus_object(nullptr),
+          focus_offset(end_offset),
+          focus_affinity(TextAffinity::kDownstream) {}
 
-    AXRange(AXObject* anchorObject,
-            int anchorOffset,
-            TextAffinity anchorAffinity,
-            AXObject* focusObject,
-            int focusOffset,
-            TextAffinity focusAffinity)
-        : anchorObject(anchorObject),
-          anchorOffset(anchorOffset),
-          anchorAffinity(anchorAffinity),
-          focusObject(focusObject),
-          focusOffset(focusOffset),
-          focusAffinity(focusAffinity) {}
+    AXRange(AXObject* anchor_object,
+            int anchor_offset,
+            TextAffinity anchor_affinity,
+            AXObject* focus_object,
+            int focus_offset,
+            TextAffinity focus_affinity)
+        : anchor_object(anchor_object),
+          anchor_offset(anchor_offset),
+          anchor_affinity(anchor_affinity),
+          focus_object(focus_object),
+          focus_offset(focus_offset),
+          focus_affinity(focus_affinity) {}
 
-    bool isValid() const {
-      return ((anchorObject && focusObject) ||
-              (!anchorObject && !focusObject)) &&
-             anchorOffset >= 0 && focusOffset >= 0;
+    bool IsValid() const {
+      return ((anchor_object && focus_object) ||
+              (!anchor_object && !focus_object)) &&
+             anchor_offset >= 0 && focus_offset >= 0;
     }
 
     // Determines if the range only refers to text offsets under the current
     // object.
-    bool isSimple() const {
-      return anchorObject == focusObject || !anchorObject || !focusObject;
+    bool IsSimple() const {
+      return anchor_object == focus_object || !anchor_object || !focus_object;
     }
   };
 
@@ -576,161 +576,163 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual ~AXObject();
   DECLARE_VIRTUAL_TRACE();
 
-  static unsigned numberOfLiveAXObjects() { return s_numberOfLiveAXObjects; }
+  static unsigned NumberOfLiveAXObjects() { return number_of_live_ax_objects_; }
 
   // After constructing an AXObject, it must be given a
   // unique ID, then added to AXObjectCacheImpl, and finally init() must
   // be called last.
-  void setAXObjectID(AXID axObjectID) { m_id = axObjectID; }
-  virtual void init() {}
+  void SetAXObjectID(AXID ax_object_id) { id_ = ax_object_id; }
+  virtual void Init() {}
 
   // When the corresponding WebCore object that this AXObject
   // wraps is deleted, it must be detached.
-  virtual void detach();
-  virtual bool isDetached() const;
+  virtual void Detach();
+  virtual bool IsDetached() const;
 
   // If the parent of this object is known, this can be faster than using
   // computeParent().
-  virtual void setParent(AXObject* parent) { m_parent = parent; }
+  virtual void SetParent(AXObject* parent) { parent_ = parent; }
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
-  AXObjectCacheImpl& axObjectCache() const {
-    DCHECK(m_axObjectCache);
-    return *m_axObjectCache;
+  AXObjectCacheImpl& AxObjectCache() const {
+    DCHECK(ax_object_cache_);
+    return *ax_object_cache_;
   }
 
-  AXID axObjectID() const { return m_id; }
+  AXID AxObjectID() const { return id_; }
 
   // Wrappers that retrieve either an Accessibility Object Model property,
   // or the equivalent ARIA attribute, in that order.
   // TODO(dmazzoni): Add equivalents for other types of properties besides
   // just strings.
-  const AtomicString& getAOMPropertyOrARIAAttribute(AOMStringProperty) const;
+  const AtomicString& GetAOMPropertyOrARIAAttribute(AOMStringProperty) const;
 
-  virtual void getSparseAXAttributes(AXSparseAttributeClient&) const {}
+  virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const {}
 
   // Determine subclass type.
-  virtual bool isAXNodeObject() const { return false; }
-  virtual bool isAXLayoutObject() const { return false; }
-  virtual bool isAXListBox() const { return false; }
-  virtual bool isAXListBoxOption() const { return false; }
-  virtual bool isAXRadioInput() const { return false; }
-  virtual bool isAXSVGRoot() const { return false; }
+  virtual bool IsAXNodeObject() const { return false; }
+  virtual bool IsAXLayoutObject() const { return false; }
+  virtual bool IsAXListBox() const { return false; }
+  virtual bool IsAXListBoxOption() const { return false; }
+  virtual bool IsAXRadioInput() const { return false; }
+  virtual bool IsAXSVGRoot() const { return false; }
 
   // Check object role or purpose.
-  virtual AccessibilityRole roleValue() const { return m_role; }
-  bool isARIATextControl() const;
-  virtual bool isARIATreeGridRow() const { return false; }
-  virtual bool isAXTable() const { return false; }
-  virtual bool isAnchor() const { return false; }
-  bool isButton() const;
-  bool isCanvas() const { return roleValue() == CanvasRole; }
-  bool isCheckbox() const { return roleValue() == CheckBoxRole; }
-  bool isCheckboxOrRadio() const { return isCheckbox() || isRadioButton(); }
-  bool isColorWell() const { return roleValue() == ColorWellRole; }
-  bool isComboBox() const { return roleValue() == ComboBoxRole; }
-  virtual bool isControl() const { return false; }
-  virtual bool isDataTable() const { return false; }
-  virtual bool isEmbeddedObject() const { return false; }
-  virtual bool isFieldset() const { return false; }
-  virtual bool isHeading() const { return false; }
-  virtual bool isImage() const { return false; }
-  virtual bool isImageMapLink() const { return false; }
-  virtual bool isInputImage() const { return false; }
-  bool isLandmarkRelated() const;
-  virtual bool isLink() const { return false; }
-  virtual bool isInPageLinkTarget() const { return false; }
-  virtual bool isList() const { return false; }
-  virtual bool isMenu() const { return false; }
-  virtual bool isMenuButton() const { return false; }
-  virtual bool isMenuList() const { return false; }
-  virtual bool isMenuListOption() const { return false; }
-  virtual bool isMenuListPopup() const { return false; }
-  bool isMenuRelated() const;
-  virtual bool isMeter() const { return false; }
-  virtual bool isMockObject() const { return false; }
-  virtual bool isNativeSpinButton() const { return false; }
-  virtual bool isNativeTextControl() const {
+  virtual AccessibilityRole RoleValue() const { return role_; }
+  bool IsARIATextControl() const;
+  virtual bool IsARIATreeGridRow() const { return false; }
+  virtual bool IsAXTable() const { return false; }
+  virtual bool IsAnchor() const { return false; }
+  bool IsButton() const;
+  bool IsCanvas() const { return RoleValue() == kCanvasRole; }
+  bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
+  bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
+  bool IsColorWell() const { return RoleValue() == kColorWellRole; }
+  bool IsComboBox() const { return RoleValue() == kComboBoxRole; }
+  virtual bool IsControl() const { return false; }
+  virtual bool IsDataTable() const { return false; }
+  virtual bool IsEmbeddedObject() const { return false; }
+  virtual bool IsFieldset() const { return false; }
+  virtual bool IsHeading() const { return false; }
+  virtual bool IsImage() const { return false; }
+  virtual bool IsImageMapLink() const { return false; }
+  virtual bool IsInputImage() const { return false; }
+  bool IsLandmarkRelated() const;
+  virtual bool IsLink() const { return false; }
+  virtual bool IsInPageLinkTarget() const { return false; }
+  virtual bool IsList() const { return false; }
+  virtual bool IsMenu() const { return false; }
+  virtual bool IsMenuButton() const { return false; }
+  virtual bool IsMenuList() const { return false; }
+  virtual bool IsMenuListOption() const { return false; }
+  virtual bool IsMenuListPopup() const { return false; }
+  bool IsMenuRelated() const;
+  virtual bool IsMeter() const { return false; }
+  virtual bool IsMockObject() const { return false; }
+  virtual bool IsNativeSpinButton() const { return false; }
+  virtual bool IsNativeTextControl() const {
     return false;
   }  // input or textarea
-  virtual bool isNonNativeTextControl() const {
+  virtual bool IsNonNativeTextControl() const {
     return false;
   }  // contenteditable or role=textbox
-  virtual bool isPasswordField() const { return false; }
-  virtual bool isPasswordFieldAndShouldHideValue() const;
-  bool isPresentational() const {
-    return roleValue() == NoneRole || roleValue() == PresentationalRole;
+  virtual bool IsPasswordField() const { return false; }
+  virtual bool IsPasswordFieldAndShouldHideValue() const;
+  bool IsPresentational() const {
+    return RoleValue() == kNoneRole || RoleValue() == kPresentationalRole;
   }
-  virtual bool isProgressIndicator() const { return false; }
-  bool isRadioButton() const { return roleValue() == RadioButtonRole; }
-  bool isRange() const {
-    return roleValue() == ProgressIndicatorRole ||
-           roleValue() == ScrollBarRole || roleValue() == SliderRole ||
-           roleValue() == SpinButtonRole;
+  virtual bool IsProgressIndicator() const { return false; }
+  bool IsRadioButton() const { return RoleValue() == kRadioButtonRole; }
+  bool IsRange() const {
+    return RoleValue() == kProgressIndicatorRole ||
+           RoleValue() == kScrollBarRole || RoleValue() == kSliderRole ||
+           RoleValue() == kSpinButtonRole;
   }
-  bool isScrollbar() const { return roleValue() == ScrollBarRole; }
-  virtual bool isSlider() const { return false; }
-  virtual bool isNativeSlider() const { return false; }
-  virtual bool isSpinButton() const { return roleValue() == SpinButtonRole; }
-  virtual bool isSpinButtonPart() const { return false; }
-  bool isTabItem() const { return roleValue() == TabRole; }
-  virtual bool isTableCell() const { return false; }
-  virtual bool isTableRow() const { return false; }
-  virtual bool isTextControl() const { return false; }
-  virtual bool isTableCol() const { return false; }
-  bool isTree() const { return roleValue() == TreeRole; }
-  bool isWebArea() const { return roleValue() == WebAreaRole; }
+  bool IsScrollbar() const { return RoleValue() == kScrollBarRole; }
+  virtual bool IsSlider() const { return false; }
+  virtual bool IsNativeSlider() const { return false; }
+  virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
+  virtual bool IsSpinButtonPart() const { return false; }
+  bool IsTabItem() const { return RoleValue() == kTabRole; }
+  virtual bool IsTableCell() const { return false; }
+  virtual bool IsTableRow() const { return false; }
+  virtual bool IsTextControl() const { return false; }
+  virtual bool IsTableCol() const { return false; }
+  bool IsTree() const { return RoleValue() == kTreeRole; }
+  bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
 
   // Check object state.
-  virtual bool isChecked() const { return false; }
-  virtual bool isClickable() const;
-  virtual bool isCollapsed() const { return false; }
-  virtual bool isEnabled() const { return false; }
-  virtual AccessibilityExpanded isExpanded() const { return ExpandedUndefined; }
-  virtual bool isFocused() const { return false; }
-  virtual bool isHovered() const { return false; }
-  virtual bool isLinked() const { return false; }
-  virtual bool isLoaded() const { return false; }
-  virtual bool isModal() const { return false; }
-  virtual bool isMultiSelectable() const { return false; }
-  virtual bool isOffScreen() const { return false; }
-  virtual bool isPressed() const { return false; }
-  virtual bool isReadOnly() const { return false; }
-  virtual bool isRequired() const { return false; }
-  virtual bool isSelected() const { return false; }
-  virtual bool isSelectedOptionActive() const { return false; }
-  virtual bool isVisible() const { return true; }
-  virtual bool isVisited() const { return false; }
+  virtual bool IsChecked() const { return false; }
+  virtual bool IsClickable() const;
+  virtual bool IsCollapsed() const { return false; }
+  virtual bool IsEnabled() const { return false; }
+  virtual AccessibilityExpanded IsExpanded() const {
+    return kExpandedUndefined;
+  }
+  virtual bool IsFocused() const { return false; }
+  virtual bool IsHovered() const { return false; }
+  virtual bool IsLinked() const { return false; }
+  virtual bool IsLoaded() const { return false; }
+  virtual bool IsModal() const { return false; }
+  virtual bool IsMultiSelectable() const { return false; }
+  virtual bool IsOffScreen() const { return false; }
+  virtual bool IsPressed() const { return false; }
+  virtual bool IsReadOnly() const { return false; }
+  virtual bool IsRequired() const { return false; }
+  virtual bool IsSelected() const { return false; }
+  virtual bool IsSelectedOptionActive() const { return false; }
+  virtual bool IsVisible() const { return true; }
+  virtual bool IsVisited() const { return false; }
 
   // Check whether certain properties can be modified.
-  virtual bool canSetFocusAttribute() const { return false; }
-  virtual bool canSetValueAttribute() const { return false; }
-  virtual bool canSetSelectedAttribute() const { return false; }
+  virtual bool CanSetFocusAttribute() const { return false; }
+  virtual bool CanSetValueAttribute() const { return false; }
+  virtual bool CanSetSelectedAttribute() const { return false; }
 
   // Whether objects are ignored, i.e. not included in the tree.
-  bool accessibilityIsIgnored() const;
+  bool AccessibilityIsIgnored() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
-  virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
+  virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
     return true;
   }
-  bool accessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
-  AXObjectInclusion accessibilityPlatformIncludesObject() const;
-  virtual AXObjectInclusion defaultObjectInclusion(
+  bool AccessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
+  AXObjectInclusion AccessibilityPlatformIncludesObject() const;
+  virtual AXObjectInclusion DefaultObjectInclusion(
       IgnoredReasons* = nullptr) const;
-  bool isInertOrAriaHidden() const;
-  const AXObject* ariaHiddenRoot() const;
-  bool computeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
-  bool isDescendantOfLeafNode() const;
-  AXObject* leafNodeAncestor() const;
-  bool isDescendantOfDisabledNode() const;
-  const AXObject* disabledAncestor() const;
-  bool lastKnownIsIgnoredValue();
-  void setLastKnownIsIgnoredValue(bool);
-  bool hasInheritedPresentationalRole() const;
-  bool isPresentationalChild() const;
-  bool ancestorExposesActiveDescendant() const;
-  bool computeAncestorExposesActiveDescendant() const;
+  bool IsInertOrAriaHidden() const;
+  const AXObject* AriaHiddenRoot() const;
+  bool ComputeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
+  bool IsDescendantOfLeafNode() const;
+  AXObject* LeafNodeAncestor() const;
+  bool IsDescendantOfDisabledNode() const;
+  const AXObject* DisabledAncestor() const;
+  bool LastKnownIsIgnoredValue();
+  void SetLastKnownIsIgnoredValue(bool);
+  bool HasInheritedPresentationalRole() const;
+  bool IsPresentationalChild() const;
+  bool AncestorExposesActiveDescendant() const;
+  bool ComputeAncestorExposesActiveDescendant() const;
 
   //
   // Accessible name calculation
@@ -739,27 +741,27 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Retrieves the accessible name of the object, an enum indicating where the
   // name was derived from, and a list of objects that were used to derive the
   // name, if any.
-  virtual String name(AXNameFrom&, AXObjectVector* nameObjects) const;
+  virtual String GetName(AXNameFrom&, AXObjectVector* name_objects) const;
 
   typedef HeapVector<NameSource> NameSources;
   // Retrieves the accessible name of the object and a list of all potential
   // sources for the name, indicating which were used.
-  virtual String name(NameSources*) const;
+  virtual String GetName(NameSources*) const;
 
   typedef HeapVector<DescriptionSource> DescriptionSources;
   // Takes the result of nameFrom from calling |name|, above, and retrieves the
   // accessible description of the object, which is secondary to |name|, an enum
   // indicating where the description was derived from, and a list of objects
   // that were used to derive the description, if any.
-  virtual String description(AXNameFrom,
+  virtual String Description(AXNameFrom,
                              AXDescriptionFrom&,
-                             AXObjectVector* descriptionObjects) const {
+                             AXObjectVector* description_objects) const {
     return String();
   }
 
   // Same as above, but returns a list of all potential sources for the
   // description, indicating which were used.
-  virtual String description(AXNameFrom,
+  virtual String Description(AXNameFrom,
                              AXDescriptionFrom&,
                              DescriptionSources*,
                              AXRelatedObjectVector*) const {
@@ -769,151 +771,155 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Takes the result of nameFrom and descriptionFrom from calling |name| and
   // |description|, above, and retrieves the placeholder of the object, if
   // present and if it wasn't already exposed by one of the two functions above.
-  virtual String placeholder(AXNameFrom) const { return String(); }
+  virtual String Placeholder(AXNameFrom) const { return String(); }
 
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
-  virtual String textAlternative(bool recursive,
-                                 bool inAriaLabelledByTraversal,
+  virtual String TextAlternative(bool recursive,
+                                 bool in_aria_labelled_by_traversal,
                                  AXObjectSet& visited,
-                                 AXNameFrom& nameFrom,
-                                 AXRelatedObjectVector* relatedObjects,
-                                 NameSources* nameSources) const {
+                                 AXNameFrom& name_from,
+                                 AXRelatedObjectVector* related_objects,
+                                 NameSources* name_sources) const {
     return String();
   }
-  virtual String textFromDescendants(AXObjectSet& visited,
+  virtual String TextFromDescendants(AXObjectSet& visited,
                                      bool recursive) const {
     return String();
   }
 
   // Returns result of Accessible Name Calculation algorithm.
   // This is a simpler high-level interface to |name| used by Inspector.
-  String computedName() const;
+  String ComputedName() const;
 
   // Internal function used to determine whether the result of calling |name| on
   // this object would return text that came from the an HTML label element or
   // not. This is intended to be faster than calling |name| or
   // |textAlternative|, and without side effects (it won't call
   // axObjectCache->getOrCreate).
-  virtual bool nameFromLabelElement() const { return false; }
+  virtual bool NameFromLabelElement() const { return false; }
 
   //
   // Properties of static elements.
   //
 
-  virtual const AtomicString& accessKey() const { return nullAtom; }
-  RGBA32 backgroundColor() const;
-  virtual RGBA32 computeBackgroundColor() const { return Color::transparent; }
-  virtual RGBA32 color() const { return Color::black; }
+  virtual const AtomicString& AccessKey() const { return g_null_atom; }
+  RGBA32 BackgroundColor() const;
+  virtual RGBA32 ComputeBackgroundColor() const { return Color::kTransparent; }
+  virtual RGBA32 GetColor() const { return Color::kBlack; }
   // Used by objects of role ColorWellRole.
-  virtual RGBA32 colorValue() const { return Color::transparent; }
-  virtual bool canvasHasFallbackContent() const { return false; }
-  virtual String fontFamily() const { return nullAtom; }
+  virtual RGBA32 ColorValue() const { return Color::kTransparent; }
+  virtual bool CanvasHasFallbackContent() const { return false; }
+  virtual String FontFamily() const { return g_null_atom; }
   // Font size is in pixels.
-  virtual float fontSize() const { return 0.0f; }
+  virtual float FontSize() const { return 0.0f; }
   // Value should be 1-based. 0 means not supported.
-  virtual int headingLevel() const { return 0; }
+  virtual int HeadingLevel() const { return 0; }
   // Value should be 1-based. 0 means not supported.
-  virtual unsigned hierarchicalLevel() const { return 0; }
+  virtual unsigned HierarchicalLevel() const { return 0; }
   // Return the content of an image or canvas as an image data url in
   // PNG format. If |maxSize| is not empty and if the image is larger than
   // those dimensions, the image will be resized proportionally first to fit.
-  virtual String imageDataUrl(const IntSize& maxSize) const { return nullAtom; }
-  virtual AXObject* inPageLinkTarget() const { return nullptr; }
-  virtual AccessibilityOrientation orientation() const;
-  virtual String text() const { return String(); }
-  virtual AccessibilityTextDirection textDirection() const {
-    return AccessibilityTextDirectionLTR;
+  virtual String ImageDataUrl(const IntSize& max_size) const {
+    return g_null_atom;
   }
-  virtual int textLength() const { return 0; }
-  virtual TextStyle getTextStyle() const { return TextStyleNone; }
-  virtual AXObjectVector radioButtonsInGroup() const {
+  virtual AXObject* InPageLinkTarget() const { return nullptr; }
+  virtual AccessibilityOrientation Orientation() const;
+  virtual String GetText() const { return String(); }
+  virtual AccessibilityTextDirection GetTextDirection() const {
+    return kAccessibilityTextDirectionLTR;
+  }
+  virtual int TextLength() const { return 0; }
+  virtual TextStyle GetTextStyle() const { return kTextStyleNone; }
+  virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
   }
-  virtual KURL url() const { return KURL(); }
+  virtual KURL Url() const { return KURL(); }
 
   // Load inline text boxes for just this node, even if
   // settings->inlineTextBoxAccessibilityEnabled() is false.
-  virtual void loadInlineTextBoxes() {}
+  virtual void LoadInlineTextBoxes() {}
 
   // Walk the AXObjects on the same line. This is supported on any
   // object type but primarily intended to be used for inline text boxes.
-  virtual AXObject* nextOnLine() const { return nullptr; }
-  virtual AXObject* previousOnLine() const { return nullptr; }
+  virtual AXObject* NextOnLine() const { return nullptr; }
+  virtual AXObject* PreviousOnLine() const { return nullptr; }
 
   // For all node objects. The start and end character offset of each
   // marker, such as spelling or grammar error.
-  virtual void markers(Vector<DocumentMarker::MarkerType>&,
+  virtual void Markers(Vector<DocumentMarker::MarkerType>&,
                        Vector<AXRange>&) const {}
   // For an inline text box.
   // The integer horizontal pixel offset of each character in the string;
   // negative values for RTL.
-  virtual void textCharacterOffsets(Vector<int>&) const {}
+  virtual void TextCharacterOffsets(Vector<int>&) const {}
   // The start and end character offset of each word in the object's text.
-  virtual void wordBoundaries(Vector<AXRange>&) const {}
+  virtual void GetWordBoundaries(Vector<AXRange>&) const {}
 
   // Properties of interactive elements.
-  AXSupportedAction action() const;
-  virtual AccessibilityButtonState checkboxOrRadioValue() const;
-  virtual AriaCurrentState ariaCurrentState() const {
-    return AriaCurrentStateUndefined;
+  AXSupportedAction Action() const;
+  virtual AccessibilityButtonState CheckboxOrRadioValue() const;
+  virtual AriaCurrentState GetAriaCurrentState() const {
+    return kAriaCurrentStateUndefined;
   }
-  virtual InvalidState getInvalidState() const { return InvalidStateUndefined; }
+  virtual InvalidState GetInvalidState() const {
+    return kInvalidStateUndefined;
+  }
   // Only used when invalidState() returns InvalidStateOther.
-  virtual String ariaInvalidValue() const { return String(); }
-  virtual String valueDescription() const { return String(); }
-  virtual float valueForRange() const { return 0.0f; }
-  virtual float maxValueForRange() const { return 0.0f; }
-  virtual float minValueForRange() const { return 0.0f; }
-  virtual String stringValue() const { return String(); }
+  virtual String AriaInvalidValue() const { return String(); }
+  virtual String ValueDescription() const { return String(); }
+  virtual float ValueForRange() const { return 0.0f; }
+  virtual float MaxValueForRange() const { return 0.0f; }
+  virtual float MinValueForRange() const { return 0.0f; }
+  virtual String StringValue() const { return String(); }
 
   // ARIA attributes.
-  virtual AXObject* activeDescendant() { return nullptr; }
-  virtual String ariaAutoComplete() const { return String(); }
-  virtual void ariaOwnsElements(AXObjectVector& owns) const {}
-  virtual void ariaDescribedbyElements(AXObjectVector&) const {}
-  virtual void ariaLabelledbyElements(AXObjectVector&) const {}
-  virtual bool ariaHasPopup() const { return false; }
-  virtual bool isEditable() const { return false; }
-  bool isMultiline() const;
-  virtual bool isRichlyEditable() const { return false; }
-  bool ariaPressedIsPresent() const;
-  virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
-  virtual bool ariaRoleHasPresentationalChildren() const { return false; }
-  virtual AXObject* ancestorForWhichThisIsAPresentationalChild() const {
+  virtual AXObject* ActiveDescendant() { return nullptr; }
+  virtual String AriaAutoComplete() const { return String(); }
+  virtual void AriaOwnsElements(AXObjectVector& owns) const {}
+  virtual void AriaDescribedbyElements(AXObjectVector&) const {}
+  virtual void AriaLabelledbyElements(AXObjectVector&) const {}
+  virtual bool AriaHasPopup() const { return false; }
+  virtual bool IsEditable() const { return false; }
+  bool IsMultiline() const;
+  virtual bool IsRichlyEditable() const { return false; }
+  bool AriaPressedIsPresent() const;
+  virtual AccessibilityRole AriaRoleAttribute() const { return kUnknownRole; }
+  virtual bool AriaRoleHasPresentationalChildren() const { return false; }
+  virtual AXObject* AncestorForWhichThisIsAPresentationalChild() const {
     return 0;
   }
-  bool supportsActiveDescendant() const;
-  bool supportsARIAAttributes() const;
-  virtual bool supportsARIADragging() const { return false; }
-  virtual bool supportsARIADropping() const { return false; }
-  virtual bool supportsARIAFlowTo() const { return false; }
-  virtual bool supportsARIAOwns() const { return false; }
-  bool supportsRangeValue() const;
-  virtual SortDirection getSortDirection() const {
-    return SortDirectionUndefined;
+  bool SupportsActiveDescendant() const;
+  bool SupportsARIAAttributes() const;
+  virtual bool SupportsARIADragging() const { return false; }
+  virtual bool SupportsARIADropping() const { return false; }
+  virtual bool SupportsARIAFlowTo() const { return false; }
+  virtual bool SupportsARIAOwns() const { return false; }
+  bool SupportsRangeValue() const;
+  virtual SortDirection GetSortDirection() const {
+    return kSortDirectionUndefined;
   }
 
   // Returns 0-based index.
-  int indexInParent() const;
+  int IndexInParent() const;
 
   // Value should be 1-based. 0 means not supported.
-  virtual int posInSet() const { return 0; }
-  virtual int setSize() const { return 0; }
-  bool supportsSetSizeAndPosInSet() const;
+  virtual int PosInSet() const { return 0; }
+  virtual int SetSize() const { return 0; }
+  bool SupportsSetSizeAndPosInSet() const;
 
   // ARIA live-region features.
-  bool isLiveRegion() const;
-  AXObject* liveRegionRoot() const;
-  virtual const AtomicString& liveRegionStatus() const { return nullAtom; }
-  virtual const AtomicString& liveRegionRelevant() const { return nullAtom; }
-  virtual bool liveRegionAtomic() const { return false; }
-  virtual bool liveRegionBusy() const { return false; }
+  bool IsLiveRegion() const;
+  AXObject* LiveRegionRoot() const;
+  virtual const AtomicString& LiveRegionStatus() const { return g_null_atom; }
+  virtual const AtomicString& LiveRegionRelevant() const { return g_null_atom; }
+  virtual bool LiveRegionAtomic() const { return false; }
+  virtual bool LiveRegionBusy() const { return false; }
 
-  const AtomicString& containerLiveRegionStatus() const;
-  const AtomicString& containerLiveRegionRelevant() const;
-  bool containerLiveRegionAtomic() const;
-  bool containerLiveRegionBusy() const;
+  const AtomicString& ContainerLiveRegionStatus() const;
+  const AtomicString& ContainerLiveRegionRelevant() const;
+  bool ContainerLiveRegionAtomic() const;
+  bool ContainerLiveRegionBusy() const;
 
   // Every object's bounding box is returned relative to a
   // container object (which is guaranteed to be an ancestor) and
@@ -923,201 +929,201 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // not null, walk up to its container and offset by the container's offset
   // from origin, the container's scroll position if any, and apply the
   // container's transform.  Do this until you reach the root of the tree.
-  virtual void getRelativeBounds(AXObject** outContainer,
-                                 FloatRect& outBoundsInContainer,
-                                 SkMatrix44& outContainerTransform) const;
+  virtual void GetRelativeBounds(AXObject** out_container,
+                                 FloatRect& out_bounds_in_container,
+                                 SkMatrix44& out_container_transform) const;
 
   // Get the bounds in frame-relative coordinates as a LayoutRect.
-  LayoutRect getBoundsInFrameCoordinates() const;
+  LayoutRect GetBoundsInFrameCoordinates() const;
 
   // Explicitly set an object's bounding rect and offset container.
-  void setElementRect(LayoutRect r, AXObject* container) {
-    m_explicitElementRect = r;
-    m_explicitContainerID = container->axObjectID();
+  void SetElementRect(LayoutRect r, AXObject* container) {
+    explicit_element_rect_ = r;
+    explicit_container_id_ = container->AxObjectID();
   }
 
   // Hit testing.
   // Called on the root AX object to return the deepest available element.
-  virtual AXObject* accessibilityHitTest(const IntPoint&) const { return 0; }
+  virtual AXObject* AccessibilityHitTest(const IntPoint&) const { return 0; }
   // Called on the AX object after the layout tree determines which is the right
   // AXLayoutObject.
-  virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const;
+  virtual AXObject* ElementAccessibilityHitTest(const IntPoint&) const;
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
-  const AXObjectVector& children();
-  AXObject* parentObject() const;
-  AXObject* parentObjectIfExists() const;
-  virtual AXObject* computeParent() const = 0;
-  virtual AXObject* computeParentIfExists() const { return 0; }
-  AXObject* cachedParentObject() const { return m_parent; }
-  AXObject* parentObjectUnignored() const;
+  const AXObjectVector& Children();
+  AXObject* ParentObject() const;
+  AXObject* ParentObjectIfExists() const;
+  virtual AXObject* ComputeParent() const = 0;
+  virtual AXObject* ComputeParentIfExists() const { return 0; }
+  AXObject* CachedParentObject() const { return parent_; }
+  AXObject* ParentObjectUnignored() const;
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.
-  virtual AXObject* rawFirstChild() const { return 0; }
-  virtual AXObject* rawNextSibling() const { return 0; }
-  virtual void addChildren() {}
-  virtual bool canHaveChildren() const { return true; }
-  bool hasChildren() const { return m_haveChildren; }
-  virtual void updateChildrenIfNecessary();
-  virtual bool needsToUpdateChildren() const { return false; }
-  virtual void setNeedsToUpdateChildren() {}
-  virtual void clearChildren();
-  virtual void detachFromParent() { m_parent = 0; }
-  virtual AXObject* scrollBar(AccessibilityOrientation) { return 0; }
+  virtual AXObject* RawFirstChild() const { return 0; }
+  virtual AXObject* RawNextSibling() const { return 0; }
+  virtual void AddChildren() {}
+  virtual bool CanHaveChildren() const { return true; }
+  bool HasChildren() const { return have_children_; }
+  virtual void UpdateChildrenIfNecessary();
+  virtual bool NeedsToUpdateChildren() const { return false; }
+  virtual void SetNeedsToUpdateChildren() {}
+  virtual void ClearChildren();
+  virtual void DetachFromParent() { parent_ = 0; }
+  virtual AXObject* ScrollBar(AccessibilityOrientation) { return 0; }
 
   // Properties of the object's owning document or page.
-  virtual double estimatedLoadingProgress() const { return 0; }
+  virtual double EstimatedLoadingProgress() const { return 0; }
 
   // DOM and layout tree access.
-  virtual Node* getNode() const { return 0; }
-  virtual LayoutObject* getLayoutObject() const { return 0; }
-  virtual Document* getDocument() const;
-  virtual FrameView* documentFrameView() const;
-  virtual Element* anchorElement() const { return 0; }
-  virtual Element* actionElement() const { return 0; }
-  String language() const;
-  bool hasAttribute(const QualifiedName&) const;
-  const AtomicString& getAttribute(const QualifiedName&) const;
+  virtual Node* GetNode() const { return 0; }
+  virtual LayoutObject* GetLayoutObject() const { return 0; }
+  virtual Document* GetDocument() const;
+  virtual FrameView* DocumentFrameView() const;
+  virtual Element* AnchorElement() const { return 0; }
+  virtual Element* ActionElement() const { return 0; }
+  String Language() const;
+  bool HasAttribute(const QualifiedName&) const;
+  const AtomicString& GetAttribute(const QualifiedName&) const;
 
   // Methods that retrieve or manipulate the current selection.
 
   // Get the current selection from anywhere in the accessibility tree.
-  virtual AXRange selection() const { return AXRange(); }
+  virtual AXRange Selection() const { return AXRange(); }
   // Gets only the start and end offsets of the selection computed using the
   // current object as the starting point. Returns a null selection if there is
   // no selection in the subtree rooted at this object.
-  virtual AXRange selectionUnderObject() const { return AXRange(); }
-  virtual void setSelection(const AXRange&) {}
+  virtual AXRange SelectionUnderObject() const { return AXRange(); }
+  virtual void SetSelection(const AXRange&) {}
 
   // Scrollable containers.
-  bool isScrollableContainer() const;
-  IntPoint getScrollOffset() const;
-  IntPoint minimumScrollOffset() const;
-  IntPoint maximumScrollOffset() const;
-  void setScrollOffset(const IntPoint&) const;
+  bool IsScrollableContainer() const;
+  IntPoint GetScrollOffset() const;
+  IntPoint MinimumScrollOffset() const;
+  IntPoint MaximumScrollOffset() const;
+  void SetScrollOffset(const IntPoint&) const;
 
   // If this object itself scrolls, return its ScrollableArea.
-  virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
+  virtual ScrollableArea* GetScrollableAreaIfScrollable() const { return 0; }
 
   // Modify or take an action on an object.
-  virtual void increment() {}
-  virtual void decrement() {}
-  bool performDefaultAction() { return press(); }
-  virtual bool press();
+  virtual void Increment() {}
+  virtual void Decrement() {}
+  bool PerformDefaultAction() { return Press(); }
+  virtual bool Press();
   // Make this object visible by scrolling as many nested scrollable views as
   // needed.
-  void scrollToMakeVisible() const;
+  void ScrollToMakeVisible() const;
   // Same, but if the whole object can't be made visible, try for this subrect,
   // in local coordinates.
-  void scrollToMakeVisibleWithSubFocus(const IntRect&) const;
+  void ScrollToMakeVisibleWithSubFocus(const IntRect&) const;
   // Scroll this object to a given point in global coordinates of the top-level
   // window.
-  void scrollToGlobalPoint(const IntPoint&) const;
-  virtual void setFocused(bool) {}
-  virtual void setSelected(bool) {}
-  virtual void setSequentialFocusNavigationStartingPoint();
-  virtual void setValue(const String&) {}
-  virtual void setValue(float) {}
+  void ScrollToGlobalPoint(const IntPoint&) const;
+  virtual void SetFocused(bool) {}
+  virtual void SetSelected(bool) {}
+  virtual void SetSequentialFocusNavigationStartingPoint();
+  virtual void SetValue(const String&) {}
+  virtual void SetValue(float) {}
 
   // Notifications that this object may have changed.
-  virtual void childrenChanged() {}
-  virtual void handleActiveDescendantChanged() {}
-  virtual void handleAriaExpandedChanged() {}
-  void notifyIfIgnoredValueChanged();
-  virtual void selectionChanged();
-  virtual void textChanged() {}
-  virtual void updateAccessibilityRole() {}
+  virtual void ChildrenChanged() {}
+  virtual void HandleActiveDescendantChanged() {}
+  virtual void HandleAriaExpandedChanged() {}
+  void NotifyIfIgnoredValueChanged();
+  virtual void SelectionChanged();
+  virtual void TextChanged() {}
+  virtual void UpdateAccessibilityRole() {}
 
   // Text metrics. Most of these should be deprecated, needs major cleanup.
-  virtual VisiblePosition visiblePositionForIndex(int) const {
+  virtual VisiblePosition VisiblePositionForIndex(int) const {
     return VisiblePosition();
   }
-  int lineForPosition(const VisiblePosition&) const;
-  virtual int index(const VisiblePosition&) const { return -1; }
-  virtual void lineBreaks(Vector<int>&) const {}
+  int LineForPosition(const VisiblePosition&) const;
+  virtual int Index(const VisiblePosition&) const { return -1; }
+  virtual void LineBreaks(Vector<int>&) const {}
 
   // Static helper functions.
-  static bool isARIAControl(AccessibilityRole);
-  static bool isARIAInput(AccessibilityRole);
-  static AccessibilityRole ariaRoleToWebCoreRole(const String&);
-  static const AtomicString& roleName(AccessibilityRole);
-  static const AtomicString& internalRoleName(AccessibilityRole);
-  static bool isInsideFocusableElementOrARIAWidget(const Node&);
+  static bool IsARIAControl(AccessibilityRole);
+  static bool IsARIAInput(AccessibilityRole);
+  static AccessibilityRole AriaRoleToWebCoreRole(const String&);
+  static const AtomicString& RoleName(AccessibilityRole);
+  static const AtomicString& InternalRoleName(AccessibilityRole);
+  static bool IsInsideFocusableElementOrARIAWidget(const Node&);
 
  protected:
-  AXID m_id;
-  AXObjectVector m_children;
-  mutable bool m_haveChildren;
-  AccessibilityRole m_role;
-  AXObjectInclusion m_lastKnownIsIgnoredValue;
-  LayoutRect m_explicitElementRect;
-  AXID m_explicitContainerID;
+  AXID id_;
+  AXObjectVector children_;
+  mutable bool have_children_;
+  AccessibilityRole role_;
+  AXObjectInclusion last_known_is_ignored_value_;
+  LayoutRect explicit_element_rect_;
+  AXID explicit_container_id_;
 
   // Used only inside textAlternative():
-  static String collapseWhitespace(const String&);
-  static String recursiveTextAlternative(const AXObject&,
-                                         bool inAriaLabelledByTraversal,
+  static String CollapseWhitespace(const String&);
+  static String RecursiveTextAlternative(const AXObject&,
+                                         bool in_aria_labelled_by_traversal,
                                          AXObjectSet& visited);
-  bool isHiddenForTextAlternativeCalculation() const;
-  String ariaTextAlternative(bool recursive,
-                             bool inAriaLabelledByTraversal,
+  bool IsHiddenForTextAlternativeCalculation() const;
+  String AriaTextAlternative(bool recursive,
+                             bool in_aria_labelled_by_traversal,
                              AXObjectSet& visited,
                              AXNameFrom&,
                              AXRelatedObjectVector*,
                              NameSources*,
-                             bool* foundTextAlternative) const;
-  String textFromElements(bool inAriaLabelledByTraversal,
+                             bool* found_text_alternative) const;
+  String TextFromElements(bool in_aria_labelled_by_traversal,
                           AXObjectSet& visited,
                           HeapVector<Member<Element>>& elements,
-                          AXRelatedObjectVector* relatedObjects) const;
-  void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
-  void elementsFromAttribute(HeapVector<Member<Element>>& elements,
+                          AXRelatedObjectVector* related_objects) const;
+  void TokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
+  void ElementsFromAttribute(HeapVector<Member<Element>>& elements,
                              const QualifiedName&) const;
-  void ariaLabelledbyElementVector(HeapVector<Member<Element>>& elements) const;
-  String textFromAriaLabelledby(AXObjectSet& visited,
-                                AXRelatedObjectVector* relatedObjects) const;
-  String textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const;
+  void AriaLabelledbyElementVector(HeapVector<Member<Element>>& elements) const;
+  String TextFromAriaLabelledby(AXObjectSet& visited,
+                                AXRelatedObjectVector* related_objects) const;
+  String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects) const;
 
-  virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
+  virtual const AXObject* InheritsPresentationalRoleFrom() const { return 0; }
 
-  virtual bool nameFromContents() const;
+  virtual bool NameFromContents() const;
 
-  AccessibilityRole buttonRoleType() const;
+  AccessibilityRole ButtonRoleType() const;
 
-  virtual LayoutObject* layoutObjectForRelativeBounds() const {
+  virtual LayoutObject* LayoutObjectForRelativeBounds() const {
     return nullptr;
   }
 
-  mutable Member<AXObject> m_parent;
+  mutable Member<AXObject> parent_;
 
   // The following cached attribute values (the ones starting with m_cached*)
   // are only valid if m_lastModificationCount matches
   // AXObjectCacheImpl::modificationCount().
-  mutable int m_lastModificationCount;
-  mutable RGBA32 m_cachedBackgroundColor;
-  mutable bool m_cachedIsIgnored : 1;
-  mutable bool m_cachedIsInertOrAriaHidden : 1;
-  mutable bool m_cachedIsDescendantOfLeafNode : 1;
-  mutable bool m_cachedIsDescendantOfDisabledNode : 1;
-  mutable bool m_cachedHasInheritedPresentationalRole : 1;
-  mutable bool m_cachedIsPresentationalChild : 1;
-  mutable bool m_cachedAncestorExposesActiveDescendant : 1;
-  mutable Member<AXObject> m_cachedLiveRegionRoot;
+  mutable int last_modification_count_;
+  mutable RGBA32 cached_background_color_;
+  mutable bool cached_is_ignored_ : 1;
+  mutable bool cached_is_inert_or_aria_hidden_ : 1;
+  mutable bool cached_is_descendant_of_leaf_node_ : 1;
+  mutable bool cached_is_descendant_of_disabled_node_ : 1;
+  mutable bool cached_has_inherited_presentational_role_ : 1;
+  mutable bool cached_is_presentational_child_ : 1;
+  mutable bool cached_ancestor_exposes_active_descendant_ : 1;
+  mutable Member<AXObject> cached_live_region_root_;
 
-  Member<AXObjectCacheImpl> m_axObjectCache;
+  Member<AXObjectCacheImpl> ax_object_cache_;
 
   // Updates the cached attribute values. This may be recursive, so to prevent
   // deadlocks,
   // functions called here may only search up the tree (ancestors), not down.
-  void updateCachedAttributeValuesIfNeeded() const;
+  void UpdateCachedAttributeValuesIfNeeded() const;
 
  private:
-  static bool includesARIAWidgetRole(const String&);
-  static bool hasInteractiveARIAAttribute(const Element&);
+  static bool IncludesARIAWidgetRole(const String&);
+  static bool HasInteractiveARIAAttribute(const Element&);
 
-  static unsigned s_numberOfLiveAXObjects;
+  static unsigned number_of_live_ax_objects_;
 };
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate)           \

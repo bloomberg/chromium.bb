@@ -27,14 +27,14 @@ enum class WebRTCErrorType {
 
 class WebRTCError {
  public:
-  WebRTCError() : m_type(WebRTCErrorType::kNone) {}
-  explicit WebRTCError(WebRTCErrorType type) : m_type(type) {}
+  WebRTCError() : type_(WebRTCErrorType::kNone) {}
+  explicit WebRTCError(WebRTCErrorType type) : type_(type) {}
 
-  WebRTCErrorType type() const { return m_type; }
-  void setType(WebRTCErrorType type) { m_type = type; }
+  WebRTCErrorType GetType() const { return type_; }
+  void SetType(WebRTCErrorType type) { type_ = type; }
 
  private:
-  WebRTCErrorType m_type;
+  WebRTCErrorType type_;
 };
 
 }  // namespace blink

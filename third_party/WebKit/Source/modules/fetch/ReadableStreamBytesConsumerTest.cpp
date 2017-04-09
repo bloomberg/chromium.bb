@@ -35,8 +35,8 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
  public:
-  static MockClient* create() { return new StrictMock<MockClient>(); }
-  MOCK_METHOD0(onStateChange, void());
+  static MockClient* Create() { return new StrictMock<MockClient>(); }
+  MOCK_METHOD0(OnStateChange, void());
 
   DEFINE_INLINE_TRACE() {}
 
@@ -46,136 +46,137 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
 
 class ReadableStreamBytesConsumerTest : public ::testing::Test {
  public:
-  ReadableStreamBytesConsumerTest() : m_page(DummyPageHolder::create()) {}
+  ReadableStreamBytesConsumerTest() : page_(DummyPageHolder::Create()) {}
 
-  ScriptState* getScriptState() {
-    return toScriptStateForMainWorld(m_page->document().frame());
+  ScriptState* GetScriptState() {
+    return ToScriptStateForMainWorld(page_->GetDocument().GetFrame());
   }
-  v8::Isolate* isolate() { return getScriptState()->isolate(); }
+  v8::Isolate* GetIsolate() { return GetScriptState()->GetIsolate(); }
 
-  v8::MaybeLocal<v8::Value> eval(const char* s) {
+  v8::MaybeLocal<v8::Value> Eval(const char* s) {
     v8::Local<v8::String> source;
     v8::Local<v8::Script> script;
-    v8::MicrotasksScope microtasks(isolate(),
+    v8::MicrotasksScope microtasks(GetIsolate(),
                                    v8::MicrotasksScope::kDoNotRunMicrotasks);
-    if (!v8Call(
-            v8::String::NewFromUtf8(isolate(), s, v8::NewStringType::kNormal),
-            source)) {
+    if (!V8Call(v8::String::NewFromUtf8(GetIsolate(), s,
+                                        v8::NewStringType::kNormal),
+                source)) {
       ADD_FAILURE();
       return v8::MaybeLocal<v8::Value>();
     }
-    if (!v8Call(v8::Script::Compile(getScriptState()->context(), source),
+    if (!V8Call(v8::Script::Compile(GetScriptState()->GetContext(), source),
                 script)) {
       ADD_FAILURE() << "Compilation fails";
       return v8::MaybeLocal<v8::Value>();
     }
-    return script->Run(getScriptState()->context());
+    return script->Run(GetScriptState()->GetContext());
   }
-  v8::MaybeLocal<v8::Value> evalWithPrintingError(const char* s) {
-    v8::TryCatch block(isolate());
-    v8::MaybeLocal<v8::Value> r = eval(s);
+  v8::MaybeLocal<v8::Value> EvalWithPrintingError(const char* s) {
+    v8::TryCatch block(GetIsolate());
+    v8::MaybeLocal<v8::Value> r = Eval(s);
     if (block.HasCaught()) {
-      ADD_FAILURE()
-          << toCoreString(block.Exception()->ToString(isolate())).utf8().data();
+      ADD_FAILURE() << ToCoreString(block.Exception()->ToString(GetIsolate()))
+                           .Utf8()
+                           .Data();
       block.ReThrow();
     }
     return r;
   }
 
-  ReadableStreamBytesConsumer* createConsumer(ScriptValue stream) {
+  ReadableStreamBytesConsumer* CreateConsumer(ScriptValue stream) {
     NonThrowableExceptionState es;
     ScriptValue reader =
-        ReadableStreamOperations::getReader(getScriptState(), stream, es);
-    DCHECK(!reader.isEmpty());
-    DCHECK(reader.v8Value()->IsObject());
-    return new ReadableStreamBytesConsumer(getScriptState(), reader);
+        ReadableStreamOperations::GetReader(GetScriptState(), stream, es);
+    DCHECK(!reader.IsEmpty());
+    DCHECK(reader.V8Value()->IsObject());
+    return new ReadableStreamBytesConsumer(GetScriptState(), reader);
   }
 
-  void gc() { V8GCController::collectAllGarbageForTesting(isolate()); }
+  void Gc() { V8GCController::CollectAllGarbageForTesting(GetIsolate()); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_page;
+  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(ReadableStreamBytesConsumerTest, Create) {
-  ScriptState::Scope scope(getScriptState());
-  ScriptValue stream(getScriptState(),
-                     evalWithPrintingError("new ReadableStream"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
+  ScriptState::Scope scope(GetScriptState());
+  ScriptValue stream(GetScriptState(),
+                     EvalWithPrintingError("new ReadableStream"));
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, EmptyStream) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError("new ReadableStream({start: c => c.close()})"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+      GetScriptState(),
+      EvalWithPrintingError("new ReadableStream({start: c => c.close()})"));
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
 
   Checkpoint checkpoint;
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, ErroredStream) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError("new ReadableStream({start: c => c.error()})"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+      GetScriptState(),
+      EvalWithPrintingError("new ReadableStream({start: c => c.error()})"));
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
   Checkpoint checkpoint;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError(
+      GetScriptState(),
+      EvalWithPrintingError(
           "var controller;"
           "var stream = new ReadableStream({start: c => controller = c});"
           "controller.enqueue(new Uint8Array());"
@@ -183,195 +184,195 @@ TEST_F(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
           "controller.enqueue(new Uint8Array([0x47, 0x48, 0x49, 0x4a]));"
           "controller.close();"
           "stream"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
   Checkpoint checkpoint;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
   EXPECT_CALL(checkpoint, Call(5));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(6));
   EXPECT_CALL(checkpoint, Call(7));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(8));
   EXPECT_CALL(checkpoint, Call(9));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(10));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(0u, available);
-  EXPECT_EQ(Result::Ok, consumer->endRead(0));
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->EndRead(0));
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(5);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(6);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(4u, available);
   EXPECT_EQ(0x43, buffer[0]);
   EXPECT_EQ(0x44, buffer[1]);
   EXPECT_EQ(0x45, buffer[2]);
   EXPECT_EQ(0x46, buffer[3]);
-  EXPECT_EQ(Result::Ok, consumer->endRead(0));
-  EXPECT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->EndRead(0));
+  EXPECT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(4u, available);
   EXPECT_EQ(0x43, buffer[0]);
   EXPECT_EQ(0x44, buffer[1]);
   EXPECT_EQ(0x45, buffer[2]);
   EXPECT_EQ(0x46, buffer[3]);
-  EXPECT_EQ(Result::Ok, consumer->endRead(1));
-  EXPECT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->EndRead(1));
+  EXPECT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(3u, available);
   EXPECT_EQ(0x44, buffer[0]);
   EXPECT_EQ(0x45, buffer[1]);
   EXPECT_EQ(0x46, buffer[2]);
-  EXPECT_EQ(Result::Ok, consumer->endRead(3));
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->EndRead(3));
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(7);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(8);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(4u, available);
   EXPECT_EQ(0x47, buffer[0]);
   EXPECT_EQ(0x48, buffer[1]);
   EXPECT_EQ(0x49, buffer[2]);
   EXPECT_EQ(0x4a, buffer[3]);
-  EXPECT_EQ(Result::Ok, consumer->endRead(4));
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(Result::kOk, consumer->EndRead(4));
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(9);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(10);
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError(
+      GetScriptState(),
+      EvalWithPrintingError(
           "var controller;"
           "var stream = new ReadableStream({start: c => controller = c});"
           "controller.enqueue(undefined);"
           "controller.close();"
           "stream"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
   Checkpoint checkpoint;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, EnqueueNull) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError(
+      GetScriptState(),
+      EvalWithPrintingError(
           "var controller;"
           "var stream = new ReadableStream({start: c => controller = c});"
           "controller.enqueue(null);"
           "controller.close();"
           "stream"));
 
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
   Checkpoint checkpoint;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(ReadableStreamBytesConsumerTest, EnqueueString) {
-  ScriptState::Scope scope(getScriptState());
+  ScriptState::Scope scope(GetScriptState());
   ScriptValue stream(
-      getScriptState(),
-      evalWithPrintingError(
+      GetScriptState(),
+      EvalWithPrintingError(
           "var controller;"
           "var stream = new ReadableStream({start: c => controller = c});"
           "controller.enqueue('hello');"
           "controller.close();"
           "stream"));
-  ASSERT_FALSE(stream.isEmpty());
-  Persistent<BytesConsumer> consumer = createConsumer(stream);
-  Persistent<MockClient> client = MockClient::create();
-  consumer->setClient(client);
+  ASSERT_FALSE(stream.IsEmpty());
+  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<MockClient> client = MockClient::Create();
+  consumer->SetClient(client);
   Checkpoint checkpoint;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
   EXPECT_CALL(checkpoint, Call(3));
-  EXPECT_CALL(*client, onStateChange());
+  EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(4));
 
   const char* buffer = nullptr;
   size_t available = 0;
   checkpoint.Call(1);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(2);
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   checkpoint.Call(3);
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   checkpoint.Call(4);
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 }  // namespace

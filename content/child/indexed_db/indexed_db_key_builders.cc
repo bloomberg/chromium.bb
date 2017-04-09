@@ -15,21 +15,21 @@
 
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
-using blink::WebIDBKeyTypeArray;
-using blink::WebIDBKeyTypeBinary;
-using blink::WebIDBKeyTypeDate;
-using blink::WebIDBKeyTypeInvalid;
-using blink::WebIDBKeyTypeMin;
-using blink::WebIDBKeyTypeNull;
-using blink::WebIDBKeyTypeNumber;
-using blink::WebIDBKeyTypeString;
+using blink::kWebIDBKeyTypeArray;
+using blink::kWebIDBKeyTypeBinary;
+using blink::kWebIDBKeyTypeDate;
+using blink::kWebIDBKeyTypeInvalid;
+using blink::kWebIDBKeyTypeMin;
+using blink::kWebIDBKeyTypeNull;
+using blink::kWebIDBKeyTypeNumber;
+using blink::kWebIDBKeyTypeString;
 using blink::WebVector;
 using blink::WebString;
 
 static content::IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
   content::IndexedDBKey::KeyArray result;
-  if (other.keyType() == WebIDBKeyTypeArray) {
-    const WebVector<WebIDBKey>& array = other.array();
+  if (other.KeyType() == kWebIDBKeyTypeArray) {
+    const WebVector<WebIDBKey>& array = other.Array();
     for (size_t i = 0; i < array.size(); ++i)
       result.push_back(content::IndexedDBKeyBuilder::Build(array[i]));
   }
@@ -40,29 +40,29 @@ static std::vector<base::string16> CopyArray(
     const WebVector<WebString>& array) {
   std::vector<base::string16> copy(array.size());
   for (size_t i = 0; i < array.size(); ++i)
-    copy[i] = array[i].utf16();
+    copy[i] = array[i].Utf16();
   return copy;
 }
 
 namespace content {
 
 IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
-  switch (key.keyType()) {
-    case WebIDBKeyTypeArray:
+  switch (key.KeyType()) {
+    case kWebIDBKeyTypeArray:
       return IndexedDBKey(CopyKeyArray(key));
-    case WebIDBKeyTypeBinary:
+    case kWebIDBKeyTypeBinary:
       return IndexedDBKey(
-          std::string(key.binary().data(), key.binary().size()));
-    case WebIDBKeyTypeString:
-      return IndexedDBKey(key.string().utf16());
-    case WebIDBKeyTypeDate:
-      return IndexedDBKey(key.date(), WebIDBKeyTypeDate);
-    case WebIDBKeyTypeNumber:
-      return IndexedDBKey(key.number(), WebIDBKeyTypeNumber);
-    case WebIDBKeyTypeNull:
-    case WebIDBKeyTypeInvalid:
-      return IndexedDBKey(key.keyType());
-    case WebIDBKeyTypeMin:
+          std::string(key.Binary().Data(), key.Binary().size()));
+    case kWebIDBKeyTypeString:
+      return IndexedDBKey(key.GetString().Utf16());
+    case kWebIDBKeyTypeDate:
+      return IndexedDBKey(key.Date(), kWebIDBKeyTypeDate);
+    case kWebIDBKeyTypeNumber:
+      return IndexedDBKey(key.Number(), kWebIDBKeyTypeNumber);
+    case kWebIDBKeyTypeNull:
+    case kWebIDBKeyTypeInvalid:
+      return IndexedDBKey(key.KeyType());
+    case kWebIDBKeyTypeMin:
     default:
       NOTREACHED();
       return IndexedDBKey();
@@ -71,40 +71,38 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
 
 WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
   switch (key.type()) {
-    case WebIDBKeyTypeArray: {
+    case kWebIDBKeyTypeArray: {
       const IndexedDBKey::KeyArray& array = key.array();
       blink::WebVector<WebIDBKey> web_array(array.size());
       for (size_t i = 0; i < array.size(); ++i) {
         web_array[i] = Build(array[i]);
       }
-      return WebIDBKey::createArray(web_array);
+      return WebIDBKey::CreateArray(web_array);
     }
-    case WebIDBKeyTypeBinary:
-      return WebIDBKey::createBinary(key.binary());
-    case WebIDBKeyTypeString:
-      return WebIDBKey::createString(WebString::fromUTF16(key.string()));
-    case WebIDBKeyTypeDate:
-      return WebIDBKey::createDate(key.date());
-    case WebIDBKeyTypeNumber:
-      return WebIDBKey::createNumber(key.number());
-    case WebIDBKeyTypeInvalid:
-      return WebIDBKey::createInvalid();
-    case WebIDBKeyTypeNull:
-      return WebIDBKey::createNull();
-    case WebIDBKeyTypeMin:
+    case kWebIDBKeyTypeBinary:
+      return WebIDBKey::CreateBinary(key.binary());
+    case kWebIDBKeyTypeString:
+      return WebIDBKey::CreateString(WebString::FromUTF16(key.string()));
+    case kWebIDBKeyTypeDate:
+      return WebIDBKey::CreateDate(key.date());
+    case kWebIDBKeyTypeNumber:
+      return WebIDBKey::CreateNumber(key.number());
+    case kWebIDBKeyTypeInvalid:
+      return WebIDBKey::CreateInvalid();
+    case kWebIDBKeyTypeNull:
+      return WebIDBKey::CreateNull();
+    case kWebIDBKeyTypeMin:
     default:
       NOTREACHED();
-      return WebIDBKey::createInvalid();
+      return WebIDBKey::CreateInvalid();
   }
 }
 
 IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
     const WebIDBKeyRange& key_range) {
-  return IndexedDBKeyRange(
-    IndexedDBKeyBuilder::Build(key_range.lower()),
-    IndexedDBKeyBuilder::Build(key_range.upper()),
-    key_range.lowerOpen(),
-    key_range.upperOpen());
+  return IndexedDBKeyRange(IndexedDBKeyBuilder::Build(key_range.Lower()),
+                           IndexedDBKeyBuilder::Build(key_range.Upper()),
+                           key_range.LowerOpen(), key_range.UpperOpen());
 }
 
 WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
@@ -116,12 +114,12 @@ WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
 
 IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
     const blink::WebIDBKeyPath& key_path) {
-  switch (key_path.keyPathType()) {
-    case blink::WebIDBKeyPathTypeString:
-      return IndexedDBKeyPath(key_path.string().utf16());
-    case blink::WebIDBKeyPathTypeArray:
-      return IndexedDBKeyPath(CopyArray(key_path.array()));
-    case blink::WebIDBKeyPathTypeNull:
+  switch (key_path.KeyPathType()) {
+    case blink::kWebIDBKeyPathTypeString:
+      return IndexedDBKeyPath(key_path.GetString().Utf16());
+    case blink::kWebIDBKeyPathTypeArray:
+      return IndexedDBKeyPath(CopyArray(key_path.Array()));
+    case blink::kWebIDBKeyPathTypeNull:
       return IndexedDBKeyPath();
     default:
       NOTREACHED();
@@ -132,23 +130,23 @@ IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
 blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
     const IndexedDBKeyPath& key_path) {
   switch (key_path.type()) {
-    case blink::WebIDBKeyPathTypeString:
-      return blink::WebIDBKeyPath::create(
-          WebString::fromUTF16(key_path.string()));
-    case blink::WebIDBKeyPathTypeArray: {
+    case blink::kWebIDBKeyPathTypeString:
+      return blink::WebIDBKeyPath::Create(
+          WebString::FromUTF16(key_path.string()));
+    case blink::kWebIDBKeyPathTypeArray: {
       WebVector<WebString> key_path_vector(key_path.array().size());
       std::transform(key_path.array().begin(), key_path.array().end(),
                      key_path_vector.begin(),
                      [](const typename base::string16& s) {
-                       return WebString::fromUTF16(s);
+                       return WebString::FromUTF16(s);
                      });
-      return blink::WebIDBKeyPath::create(key_path_vector);
+      return blink::WebIDBKeyPath::Create(key_path_vector);
     }
-    case blink::WebIDBKeyPathTypeNull:
-      return blink::WebIDBKeyPath::createNull();
+    case blink::kWebIDBKeyPathTypeNull:
+      return blink::WebIDBKeyPath::CreateNull();
     default:
       NOTREACHED();
-      return blink::WebIDBKeyPath::createNull();
+      return blink::WebIDBKeyPath::CreateNull();
   }
 }
 

@@ -41,22 +41,22 @@ class BackwardsCharacterIteratorAlgorithm {
       const PositionTemplate<Strategy>&,
       const TextIteratorBehavior& = TextIteratorBehavior());
 
-  void advance(int);
+  void Advance(int);
 
-  bool atEnd() const { return m_textIterator.atEnd(); }
+  bool AtEnd() const { return text_iterator_.AtEnd(); }
 
-  PositionTemplate<Strategy> endPosition() const;
+  PositionTemplate<Strategy> EndPosition() const;
 
-  bool isInTextSecurityMode() const {
-    return m_textIterator.isInTextSecurityMode();
+  bool IsInTextSecurityMode() const {
+    return text_iterator_.IsInTextSecurityMode();
   }
 
  private:
-  int m_offset;
-  int m_runOffset;
-  bool m_atBreak;
+  int offset_;
+  int run_offset_;
+  bool at_break_;
 
-  SimplifiedBackwardsTextIteratorAlgorithm<Strategy> m_textIterator;
+  SimplifiedBackwardsTextIteratorAlgorithm<Strategy> text_iterator_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

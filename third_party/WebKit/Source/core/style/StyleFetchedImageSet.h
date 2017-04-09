@@ -39,62 +39,62 @@ class CSSImageSetValue;
 
 class StyleFetchedImageSet final : public StyleImage,
                                    public ImageResourceObserver {
-  USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
+  USING_PRE_FINALIZER(StyleFetchedImageSet, Dispose);
 
  public:
-  static StyleFetchedImageSet* create(ImageResourceContent* image,
-                                      float imageScaleFactor,
+  static StyleFetchedImageSet* Create(ImageResourceContent* image,
+                                      float image_scale_factor,
                                       CSSImageSetValue* value,
                                       const KURL& url) {
-    return new StyleFetchedImageSet(image, imageScaleFactor, value, url);
+    return new StyleFetchedImageSet(image, image_scale_factor, value, url);
   }
   ~StyleFetchedImageSet() override;
 
-  CSSValue* cssValue() const override;
-  CSSValue* computedCSSValue() const override;
+  CSSValue* CssValue() const override;
+  CSSValue* ComputedCSSValue() const override;
 
   // FIXME: This is used by StyleImage for equals comparison, but this
   // implementation only looks at the image from the set that we have loaded.
   // I'm not sure if that is meaningful enough or not.
-  WrappedImagePtr data() const override;
+  WrappedImagePtr Data() const override;
 
-  bool canRender() const override;
-  bool isLoaded() const override;
-  bool errorOccurred() const override;
-  LayoutSize imageSize(const LayoutObject&,
+  bool CanRender() const override;
+  bool IsLoaded() const override;
+  bool ErrorOccurred() const override;
+  LayoutSize ImageSize(const LayoutObject&,
                        float multiplier,
-                       const LayoutSize& defaultObjectSize) const override;
-  bool imageHasRelativeSize() const override;
-  bool usesImageContainerSize() const override;
-  void addClient(LayoutObject*) override;
-  void removeClient(LayoutObject*) override;
-  PassRefPtr<Image> image(const LayoutObject&,
-                          const IntSize&,
-                          float) const override;
-  float imageScaleFactor() const override { return m_imageScaleFactor; }
-  bool knownToBeOpaque(const LayoutObject&) const override;
-  ImageResourceContent* cachedImage() const override;
+                       const LayoutSize& default_object_size) const override;
+  bool ImageHasRelativeSize() const override;
+  bool UsesImageContainerSize() const override;
+  void AddClient(LayoutObject*) override;
+  void RemoveClient(LayoutObject*) override;
+  PassRefPtr<Image> GetImage(const LayoutObject&,
+                             const IntSize&,
+                             float) const override;
+  float ImageScaleFactor() const override { return image_scale_factor_; }
+  bool KnownToBeOpaque(const LayoutObject&) const override;
+  ImageResourceContent* CachedImage() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   StyleFetchedImageSet(ImageResourceContent*,
-                       float imageScaleFactor,
+                       float image_scale_factor,
                        CSSImageSetValue*,
                        const KURL&);
 
-  void dispose();
+  void Dispose();
 
-  String debugName() const override { return "StyleFetchedImageSet"; }
+  String DebugName() const override { return "StyleFetchedImageSet"; }
 
-  Member<ImageResourceContent> m_bestFitImage;
-  float m_imageScaleFactor;
+  Member<ImageResourceContent> best_fit_image_;
+  float image_scale_factor_;
 
-  Member<CSSImageSetValue> m_imageSetValue;  // Not retained; it owns us.
-  const KURL m_url;
+  Member<CSSImageSetValue> image_set_value_;  // Not retained; it owns us.
+  const KURL url_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, isImageResourceSet());
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, IsImageResourceSet());
 
 }  // namespace blink
 

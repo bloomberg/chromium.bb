@@ -6,33 +6,33 @@
 
 namespace blink {
 
-WebTouchEvent WebTouchEvent::flattenTransform() const {
-  WebTouchEvent transformedEvent = *this;
-  for (unsigned i = 0; i < touchesLength; ++i) {
-    transformedEvent.touches[i] = touchPointInRootFrame(i);
+WebTouchEvent WebTouchEvent::FlattenTransform() const {
+  WebTouchEvent transformed_event = *this;
+  for (unsigned i = 0; i < touches_length; ++i) {
+    transformed_event.touches[i] = TouchPointInRootFrame(i);
   }
-  transformedEvent.m_frameTranslate.x = 0;
-  transformedEvent.m_frameTranslate.y = 0;
-  transformedEvent.m_frameScale = 1;
+  transformed_event.frame_translate_.x = 0;
+  transformed_event.frame_translate_.y = 0;
+  transformed_event.frame_scale_ = 1;
 
-  return transformedEvent;
+  return transformed_event;
 }
 
-WebTouchPoint WebTouchEvent::touchPointInRootFrame(unsigned point) const {
-  DCHECK_LT(point, touchesLength);
-  if (point >= touchesLength)
+WebTouchPoint WebTouchEvent::TouchPointInRootFrame(unsigned point) const {
+  DCHECK_LT(point, touches_length);
+  if (point >= touches_length)
     return WebTouchPoint();
 
-  WebTouchPoint transformedPoint = touches[point];
-  transformedPoint.radiusX /= m_frameScale;
-  transformedPoint.radiusY /= m_frameScale;
-  transformedPoint.movementX /= m_frameScale;
-  transformedPoint.movementY /= m_frameScale;
-  transformedPoint.position.x =
-      (transformedPoint.position.x / m_frameScale) + m_frameTranslate.x;
-  transformedPoint.position.y =
-      (transformedPoint.position.y / m_frameScale) + m_frameTranslate.y;
-  return transformedPoint;
+  WebTouchPoint transformed_point = touches[point];
+  transformed_point.radius_x /= frame_scale_;
+  transformed_point.radius_y /= frame_scale_;
+  transformed_point.movement_x /= frame_scale_;
+  transformed_point.movement_y /= frame_scale_;
+  transformed_point.position.x =
+      (transformed_point.position.x / frame_scale_) + frame_translate_.x;
+  transformed_point.position.y =
+      (transformed_point.position.y / frame_scale_) + frame_translate_.y;
+  return transformed_point;
 }
 
 }  // namespace blink

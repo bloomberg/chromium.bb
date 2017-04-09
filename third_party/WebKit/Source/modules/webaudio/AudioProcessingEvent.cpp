@@ -28,17 +28,17 @@
 
 namespace blink {
 
-AudioProcessingEvent* AudioProcessingEvent::create() {
+AudioProcessingEvent* AudioProcessingEvent::Create() {
   return new AudioProcessingEvent;
 }
 
-AudioProcessingEvent* AudioProcessingEvent::create(AudioBuffer* inputBuffer,
-                                                   AudioBuffer* outputBuffer,
-                                                   double playbackTime) {
-  return new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime);
+AudioProcessingEvent* AudioProcessingEvent::Create(AudioBuffer* input_buffer,
+                                                   AudioBuffer* output_buffer,
+                                                   double playback_time) {
+  return new AudioProcessingEvent(input_buffer, output_buffer, playback_time);
 }
 
-AudioProcessingEvent* AudioProcessingEvent::create(
+AudioProcessingEvent* AudioProcessingEvent::Create(
     const AtomicString& type,
     const AudioProcessingEventInit& initializer) {
   return new AudioProcessingEvent(type, initializer);
@@ -46,33 +46,33 @@ AudioProcessingEvent* AudioProcessingEvent::create(
 
 AudioProcessingEvent::AudioProcessingEvent() {}
 
-AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer,
-                                           AudioBuffer* outputBuffer,
-                                           double playbackTime)
+AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* input_buffer,
+                                           AudioBuffer* output_buffer,
+                                           double playback_time)
     : Event(EventTypeNames::audioprocess, true, false),
-      m_inputBuffer(inputBuffer),
-      m_outputBuffer(outputBuffer),
-      m_playbackTime(playbackTime) {}
+      input_buffer_(input_buffer),
+      output_buffer_(output_buffer),
+      playback_time_(playback_time) {}
 
 AudioProcessingEvent::AudioProcessingEvent(
     const AtomicString& type,
     const AudioProcessingEventInit& initializer)
     : Event(type, initializer) {
-  m_inputBuffer = initializer.inputBuffer();
-  m_outputBuffer = initializer.outputBuffer();
-  m_playbackTime = initializer.playbackTime();
+  input_buffer_ = initializer.inputBuffer();
+  output_buffer_ = initializer.outputBuffer();
+  playback_time_ = initializer.playbackTime();
 }
 
 AudioProcessingEvent::~AudioProcessingEvent() {}
 
-const AtomicString& AudioProcessingEvent::interfaceName() const {
+const AtomicString& AudioProcessingEvent::InterfaceName() const {
   return EventNames::AudioProcessingEvent;
 }
 
 DEFINE_TRACE(AudioProcessingEvent) {
-  visitor->trace(m_inputBuffer);
-  visitor->trace(m_outputBuffer);
-  Event::trace(visitor);
+  visitor->Trace(input_buffer_);
+  visitor->Trace(output_buffer_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

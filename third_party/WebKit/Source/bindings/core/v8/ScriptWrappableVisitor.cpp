@@ -31,282 +31,284 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor() {}
 void ScriptWrappableVisitor::TracePrologue() {
   // This CHECK ensures that wrapper tracing is not started from scopes
   // that forbid GC execution, e.g., constructors.
-  CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
-  performCleanup();
+  CHECK(ThreadState::Current());
+  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  PerformCleanup();
 
-  CHECK(!m_tracingInProgress);
-  CHECK(!m_shouldCleanup);
-  CHECK(m_headersToUnmark.isEmpty());
-  CHECK(m_markingDeque.isEmpty());
-  CHECK(m_verifierDeque.isEmpty());
-  m_tracingInProgress = true;
+  CHECK(!tracing_in_progress_);
+  CHECK(!should_cleanup_);
+  CHECK(headers_to_unmark_.IsEmpty());
+  CHECK(marking_deque_.IsEmpty());
+  CHECK(verifier_deque_.IsEmpty());
+  tracing_in_progress_ = true;
 }
 
 void ScriptWrappableVisitor::EnterFinalPause() {
-  CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
-  ActiveScriptWrappableBase::traceActiveScriptWrappables(m_isolate, this);
+  CHECK(ThreadState::Current());
+  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue() {
-  CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
-  DCHECK(m_markingDeque.isEmpty());
+  CHECK(ThreadState::Current());
+  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
   ScriptWrappableVisitorVerifier verifier;
-  for (auto& markingData : m_verifierDeque) {
-    markingData.traceWrappers(&verifier);
+  for (auto& marking_data : verifier_deque_) {
+    marking_data.TraceWrappers(&verifier);
   }
 #endif
 
-  m_shouldCleanup = true;
-  m_tracingInProgress = false;
-  scheduleIdleLazyCleanup();
+  should_cleanup_ = true;
+  tracing_in_progress_ = false;
+  ScheduleIdleLazyCleanup();
 }
 
 void ScriptWrappableVisitor::AbortTracing() {
-  CHECK(ThreadState::current());
-  m_shouldCleanup = true;
-  m_tracingInProgress = false;
-  performCleanup();
+  CHECK(ThreadState::Current());
+  should_cleanup_ = true;
+  tracing_in_progress_ = false;
+  PerformCleanup();
 }
 
 size_t ScriptWrappableVisitor::NumberOfWrappersToTrace() {
-  CHECK(ThreadState::current());
-  return m_markingDeque.size();
+  CHECK(ThreadState::Current());
+  return marking_deque_.size();
 }
 
-void ScriptWrappableVisitor::performCleanup() {
-  if (!m_shouldCleanup)
+void ScriptWrappableVisitor::PerformCleanup() {
+  if (!should_cleanup_)
     return;
 
-  CHECK(!m_tracingInProgress);
-  for (auto header : m_headersToUnmark) {
+  CHECK(!tracing_in_progress_);
+  for (auto header : headers_to_unmark_) {
     // Dead objects residing in the marking deque may become invalid due to
     // minor garbage collections and are therefore set to nullptr. We have
     // to skip over such objects.
     if (header)
-      header->unmarkWrapperHeader();
+      header->UnmarkWrapperHeader();
   }
 
-  m_headersToUnmark.clear();
-  m_markingDeque.clear();
-  m_verifierDeque.clear();
-  m_shouldCleanup = false;
+  headers_to_unmark_.Clear();
+  marking_deque_.Clear();
+  verifier_deque_.Clear();
+  should_cleanup_ = false;
 }
 
-void ScriptWrappableVisitor::scheduleIdleLazyCleanup() {
+void ScriptWrappableVisitor::ScheduleIdleLazyCleanup() {
   // Some threads (e.g. PPAPI thread) don't have a scheduler.
-  if (!Platform::current()->currentThread()->scheduler())
+  if (!Platform::Current()->CurrentThread()->Scheduler())
     return;
 
-  if (m_idleCleanupTaskScheduled)
+  if (idle_cleanup_task_scheduled_)
     return;
 
-  Platform::current()->currentThread()->scheduler()->postIdleTask(
-      BLINK_FROM_HERE, WTF::bind(&ScriptWrappableVisitor::performLazyCleanup,
-                                 WTF::unretained(this)));
-  m_idleCleanupTaskScheduled = true;
+  Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+      BLINK_FROM_HERE, WTF::Bind(&ScriptWrappableVisitor::PerformLazyCleanup,
+                                 WTF::Unretained(this)));
+  idle_cleanup_task_scheduled_ = true;
 }
 
-void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds) {
-  m_idleCleanupTaskScheduled = false;
+void ScriptWrappableVisitor::PerformLazyCleanup(double deadline_seconds) {
+  idle_cleanup_task_scheduled_ = false;
 
-  if (!m_shouldCleanup)
+  if (!should_cleanup_)
     return;
 
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ScriptWrappableVisitor::performLazyCleanup",
                "idleDeltaInSeconds",
-               deadlineSeconds - monotonicallyIncreasingTime());
+               deadline_seconds - MonotonicallyIncreasingTime());
 
   const int kDeadlineCheckInterval = 2500;
-  int processedWrapperCount = 0;
-  for (auto it = m_headersToUnmark.rbegin(); it != m_headersToUnmark.rend();) {
+  int processed_wrapper_count = 0;
+  for (auto it = headers_to_unmark_.rbegin();
+       it != headers_to_unmark_.rend();) {
     auto header = *it;
     // Dead objects residing in the marking deque may become invalid due to
     // minor garbage collections and are therefore set to nullptr. We have
     // to skip over such objects.
     if (header)
-      header->unmarkWrapperHeader();
+      header->UnmarkWrapperHeader();
 
     ++it;
-    m_headersToUnmark.pop_back();
+    headers_to_unmark_.pop_back();
 
-    processedWrapperCount++;
-    if (processedWrapperCount % kDeadlineCheckInterval == 0) {
-      if (deadlineSeconds <= monotonicallyIncreasingTime()) {
-        scheduleIdleLazyCleanup();
+    processed_wrapper_count++;
+    if (processed_wrapper_count % kDeadlineCheckInterval == 0) {
+      if (deadline_seconds <= MonotonicallyIncreasingTime()) {
+        ScheduleIdleLazyCleanup();
         return;
       }
     }
   }
 
   // Unmarked all headers.
-  CHECK(m_headersToUnmark.isEmpty());
-  m_markingDeque.clear();
-  m_verifierDeque.clear();
-  m_shouldCleanup = false;
+  CHECK(headers_to_unmark_.IsEmpty());
+  marking_deque_.Clear();
+  verifier_deque_.Clear();
+  should_cleanup_ = false;
 }
 
 void ScriptWrappableVisitor::RegisterV8Reference(
-    const std::pair<void*, void*>& internalFields) {
-  if (!m_tracingInProgress) {
+    const std::pair<void*, void*>& internal_fields) {
+  if (!tracing_in_progress_) {
     return;
   }
 
-  WrapperTypeInfo* wrapperTypeInfo =
-      reinterpret_cast<WrapperTypeInfo*>(internalFields.first);
-  if (wrapperTypeInfo->ginEmbedder != gin::GinEmbedder::kEmbedderBlink) {
+  WrapperTypeInfo* wrapper_type_info =
+      reinterpret_cast<WrapperTypeInfo*>(internal_fields.first);
+  if (wrapper_type_info->gin_embedder != gin::GinEmbedder::kEmbedderBlink) {
     return;
   }
-  DCHECK(wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::NodeClassId ||
-         wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
+  DCHECK(wrapper_type_info->wrapper_class_id == WrapperTypeInfo::kNodeClassId ||
+         wrapper_type_info->wrapper_class_id ==
+             WrapperTypeInfo::kObjectClassId);
 
-  ScriptWrappable* scriptWrappable =
-      reinterpret_cast<ScriptWrappable*>(internalFields.second);
+  ScriptWrappable* script_wrappable =
+      reinterpret_cast<ScriptWrappable*>(internal_fields.second);
 
-  wrapperTypeInfo->traceWrappers(this, scriptWrappable);
+  wrapper_type_info->TraceWrappers(this, script_wrappable);
 }
 
 void ScriptWrappableVisitor::RegisterV8References(
     const std::vector<std::pair<void*, void*>>&
-        internalFieldsOfPotentialWrappers) {
-  CHECK(ThreadState::current());
+        internal_fields_of_potential_wrappers) {
+  CHECK(ThreadState::Current());
   // TODO(hlopko): Visit the vector in the V8 instead of passing it over if
   // there is no performance impact
-  for (auto& pair : internalFieldsOfPotentialWrappers) {
+  for (auto& pair : internal_fields_of_potential_wrappers) {
     RegisterV8Reference(pair);
   }
 }
 
 bool ScriptWrappableVisitor::AdvanceTracing(
-    double deadlineInMs,
+    double deadline_in_ms,
     v8::EmbedderHeapTracer::AdvanceTracingActions actions) {
   // Do not drain the marking deque in a state where we can generally not
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
-  CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
-  CHECK(m_tracingInProgress);
-  WTF::AutoReset<bool>(&m_advancingTracing, true);
+  CHECK(ThreadState::Current());
+  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  CHECK(tracing_in_progress_);
+  WTF::AutoReset<bool>(&advancing_tracing_, true);
   while (actions.force_completion ==
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
-         WTF::monotonicallyIncreasingTimeMS() < deadlineInMs) {
-    if (m_markingDeque.isEmpty()) {
+         WTF::MonotonicallyIncreasingTimeMS() < deadline_in_ms) {
+    if (marking_deque_.IsEmpty()) {
       return false;
     }
-    m_markingDeque.takeFirst().traceWrappers(this);
+    marking_deque_.TakeFirst().TraceWrappers(this);
   }
   return true;
 }
 
-bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const {
-  if (header->isWrapperHeaderMarked())
+bool ScriptWrappableVisitor::MarkWrapperHeader(HeapObjectHeader* header) const {
+  if (header->IsWrapperHeaderMarked())
     return false;
 
   // Verify that no compactable & movable objects are slated for
   // lazy unmarking.
-  DCHECK(!HeapCompact::isCompactableArena(
-      pageFromObject(header)->arena()->arenaIndex()));
-  header->markWrapperHeader();
-  m_headersToUnmark.push_back(header);
+  DCHECK(!HeapCompact::IsCompactableArena(
+      PageFromObject(header)->Arena()->ArenaIndex()));
+  header->MarkWrapperHeader();
+  headers_to_unmark_.push_back(header);
   return true;
 }
 
-void ScriptWrappableVisitor::markWrappersInAllWorlds(
-    const ScriptWrappable* scriptWrappable) const {
-  DOMWrapperWorld::markWrappersInAllWorlds(
-      const_cast<ScriptWrappable*>(scriptWrappable), this);
+void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
+    const ScriptWrappable* script_wrappable) const {
+  DOMWrapperWorld::MarkWrappersInAllWorlds(
+      const_cast<ScriptWrappable*>(script_wrappable), this);
 }
 
-void ScriptWrappableVisitor::writeBarrier(
-    const void* srcObject,
-    const TraceWrapperV8Reference<v8::Value>* dstObject) {
-  if (!srcObject || !dstObject || dstObject->isEmpty()) {
+void ScriptWrappableVisitor::WriteBarrier(
+    const void* src_object,
+    const TraceWrapperV8Reference<v8::Value>* dst_object) {
+  if (!src_object || !dst_object || dst_object->IsEmpty()) {
     return;
   }
   // We only require a write barrier if |srcObject|  is already marked. Note
   // that this implicitly disables the write barrier when the GC is not
   // active as object will not be marked in this case.
-  if (!HeapObjectHeader::fromPayload(srcObject)->isWrapperHeaderMarked()) {
+  if (!HeapObjectHeader::FromPayload(src_object)->IsWrapperHeaderMarked()) {
     return;
   }
-  currentVisitor(ThreadState::current()->isolate())
-      ->markWrapper(
-          &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dstObject)->get()));
+  CurrentVisitor(ThreadState::Current()->GetIsolate())
+      ->MarkWrapper(&(
+          const_cast<TraceWrapperV8Reference<v8::Value>*>(dst_object)->Get()));
 }
 
-void ScriptWrappableVisitor::writeBarrier(
-    const v8::Persistent<v8::Object>* dstObject) {
-  if (!dstObject || dstObject->IsEmpty()) {
+void ScriptWrappableVisitor::WriteBarrier(
+    const v8::Persistent<v8::Object>* dst_object) {
+  if (!dst_object || dst_object->IsEmpty()) {
     return;
   }
-  currentVisitor(ThreadState::current()->isolate())
-      ->markWrapper(&(dstObject->As<v8::Value>()));
+  CurrentVisitor(ThreadState::Current()->GetIsolate())
+      ->MarkWrapper(&(dst_object->As<v8::Value>()));
 }
 
-void ScriptWrappableVisitor::traceWrappers(
-    const TraceWrapperV8Reference<v8::Value>& tracedWrapper) const {
-  markWrapper(
-      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(tracedWrapper).get()));
+void ScriptWrappableVisitor::TraceWrappers(
+    const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const {
+  MarkWrapper(
+      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(traced_wrapper).Get()));
 }
 
-void ScriptWrappableVisitor::markWrapper(
+void ScriptWrappableVisitor::MarkWrapper(
     const v8::PersistentBase<v8::Value>* handle) const {
   // The write barrier may try to mark a wrapper because cleanup is still
   // delayed. Bail out in this case. We also allow unconditional marking which
   // requires us to bail out here when tracing is not in progress.
-  if (!m_tracingInProgress)
+  if (!tracing_in_progress_)
     return;
-  handle->RegisterExternalReference(m_isolate);
+  handle->RegisterExternalReference(isolate_);
 }
 
-void ScriptWrappableVisitor::dispatchTraceWrappers(
-    const TraceWrapperBase* wrapperBase) const {
-  wrapperBase->traceWrappers(this);
+void ScriptWrappableVisitor::DispatchTraceWrappers(
+    const TraceWrapperBase* wrapper_base) const {
+  wrapper_base->TraceWrappers(this);
 }
 
-void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque() {
-  for (auto it = m_markingDeque.begin(); it != m_markingDeque.end(); ++it) {
-    auto& markingData = *it;
-    if (markingData.shouldBeInvalidated()) {
-      markingData.invalidate();
+void ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque() {
+  for (auto it = marking_deque_.begin(); it != marking_deque_.end(); ++it) {
+    auto& marking_data = *it;
+    if (marking_data.ShouldBeInvalidated()) {
+      marking_data.Invalidate();
     }
   }
-  for (auto it = m_verifierDeque.begin(); it != m_verifierDeque.end(); ++it) {
-    auto& markingData = *it;
-    if (markingData.shouldBeInvalidated()) {
-      markingData.invalidate();
+  for (auto it = verifier_deque_.begin(); it != verifier_deque_.end(); ++it) {
+    auto& marking_data = *it;
+    if (marking_data.ShouldBeInvalidated()) {
+      marking_data.Invalidate();
     }
   }
-  for (auto it = m_headersToUnmark.begin(); it != m_headersToUnmark.end();
+  for (auto it = headers_to_unmark_.begin(); it != headers_to_unmark_.end();
        ++it) {
     auto header = *it;
-    if (header && !header->isMarked()) {
+    if (header && !header->IsMarked()) {
       *it = nullptr;
     }
   }
 }
 
-void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque(
+void ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque(
     v8::Isolate* isolate) {
-  ScriptWrappableVisitor* scriptWrappableVisitor =
-      V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
-  if (scriptWrappableVisitor)
-    scriptWrappableVisitor->invalidateDeadObjectsInMarkingDeque();
+  ScriptWrappableVisitor* script_wrappable_visitor =
+      V8PerIsolateData::From(isolate)->GetScriptWrappableVisitor();
+  if (script_wrappable_visitor)
+    script_wrappable_visitor->InvalidateDeadObjectsInMarkingDeque();
 }
 
-void ScriptWrappableVisitor::performCleanup(v8::Isolate* isolate) {
-  ScriptWrappableVisitor* scriptWrappableVisitor =
-      V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
-  if (scriptWrappableVisitor)
-    scriptWrappableVisitor->performCleanup();
+void ScriptWrappableVisitor::PerformCleanup(v8::Isolate* isolate) {
+  ScriptWrappableVisitor* script_wrappable_visitor =
+      V8PerIsolateData::From(isolate)->GetScriptWrappableVisitor();
+  if (script_wrappable_visitor)
+    script_wrappable_visitor->PerformCleanup();
 }
 
-WrapperVisitor* ScriptWrappableVisitor::currentVisitor(v8::Isolate* isolate) {
-  return V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
+WrapperVisitor* ScriptWrappableVisitor::CurrentVisitor(v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->GetScriptWrappableVisitor();
 }
 
 }  // namespace blink

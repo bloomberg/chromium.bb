@@ -69,7 +69,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
-                          blink::WebConsoleMessage::LevelLast)
+                          blink::WebConsoleMessage::kLevelLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
                           content::BROWSER_CONTROLS_STATE_LAST)
 

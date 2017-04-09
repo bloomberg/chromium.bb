@@ -35,96 +35,97 @@ namespace {
 
 class SVGPathTraversalState final : public SVGPathConsumer {
  public:
-  SVGPathTraversalState(PathTraversalState::PathTraversalAction traversalAction,
-                        float desiredLength = 0)
-      : m_traversalState(traversalAction), m_segmentIndex(0) {
-    m_traversalState.m_desiredLength = desiredLength;
+  SVGPathTraversalState(
+      PathTraversalState::PathTraversalAction traversal_action,
+      float desired_length = 0)
+      : traversal_state_(traversal_action), segment_index_(0) {
+    traversal_state_.desired_length_ = desired_length;
   }
 
-  unsigned segmentIndex() const { return m_segmentIndex; }
-  float totalLength() const { return m_traversalState.m_totalLength; }
-  FloatPoint computedPoint() const { return m_traversalState.m_current; }
+  unsigned SegmentIndex() const { return segment_index_; }
+  float TotalLength() const { return traversal_state_.total_length_; }
+  FloatPoint ComputedPoint() const { return traversal_state_.current_; }
 
-  bool processSegment(bool hasMoreData) {
-    m_traversalState.processSegment();
-    if (m_traversalState.m_success)
+  bool ProcessSegment(bool has_more_data) {
+    traversal_state_.ProcessSegment();
+    if (traversal_state_.success_)
       return true;
-    if (hasMoreData)
-      m_segmentIndex++;
+    if (has_more_data)
+      segment_index_++;
     return false;
   }
 
  private:
-  void emitSegment(const PathSegmentData&) override;
+  void EmitSegment(const PathSegmentData&) override;
 
-  PathTraversalState m_traversalState;
-  unsigned m_segmentIndex;
+  PathTraversalState traversal_state_;
+  unsigned segment_index_;
 };
 
-void SVGPathTraversalState::emitSegment(const PathSegmentData& segment) {
+void SVGPathTraversalState::EmitSegment(const PathSegmentData& segment) {
   switch (segment.command) {
-    case PathSegMoveToAbs:
-      m_traversalState.m_totalLength +=
-          m_traversalState.moveTo(segment.targetPoint);
+    case kPathSegMoveToAbs:
+      traversal_state_.total_length_ +=
+          traversal_state_.MoveTo(segment.target_point);
       break;
-    case PathSegLineToAbs:
-      m_traversalState.m_totalLength +=
-          m_traversalState.lineTo(segment.targetPoint);
+    case kPathSegLineToAbs:
+      traversal_state_.total_length_ +=
+          traversal_state_.LineTo(segment.target_point);
       break;
-    case PathSegClosePath:
-      m_traversalState.m_totalLength += m_traversalState.closeSubpath();
+    case kPathSegClosePath:
+      traversal_state_.total_length_ += traversal_state_.CloseSubpath();
       break;
-    case PathSegCurveToCubicAbs:
-      m_traversalState.m_totalLength += m_traversalState.cubicBezierTo(
-          segment.point1, segment.point2, segment.targetPoint);
+    case kPathSegCurveToCubicAbs:
+      traversal_state_.total_length_ += traversal_state_.CubicBezierTo(
+          segment.point1, segment.point2, segment.target_point);
       break;
     default:
       NOTREACHED();
   }
 }
 
-void executeQuery(const SVGPathByteStream& pathByteStream,
-                  SVGPathTraversalState& traversalState) {
-  SVGPathByteStreamSource source(pathByteStream);
-  SVGPathNormalizer normalizer(&traversalState);
+void ExecuteQuery(const SVGPathByteStream& path_byte_stream,
+                  SVGPathTraversalState& traversal_state) {
+  SVGPathByteStreamSource source(path_byte_stream);
+  SVGPathNormalizer normalizer(&traversal_state);
 
-  bool hasMoreData = source.hasMoreData();
-  while (hasMoreData) {
-    PathSegmentData segment = source.parseSegment();
-    DCHECK_NE(segment.command, PathSegUnknown);
+  bool has_more_data = source.HasMoreData();
+  while (has_more_data) {
+    PathSegmentData segment = source.ParseSegment();
+    DCHECK_NE(segment.command, kPathSegUnknown);
 
-    normalizer.emitSegment(segment);
+    normalizer.EmitSegment(segment);
 
-    hasMoreData = source.hasMoreData();
-    if (traversalState.processSegment(hasMoreData))
+    has_more_data = source.HasMoreData();
+    if (traversal_state.ProcessSegment(has_more_data))
       break;
   }
 }
 
 }  // namespace
 
-SVGPathQuery::SVGPathQuery(const SVGPathByteStream& pathByteStream)
-    : m_pathByteStream(pathByteStream) {}
+SVGPathQuery::SVGPathQuery(const SVGPathByteStream& path_byte_stream)
+    : path_byte_stream_(path_byte_stream) {}
 
-unsigned SVGPathQuery::getPathSegIndexAtLength(float length) const {
-  SVGPathTraversalState traversalState(
-      PathTraversalState::TraversalSegmentAtLength, length);
-  executeQuery(m_pathByteStream, traversalState);
-  return traversalState.segmentIndex();
+unsigned SVGPathQuery::GetPathSegIndexAtLength(float length) const {
+  SVGPathTraversalState traversal_state(
+      PathTraversalState::kTraversalSegmentAtLength, length);
+  ExecuteQuery(path_byte_stream_, traversal_state);
+  return traversal_state.SegmentIndex();
 }
 
-float SVGPathQuery::getTotalLength() const {
-  SVGPathTraversalState traversalState(
-      PathTraversalState::TraversalTotalLength);
-  executeQuery(m_pathByteStream, traversalState);
-  return traversalState.totalLength();
+float SVGPathQuery::GetTotalLength() const {
+  SVGPathTraversalState traversal_state(
+      PathTraversalState::kTraversalTotalLength);
+  ExecuteQuery(path_byte_stream_, traversal_state);
+  return traversal_state.TotalLength();
 }
 
-FloatPoint SVGPathQuery::getPointAtLength(float length) const {
-  SVGPathTraversalState traversalState(
-      PathTraversalState::TraversalPointAtLength, length);
-  executeQuery(m_pathByteStream, traversalState);
-  return traversalState.computedPoint();
+FloatPoint SVGPathQuery::GetPointAtLength(float length) const {
+  SVGPathTraversalState traversal_state(
+      PathTraversalState::kTraversalPointAtLength, length);
+  ExecuteQuery(path_byte_stream_, traversal_state);
+  return traversal_state.ComputedPoint();
 }
 
 }  // namespace blink

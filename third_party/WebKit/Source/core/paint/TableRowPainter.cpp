@@ -14,115 +14,118 @@
 
 namespace blink {
 
-void TableRowPainter::paint(const PaintInfo& paintInfo,
-                            const LayoutPoint& paintOffset) {
-  ObjectPainter(m_layoutTableRow).checkPaintOffset(paintInfo, paintOffset);
-  DCHECK(m_layoutTableRow.hasSelfPaintingLayer());
+void TableRowPainter::Paint(const PaintInfo& paint_info,
+                            const LayoutPoint& paint_offset) {
+  ObjectPainter(layout_table_row_).CheckPaintOffset(paint_info, paint_offset);
+  DCHECK(layout_table_row_.HasSelfPaintingLayer());
 
   // TODO(crbug.com/577282): This painting order is inconsistent with other
   // outlines.
-  if (shouldPaintSelfOutline(paintInfo.phase))
-    paintOutline(paintInfo, paintOffset);
-  if (paintInfo.phase == PaintPhaseSelfOutlineOnly)
+  if (ShouldPaintSelfOutline(paint_info.phase))
+    PaintOutline(paint_info, paint_offset);
+  if (paint_info.phase == kPaintPhaseSelfOutlineOnly)
     return;
 
-  if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
-    const auto* section = m_layoutTableRow.section();
-    LayoutRect cullRect = LayoutRect(paintInfo.cullRect().m_rect);
-    cullRect.moveBy(m_layoutTableRow.physicalLocation(section));
-    LayoutRect logicalRectInSection =
-        section->logicalRectForWritingModeAndDirection(cullRect);
-    CellSpan dirtiedColumns =
-        section->dirtiedEffectiveColumns(logicalRectInSection);
-    paintBoxDecorationBackground(paintInfo, paintOffset, dirtiedColumns);
+  if (ShouldPaintSelfBlockBackground(paint_info.phase)) {
+    const auto* section = layout_table_row_.Section();
+    LayoutRect cull_rect = LayoutRect(paint_info.GetCullRect().rect_);
+    cull_rect.MoveBy(layout_table_row_.PhysicalLocation(section));
+    LayoutRect logical_rect_in_section =
+        section->LogicalRectForWritingModeAndDirection(cull_rect);
+    CellSpan dirtied_columns =
+        section->DirtiedEffectiveColumns(logical_rect_in_section);
+    PaintBoxDecorationBackground(paint_info, paint_offset, dirtied_columns);
   }
 
-  if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
+  if (paint_info.phase == kPaintPhaseSelfBlockBackgroundOnly)
     return;
 
-  PaintInfo paintInfoForCells = paintInfo.forDescendants();
-  for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell;
-       cell = cell->nextCell()) {
-    if (!cell->hasSelfPaintingLayer())
-      cell->paint(paintInfoForCells, paintOffset);
+  PaintInfo paint_info_for_cells = paint_info.ForDescendants();
+  for (LayoutTableCell* cell = layout_table_row_.FirstCell(); cell;
+       cell = cell->NextCell()) {
+    if (!cell->HasSelfPaintingLayer())
+      cell->Paint(paint_info_for_cells, paint_offset);
   }
 }
 
-void TableRowPainter::paintOutline(const PaintInfo& paintInfo,
-                                   const LayoutPoint& paintOffset) {
-  DCHECK(shouldPaintSelfOutline(paintInfo.phase));
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
-  ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, adjustedPaintOffset);
+void TableRowPainter::PaintOutline(const PaintInfo& paint_info,
+                                   const LayoutPoint& paint_offset) {
+  DCHECK(ShouldPaintSelfOutline(paint_info.phase));
+  LayoutPoint adjusted_paint_offset =
+      paint_offset + layout_table_row_.Location();
+  ObjectPainter(layout_table_row_)
+      .PaintOutline(paint_info, adjusted_paint_offset);
 }
 
-void TableRowPainter::paintBoxDecorationBackground(
-    const PaintInfo& paintInfo,
-    const LayoutPoint& paintOffset,
-    const CellSpan& dirtiedColumns) {
-  bool hasBackground = m_layoutTableRow.styleRef().hasBackground();
-  bool hasBoxShadow = m_layoutTableRow.styleRef().boxShadow();
-  if (!hasBackground && !hasBoxShadow)
+void TableRowPainter::PaintBoxDecorationBackground(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset,
+    const CellSpan& dirtied_columns) {
+  bool has_background = layout_table_row_.StyleRef().HasBackground();
+  bool has_box_shadow = layout_table_row_.StyleRef().BoxShadow();
+  if (!has_background && !has_box_shadow)
     return;
 
-  const auto* section = m_layoutTableRow.section();
-  PaintResult paintResult =
-      dirtiedColumns == section->fullTableEffectiveColumnSpan()
-          ? FullyPainted
-          : MayBeClippedByPaintDirtyRect;
-  m_layoutTableRow.getMutableForPainting().updatePaintResult(
-      paintResult, paintInfo.cullRect());
+  const auto* section = layout_table_row_.Section();
+  PaintResult paint_result =
+      dirtied_columns == section->FullTableEffectiveColumnSpan()
+          ? kFullyPainted
+          : kMayBeClippedByPaintDirtyRect;
+  layout_table_row_.GetMutableForPainting().UpdatePaintResult(
+      paint_result, paint_info.GetCullRect());
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutTableRow,
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_table_row_,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
+  LayoutPoint adjusted_paint_offset =
+      paint_offset + layout_table_row_.Location();
   LayoutRect bounds =
-      BoxPainter(m_layoutTableRow)
-          .boundsForDrawingRecorder(paintInfo, adjustedPaintOffset);
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableRow,
+      BoxPainter(layout_table_row_)
+          .BoundsForDrawingRecorder(paint_info, adjusted_paint_offset);
+  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_table_row_,
                                        DisplayItem::kBoxDecorationBackground,
                                        bounds);
-  LayoutRect paintRect(adjustedPaintOffset, m_layoutTableRow.size());
+  LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.size());
 
-  if (hasBoxShadow) {
-    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
-                                     m_layoutTableRow.styleRef());
+  if (has_box_shadow) {
+    BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
+                                     layout_table_row_.StyleRef());
   }
 
-  if (hasBackground) {
-    PaintInfo paintInfoForCells = paintInfo.forDescendants();
-    for (auto c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
+  if (has_background) {
+    PaintInfo paint_info_for_cells = paint_info.ForDescendants();
+    for (auto c = dirtied_columns.Start(); c < dirtied_columns.end(); c++) {
       if (const auto* cell =
-              section->originatingCellAt(m_layoutTableRow.rowIndex(), c))
-        paintBackgroundBehindCell(*cell, paintInfoForCells, paintOffset);
+              section->OriginatingCellAt(layout_table_row_.RowIndex(), c))
+        PaintBackgroundBehindCell(*cell, paint_info_for_cells, paint_offset);
     }
   }
 
-  if (hasBoxShadow) {
+  if (has_box_shadow) {
     // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting
     // paintRect by half widths of collapsed borders.
-    BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
-                                    m_layoutTableRow.styleRef());
+    BoxPainter::PaintInsetBoxShadow(paint_info, paint_rect,
+                                    layout_table_row_.StyleRef());
   }
 }
 
-void TableRowPainter::paintBackgroundBehindCell(
+void TableRowPainter::PaintBackgroundBehindCell(
     const LayoutTableCell& cell,
-    const PaintInfo& paintInfo,
-    const LayoutPoint& paintOffset) {
-  DCHECK(m_layoutTableRow.styleRef().hasBackground());
-  LayoutPoint cellPoint = paintOffset;
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  DCHECK(layout_table_row_.StyleRef().HasBackground());
+  LayoutPoint cell_point = paint_offset;
   // If the row is self painting, paintOffset is in row's coordinates, so
   // doesn't need to flip in section's blocks direction. A row doesn't have
   // flipped blocks direction.
-  if (!m_layoutTableRow.hasSelfPaintingLayer()) {
-    cellPoint = m_layoutTableRow.section()->flipForWritingModeForChild(
-        &cell, cellPoint);
+  if (!layout_table_row_.HasSelfPaintingLayer()) {
+    cell_point = layout_table_row_.Section()->FlipForWritingModeForChild(
+        &cell, cell_point);
   }
-  TableCellPainter(cell).paintContainerBackgroundBehindCell(
-      paintInfo, cellPoint, m_layoutTableRow);
+  TableCellPainter(cell).PaintContainerBackgroundBehindCell(
+      paint_info, cell_point, layout_table_row_);
 }
 
 }  // namespace blink

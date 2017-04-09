@@ -37,11 +37,11 @@ class OESVertexArrayObject final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OESVertexArrayObject* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static OESVertexArrayObject* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
 
   WebGLVertexArrayObjectOES* createVertexArrayOES();
   void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);

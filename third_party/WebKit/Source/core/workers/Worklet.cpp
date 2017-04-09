@@ -16,66 +16,66 @@
 namespace blink {
 
 Worklet::Worklet(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->document()), m_frame(frame) {}
+    : ContextLifecycleObserver(frame->GetDocument()), frame_(frame) {}
 
-ScriptPromise Worklet::import(ScriptState* scriptState, const String& url) {
-  DCHECK(isMainThread());
-  if (!getExecutionContext()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "This frame is already detached"));
+ScriptPromise Worklet::import(ScriptState* script_state, const String& url) {
+  DCHECK(IsMainThread());
+  if (!GetExecutionContext()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "This frame is already detached"));
   }
 
-  KURL scriptURL = getExecutionContext()->completeURL(url);
-  if (!scriptURL.isValid()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
+  KURL script_url = GetExecutionContext()->CompleteURL(url);
+  if (!script_url.IsValid()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(
+                          kSyntaxError, "'" + url + "' is not a valid URL."));
   }
 
-  if (!isInitialized())
-    initialize();
+  if (!IsInitialized())
+    Initialize();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  WorkletScriptLoader* scriptLoader =
-      WorkletScriptLoader::create(m_frame->document()->fetcher(), this);
-  m_loaderAndResolvers.set(scriptLoader, resolver);
-  scriptLoader->fetchScript(scriptURL);
+  WorkletScriptLoader* script_loader =
+      WorkletScriptLoader::Create(frame_->GetDocument()->Fetcher(), this);
+  loader_and_resolvers_.Set(script_loader, resolver);
+  script_loader->FetchScript(script_url);
   return promise;
 }
 
-void Worklet::notifyWorkletScriptLoadingFinished(
-    WorkletScriptLoader* scriptLoader,
-    const ScriptSourceCode& sourceCode) {
-  DCHECK(isMainThread());
-  ScriptPromiseResolver* resolver = m_loaderAndResolvers.at(scriptLoader);
-  m_loaderAndResolvers.erase(scriptLoader);
+void Worklet::NotifyWorkletScriptLoadingFinished(
+    WorkletScriptLoader* script_loader,
+    const ScriptSourceCode& source_code) {
+  DCHECK(IsMainThread());
+  ScriptPromiseResolver* resolver = loader_and_resolvers_.at(script_loader);
+  loader_and_resolvers_.erase(script_loader);
 
-  if (!scriptLoader->wasScriptLoadSuccessful()) {
-    resolver->reject(DOMException::create(NetworkError));
+  if (!script_loader->WasScriptLoadSuccessful()) {
+    resolver->Reject(DOMException::Create(kNetworkError));
     return;
   }
 
-  workletGlobalScopeProxy()->evaluateScript(sourceCode);
-  resolver->resolve();
+  GetWorkletGlobalScopeProxy()->EvaluateScript(source_code);
+  resolver->Resolve();
 }
 
-void Worklet::contextDestroyed(ExecutionContext*) {
-  DCHECK(isMainThread());
-  if (isInitialized())
-    workletGlobalScopeProxy()->terminateWorkletGlobalScope();
-  for (const auto& scriptLoader : m_loaderAndResolvers.keys())
-    scriptLoader->cancel();
-  m_loaderAndResolvers.clear();
-  m_frame = nullptr;
+void Worklet::ContextDestroyed(ExecutionContext*) {
+  DCHECK(IsMainThread());
+  if (IsInitialized())
+    GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
+  for (const auto& script_loader : loader_and_resolvers_.Keys())
+    script_loader->Cancel();
+  loader_and_resolvers_.Clear();
+  frame_ = nullptr;
 }
 
 DEFINE_TRACE(Worklet) {
-  visitor->trace(m_frame);
-  visitor->trace(m_loaderAndResolvers);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(frame_);
+  visitor->Trace(loader_and_resolvers_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

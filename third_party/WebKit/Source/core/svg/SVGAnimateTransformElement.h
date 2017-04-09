@@ -37,14 +37,14 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
  private:
   explicit SVGAnimateTransformElement(Document&);
 
-  bool hasValidTarget() override;
+  bool HasValidTarget() override;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void resolveTargetProperty() override;
-  SVGPropertyBase* createPropertyForAnimation(const String&) const override;
+  void ResolveTargetProperty() override;
+  SVGPropertyBase* CreatePropertyForAnimation(const String&) const override;
 
-  SVGTransformType m_transformType;
+  SVGTransformType transform_type_;
 };
 
 }  // namespace blink

@@ -46,36 +46,36 @@ class StringBuffer {
 
   explicit StringBuffer(unsigned length) {
     CharType* characters;
-    m_data = StringImpl::createUninitialized(length, characters);
+    data_ = StringImpl::CreateUninitialized(length, characters);
   }
 
   ~StringBuffer() {}
 
-  void shrink(unsigned newLength);
+  void Shrink(unsigned new_length);
 
-  unsigned length() const { return m_data ? m_data->length() : 0; }
-  CharType* characters() {
-    return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>())
+  unsigned length() const { return data_ ? data_->length() : 0; }
+  CharType* Characters() {
+    return length() ? const_cast<CharType*>(data_->GetCharacters<CharType>())
                     : 0;
   }
 
   CharType& operator[](unsigned i) {
     SECURITY_DCHECK(i < length());
-    return characters()[i];
+    return Characters()[i];
   }
 
-  PassRefPtr<StringImpl> release() { return std::move(m_data); }
+  PassRefPtr<StringImpl> Release() { return std::move(data_); }
 
  private:
-  RefPtr<StringImpl> m_data;
+  RefPtr<StringImpl> data_;
 };
 
 template <typename CharType>
-void StringBuffer<CharType>::shrink(unsigned newLength) {
-  DCHECK(m_data);
-  if (m_data->length() == newLength)
+void StringBuffer<CharType>::Shrink(unsigned new_length) {
+  DCHECK(data_);
+  if (data_->length() == new_length)
     return;
-  m_data = m_data->substring(0, newLength);
+  data_ = data_->Substring(0, new_length);
 }
 
 }  // namespace WTF

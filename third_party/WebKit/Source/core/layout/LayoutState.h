@@ -71,50 +71,49 @@ class LayoutState {
   // Constructor for sub-tree layout and orthogonal writing-mode roots
   explicit LayoutState(LayoutObject& root);
 
-  LayoutState(LayoutBox&,
-              bool containingBlockLogicalWidthChanged = false);
+  LayoutState(LayoutBox&, bool containing_block_logical_width_changed = false);
 
   ~LayoutState();
 
-  bool isPaginated() const { return m_isPaginated; }
+  bool IsPaginated() const { return is_paginated_; }
 
   // The page logical offset is the object's offset from the top of the page in
   // the page progression direction (so an x-offset in vertical text and a
   // y-offset for horizontal text).
-  LayoutUnit pageLogicalOffset(const LayoutBox&,
-                               const LayoutUnit& childLogicalOffset) const;
+  LayoutUnit PageLogicalOffset(const LayoutBox&,
+                               const LayoutUnit& child_logical_offset) const;
 
-  const LayoutSize& paginationOffset() const { return m_paginationOffset; }
-  bool containingBlockLogicalWidthChanged() const {
-    return m_containingBlockLogicalWidthChanged;
+  const LayoutSize& PaginationOffset() const { return pagination_offset_; }
+  bool ContainingBlockLogicalWidthChanged() const {
+    return containing_block_logical_width_changed_;
   }
 
-  bool paginationStateChanged() const { return m_paginationStateChanged; }
-  void setPaginationStateChanged() { m_paginationStateChanged = true; }
+  bool PaginationStateChanged() const { return pagination_state_changed_; }
+  void SetPaginationStateChanged() { pagination_state_changed_ = true; }
 
-  LayoutState* next() const { return m_next; }
+  LayoutState* Next() const { return next_; }
 
-  LayoutFlowThread* flowThread() const { return m_flowThread; }
+  LayoutFlowThread* FlowThread() const { return flow_thread_; }
 
-  LayoutObject& layoutObject() const { return m_layoutObject; }
+  LayoutObject& GetLayoutObject() const { return layout_object_; }
 
  private:
   // Do not add anything apart from bitfields until after m_flowThread. See
   // https://bugs.webkit.org/show_bug.cgi?id=100173
-  bool m_isPaginated : 1;
+  bool is_paginated_ : 1;
 
-  bool m_containingBlockLogicalWidthChanged : 1;
-  bool m_paginationStateChanged : 1;
+  bool containing_block_logical_width_changed_ : 1;
+  bool pagination_state_changed_ : 1;
 
-  LayoutFlowThread* m_flowThread;
+  LayoutFlowThread* flow_thread_;
 
-  LayoutState* m_next;
+  LayoutState* next_;
 
   // x/y offset from the logical top / start of the first page. Does not include
   // relative positioning or scroll offsets.
-  LayoutSize m_paginationOffset;
+  LayoutSize pagination_offset_;
 
-  LayoutObject& m_layoutObject;
+  LayoutObject& layout_object_;
 };
 
 }  // namespace blink

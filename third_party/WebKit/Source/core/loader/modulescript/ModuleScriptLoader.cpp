@@ -20,7 +20,7 @@ namespace blink {
 ModuleScriptLoader::ModuleScriptLoader(Modulator* modulator,
                                        ModuleScriptLoaderRegistry* registry,
                                        ModuleScriptLoaderClient* client)
-    : m_modulator(modulator), m_registry(registry), m_client(client) {
+    : modulator_(modulator), registry_(registry), client_(client) {
   DCHECK(modulator);
   DCHECK(registry);
   DCHECK(client);
@@ -29,13 +29,13 @@ ModuleScriptLoader::ModuleScriptLoader(Modulator* modulator,
 ModuleScriptLoader::~ModuleScriptLoader() {}
 
 #if DCHECK_IS_ON()
-const char* ModuleScriptLoader::stateToString(ModuleScriptLoader::State state) {
+const char* ModuleScriptLoader::StateToString(ModuleScriptLoader::State state) {
   switch (state) {
-    case State::Initial:
+    case State::kInitial:
       return "Initial";
-    case State::Fetching:
+    case State::kFetching:
       return "Fetching";
-    case State::Finished:
+    case State::kFinished:
       return "Finished";
   }
   NOTREACHED();
@@ -43,45 +43,45 @@ const char* ModuleScriptLoader::stateToString(ModuleScriptLoader::State state) {
 }
 #endif
 
-void ModuleScriptLoader::advanceState(ModuleScriptLoader::State newState) {
-  switch (m_state) {
-    case State::Initial:
-      DCHECK_EQ(newState, State::Fetching);
+void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
+  switch (state_) {
+    case State::kInitial:
+      DCHECK_EQ(new_state, State::kFetching);
       break;
-    case State::Fetching:
-      DCHECK_EQ(newState, State::Finished);
+    case State::kFetching:
+      DCHECK_EQ(new_state, State::kFinished);
       break;
-    case State::Finished:
+    case State::kFinished:
       NOTREACHED();
       break;
   }
 
 #if DCHECK_IS_ON()
   RESOURCE_LOADING_DVLOG(1)
-      << "ModuleLoader[" << m_url.getString() << "]::advanceState("
-      << stateToString(m_state) << " -> " << stateToString(newState) << ")";
+      << "ModuleLoader[" << url_.GetString() << "]::advanceState("
+      << StateToString(state_) << " -> " << StateToString(new_state) << ")";
 #endif
-  m_state = newState;
+  state_ = new_state;
 
-  if (m_state == State::Finished) {
-    m_registry->releaseFinishedLoader(this);
-    m_client->notifyNewSingleModuleFinished(m_moduleScript);
-    setResource(nullptr);
+  if (state_ == State::kFinished) {
+    registry_->ReleaseFinishedLoader(this);
+    client_->NotifyNewSingleModuleFinished(module_script_);
+    SetResource(nullptr);
   }
 }
 
-void ModuleScriptLoader::fetch(const ModuleScriptFetchRequest& moduleRequest,
+void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
                                ResourceFetcher* fetcher,
                                ModuleGraphLevel level) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
 
   // Step 4. Set moduleMap[url] to "fetching".
-  advanceState(State::Fetching);
+  AdvanceState(State::kFetching);
 
   // Step 5. Let request be a new request whose url is url, ...
-  ResourceRequest resourceRequest(moduleRequest.url());
+  ResourceRequest resource_request(module_request.Url());
 #if DCHECK_IS_ON()
-  m_url = moduleRequest.url();
+  url_ = module_request.Url();
 #endif
 
   // TODO(kouhei): handle "destination is destination,"
@@ -91,23 +91,23 @@ void ModuleScriptLoader::fetch(const ModuleScriptFetchRequest& moduleRequest,
 
   // parser metadata is parser state,
   ResourceLoaderOptions options;
-  options.parserDisposition = moduleRequest.parserState();
+  options.parser_disposition = module_request.ParserState();
   // referrer is referrer,
-  if (!moduleRequest.referrer().isNull()) {
-    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-        m_modulator->referrerPolicy(), moduleRequest.url(),
-        moduleRequest.referrer()));
+  if (!module_request.GetReferrer().IsNull()) {
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        modulator_->GetReferrerPolicy(), module_request.Url(),
+        module_request.GetReferrer()));
   }
   // and client is fetch client settings object. -> set by ResourceFetcher
 
   // As initiator for module script fetch is not specified in HTML spec,
   // we specity "" as initiator per:
   // https://fetch.spec.whatwg.org/#concept-request-initiator
-  const AtomicString& initiatorName = emptyAtom;
+  const AtomicString& initiator_name = g_empty_atom;
 
-  FetchRequest fetchRequest(resourceRequest, initiatorName, options);
+  FetchRequest fetch_request(resource_request, initiator_name, options);
   // ... cryptographic nonce metadata is cryptographic nonce, ...
-  fetchRequest.setContentSecurityPolicyNonce(moduleRequest.nonce());
+  fetch_request.SetContentSecurityPolicyNonce(module_request.Nonce());
   // Note: The fetch request's "origin" isn't specified in
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
@@ -116,16 +116,16 @@ void ModuleScriptLoader::fetch(const ModuleScriptFetchRequest& moduleRequest,
   // ... credentials mode is credentials mode, ...
   // TODO(tyoshino): FetchCredentialsMode should be used to communicate CORS
   // mode.
-  CrossOriginAttributeValue crossOrigin =
-      moduleRequest.credentialsMode() ==
-              WebURLRequest::FetchCredentialsModeInclude
-          ? CrossOriginAttributeUseCredentials
-          : CrossOriginAttributeAnonymous;
-  fetchRequest.setCrossOriginAccessControl(m_modulator->securityOrigin(),
-                                           crossOrigin);
+  CrossOriginAttributeValue cross_origin =
+      module_request.CredentialsMode() ==
+              WebURLRequest::kFetchCredentialsModeInclude
+          ? kCrossOriginAttributeUseCredentials
+          : kCrossOriginAttributeAnonymous;
+  fetch_request.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
+                                            cross_origin);
 
   // Module scripts are always async.
-  fetchRequest.setDefer(FetchRequest::LazyLoad);
+  fetch_request.SetDefer(FetchRequest::kLazyLoad);
 
   // Step 6. If the caller specified custom steps to perform the fetch,
   // perform them on request, setting the is top-level flag if the top-level
@@ -136,11 +136,11 @@ void ModuleScriptLoader::fetch(const ModuleScriptFetchRequest& moduleRequest,
   // steps as part of the fetch's process response for the response response.
   // TODO(ServiceWorker team): Perform the "custom steps" for module usage
   // inside service worker.
-  m_nonce = moduleRequest.nonce();
-  m_parserState = moduleRequest.parserState();
+  nonce_ = module_request.Nonce();
+  parser_state_ = module_request.ParserState();
 
-  ScriptResource* resource = ScriptResource::fetch(fetchRequest, fetcher);
-  if (m_state == State::Finished) {
+  ScriptResource* resource = ScriptResource::Fetch(fetch_request, fetcher);
+  if (state_ == State::kFinished) {
     // ScriptResource::fetch() has succeeded synchronously,
     // ::notifyFinished() already took care of the |resource|.
     return;
@@ -148,26 +148,26 @@ void ModuleScriptLoader::fetch(const ModuleScriptFetchRequest& moduleRequest,
 
   if (!resource) {
     // ScriptResource::fetch() has failed synchronously.
-    advanceState(State::Finished);
+    AdvanceState(State::kFinished);
     return;
   }
 
   // ScriptResource::fetch() is processed asynchronously.
-  setResource(resource);
+  SetResource(resource);
 }
 
-bool ModuleScriptLoader::wasModuleLoadSuccessful(Resource* resource) {
+bool ModuleScriptLoader::WasModuleLoadSuccessful(Resource* resource) {
   // Implements conditions in Step 7 of
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
 
   // - response's type is "error"
-  if (resource->errorOccurred()) {
+  if (resource->ErrorOccurred()) {
     return false;
   }
 
-  const auto& response = resource->response();
+  const auto& response = resource->GetResponse();
   // - response's status is not an ok status
-  if (response.isHTTP() && !FetchUtils::isOkStatus(response.httpStatusCode())) {
+  if (response.IsHTTP() && !FetchUtils::IsOkStatus(response.HttpStatusCode())) {
     return false;
   }
 
@@ -178,51 +178,53 @@ bool ModuleScriptLoader::wasModuleLoadSuccessful(Resource* resource) {
   // are not of a correct MIME type.
   // We use ResourceResponse::httpContentType() instead of mimeType(), as
   // mimeType() may be rewritten by mime sniffer.
-  if (!MIMETypeRegistry::isSupportedJavaScriptMIMEType(
-          response.httpContentType()))
+  if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
+          response.HttpContentType()))
     return false;
 
   return true;
 }
 
 // ScriptResourceClient callback handler
-void ModuleScriptLoader::notifyFinished(Resource*) {
+void ModuleScriptLoader::NotifyFinished(Resource*) {
   // Note: "conditions" referred in Step 7 is implemented in
   // wasModuleLoadSuccessful().
   // Step 7. If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps.
-  if (!wasModuleLoadSuccessful(resource())) {
-    advanceState(State::Finished);
+  if (!WasModuleLoadSuccessful(GetResource())) {
+    AdvanceState(State::kFinished);
     return;
   }
 
   // Step 8. Let source text be the result of UTF-8 decoding response's body.
-  String sourceText = resource()->script();
+  String source_text = GetResource()->Script();
 
-  AccessControlStatus accessControlStatus =
-      resource()->calculateAccessControlStatus(m_modulator->securityOrigin());
+  AccessControlStatus access_control_status =
+      GetResource()->CalculateAccessControlStatus(
+          modulator_->GetSecurityOrigin());
 
   // Step 9. Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, cryptographic
   // nonce, parser state, and credentials mode.
-  m_moduleScript = createModuleScript(
-      sourceText, resource()->response().url(), m_modulator, m_nonce,
-      m_parserState, resource()->resourceRequest().fetchCredentialsMode(),
-      accessControlStatus);
+  module_script_ = CreateModuleScript(
+      source_text, GetResource()->GetResponse().Url(), modulator_, nonce_,
+      parser_state_,
+      GetResource()->GetResourceRequest().GetFetchCredentialsMode(),
+      access_control_status);
 
-  advanceState(State::Finished);
+  AdvanceState(State::kFinished);
 }
 
 // https://html.spec.whatwg.org/#creating-a-module-script
-ModuleScript* ModuleScriptLoader::createModuleScript(
-    const String& sourceText,
+ModuleScript* ModuleScriptLoader::CreateModuleScript(
+    const String& source_text,
     const KURL& url,
     Modulator* modulator,
     const String& nonce,
-    ParserDisposition parserState,
-    WebURLRequest::FetchCredentialsMode credentialsMode,
-    AccessControlStatus accessControlStatus) {
+    ParserDisposition parser_state,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
+    AccessControlStatus access_control_status) {
   // Step 1. Let script be a new module script that this algorithm will
   // subsequently initialize.
   // Step 2. Set script's settings object to the environment settings object
@@ -230,10 +232,10 @@ ModuleScript* ModuleScriptLoader::createModuleScript(
   // Note: "script's settings object" will be "modulator".
 
   // Delegate to Modulator::compileModule to process Steps 3-6.
-  ScriptModule result = modulator->compileModule(sourceText, url.getString(),
-                                                 accessControlStatus);
+  ScriptModule result = modulator->CompileModule(source_text, url.GetString(),
+                                                 access_control_status);
   // Step 6: "...return null, and abort these steps."
-  if (result.isNull())
+  if (result.IsNull())
     return nullptr;
   // Step 7. Set script's module record to result.
   // Step 8. Set script's base URL to the script base URL provided.
@@ -242,15 +244,16 @@ ModuleScript* ModuleScriptLoader::createModuleScript(
   // Step 10. Set script's parser state to the parser state.
   // Step 11. Set script's credentials mode to the credentials mode provided.
   // Step 12. Return script.
-  return ModuleScript::create(result, url, nonce, parserState, credentialsMode);
+  return ModuleScript::Create(result, url, nonce, parser_state,
+                              credentials_mode);
 }
 
 DEFINE_TRACE(ModuleScriptLoader) {
-  visitor->trace(m_modulator);
-  visitor->trace(m_moduleScript);
-  visitor->trace(m_registry);
-  visitor->trace(m_client);
-  ResourceOwner<ScriptResource>::trace(visitor);
+  visitor->Trace(modulator_);
+  visitor->Trace(module_script_);
+  visitor->Trace(registry_);
+  visitor->Trace(client_);
+  ResourceOwner<ScriptResource>::Trace(visitor);
 }
 
 }  // namespace blink

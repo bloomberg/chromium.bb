@@ -38,10 +38,10 @@ class SpeechRecognitionResultList
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionResultList* create(
+  static SpeechRecognitionResultList* Create(
       const HeapVector<Member<SpeechRecognitionResult>>&);
 
-  unsigned length() { return m_results.size(); }
+  unsigned length() { return results_.size(); }
   SpeechRecognitionResult* item(unsigned index);
 
   DECLARE_TRACE();
@@ -50,7 +50,7 @@ class SpeechRecognitionResultList
   explicit SpeechRecognitionResultList(
       const HeapVector<Member<SpeechRecognitionResult>>&);
 
-  HeapVector<Member<SpeechRecognitionResult>> m_results;
+  HeapVector<Member<SpeechRecognitionResult>> results_;
 };
 
 }  // namespace blink

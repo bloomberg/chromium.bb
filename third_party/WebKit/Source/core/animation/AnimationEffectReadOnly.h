@@ -43,13 +43,16 @@ class AnimationEffectReadOnly;
 class AnimationEffectTimingReadOnly;
 class ComputedTimingProperties;
 
-enum TimingUpdateReason { TimingUpdateOnDemand, TimingUpdateForAnimationFrame };
+enum TimingUpdateReason {
+  kTimingUpdateOnDemand,
+  kTimingUpdateForAnimationFrame
+};
 
-static inline bool isNull(double value) {
+static inline bool IsNull(double value) {
   return std::isnan(value);
 }
 
-static inline double nullValue() {
+static inline double NullValue() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -63,53 +66,53 @@ class CORE_EXPORT AnimationEffectReadOnly
  public:
   // Note that logic in CSSAnimations depends on the order of these values.
   enum Phase {
-    PhaseBefore,
-    PhaseActive,
-    PhaseAfter,
-    PhaseNone,
+    kPhaseBefore,
+    kPhaseActive,
+    kPhaseAfter,
+    kPhaseNone,
   };
 
   class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
    public:
     virtual ~EventDelegate() {}
-    virtual bool requiresIterationEvents(const AnimationEffectReadOnly&) = 0;
-    virtual void onEventCondition(const AnimationEffectReadOnly&) = 0;
+    virtual bool RequiresIterationEvents(const AnimationEffectReadOnly&) = 0;
+    virtual void OnEventCondition(const AnimationEffectReadOnly&) = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
   virtual ~AnimationEffectReadOnly() {}
 
-  virtual bool isKeyframeEffectReadOnly() const { return false; }
-  virtual bool isKeyframeEffect() const { return false; }
-  virtual bool isInertEffect() const { return false; }
+  virtual bool IsKeyframeEffectReadOnly() const { return false; }
+  virtual bool IsKeyframeEffect() const { return false; }
+  virtual bool IsInertEffect() const { return false; }
 
-  Phase getPhase() const { return ensureCalculated().phase; }
-  bool isCurrent() const { return ensureCalculated().isCurrent; }
-  bool isInEffect() const { return ensureCalculated().isInEffect; }
-  bool isInPlay() const { return ensureCalculated().isInPlay; }
-  double currentIteration() const {
-    return ensureCalculated().currentIteration;
+  Phase GetPhase() const { return EnsureCalculated().phase; }
+  bool IsCurrent() const { return EnsureCalculated().is_current; }
+  bool IsInEffect() const { return EnsureCalculated().is_in_effect; }
+  bool IsInPlay() const { return EnsureCalculated().is_in_play; }
+  double CurrentIteration() const {
+    return EnsureCalculated().current_iteration;
   }
-  double progress() const { return ensureCalculated().progress; }
-  double timeToForwardsEffectChange() const {
-    return ensureCalculated().timeToForwardsEffectChange;
+  double Progress() const { return EnsureCalculated().progress; }
+  double TimeToForwardsEffectChange() const {
+    return EnsureCalculated().time_to_forwards_effect_change;
   }
-  double timeToReverseEffectChange() const {
-    return ensureCalculated().timeToReverseEffectChange;
-  }
-
-  double iterationDuration() const;
-  double activeDurationInternal() const;
-  double endTimeInternal() const {
-    return specifiedTiming().startDelay + activeDurationInternal() +
-           specifiedTiming().endDelay;
+  double TimeToReverseEffectChange() const {
+    return EnsureCalculated().time_to_reverse_effect_change;
   }
 
-  const Animation* animation() const { return m_animation; }
-  Animation* animation() { return m_animation; }
-  const Timing& specifiedTiming() const { return m_timing; }
+  double IterationDuration() const;
+  double ActiveDurationInternal() const;
+  double EndTimeInternal() const {
+    return SpecifiedTiming().start_delay + ActiveDurationInternal() +
+           SpecifiedTiming().end_delay;
+  }
+
+  const Animation* GetAnimation() const { return animation_; }
+  Animation* GetAnimation() { return animation_; }
+  const Timing& SpecifiedTiming() const { return timing_; }
   virtual AnimationEffectTimingReadOnly* timing();
-  void updateSpecifiedTiming(const Timing&);
+  void UpdateSpecifiedTiming(const Timing&);
 
   void getComputedTiming(ComputedTimingProperties&);
   ComputedTimingProperties getComputedTiming();
@@ -122,51 +125,51 @@ class CORE_EXPORT AnimationEffectReadOnly
   // When AnimationEffectReadOnly receives a new inherited time via
   // updateInheritedTime it will (if necessary) recalculate timings and (if
   // necessary) call updateChildrenAndEffects.
-  void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
-  void invalidate() const { m_needsUpdate = true; }
-  bool requiresIterationEvents() const {
-    return m_eventDelegate && m_eventDelegate->requiresIterationEvents(*this);
+  void UpdateInheritedTime(double inherited_time, TimingUpdateReason) const;
+  void Invalidate() const { needs_update_ = true; }
+  bool RequiresIterationEvents() const {
+    return event_delegate_ && event_delegate_->RequiresIterationEvents(*this);
   }
-  void clearEventDelegate() { m_eventDelegate = nullptr; }
+  void ClearEventDelegate() { event_delegate_ = nullptr; }
 
-  virtual void attach(Animation* animation) { m_animation = animation; }
+  virtual void Attach(Animation* animation) { animation_ = animation; }
 
-  virtual void detach() {
-    DCHECK(m_animation);
-    m_animation = nullptr;
+  virtual void Detach() {
+    DCHECK(animation_);
+    animation_ = nullptr;
   }
 
-  double repeatedDuration() const;
+  double RepeatedDuration() const;
 
-  virtual void updateChildrenAndEffects() const = 0;
-  virtual double intrinsicIterationDuration() const { return 0; }
-  virtual double calculateTimeToEffectChange(
+  virtual void UpdateChildrenAndEffects() const = 0;
+  virtual double IntrinsicIterationDuration() const { return 0; }
+  virtual double CalculateTimeToEffectChange(
       bool forwards,
-      double localTime,
-      double timeToNextIteration) const = 0;
-  virtual void specifiedTimingChanged() {}
+      double local_time,
+      double time_to_next_iteration) const = 0;
+  virtual void SpecifiedTimingChanged() {}
 
-  Member<Animation> m_animation;
-  Timing m_timing;
-  Member<EventDelegate> m_eventDelegate;
+  Member<Animation> animation_;
+  Timing timing_;
+  Member<EventDelegate> event_delegate_;
 
   mutable struct CalculatedTiming {
     DISALLOW_NEW();
     Phase phase;
-    double currentIteration;
+    double current_iteration;
     double progress;
-    bool isCurrent;
-    bool isInEffect;
-    bool isInPlay;
-    double localTime;
-    double timeToForwardsEffectChange;
-    double timeToReverseEffectChange;
-  } m_calculated;
-  mutable bool m_needsUpdate;
-  mutable double m_lastUpdateTime;
-  String m_name;
+    bool is_current;
+    bool is_in_effect;
+    bool is_in_play;
+    double local_time;
+    double time_to_forwards_effect_change;
+    double time_to_reverse_effect_change;
+  } calculated_;
+  mutable bool needs_update_;
+  mutable double last_update_time_;
+  String name_;
 
-  const CalculatedTiming& ensureCalculated() const;
+  const CalculatedTiming& EnsureCalculated() const;
 };
 
 }  // namespace blink

@@ -22,62 +22,62 @@ namespace {
 class MockHandler final : public WebRTCDataChannelHandler {
  public:
   MockHandler()
-      : m_client(0),
-        m_state(WebRTCDataChannelHandlerClient::ReadyStateConnecting),
-        m_bufferedAmount(0) {}
-  void setClient(WebRTCDataChannelHandlerClient* client) override {
-    m_client = client;
+      : client_(0),
+        state_(WebRTCDataChannelHandlerClient::kReadyStateConnecting),
+        buffered_amount_(0) {}
+  void SetClient(WebRTCDataChannelHandlerClient* client) override {
+    client_ = client;
   }
-  WebString label() override { return WebString(""); }
-  bool ordered() const override { return true; }
-  unsigned short maxRetransmitTime() const override { return 0; }
-  unsigned short maxRetransmits() const override { return 0; }
-  WebString protocol() const override { return WebString(""); }
-  bool negotiated() const override { return false; }
-  unsigned short id() const override { return 0; }
+  WebString Label() override { return WebString(""); }
+  bool Ordered() const override { return true; }
+  unsigned short MaxRetransmitTime() const override { return 0; }
+  unsigned short MaxRetransmits() const override { return 0; }
+  WebString Protocol() const override { return WebString(""); }
+  bool Negotiated() const override { return false; }
+  unsigned short Id() const override { return 0; }
 
-  WebRTCDataChannelHandlerClient::ReadyState state() const override {
-    return m_state;
+  WebRTCDataChannelHandlerClient::ReadyState GetState() const override {
+    return state_;
   }
-  unsigned long bufferedAmount() override { return m_bufferedAmount; }
-  bool sendStringData(const WebString& s) override {
-    m_bufferedAmount += s.length();
+  unsigned long BufferedAmount() override { return buffered_amount_; }
+  bool SendStringData(const WebString& s) override {
+    buffered_amount_ += s.length();
     return true;
   }
-  bool sendRawData(const char* data, size_t length) override {
-    m_bufferedAmount += length;
+  bool SendRawData(const char* data, size_t length) override {
+    buffered_amount_ += length;
     return true;
   }
-  void close() override {}
+  void Close() override {}
 
   // Methods for testing.
-  void changeState(WebRTCDataChannelHandlerClient::ReadyState state) {
-    m_state = state;
-    if (m_client) {
-      m_client->didChangeReadyState(m_state);
+  void ChangeState(WebRTCDataChannelHandlerClient::ReadyState state) {
+    state_ = state;
+    if (client_) {
+      client_->DidChangeReadyState(state_);
     }
   }
-  void drainBuffer(unsigned long bytes) {
-    unsigned long oldBufferedAmount = m_bufferedAmount;
-    m_bufferedAmount -= bytes;
-    if (m_client) {
-      m_client->didDecreaseBufferedAmount(oldBufferedAmount);
+  void DrainBuffer(unsigned long bytes) {
+    unsigned long old_buffered_amount = buffered_amount_;
+    buffered_amount_ -= bytes;
+    if (client_) {
+      client_->DidDecreaseBufferedAmount(old_buffered_amount);
     }
   }
 
  private:
-  WebRTCDataChannelHandlerClient* m_client;
-  WebRTCDataChannelHandlerClient::ReadyState m_state;
-  unsigned long m_bufferedAmount;
+  WebRTCDataChannelHandlerClient* client_;
+  WebRTCDataChannelHandlerClient::ReadyState state_;
+  unsigned long buffered_amount_;
 };
 
 }  // namespace
 
 TEST(RTCDataChannelTest, BufferedAmount) {
   MockHandler* handler = new MockHandler();
-  RTCDataChannel* channel = RTCDataChannel::create(0, WTF::wrapUnique(handler));
+  RTCDataChannel* channel = RTCDataChannel::Create(0, WTF::WrapUnique(handler));
 
-  handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
+  handler->ChangeState(WebRTCDataChannelHandlerClient::kReadyStateOpen);
   String message(std::string(100, 'A').c_str());
   channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
@@ -85,33 +85,33 @@ TEST(RTCDataChannelTest, BufferedAmount) {
 
 TEST(RTCDataChannelTest, BufferedAmountLow) {
   MockHandler* handler = new MockHandler();
-  RTCDataChannel* channel = RTCDataChannel::create(0, WTF::wrapUnique(handler));
+  RTCDataChannel* channel = RTCDataChannel::Create(0, WTF::WrapUnique(handler));
 
   // Add and drain 100 bytes
-  handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
+  handler->ChangeState(WebRTCDataChannelHandlerClient::kReadyStateOpen);
   String message(std::string(100, 'A').c_str());
   channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
-  EXPECT_EQ(1U, channel->m_scheduledEvents.size());
+  EXPECT_EQ(1U, channel->scheduled_events_.size());
 
-  handler->drainBuffer(100);
+  handler->DrainBuffer(100);
   EXPECT_EQ(0U, channel->bufferedAmount());
-  EXPECT_EQ(2U, channel->m_scheduledEvents.size());
+  EXPECT_EQ(2U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
+      std::string(channel->scheduled_events_.back()->type().Utf8().Data()));
 
   // Add and drain 1 byte
   channel->send("A", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(1U, channel->bufferedAmount());
-  EXPECT_EQ(2U, channel->m_scheduledEvents.size());
+  EXPECT_EQ(2U, channel->scheduled_events_.size());
 
-  handler->drainBuffer(1);
+  handler->DrainBuffer(1);
   EXPECT_EQ(0U, channel->bufferedAmount());
-  EXPECT_EQ(3U, channel->m_scheduledEvents.size());
+  EXPECT_EQ(3U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
+      std::string(channel->scheduled_events_.back()->type().Utf8().Data()));
 
   // Set the threshold to 99 bytes, add 101, and drain 1 byte at a time.
   channel->setBufferedAmountLowThreshold(99U);
@@ -121,29 +121,29 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   channel->send("A", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(101U, channel->bufferedAmount());
 
-  handler->drainBuffer(1);
+  handler->DrainBuffer(1);
   EXPECT_EQ(100U, channel->bufferedAmount());
-  EXPECT_EQ(3U, channel->m_scheduledEvents.size());  // No new events.
+  EXPECT_EQ(3U, channel->scheduled_events_.size());  // No new events.
 
-  handler->drainBuffer(1);
+  handler->DrainBuffer(1);
   EXPECT_EQ(99U, channel->bufferedAmount());
-  EXPECT_EQ(4U, channel->m_scheduledEvents.size());  // One new event.
+  EXPECT_EQ(4U, channel->scheduled_events_.size());  // One new event.
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
+      std::string(channel->scheduled_events_.back()->type().Utf8().Data()));
 
-  handler->drainBuffer(1);
+  handler->DrainBuffer(1);
   EXPECT_EQ(98U, channel->bufferedAmount());
 
   channel->setBufferedAmountLowThreshold(97U);
-  EXPECT_EQ(4U, channel->m_scheduledEvents.size());  // No new events.
+  EXPECT_EQ(4U, channel->scheduled_events_.size());  // No new events.
 
-  handler->drainBuffer(1);
+  handler->DrainBuffer(1);
   EXPECT_EQ(97U, channel->bufferedAmount());
-  EXPECT_EQ(5U, channel->m_scheduledEvents.size());  // New event.
+  EXPECT_EQ(5U, channel->scheduled_events_.size());  // New event.
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
+      std::string(channel->scheduled_events_.back()->type().Utf8().Data()));
 }
 
 }  // namespace blink

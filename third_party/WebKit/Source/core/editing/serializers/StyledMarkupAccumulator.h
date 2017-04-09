@@ -53,44 +53,44 @@ class StyledMarkupAccumulator final {
                           EAnnotateForInterchange,
                           ConvertBlocksToInlines);
 
-  void appendEndTag(const Element&);
-  void appendInterchangeNewline();
+  void AppendEndTag(const Element&);
+  void AppendInterchangeNewline();
 
-  void appendText(Text&);
-  void appendTextWithInlineStyle(Text&, EditingStyle*);
+  void AppendText(Text&);
+  void AppendTextWithInlineStyle(Text&, EditingStyle*);
 
-  void wrapWithStyleNode(StylePropertySet*);
-  String takeResults();
+  void WrapWithStyleNode(StylePropertySet*);
+  String TakeResults();
 
-  void pushMarkup(const String&);
+  void PushMarkup(const String&);
 
-  void appendElement(const Element&);
-  void appendElement(StringBuilder&, const Element&);
-  void appendElementWithInlineStyle(const Element&, EditingStyle*);
-  void appendElementWithInlineStyle(StringBuilder&,
+  void AppendElement(const Element&);
+  void AppendElement(StringBuilder&, const Element&);
+  void AppendElementWithInlineStyle(const Element&, EditingStyle*);
+  void AppendElementWithInlineStyle(StringBuilder&,
                                     const Element&,
                                     EditingStyle*);
-  void appendStartMarkup(Node&);
+  void AppendStartMarkup(Node&);
 
-  bool shouldAnnotate() const;
-  bool shouldConvertBlocksToInlines() const {
-    return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert;
+  bool ShouldAnnotate() const;
+  bool ShouldConvertBlocksToInlines() const {
+    return convert_blocks_to_inlines_ == ConvertBlocksToInlines::kConvert;
   }
 
  private:
-  String renderedText(Text&);
-  String stringValueForRange(const Text&);
+  String RenderedText(Text&);
+  String StringValueForRange(const Text&);
 
-  void appendEndMarkup(StringBuilder&, const Element&);
+  void AppendEndMarkup(StringBuilder&, const Element&);
 
-  MarkupFormatter m_formatter;
-  const TextOffset m_start;
-  const TextOffset m_end;
-  const Member<Document> m_document;
-  const EAnnotateForInterchange m_shouldAnnotate;
-  StringBuilder m_result;
-  Vector<String> m_reversedPrecedingMarkup;
-  const ConvertBlocksToInlines m_convertBlocksToInlines;
+  MarkupFormatter formatter_;
+  const TextOffset start_;
+  const TextOffset end_;
+  const Member<Document> document_;
+  const EAnnotateForInterchange should_annotate_;
+  StringBuilder result_;
+  Vector<String> reversed_preceding_markup_;
+  const ConvertBlocksToInlines convert_blocks_to_inlines_;
 };
 
 }  // namespace blink

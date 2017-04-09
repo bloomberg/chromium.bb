@@ -10,30 +10,30 @@ namespace blink {
 
 namespace {
 
-const FillLayer* getFillLayerForPosition(CSSPropertyID property,
+const FillLayer* GetFillLayerForPosition(CSSPropertyID property,
                                          const ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
-      return &style.backgroundLayers();
+      return &style.BackgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-      return &style.maskLayers();
+      return &style.MaskLayers();
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-FillLayer* accessFillLayerForPosition(CSSPropertyID property,
+FillLayer* AccessFillLayerForPosition(CSSPropertyID property,
                                       ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
-      return &style.accessBackgroundLayers();
+      return &style.AccessBackgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-      return &style.accessMaskLayers();
+      return &style.AccessMaskLayers();
     default:
       NOTREACHED();
       return nullptr;
@@ -45,19 +45,19 @@ struct FillLayerMethods {
     switch (property) {
       case CSSPropertyBackgroundPositionX:
       case CSSPropertyWebkitMaskPositionX:
-        isSet = &FillLayer::isXPositionSet;
-        getLength = &FillLayer::xPosition;
-        getEdge = &FillLayer::backgroundXOrigin;
-        setLength = &FillLayer::setXPosition;
-        clear = &FillLayer::clearXPosition;
+        is_set = &FillLayer::IsXPositionSet;
+        get_length = &FillLayer::XPosition;
+        get_edge = &FillLayer::BackgroundXOrigin;
+        set_length = &FillLayer::SetXPosition;
+        clear = &FillLayer::ClearXPosition;
         break;
       case CSSPropertyBackgroundPositionY:
       case CSSPropertyWebkitMaskPositionY:
-        isSet = &FillLayer::isYPositionSet;
-        getLength = &FillLayer::yPosition;
-        getEdge = &FillLayer::backgroundYOrigin;
-        setLength = &FillLayer::setYPosition;
-        clear = &FillLayer::clearYPosition;
+        is_set = &FillLayer::IsYPositionSet;
+        get_length = &FillLayer::YPosition;
+        get_edge = &FillLayer::BackgroundYOrigin;
+        set_length = &FillLayer::SetYPosition;
+        clear = &FillLayer::ClearYPosition;
         break;
       default:
         NOTREACHED();
@@ -65,16 +65,16 @@ struct FillLayerMethods {
     }
   }
 
-  bool (FillLayer::*isSet)() const = nullptr;
-  const Length& (FillLayer::*getLength)() const = nullptr;
-  BackgroundEdgeOrigin (FillLayer::*getEdge)() const = nullptr;
-  void (FillLayer::*setLength)(const Length&) = nullptr;
+  bool (FillLayer::*is_set)() const = nullptr;
+  const Length& (FillLayer::*get_length)() const = nullptr;
+  BackgroundEdgeOrigin (FillLayer::*get_edge)() const = nullptr;
+  void (FillLayer::*set_length)(const Length&) = nullptr;
   void (FillLayer::*clear)() = nullptr;
 };
 
 }  // namespace
 
-ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property) {
+ValueRange LengthListPropertyFunctions::GetValueRange(CSSPropertyID property) {
   switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
@@ -85,94 +85,94 @@ ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property) {
     case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-      return ValueRangeAll;
+      return kValueRangeAll;
 
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
     case CSSPropertyStrokeDasharray:
-      return ValueRangeNonNegative;
+      return kValueRangeNonNegative;
 
     default:
       NOTREACHED();
-      return ValueRangeAll;
+      return kValueRangeAll;
   }
 }
 
-bool LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID property,
+bool LengthListPropertyFunctions::GetInitialLengthList(CSSPropertyID property,
                                                        Vector<Length>& result) {
-  return getLengthList(property, ComputedStyle::initialStyle(), result);
+  return GetLengthList(property, ComputedStyle::InitialStyle(), result);
 }
 
-static bool appendToVector(const LengthPoint& point, Vector<Length>& result) {
-  result.push_back(point.x());
-  result.push_back(point.y());
+static bool AppendToVector(const LengthPoint& point, Vector<Length>& result) {
+  result.push_back(point.X());
+  result.push_back(point.Y());
   return true;
 }
 
-static bool appendToVector(const LengthSize& size, Vector<Length>& result) {
-  result.push_back(size.width());
-  result.push_back(size.height());
+static bool AppendToVector(const LengthSize& size, Vector<Length>& result) {
+  result.push_back(size.Width());
+  result.push_back(size.Height());
   return true;
 }
 
-static bool appendToVector(const TransformOrigin& transformOrigin,
+static bool AppendToVector(const TransformOrigin& transform_origin,
                            Vector<Length>& result) {
-  result.push_back(transformOrigin.x());
-  result.push_back(transformOrigin.y());
-  result.push_back(Length(transformOrigin.z(), Fixed));
+  result.push_back(transform_origin.X());
+  result.push_back(transform_origin.Y());
+  result.push_back(Length(transform_origin.Z(), kFixed));
   return true;
 }
 
-bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property,
+bool LengthListPropertyFunctions::GetLengthList(CSSPropertyID property,
                                                 const ComputedStyle& style,
                                                 Vector<Length>& result) {
-  DCHECK(result.isEmpty());
+  DCHECK(result.IsEmpty());
 
   switch (property) {
     case CSSPropertyStrokeDasharray: {
-      if (style.strokeDashArray())
-        result.appendVector(style.strokeDashArray()->vector());
+      if (style.StrokeDashArray())
+        result.AppendVector(style.StrokeDashArray()->GetVector());
       return true;
     }
 
     case CSSPropertyObjectPosition:
-      return appendToVector(style.objectPosition(), result);
+      return AppendToVector(style.ObjectPosition(), result);
     case CSSPropertyOffsetAnchor:
-      return appendToVector(style.offsetAnchor(), result);
+      return AppendToVector(style.OffsetAnchor(), result);
     case CSSPropertyOffsetPosition:
-      return appendToVector(style.offsetPosition(), result);
+      return AppendToVector(style.OffsetPosition(), result);
     case CSSPropertyPerspectiveOrigin:
-      return appendToVector(style.perspectiveOrigin(), result);
+      return AppendToVector(style.PerspectiveOrigin(), result);
     case CSSPropertyBorderBottomLeftRadius:
-      return appendToVector(style.borderBottomLeftRadius(), result);
+      return AppendToVector(style.BorderBottomLeftRadius(), result);
     case CSSPropertyBorderBottomRightRadius:
-      return appendToVector(style.borderBottomRightRadius(), result);
+      return AppendToVector(style.BorderBottomRightRadius(), result);
     case CSSPropertyBorderTopLeftRadius:
-      return appendToVector(style.borderTopLeftRadius(), result);
+      return AppendToVector(style.BorderTopLeftRadius(), result);
     case CSSPropertyBorderTopRightRadius:
-      return appendToVector(style.borderTopRightRadius(), result);
+      return AppendToVector(style.BorderTopRightRadius(), result);
     case CSSPropertyTransformOrigin:
-      return appendToVector(style.transformOrigin(), result);
+      return AppendToVector(style.GetTransformOrigin(), result);
 
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY: {
-      const FillLayer* fillLayer = getFillLayerForPosition(property, style);
-      FillLayerMethods fillLayerMethods(property);
-      while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
-        result.push_back((fillLayer->*fillLayerMethods.getLength)());
-        switch ((fillLayer->*fillLayerMethods.getEdge)()) {
-          case RightEdge:
-          case BottomEdge:
-            result.back() = result.back().subtractFromOneHundredPercent();
+      const FillLayer* fill_layer = GetFillLayerForPosition(property, style);
+      FillLayerMethods fill_layer_methods(property);
+      while (fill_layer && (fill_layer->*fill_layer_methods.is_set)()) {
+        result.push_back((fill_layer->*fill_layer_methods.get_length)());
+        switch ((fill_layer->*fill_layer_methods.get_edge)()) {
+          case kRightEdge:
+          case kBottomEdge:
+            result.back() = result.back().SubtractFromOneHundredPercent();
             break;
           default:
             break;
         }
-        fillLayer = fillLayer->next();
+        fill_layer = fill_layer->Next();
       }
       return true;
     }
@@ -183,78 +183,79 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property,
   }
 }
 
-static LengthPoint pointFromVector(const Vector<Length>& list) {
+static LengthPoint PointFromVector(const Vector<Length>& list) {
   DCHECK_EQ(list.size(), 2U);
   return LengthPoint(list[0], list[1]);
 }
 
-static LengthSize sizeFromVector(const Vector<Length>& list) {
+static LengthSize SizeFromVector(const Vector<Length>& list) {
   DCHECK_EQ(list.size(), 2U);
   return LengthSize(list[0], list[1]);
 }
 
-static TransformOrigin transformOriginFromVector(const Vector<Length>& list) {
+static TransformOrigin TransformOriginFromVector(const Vector<Length>& list) {
   DCHECK_EQ(list.size(), 3U);
-  return TransformOrigin(list[0], list[1], list[2].pixels());
+  return TransformOrigin(list[0], list[1], list[2].Pixels());
 }
 
-void LengthListPropertyFunctions::setLengthList(CSSPropertyID property,
+void LengthListPropertyFunctions::SetLengthList(CSSPropertyID property,
                                                 ComputedStyle& style,
-                                                Vector<Length>&& lengthList) {
+                                                Vector<Length>&& length_list) {
   switch (property) {
     case CSSPropertyStrokeDasharray:
-      style.setStrokeDashArray(
-          lengthList.isEmpty() ? nullptr : RefVector<Length>::create(
-                                               std::move(lengthList)));
+      style.SetStrokeDashArray(
+          length_list.IsEmpty()
+              ? nullptr
+              : RefVector<Length>::Create(std::move(length_list)));
       return;
 
     case CSSPropertyObjectPosition:
-      style.setObjectPosition(pointFromVector(lengthList));
+      style.SetObjectPosition(PointFromVector(length_list));
       return;
     case CSSPropertyOffsetAnchor:
-      style.setOffsetAnchor(pointFromVector(lengthList));
+      style.SetOffsetAnchor(PointFromVector(length_list));
       return;
     case CSSPropertyOffsetPosition:
-      style.setOffsetPosition(pointFromVector(lengthList));
+      style.SetOffsetPosition(PointFromVector(length_list));
       return;
     case CSSPropertyPerspectiveOrigin:
-      style.setPerspectiveOrigin(pointFromVector(lengthList));
+      style.SetPerspectiveOrigin(PointFromVector(length_list));
       return;
 
     case CSSPropertyBorderBottomLeftRadius:
-      style.setBorderBottomLeftRadius(sizeFromVector(lengthList));
+      style.SetBorderBottomLeftRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyBorderBottomRightRadius:
-      style.setBorderBottomRightRadius(sizeFromVector(lengthList));
+      style.SetBorderBottomRightRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyBorderTopLeftRadius:
-      style.setBorderTopLeftRadius(sizeFromVector(lengthList));
+      style.SetBorderTopLeftRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyBorderTopRightRadius:
-      style.setBorderTopRightRadius(sizeFromVector(lengthList));
+      style.SetBorderTopRightRadius(SizeFromVector(length_list));
       return;
 
     case CSSPropertyTransformOrigin:
-      style.setTransformOrigin(transformOriginFromVector(lengthList));
+      style.SetTransformOrigin(TransformOriginFromVector(length_list));
       return;
 
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY: {
-      FillLayer* fillLayer = accessFillLayerForPosition(property, style);
+      FillLayer* fill_layer = AccessFillLayerForPosition(property, style);
       FillLayer* prev = nullptr;
-      FillLayerMethods fillLayerMethods(property);
-      for (size_t i = 0; i < lengthList.size(); i++) {
-        if (!fillLayer)
-          fillLayer = prev->ensureNext();
-        (fillLayer->*fillLayerMethods.setLength)(lengthList[i]);
-        prev = fillLayer;
-        fillLayer = fillLayer->next();
+      FillLayerMethods fill_layer_methods(property);
+      for (size_t i = 0; i < length_list.size(); i++) {
+        if (!fill_layer)
+          fill_layer = prev->EnsureNext();
+        (fill_layer->*fill_layer_methods.set_length)(length_list[i]);
+        prev = fill_layer;
+        fill_layer = fill_layer->Next();
       }
-      while (fillLayer) {
-        (fillLayer->*fillLayerMethods.clear)();
-        fillLayer = fillLayer->next();
+      while (fill_layer) {
+        (fill_layer->*fill_layer_methods.clear)();
+        fill_layer = fill_layer->Next();
       }
       return;
     }

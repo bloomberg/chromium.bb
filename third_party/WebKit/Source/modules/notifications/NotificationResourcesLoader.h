@@ -26,7 +26,7 @@ struct WebNotificationResources;
 // callback to notify the caller when all fetches have finished.
 class MODULES_EXPORT NotificationResourcesLoader final
     : public GarbageCollectedFinalized<NotificationResourcesLoader> {
-  USING_PRE_FINALIZER(NotificationResourcesLoader, stop);
+  USING_PRE_FINALIZER(NotificationResourcesLoader, Stop);
 
  public:
   // Called when all fetches have finished. Passes a pointer to the
@@ -42,40 +42,40 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // |m_completionCallback| will be run synchronously, otherwise it will be
   // run asynchronously when all fetches have finished. Should not be called
   // more than once.
-  void start(ExecutionContext*, const WebNotificationData&);
+  void Start(ExecutionContext*, const WebNotificationData&);
 
   // Returns a new WebNotificationResources populated with the resources that
   // have been fetched.
-  std::unique_ptr<WebNotificationResources> getResources() const;
+  std::unique_ptr<WebNotificationResources> GetResources() const;
 
   // Stops every loader in |m_imageLoaders|. This is also used as the
   // pre-finalizer.
-  void stop();
+  void Stop();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void loadImage(ExecutionContext*,
+  void LoadImage(ExecutionContext*,
                  NotificationImageLoader::Type,
                  const KURL&,
                  std::unique_ptr<NotificationImageLoader::ImageCallback>);
-  void didLoadImage(const SkBitmap& image);
-  void didLoadIcon(const SkBitmap& image);
-  void didLoadBadge(const SkBitmap& image);
-  void didLoadActionIcon(size_t actionIndex, const SkBitmap& image);
+  void DidLoadImage(const SkBitmap& image);
+  void DidLoadIcon(const SkBitmap& image);
+  void DidLoadBadge(const SkBitmap& image);
+  void DidLoadActionIcon(size_t action_index, const SkBitmap& image);
 
   // Decrements |m_pendingRequestCount| and runs |m_completionCallback| if
   // there are no more pending requests.
-  void didFinishRequest();
+  void DidFinishRequest();
 
-  bool m_started;
-  std::unique_ptr<CompletionCallback> m_completionCallback;
-  int m_pendingRequestCount;
-  HeapVector<Member<NotificationImageLoader>> m_imageLoaders;
-  SkBitmap m_image;
-  SkBitmap m_icon;
-  SkBitmap m_badge;
-  Vector<SkBitmap> m_actionIcons;
+  bool started_;
+  std::unique_ptr<CompletionCallback> completion_callback_;
+  int pending_request_count_;
+  HeapVector<Member<NotificationImageLoader>> image_loaders_;
+  SkBitmap image_;
+  SkBitmap icon_;
+  SkBitmap badge_;
+  Vector<SkBitmap> action_icons_;
 };
 
 }  // namespace blink

@@ -32,29 +32,29 @@ namespace blink {
 
 class LayoutThemeMobile : public LayoutThemeDefault {
  public:
-  static PassRefPtr<LayoutTheme> create();
-  String extraDefaultStyleSheet() override;
+  static PassRefPtr<LayoutTheme> Create();
+  String ExtraDefaultStyleSheet() override;
 
-  void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
+  void AdjustInnerSpinButtonStyle(ComputedStyle&) const override;
 
-  String extraMediaControlsStyleSheet() override;
-  String extraFullscreenStyleSheet() override;
+  String ExtraMediaControlsStyleSheet() override;
+  String ExtraFullscreenStyleSheet() override;
 
-  Color platformTapHighlightColor() const override {
-    return LayoutThemeMobile::defaultTapHighlightColor;
+  Color PlatformTapHighlightColor() const override {
+    return LayoutThemeMobile::kDefaultTapHighlightColor;
   }
 
-  Color platformActiveSelectionBackgroundColor() const override {
-    return LayoutThemeMobile::defaultActiveSelectionBackgroundColor;
+  Color PlatformActiveSelectionBackgroundColor() const override {
+    return LayoutThemeMobile::kDefaultActiveSelectionBackgroundColor;
   }
 
  protected:
   ~LayoutThemeMobile() override;
-  bool shouldUseFallbackTheme(const ComputedStyle&) const override;
+  bool ShouldUseFallbackTheme(const ComputedStyle&) const override;
 
  private:
-  static const RGBA32 defaultTapHighlightColor = 0x6633b5e5;
-  static const RGBA32 defaultActiveSelectionBackgroundColor = 0x6633b5e5;
+  static const RGBA32 kDefaultTapHighlightColor = 0x6633b5e5;
+  static const RGBA32 kDefaultActiveSelectionBackgroundColor = 0x6633b5e5;
 };
 
 }  // namespace blink

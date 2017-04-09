@@ -18,7 +18,7 @@ class HTMLRubyElement final : public HTMLElement {
  private:
   explicit HTMLRubyElement(Document&);
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 }  // namespace blink

@@ -43,7 +43,7 @@ void SpellCheckClient::Reset() {
 }
 
 // blink::WebSpellCheckClient
-void SpellCheckClient::checkSpelling(
+void SpellCheckClient::CheckSpelling(
     const blink::WebString& text,
     int& misspelled_offset,
     int& misspelled_length,
@@ -58,19 +58,19 @@ void SpellCheckClient::checkSpelling(
   spell_check_.SpellCheckWord(text, &misspelled_offset, &misspelled_length);
 }
 
-void SpellCheckClient::requestCheckingOfText(
+void SpellCheckClient::RequestCheckingOfText(
     const blink::WebString& text,
     blink::WebTextCheckingCompletion* completion) {
-  if (!enabled_ || text.isEmpty()) {
+  if (!enabled_ || text.IsEmpty()) {
     if (completion) {
-      completion->didCancelCheckingText();
+      completion->DidCancelCheckingText();
       RequestResolved();
     }
     return;
   }
 
   if (last_requested_text_checking_completion_) {
-    last_requested_text_checking_completion_->didCancelCheckingText();
+    last_requested_text_checking_completion_->DidCancelCheckingText();
     RequestResolved();
   }
 
@@ -85,10 +85,10 @@ void SpellCheckClient::requestCheckingOfText(
         0);
 }
 
-void SpellCheckClient::cancelAllPendingRequests() {
+void SpellCheckClient::CancelAllPendingRequests() {
   if (!last_requested_text_checking_completion_)
     return;
-  last_requested_text_checking_completion_->didCancelCheckingText();
+  last_requested_text_checking_completion_->DidCancelCheckingText();
   last_requested_text_checking_completion_ = nullptr;
 }
 
@@ -99,30 +99,30 @@ void SpellCheckClient::FinishLastTextCheck() {
   int offset = 0;
   if (!spell_check_.IsMultiWordMisspelling(last_requested_text_check_string_,
                                            &results)) {
-    base::string16 text = last_requested_text_check_string_.utf16();
+    base::string16 text = last_requested_text_check_string_.Utf16();
     while (text.length()) {
       int misspelled_position = 0;
       int misspelled_length = 0;
-      spell_check_.SpellCheckWord(blink::WebString::fromUTF16(text),
+      spell_check_.SpellCheckWord(blink::WebString::FromUTF16(text),
                                   &misspelled_position, &misspelled_length);
       if (!misspelled_length)
         break;
       blink::WebVector<blink::WebString> suggestions;
       spell_check_.FillSuggestionList(
-          blink::WebString::fromUTF16(
+          blink::WebString::FromUTF16(
               text.substr(misspelled_position, misspelled_length)),
           &suggestions);
       results.push_back(blink::WebTextCheckingResult(
-          blink::WebTextDecorationTypeSpelling, offset + misspelled_position,
+          blink::kWebTextDecorationTypeSpelling, offset + misspelled_position,
           misspelled_length,
-          suggestions.isEmpty() ? blink::WebString() : suggestions[0]));
+          suggestions.IsEmpty() ? blink::WebString() : suggestions[0]));
       text = text.substr(misspelled_position + misspelled_length);
       offset += misspelled_position + misspelled_length;
     }
     MockGrammarCheck::CheckGrammarOfString(last_requested_text_check_string_,
                                            &results);
   }
-  last_requested_text_checking_completion_->didFinishCheckingText(results);
+  last_requested_text_checking_completion_->DidFinishCheckingText(results);
   last_requested_text_checking_completion_ = 0;
   RequestResolved();
 
@@ -132,7 +132,7 @@ void SpellCheckClient::FinishLastTextCheck() {
 
 void SpellCheckClient::SetSpellCheckResolvedCallback(
     v8::Local<v8::Function> callback) {
-  resolved_callback_.Reset(blink::mainThreadIsolate(), callback);
+  resolved_callback_.Reset(blink::MainThreadIsolate(), callback);
 }
 
 void SpellCheckClient::RemoveSpellCheckResolvedCallback() {
@@ -143,20 +143,20 @@ void SpellCheckClient::RequestResolved() {
   if (resolved_callback_.IsEmpty())
     return;
 
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
   blink::WebFrame* frame = test_runner_->mainFrame();
-  if (!frame || frame->isWebRemoteFrame())
+  if (!frame || frame->IsWebRemoteFrame())
     return;
 
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
-  frame->callFunctionEvenIfScriptDisabled(
+  frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, resolved_callback_),
       context->Global(), 0, nullptr);
 }

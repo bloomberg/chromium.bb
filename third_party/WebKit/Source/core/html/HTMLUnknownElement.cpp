@@ -8,22 +8,22 @@
 
 namespace blink {
 
-HTMLUnknownElement::HTMLUnknownElement(const QualifiedName& tagName,
+HTMLUnknownElement::HTMLUnknownElement(const QualifiedName& tag_name,
                                        Document& document)
-    : HTMLElement(tagName, document) {
-  if (tagName.localName() == "data")
-    UseCounter::count(document, UseCounter::DataElement);
-  else if (tagName.localName() == "time")
-    UseCounter::count(document, UseCounter::TimeElement);
-  else if (tagName.localName() == "menuitem")
-    UseCounter::count(document, UseCounter::MenuItemElement);
+    : HTMLElement(tag_name, document) {
+  if (tag_name.LocalName() == "data")
+    UseCounter::Count(document, UseCounter::kDataElement);
+  else if (tag_name.LocalName() == "time")
+    UseCounter::Count(document, UseCounter::kTimeElement);
+  else if (tag_name.LocalName() == "menuitem")
+    UseCounter::Count(document, UseCounter::kMenuItemElement);
 }
 
-void HTMLUnknownElement::parseAttribute(
+void HTMLUnknownElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == HTMLNames::iconAttr && hasTagName(HTMLNames::menuitemTag))
-    UseCounter::count(document(), UseCounter::MenuItemElementIconAttribute);
-  HTMLElement::parseAttribute(params);
+  if (params.name == HTMLNames::iconAttr && HasTagName(HTMLNames::menuitemTag))
+    UseCounter::Count(GetDocument(), UseCounter::kMenuItemElementIconAttribute);
+  HTMLElement::ParseAttribute(params);
 }
 
 }  // namespace blink

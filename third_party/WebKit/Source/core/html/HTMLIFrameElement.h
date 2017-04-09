@@ -47,51 +47,53 @@ class CORE_EXPORT HTMLIFrameElement final
   DOMTokenList* sandbox() const;
   DOMTokenList* allow() const;
 
-  void sandboxValueWasSet();
-  void allowValueWasSet();
+  void SandboxValueWasSet();
+  void AllowValueWasSet();
 
  private:
   explicit HTMLIFrameElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  bool loadedNonEmptyDocument() const override {
-    return m_didLoadNonEmptyDocument;
+  bool LoadedNonEmptyDocument() const override {
+    return did_load_non_empty_document_;
   }
-  void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
-  bool isInteractiveContent() const override;
+  void DidLoadNonEmptyDocument() override {
+    did_load_non_empty_document_ = true;
+  }
+  bool IsInteractiveContent() const override;
 
-  ReferrerPolicy referrerPolicyAttribute() override;
+  ReferrerPolicy ReferrerPolicyAttribute() override;
 
   // FrameOwner overrides:
-  bool allowFullscreen() const override { return m_allowFullscreen; }
-  bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
-  AtomicString csp() const override { return m_csp; }
-  const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
-    return m_allowedFeatures;
+  bool AllowFullscreen() const override { return allow_fullscreen_; }
+  bool AllowPaymentRequest() const override { return allow_payment_request_; }
+  AtomicString Csp() const override { return csp_; }
+  const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
+    return allowed_features_;
   }
 
-  AtomicString m_name;
-  AtomicString m_csp;
-  bool m_didLoadNonEmptyDocument;
-  bool m_allowFullscreen;
-  bool m_allowPaymentRequest;
-  Member<HTMLIFrameElementSandbox> m_sandbox;
-  Member<HTMLIFrameElementAllow> m_allow;
+  AtomicString name_;
+  AtomicString csp_;
+  bool did_load_non_empty_document_;
+  bool allow_fullscreen_;
+  bool allow_payment_request_;
+  Member<HTMLIFrameElementSandbox> sandbox_;
+  Member<HTMLIFrameElementAllow> allow_;
 
-  WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
+  WebVector<WebFeaturePolicyFeature> allowed_features_;
 
-  ReferrerPolicy m_referrerPolicy;
+  ReferrerPolicy referrer_policy_;
 };
 
 }  // namespace blink

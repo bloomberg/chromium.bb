@@ -34,45 +34,45 @@ namespace blink {
 
 class RenderedDocumentMarker final : public DocumentMarker {
  private:
-  enum class State { Invalid, ValidNull, ValidNotNull };
+  enum class State { kInvalid, kValidNull, kValidNotNull };
 
  public:
-  static RenderedDocumentMarker* create(const DocumentMarker& marker) {
+  static RenderedDocumentMarker* Create(const DocumentMarker& marker) {
     return new RenderedDocumentMarker(marker);
   }
 
-  bool isRendered() const { return m_state == State::ValidNotNull; }
-  bool contains(const LayoutPoint& point) const {
-    DCHECK_EQ(m_state, State::ValidNotNull);
-    return m_renderedRect.contains(point);
+  bool IsRendered() const { return state_ == State::kValidNotNull; }
+  bool Contains(const LayoutPoint& point) const {
+    DCHECK_EQ(state_, State::kValidNotNull);
+    return rendered_rect_.Contains(point);
   }
-  void setRenderedRect(const LayoutRect& rect) {
-    if (m_state == State::ValidNotNull && rect == m_renderedRect)
+  void SetRenderedRect(const LayoutRect& rect) {
+    if (state_ == State::kValidNotNull && rect == rendered_rect_)
       return;
-    m_state = State::ValidNotNull;
-    m_renderedRect = rect;
+    state_ = State::kValidNotNull;
+    rendered_rect_ = rect;
   }
 
-  const LayoutRect& renderedRect() const {
-    DCHECK_EQ(m_state, State::ValidNotNull);
-    return m_renderedRect;
+  const LayoutRect& RenderedRect() const {
+    DCHECK_EQ(state_, State::kValidNotNull);
+    return rendered_rect_;
   }
 
-  void nullifyRenderedRect() {
-    m_state = State::ValidNull;
+  void NullifyRenderedRect() {
+    state_ = State::kValidNull;
     // Now |m_renderedRect| can not be accessed until |setRenderedRect| is
     // called.
   }
 
-  void invalidate() { m_state = State::Invalid; }
-  bool isValid() const { return m_state != State::Invalid; }
+  void Invalidate() { state_ = State::kInvalid; }
+  bool IsValid() const { return state_ != State::kInvalid; }
 
  private:
   explicit RenderedDocumentMarker(const DocumentMarker& marker)
-      : DocumentMarker(marker), m_state(State::Invalid) {}
+      : DocumentMarker(marker), state_(State::kInvalid) {}
 
-  LayoutRect m_renderedRect;
-  State m_state;
+  LayoutRect rendered_rect_;
+  State state_;
 };
 
 DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);

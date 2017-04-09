@@ -45,38 +45,38 @@ class WebSurroundingText {
   BLINK_EXPORT WebSurroundingText();
   BLINK_EXPORT ~WebSurroundingText();
 
-  BLINK_EXPORT bool isNull() const;
+  BLINK_EXPORT bool IsNull() const;
 
   // Initializes the object to get the surrounding text centered in the
   // position relative to a provided node.
   // The maximum length of the contents retrieved is defined by maxLength.
-  BLINK_EXPORT void initialize(const WebNode&,
+  BLINK_EXPORT void Initialize(const WebNode&,
                                const WebPoint&,
-                               size_t maxLength);
+                               size_t max_length);
   // Initializes the object with the current selection in a given frame.
   // The maximum length of the contents retrieved is defined by maxLength.
   // It does not include the text inside the range.
-  BLINK_EXPORT void initializeFromCurrentSelection(WebLocalFrame*,
-                                                   size_t maxLength);
+  BLINK_EXPORT void InitializeFromCurrentSelection(WebLocalFrame*,
+                                                   size_t max_length);
 
   // Surrounding text content retrieved.
-  BLINK_EXPORT WebString textContent() const;
+  BLINK_EXPORT WebString TextContent() const;
 
   // Offset in the text content of the initial hit position (or provided
   // offset in the node).
   // This should only be called when WebSurroundingText has been initialized
   // with a WebPoint.
   // DEPRECATED: use startOffsetInTextContent() or endOffsetInTextContent().
-  BLINK_EXPORT size_t hitOffsetInTextContent() const;
+  BLINK_EXPORT size_t HitOffsetInTextContent() const;
 
   // Start offset of the initial text in the text content.
-  BLINK_EXPORT size_t startOffsetInTextContent() const;
+  BLINK_EXPORT size_t StartOffsetInTextContent() const;
 
   // End offset of the initial text in the text content.
-  BLINK_EXPORT size_t endOffsetInTextContent() const;
+  BLINK_EXPORT size_t EndOffsetInTextContent() const;
 
  protected:
-  std::unique_ptr<SurroundingText> m_private;
+  std::unique_ptr<SurroundingText> private_;
 };
 
 }  // namespace blink

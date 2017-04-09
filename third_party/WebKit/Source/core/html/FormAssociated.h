@@ -14,7 +14,7 @@ class HTMLFormElement;
 class FormAssociated {
  public:
   // HTMLFormElement can be null
-  virtual void associateWith(HTMLFormElement*) = 0;
+  virtual void AssociateWith(HTMLFormElement*) = 0;
 };
 
 }  // namespace blink

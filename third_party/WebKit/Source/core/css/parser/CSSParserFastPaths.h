@@ -22,16 +22,16 @@ class CORE_EXPORT CSSParserFastPaths {
  public:
   // Parses simple values like '10px' or 'green', but makes no guarantees
   // about handling any property completely.
-  static CSSValue* maybeParseValue(CSSPropertyID, const String&, CSSParserMode);
+  static CSSValue* MaybeParseValue(CSSPropertyID, const String&, CSSParserMode);
 
   // Properties handled here shouldn't be explicitly handled in
   // CSSPropertyParser
-  static bool isKeywordPropertyID(CSSPropertyID);
-  static bool isValidKeywordPropertyAndValue(CSSPropertyID,
+  static bool IsKeywordPropertyID(CSSPropertyID);
+  static bool IsValidKeywordPropertyAndValue(CSSPropertyID,
                                              CSSValueID,
                                              CSSParserMode);
 
-  static CSSValue* parseColor(const String&, CSSParserMode);
+  static CSSValue* ParseColor(const String&, CSSParserMode);
 };
 
 }  // namespace blink

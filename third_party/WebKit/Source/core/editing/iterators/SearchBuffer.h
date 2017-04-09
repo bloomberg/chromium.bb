@@ -55,47 +55,47 @@ class SearchBuffer {
   // Returns number of characters appended; guaranteed to be in the range
   // [1, length].
   template <typename CharType>
-  void append(const CharType*, size_t length);
-  size_t numberOfCharactersJustAppended() const {
-    return m_numberOfCharactersJustAppended;
+  void Append(const CharType*, size_t length);
+  size_t NumberOfCharactersJustAppended() const {
+    return number_of_characters_just_appended_;
   }
 
-  bool needsMoreContext() const;
-  void prependContext(const UChar*, size_t length);
-  void reachedBreak();
+  bool NeedsMoreContext() const;
+  void PrependContext(const UChar*, size_t length);
+  void ReachedBreak();
 
   // Result is the size in characters of what was found.
   // And <startOffset> is the number of characters back to the start of what
   // was found.
-  size_t search(size_t& startOffset);
-  bool atBreak() const;
+  size_t Search(size_t& start_offset);
+  bool AtBreak() const;
 
  private:
-  bool isBadMatch(const UChar*, size_t length) const;
-  bool isWordStartMatch(size_t start, size_t length) const;
+  bool IsBadMatch(const UChar*, size_t length) const;
+  bool IsWordStartMatch(size_t start, size_t length) const;
 
-  Vector<UChar> m_target;
-  FindOptions m_options;
+  Vector<UChar> target_;
+  FindOptions options_;
 
-  Vector<UChar> m_buffer;
-  size_t m_overlap;
-  size_t m_prefixLength;
-  size_t m_numberOfCharactersJustAppended;
-  bool m_atBreak;
-  bool m_needsMoreContext;
+  Vector<UChar> buffer_;
+  size_t overlap_;
+  size_t prefix_length_;
+  size_t number_of_characters_just_appended_;
+  bool at_break_;
+  bool needs_more_context_;
 
-  bool m_targetRequiresKanaWorkaround;
-  Vector<UChar> m_normalizedTarget;
-  mutable Vector<UChar> m_normalizedMatch;
+  bool target_requires_kana_workaround_;
+  Vector<UChar> normalized_target_;
+  mutable Vector<UChar> normalized_match_;
 
-  std::unique_ptr<TextSearcherICU> m_textSearcher;
+  std::unique_ptr<TextSearcherICU> text_searcher_;
 };
 
-CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange,
+CORE_EXPORT EphemeralRange FindPlainText(const EphemeralRange& input_range,
                                          const String&,
                                          FindOptions);
 CORE_EXPORT EphemeralRangeInFlatTree
-findPlainText(const EphemeralRangeInFlatTree& inputRange,
+FindPlainText(const EphemeralRangeInFlatTree& input_range,
               const String&,
               FindOptions);
 

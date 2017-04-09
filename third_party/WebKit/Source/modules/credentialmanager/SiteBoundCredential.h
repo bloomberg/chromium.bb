@@ -17,8 +17,8 @@ class MODULES_EXPORT SiteBoundCredential : public Credential {
 
  public:
   // SiteBoundCredential.idl
-  const String& name() const { return m_platformCredential->name(); }
-  const KURL& iconURL() const { return m_platformCredential->iconURL(); }
+  const String& name() const { return platform_credential_->GetName(); }
+  const KURL& iconURL() const { return platform_credential_->GetIconURL(); }
 
  protected:
   SiteBoundCredential(PlatformCredential*);

@@ -30,62 +30,63 @@
 
 namespace blink {
 
-CSSImportRule::CSSImportRule(StyleRuleImport* importRule, CSSStyleSheet* parent)
-    : CSSRule(parent), m_importRule(importRule) {}
+CSSImportRule::CSSImportRule(StyleRuleImport* import_rule,
+                             CSSStyleSheet* parent)
+    : CSSRule(parent), import_rule_(import_rule) {}
 
 CSSImportRule::~CSSImportRule() {}
 
 String CSSImportRule::href() const {
-  return m_importRule->href();
+  return import_rule_->Href();
 }
 
 MediaList* CSSImportRule::media() const {
-  if (!m_mediaCSSOMWrapper)
-    m_mediaCSSOMWrapper = MediaList::create(m_importRule->mediaQueries(),
-                                            const_cast<CSSImportRule*>(this));
-  return m_mediaCSSOMWrapper.get();
+  if (!media_cssom_wrapper_)
+    media_cssom_wrapper_ = MediaList::Create(import_rule_->MediaQueries(),
+                                             const_cast<CSSImportRule*>(this));
+  return media_cssom_wrapper_.Get();
 }
 
 String CSSImportRule::cssText() const {
   StringBuilder result;
-  result.append("@import url(\"");
-  result.append(m_importRule->href());
-  result.append("\")");
+  result.Append("@import url(\"");
+  result.Append(import_rule_->Href());
+  result.Append("\")");
 
-  if (m_importRule->mediaQueries()) {
-    String mediaText = m_importRule->mediaQueries()->mediaText();
-    if (!mediaText.isEmpty()) {
-      result.append(' ');
-      result.append(mediaText);
+  if (import_rule_->MediaQueries()) {
+    String media_text = import_rule_->MediaQueries()->MediaText();
+    if (!media_text.IsEmpty()) {
+      result.Append(' ');
+      result.Append(media_text);
     }
   }
-  result.append(';');
+  result.Append(';');
 
-  return result.toString();
+  return result.ToString();
 }
 
 CSSStyleSheet* CSSImportRule::styleSheet() const {
   // TODO(yukishiino): CSSImportRule.styleSheet attribute is not nullable,
   // thus this function must not return nullptr.
-  if (!m_importRule->styleSheet())
+  if (!import_rule_->GetStyleSheet())
     return nullptr;
 
-  if (!m_styleSheetCSSOMWrapper)
-    m_styleSheetCSSOMWrapper = CSSStyleSheet::create(
-        m_importRule->styleSheet(), const_cast<CSSImportRule*>(this));
-  return m_styleSheetCSSOMWrapper.get();
+  if (!style_sheet_cssom_wrapper_)
+    style_sheet_cssom_wrapper_ = CSSStyleSheet::Create(
+        import_rule_->GetStyleSheet(), const_cast<CSSImportRule*>(this));
+  return style_sheet_cssom_wrapper_.Get();
 }
 
-void CSSImportRule::reattach(StyleRuleBase*) {
+void CSSImportRule::Reattach(StyleRuleBase*) {
   // FIXME: Implement when enabling caching for stylesheets with import rules.
   NOTREACHED();
 }
 
 DEFINE_TRACE(CSSImportRule) {
-  visitor->trace(m_importRule);
-  visitor->trace(m_mediaCSSOMWrapper);
-  visitor->trace(m_styleSheetCSSOMWrapper);
-  CSSRule::trace(visitor);
+  visitor->Trace(import_rule_);
+  visitor->Trace(media_cssom_wrapper_);
+  visitor->Trace(style_sheet_cssom_wrapper_);
+  CSSRule::Trace(visitor);
 }
 
 }  // namespace blink

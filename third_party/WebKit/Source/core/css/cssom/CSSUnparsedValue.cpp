@@ -12,84 +12,83 @@ namespace blink {
 
 namespace {
 
-StringView findVariableName(CSSParserTokenRange& range) {
-  range.consumeWhitespace();
-  return range.consume().value();
+StringView FindVariableName(CSSParserTokenRange& range) {
+  range.ConsumeWhitespace();
+  return range.Consume().Value();
 }
 
-StringOrCSSVariableReferenceValue variableReferenceValue(
-    const StringView& variableName,
+StringOrCSSVariableReferenceValue VariableReferenceValue(
+    const StringView& variable_name,
     const HeapVector<StringOrCSSVariableReferenceValue>& fragments) {
-  CSSUnparsedValue* unparsedValue;
+  CSSUnparsedValue* unparsed_value;
   if (fragments.size() == 0)
-    unparsedValue = nullptr;
+    unparsed_value = nullptr;
   else
-    unparsedValue = CSSUnparsedValue::create(fragments);
+    unparsed_value = CSSUnparsedValue::Create(fragments);
 
-  CSSStyleVariableReferenceValue* variableReference =
-      CSSStyleVariableReferenceValue::create(variableName.toString(),
-                                             unparsedValue);
+  CSSStyleVariableReferenceValue* variable_reference =
+      CSSStyleVariableReferenceValue::Create(variable_name.ToString(),
+                                             unparsed_value);
   return StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
-      variableReference);
+      variable_reference);
 }
 
-HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(
+HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToFragments(
     CSSParserTokenRange range) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
   StringBuilder builder;
-  while (!range.atEnd()) {
-    if (range.peek().functionId() == CSSValueVar) {
-      if (!builder.isEmpty()) {
+  while (!range.AtEnd()) {
+    if (range.Peek().FunctionId() == CSSValueVar) {
+      if (!builder.IsEmpty()) {
         fragments.push_back(
-            StringOrCSSVariableReferenceValue::fromString(builder.toString()));
-        builder.clear();
+            StringOrCSSVariableReferenceValue::fromString(builder.ToString()));
+        builder.Clear();
       }
-      CSSParserTokenRange block = range.consumeBlock();
-      StringView variableName = findVariableName(block);
-      block.consumeWhitespace();
-      if (block.peek().type() == CSSParserTokenType::CommaToken)
-        block.consume();
-      fragments.push_back(variableReferenceValue(
-          variableName, parserTokenRangeToFragments(block)));
+      CSSParserTokenRange block = range.ConsumeBlock();
+      StringView variable_name = FindVariableName(block);
+      block.ConsumeWhitespace();
+      if (block.Peek().GetType() == CSSParserTokenType::kCommaToken)
+        block.Consume();
+      fragments.push_back(VariableReferenceValue(
+          variable_name, ParserTokenRangeToFragments(block)));
     } else {
-      range.consume().serialize(builder);
+      range.Consume().Serialize(builder);
     }
   }
-  if (!builder.isEmpty()) {
+  if (!builder.IsEmpty()) {
     fragments.push_back(
-        StringOrCSSVariableReferenceValue::fromString(builder.toString()));
+        StringOrCSSVariableReferenceValue::fromString(builder.ToString()));
   }
   return fragments;
 }
 
 }  // namespace
 
-CSSUnparsedValue* CSSUnparsedValue::fromCSSValue(
-    const CSSVariableReferenceValue& cssVariableReferenceValue) {
-  return CSSUnparsedValue::create(parserTokenRangeToFragments(
-      cssVariableReferenceValue.variableDataValue()->tokenRange()));
+CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
+    const CSSVariableReferenceValue& css_variable_reference_value) {
+  return CSSUnparsedValue::Create(ParserTokenRangeToFragments(
+      css_variable_reference_value.VariableDataValue()->TokenRange()));
 }
 
-CSSValue* CSSUnparsedValue::toCSSValue() const {
+CSSValue* CSSUnparsedValue::ToCSSValue() const {
   StringBuilder tokens;
 
-  for (unsigned i = 0; i < m_fragments.size(); i++) {
+  for (unsigned i = 0; i < fragments_.size(); i++) {
     if (i) {
-      tokens.append("/**/");
+      tokens.Append("/**/");
     }
-    if (m_fragments[i].isString()) {
-      tokens.append(m_fragments[i].getAsString());
-    } else if (m_fragments[i].isCSSVariableReferenceValue()) {
-      tokens.append(
-          m_fragments[i].getAsCSSVariableReferenceValue()->variable());
+    if (fragments_[i].isString()) {
+      tokens.Append(fragments_[i].getAsString());
+    } else if (fragments_[i].isCSSVariableReferenceValue()) {
+      tokens.Append(fragments_[i].getAsCSSVariableReferenceValue()->variable());
     } else {
       NOTREACHED();
     }
   }
 
-  CSSTokenizer tokenizer(tokens.toString());
-  return CSSVariableReferenceValue::create(CSSVariableData::create(
-      tokenizer.tokenRange(), false /* isAnimationTainted */,
+  CSSTokenizer tokenizer(tokens.ToString());
+  return CSSVariableReferenceValue::Create(CSSVariableData::Create(
+      tokenizer.TokenRange(), false /* isAnimationTainted */,
       true /* needsVariableResolution */));
 }
 

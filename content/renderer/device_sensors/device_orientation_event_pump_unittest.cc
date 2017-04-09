@@ -27,7 +27,7 @@ class MockDeviceOrientationListener
   }
   ~MockDeviceOrientationListener() override {}
 
-  void didChangeDeviceOrientation(
+  void DidChangeDeviceOrientation(
       const device::OrientationData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_orientation_ = true;

@@ -35,65 +35,65 @@ namespace blink {
 DeviceMotionEvent::~DeviceMotionEvent() {}
 
 DeviceMotionEvent::DeviceMotionEvent()
-    : m_deviceMotionData(DeviceMotionData::create()) {}
+    : device_motion_data_(DeviceMotionData::Create()) {}
 
-DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType,
+DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
                                      const DeviceMotionEventInit& initializer)
-    : Event(eventType, initializer),
-      m_deviceMotionData(DeviceMotionData::create(initializer)) {}
+    : Event(event_type, initializer),
+      device_motion_data_(DeviceMotionData::Create(initializer)) {}
 
-DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType,
-                                     DeviceMotionData* deviceMotionData)
-    : Event(eventType, false, false),  // Can't bubble, not cancelable
-      m_deviceMotionData(deviceMotionData) {}
+DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
+                                     DeviceMotionData* device_motion_data)
+    : Event(event_type, false, false),  // Can't bubble, not cancelable
+      device_motion_data_(device_motion_data) {}
 
 DeviceAcceleration* DeviceMotionEvent::acceleration() {
-  if (!m_deviceMotionData->getAcceleration())
+  if (!device_motion_data_->GetAcceleration())
     return nullptr;
 
-  if (!m_acceleration)
-    m_acceleration =
-        DeviceAcceleration::create(m_deviceMotionData->getAcceleration());
+  if (!acceleration_)
+    acceleration_ =
+        DeviceAcceleration::Create(device_motion_data_->GetAcceleration());
 
-  return m_acceleration.get();
+  return acceleration_.Get();
 }
 
 DeviceAcceleration* DeviceMotionEvent::accelerationIncludingGravity() {
-  if (!m_deviceMotionData->getAccelerationIncludingGravity())
+  if (!device_motion_data_->GetAccelerationIncludingGravity())
     return nullptr;
 
-  if (!m_accelerationIncludingGravity)
-    m_accelerationIncludingGravity = DeviceAcceleration::create(
-        m_deviceMotionData->getAccelerationIncludingGravity());
+  if (!acceleration_including_gravity_)
+    acceleration_including_gravity_ = DeviceAcceleration::Create(
+        device_motion_data_->GetAccelerationIncludingGravity());
 
-  return m_accelerationIncludingGravity.get();
+  return acceleration_including_gravity_.Get();
 }
 
 DeviceRotationRate* DeviceMotionEvent::rotationRate() {
-  if (!m_deviceMotionData->getRotationRate())
+  if (!device_motion_data_->GetRotationRate())
     return nullptr;
 
-  if (!m_rotationRate)
-    m_rotationRate =
-        DeviceRotationRate::create(m_deviceMotionData->getRotationRate());
+  if (!rotation_rate_)
+    rotation_rate_ =
+        DeviceRotationRate::Create(device_motion_data_->GetRotationRate());
 
-  return m_rotationRate.get();
+  return rotation_rate_.Get();
 }
 
 double DeviceMotionEvent::interval() const {
-  return m_deviceMotionData->interval();
+  return device_motion_data_->Interval();
 }
 
-const AtomicString& DeviceMotionEvent::interfaceName() const {
+const AtomicString& DeviceMotionEvent::InterfaceName() const {
   return EventNames::DeviceMotionEvent;
 }
 
 DEFINE_TRACE(DeviceMotionEvent) {
-  visitor->trace(m_deviceMotionData);
-  visitor->trace(m_acceleration);
-  visitor->trace(m_accelerationIncludingGravity);
-  visitor->trace(m_rotationRate);
-  Event::trace(visitor);
+  visitor->Trace(device_motion_data_);
+  visitor->Trace(acceleration_);
+  visitor->Trace(acceleration_including_gravity_);
+  visitor->Trace(rotation_rate_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

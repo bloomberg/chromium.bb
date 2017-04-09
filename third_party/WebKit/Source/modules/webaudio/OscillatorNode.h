@@ -49,64 +49,64 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   // These must be defined as in the .idl file.
   enum { SINE = 0, SQUARE = 1, SAWTOOTH = 2, TRIANGLE = 3, CUSTOM = 4 };
 
-  static PassRefPtr<OscillatorHandler> create(AudioNode&,
-                                              float sampleRate,
+  static PassRefPtr<OscillatorHandler> Create(AudioNode&,
+                                              float sample_rate,
                                               AudioParamHandler& frequency,
                                               AudioParamHandler& detune);
   ~OscillatorHandler() override;
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
+  void Process(size_t frames_to_process) override;
 
-  String type() const;
-  void setType(const String&, ExceptionState&);
+  String GetType() const;
+  void SetType(const String&, ExceptionState&);
 
-  void setPeriodicWave(PeriodicWave*);
+  void SetPeriodicWave(PeriodicWave*);
 
  private:
   OscillatorHandler(AudioNode&,
-                    float sampleRate,
+                    float sample_rate,
                     AudioParamHandler& frequency,
                     AudioParamHandler& detune);
-  bool setType(unsigned);  // Returns true on success.
+  bool SetType(unsigned);  // Returns true on success.
 
   // Returns true if there are sample-accurate timeline parameter changes.
-  bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);
+  bool CalculateSampleAccuratePhaseIncrements(size_t frames_to_process);
 
-  bool propagatesSilence() const override;
+  bool PropagatesSilence() const override;
 
   // One of the waveform types defined in the enum.
-  unsigned short m_type;
+  unsigned short type_;
 
   // Frequency value in Hertz.
-  RefPtr<AudioParamHandler> m_frequency;
+  RefPtr<AudioParamHandler> frequency_;
 
   // Detune value (deviating from the frequency) in Cents.
-  RefPtr<AudioParamHandler> m_detune;
+  RefPtr<AudioParamHandler> detune_;
 
-  bool m_firstRender;
+  bool first_render_;
 
   // m_virtualReadIndex is a sample-frame index into our buffer representing the
   // current playback position.  Since it's floating-point, it has sub-sample
   // accuracy.
-  double m_virtualReadIndex;
+  double virtual_read_index_;
 
   // Stores sample-accurate values calculated according to frequency and detune.
-  AudioFloatArray m_phaseIncrements;
-  AudioFloatArray m_detuneValues;
+  AudioFloatArray phase_increments_;
+  AudioFloatArray detune_values_;
 
   // This Persistent doesn't make a reference cycle including the owner
   // OscillatorNode. It is cross-thread, as it will be accessed by the audio
   // thread.
-  CrossThreadPersistent<PeriodicWave> m_periodicWave;
+  CrossThreadPersistent<PeriodicWave> periodic_wave_;
 };
 
 class OscillatorNode final : public AudioScheduledSourceNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OscillatorNode* create(BaseAudioContext&, ExceptionState&);
-  static OscillatorNode* create(BaseAudioContext*,
+  static OscillatorNode* Create(BaseAudioContext&, ExceptionState&);
+  static OscillatorNode* Create(BaseAudioContext*,
                                 const OscillatorOptions&,
                                 ExceptionState&);
   DECLARE_VIRTUAL_TRACE();
@@ -119,10 +119,10 @@ class OscillatorNode final : public AudioScheduledSourceNode {
 
  private:
   OscillatorNode(BaseAudioContext&);
-  OscillatorHandler& oscillatorHandler() const;
+  OscillatorHandler& GetOscillatorHandler() const;
 
-  Member<AudioParam> m_frequency;
-  Member<AudioParam> m_detune;
+  Member<AudioParam> frequency_;
+  Member<AudioParam> detune_;
 };
 
 }  // namespace blink

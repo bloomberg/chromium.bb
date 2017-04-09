@@ -14,99 +14,99 @@
 namespace blink {
 
 namespace {
-Element* elementForId(int elementId) {
-  Node* node = DOMNodeIds::nodeForId(elementId);
+Element* ElementForId(int element_id) {
+  Node* node = DOMNodeIds::NodeForId(element_id);
   ASSERT(node);
   if (!node)
     return nullptr;
-  ASSERT(node->isElementNode());
-  if (!node->isElementNode())
+  ASSERT(node->IsElementNode());
+  if (!node->IsElementNode())
     return nullptr;
   return static_cast<Element*>(node);
 }
 }  // namespace
 
-ScrollState* ScrollState::create(ScrollStateInit init) {
-  std::unique_ptr<ScrollStateData> scrollStateData =
-      WTF::makeUnique<ScrollStateData>();
-  scrollStateData->delta_x = init.deltaX();
-  scrollStateData->delta_y = init.deltaY();
-  scrollStateData->position_x = init.positionX();
-  scrollStateData->position_y = init.positionY();
-  scrollStateData->velocity_x = init.velocityX();
-  scrollStateData->velocity_y = init.velocityY();
-  scrollStateData->is_beginning = init.isBeginning();
-  scrollStateData->is_in_inertial_phase = init.isInInertialPhase();
-  scrollStateData->is_ending = init.isEnding();
-  scrollStateData->should_propagate = init.shouldPropagate();
-  scrollStateData->from_user_input = init.fromUserInput();
-  scrollStateData->is_direct_manipulation = init.isDirectManipulation();
-  scrollStateData->delta_granularity = init.deltaGranularity();
-  ScrollState* scrollState = new ScrollState(std::move(scrollStateData));
-  return scrollState;
+ScrollState* ScrollState::Create(ScrollStateInit init) {
+  std::unique_ptr<ScrollStateData> scroll_state_data =
+      WTF::MakeUnique<ScrollStateData>();
+  scroll_state_data->delta_x = init.deltaX();
+  scroll_state_data->delta_y = init.deltaY();
+  scroll_state_data->position_x = init.positionX();
+  scroll_state_data->position_y = init.positionY();
+  scroll_state_data->velocity_x = init.velocityX();
+  scroll_state_data->velocity_y = init.velocityY();
+  scroll_state_data->is_beginning = init.isBeginning();
+  scroll_state_data->is_in_inertial_phase = init.isInInertialPhase();
+  scroll_state_data->is_ending = init.isEnding();
+  scroll_state_data->should_propagate = init.shouldPropagate();
+  scroll_state_data->from_user_input = init.fromUserInput();
+  scroll_state_data->is_direct_manipulation = init.isDirectManipulation();
+  scroll_state_data->delta_granularity = init.deltaGranularity();
+  ScrollState* scroll_state = new ScrollState(std::move(scroll_state_data));
+  return scroll_state;
 }
 
-ScrollState* ScrollState::create(std::unique_ptr<ScrollStateData> data) {
-  ScrollState* scrollState = new ScrollState(std::move(data));
-  return scrollState;
+ScrollState* ScrollState::Create(std::unique_ptr<ScrollStateData> data) {
+  ScrollState* scroll_state = new ScrollState(std::move(data));
+  return scroll_state;
 }
 
 ScrollState::ScrollState(std::unique_ptr<ScrollStateData> data)
-    : m_data(std::move(data)) {}
+    : data_(std::move(data)) {}
 
 void ScrollState::consumeDelta(double x,
                                double y,
-                               ExceptionState& exceptionState) {
-  if ((m_data->delta_x > 0 && 0 > x) || (m_data->delta_x < 0 && 0 < x) ||
-      (m_data->delta_y > 0 && 0 > y) || (m_data->delta_y < 0 && 0 < y)) {
-    exceptionState.throwDOMException(InvalidModificationError,
-                                     "Can't increase delta using consumeDelta");
+                               ExceptionState& exception_state) {
+  if ((data_->delta_x > 0 && 0 > x) || (data_->delta_x < 0 && 0 < x) ||
+      (data_->delta_y > 0 && 0 > y) || (data_->delta_y < 0 && 0 < y)) {
+    exception_state.ThrowDOMException(
+        kInvalidModificationError, "Can't increase delta using consumeDelta");
     return;
   }
-  if (fabs(x) > fabs(m_data->delta_x) || fabs(y) > fabs(m_data->delta_y)) {
-    exceptionState.throwDOMException(
-        InvalidModificationError,
+  if (fabs(x) > fabs(data_->delta_x) || fabs(y) > fabs(data_->delta_y)) {
+    exception_state.ThrowDOMException(
+        kInvalidModificationError,
         "Can't change direction of delta using consumeDelta");
     return;
   }
-  consumeDeltaNative(x, y);
+  ConsumeDeltaNative(x, y);
 }
 
 void ScrollState::distributeToScrollChainDescendant() {
-  if (!m_scrollChain.empty()) {
-    int descendantId = m_scrollChain.front();
-    m_scrollChain.pop_front();
-    elementForId(descendantId)->callDistributeScroll(*this);
+  if (!scroll_chain_.empty()) {
+    int descendant_id = scroll_chain_.front();
+    scroll_chain_.pop_front();
+    ElementForId(descendant_id)->CallDistributeScroll(*this);
   }
 }
 
-void ScrollState::consumeDeltaNative(double x, double y) {
-  m_data->delta_x -= x;
-  m_data->delta_y -= y;
+void ScrollState::ConsumeDeltaNative(double x, double y) {
+  data_->delta_x -= x;
+  data_->delta_y -= y;
 
   if (x)
-    m_data->caused_scroll_x = true;
+    data_->caused_scroll_x = true;
   if (y)
-    m_data->caused_scroll_y = true;
+    data_->caused_scroll_y = true;
   if (x || y)
-    m_data->delta_consumed_for_scroll_sequence = true;
+    data_->delta_consumed_for_scroll_sequence = true;
 }
 
-Element* ScrollState::currentNativeScrollingElement() const {
-  uint64_t elementId = m_data->current_native_scrolling_element().primaryId;
-  if (elementId == 0)
+Element* ScrollState::CurrentNativeScrollingElement() const {
+  uint64_t element_id = data_->current_native_scrolling_element().primaryId;
+  if (element_id == 0)
     return nullptr;
-  return elementForId(elementId);
+  return ElementForId(element_id);
 }
 
-void ScrollState::setCurrentNativeScrollingElement(Element* element) {
-  m_data->set_current_native_scrolling_element(createCompositorElementId(
-      DOMNodeIds::idForNode(element), CompositorSubElementId::Scroll));
+void ScrollState::SetCurrentNativeScrollingElement(Element* element) {
+  data_->set_current_native_scrolling_element(CreateCompositorElementId(
+      DOMNodeIds::IdForNode(element), CompositorSubElementId::kScroll));
 }
 
-void ScrollState::setCurrentNativeScrollingElementById(int elementId) {
-  m_data->set_current_native_scrolling_element(
-      createCompositorElementId(elementId, CompositorSubElementId::Scroll));
+void ScrollState::SetCurrentNativeScrollingElementById(int element_id) {
+  data_->set_current_native_scrolling_element(
+      CreateCompositorElementId(element_id, CompositorSubElementId::kScroll));
 }
 
 }  // namespace blink

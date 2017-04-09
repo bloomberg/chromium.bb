@@ -18,88 +18,88 @@ namespace blink {
 
 class LayoutTreeBuilderTraversalTest : public RenderingTest {
  protected:
-  void setupSampleHTML(const char* mainHTML);
+  void SetupSampleHTML(const char* main_html);
 };
 
-void LayoutTreeBuilderTraversalTest::setupSampleHTML(const char* mainHTML) {
-  setBodyInnerHTML(String::fromUTF8(mainHTML));
+void LayoutTreeBuilderTraversalTest::SetupSampleHTML(const char* main_html) {
+  SetBodyInnerHTML(String::FromUTF8(main_html));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, emptySubTree) {
-  const char* const html = "<div id='top'></div>";
-  setupSampleHTML(html);
+  const char* const kHtml = "<div id='top'></div>";
+  SetupSampleHTML(kHtml);
 
-  Element* top = document().querySelector("#top");
-  Element* body = document().querySelector("body");
-  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::firstChild(*top));
-  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::nextSibling(*top));
-  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::previousSibling(*top));
-  EXPECT_EQ(body, LayoutTreeBuilderTraversal::parent(*top));
+  Element* top = GetDocument().QuerySelector("#top");
+  Element* body = GetDocument().QuerySelector("body");
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::FirstChild(*top));
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::NextSibling(*top));
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::PreviousSibling(*top));
+  EXPECT_EQ(body, LayoutTreeBuilderTraversal::Parent(*top));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, pseudos) {
-  const char* const html =
+  const char* const kHtml =
       "<style>"
       "#top::before { content: \"foo\"; }"
       "#top::before { content: \"bar\"; }"
       "</style>"
       "<div id='top'></div>";
-  setupSampleHTML(html);
+  SetupSampleHTML(kHtml);
 
-  Element* top = document().querySelector("#top");
-  Element* before = top->pseudoElement(PseudoIdBefore);
-  Element* after = top->pseudoElement(PseudoIdAfter);
-  EXPECT_EQ(before, LayoutTreeBuilderTraversal::next(*top, nullptr));
-  EXPECT_EQ(after, LayoutTreeBuilderTraversal::nextSibling(*before));
-  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::previousSibling(*before));
+  Element* top = GetDocument().QuerySelector("#top");
+  Element* before = top->GetPseudoElement(kPseudoIdBefore);
+  Element* after = top->GetPseudoElement(kPseudoIdAfter);
+  EXPECT_EQ(before, LayoutTreeBuilderTraversal::Next(*top, nullptr));
+  EXPECT_EQ(after, LayoutTreeBuilderTraversal::NextSibling(*before));
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::PreviousSibling(*before));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, emptyDisplayContents) {
-  const char* const html =
+  const char* const kHtml =
       "<div></div>"
       "<div style='display: contents'></div>"
       "<div id='last'></div>";
-  setupSampleHTML(html);
+  SetupSampleHTML(kHtml);
 
-  Element* first = document().querySelector("div");
-  Element* last = document().querySelector("#last");
+  Element* first = GetDocument().QuerySelector("div");
+  Element* last = GetDocument().QuerySelector("#last");
 
-  EXPECT_TRUE(last->layoutObject());
-  EXPECT_EQ(last->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*first));
+  EXPECT_TRUE(last->GetLayoutObject());
+  EXPECT_EQ(last->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*first));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, displayContentsChildren) {
-  const char* const html =
+  const char* const kHtml =
       "<div></div>"
       "<div id='contents' style='display: contents'><div "
       "id='inner'></div></div>"
       "<div id='last'></div>";
-  setupSampleHTML(html);
+  SetupSampleHTML(kHtml);
 
-  Element* first = document().querySelector("div");
-  Element* inner = document().querySelector("#inner");
-  Element* contents = document().querySelector("#contents");
-  Element* last = document().querySelector("#last");
+  Element* first = GetDocument().QuerySelector("div");
+  Element* inner = GetDocument().QuerySelector("#inner");
+  Element* contents = GetDocument().QuerySelector("#contents");
+  Element* last = GetDocument().QuerySelector("#last");
 
-  EXPECT_TRUE(inner->layoutObject());
-  EXPECT_TRUE(last->layoutObject());
-  EXPECT_TRUE(first->layoutObject());
-  EXPECT_FALSE(contents->layoutObject());
+  EXPECT_TRUE(inner->GetLayoutObject());
+  EXPECT_TRUE(last->GetLayoutObject());
+  EXPECT_TRUE(first->GetLayoutObject());
+  EXPECT_FALSE(contents->GetLayoutObject());
 
-  EXPECT_EQ(inner->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*first));
-  EXPECT_EQ(first->layoutObject(),
-            LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*inner));
+  EXPECT_EQ(inner->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*first));
+  EXPECT_EQ(first->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(*inner));
 
-  EXPECT_EQ(last->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*inner));
-  EXPECT_EQ(inner->layoutObject(),
-            LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*last));
+  EXPECT_EQ(last->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*inner));
+  EXPECT_EQ(inner->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(*last));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, displayContentsChildrenNested) {
-  const char* const html =
+  const char* const kHtml =
       "<div></div>"
       "<div style='display: contents'>"
       "<div style='display: contents'>"
@@ -108,36 +108,36 @@ TEST_F(LayoutTreeBuilderTraversalTest, displayContentsChildrenNested) {
       "</div>"
       "</div>"
       "<div id='last'></div>";
-  setupSampleHTML(html);
+  SetupSampleHTML(kHtml);
 
-  Element* first = document().querySelector("div");
-  Element* inner = document().querySelector("#inner");
-  Element* sibling = document().querySelector("#inner-sibling");
-  Element* last = document().querySelector("#last");
+  Element* first = GetDocument().QuerySelector("div");
+  Element* inner = GetDocument().QuerySelector("#inner");
+  Element* sibling = GetDocument().QuerySelector("#inner-sibling");
+  Element* last = GetDocument().QuerySelector("#last");
 
-  EXPECT_TRUE(first->layoutObject());
-  EXPECT_TRUE(inner->layoutObject());
-  EXPECT_TRUE(sibling->layoutObject());
-  EXPECT_TRUE(last->layoutObject());
+  EXPECT_TRUE(first->GetLayoutObject());
+  EXPECT_TRUE(inner->GetLayoutObject());
+  EXPECT_TRUE(sibling->GetLayoutObject());
+  EXPECT_TRUE(last->GetLayoutObject());
 
-  EXPECT_EQ(inner->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*first));
-  EXPECT_EQ(first->layoutObject(),
-            LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*inner));
+  EXPECT_EQ(inner->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*first));
+  EXPECT_EQ(first->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(*inner));
 
-  EXPECT_EQ(sibling->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*inner));
-  EXPECT_EQ(inner->layoutObject(),
-            LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*sibling));
+  EXPECT_EQ(sibling->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*inner));
+  EXPECT_EQ(inner->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(*sibling));
 
-  EXPECT_EQ(last->layoutObject(),
-            LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*sibling));
-  EXPECT_EQ(sibling->layoutObject(),
-            LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*last));
+  EXPECT_EQ(last->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*sibling));
+  EXPECT_EQ(sibling->GetLayoutObject(),
+            LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(*last));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, limits) {
-  const char* const html =
+  const char* const kHtml =
       "<div></div>"
       "<div style='display: contents'></div>"
       "<div style='display: contents'>"
@@ -146,14 +146,14 @@ TEST_F(LayoutTreeBuilderTraversalTest, limits) {
       "</div>"
       "<div id='shouldNotBeFound'></div>";
 
-  setupSampleHTML(html);
+  SetupSampleHTML(kHtml);
 
-  Element* first = document().querySelector("div");
+  Element* first = GetDocument().QuerySelector("div");
 
-  EXPECT_TRUE(first->layoutObject());
-  LayoutObject* nextSibling =
-      LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*first, 2);
-  EXPECT_FALSE(nextSibling);  // Should not overrecurse
+  EXPECT_TRUE(first->GetLayoutObject());
+  LayoutObject* next_sibling =
+      LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*first, 2);
+  EXPECT_FALSE(next_sibling);  // Should not overrecurse
 }
 
 }  // namespace blink

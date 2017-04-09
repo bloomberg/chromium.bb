@@ -47,9 +47,9 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   // Override RefCounted's deref() to ensure operator delete is called on the
   // appropriate subclass type.
-  void deref() const {
-    if (derefBase())
-      destroy();
+  void Deref() const {
+    if (DerefBase())
+      Destroy();
   }
 
   // The accessors in this class shouldn't be used by layout code directly,
@@ -84,7 +84,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     is_placed_ = true;
   }
 
-  NGBreakToken* BreakToken() const { return break_token_.get(); }
+  NGBreakToken* BreakToken() const { return break_token_.Get(); }
 
   const ComputedStyle& Style() const;
 
@@ -111,7 +111,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   unsigned is_placed_ : 1;
 
  private:
-  void destroy() const;
+  void Destroy() const;
 };
 
 }  // namespace blink

@@ -34,41 +34,41 @@
 
 namespace blink {
 
-ScriptString::ScriptString() : m_isolate(0) {}
+ScriptString::ScriptString() : isolate_(0) {}
 
 ScriptString::ScriptString(v8::Isolate* isolate, v8::Local<v8::String> string)
-    : m_isolate(isolate),
-      m_string(SharedPersistent<v8::String>::create(string, m_isolate)) {}
+    : isolate_(isolate),
+      string_(SharedPersistent<v8::String>::Create(string, isolate_)) {}
 
 ScriptString& ScriptString::operator=(const ScriptString& string) {
   if (this != &string) {
-    m_isolate = string.m_isolate;
-    m_string = string.m_string;
+    isolate_ = string.isolate_;
+    string_ = string.string_;
   }
   return *this;
 }
 
-v8::Local<v8::String> ScriptString::v8Value() {
-  if (isEmpty())
+v8::Local<v8::String> ScriptString::V8Value() {
+  if (IsEmpty())
     return v8::Local<v8::String>();
-  return m_string->newLocal(isolate());
+  return string_->NewLocal(GetIsolate());
 }
 
-ScriptString ScriptString::concatenateWith(const String& string) {
-  v8::Isolate* nonNullIsolate = isolate();
-  v8::HandleScope handleScope(nonNullIsolate);
-  v8::Local<v8::String> targetString = v8String(nonNullIsolate, string);
-  if (isEmpty())
-    return ScriptString(nonNullIsolate, targetString);
-  return ScriptString(nonNullIsolate,
-                      v8::String::Concat(v8Value(), targetString));
+ScriptString ScriptString::ConcatenateWith(const String& string) {
+  v8::Isolate* non_null_isolate = GetIsolate();
+  v8::HandleScope handle_scope(non_null_isolate);
+  v8::Local<v8::String> target_string = V8String(non_null_isolate, string);
+  if (IsEmpty())
+    return ScriptString(non_null_isolate, target_string);
+  return ScriptString(non_null_isolate,
+                      v8::String::Concat(V8Value(), target_string));
 }
 
-String ScriptString::flattenToString() {
-  if (isEmpty())
+String ScriptString::FlattenToString() {
+  if (IsEmpty())
     return String();
-  v8::HandleScope handleScope(isolate());
-  return v8StringToWebCoreString<String>(v8Value(), Externalize);
+  v8::HandleScope handle_scope(GetIsolate());
+  return V8StringToWebCoreString<String>(V8Value(), kExternalize);
 }
 
 }  // namespace blink

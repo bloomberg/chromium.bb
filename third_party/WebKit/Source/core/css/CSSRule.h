@@ -59,24 +59,24 @@ class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
 
   virtual Type type() const = 0;
   virtual String cssText() const = 0;
-  virtual void reattach(StyleRuleBase*) = 0;
+  virtual void Reattach(StyleRuleBase*) = 0;
 
   virtual CSSRuleList* cssRules() const { return 0; }
 
-  void setParentStyleSheet(CSSStyleSheet*);
+  void SetParentStyleSheet(CSSStyleSheet*);
 
-  void setParentRule(CSSRule*);
+  void SetParentRule(CSSRule*);
 
   DECLARE_VIRTUAL_TRACE();
 
   CSSStyleSheet* parentStyleSheet() const {
-    if (m_parentIsRule)
-      return m_parentRule ? m_parentRule->parentStyleSheet() : nullptr;
-    return m_parentStyleSheet;
+    if (parent_is_rule_)
+      return parent_rule_ ? parent_rule_->parentStyleSheet() : nullptr;
+    return parent_style_sheet_;
   }
 
   CSSRule* parentRule() const {
-    return m_parentIsRule ? m_parentRule : nullptr;
+    return parent_is_rule_ ? parent_rule_ : nullptr;
   }
 
   // The CSSOM spec states that "setting the cssText attribute must do nothing."
@@ -84,25 +84,25 @@ class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
 
  protected:
   CSSRule(CSSStyleSheet* parent)
-      : m_hasCachedSelectorText(false),
-        m_parentIsRule(false),
-        m_parentStyleSheet(parent) {}
+      : has_cached_selector_text_(false),
+        parent_is_rule_(false),
+        parent_style_sheet_(parent) {}
 
-  bool hasCachedSelectorText() const { return m_hasCachedSelectorText; }
-  void setHasCachedSelectorText(bool hasCachedSelectorText) const {
-    m_hasCachedSelectorText = hasCachedSelectorText;
+  bool HasCachedSelectorText() const { return has_cached_selector_text_; }
+  void SetHasCachedSelectorText(bool has_cached_selector_text) const {
+    has_cached_selector_text_ = has_cached_selector_text;
   }
 
-  const CSSParserContext* parserContext() const;
+  const CSSParserContext* ParserContext() const;
 
  private:
-  mutable unsigned char m_hasCachedSelectorText : 1;
-  unsigned char m_parentIsRule : 1;
+  mutable unsigned char has_cached_selector_text_ : 1;
+  unsigned char parent_is_rule_ : 1;
 
   // These should be Members, but no Members in unions.
   union {
-    CSSRule* m_parentRule;
-    CSSStyleSheet* m_parentStyleSheet;
+    CSSRule* parent_rule_;
+    CSSStyleSheet* parent_style_sheet_;
   };
 };
 

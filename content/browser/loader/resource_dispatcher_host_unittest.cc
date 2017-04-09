@@ -160,7 +160,7 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.url = url;
   request.first_party_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator = url::Origin(url);  // ensure initiator is set
-  request.referrer_policy = blink::WebReferrerPolicyDefault;
+  request.referrer_policy = blink::kWebReferrerPolicyDefault;
   request.load_flags = 0;
   request.origin_pid = 0;
   request.resource_type = type;
@@ -1063,7 +1063,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
       BeginNavigationParams begin_params(
           std::string(), net::LOAD_NORMAL, false, false,
           REQUEST_CONTEXT_TYPE_LOCATION,
-          blink::WebMixedContentContextType::Blockable,
+          blink::WebMixedContentContextType::kBlockable,
           false,  // is_form_submission
           url::Origin(url));
       CommonNavigationParams common_params;
@@ -1071,7 +1071,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
       std::unique_ptr<NavigationRequestInfo> request_info(
           new NavigationRequestInfo(common_params, begin_params, url, true,
                                     false, false, -1, false, false,
-                                    blink::WebPageVisibilityStateVisible));
+                                    blink::kWebPageVisibilityStateVisible));
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(
               browser_context_->GetResourceContext(),
@@ -2581,7 +2581,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, false, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::Blockable,
+        blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin(download_url));
     CommonNavigationParams common_params;
@@ -2589,7 +2589,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, download_url,
                                   true, false, false, -1, false, false,
-                                  blink::WebPageVisibilityStateVisible));
+                                  blink::kWebPageVisibilityStateVisible));
     std::unique_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

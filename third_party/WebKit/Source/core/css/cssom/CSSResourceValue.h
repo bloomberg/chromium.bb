@@ -19,15 +19,15 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
   virtual ~CSSResourceValue() {}
 
   const String state() const {
-    switch (status()) {
-      case ResourceStatus::NotStarted:
+    switch (Status()) {
+      case ResourceStatus::kNotStarted:
         return "unloaded";
-      case ResourceStatus::Pending:
+      case ResourceStatus::kPending:
         return "loading";
-      case ResourceStatus::Cached:
+      case ResourceStatus::kCached:
         return "loaded";
-      case ResourceStatus::LoadError:
-      case ResourceStatus::DecodeError:
+      case ResourceStatus::kLoadError:
+      case ResourceStatus::kDecodeError:
         return "error";
       default:
         NOTREACHED();
@@ -35,12 +35,12 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
     }
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { CSSStyleValue::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { CSSStyleValue::Trace(visitor); }
 
  protected:
   CSSResourceValue() {}
 
-  virtual ResourceStatus status() const = 0;
+  virtual ResourceStatus Status() const = 0;
 };
 
 }  // namespace blink

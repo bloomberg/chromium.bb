@@ -12,7 +12,7 @@ struct CharacterRange {
     ASSERT(start <= end);
   }
 
-  float width() const { return end - start; }
+  float Width() const { return end - start; }
 
   float start;
   float end;

@@ -24,69 +24,69 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
           public cc::mojom::blink::MojoCompositorFrameSinkClient) {
  public:
   OffscreenCanvasFrameDispatcherImpl(OffscreenCanvasFrameDispatcherClient*,
-                                     uint32_t clientId,
-                                     uint32_t sinkId,
-                                     int canvasId,
+                                     uint32_t client_id,
+                                     uint32_t sink_id,
+                                     int canvas_id,
                                      int width,
                                      int height);
 
   // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcherImpl() final;
-  void setNeedsBeginFrame(bool) final;
-  void dispatchFrame(RefPtr<StaticBitmapImage>,
-                     double commitStartTime,
-                     bool isWebGLSoftwareRendering = false) final;
-  void reclaimResource(unsigned resourceId) final;
-  void reshape(int width, int height) final;
+  void SetNeedsBeginFrame(bool) final;
+  void DispatchFrame(RefPtr<StaticBitmapImage>,
+                     double commit_start_time,
+                     bool is_web_gl_software_rendering = false) final;
+  void ReclaimResource(unsigned resource_id) final;
+  void Reshape(int width, int height) final;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck() final;
   void OnBeginFrame(const cc::BeginFrameArgs&) final;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) final;
   void WillDrawSurface(const cc::LocalSurfaceId&,
-                       ::gfx::mojom::blink::RectPtr damageRect) final;
+                       ::gfx::mojom::blink::RectPtr damage_rect) final;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {
-    CommitGPUCanvasGPUCompositing = 0,
-    CommitGPUCanvasSoftwareCompositing = 1,
-    CommitSoftwareCanvasGPUCompositing = 2,
-    CommitSoftwareCanvasSoftwareCompositing = 3,
-    OffscreenCanvasCommitTypeCount,
+    kCommitGPUCanvasGPUCompositing = 0,
+    kCommitGPUCanvasSoftwareCompositing = 1,
+    kCommitSoftwareCanvasGPUCompositing = 2,
+    kCommitSoftwareCanvasSoftwareCompositing = 3,
+    kOffscreenCanvasCommitTypeCount,
   };
 
  private:
   // Surface-related
-  cc::LocalSurfaceIdAllocator m_localSurfaceIdAllocator;
-  const cc::FrameSinkId m_frameSinkId;
-  cc::LocalSurfaceId m_currentLocalSurfaceId;
+  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  const cc::FrameSinkId frame_sink_id_;
+  cc::LocalSurfaceId current_local_surface_id_;
 
-  int m_width;
-  int m_height;
-  bool m_changeSizeForNextCommit;
-  bool m_needsBeginFrame;
+  int width_;
+  int height_;
+  bool change_size_for_next_commit_;
+  bool needs_begin_frame_;
 
-  unsigned m_nextResourceId;
-  HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
-  HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
-  HashMap<unsigned, GLuint> m_cachedTextureIds;
-  HashSet<unsigned> m_spareResourceLocks;
+  unsigned next_resource_id_;
+  HashMap<unsigned, RefPtr<StaticBitmapImage>> cached_images_;
+  HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> shared_bitmaps_;
+  HashMap<unsigned, GLuint> cached_texture_ids_;
+  HashSet<unsigned> spare_resource_locks_;
 
-  bool verifyImageSize(const IntSize);
-  void postImageToPlaceholder(RefPtr<StaticBitmapImage>);
+  bool VerifyImageSize(const IntSize);
+  void PostImageToPlaceholder(RefPtr<StaticBitmapImage>);
 
-  cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
-  mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
+  cc::mojom::blink::MojoCompositorFrameSinkPtr sink_;
+  mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> binding_;
 
-  int m_placeholderCanvasId;
+  int placeholder_canvas_id_;
 
-  cc::BeginFrameAck m_currentBeginFrameAck;
+  cc::BeginFrameAck current_begin_frame_ack_;
 
-  void setTransferableResourceToSharedBitmap(cc::TransferableResource&,
+  void SetTransferableResourceToSharedBitmap(cc::TransferableResource&,
                                              RefPtr<StaticBitmapImage>);
-  void setTransferableResourceToSharedGPUContext(cc::TransferableResource&,
+  void SetTransferableResourceToSharedGPUContext(cc::TransferableResource&,
                                                  RefPtr<StaticBitmapImage>);
-  void setTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
+  void SetTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
                                                   RefPtr<StaticBitmapImage>);
 };
 

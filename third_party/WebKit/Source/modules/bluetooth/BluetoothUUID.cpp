@@ -18,10 +18,10 @@ namespace {
 
 typedef WTF::HashMap<String, unsigned> NameToAssignedNumberMap;
 
-enum class GATTAttribute { Service, Characteristic, Descriptor };
+enum class GATTAttribute { kService, kCharacteristic, kDescriptor };
 
-NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, servicesMap, []() {
+NameToAssignedNumberMap* GetAssignedNumberToServiceNameMap() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, services_map, []() {
     // https://www.bluetooth.com/specifications/gatt/services
     NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
     services->insert("generic_access", 0x1800);
@@ -63,12 +63,12 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
     return services;
   }());
 
-  return &servicesMap;
+  return &services_map;
 }
 
-NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
+NameToAssignedNumberMap* GetAssignedNumberForCharacteristicNameMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      NameToAssignedNumberMap, characteristicsMap, []() {
+      NameToAssignedNumberMap, characteristics_map, []() {
         // https://www.bluetooth.com/specifications/gatt/characteristics
         NameToAssignedNumberMap* characteristics =
             new NameToAssignedNumberMap();
@@ -275,12 +275,12 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         return characteristics;
       }());
 
-  return &characteristicsMap;
+  return &characteristics_map;
 }
 
-NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap() {
+NameToAssignedNumberMap* GetAssignedNumberForDescriptorNameMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      NameToAssignedNumberMap, descriptorsMap, []() {
+      NameToAssignedNumberMap, descriptors_map, []() {
         // https://www.bluetooth.com/specifications/gatt/descriptors
         NameToAssignedNumberMap* descriptors = new NameToAssignedNumberMap();
         descriptors->insert("gatt.characteristic_extended_properties", 0x2900);
@@ -301,12 +301,12 @@ NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap() {
         return descriptors;
       }());
 
-  return &descriptorsMap;
+  return &descriptors_map;
 }
 
-String getUUIDForGATTAttribute(GATTAttribute attribute,
+String GetUUIDForGATTAttribute(GATTAttribute attribute,
                                StringOrUnsignedLong name,
-                               ExceptionState& exceptionState) {
+                               ExceptionState& exception_state) {
   // Implementation of BluetoothUUID.getService, BluetoothUUID.getCharacteristic
   // and BluetoothUUID.getDescriptor algorithms:
   // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothuuid-getservice
@@ -318,63 +318,63 @@ String getUUIDForGATTAttribute(GATTAttribute attribute,
   if (name.isUnsignedLong())
     return BluetoothUUID::canonicalUUID(name.getAsUnsignedLong());
 
-  String nameStr = name.getAsString();
+  String name_str = name.getAsString();
 
   // If name is a valid UUID, return name and abort these steps.
-  if (isValidUUID(nameStr))
-    return nameStr;
+  if (IsValidUUID(name_str))
+    return name_str;
 
   // If name is in the corresponding attribute map return
   // BluetoothUUID.cannonicalUUID(alias).
   NameToAssignedNumberMap* map = nullptr;
-  const char* attributeType = nullptr;
+  const char* attribute_type = nullptr;
   switch (attribute) {
-    case GATTAttribute::Service:
-      map = getAssignedNumberToServiceNameMap();
-      attributeType = "Service";
+    case GATTAttribute::kService:
+      map = GetAssignedNumberToServiceNameMap();
+      attribute_type = "Service";
       break;
-    case GATTAttribute::Characteristic:
-      map = getAssignedNumberForCharacteristicNameMap();
-      attributeType = "Characteristic";
+    case GATTAttribute::kCharacteristic:
+      map = GetAssignedNumberForCharacteristicNameMap();
+      attribute_type = "Characteristic";
       break;
-    case GATTAttribute::Descriptor:
-      map = getAssignedNumberForDescriptorNameMap();
-      attributeType = "Descriptor";
+    case GATTAttribute::kDescriptor:
+      map = GetAssignedNumberForDescriptorNameMap();
+      attribute_type = "Descriptor";
       break;
   }
 
-  if (map->contains(nameStr))
-    return BluetoothUUID::canonicalUUID(map->at(nameStr));
+  if (map->Contains(name_str))
+    return BluetoothUUID::canonicalUUID(map->at(name_str));
 
-  StringBuilder errorMessage;
-  errorMessage.append("Invalid ");
-  errorMessage.append(attributeType);
-  errorMessage.append(" name: '");
-  errorMessage.append(nameStr);
-  errorMessage.append(
+  StringBuilder error_message;
+  error_message.Append("Invalid ");
+  error_message.Append(attribute_type);
+  error_message.Append(" name: '");
+  error_message.Append(name_str);
+  error_message.Append(
       "'. It must be a valid UUID alias (e.g. 0x1234), "
       "UUID (lowercase hex characters e.g. "
       "'00001234-0000-1000-8000-00805f9b34fb'), "
       "or recognized standard name from ");
   switch (attribute) {
-    case GATTAttribute::Service:
-      errorMessage.append(
+    case GATTAttribute::kService:
+      error_message.Append(
           "https://www.bluetooth.com/specifications/gatt/services"
           " e.g. 'alert_notification'.");
       break;
-    case GATTAttribute::Characteristic:
-      errorMessage.append(
+    case GATTAttribute::kCharacteristic:
+      error_message.Append(
           "https://www.bluetooth.com/specifications/gatt/characteristics"
           " e.g. 'aerobic_heart_rate_lower_limit'.");
       break;
-    case GATTAttribute::Descriptor:
-      errorMessage.append(
+    case GATTAttribute::kDescriptor:
+      error_message.Append(
           "https://www.bluetooth.com/specifications/gatt/descriptors"
           " e.g. 'gatt.characteristic_presentation_format'.");
       break;
   }
   // Otherwise, throw a TypeError.
-  exceptionState.throwDOMException(V8TypeError, errorMessage.toString());
+  exception_state.ThrowDOMException(kV8TypeError, error_message.ToString());
   return String();
 }
 
@@ -382,34 +382,35 @@ String getUUIDForGATTAttribute(GATTAttribute attribute,
 
 // static
 String BluetoothUUID::getService(StringOrUnsignedLong name,
-                                 ExceptionState& exceptionState) {
-  return getUUIDForGATTAttribute(GATTAttribute::Service, name, exceptionState);
+                                 ExceptionState& exception_state) {
+  return GetUUIDForGATTAttribute(GATTAttribute::kService, name,
+                                 exception_state);
 }
 
 // static
 String BluetoothUUID::getCharacteristic(StringOrUnsignedLong name,
-                                        ExceptionState& exceptionState) {
-  return getUUIDForGATTAttribute(GATTAttribute::Characteristic, name,
-                                 exceptionState);
+                                        ExceptionState& exception_state) {
+  return GetUUIDForGATTAttribute(GATTAttribute::kCharacteristic, name,
+                                 exception_state);
 }
 
 // static
 String BluetoothUUID::getDescriptor(StringOrUnsignedLong name,
-                                    ExceptionState& exceptionState) {
-  return getUUIDForGATTAttribute(GATTAttribute::Descriptor, name,
-                                 exceptionState);
+                                    ExceptionState& exception_state) {
+  return GetUUIDForGATTAttribute(GATTAttribute::kDescriptor, name,
+                                 exception_state);
 }
 
 // static
 String BluetoothUUID::canonicalUUID(unsigned alias) {
   StringBuilder builder;
-  builder.reserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
-  HexNumber::appendUnsignedAsHexFixedSize(
+  builder.ReserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
+  HexNumber::AppendUnsignedAsHexFixedSize(
       alias, builder, 8 /* 8 chars or 32 bits, prefix length */,
-      HexNumber::Lowercase);
+      HexNumber::kLowercase);
 
-  builder.append("-0000-1000-8000-00805f9b34fb");
-  return builder.toString();
+  builder.Append("-0000-1000-8000-00805f9b34fb");
+  return builder.ToString();
 }
 
 }  // namespace blink

@@ -25,15 +25,15 @@ class CORE_EXPORT InspectorTaskRunner final {
   ~InspectorTaskRunner();
 
   using Task = WTF::CrossThreadClosure;
-  void appendTask(std::unique_ptr<Task>);
+  void AppendTask(std::unique_ptr<Task>);
 
-  enum WaitMode { WaitForTask, DontWaitForTask };
-  std::unique_ptr<Task> takeNextTask(WaitMode);
+  enum WaitMode { kWaitForTask, kDontWaitForTask };
+  std::unique_ptr<Task> TakeNextTask(WaitMode);
 
-  void interruptAndRunAllTasksDontWait(v8::Isolate*);
-  void runAllTasksDontWait();
+  void InterruptAndRunAllTasksDontWait(v8::Isolate*);
+  void RunAllTasksDontWait();
 
-  void kill();
+  void Kill();
 
   class CORE_EXPORT IgnoreInterruptsScope final {
     USING_FAST_MALLOC(IgnoreInterruptsScope);
@@ -43,18 +43,18 @@ class CORE_EXPORT InspectorTaskRunner final {
     ~IgnoreInterruptsScope();
 
    private:
-    bool m_wasIgnoring;
-    InspectorTaskRunner* m_taskRunner;
+    bool was_ignoring_;
+    InspectorTaskRunner* task_runner_;
   };
 
  private:
-  static void v8InterruptCallback(v8::Isolate*, void* data);
+  static void V8InterruptCallback(v8::Isolate*, void* data);
 
-  bool m_ignoreInterrupts;
-  Mutex m_mutex;
-  ThreadCondition m_condition;
-  Deque<std::unique_ptr<Task>> m_queue;
-  bool m_killed;
+  bool ignore_interrupts_;
+  Mutex mutex_;
+  ThreadCondition condition_;
+  Deque<std::unique_ptr<Task>> queue_;
+  bool killed_;
 };
 
 }  // namespace blink

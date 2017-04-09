@@ -28,49 +28,49 @@
 
 namespace blink {
 
-bool buildPathFromString(const String& d, Path& result) {
-  if (d.isEmpty())
+bool BuildPathFromString(const String& d, Path& result) {
+  if (d.IsEmpty())
     return true;
 
   SVGPathBuilder builder(result);
   SVGPathStringSource source(d);
-  return SVGPathParser::parsePath(source, builder);
+  return SVGPathParser::ParsePath(source, builder);
 }
 
-bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result) {
-  if (stream.isEmpty())
+bool BuildPathFromByteStream(const SVGPathByteStream& stream, Path& result) {
+  if (stream.IsEmpty())
     return true;
 
   SVGPathBuilder builder(result);
   SVGPathByteStreamSource source(stream);
-  return SVGPathParser::parsePath(source, builder);
+  return SVGPathParser::ParsePath(source, builder);
 }
 
-String buildStringFromByteStream(const SVGPathByteStream& stream) {
-  if (stream.isEmpty())
+String BuildStringFromByteStream(const SVGPathByteStream& stream) {
+  if (stream.IsEmpty())
     return String();
 
   SVGPathStringBuilder builder;
   SVGPathByteStreamSource source(stream);
-  SVGPathParser::parsePath(source, builder);
-  return builder.result();
+  SVGPathParser::ParsePath(source, builder);
+  return builder.Result();
 }
 
-SVGParsingError buildByteStreamFromString(const String& d,
+SVGParsingError BuildByteStreamFromString(const String& d,
                                           SVGPathByteStream& result) {
-  result.clear();
-  if (d.isEmpty())
-    return SVGParseStatus::NoError;
+  result.Clear();
+  if (d.IsEmpty())
+    return SVGParseStatus::kNoError;
 
   // The string length is typically a minor overestimate of eventual byte stream
   // size, so it avoids us a lot of reallocs.
-  result.reserveInitialCapacity(d.length());
+  result.ReserveInitialCapacity(d.length());
 
   SVGPathByteStreamBuilder builder(result);
   SVGPathStringSource source(d);
-  SVGPathParser::parsePath(source, builder);
-  result.shrinkToFit();
-  return source.parseError();
+  SVGPathParser::ParsePath(source, builder);
+  result.ShrinkToFit();
+  return source.ParseError();
 }
 
 }  // namespace blink

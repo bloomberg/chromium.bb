@@ -18,7 +18,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                          kFragmentLineBox,
                          std::move(break_token)),
       metrics_(metrics) {
-  children_.swap(children);
+  children_.Swap(children);
 }
 
 }  // namespace blink

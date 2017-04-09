@@ -34,8 +34,8 @@ class SVGFEMergeElement final : public SVGFilterPrimitiveStandardAttributes {
  private:
   explicit SVGFEMergeElement(Document&);
 
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
-  bool taintsOrigin(bool inputsTaintOrigin) const override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin(bool inputs_taint_origin) const override;
 };
 
 }  // namespace blink

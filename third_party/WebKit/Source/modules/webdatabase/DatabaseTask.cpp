@@ -35,49 +35,49 @@
 
 namespace blink {
 
-DatabaseTask::DatabaseTask(Database* database, WaitableEvent* completeEvent)
-    : m_database(database),
-      m_completeEvent(completeEvent)
+DatabaseTask::DatabaseTask(Database* database, WaitableEvent* complete_event)
+    : database_(database),
+      complete_event_(complete_event)
 #if DCHECK_IS_ON()
       ,
-      m_complete(false)
+      complete_(false)
 #endif
 {
 }
 
 DatabaseTask::~DatabaseTask() {
 #if DCHECK_IS_ON()
-  DCHECK(m_complete || !m_completeEvent);
+  DCHECK(complete_ || !complete_event_);
 #endif
 }
 
-void DatabaseTask::run() {
+void DatabaseTask::Run() {
 // Database tasks are meant to be used only once, so make sure this one hasn't
 // been performed before.
 #if DCHECK_IS_ON()
-  ASSERT(!m_complete);
+  ASSERT(!complete_);
 #endif
 
-  if (!m_completeEvent &&
-      !m_database->getDatabaseContext()->databaseThread()->isDatabaseOpen(
-          m_database.get())) {
-    taskCancelled();
+  if (!complete_event_ &&
+      !database_->GetDatabaseContext()->GetDatabaseThread()->IsDatabaseOpen(
+          database_.Get())) {
+    TaskCancelled();
 #if DCHECK_IS_ON()
-    m_complete = true;
+    complete_ = true;
 #endif
     return;
   }
 #if DCHECK_IS_ON()
-  STORAGE_DVLOG(1) << "Performing " << debugTaskName() << " " << this;
+  STORAGE_DVLOG(1) << "Performing " << DebugTaskName() << " " << this;
 #endif
-  m_database->resetAuthorizer();
-  doPerformTask();
+  database_->ResetAuthorizer();
+  DoPerformTask();
 
-  if (m_completeEvent)
-    m_completeEvent->signal();
+  if (complete_event_)
+    complete_event_->Signal();
 
 #if DCHECK_IS_ON()
-  m_complete = true;
+  complete_ = true;
 #endif
 }
 
@@ -86,30 +86,30 @@ void DatabaseTask::run() {
 // version.
 
 Database::DatabaseOpenTask::DatabaseOpenTask(Database* database,
-                                             bool setVersionInNewDatabase,
-                                             WaitableEvent* completeEvent,
+                                             bool set_version_in_new_database,
+                                             WaitableEvent* complete_event,
                                              DatabaseError& error,
-                                             String& errorMessage,
+                                             String& error_message,
                                              bool& success)
-    : DatabaseTask(database, completeEvent),
-      m_setVersionInNewDatabase(setVersionInNewDatabase),
-      m_error(error),
-      m_errorMessage(errorMessage),
-      m_success(success) {
-  DCHECK(completeEvent);  // A task with output parameters is supposed to be
-                          // synchronous.
+    : DatabaseTask(database, complete_event),
+      set_version_in_new_database_(set_version_in_new_database),
+      error_(error),
+      error_message_(error_message),
+      success_(success) {
+  DCHECK(complete_event);  // A task with output parameters is supposed to be
+                           // synchronous.
 }
 
-void Database::DatabaseOpenTask::doPerformTask() {
-  String errorMessage;
-  m_success = database()->performOpenAndVerify(m_setVersionInNewDatabase,
-                                               m_error, errorMessage);
-  if (!m_success)
-    m_errorMessage = errorMessage.isolatedCopy();
+void Database::DatabaseOpenTask::DoPerformTask() {
+  String error_message;
+  success_ = GetDatabase()->PerformOpenAndVerify(set_version_in_new_database_,
+                                                 error_, error_message);
+  if (!success_)
+    error_message_ = error_message.IsolatedCopy();
 }
 
 #if DCHECK_IS_ON()
-const char* Database::DatabaseOpenTask::debugTaskName() const {
+const char* Database::DatabaseOpenTask::DebugTaskName() const {
   return "DatabaseOpenTask";
 }
 #endif
@@ -118,15 +118,15 @@ const char* Database::DatabaseOpenTask::debugTaskName() const {
 // Closes the database.
 
 Database::DatabaseCloseTask::DatabaseCloseTask(Database* database,
-                                               WaitableEvent* completeEvent)
-    : DatabaseTask(database, completeEvent) {}
+                                               WaitableEvent* complete_event)
+    : DatabaseTask(database, complete_event) {}
 
-void Database::DatabaseCloseTask::doPerformTask() {
-  database()->close();
+void Database::DatabaseCloseTask::DoPerformTask() {
+  GetDatabase()->Close();
 }
 
 #if DCHECK_IS_ON()
-const char* Database::DatabaseCloseTask::debugTaskName() const {
+const char* Database::DatabaseCloseTask::DebugTaskName() const {
   return "DatabaseCloseTask";
 }
 #endif
@@ -136,15 +136,15 @@ const char* Database::DatabaseCloseTask::debugTaskName() const {
 
 Database::DatabaseTransactionTask::DatabaseTransactionTask(
     SQLTransactionBackend* transaction)
-    : DatabaseTask(transaction->database(), 0), m_transaction(transaction) {}
+    : DatabaseTask(transaction->GetDatabase(), 0), transaction_(transaction) {}
 
 Database::DatabaseTransactionTask::~DatabaseTransactionTask() {}
 
-void Database::DatabaseTransactionTask::doPerformTask() {
-  m_transaction->performNextStep();
+void Database::DatabaseTransactionTask::DoPerformTask() {
+  transaction_->PerformNextStep();
 }
 
-void Database::DatabaseTransactionTask::taskCancelled() {
+void Database::DatabaseTransactionTask::TaskCancelled() {
   // If the task is being destructed without the transaction ever being run,
   // then we must either have an error or an interruption. Give the
   // transaction a chance to clean up since it may not have been able to
@@ -153,11 +153,11 @@ void Database::DatabaseTransactionTask::taskCancelled() {
   // Transaction phase 2 cleanup. See comment on "What happens if a
   // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
 
-  m_transaction->notifyDatabaseThreadIsShuttingDown();
+  transaction_->NotifyDatabaseThreadIsShuttingDown();
 }
 
 #if DCHECK_IS_ON()
-const char* Database::DatabaseTransactionTask::debugTaskName() const {
+const char* Database::DatabaseTransactionTask::DebugTaskName() const {
   return "DatabaseTransactionTask";
 }
 #endif
@@ -167,19 +167,19 @@ const char* Database::DatabaseTransactionTask::debugTaskName() const {
 
 Database::DatabaseTableNamesTask::DatabaseTableNamesTask(
     Database* database,
-    WaitableEvent* completeEvent,
+    WaitableEvent* complete_event,
     Vector<String>& names)
-    : DatabaseTask(database, completeEvent), m_tableNames(names) {
-  DCHECK(completeEvent);  // A task with output parameters is supposed to be
-                          // synchronous.
+    : DatabaseTask(database, complete_event), table_names_(names) {
+  DCHECK(complete_event);  // A task with output parameters is supposed to be
+                           // synchronous.
 }
 
-void Database::DatabaseTableNamesTask::doPerformTask() {
-  m_tableNames = database()->performGetTableNames();
+void Database::DatabaseTableNamesTask::DoPerformTask() {
+  table_names_ = GetDatabase()->PerformGetTableNames();
 }
 
 #if DCHECK_IS_ON()
-const char* Database::DatabaseTableNamesTask::debugTaskName() const {
+const char* Database::DatabaseTableNamesTask::DebugTaskName() const {
   return "DatabaseTableNamesTask";
 }
 #endif

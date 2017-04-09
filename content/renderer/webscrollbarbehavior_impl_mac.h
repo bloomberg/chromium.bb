@@ -13,7 +13,7 @@ class WebScrollbarBehaviorImpl : public blink::WebScrollbarBehavior {
  public:
   WebScrollbarBehaviorImpl();
 
-  bool shouldCenterOnThumb(blink::WebPointerProperties::Button mouseButton,
+  bool ShouldCenterOnThumb(blink::WebPointerProperties::Button mouseButton,
                            bool shiftKeyPressed,
                            bool altKeyPressed) override;
 

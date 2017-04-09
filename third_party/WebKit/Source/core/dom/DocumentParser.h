@@ -43,47 +43,47 @@ class CORE_EXPORT DocumentParser
   virtual ~DocumentParser();
   DECLARE_VIRTUAL_TRACE();
 
-  virtual ScriptableDocumentParser* asScriptableDocumentParser() { return 0; }
+  virtual ScriptableDocumentParser* AsScriptableDocumentParser() { return 0; }
 
   // http://www.whatwg.org/specs/web-apps/current-work/#insertion-point
-  virtual bool hasInsertionPoint() { return true; }
+  virtual bool HasInsertionPoint() { return true; }
 
   // insert is used by document.write.
   virtual void insert(const SegmentedString&) = 0;
 
   // The below functions are used by DocumentWriter (the loader).
-  virtual void appendBytes(const char* bytes, size_t length) = 0;
-  virtual bool needsDecoder() const { return false; }
-  virtual void setDecoder(std::unique_ptr<TextResourceDecoder>);
-  virtual TextResourceDecoder* decoder();
-  virtual void setHasAppendedData() {}
+  virtual void AppendBytes(const char* bytes, size_t length) = 0;
+  virtual bool NeedsDecoder() const { return false; }
+  virtual void SetDecoder(std::unique_ptr<TextResourceDecoder>);
+  virtual TextResourceDecoder* Decoder();
+  virtual void SetHasAppendedData() {}
 
   // FIXME: append() should be private, but DocumentLoader and DOMPatchSupport
   // uses it for now.
-  virtual void append(const String&) = 0;
+  virtual void Append(const String&) = 0;
 
-  virtual void finish() = 0;
+  virtual void Finish() = 0;
 
   // document() will return 0 after detach() is called.
-  Document* document() const {
-    DCHECK(m_document);
-    return m_document;
+  Document* GetDocument() const {
+    DCHECK(document_);
+    return document_;
   }
 
-  bool isParsing() const { return m_state == ParsingState; }
-  bool isStopping() const { return m_state == StoppingState; }
-  bool isStopped() const { return m_state >= StoppedState; }
-  bool isDetached() const { return m_state == DetachedState; }
+  bool IsParsing() const { return state_ == kParsingState; }
+  bool IsStopping() const { return state_ == kStoppingState; }
+  bool IsStopped() const { return state_ >= kStoppedState; }
+  bool IsDetached() const { return state_ == kDetachedState; }
 
   // prepareToStop() is used when the EOF token is encountered and parsing is to
   // be stopped normally.
-  virtual void prepareToStopParsing();
+  virtual void PrepareToStopParsing();
 
   // stopParsing() is used when a load is canceled/stopped.
   // stopParsing() is currently different from detach(), but shouldn't be.
   // It should NOT be ok to call any methods on DocumentParser after either
   // detach() or stopParsing() but right now only detach() will ASSERT.
-  virtual void stopParsing();
+  virtual void StopParsing();
 
   // Document is expected to detach the parser before releasing its ref.
   // After detach, m_document is cleared.  The parser will unwind its
@@ -91,39 +91,44 @@ class CORE_EXPORT DocumentParser
   // It is impossible for the parser to touch the rest of WebCore after
   // detach is called.
   // Oilpan: We don't need to call detach when a Document is destructed.
-  virtual void detach();
+  virtual void Detach();
 
   // Notifies the parser that the document element is available. Used by
   // HTMLDocumentParser to dispatch preloads.
-  virtual void documentElementAvailable() {}
+  virtual void DocumentElementAvailable() {}
 
-  void setDocumentWasLoadedAsPartOfNavigation() {
-    m_documentWasLoadedAsPartOfNavigation = true;
+  void SetDocumentWasLoadedAsPartOfNavigation() {
+    document_was_loaded_as_part_of_navigation_ = true;
   }
-  bool documentWasLoadedAsPartOfNavigation() const {
-    return m_documentWasLoadedAsPartOfNavigation;
+  bool DocumentWasLoadedAsPartOfNavigation() const {
+    return document_was_loaded_as_part_of_navigation_;
   }
 
   // FIXME: The names are not very accurate :(
-  virtual void suspendScheduledTasks();
-  virtual void resumeScheduledTasks();
+  virtual void SuspendScheduledTasks();
+  virtual void ResumeScheduledTasks();
 
-  void addClient(DocumentParserClient*);
-  void removeClient(DocumentParserClient*);
+  void AddClient(DocumentParserClient*);
+  void RemoveClient(DocumentParserClient*);
 
  protected:
   explicit DocumentParser(Document*);
 
  private:
-  enum ParserState { ParsingState, StoppingState, StoppedState, DetachedState };
-  ParserState m_state;
-  bool m_documentWasLoadedAsPartOfNavigation;
+  enum ParserState {
+    kParsingState,
+    kStoppingState,
+    kStoppedState,
+    kDetachedState
+  };
+  ParserState state_;
+  bool document_was_loaded_as_part_of_navigation_;
 
   // Every DocumentParser needs a pointer back to the document.
   // m_document will be 0 after the parser is stopped.
-  Member<Document> m_document;
+  Member<Document> document_;
 
-  HeapHashSet<WeakMember<DocumentParserClient>> m_clients;
+  HeapHashSet<WeakMember<DocumentParserClient>> clients_;
 };
 
 }  // namespace blink

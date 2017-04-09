@@ -38,7 +38,7 @@ class CORE_EXPORT HTMLDivElement : public HTMLElement {
   explicit HTMLDivElement(Document&);
 
  private:
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 };

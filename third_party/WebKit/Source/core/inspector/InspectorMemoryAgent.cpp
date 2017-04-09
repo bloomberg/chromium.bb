@@ -40,12 +40,12 @@ InspectorMemoryAgent::~InspectorMemoryAgent() {}
 
 Response InspectorMemoryAgent::getDOMCounters(int* documents,
                                               int* nodes,
-                                              int* jsEventListeners) {
+                                              int* js_event_listeners) {
   *documents =
-      InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
-  *nodes = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
-  *jsEventListeners =
-      InstanceCounters::counterValue(InstanceCounters::JSEventListenerCounter);
+      InstanceCounters::CounterValue(InstanceCounters::kDocumentCounter);
+  *nodes = InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
+  *js_event_listeners =
+      InstanceCounters::CounterValue(InstanceCounters::kJSEventListenerCounter);
   return Response::OK();
 }
 

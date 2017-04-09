@@ -9,27 +9,27 @@
 
 namespace blink {
 
-ClipPaintPropertyNode* ClipPaintPropertyNode::root() {
+ClipPaintPropertyNode* ClipPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(ClipPaintPropertyNode, root,
-                    (ClipPaintPropertyNode::create(
-                        nullptr, TransformPaintPropertyNode::root(),
-                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
+                    (ClipPaintPropertyNode::Create(
+                        nullptr, TransformPaintPropertyNode::Root(),
+                        FloatRoundedRect(LayoutRect::InfiniteIntRect()))));
   return root;
 }
 
-String ClipPaintPropertyNode::toString() const {
-  return String::format(
+String ClipPaintPropertyNode::ToString() const {
+  return String::Format(
       "parent=%p localTransformSpace=%p rect=%s directCompositingReasons=%s",
-      m_parent.get(), m_localTransformSpace.get(),
-      m_clipRect.toString().ascii().data(),
-      compositingReasonsAsString(m_directCompositingReasons).ascii().data());
+      parent_.Get(), local_transform_space_.Get(),
+      clip_rect_.ToString().Ascii().Data(),
+      CompositingReasonsAsString(direct_compositing_reasons_).Ascii().Data());
 }
 
 #if DCHECK_IS_ON()
 
-String ClipPaintPropertyNode::toTreeString() const {
+String ClipPaintPropertyNode::ToTreeString() const {
   return blink::PropertyTreeStatePrinter<blink::ClipPaintPropertyNode>()
-      .pathAsString(this);
+      .PathAsString(this);
 }
 
 #endif

@@ -29,71 +29,71 @@ class WebServiceWorkerRequestPrivate;
 // Represents a request for a web resource.
 class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
  public:
-  ~WebServiceWorkerRequest() { reset(); }
+  ~WebServiceWorkerRequest() { Reset(); }
   WebServiceWorkerRequest();
   WebServiceWorkerRequest(const WebServiceWorkerRequest& other) {
-    assign(other);
+    Assign(other);
   }
   WebServiceWorkerRequest& operator=(const WebServiceWorkerRequest& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  void reset();
-  void assign(const WebServiceWorkerRequest&);
+  void Reset();
+  void Assign(const WebServiceWorkerRequest&);
 
-  void setURL(const WebURL&);
-  const WebURL& url() const;
+  void SetURL(const WebURL&);
+  const WebURL& Url() const;
 
-  void setMethod(const WebString&);
-  const WebString& method() const;
+  void SetMethod(const WebString&);
+  const WebString& Method() const;
 
-  void setHeader(const WebString& key, const WebString& value);
+  void SetHeader(const WebString& key, const WebString& value);
 
   // If the key already exists, the value is appended to the existing value
   // with a comma delimiter between them.
-  void appendHeader(const WebString& key, const WebString& value);
+  void AppendHeader(const WebString& key, const WebString& value);
 
-  void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  void setBlob(const WebString& uuid, long long size);
+  void SetBlob(const WebString& uuid, long long size);
 
-  void setReferrer(const WebString&, WebReferrerPolicy);
-  WebURL referrerUrl() const;
-  WebReferrerPolicy getReferrerPolicy() const;
+  void SetReferrer(const WebString&, WebReferrerPolicy);
+  WebURL ReferrerUrl() const;
+  WebReferrerPolicy GetReferrerPolicy() const;
 
-  void setMode(WebURLRequest::FetchRequestMode);
-  WebURLRequest::FetchRequestMode mode() const;
+  void SetMode(WebURLRequest::FetchRequestMode);
+  WebURLRequest::FetchRequestMode Mode() const;
 
-  void setIsMainResourceLoad(bool);
-  bool isMainResourceLoad() const;
+  void SetIsMainResourceLoad(bool);
+  bool IsMainResourceLoad() const;
 
-  void setCredentialsMode(WebURLRequest::FetchCredentialsMode);
-  WebURLRequest::FetchCredentialsMode credentialsMode() const;
+  void SetCredentialsMode(WebURLRequest::FetchCredentialsMode);
+  WebURLRequest::FetchCredentialsMode CredentialsMode() const;
 
-  void setRedirectMode(WebURLRequest::FetchRedirectMode);
-  WebURLRequest::FetchRedirectMode redirectMode() const;
+  void SetRedirectMode(WebURLRequest::FetchRedirectMode);
+  WebURLRequest::FetchRedirectMode RedirectMode() const;
 
-  void setRequestContext(WebURLRequest::RequestContext);
-  WebURLRequest::RequestContext requestContext() const;
+  void SetRequestContext(WebURLRequest::RequestContext);
+  WebURLRequest::RequestContext GetRequestContext() const;
 
-  void setFrameType(WebURLRequest::FrameType);
-  WebURLRequest::FrameType frameType() const;
+  void SetFrameType(WebURLRequest::FrameType);
+  WebURLRequest::FrameType GetFrameType() const;
 
-  void setClientId(const WebString&);
-  const WebString& clientId() const;
+  void SetClientId(const WebString&);
+  const WebString& ClientId() const;
 
-  void setIsReload(bool);
-  bool isReload() const;
+  void SetIsReload(bool);
+  bool IsReload() const;
 
 #if INSIDE_BLINK
-  const HTTPHeaderMap& headers() const;
-  PassRefPtr<BlobDataHandle> blobDataHandle() const;
-  const Referrer& referrer() const;
+  const HTTPHeaderMap& Headers() const;
+  PassRefPtr<BlobDataHandle> GetBlobDataHandle() const;
+  const Referrer& GetReferrer() const;
 #endif
 
  private:
-  WebPrivatePtr<WebServiceWorkerRequestPrivate> m_private;
+  WebPrivatePtr<WebServiceWorkerRequestPrivate> private_;
 };
 
 }  // namespace blink

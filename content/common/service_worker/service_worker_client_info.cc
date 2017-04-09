@@ -11,12 +11,12 @@ namespace content {
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo()
     : ServiceWorkerClientInfo(std::string(),
-                              blink::WebPageVisibilityStateLast,
+                              blink::kWebPageVisibilityStateLast,
                               false,
                               GURL(),
                               REQUEST_CONTEXT_FRAME_TYPE_LAST,
                               base::TimeTicks(),
-                              blink::WebServiceWorkerClientTypeLast) {}
+                              blink::kWebServiceWorkerClientTypeLast) {}
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const std::string& client_uuid,
@@ -38,11 +38,10 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const ServiceWorkerClientInfo& other) = default;
 
 bool ServiceWorkerClientInfo::IsEmpty() const {
-  return page_visibility_state == blink::WebPageVisibilityStateLast &&
-         is_focused == false &&
-         url.is_empty() &&
+  return page_visibility_state == blink::kWebPageVisibilityStateLast &&
+         is_focused == false && url.is_empty() &&
          frame_type == REQUEST_CONTEXT_FRAME_TYPE_LAST &&
-         client_type == blink::WebServiceWorkerClientTypeLast;
+         client_type == blink::kWebServiceWorkerClientTypeLast;
 }
 
 bool ServiceWorkerClientInfo::IsValid() const {

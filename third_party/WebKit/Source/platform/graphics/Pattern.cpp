@@ -39,42 +39,42 @@
 
 namespace blink {
 
-PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage,
-                                                RepeatMode repeatMode) {
-  return ImagePattern::create(std::move(tileImage), repeatMode);
+PassRefPtr<Pattern> Pattern::CreateImagePattern(PassRefPtr<Image> tile_image,
+                                                RepeatMode repeat_mode) {
+  return ImagePattern::Create(std::move(tile_image), repeat_mode);
 }
 
-PassRefPtr<Pattern> Pattern::createPaintRecordPattern(sk_sp<PaintRecord> record,
-                                                      RepeatMode repeatMode) {
-  return PaintRecordPattern::create(std::move(record), repeatMode);
+PassRefPtr<Pattern> Pattern::CreatePaintRecordPattern(sk_sp<PaintRecord> record,
+                                                      RepeatMode repeat_mode) {
+  return PaintRecordPattern::Create(std::move(record), repeat_mode);
 }
 
-Pattern::Pattern(RepeatMode repeatMode, int64_t externalMemoryAllocated)
-    : m_repeatMode(repeatMode), m_externalMemoryAllocated(0) {
-  adjustExternalMemoryAllocated(externalMemoryAllocated);
+Pattern::Pattern(RepeatMode repeat_mode, int64_t external_memory_allocated)
+    : repeat_mode_(repeat_mode), external_memory_allocated_(0) {
+  AdjustExternalMemoryAllocated(external_memory_allocated);
 }
 
 Pattern::~Pattern() {
-  adjustExternalMemoryAllocated(-m_externalMemoryAllocated);
+  AdjustExternalMemoryAllocated(-external_memory_allocated_);
 }
 
-void Pattern::applyToFlags(PaintFlags& flags, const SkMatrix& localMatrix) {
-  if (!m_cachedShader || isLocalMatrixChanged(localMatrix))
-    m_cachedShader = createShader(localMatrix);
+void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
+  if (!cached_shader_ || IsLocalMatrixChanged(local_matrix))
+    cached_shader_ = CreateShader(local_matrix);
 
-  flags.setShader(m_cachedShader);
+  flags.setShader(cached_shader_);
 }
 
-bool Pattern::isLocalMatrixChanged(const SkMatrix& localMatrix) const {
-  return localMatrix != m_cachedShader->getLocalMatrix();
+bool Pattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {
+  return local_matrix != cached_shader_->getLocalMatrix();
 }
 
-void Pattern::adjustExternalMemoryAllocated(int64_t delta) {
-  delta = std::max(-m_externalMemoryAllocated, delta);
+void Pattern::AdjustExternalMemoryAllocated(int64_t delta) {
+  delta = std::max(-external_memory_allocated_, delta);
 
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(delta);
 
-  m_externalMemoryAllocated += delta;
+  external_memory_allocated_ += delta;
 }
 
 }  // namespace blink

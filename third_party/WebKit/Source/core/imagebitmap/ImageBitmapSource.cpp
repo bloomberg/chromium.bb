@@ -9,25 +9,25 @@
 
 namespace blink {
 
-ScriptPromise ImageBitmapSource::fulfillImageBitmap(ScriptState* scriptState,
-                                                    ImageBitmap* imageBitmap) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  if (imageBitmap && imageBitmap->bitmapImage()) {
-    resolver->resolve(imageBitmap);
+ScriptPromise ImageBitmapSource::FulfillImageBitmap(ScriptState* script_state,
+                                                    ImageBitmap* image_bitmap) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  if (image_bitmap && image_bitmap->BitmapImage()) {
+    resolver->Resolve(image_bitmap);
   } else {
-    resolver->reject(
-        ScriptValue(scriptState, v8::Null(scriptState->isolate())));
+    resolver->Reject(
+        ScriptValue(script_state, v8::Null(script_state->GetIsolate())));
   }
   return promise;
 }
 
-ScriptPromise ImageBitmapSource::createImageBitmap(
-    ScriptState* scriptState,
-    EventTarget& eventTarget,
-    Optional<IntRect> cropRect,
+ScriptPromise ImageBitmapSource::CreateImageBitmap(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   return ScriptPromise();
 }
 

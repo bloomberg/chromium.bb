@@ -29,12 +29,12 @@ namespace blink {
 
 DocumentType::DocumentType(Document* document,
                            const String& name,
-                           const String& publicId,
-                           const String& systemId)
-    : Node(document, CreateOther),
-      m_name(name),
-      m_publicId(publicId),
-      m_systemId(systemId) {}
+                           const String& public_id,
+                           const String& system_id)
+    : Node(document, kCreateOther),
+      name_(name),
+      public_id_(public_id),
+      system_id_(system_id) {}
 
 String DocumentType::nodeName() const {
   return name();
@@ -45,24 +45,24 @@ Node::NodeType DocumentType::getNodeType() const {
 }
 
 Node* DocumentType::cloneNode(bool /*deep*/, ExceptionState&) {
-  return create(&document(), m_name, m_publicId, m_systemId);
+  return Create(&GetDocument(), name_, public_id_, system_id_);
 }
 
-Node::InsertionNotificationRequest DocumentType::insertedInto(
-    ContainerNode* insertionPoint) {
-  Node::insertedInto(insertionPoint);
+Node::InsertionNotificationRequest DocumentType::InsertedInto(
+    ContainerNode* insertion_point) {
+  Node::InsertedInto(insertion_point);
 
   // DocumentType can only be inserted into a Document.
-  DCHECK(parentNode()->isDocumentNode());
+  DCHECK(parentNode()->IsDocumentNode());
 
-  document().setDoctype(this);
+  GetDocument().SetDoctype(this);
 
-  return InsertionDone;
+  return kInsertionDone;
 }
 
-void DocumentType::removedFrom(ContainerNode* insertionPoint) {
-  document().setDoctype(nullptr);
-  Node::removedFrom(insertionPoint);
+void DocumentType::RemovedFrom(ContainerNode* insertion_point) {
+  GetDocument().SetDoctype(nullptr);
+  Node::RemovedFrom(insertion_point);
 }
 
 }  // namespace blink

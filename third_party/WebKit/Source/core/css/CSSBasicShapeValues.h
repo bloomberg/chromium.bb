@@ -42,179 +42,179 @@ namespace blink {
 
 class CSSBasicShapeCircleValue final : public CSSValue {
  public:
-  static CSSBasicShapeCircleValue* create() {
+  static CSSBasicShapeCircleValue* Create() {
     return new CSSBasicShapeCircleValue;
   }
 
-  String customCSSText() const;
-  bool equals(const CSSBasicShapeCircleValue&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSBasicShapeCircleValue&) const;
 
-  CSSValue* centerX() const { return m_centerX.get(); }
-  CSSValue* centerY() const { return m_centerY.get(); }
-  CSSValue* radius() const { return m_radius.get(); }
+  CSSValue* CenterX() const { return center_x_.Get(); }
+  CSSValue* CenterY() const { return center_y_.Get(); }
+  CSSValue* Radius() const { return radius_.Get(); }
 
   // TODO(sashab): Remove these and pass them as arguments in the constructor.
-  void setCenterX(CSSValue* centerX) { m_centerX = centerX; }
-  void setCenterY(CSSValue* centerY) { m_centerY = centerY; }
-  void setRadius(CSSValue* radius) { m_radius = radius; }
+  void SetCenterX(CSSValue* center_x) { center_x_ = center_x; }
+  void SetCenterY(CSSValue* center_y) { center_y_ = center_y; }
+  void SetRadius(CSSValue* radius) { radius_ = radius; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSBasicShapeCircleValue() : CSSValue(BasicShapeCircleClass) {}
+  CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
 
-  Member<CSSValue> m_centerX;
-  Member<CSSValue> m_centerY;
-  Member<CSSValue> m_radius;
+  Member<CSSValue> center_x_;
+  Member<CSSValue> center_y_;
+  Member<CSSValue> radius_;
 };
 
 class CSSBasicShapeEllipseValue final : public CSSValue {
  public:
-  static CSSBasicShapeEllipseValue* create() {
+  static CSSBasicShapeEllipseValue* Create() {
     return new CSSBasicShapeEllipseValue;
   }
 
-  String customCSSText() const;
-  bool equals(const CSSBasicShapeEllipseValue&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSBasicShapeEllipseValue&) const;
 
-  CSSValue* centerX() const { return m_centerX.get(); }
-  CSSValue* centerY() const { return m_centerY.get(); }
-  CSSValue* radiusX() const { return m_radiusX.get(); }
-  CSSValue* radiusY() const { return m_radiusY.get(); }
+  CSSValue* CenterX() const { return center_x_.Get(); }
+  CSSValue* CenterY() const { return center_y_.Get(); }
+  CSSValue* RadiusX() const { return radius_x_.Get(); }
+  CSSValue* RadiusY() const { return radius_y_.Get(); }
 
   // TODO(sashab): Remove these and pass them as arguments in the constructor.
-  void setCenterX(CSSValue* centerX) { m_centerX = centerX; }
-  void setCenterY(CSSValue* centerY) { m_centerY = centerY; }
-  void setRadiusX(CSSValue* radiusX) { m_radiusX = radiusX; }
-  void setRadiusY(CSSValue* radiusY) { m_radiusY = radiusY; }
+  void SetCenterX(CSSValue* center_x) { center_x_ = center_x; }
+  void SetCenterY(CSSValue* center_y) { center_y_ = center_y; }
+  void SetRadiusX(CSSValue* radius_x) { radius_x_ = radius_x; }
+  void SetRadiusY(CSSValue* radius_y) { radius_y_ = radius_y; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSBasicShapeEllipseValue() : CSSValue(BasicShapeEllipseClass) {}
+  CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
 
-  Member<CSSValue> m_centerX;
-  Member<CSSValue> m_centerY;
-  Member<CSSValue> m_radiusX;
-  Member<CSSValue> m_radiusY;
+  Member<CSSValue> center_x_;
+  Member<CSSValue> center_y_;
+  Member<CSSValue> radius_x_;
+  Member<CSSValue> radius_y_;
 };
 
 class CSSBasicShapePolygonValue final : public CSSValue {
  public:
-  static CSSBasicShapePolygonValue* create() {
+  static CSSBasicShapePolygonValue* Create() {
     return new CSSBasicShapePolygonValue;
   }
 
-  void appendPoint(CSSPrimitiveValue* x, CSSPrimitiveValue* y) {
-    m_values.push_back(x);
-    m_values.push_back(y);
+  void AppendPoint(CSSPrimitiveValue* x, CSSPrimitiveValue* y) {
+    values_.push_back(x);
+    values_.push_back(y);
   }
 
-  CSSPrimitiveValue* getXAt(unsigned i) const { return m_values.at(i * 2); }
-  CSSPrimitiveValue* getYAt(unsigned i) const { return m_values.at(i * 2 + 1); }
-  const HeapVector<Member<CSSPrimitiveValue>>& values() const {
-    return m_values;
+  CSSPrimitiveValue* GetXAt(unsigned i) const { return values_.at(i * 2); }
+  CSSPrimitiveValue* GetYAt(unsigned i) const { return values_.at(i * 2 + 1); }
+  const HeapVector<Member<CSSPrimitiveValue>>& Values() const {
+    return values_;
   }
 
   // TODO(sashab): Remove this and pass it as an argument in the constructor.
-  void setWindRule(WindRule w) { m_windRule = w; }
-  WindRule getWindRule() const { return m_windRule; }
+  void SetWindRule(WindRule w) { wind_rule_ = w; }
+  WindRule GetWindRule() const { return wind_rule_; }
 
-  String customCSSText() const;
-  bool equals(const CSSBasicShapePolygonValue&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSBasicShapePolygonValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   CSSBasicShapePolygonValue()
-      : CSSValue(BasicShapePolygonClass), m_windRule(RULE_NONZERO) {}
+      : CSSValue(kBasicShapePolygonClass), wind_rule_(RULE_NONZERO) {}
 
-  HeapVector<Member<CSSPrimitiveValue>> m_values;
-  WindRule m_windRule;
+  HeapVector<Member<CSSPrimitiveValue>> values_;
+  WindRule wind_rule_;
 };
 
 class CSSBasicShapeInsetValue final : public CSSValue {
  public:
-  static CSSBasicShapeInsetValue* create() {
+  static CSSBasicShapeInsetValue* Create() {
     return new CSSBasicShapeInsetValue;
   }
 
-  CSSPrimitiveValue* top() const { return m_top.get(); }
-  CSSPrimitiveValue* right() const { return m_right.get(); }
-  CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
-  CSSPrimitiveValue* left() const { return m_left.get(); }
+  CSSPrimitiveValue* Top() const { return top_.Get(); }
+  CSSPrimitiveValue* Right() const { return right_.Get(); }
+  CSSPrimitiveValue* Bottom() const { return bottom_.Get(); }
+  CSSPrimitiveValue* Left() const { return left_.Get(); }
 
-  CSSValuePair* topLeftRadius() const { return m_topLeftRadius.get(); }
-  CSSValuePair* topRightRadius() const { return m_topRightRadius.get(); }
-  CSSValuePair* bottomRightRadius() const { return m_bottomRightRadius.get(); }
-  CSSValuePair* bottomLeftRadius() const { return m_bottomLeftRadius.get(); }
+  CSSValuePair* TopLeftRadius() const { return top_left_radius_.Get(); }
+  CSSValuePair* TopRightRadius() const { return top_right_radius_.Get(); }
+  CSSValuePair* BottomRightRadius() const { return bottom_right_radius_.Get(); }
+  CSSValuePair* BottomLeftRadius() const { return bottom_left_radius_.Get(); }
 
   // TODO(sashab): Remove these and pass them as arguments in the constructor.
-  void setTop(CSSPrimitiveValue* top) { m_top = top; }
-  void setRight(CSSPrimitiveValue* right) { m_right = right; }
-  void setBottom(CSSPrimitiveValue* bottom) { m_bottom = bottom; }
-  void setLeft(CSSPrimitiveValue* left) { m_left = left; }
+  void SetTop(CSSPrimitiveValue* top) { top_ = top; }
+  void SetRight(CSSPrimitiveValue* right) { right_ = right; }
+  void SetBottom(CSSPrimitiveValue* bottom) { bottom_ = bottom; }
+  void SetLeft(CSSPrimitiveValue* left) { left_ = left; }
 
-  void updateShapeSize4Values(CSSPrimitiveValue* top,
+  void UpdateShapeSize4Values(CSSPrimitiveValue* top,
                               CSSPrimitiveValue* right,
                               CSSPrimitiveValue* bottom,
                               CSSPrimitiveValue* left) {
-    setTop(top);
-    setRight(right);
-    setBottom(bottom);
-    setLeft(left);
+    SetTop(top);
+    SetRight(right);
+    SetBottom(bottom);
+    SetLeft(left);
   }
 
-  void updateShapeSize1Value(CSSPrimitiveValue* value1) {
-    updateShapeSize4Values(value1, value1, value1, value1);
+  void UpdateShapeSize1Value(CSSPrimitiveValue* value1) {
+    UpdateShapeSize4Values(value1, value1, value1, value1);
   }
 
-  void updateShapeSize2Values(CSSPrimitiveValue* value1,
+  void UpdateShapeSize2Values(CSSPrimitiveValue* value1,
                               CSSPrimitiveValue* value2) {
-    updateShapeSize4Values(value1, value2, value1, value2);
+    UpdateShapeSize4Values(value1, value2, value1, value2);
   }
 
-  void updateShapeSize3Values(CSSPrimitiveValue* value1,
+  void UpdateShapeSize3Values(CSSPrimitiveValue* value1,
                               CSSPrimitiveValue* value2,
                               CSSPrimitiveValue* value3) {
-    updateShapeSize4Values(value1, value2, value3, value2);
+    UpdateShapeSize4Values(value1, value2, value3, value2);
   }
 
-  void setTopLeftRadius(CSSValuePair* radius) { m_topLeftRadius = radius; }
-  void setTopRightRadius(CSSValuePair* radius) { m_topRightRadius = radius; }
-  void setBottomRightRadius(CSSValuePair* radius) {
-    m_bottomRightRadius = radius;
+  void SetTopLeftRadius(CSSValuePair* radius) { top_left_radius_ = radius; }
+  void SetTopRightRadius(CSSValuePair* radius) { top_right_radius_ = radius; }
+  void SetBottomRightRadius(CSSValuePair* radius) {
+    bottom_right_radius_ = radius;
   }
-  void setBottomLeftRadius(CSSValuePair* radius) {
-    m_bottomLeftRadius = radius;
+  void SetBottomLeftRadius(CSSValuePair* radius) {
+    bottom_left_radius_ = radius;
   }
 
-  String customCSSText() const;
-  bool equals(const CSSBasicShapeInsetValue&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSBasicShapeInsetValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSBasicShapeInsetValue() : CSSValue(BasicShapeInsetClass) {}
+  CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}
 
-  Member<CSSPrimitiveValue> m_top;
-  Member<CSSPrimitiveValue> m_right;
-  Member<CSSPrimitiveValue> m_bottom;
-  Member<CSSPrimitiveValue> m_left;
+  Member<CSSPrimitiveValue> top_;
+  Member<CSSPrimitiveValue> right_;
+  Member<CSSPrimitiveValue> bottom_;
+  Member<CSSPrimitiveValue> left_;
 
-  Member<CSSValuePair> m_topLeftRadius;
-  Member<CSSValuePair> m_topRightRadius;
-  Member<CSSValuePair> m_bottomRightRadius;
-  Member<CSSValuePair> m_bottomLeftRadius;
+  Member<CSSValuePair> top_left_radius_;
+  Member<CSSValuePair> top_right_radius_;
+  Member<CSSValuePair> bottom_right_radius_;
+  Member<CSSValuePair> bottom_left_radius_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeCircleValue,
-                            isBasicShapeCircleValue());
+                            IsBasicShapeCircleValue());
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeEllipseValue,
-                            isBasicShapeEllipseValue());
+                            IsBasicShapeEllipseValue());
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapePolygonValue,
-                            isBasicShapePolygonValue());
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeInsetValue, isBasicShapeInsetValue());
+                            IsBasicShapePolygonValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeInsetValue, IsBasicShapeInsetValue());
 
 }  // namespace blink
 

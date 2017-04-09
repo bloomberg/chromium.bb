@@ -7,50 +7,50 @@
 namespace blink {
 
 AnimationPlaybackEvent::AnimationPlaybackEvent(const AtomicString& type,
-                                               double currentTime,
-                                               double timelineTime)
+                                               double current_time,
+                                               double timeline_time)
     : Event(type, false, false),
-      m_currentTime(currentTime),
-      m_timelineTime(timelineTime) {}
+      current_time_(current_time),
+      timeline_time_(timeline_time) {}
 
 AnimationPlaybackEvent::AnimationPlaybackEvent(
     const AtomicString& type,
     const AnimationPlaybackEventInit& initializer)
-    : Event(type, initializer), m_currentTime(0.0), m_timelineTime(0.0) {
+    : Event(type, initializer), current_time_(0.0), timeline_time_(0.0) {
   if (initializer.hasCurrentTime())
-    m_currentTime = initializer.currentTime();
+    current_time_ = initializer.currentTime();
   if (initializer.hasTimelineTime())
-    m_timelineTime = initializer.timelineTime();
+    timeline_time_ = initializer.timelineTime();
 }
 
 AnimationPlaybackEvent::~AnimationPlaybackEvent() {}
 
-double AnimationPlaybackEvent::currentTime(bool& isNull) const {
+double AnimationPlaybackEvent::currentTime(bool& is_null) const {
   double result = currentTime();
-  isNull = std::isnan(result);
+  is_null = std::isnan(result);
   return result;
 }
 
 double AnimationPlaybackEvent::currentTime() const {
-  return m_currentTime;
+  return current_time_;
 }
 
-double AnimationPlaybackEvent::timelineTime(bool& isNull) const {
+double AnimationPlaybackEvent::timelineTime(bool& is_null) const {
   double result = timelineTime();
-  isNull = std::isnan(result);
+  is_null = std::isnan(result);
   return result;
 }
 
 double AnimationPlaybackEvent::timelineTime() const {
-  return m_timelineTime;
+  return timeline_time_;
 }
 
-const AtomicString& AnimationPlaybackEvent::interfaceName() const {
+const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
   return EventNames::AnimationPlaybackEvent;
 }
 
 DEFINE_TRACE(AnimationPlaybackEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

@@ -12,47 +12,47 @@
 
 namespace blink {
 
-WebFeaturePolicyFeature getWebFeaturePolicyFeature(const String& feature) {
+WebFeaturePolicyFeature GetWebFeaturePolicyFeature(const String& feature) {
   if (feature == "fullscreen")
-    return WebFeaturePolicyFeature::Fullscreen;
+    return WebFeaturePolicyFeature::kFullscreen;
   if (feature == "payment")
-    return WebFeaturePolicyFeature::Payment;
+    return WebFeaturePolicyFeature::kPayment;
   if (feature == "vibrate")
-    return WebFeaturePolicyFeature::Vibrate;
+    return WebFeaturePolicyFeature::kVibrate;
   if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
     if (feature == "camera")
-      return WebFeaturePolicyFeature::Camera;
+      return WebFeaturePolicyFeature::kCamera;
     if (feature == "eme")
-      return WebFeaturePolicyFeature::Eme;
+      return WebFeaturePolicyFeature::kEme;
     if (feature == "microphone")
-      return WebFeaturePolicyFeature::Microphone;
+      return WebFeaturePolicyFeature::kMicrophone;
     if (feature == "speaker")
-      return WebFeaturePolicyFeature::Speaker;
+      return WebFeaturePolicyFeature::kSpeaker;
     if (feature == "cookie")
-      return WebFeaturePolicyFeature::DocumentCookie;
+      return WebFeaturePolicyFeature::kDocumentCookie;
     if (feature == "domain")
-      return WebFeaturePolicyFeature::DocumentDomain;
+      return WebFeaturePolicyFeature::kDocumentDomain;
     if (feature == "docwrite")
-      return WebFeaturePolicyFeature::DocumentWrite;
+      return WebFeaturePolicyFeature::kDocumentWrite;
     if (feature == "geolocation")
-      return WebFeaturePolicyFeature::Geolocation;
+      return WebFeaturePolicyFeature::kGeolocation;
     if (feature == "midi")
-      return WebFeaturePolicyFeature::MidiFeature;
+      return WebFeaturePolicyFeature::kMidiFeature;
     if (feature == "notifications")
-      return WebFeaturePolicyFeature::Notifications;
+      return WebFeaturePolicyFeature::kNotifications;
     if (feature == "push")
-      return WebFeaturePolicyFeature::Push;
+      return WebFeaturePolicyFeature::kPush;
     if (feature == "sync-script")
-      return WebFeaturePolicyFeature::SyncScript;
+      return WebFeaturePolicyFeature::kSyncScript;
     if (feature == "sync-xhr")
-      return WebFeaturePolicyFeature::SyncXHR;
+      return WebFeaturePolicyFeature::kSyncXHR;
     if (feature == "webrtc")
-      return WebFeaturePolicyFeature::WebRTC;
+      return WebFeaturePolicyFeature::kWebRTC;
   }
-  return WebFeaturePolicyFeature::NotFound;
+  return WebFeaturePolicyFeature::kNotFound;
 }
 
-WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
+WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
                                           RefPtr<SecurityOrigin> origin,
                                           Vector<String>* messages) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
@@ -60,15 +60,15 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
   // Use a reasonable parse depth limit; the actual maximum depth is only going
   // to be 4 for a valid policy, but we'll give the featurePolicyParser a chance
   // to report more specific errors, unless the string is really invalid.
-  std::unique_ptr<JSONArray> policyItems = parseJSONHeader(policy, 50);
-  if (!policyItems) {
+  std::unique_ptr<JSONArray> policy_items = ParseJSONHeader(policy, 50);
+  if (!policy_items) {
     if (messages)
       messages->push_back("Unable to parse header.");
     return whitelists;
   }
 
-  for (size_t i = 0; i < policyItems->size(); ++i) {
-    JSONObject* item = JSONObject::cast(policyItems->at(i));
+  for (size_t i = 0; i < policy_items->size(); ++i) {
+    JSONObject* item = JSONObject::Cast(policy_items->at(i));
     if (!item) {
       if (messages)
         messages->push_back("Policy is not an object.");
@@ -77,10 +77,10 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
 
     for (size_t j = 0; j < item->size(); ++j) {
       JSONObject::Entry entry = item->at(j);
-      WebFeaturePolicyFeature feature = getWebFeaturePolicyFeature(entry.first);
-      if (feature == WebFeaturePolicyFeature::NotFound)
+      WebFeaturePolicyFeature feature = GetWebFeaturePolicyFeature(entry.first);
+      if (feature == WebFeaturePolicyFeature::kNotFound)
         continue;  // Unrecognized feature; skip
-      JSONArray* targets = JSONArray::cast(entry.second);
+      JSONArray* targets = JSONArray::Cast(entry.second);
       if (!targets) {
         if (messages)
           messages->push_back("Whitelist is not an array of strings.");
@@ -90,19 +90,19 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
       WebParsedFeaturePolicyDeclaration whitelist;
       whitelist.feature = feature;
       Vector<WebSecurityOrigin> origins;
-      String targetString;
+      String target_string;
       for (size_t j = 0; j < targets->size(); ++j) {
-        if (targets->at(j)->asString(&targetString)) {
-          if (equalIgnoringCase(targetString, "self")) {
-            if (!origin->isUnique())
+        if (targets->at(j)->AsString(&target_string)) {
+          if (EqualIgnoringCase(target_string, "self")) {
+            if (!origin->IsUnique())
               origins.push_back(origin);
-          } else if (targetString == "*") {
-            whitelist.matchesAllOrigins = true;
+          } else if (target_string == "*") {
+            whitelist.matches_all_origins = true;
           } else {
-            WebSecurityOrigin targetOrigin =
-                WebSecurityOrigin::createFromString(targetString);
-            if (!targetOrigin.isNull() && !targetOrigin.isUnique())
-              origins.push_back(targetOrigin);
+            WebSecurityOrigin target_origin =
+                WebSecurityOrigin::CreateFromString(target_string);
+            if (!target_origin.IsNull() && !target_origin.IsUnique())
+              origins.push_back(target_origin);
           }
         } else {
           if (messages)
@@ -118,7 +118,7 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
 
 // TODO(lunalu): also take information of allowfullscreen and
 // allowpaymentrequest into account when constructing the whitelist.
-WebParsedFeaturePolicy getContainerPolicyFromAllowedFeatures(
+WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     const WebVector<WebFeaturePolicyFeature>& features,
     RefPtr<SecurityOrigin> origin) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;

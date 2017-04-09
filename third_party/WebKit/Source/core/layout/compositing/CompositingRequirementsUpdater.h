@@ -56,22 +56,22 @@ class CompositingRequirementsUpdater {
   //      child.  This implies that its positive z-index children must also be
   //      compositing.
   //
-  void update(PaintLayer* root);
+  void Update(PaintLayer* root);
 
  private:
   class OverlapMap;
   class RecursionData;
 
-  void updateRecursive(PaintLayer* ancestorLayer,
-                       PaintLayer* currentLayer,
+  void UpdateRecursive(PaintLayer* ancestor_layer,
+                       PaintLayer* current_layer,
                        OverlapMap&,
                        RecursionData&,
-                       bool& descendantHas3DTransform,
-                       Vector<PaintLayer*>& unclippedDescendants,
-                       IntRect& absoluteDescendantBoundingBox);
+                       bool& descendant_has3d_transform,
+                       Vector<PaintLayer*>& unclipped_descendants,
+                       IntRect& absolute_descendant_bounding_box);
 
-  LayoutView& m_layoutView;
-  CompositingReasonFinder& m_compositingReasonFinder;
+  LayoutView& layout_view_;
+  CompositingReasonFinder& compositing_reason_finder_;
 };
 
 }  // namespace blink

@@ -6,8 +6,8 @@
 
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
-      display(blink::WebDisplayModeBrowser),
-      orientation(blink::WebScreenOrientationLockDefault),
+      display(blink::kWebDisplayModeBrowser),
+      orientation(blink::kWebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN_SHORTCUT),
       theme_color(content::Manifest::kInvalidOrMissingColor),
       background_color(content::Manifest::kInvalidOrMissingColor),
@@ -40,25 +40,25 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
     scope = manifest.scope;
 
   // Set the display based on the manifest value, if any.
-  if (manifest.display != blink::WebDisplayModeUndefined)
+  if (manifest.display != blink::kWebDisplayModeUndefined)
     display = manifest.display;
 
   // 'minimal-ui' is not yet supported (see crbug.com/604390). Otherwise, set
   // the source to be standalone if appropriate.
-  if (manifest.display == blink::WebDisplayModeMinimalUi) {
-    display = blink::WebDisplayModeBrowser;
-  } else if (display == blink::WebDisplayModeStandalone ||
-             display == blink::WebDisplayModeFullscreen) {
+  if (manifest.display == blink::kWebDisplayModeMinimalUi) {
+    display = blink::kWebDisplayModeBrowser;
+  } else if (display == blink::kWebDisplayModeStandalone ||
+             display == blink::kWebDisplayModeFullscreen) {
     source = SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
   }
 
   // Set the orientation based on the manifest value, if any.
-  if (manifest.orientation != blink::WebScreenOrientationLockDefault) {
+  if (manifest.orientation != blink::kWebScreenOrientationLockDefault) {
     // Ignore the orientation if the display mode is different from
     // 'standalone' or 'fullscreen'.
     // TODO(mlamouri): send a message to the developer console about this.
-    if (display == blink::WebDisplayModeStandalone ||
-        display == blink::WebDisplayModeFullscreen) {
+    if (display == blink::kWebDisplayModeStandalone ||
+        display == blink::kWebDisplayModeFullscreen) {
       orientation = manifest.orientation;
     }
   }

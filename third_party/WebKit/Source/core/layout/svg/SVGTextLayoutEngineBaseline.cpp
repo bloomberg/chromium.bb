@@ -26,29 +26,29 @@
 namespace blink {
 
 SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font,
-                                                         float effectiveZoom)
-    : m_font(font), m_effectiveZoom(effectiveZoom) {
-  DCHECK(m_effectiveZoom);
+                                                         float effective_zoom)
+    : font_(font), effective_zoom_(effective_zoom) {
+  DCHECK(effective_zoom_);
 }
 
-float SVGTextLayoutEngineBaseline::calculateBaselineShift(
+float SVGTextLayoutEngineBaseline::CalculateBaselineShift(
     const ComputedStyle& style) const {
-  const SVGComputedStyle& svgStyle = style.svgStyle();
-  const SimpleFontData* fontData = m_font.primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  const SimpleFontData* font_data = font_.PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return 0;
 
-  DCHECK(m_effectiveZoom);
-  switch (svgStyle.baselineShift()) {
+  DCHECK(effective_zoom_);
+  switch (svg_style.BaselineShift()) {
     case BS_LENGTH:
-      return SVGLengthContext::valueForLength(
-          svgStyle.baselineShiftValue(), style,
-          m_font.getFontDescription().computedPixelSize() / m_effectiveZoom);
+      return SVGLengthContext::ValueForLength(
+          svg_style.BaselineShiftValue(), style,
+          font_.GetFontDescription().ComputedPixelSize() / effective_zoom_);
     case BS_SUB:
-      return -fontData->getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
+      return -font_data->GetFontMetrics().FloatHeight() / 2 / effective_zoom_;
     case BS_SUPER:
-      return fontData->getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
+      return font_data->GetFontMetrics().FloatHeight() / 2 / effective_zoom_;
     default:
       NOTREACHED();
       return 0;
@@ -56,17 +56,17 @@ float SVGTextLayoutEngineBaseline::calculateBaselineShift(
 }
 
 EAlignmentBaseline
-SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
-    bool isVerticalText,
-    LineLayoutItem textLineLayout) const {
-  DCHECK(textLineLayout);
-  DCHECK(textLineLayout.style());
+SVGTextLayoutEngineBaseline::DominantBaselineToAlignmentBaseline(
+    bool is_vertical_text,
+    LineLayoutItem text_line_layout) const {
+  DCHECK(text_line_layout);
+  DCHECK(text_line_layout.Style());
 
-  const SVGComputedStyle& style = textLineLayout.style()->svgStyle();
+  const SVGComputedStyle& style = text_line_layout.Style()->SvgStyle();
 
-  EDominantBaseline baseline = style.dominantBaseline();
+  EDominantBaseline baseline = style.DominantBaseline();
   if (baseline == DB_AUTO) {
-    if (isVerticalText)
+    if (is_vertical_text)
       baseline = DB_CENTRAL;
     else
       baseline = DB_ALPHABETIC;
@@ -79,13 +79,13 @@ SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
       // content.
       return AB_ALPHABETIC;
     case DB_NO_CHANGE:
-      DCHECK(textLineLayout.parent());
-      return dominantBaselineToAlignmentBaseline(isVerticalText,
-                                                 textLineLayout.parent());
+      DCHECK(text_line_layout.Parent());
+      return DominantBaselineToAlignmentBaseline(is_vertical_text,
+                                                 text_line_layout.Parent());
     case DB_RESET_SIZE:
-      DCHECK(textLineLayout.parent());
-      return dominantBaselineToAlignmentBaseline(isVerticalText,
-                                                 textLineLayout.parent());
+      DCHECK(text_line_layout.Parent());
+      return DominantBaselineToAlignmentBaseline(is_vertical_text,
+                                                 text_line_layout.Parent());
     case DB_IDEOGRAPHIC:
       return AB_IDEOGRAPHIC;
     case DB_ALPHABETIC:
@@ -108,34 +108,34 @@ SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
   }
 }
 
-float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(
-    bool isVerticalText,
-    LineLayoutItem textLineLayout) const {
-  DCHECK(textLineLayout);
-  DCHECK(textLineLayout.style());
-  DCHECK(textLineLayout.parent());
+float SVGTextLayoutEngineBaseline::CalculateAlignmentBaselineShift(
+    bool is_vertical_text,
+    LineLayoutItem text_line_layout) const {
+  DCHECK(text_line_layout);
+  DCHECK(text_line_layout.Style());
+  DCHECK(text_line_layout.Parent());
 
-  LineLayoutItem textLineLayoutParent = textLineLayout.parent();
-  DCHECK(textLineLayoutParent);
+  LineLayoutItem text_line_layout_parent = text_line_layout.Parent();
+  DCHECK(text_line_layout_parent);
 
   EAlignmentBaseline baseline =
-      textLineLayout.style()->svgStyle().alignmentBaseline();
+      text_line_layout.Style()->SvgStyle().AlignmentBaseline();
   if (baseline == AB_AUTO || baseline == AB_BASELINE) {
-    baseline = dominantBaselineToAlignmentBaseline(isVerticalText,
-                                                   textLineLayoutParent);
+    baseline = DominantBaselineToAlignmentBaseline(is_vertical_text,
+                                                   text_line_layout_parent);
     DCHECK_NE(baseline, AB_AUTO);
     DCHECK_NE(baseline, AB_BASELINE);
   }
 
-  const SimpleFontData* fontData = m_font.primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  const SimpleFontData* font_data = font_.PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return 0;
 
-  const FontMetrics& fontMetrics = fontData->getFontMetrics();
-  float ascent = fontMetrics.floatAscent() / m_effectiveZoom;
-  float descent = fontMetrics.floatDescent() / m_effectiveZoom;
-  float xheight = fontMetrics.xHeight() / m_effectiveZoom;
+  const FontMetrics& font_metrics = font_data->GetFontMetrics();
+  float ascent = font_metrics.FloatAscent() / effective_zoom_;
+  float descent = font_metrics.FloatDescent() / effective_zoom_;
+  float xheight = font_metrics.XHeight() / effective_zoom_;
 
   // Note: http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
   switch (baseline) {

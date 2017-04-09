@@ -18,147 +18,148 @@
 
 namespace blink {
 
-static bool shouldApplyViewportClip(const LayoutReplaced& layoutReplaced) {
-  return !layoutReplaced.isSVGRoot() ||
-         toLayoutSVGRoot(&layoutReplaced)->shouldApplyViewportClip();
+static bool ShouldApplyViewportClip(const LayoutReplaced& layout_replaced) {
+  return !layout_replaced.IsSVGRoot() ||
+         ToLayoutSVGRoot(&layout_replaced)->ShouldApplyViewportClip();
 }
 
-void ReplacedPainter::paint(const PaintInfo& paintInfo,
-                            const LayoutPoint& paintOffset) {
-  ObjectPainter(m_layoutReplaced).checkPaintOffset(paintInfo, paintOffset);
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutReplaced.location();
-  if (!shouldPaint(paintInfo, adjustedPaintOffset))
+void ReplacedPainter::Paint(const PaintInfo& paint_info,
+                            const LayoutPoint& paint_offset) {
+  ObjectPainter(layout_replaced_).CheckPaintOffset(paint_info, paint_offset);
+  LayoutPoint adjusted_paint_offset =
+      paint_offset + layout_replaced_.Location();
+  if (!ShouldPaint(paint_info, adjusted_paint_offset))
     return;
 
-  LayoutRect borderRect(adjustedPaintOffset, m_layoutReplaced.size());
+  LayoutRect border_rect(adjusted_paint_offset, layout_replaced_.size());
 
-  if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
-    if (m_layoutReplaced.style()->visibility() == EVisibility::kVisible &&
-        m_layoutReplaced.hasBoxDecorationBackground()) {
-      if (m_layoutReplaced.hasLayer() &&
-          m_layoutReplaced.layer()->compositingState() ==
-              PaintsIntoOwnBacking &&
-          m_layoutReplaced.layer()
-              ->compositedLayerMapping()
-              ->drawsBackgroundOntoContentLayer())
+  if (ShouldPaintSelfBlockBackground(paint_info.phase)) {
+    if (layout_replaced_.Style()->Visibility() == EVisibility::kVisible &&
+        layout_replaced_.HasBoxDecorationBackground()) {
+      if (layout_replaced_.HasLayer() &&
+          layout_replaced_.Layer()->GetCompositingState() ==
+              kPaintsIntoOwnBacking &&
+          layout_replaced_.Layer()
+              ->GetCompositedLayerMapping()
+              ->DrawsBackgroundOntoContentLayer())
         return;
 
-      m_layoutReplaced.paintBoxDecorationBackground(paintInfo,
-                                                    adjustedPaintOffset);
+      layout_replaced_.PaintBoxDecorationBackground(paint_info,
+                                                    adjusted_paint_offset);
     }
     // We're done. We don't bother painting any children.
-    if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
+    if (paint_info.phase == kPaintPhaseSelfBlockBackgroundOnly)
       return;
   }
 
-  if (paintInfo.phase == PaintPhaseMask) {
-    m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
+  if (paint_info.phase == kPaintPhaseMask) {
+    layout_replaced_.PaintMask(paint_info, adjusted_paint_offset);
     return;
   }
 
-  if (paintInfo.phase == PaintPhaseClippingMask &&
-      (!m_layoutReplaced.hasLayer() ||
-       !m_layoutReplaced.layer()->hasCompositedClippingMask()))
+  if (paint_info.phase == kPaintPhaseClippingMask &&
+      (!layout_replaced_.HasLayer() ||
+       !layout_replaced_.Layer()->HasCompositedClippingMask()))
     return;
 
-  if (shouldPaintSelfOutline(paintInfo.phase)) {
-    ObjectPainter(m_layoutReplaced)
-        .paintOutline(paintInfo, adjustedPaintOffset);
+  if (ShouldPaintSelfOutline(paint_info.phase)) {
+    ObjectPainter(layout_replaced_)
+        .PaintOutline(paint_info, adjusted_paint_offset);
     return;
   }
 
-  if (paintInfo.phase != PaintPhaseForeground &&
-      paintInfo.phase != PaintPhaseSelection &&
-      !m_layoutReplaced.canHaveChildren() &&
-      paintInfo.phase != PaintPhaseClippingMask)
+  if (paint_info.phase != kPaintPhaseForeground &&
+      paint_info.phase != kPaintPhaseSelection &&
+      !layout_replaced_.CanHaveChildren() &&
+      paint_info.phase != kPaintPhaseClippingMask)
     return;
 
-  if (paintInfo.phase == PaintPhaseSelection)
-    if (m_layoutReplaced.getSelectionState() == SelectionNone)
+  if (paint_info.phase == kPaintPhaseSelection)
+    if (layout_replaced_.GetSelectionState() == SelectionNone)
       return;
 
   {
     Optional<RoundedInnerRectClipper> clipper;
-    bool completelyClippedOut = false;
-    if (m_layoutReplaced.style()->hasBorderRadius()) {
-      if (borderRect.isEmpty()) {
-        completelyClippedOut = true;
-      } else if (shouldApplyViewportClip(m_layoutReplaced)) {
+    bool completely_clipped_out = false;
+    if (layout_replaced_.Style()->HasBorderRadius()) {
+      if (border_rect.IsEmpty()) {
+        completely_clipped_out = true;
+      } else if (ShouldApplyViewportClip(layout_replaced_)) {
         // Push a clip if we have a border radius, since we want to round the
         // foreground content that gets painted.
-        FloatRoundedRect roundedInnerRect =
-            m_layoutReplaced.style()->getRoundedInnerBorderFor(
-                borderRect,
-                LayoutRectOutsets(-(m_layoutReplaced.paddingTop() +
-                                    m_layoutReplaced.borderTop()),
-                                  -(m_layoutReplaced.paddingRight() +
-                                    m_layoutReplaced.borderRight()),
-                                  -(m_layoutReplaced.paddingBottom() +
-                                    m_layoutReplaced.borderBottom()),
-                                  -(m_layoutReplaced.paddingLeft() +
-                                    m_layoutReplaced.borderLeft())),
+        FloatRoundedRect rounded_inner_rect =
+            layout_replaced_.Style()->GetRoundedInnerBorderFor(
+                border_rect,
+                LayoutRectOutsets(-(layout_replaced_.PaddingTop() +
+                                    layout_replaced_.BorderTop()),
+                                  -(layout_replaced_.PaddingRight() +
+                                    layout_replaced_.BorderRight()),
+                                  -(layout_replaced_.PaddingBottom() +
+                                    layout_replaced_.BorderBottom()),
+                                  -(layout_replaced_.PaddingLeft() +
+                                    layout_replaced_.BorderLeft())),
                 true, true);
 
-        clipper.emplace(m_layoutReplaced, paintInfo, borderRect,
-                        roundedInnerRect, ApplyToDisplayList);
+        clipper.emplace(layout_replaced_, paint_info, border_rect,
+                        rounded_inner_rect, kApplyToDisplayList);
       }
     }
 
-    if (!completelyClippedOut) {
-      if (paintInfo.phase == PaintPhaseClippingMask) {
-        BoxPainter(m_layoutReplaced)
-            .paintClippingMask(paintInfo, adjustedPaintOffset);
+    if (!completely_clipped_out) {
+      if (paint_info.phase == kPaintPhaseClippingMask) {
+        BoxPainter(layout_replaced_)
+            .PaintClippingMask(paint_info, adjusted_paint_offset);
       } else {
-        m_layoutReplaced.paintReplaced(paintInfo, adjustedPaintOffset);
+        layout_replaced_.PaintReplaced(paint_info, adjusted_paint_offset);
       }
     }
   }
 
   // The selection tint never gets clipped by border-radius rounding, since we
   // want it to run right up to the edges of surrounding content.
-  bool drawSelectionTint =
-      paintInfo.phase == PaintPhaseForeground &&
-      m_layoutReplaced.getSelectionState() != SelectionNone &&
-      !paintInfo.isPrinting();
-  if (drawSelectionTint &&
-      !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutReplaced, DisplayItem::kSelectionTint)) {
-    LayoutRect selectionPaintingRect = m_layoutReplaced.localSelectionRect();
-    selectionPaintingRect.moveBy(adjustedPaintOffset);
-    IntRect selectionPaintingIntRect =
-        pixelSnappedIntRect(selectionPaintingRect);
+  bool draw_selection_tint =
+      paint_info.phase == kPaintPhaseForeground &&
+      layout_replaced_.GetSelectionState() != SelectionNone &&
+      !paint_info.IsPrinting();
+  if (draw_selection_tint &&
+      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_replaced_, DisplayItem::kSelectionTint)) {
+    LayoutRect selection_painting_rect = layout_replaced_.LocalSelectionRect();
+    selection_painting_rect.MoveBy(adjusted_paint_offset);
+    IntRect selection_painting_int_rect =
+        PixelSnappedIntRect(selection_painting_rect);
 
-    LayoutObjectDrawingRecorder drawingRecorder(
-        paintInfo.context, m_layoutReplaced, DisplayItem::kSelectionTint,
-        selectionPaintingIntRect);
-    paintInfo.context.fillRect(selectionPaintingIntRect,
-                               m_layoutReplaced.selectionBackgroundColor());
+    LayoutObjectDrawingRecorder drawing_recorder(
+        paint_info.context, layout_replaced_, DisplayItem::kSelectionTint,
+        selection_painting_int_rect);
+    paint_info.context.FillRect(selection_painting_int_rect,
+                                layout_replaced_.SelectionBackgroundColor());
   }
 }
 
-bool ReplacedPainter::shouldPaint(
-    const PaintInfo& paintInfo,
-    const LayoutPoint& adjustedPaintOffset) const {
-  if (paintInfo.phase != PaintPhaseForeground &&
-      !shouldPaintSelfOutline(paintInfo.phase) &&
-      paintInfo.phase != PaintPhaseSelection &&
-      paintInfo.phase != PaintPhaseMask &&
-      paintInfo.phase != PaintPhaseClippingMask &&
-      !shouldPaintSelfBlockBackground(paintInfo.phase))
+bool ReplacedPainter::ShouldPaint(
+    const PaintInfo& paint_info,
+    const LayoutPoint& adjusted_paint_offset) const {
+  if (paint_info.phase != kPaintPhaseForeground &&
+      !ShouldPaintSelfOutline(paint_info.phase) &&
+      paint_info.phase != kPaintPhaseSelection &&
+      paint_info.phase != kPaintPhaseMask &&
+      paint_info.phase != kPaintPhaseClippingMask &&
+      !ShouldPaintSelfBlockBackground(paint_info.phase))
     return false;
 
   // If we're invisible or haven't received a layout yet, just bail.
   // But if it's an SVG root, there can be children, so we'll check visibility
   // later.
-  if (!m_layoutReplaced.isSVGRoot() &&
-      m_layoutReplaced.style()->visibility() != EVisibility::kVisible)
+  if (!layout_replaced_.IsSVGRoot() &&
+      layout_replaced_.Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  LayoutRect paintRect(m_layoutReplaced.visualOverflowRect());
-  paintRect.unite(m_layoutReplaced.localSelectionRect());
-  paintRect.moveBy(adjustedPaintOffset);
+  LayoutRect paint_rect(layout_replaced_.VisualOverflowRect());
+  paint_rect.Unite(layout_replaced_.LocalSelectionRect());
+  paint_rect.MoveBy(adjusted_paint_offset);
 
-  if (!paintInfo.cullRect().intersectsCullRect(paintRect))
+  if (!paint_info.GetCullRect().IntersectsCullRect(paint_rect))
     return false;
 
   return true;

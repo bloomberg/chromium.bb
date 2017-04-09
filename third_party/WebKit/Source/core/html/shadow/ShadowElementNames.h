@@ -38,22 +38,22 @@ namespace blink {
 
 namespace ShadowElementNames {
 
-const AtomicString& detailsContent();
-const AtomicString& detailsSummary();
-const AtomicString& detailsMarker();
-const AtomicString& dateTimeEdit();
-CORE_EXPORT const AtomicString& spinButton();
-const AtomicString& clearButton();
-const AtomicString& editingViewPort();
-const AtomicString& innerEditor();
-const AtomicString& pickerIndicator();
-const AtomicString& placeholder();
-const AtomicString& searchClearButton();
-const AtomicString& searchDecoration();
-CORE_EXPORT const AtomicString& sliderThumb();
-const AtomicString& sliderTrack();
-const AtomicString& textFieldContainer();
-const AtomicString& optGroupLabel();
+const AtomicString& DetailsContent();
+const AtomicString& DetailsSummary();
+const AtomicString& DetailsMarker();
+const AtomicString& DateTimeEdit();
+CORE_EXPORT const AtomicString& SpinButton();
+const AtomicString& ClearButton();
+const AtomicString& EditingViewPort();
+const AtomicString& InnerEditor();
+const AtomicString& PickerIndicator();
+const AtomicString& Placeholder();
+const AtomicString& SearchClearButton();
+const AtomicString& SearchDecoration();
+CORE_EXPORT const AtomicString& SliderThumb();
+const AtomicString& SliderTrack();
+const AtomicString& TextFieldContainer();
+const AtomicString& OptGroupLabel();
 
 }  // namespace ShadowElementNames
 

@@ -41,31 +41,31 @@ class StyleSheetCandidate {
   STACK_ALLOCATED();
 
  public:
-  enum Type { HTMLLink, HTMLStyle, SVGStyle, Pi, Invalid };
+  enum Type { kHTMLLink, kHTMLStyle, kSVGStyle, kPi, kInvalid };
 
-  StyleSheetCandidate(Node& node) : m_node(node), m_type(typeOf(node)) {}
+  StyleSheetCandidate(Node& node) : node_(node), type_(TypeOf(node)) {}
 
-  bool isXSL() const;
-  bool isImport() const;
-  bool isAlternate() const;
-  bool isEnabledViaScript() const;
-  bool isEnabledAndLoading() const;
-  bool canBeActivated(const String& currentPreferrableName) const;
-  bool isCSSStyle() const;
+  bool IsXSL() const;
+  bool IsImport() const;
+  bool IsAlternate() const;
+  bool IsEnabledViaScript() const;
+  bool IsEnabledAndLoading() const;
+  bool CanBeActivated(const String& current_preferrable_name) const;
+  bool IsCSSStyle() const;
 
-  StyleSheet* sheet() const;
-  AtomicString title() const;
-  Document* importedDocument() const;
+  StyleSheet* Sheet() const;
+  AtomicString Title() const;
+  Document* ImportedDocument() const;
 
  private:
-  bool isElement() const { return m_type != Pi; }
-  bool isHTMLLink() const { return m_type == HTMLLink; }
-  Node& node() const { return *m_node; }
+  bool IsElement() const { return type_ != kPi; }
+  bool IsHTMLLink() const { return type_ == kHTMLLink; }
+  Node& GetNode() const { return *node_; }
 
-  static Type typeOf(Node&);
+  static Type TypeOf(Node&);
 
-  Member<Node> m_node;
-  Type m_type;
+  Member<Node> node_;
+  Type type_;
 };
 
 }  // namespace blink

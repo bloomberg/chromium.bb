@@ -13,18 +13,18 @@ namespace blink {
 
 struct WebMediaKeySystemConfiguration {
   enum class Requirement {
-    Required,
-    Optional,
-    NotAllowed,
+    kRequired,
+    kOptional,
+    kNotAllowed,
   };
 
   WebString label;
-  WebVector<WebEncryptedMediaInitDataType> initDataTypes;
-  WebVector<WebMediaKeySystemMediaCapability> audioCapabilities;
-  WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
-  Requirement distinctiveIdentifier = Requirement::Optional;
-  Requirement persistentState = Requirement::Optional;
-  WebVector<WebEncryptedMediaSessionType> sessionTypes;
+  WebVector<WebEncryptedMediaInitDataType> init_data_types;
+  WebVector<WebMediaKeySystemMediaCapability> audio_capabilities;
+  WebVector<WebMediaKeySystemMediaCapability> video_capabilities;
+  Requirement distinctive_identifier = Requirement::kOptional;
+  Requirement persistent_state = Requirement::kOptional;
+  WebVector<WebEncryptedMediaSessionType> session_types;
 };
 
 }  // namespace blink

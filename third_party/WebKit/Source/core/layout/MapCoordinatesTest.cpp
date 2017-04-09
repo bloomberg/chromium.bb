@@ -19,20 +19,20 @@ class MapCoordinatesTest
  public:
   MapCoordinatesTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::create()) {}
-  FloatPoint mapLocalToAncestor(const LayoutObject*,
+        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  FloatPoint MapLocalToAncestor(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,
                                 MapCoordinatesFlags = 0) const;
-  FloatQuad mapLocalToAncestor(const LayoutObject*,
+  FloatQuad MapLocalToAncestor(const LayoutObject*,
                                const LayoutBoxModelObject* ancestor,
                                FloatQuad,
                                MapCoordinatesFlags = 0) const;
-  FloatPoint mapAncestorToLocal(const LayoutObject*,
+  FloatPoint MapAncestorToLocal(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,
                                 MapCoordinatesFlags = 0) const;
-  FloatQuad mapAncestorToLocal(const LayoutObject*,
+  FloatQuad MapAncestorToLocal(const LayoutObject*,
                                const LayoutBoxModelObject* ancestor,
                                FloatQuad,
                                MapCoordinatesFlags = 0) const;
@@ -43,7 +43,7 @@ class MapCoordinatesTest
   // root layer scrolling is enabled.  This is analogous to what
   // LayoutGeometryMapTest does; for more context, see:
   // https://codereview.chromium.org/2417103002/#msg11
-  FloatPoint adjustForFrameScroll(const FloatPoint&) const;
+  FloatPoint AdjustForFrameScroll(const FloatPoint&) const;
 };
 
 // One note about tests here that operate on LayoutInline and LayoutText
@@ -55,108 +55,109 @@ class MapCoordinatesTest
 // and so on. This in contrast to LayoutBox objects, where the TransformState
 // passed is relative to the box itself, not the container.
 
-FloatPoint MapCoordinatesTest::adjustForFrameScroll(
+FloatPoint MapCoordinatesTest::AdjustForFrameScroll(
     const FloatPoint& point) const {
   FloatPoint result(point);
-  LayoutView* layoutView = document().layoutView();
-  if (layoutView->hasOverflowClip())
-    result.move(-layoutView->scrolledContentOffset());
+  LayoutView* layout_view = GetDocument().GetLayoutView();
+  if (layout_view->HasOverflowClip())
+    result.Move(-layout_view->ScrolledContentOffset());
   return result;
 }
 
-FloatPoint MapCoordinatesTest::mapLocalToAncestor(
+FloatPoint MapCoordinatesTest::MapLocalToAncestor(
     const LayoutObject* object,
     const LayoutBoxModelObject* ancestor,
     FloatPoint point,
     MapCoordinatesFlags mode) const {
-  TransformState transformState(TransformState::ApplyTransformDirection, point);
-  object->mapLocalToAncestor(ancestor, transformState, mode);
-  transformState.flatten();
-  return transformState.lastPlanarPoint();
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 point);
+  object->MapLocalToAncestor(ancestor, transform_state, mode);
+  transform_state.Flatten();
+  return transform_state.LastPlanarPoint();
 }
 
-FloatQuad MapCoordinatesTest::mapLocalToAncestor(
+FloatQuad MapCoordinatesTest::MapLocalToAncestor(
     const LayoutObject* object,
     const LayoutBoxModelObject* ancestor,
     FloatQuad quad,
     MapCoordinatesFlags mode) const {
-  TransformState transformState(TransformState::ApplyTransformDirection,
-                                quad.boundingBox().center(), quad);
-  object->mapLocalToAncestor(ancestor, transformState, mode);
-  transformState.flatten();
-  return transformState.lastPlanarQuad();
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 quad.BoundingBox().Center(), quad);
+  object->MapLocalToAncestor(ancestor, transform_state, mode);
+  transform_state.Flatten();
+  return transform_state.LastPlanarQuad();
 }
 
-FloatPoint MapCoordinatesTest::mapAncestorToLocal(
+FloatPoint MapCoordinatesTest::MapAncestorToLocal(
     const LayoutObject* object,
     const LayoutBoxModelObject* ancestor,
     FloatPoint point,
     MapCoordinatesFlags mode) const {
-  TransformState transformState(
-      TransformState::UnapplyInverseTransformDirection, point);
-  object->mapAncestorToLocal(ancestor, transformState, mode);
-  transformState.flatten();
-  return transformState.lastPlanarPoint();
+  TransformState transform_state(
+      TransformState::kUnapplyInverseTransformDirection, point);
+  object->MapAncestorToLocal(ancestor, transform_state, mode);
+  transform_state.Flatten();
+  return transform_state.LastPlanarPoint();
 }
 
-FloatQuad MapCoordinatesTest::mapAncestorToLocal(
+FloatQuad MapCoordinatesTest::MapAncestorToLocal(
     const LayoutObject* object,
     const LayoutBoxModelObject* ancestor,
     FloatQuad quad,
     MapCoordinatesFlags mode) const {
-  TransformState transformState(
-      TransformState::UnapplyInverseTransformDirection,
-      quad.boundingBox().center(), quad);
-  object->mapAncestorToLocal(ancestor, transformState, mode);
-  transformState.flatten();
-  return transformState.lastPlanarQuad();
+  TransformState transform_state(
+      TransformState::kUnapplyInverseTransformDirection,
+      quad.BoundingBox().Center(), quad);
+  object->MapAncestorToLocal(ancestor, transform_state, mode);
+  transform_state.Flatten();
+  return transform_state.LastPlanarQuad();
 }
 
 INSTANTIATE_TEST_CASE_P(All, MapCoordinatesTest, ::testing::Bool());
 
 TEST_P(MapCoordinatesTest, SimpleText) {
-  setBodyInnerHTML("<div id='container'><br>text</div>");
+  SetBodyInnerHTML("<div id='container'><br>text</div>");
 
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutObject* text = toLayoutBlockFlow(container)->lastChild();
-  ASSERT_TRUE(text->isText());
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(text, container, FloatPoint(10, 30));
-  EXPECT_EQ(FloatPoint(10, 30), mappedPoint);
-  mappedPoint = mapAncestorToLocal(text, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 30), mappedPoint);
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutObject* text = ToLayoutBlockFlow(container)->LastChild();
+  ASSERT_TRUE(text->IsText());
+  FloatPoint mapped_point =
+      MapLocalToAncestor(text, container, FloatPoint(10, 30));
+  EXPECT_EQ(FloatPoint(10, 30), mapped_point);
+  mapped_point = MapAncestorToLocal(text, container, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 30), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SimpleInline) {
-  setBodyInnerHTML("<div><span id='target'>text</span></div>");
+  SetBodyInnerHTML("<div><span id='target'>text</span></div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  FloatPoint mappedPoint = mapLocalToAncestor(
-      target, toLayoutBoxModelObject(target->parent()), FloatPoint(10, 10));
-  EXPECT_EQ(FloatPoint(10, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      target, toLayoutBoxModelObject(target->parent()), mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 10), mappedPoint);
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  FloatPoint mapped_point = MapLocalToAncestor(
+      target, ToLayoutBoxModelObject(target->Parent()), FloatPoint(10, 10));
+  EXPECT_EQ(FloatPoint(10, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      target, ToLayoutBoxModelObject(target->Parent()), mapped_point);
+  EXPECT_EQ(FloatPoint(10, 10), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SimpleBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='margin:666px; border:8px solid; padding:7px;'>"
       "    <div id='target' style='margin:10px; border:666px; "
       "padding:666px;'></div>"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  FloatPoint mappedPoint = mapLocalToAncestor(
-      target, toLayoutBoxModelObject(target->parent()), FloatPoint(100, 100));
-  EXPECT_EQ(FloatPoint(125, 125), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      target, toLayoutBoxModelObject(target->parent()), mappedPoint);
-  EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  FloatPoint mapped_point = MapLocalToAncestor(
+      target, ToLayoutBoxModelObject(target->Parent()), FloatPoint(100, 100));
+  EXPECT_EQ(FloatPoint(125, 125), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      target, ToLayoutBoxModelObject(target->Parent()), mapped_point);
+  EXPECT_EQ(FloatPoint(100, 100), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, OverflowClip) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='overflow' style='height: 100px; width: 100px; border:8px "
       "solid; padding:7px; overflow:scroll'>"
       "    <div style='height:200px; width:200px'></div>"
@@ -164,49 +165,50 @@ TEST_P(MapCoordinatesTest, OverflowClip) {
       "padding:666px;'></div>"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutObject* overflow = getLayoutObjectByElementId("overflow");
-  toLayoutBox(overflow)->scrollToPosition(FloatPoint(32, 54));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutObject* overflow = GetLayoutObjectByElementId("overflow");
+  ToLayoutBox(overflow)->ScrollToPosition(FloatPoint(32, 54));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(
-      target, toLayoutBoxModelObject(target->parent()), FloatPoint(100, 100));
-  EXPECT_EQ(FloatPoint(93, 271), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      target, toLayoutBoxModelObject(target->parent()), mappedPoint);
-  EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(
+      target, ToLayoutBoxModelObject(target->Parent()), FloatPoint(100, 100));
+  EXPECT_EQ(FloatPoint(93, 271), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      target, ToLayoutBoxModelObject(target->Parent()), mapped_point);
+  EXPECT_EQ(FloatPoint(100, 100), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, TextInRelPosInline) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div><span style='position:relative; left:7px; top:4px;'><br "
       "id='sibling'>text</span></div>");
 
-  LayoutObject* br = getLayoutObjectByElementId("sibling");
-  LayoutObject* text = br->nextSibling();
-  ASSERT_TRUE(text->isText());
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(text, text->containingBlock(), FloatPoint(10, 30));
-  EXPECT_EQ(FloatPoint(17, 34), mappedPoint);
-  mappedPoint = mapAncestorToLocal(text, text->containingBlock(), mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 30), mappedPoint);
+  LayoutObject* br = GetLayoutObjectByElementId("sibling");
+  LayoutObject* text = br->NextSibling();
+  ASSERT_TRUE(text->IsText());
+  FloatPoint mapped_point =
+      MapLocalToAncestor(text, text->ContainingBlock(), FloatPoint(10, 30));
+  EXPECT_EQ(FloatPoint(17, 34), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(text, text->ContainingBlock(), mapped_point);
+  EXPECT_EQ(FloatPoint(10, 30), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, RelposInline) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<span id='target' style='position:relative; left:50px; "
       "top:100px;'>text</span>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  FloatPoint mappedPoint = mapLocalToAncestor(
-      target, toLayoutBoxModelObject(target->parent()), FloatPoint(10, 10));
-  EXPECT_EQ(FloatPoint(60, 110), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      target, toLayoutBoxModelObject(target->parent()), mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 10), mappedPoint);
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  FloatPoint mapped_point = MapLocalToAncestor(
+      target, ToLayoutBoxModelObject(target->Parent()), FloatPoint(10, 10));
+  EXPECT_EQ(FloatPoint(60, 110), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      target, ToLayoutBoxModelObject(target->Parent()), mapped_point);
+  EXPECT_EQ(FloatPoint(10, 10), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, RelposInlineInRelposInline) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='padding-left:10px;'>"
       "    <span style='position:relative; left:5px; top:6px;'>"
       "        <span id='target' style='position:relative; left:50px; "
@@ -214,32 +216,32 @@ TEST_P(MapCoordinatesTest, RelposInlineInRelposInline) {
       "    </span>"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutInline* parent = toLayoutInline(target->parent());
-  LayoutBlockFlow* containingBlock = toLayoutBlockFlow(parent->parent());
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutInline* parent = ToLayoutInline(target->Parent());
+  LayoutBlockFlow* containing_block = ToLayoutBlockFlow(parent->Parent());
 
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, containingBlock, FloatPoint(20, 10));
-  EXPECT_EQ(FloatPoint(75, 116), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, containingBlock, mappedPoint);
-  EXPECT_EQ(FloatPoint(20, 10), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, containing_block, FloatPoint(20, 10));
+  EXPECT_EQ(FloatPoint(75, 116), mapped_point);
+  mapped_point = MapAncestorToLocal(target, containing_block, mapped_point);
+  EXPECT_EQ(FloatPoint(20, 10), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  mappedPoint = mapLocalToAncestor(target, parent, FloatPoint(20, 10));
-  EXPECT_EQ(FloatPoint(70, 110), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, parent, FloatPoint(20, 10));
+  EXPECT_EQ(FloatPoint(70, 110), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(parent, containingBlock, mappedPoint);
-  EXPECT_EQ(FloatPoint(75, 116), mappedPoint);
+  mapped_point = MapLocalToAncestor(parent, containing_block, mapped_point);
+  EXPECT_EQ(FloatPoint(75, 116), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(parent, containingBlock, mappedPoint);
-  EXPECT_EQ(FloatPoint(70, 110), mappedPoint);
+  mapped_point = MapAncestorToLocal(parent, containing_block, mapped_point);
+  EXPECT_EQ(FloatPoint(70, 110), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, parent, mappedPoint);
-  EXPECT_EQ(FloatPoint(20, 10), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, parent, mapped_point);
+  EXPECT_EQ(FloatPoint(20, 10), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, RelPosBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='margin:666px; border:8px solid; "
       "padding:7px;'>"
       "    <div id='middle' style='margin:30px; border:1px solid;'>"
@@ -248,32 +250,32 @@ TEST_P(MapCoordinatesTest, RelPosBlock) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(106, 106), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(110, 110));
-  EXPECT_EQ(FloatPoint(4, 4), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(106, 106), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(110, 110));
+  EXPECT_EQ(FloatPoint(4, 4), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* middle = toLayoutBox(getLayoutObjectByElementId("middle"));
+  LayoutBox* middle = ToLayoutBox(GetLayoutObjectByElementId("middle"));
 
-  mappedPoint = mapLocalToAncestor(target, middle, FloatPoint());
-  EXPECT_EQ(FloatPoint(61, 61), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, middle, FloatPoint());
+  EXPECT_EQ(FloatPoint(61, 61), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(middle, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(106, 106), mappedPoint);
+  mapped_point = MapLocalToAncestor(middle, container, mapped_point);
+  EXPECT_EQ(FloatPoint(106, 106), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(middle, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(61, 61), mappedPoint);
+  mapped_point = MapAncestorToLocal(middle, container, mapped_point);
+  EXPECT_EQ(FloatPoint(61, 61), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, middle, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, middle, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, AbsPos) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:relative; margin:666px; border:8px "
       "solid; padding:7px;'>"
       "    <div id='staticChild' style='margin:30px; padding-top:666px;'>"
@@ -283,33 +285,33 @@ TEST_P(MapCoordinatesTest, AbsPos) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(17, 17), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(18, 18));
-  EXPECT_EQ(FloatPoint(1, 1), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(17, 17), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(18, 18));
+  EXPECT_EQ(FloatPoint(1, 1), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* staticChild =
-      toLayoutBox(getLayoutObjectByElementId("staticChild"));
+  LayoutBox* static_child =
+      ToLayoutBox(GetLayoutObjectByElementId("staticChild"));
 
-  mappedPoint = mapLocalToAncestor(target, staticChild, FloatPoint());
-  EXPECT_EQ(FloatPoint(-28, -28), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, static_child, FloatPoint());
+  EXPECT_EQ(FloatPoint(-28, -28), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(17, 17), mappedPoint);
+  mapped_point = MapLocalToAncestor(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(17, 17), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(-28, -28), mappedPoint);
+  mapped_point = MapAncestorToLocal(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(-28, -28), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, AbsPosAuto) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:666px; border:8px "
       "solid; padding:7px;'>"
       "    <div id='staticChild' style='margin:30px; padding-top:5px;'>"
@@ -319,34 +321,34 @@ TEST_P(MapCoordinatesTest, AbsPosAuto) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(55, 80), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(56, 82));
-  EXPECT_EQ(FloatPoint(1, 2), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(55, 80), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(56, 82));
+  EXPECT_EQ(FloatPoint(1, 2), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* staticChild =
-      toLayoutBox(getLayoutObjectByElementId("staticChild"));
+  LayoutBox* static_child =
+      ToLayoutBox(GetLayoutObjectByElementId("staticChild"));
 
-  mappedPoint = mapLocalToAncestor(target, staticChild, FloatPoint());
-  EXPECT_EQ(FloatPoint(10, 35), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, static_child, FloatPoint());
+  EXPECT_EQ(FloatPoint(10, 35), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(55, 80), mappedPoint);
+  mapped_point = MapLocalToAncestor(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(55, 80), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 35), mappedPoint);
+  mapped_point = MapAncestorToLocal(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 35), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPos) {
   // Assuming BODY margin of 8px.
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:4px; border:5px "
       "solid; padding:7px;'>"
       "    <div id='staticChild' style='padding-top:666px;'>"
@@ -356,55 +358,55 @@ TEST_P(MapCoordinatesTest, FixedPos) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* staticChild =
-      toLayoutBox(getLayoutObjectByElementId("staticChild"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* static_child =
+      ToLayoutBox(GetLayoutObjectByElementId("staticChild"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(10, 11));
-  EXPECT_EQ(FloatPoint(1, 2), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, FloatPoint(10, 11));
+  EXPECT_EQ(FloatPoint(1, 2), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  mappedPoint = mapLocalToAncestor(target, staticChild, FloatPoint());
-  EXPECT_EQ(FloatPoint(-15, -15), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, static_child, FloatPoint());
+  EXPECT_EQ(FloatPoint(-15, -15), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(-3, -3), mappedPoint);
+  mapped_point = MapLocalToAncestor(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(-3, -3), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(1, 1), mappedPoint);
+  mapped_point = MapLocalToAncestor(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(1, 1), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapLocalToAncestor(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapLocalToAncestor(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapAncestorToLocal(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(1, 1), mappedPoint);
+  mapped_point = MapAncestorToLocal(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(1, 1), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(-3, -3), mappedPoint);
+  mapped_point = MapAncestorToLocal(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(-3, -3), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(-15, -15), mappedPoint);
+  mapped_point = MapAncestorToLocal(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(-15, -15), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosAuto) {
   // Assuming BODY margin of 8px.
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:3px; border:8px "
       "solid; padding:7px;'>"
       "    <div id='staticChild' style='padding-top:5px;'>"
@@ -414,57 +416,57 @@ TEST_P(MapCoordinatesTest, FixedPosAuto) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* staticChild =
-      toLayoutBox(getLayoutObjectByElementId("staticChild"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* static_child =
+      ToLayoutBox(GetLayoutObjectByElementId("staticChild"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, target->containingBlock(), FloatPoint());
-  EXPECT_EQ(FloatPoint(36, 61), mappedPoint);
-  mappedPoint =
-      mapAncestorToLocal(target, target->containingBlock(), FloatPoint(36, 61));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, target->ContainingBlock(), FloatPoint());
+  EXPECT_EQ(FloatPoint(36, 61), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(target, target->ContainingBlock(), FloatPoint(36, 61));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  mappedPoint = mapLocalToAncestor(target, staticChild, FloatPoint());
-  EXPECT_EQ(FloatPoint(10, 35), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, static_child, FloatPoint());
+  EXPECT_EQ(FloatPoint(10, 35), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(25, 50), mappedPoint);
+  mapped_point = MapLocalToAncestor(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(25, 50), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(28, 53), mappedPoint);
+  mapped_point = MapLocalToAncestor(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(28, 53), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(36, 61), mappedPoint);
+  mapped_point = MapLocalToAncestor(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(36, 61), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(36, 61), mappedPoint);
+  mapped_point = MapLocalToAncestor(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(36, 61), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(36, 61), mappedPoint);
+  mapped_point = MapAncestorToLocal(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(36, 61), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(28, 53), mappedPoint);
+  mapped_point = MapAncestorToLocal(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(28, 53), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(25, 50), mappedPoint);
+  mapped_point = MapAncestorToLocal(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(25, 50), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 35), mappedPoint);
+  mapped_point = MapAncestorToLocal(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 35), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInFixedPos) {
   // Assuming BODY margin of 8px.
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:absolute; margin:4px; border:5px "
       "solid; padding:7px;'>"
       "    <div id='staticChild' style='padding-top:666px;'>"
@@ -477,131 +479,132 @@ TEST_P(MapCoordinatesTest, FixedPosInFixedPos) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* outerFixed = toLayoutBox(getLayoutObjectByElementId("outerFixed"));
-  LayoutBox* staticChild =
-      toLayoutBox(getLayoutObjectByElementId("staticChild"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* outer_fixed =
+      ToLayoutBox(GetLayoutObjectByElementId("outerFixed"));
+  LayoutBox* static_child =
+      ToLayoutBox(GetLayoutObjectByElementId("staticChild"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, FloatPoint(9, 9));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, FloatPoint(9, 9));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  mappedPoint = mapLocalToAncestor(target, outerFixed, FloatPoint());
-  EXPECT_EQ(FloatPoint(-101, -101), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, outer_fixed, FloatPoint());
+  EXPECT_EQ(FloatPoint(-101, -101), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(outerFixed, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(-15, -15), mappedPoint);
+  mapped_point = MapLocalToAncestor(outer_fixed, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(-15, -15), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(-3, -3), mappedPoint);
+  mapped_point = MapLocalToAncestor(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(-3, -3), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(1, 1), mappedPoint);
+  mapped_point = MapLocalToAncestor(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(1, 1), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapLocalToAncestor(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapLocalToAncestor(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(html, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(9, 9), mappedPoint);
+  mapped_point = MapAncestorToLocal(html, view, mapped_point);
+  EXPECT_EQ(FloatPoint(9, 9), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(body, html, mappedPoint);
-  EXPECT_EQ(FloatPoint(1, 1), mappedPoint);
+  mapped_point = MapAncestorToLocal(body, html, mapped_point);
+  EXPECT_EQ(FloatPoint(1, 1), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(container, body, mappedPoint);
-  EXPECT_EQ(FloatPoint(-3, -3), mappedPoint);
+  mapped_point = MapAncestorToLocal(container, body, mapped_point);
+  EXPECT_EQ(FloatPoint(-3, -3), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(staticChild, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(-15, -15), mappedPoint);
+  mapped_point = MapAncestorToLocal(static_child, container, mapped_point);
+  EXPECT_EQ(FloatPoint(-15, -15), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(outerFixed, staticChild, mappedPoint);
-  EXPECT_EQ(FloatPoint(-101, -101), mappedPoint);
+  mapped_point = MapAncestorToLocal(outer_fixed, static_child, mapped_point);
+  EXPECT_EQ(FloatPoint(-101, -101), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, outerFixed, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, outer_fixed, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='height: 4000px'></div>"
       "<div id='container' style='position:fixed; top: 100px; left: 100px'>"
       "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
       "  </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 50), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document()
-                    .view()
-                    ->layoutViewportScrollableArea()
-                    ->scrollOffsetInt()
-                    .height());
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, GetDocument()
+                    .View()
+                    ->LayoutViewportScrollableArea()
+                    ->ScrollOffsetInt()
+                    .Height());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(200, 250)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(200, 250)), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(100, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(100, 100));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 100), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(100, 100));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='height: 4000px'></div>"
       "<div id='container' style='position:absolute; top: 100px; left: 100px'>"
       "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
       "  </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 50), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document()
-                    .view()
-                    ->layoutViewportScrollableArea()
-                    ->scrollOffsetInt()
-                    .height());
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, GetDocument()
+                    .View()
+                    ->LayoutViewportScrollableArea()
+                    ->ScrollOffsetInt()
+                    .Height());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(200, 250)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(200, 250)), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(100, 150), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(100, 150));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 150), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(100, 150));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInTransform) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>#container { transform: translateY(100px); position: absolute; "
       "left: 0; top: 100px; }"
       ".fixed { position: fixed; top: 0; }"
@@ -609,40 +612,40 @@ TEST_P(MapCoordinatesTest, FixedPosInTransform) {
       "<div id='container'><div class='fixed' id='target'></div></div>"
       "<div class='spacer'></div>");
 
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 50), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document()
-                    .view()
-                    ->layoutViewportScrollableArea()
-                    ->scrollOffsetInt()
-                    .height());
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, GetDocument()
+                    .View()
+                    ->LayoutViewportScrollableArea()
+                    ->ScrollOffsetInt()
+                    .Height());
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(0, 100)), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(0, 0));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, 0), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(0, 0));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(container, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(container, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(0, 100)), mapped_point);
+  mapped_point = MapAncestorToLocal(container, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>#container { contain: paint; position: absolute; left: 0; top: "
       "100px; }"
       ".fixed { position: fixed; top: 0; }"
@@ -650,90 +653,90 @@ TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
       "<div id='container'><div class='fixed' id='target'></div></div>"
       "<div class='spacer'></div>");
 
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 50), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(50, document()
-                    .view()
-                    ->layoutViewportScrollableArea()
-                    ->scrollOffsetInt()
-                    .height());
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, GetDocument()
+                    .View()
+                    ->LayoutViewportScrollableArea()
+                    ->ScrollOffsetInt()
+                    .Height());
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
-  LayoutBox* body = container->parentBox();
-  LayoutBox* html = body->parentBox();
-  LayoutBox* view = html->parentBox();
-  ASSERT_TRUE(view->isLayoutView());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
+  LayoutBox* body = container->ParentBox();
+  LayoutBox* html = body->ParentBox();
+  LayoutBox* view = html->ParentBox();
+  ASSERT_TRUE(view->IsLayoutView());
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(0, 100)), mapped_point);
+  mapped_point = MapAncestorToLocal(target, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(0, 0));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, 0), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(0, 0));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
-  EXPECT_EQ(adjustForFrameScroll(FloatPoint(0, 100)), mappedPoint);
-  mappedPoint = mapAncestorToLocal(container, view, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(container, view, FloatPoint());
+  EXPECT_EQ(AdjustForFrameScroll(FloatPoint(0, 100)), mapped_point);
+  mapped_point = MapAncestorToLocal(container, view, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 // TODO(chrishtr): add more multi-frame tests.
 TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-  setBodyInnerHTML(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  SetBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div style='width: 200; height: 8000px'></div>"
       "<iframe src='http://test.com' width='500' height='500' "
       "frameBorder='0'>"
       "</iframe>");
-  setChildFrameHTML(
+  SetChildFrameHTML(
       "<style>body { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>");
 
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 1000), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 1000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = childDocument().getElementById("target");
+  Element* target = ChildDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  FloatPoint mappedPoint =
-      mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(10, 70),
-                         TraverseDocumentBoundaries);
+  FloatPoint mapped_point =
+      MapAncestorToLocal(target->GetLayoutObject(), nullptr, FloatPoint(10, 70),
+                         kTraverseDocumentBoundaries);
 
   // y = 70 - 8000, since the iframe is offset by 8000px from the main frame.
   // The scroll is not taken into account because the element is not fixed to
   // the root LayoutView, and the space of the root LayoutView does not include
   // scroll.
-  EXPECT_EQ(FloatPoint(10, -7930), adjustForFrameScroll(mappedPoint));
+  EXPECT_EQ(FloatPoint(10, -7930), AdjustForFrameScroll(mapped_point));
 }
 
 TEST_P(MapCoordinatesTest, IFrameTransformed) {
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-  setBodyInnerHTML(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  SetBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<iframe style='transform: scale(2)' src='http://test.com' "
       "width='500' height='500' frameBorder='0'>"
       "</iframe>");
-  setChildFrameHTML(
+  SetChildFrameHTML(
       "<style>body { margin: 0; } #target { width: 200px; "
       "height: 8000px}</style><div id=target></div>");
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  childDocument().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 1000), ProgrammaticScroll);
-  childDocument().view()->updateAllLifecyclePhases();
+  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 1000), kProgrammaticScroll);
+  ChildDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = childDocument().getElementById("target");
+  Element* target = ChildDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  FloatPoint mappedPoint =
-      mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(200, 200),
-                         TraverseDocumentBoundaries | UseTransforms);
+  FloatPoint mapped_point = MapAncestorToLocal(
+      target->GetLayoutObject(), nullptr, FloatPoint(200, 200),
+      kTraverseDocumentBoundaries | kUseTransforms);
 
   // Derivation:
   // (200, 200) -> (-50, -50)  (Adjust for transform origin of scale, which is
@@ -741,89 +744,89 @@ TEST_P(MapCoordinatesTest, IFrameTransformed) {
   // (-50, -50) -> (-25, -25)  (Divide by 2 to invert the scale)
   // (-25, -25) -> (225, 225)  (Add the origin back in)
   // (225, 225) -> (225, 1225) (Adjust by scroll offset of y=1000)
-  EXPECT_EQ(FloatPoint(225, 1225), mappedPoint);
+  EXPECT_EQ(FloatPoint(225, 1225), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
-  document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-  setBodyInnerHTML(
+  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  SetBodyInnerHTML(
       "<style>* { margin: 0; }</style>"
       "<div style='position: absolute; left: 0px; top: 0px; width: 1024px; "
       "height: 768px; transform-origin: 0 0; transform: scale(0.5, 0.5);'>"
       "    <iframe frameborder=0 src='http://test.com' "
       "sandbox='allow-same-origin' width='1024' height='768'></iframe>"
       "</div>");
-  setChildFrameHTML(
+  SetChildFrameHTML(
       "<style>* { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>"
       "<div style='width: 200; height: 8000px'></div>");
 
-  document().view()->updateAllLifecyclePhases();
-  childDocument().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0.0, 1000), ProgrammaticScroll);
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 1000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = childDocument().getElementById("target");
+  Element* target = ChildDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  FloatPoint mappedPoint =
-      mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(0, 0),
-                         UseTransforms | TraverseDocumentBoundaries);
+  FloatPoint mapped_point =
+      MapAncestorToLocal(target->GetLayoutObject(), nullptr, FloatPoint(0, 0),
+                         kUseTransforms | kTraverseDocumentBoundaries);
 
-  EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
+  EXPECT_EQ(FloatPoint(0, 0), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithText) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
       "line-height:50px; padding:5px; orphans:1; widows:1;'>"
       "    <br id='sibling'>"
       "    text"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("sibling")->nextSibling();
-  ASSERT_TRUE(target->isText());
-  LayoutBox* flowThread = toLayoutBox(target->parent());
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
-  LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
+  LayoutObject* target = GetLayoutObjectByElementId("sibling")->NextSibling();
+  ASSERT_TRUE(target->IsText());
+  LayoutBox* flow_thread = ToLayoutBox(target->Parent());
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
+  LayoutBox* multicol = ToLayoutBox(GetLayoutObjectByElementId("multicol"));
 
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, flow_thread, FloatPoint(10, 70));
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(10, 70));
-  EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, multicol, FloatPoint(10, 70));
+  EXPECT_EQ(FloatPoint(225, 25), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithInline) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
       "line-height:50px; padding:5px; orphans:1; widows:1;'>"
       "    <span id='target'><br>text</span>"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* flowThread = toLayoutBox(target->parent());
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
-  LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* flow_thread = ToLayoutBox(target->Parent());
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
+  LayoutBox* multicol = ToLayoutBox(GetLayoutObjectByElementId("multicol"));
 
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, flow_thread, FloatPoint(10, 70));
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(10, 70));
-  EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, multicol, FloatPoint(10, 70));
+  EXPECT_EQ(FloatPoint(225, 25), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 70), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='-webkit-columns:3; -webkit-column-gap:0; "
       "column-fill:auto; width:300px; height:100px; border:8px solid; "
       "padding:7px;'>"
@@ -832,61 +835,62 @@ TEST_P(MapCoordinatesTest, MulticolWithBlock) {
       "padding:13px;'></div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(125, 35), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(125, 35), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* flowThread = target->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* flow_thread = target->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(10, 120), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(10, 120));
-  EXPECT_EQ(FloatPoint(125, 35), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
+  mapped_point =
+      MapLocalToAncestor(flow_thread, container, FloatPoint(10, 120));
+  EXPECT_EQ(FloatPoint(125, 35), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, container, mapped_point);
+  EXPECT_EQ(FloatPoint(10, 120), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithBlockAbove) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='columns:3; column-gap:0; "
       "column-fill:auto; width:300px; height:200px;'>"
       "    <div id='target' style='margin-top:-50px; height:100px;'></div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, -50), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* flowThread = target->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* flow_thread = target->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, -50), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(0, -50));
-  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, container, FloatPoint(0, -50));
+  EXPECT_EQ(FloatPoint(0, -50), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, container, mapped_point);
+  EXPECT_EQ(FloatPoint(0, -50), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='outerMulticol' style='columns:2; column-gap:0; "
       "column-fill:auto; width:560px; height:215px; border:8px solid; "
       "padding:7px;'>"
@@ -898,49 +902,52 @@ TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* outerMulticol =
-      toLayoutBox(getLayoutObjectByElementId("outerMulticol"));
-  LayoutBox* innerMulticol =
-      toLayoutBox(getLayoutObjectByElementId("innerMulticol"));
-  LayoutBox* innerFlowThread = target->parentBox();
-  ASSERT_TRUE(innerFlowThread->isLayoutFlowThread());
-  LayoutBox* outerFlowThread = innerMulticol->parentBox();
-  ASSERT_TRUE(outerFlowThread->isLayoutFlowThread());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* outer_multicol =
+      ToLayoutBox(GetLayoutObjectByElementId("outerMulticol"));
+  LayoutBox* inner_multicol =
+      ToLayoutBox(GetLayoutObjectByElementId("innerMulticol"));
+  LayoutBox* inner_flow_thread = target->ParentBox();
+  ASSERT_TRUE(inner_flow_thread->IsLayoutFlowThread());
+  LayoutBox* outer_flow_thread = inner_multicol->ParentBox();
+  ASSERT_TRUE(outer_flow_thread->IsLayoutFlowThread());
 
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, outerMulticol, FloatPoint());
-  EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, outerMulticol, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, outer_multicol, FloatPoint());
+  EXPECT_EQ(FloatPoint(435, 115), mapped_point);
+  mapped_point = MapAncestorToLocal(target, outer_multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  mappedPoint = mapLocalToAncestor(target, innerFlowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 630), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, innerFlowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, inner_flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, 630), mapped_point);
+  mapped_point = MapAncestorToLocal(target, inner_flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint =
-      mapLocalToAncestor(innerFlowThread, innerMulticol, FloatPoint(0, 630));
-  EXPECT_EQ(FloatPoint(140, 305), mappedPoint);
-  mappedPoint = mapAncestorToLocal(innerFlowThread, innerMulticol, mappedPoint);
-  EXPECT_EQ(FloatPoint(0, 630), mappedPoint);
+  mapped_point =
+      MapLocalToAncestor(inner_flow_thread, inner_multicol, FloatPoint(0, 630));
+  EXPECT_EQ(FloatPoint(140, 305), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(inner_flow_thread, inner_multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(0, 630), mapped_point);
 
-  mappedPoint =
-      mapLocalToAncestor(innerMulticol, outerFlowThread, FloatPoint(140, 305));
-  EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
-  mappedPoint = mapAncestorToLocal(innerMulticol, outerFlowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(140, 305), mappedPoint);
+  mapped_point = MapLocalToAncestor(inner_multicol, outer_flow_thread,
+                                    FloatPoint(140, 305));
+  EXPECT_EQ(FloatPoint(140, 315), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(inner_multicol, outer_flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(140, 305), mapped_point);
 
-  mappedPoint =
-      mapLocalToAncestor(outerFlowThread, outerMulticol, FloatPoint(140, 315));
-  EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
-  mappedPoint = mapAncestorToLocal(outerFlowThread, outerMulticol, mappedPoint);
-  EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
+  mapped_point = MapLocalToAncestor(outer_flow_thread, outer_multicol,
+                                    FloatPoint(140, 315));
+  EXPECT_EQ(FloatPoint(435, 115), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(outer_flow_thread, outer_multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(140, 315), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0; "
       "column-fill:auto; width:300px; height:100px; border:8px solid; "
       "padding:7px;'>"
@@ -951,37 +958,37 @@ TEST_P(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* multicol = ToLayoutBox(GetLayoutObjectByElementId("multicol"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, multicol, FloatPoint());
-  EXPECT_EQ(FloatPoint(144, 54), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, multicol, FloatPoint());
+  EXPECT_EQ(FloatPoint(144, 54), mapped_point);
+  mapped_point = MapAncestorToLocal(target, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* relpos = toLayoutBox(getLayoutObjectByElementId("relpos"));
-  LayoutBox* flowThread = relpos->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* relpos = ToLayoutBox(GetLayoutObjectByElementId("relpos"));
+  LayoutBox* flow_thread = relpos->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, relpos, FloatPoint());
-  EXPECT_EQ(FloatPoint(25, 25), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, relpos, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, relpos, FloatPoint());
+  EXPECT_EQ(FloatPoint(25, 25), mapped_point);
+  mapped_point = MapAncestorToLocal(target, relpos, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(relpos, flowThread, FloatPoint(25, 25));
-  EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
-  mappedPoint = mapAncestorToLocal(relpos, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(25, 25), mappedPoint);
+  mapped_point = MapLocalToAncestor(relpos, flow_thread, FloatPoint(25, 25));
+  EXPECT_EQ(FloatPoint(29, 139), mapped_point);
+  mapped_point = MapAncestorToLocal(relpos, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(25, 25), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(29, 139));
-  EXPECT_EQ(FloatPoint(144, 54), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, multicol, FloatPoint(29, 139));
+  EXPECT_EQ(FloatPoint(144, 54), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(29, 139), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position:relative; margin:666px; border:7px "
       "solid; padding:3px;'>"
       "    <div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0; "
@@ -993,73 +1000,73 @@ TEST_P(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
   // The multicol container isn't in the containing block chain of the abspos
   // #target.
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(16, 16), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(16, 16), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
-  LayoutBox* flowThread = target->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* multicol = ToLayoutBox(GetLayoutObjectByElementId("multicol"));
+  LayoutBox* flow_thread = target->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(-9, -9), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(-9, -9), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(6, 6), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(6, 6), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(multicol, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(16, 16), mappedPoint);
+  mapped_point = MapLocalToAncestor(multicol, container, mapped_point);
+  EXPECT_EQ(FloatPoint(16, 16), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(multicol, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(6, 6), mappedPoint);
+  mapped_point = MapAncestorToLocal(multicol, container, mapped_point);
+  EXPECT_EQ(FloatPoint(6, 6), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-  EXPECT_EQ(FloatPoint(-9, -9), mappedPoint);
+  mapped_point = MapAncestorToLocal(flow_thread, multicol, mapped_point);
+  EXPECT_EQ(FloatPoint(-9, -9), mapped_point);
 
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolRtl) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='columns:3; column-gap:0; column-fill:auto; "
       "width:300px; height:200px; direction:rtl;'>"
       "    <div style='height:200px;'></div>"
       "    <div id='target' style='height:50px;'></div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(100, 0), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 0), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* flowThread = target->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* flow_thread = target->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 200), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, 200), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(0, 200));
-  EXPECT_EQ(FloatPoint(100, 0), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(0, 200), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, container, FloatPoint(0, 200));
+  EXPECT_EQ(FloatPoint(100, 0), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, container, mapped_point);
+  EXPECT_EQ(FloatPoint(0, 200), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithLargeBorder) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='columns:3; column-gap:0; column-fill:auto; "
       "width:300px; height:200px; border:200px solid;'>"
       "    <div style='height:200px;'></div>"
@@ -1067,31 +1074,31 @@ TEST_P(MapCoordinatesTest, MulticolWithLargeBorder) {
       "    <div style='height:200px;'></div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(300, 200), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(300, 200), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* flowThread = target->parentBox();
-  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+  LayoutBox* flow_thread = target->ParentBox();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
 
-  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-  EXPECT_EQ(FloatPoint(0, 200), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, flow_thread, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, 200), mapped_point);
+  mapped_point = MapAncestorToLocal(target, flow_thread, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(0, 200));
-  EXPECT_EQ(FloatPoint(300, 200), mappedPoint);
-  mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(0, 200), mappedPoint);
+  mapped_point = MapLocalToAncestor(flow_thread, container, FloatPoint(0, 200));
+  EXPECT_EQ(FloatPoint(300, 200), mapped_point);
+  mapped_point = MapAncestorToLocal(flow_thread, container, mapped_point);
+  EXPECT_EQ(FloatPoint(0, 200), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='-webkit-writing-mode:vertical-rl;'>"
       "    <div style='width:13px;'></div>"
       "    <div style='width:200px; height:400px; line-height:50px;'>"
@@ -1100,43 +1107,43 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
       "    <div style='width:5px;'></div>"
       "</div>");
 
-  LayoutObject* br = getLayoutObjectByElementId("sibling");
-  LayoutObject* text = br->nextSibling();
-  ASSERT_TRUE(text->isText());
+  LayoutObject* br = GetLayoutObjectByElementId("sibling");
+  LayoutObject* text = br->NextSibling();
+  ASSERT_TRUE(text->IsText());
 
   // Map to the nearest container. Flipping should occur.
-  FloatPoint mappedPoint = mapLocalToAncestor(
-      text, text->containingBlock(), FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(125, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(text, text->containingBlock(), mappedPoint,
-                                   ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(
+      text, text->ContainingBlock(), FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(125, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(text, text->ContainingBlock(), mapped_point,
+                                    kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // Map to a container further up in the tree. Flipping should still occur on
   // the nearest container. LayoutObject::mapLocalToAncestor() is called
   // recursively until the ancestor is reached, and the ApplyContainerFlip flag
   // is cleared after having processed the innermost object.
-  mappedPoint =
-      mapLocalToAncestor(text, text->containingBlock()->containingBlock(),
-                         FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(130, 10), mappedPoint);
-  mappedPoint =
-      mapAncestorToLocal(text, text->containingBlock()->containingBlock(),
-                         mappedPoint, ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point =
+      MapLocalToAncestor(text, text->ContainingBlock()->ContainingBlock(),
+                         FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(130, 10), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(text, text->ContainingBlock()->ContainingBlock(),
+                         mapped_point, kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // If the ApplyContainerFlip flag isn't specified, no flipping should take
   // place.
-  mappedPoint = mapLocalToAncestor(
-      text, text->containingBlock()->containingBlock(), FloatPoint(75, 10));
-  EXPECT_EQ(FloatPoint(80, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      text, text->containingBlock()->containingBlock(), mappedPoint);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point = MapLocalToAncestor(
+      text, text->ContainingBlock()->ContainingBlock(), FloatPoint(75, 10));
+  EXPECT_EQ(FloatPoint(80, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      text, text->ContainingBlock()->ContainingBlock(), mapped_point);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='-webkit-writing-mode:vertical-rl;'>"
       "    <div style='width:13px;'></div>"
       "    <div style='width:200px; height:400px; line-height:50px;'>"
@@ -1147,61 +1154,61 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
       "    <div style='width:7px;'></div>"
       "</div>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
+  LayoutObject* target = GetLayoutObjectByElementId("target");
   ASSERT_TRUE(target);
 
   // First map to the parent SPAN. Nothing special should happen, since flipping
   // occurs at the nearest container.
-  FloatPoint mappedPoint =
-      mapLocalToAncestor(target, toLayoutBoxModelObject(target->parent()),
-                         FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
-  mappedPoint =
-      mapAncestorToLocal(target, toLayoutBoxModelObject(target->parent()),
-                         mappedPoint, ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  FloatPoint mapped_point =
+      MapLocalToAncestor(target, ToLayoutBoxModelObject(target->Parent()),
+                         FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(target, ToLayoutBoxModelObject(target->Parent()),
+                         mapped_point, kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // Continue to the nearest container. Flipping should occur.
-  mappedPoint = mapLocalToAncestor(toLayoutBoxModelObject(target->parent()),
-                                   target->containingBlock(),
-                                   FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(125, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(toLayoutBoxModelObject(target->parent()),
-                                   target->containingBlock(), mappedPoint,
-                                   ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point = MapLocalToAncestor(ToLayoutBoxModelObject(target->Parent()),
+                                    target->ContainingBlock(),
+                                    FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(125, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(ToLayoutBoxModelObject(target->Parent()),
+                                    target->ContainingBlock(), mapped_point,
+                                    kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // Now map from the innermost inline to the nearest container in one go.
-  mappedPoint = mapLocalToAncestor(target, target->containingBlock(),
-                                   FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(125, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, target->containingBlock(),
-                                   mappedPoint, ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, target->ContainingBlock(),
+                                    FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(125, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(target, target->ContainingBlock(),
+                                    mapped_point, kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // Map to a container further up in the tree. Flipping should still only occur
   // on the nearest container.
-  mappedPoint =
-      mapLocalToAncestor(target, target->containingBlock()->containingBlock(),
-                         FloatPoint(75, 10), ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(132, 10), mappedPoint);
-  mappedPoint =
-      mapAncestorToLocal(target, target->containingBlock()->containingBlock(),
-                         mappedPoint, ApplyContainerFlip);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point =
+      MapLocalToAncestor(target, target->ContainingBlock()->ContainingBlock(),
+                         FloatPoint(75, 10), kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(132, 10), mapped_point);
+  mapped_point =
+      MapAncestorToLocal(target, target->ContainingBlock()->ContainingBlock(),
+                         mapped_point, kApplyContainerFlip);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 
   // If the ApplyContainerFlip flag isn't specified, no flipping should take
   // place.
-  mappedPoint = mapLocalToAncestor(
-      target, target->containingBlock()->containingBlock(), FloatPoint(75, 10));
-  EXPECT_EQ(FloatPoint(82, 10), mappedPoint);
-  mappedPoint = mapAncestorToLocal(
-      target, target->containingBlock()->containingBlock(), mappedPoint);
-  EXPECT_EQ(FloatPoint(75, 10), mappedPoint);
+  mapped_point = MapLocalToAncestor(
+      target, target->ContainingBlock()->ContainingBlock(), FloatPoint(75, 10));
+  EXPECT_EQ(FloatPoint(82, 10), mapped_point);
+  mapped_point = MapAncestorToLocal(
+      target, target->ContainingBlock()->ContainingBlock(), mapped_point);
+  EXPECT_EQ(FloatPoint(75, 10), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='-webkit-writing-mode:vertical-rl; border:8px "
       "solid; padding:7px; width:200px; height:200px;'>"
       "    <div id='middle' style='border:1px solid;'>"
@@ -1210,30 +1217,30 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(153, 22), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(153, 22), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* middle = toLayoutBox(getLayoutObjectByElementId("middle"));
+  LayoutBox* middle = ToLayoutBox(GetLayoutObjectByElementId("middle"));
 
-  mappedPoint = mapLocalToAncestor(target, middle, FloatPoint());
-  EXPECT_EQ(FloatPoint(7, 7), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, middle, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapLocalToAncestor(target, middle, FloatPoint());
+  EXPECT_EQ(FloatPoint(7, 7), mapped_point);
+  mapped_point = MapAncestorToLocal(target, middle, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(middle, container, FloatPoint(7, 7));
-  EXPECT_EQ(FloatPoint(153, 22), mappedPoint);
-  mappedPoint = mapAncestorToLocal(middle, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(7, 7), mappedPoint);
+  mapped_point = MapLocalToAncestor(middle, container, FloatPoint(7, 7));
+  EXPECT_EQ(FloatPoint(153, 22), mapped_point);
+  mapped_point = MapAncestorToLocal(middle, container, mapped_point);
+  EXPECT_EQ(FloatPoint(7, 7), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, Table) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>td { padding: 2px; }</style>"
       "<div id='container' style='border:3px solid;'>"
       "    <table style='margin:9px; border:5px solid; border-spacing:10px;'>"
@@ -1263,76 +1270,76 @@ TEST_P(MapCoordinatesTest, Table) {
       "    </table>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(143, 302), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(143, 302), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* td = target->parentBox();
-  ASSERT_TRUE(td->isTableCell());
-  mappedPoint = mapLocalToAncestor(target, td, FloatPoint());
+  LayoutBox* td = target->ParentBox();
+  ASSERT_TRUE(td->IsTableCell());
+  mapped_point = MapLocalToAncestor(target, td, FloatPoint());
   // Cells are middle-aligned by default.
-  EXPECT_EQ(FloatPoint(2, 47), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, td, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  EXPECT_EQ(FloatPoint(2, 47), mapped_point);
+  mapped_point = MapAncestorToLocal(target, td, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 
-  LayoutBox* tr = td->parentBox();
-  ASSERT_TRUE(tr->isTableRow());
-  mappedPoint = mapLocalToAncestor(td, tr, FloatPoint(2, 47));
-  EXPECT_EQ(FloatPoint(126, 47), mappedPoint);
-  mappedPoint = mapAncestorToLocal(td, tr, mappedPoint);
-  EXPECT_EQ(FloatPoint(2, 47), mappedPoint);
+  LayoutBox* tr = td->ParentBox();
+  ASSERT_TRUE(tr->IsTableRow());
+  mapped_point = MapLocalToAncestor(td, tr, FloatPoint(2, 47));
+  EXPECT_EQ(FloatPoint(126, 47), mapped_point);
+  mapped_point = MapAncestorToLocal(td, tr, mapped_point);
+  EXPECT_EQ(FloatPoint(2, 47), mapped_point);
 
-  LayoutBox* tbody = tr->parentBox();
-  ASSERT_TRUE(tbody->isTableSection());
-  mappedPoint = mapLocalToAncestor(tr, tbody, FloatPoint(126, 47));
-  EXPECT_EQ(FloatPoint(126, 161), mappedPoint);
-  mappedPoint = mapAncestorToLocal(tr, tbody, mappedPoint);
-  EXPECT_EQ(FloatPoint(126, 47), mappedPoint);
+  LayoutBox* tbody = tr->ParentBox();
+  ASSERT_TRUE(tbody->IsTableSection());
+  mapped_point = MapLocalToAncestor(tr, tbody, FloatPoint(126, 47));
+  EXPECT_EQ(FloatPoint(126, 161), mapped_point);
+  mapped_point = MapAncestorToLocal(tr, tbody, mapped_point);
+  EXPECT_EQ(FloatPoint(126, 47), mapped_point);
 
-  LayoutBox* table = tbody->parentBox();
-  ASSERT_TRUE(table->isTable());
-  mappedPoint = mapLocalToAncestor(tbody, table, FloatPoint(126, 161));
-  EXPECT_EQ(FloatPoint(131, 290), mappedPoint);
-  mappedPoint = mapAncestorToLocal(tbody, table, mappedPoint);
-  EXPECT_EQ(FloatPoint(126, 161), mappedPoint);
+  LayoutBox* table = tbody->ParentBox();
+  ASSERT_TRUE(table->IsTable());
+  mapped_point = MapLocalToAncestor(tbody, table, FloatPoint(126, 161));
+  EXPECT_EQ(FloatPoint(131, 290), mapped_point);
+  mapped_point = MapAncestorToLocal(tbody, table, mapped_point);
+  EXPECT_EQ(FloatPoint(126, 161), mapped_point);
 
-  mappedPoint = mapLocalToAncestor(table, container, FloatPoint(131, 290));
-  EXPECT_EQ(FloatPoint(143, 302), mappedPoint);
-  mappedPoint = mapAncestorToLocal(table, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(131, 290), mappedPoint);
+  mapped_point = MapLocalToAncestor(table, container, FloatPoint(131, 290));
+  EXPECT_EQ(FloatPoint(143, 302), mapped_point);
+  mapped_point = MapAncestorToLocal(table, container, mapped_point);
+  EXPECT_EQ(FloatPoint(131, 290), mapped_point);
 }
 
-static bool floatValuesAlmostEqual(float expected, float actual) {
+static bool FloatValuesAlmostEqual(float expected, float actual) {
   return fabs(expected - actual) < 0.01;
 }
 
-static bool floatQuadsAlmostEqual(const FloatQuad& expected,
+static bool FloatQuadsAlmostEqual(const FloatQuad& expected,
                                   const FloatQuad& actual) {
-  return floatValuesAlmostEqual(expected.p1().x(), actual.p1().x()) &&
-         floatValuesAlmostEqual(expected.p1().y(), actual.p1().y()) &&
-         floatValuesAlmostEqual(expected.p2().x(), actual.p2().x()) &&
-         floatValuesAlmostEqual(expected.p2().y(), actual.p2().y()) &&
-         floatValuesAlmostEqual(expected.p3().x(), actual.p3().x()) &&
-         floatValuesAlmostEqual(expected.p3().y(), actual.p3().y()) &&
-         floatValuesAlmostEqual(expected.p4().x(), actual.p4().x()) &&
-         floatValuesAlmostEqual(expected.p4().y(), actual.p4().y());
+  return FloatValuesAlmostEqual(expected.P1().X(), actual.P1().X()) &&
+         FloatValuesAlmostEqual(expected.P1().Y(), actual.P1().Y()) &&
+         FloatValuesAlmostEqual(expected.P2().X(), actual.P2().X()) &&
+         FloatValuesAlmostEqual(expected.P2().Y(), actual.P2().Y()) &&
+         FloatValuesAlmostEqual(expected.P3().X(), actual.P3().X()) &&
+         FloatValuesAlmostEqual(expected.P3().Y(), actual.P3().Y()) &&
+         FloatValuesAlmostEqual(expected.P4().X(), actual.P4().X()) &&
+         FloatValuesAlmostEqual(expected.P4().Y(), actual.P4().Y());
 }
 
 // If comparison fails, pretty-print the error using EXPECT_EQ()
 #define EXPECT_FLOAT_QUAD_EQ(expected, actual)      \
   do {                                              \
-    if (!floatQuadsAlmostEqual(expected, actual)) { \
+    if (!FloatQuadsAlmostEqual(expected, actual)) { \
       EXPECT_EQ(expected, actual);                  \
     }                                               \
   } while (false)
 
 TEST_P(MapCoordinatesTest, Transforms) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container'>"
       "    <div id='outerTransform' style='transform:rotate(45deg); "
       "width:200px; height:200px;'>"
@@ -1343,79 +1350,80 @@ TEST_P(MapCoordinatesTest, Transforms) {
       "    </div>"
       "</div>");
 
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatQuad initialQuad(FloatPoint(0, 0), FloatPoint(200, 0),
-                        FloatPoint(200, 200), FloatPoint(0, 200));
-  FloatQuad mappedQuad =
-      mapLocalToAncestor(target, container, initialQuad, UseTransforms);
+  FloatQuad initial_quad(FloatPoint(0, 0), FloatPoint(200, 0),
+                         FloatPoint(200, 200), FloatPoint(0, 200));
+  FloatQuad mapped_quad =
+      MapLocalToAncestor(target, container, initial_quad, kUseTransforms);
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(200, 0), FloatPoint(200, 200),
                                  FloatPoint(0, 200), FloatPoint(0, 0)),
-                       mappedQuad);
-  mappedQuad = mapAncestorToLocal(target, container, mappedQuad, UseTransforms);
-  EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
+                       mapped_quad);
+  mapped_quad =
+      MapAncestorToLocal(target, container, mapped_quad, kUseTransforms);
+  EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
-  LayoutBox* innerTransform =
-      toLayoutBox(getLayoutObjectByElementId("innerTransform"));
-  LayoutBox* outerTransform =
-      toLayoutBox(getLayoutObjectByElementId("outerTransform"));
+  LayoutBox* inner_transform =
+      ToLayoutBox(GetLayoutObjectByElementId("innerTransform"));
+  LayoutBox* outer_transform =
+      ToLayoutBox(GetLayoutObjectByElementId("outerTransform"));
 
-  mappedQuad =
-      mapLocalToAncestor(target, innerTransform, initialQuad, UseTransforms);
+  mapped_quad =
+      MapLocalToAncestor(target, inner_transform, initial_quad, kUseTransforms);
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(0, 0), FloatPoint(200, 0),
                                  FloatPoint(200, 200), FloatPoint(0, 200)),
-                       mappedQuad);
-  mappedQuad =
-      mapAncestorToLocal(target, innerTransform, mappedQuad, UseTransforms);
-  EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
+                       mapped_quad);
+  mapped_quad =
+      MapAncestorToLocal(target, inner_transform, mapped_quad, kUseTransforms);
+  EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
-  initialQuad = FloatQuad(FloatPoint(0, 0), FloatPoint(200, 0),
-                          FloatPoint(200, 200), FloatPoint(0, 200));
-  mappedQuad = mapLocalToAncestor(innerTransform, outerTransform, initialQuad,
-                                  UseTransforms);
+  initial_quad = FloatQuad(FloatPoint(0, 0), FloatPoint(200, 0),
+                           FloatPoint(200, 200), FloatPoint(0, 200));
+  mapped_quad = MapLocalToAncestor(inner_transform, outer_transform,
+                                   initial_quad, kUseTransforms);
   // Clockwise rotation by 45 degrees.
   EXPECT_FLOAT_QUAD_EQ(
       FloatQuad(FloatPoint(100, -41.42), FloatPoint(241.42, 100),
                 FloatPoint(100, 241.42), FloatPoint(-41.42, 100)),
-      mappedQuad);
-  mappedQuad = mapAncestorToLocal(innerTransform, outerTransform, mappedQuad,
-                                  UseTransforms);
-  EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
+      mapped_quad);
+  mapped_quad = MapAncestorToLocal(inner_transform, outer_transform,
+                                   mapped_quad, kUseTransforms);
+  EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
-  initialQuad = FloatQuad(FloatPoint(100, -41.42), FloatPoint(241.42, 100),
-                          FloatPoint(100, 241.42), FloatPoint(-41.42, 100));
-  mappedQuad =
-      mapLocalToAncestor(outerTransform, container, initialQuad, UseTransforms);
+  initial_quad = FloatQuad(FloatPoint(100, -41.42), FloatPoint(241.42, 100),
+                           FloatPoint(100, 241.42), FloatPoint(-41.42, 100));
+  mapped_quad = MapLocalToAncestor(outer_transform, container, initial_quad,
+                                   kUseTransforms);
   // Another clockwise rotation by 45 degrees. So now 90 degrees in total.
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(200, 0), FloatPoint(200, 200),
                                  FloatPoint(0, 200), FloatPoint(0, 0)),
-                       mappedQuad);
-  mappedQuad =
-      mapAncestorToLocal(outerTransform, container, mappedQuad, UseTransforms);
-  EXPECT_FLOAT_QUAD_EQ(initialQuad, mappedQuad);
+                       mapped_quad);
+  mapped_quad = MapAncestorToLocal(outer_transform, container, mapped_quad,
+                                   kUseTransforms);
+  EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 }
 
 TEST_P(MapCoordinatesTest, SVGShape) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container'>"
       "    <g transform='translate(100 200)'>"
       "        <rect id='target' width='100' height='100'/>"
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(100, 200), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(100, 200), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeScale) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container'>"
       "    <g transform='scale(2) translate(50 40)'>"
       "        <rect id='target' transform='translate(50 80)' x='66' y='77' "
@@ -1423,51 +1431,51 @@ TEST_P(MapCoordinatesTest, SVGShapeScale) {
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 240), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 240), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container' viewBox='0 0 200 200' width='400' height='200'>"
       "    <g transform='translate(100 50)'>"
       "        <rect id='target' width='100' height='100'/>"
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 50), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 50), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
       "        <rect id='target' width='100' height='100'/>"
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 100), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container' viewBox='100 100 200 200' width='400' height='200'>"
       "    <g transform='translate(100 50)'>"
       "        <rect id='target' transform='translate(100 100)' width='100' "
@@ -1475,17 +1483,17 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 50), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 50), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container' viewBox='100 100 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
       "        <rect id='target' transform='translate(100 100)' width='100' "
@@ -1493,17 +1501,17 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(200, 100), mappedPoint);
-  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(200, 100), mapped_point);
+  mapped_point = MapAncestorToLocal(target, container, mapped_point);
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, SVGForeignObject) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
       "    <g transform='translate(50 50)'>"
       "        <foreignObject transform='translate(-25 -25)'>"
@@ -1515,30 +1523,30 @@ TEST_P(MapCoordinatesTest, SVGForeignObject) {
       "    </g>"
       "</svg>");
 
-  LayoutObject* target = getLayoutObjectByElementId("target");
-  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
 
-  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
-  EXPECT_EQ(FloatPoint(250, 50), mappedPoint);
+  FloatPoint mapped_point = MapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(250, 50), mapped_point);
   // <svg>
-  mappedPoint = mapAncestorToLocal(target->parent()->parent()->parent(),
-                                   container, FloatPoint(250, 50));
-  EXPECT_EQ(FloatPoint(250, 50), mappedPoint);
+  mapped_point = MapAncestorToLocal(target->Parent()->Parent()->Parent(),
+                                    container, FloatPoint(250, 50));
+  EXPECT_EQ(FloatPoint(250, 50), mapped_point);
   // <g>
-  mappedPoint = mapAncestorToLocal(target->parent()->parent(), container,
-                                   FloatPoint(250, 50));
-  EXPECT_EQ(FloatPoint(25, -25), mappedPoint);
+  mapped_point = MapAncestorToLocal(target->Parent()->Parent(), container,
+                                    FloatPoint(250, 50));
+  EXPECT_EQ(FloatPoint(25, -25), mapped_point);
   // <foreignObject>
-  mappedPoint =
-      mapAncestorToLocal(target->parent(), container, FloatPoint(250, 50));
-  EXPECT_EQ(FloatPoint(50, 0), mappedPoint);
+  mapped_point =
+      MapAncestorToLocal(target->Parent(), container, FloatPoint(250, 50));
+  EXPECT_EQ(FloatPoint(50, 0), mapped_point);
   // <div>
-  mappedPoint = mapAncestorToLocal(target, container, FloatPoint(250, 50));
-  EXPECT_EQ(FloatPoint(), mappedPoint);
+  mapped_point = MapAncestorToLocal(target, container, FloatPoint(250, 50));
+  EXPECT_EQ(FloatPoint(), mapped_point);
 }
 
 TEST_P(MapCoordinatesTest, LocalToAbsoluteTransform) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container' style='position: absolute; left: 0; top: 0;'>"
       "  <div id='scale' style='transform: scale(2.0); transform-origin: left "
       "top;'>"
@@ -1546,22 +1554,22 @@ TEST_P(MapCoordinatesTest, LocalToAbsoluteTransform) {
       "  </div>"
       "</div>");
   LayoutBoxModelObject* container =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
-  TransformationMatrix containerMatrix = container->localToAbsoluteTransform();
-  EXPECT_TRUE(containerMatrix.isIdentity());
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("container"));
+  TransformationMatrix container_matrix = container->LocalToAbsoluteTransform();
+  EXPECT_TRUE(container_matrix.IsIdentity());
 
-  LayoutObject* child = getLayoutObjectByElementId("child");
-  TransformationMatrix childMatrix = child->localToAbsoluteTransform();
-  EXPECT_FALSE(childMatrix.isIdentityOrTranslation());
-  EXPECT_TRUE(childMatrix.isAffine());
-  EXPECT_EQ(0.0, childMatrix.projectPoint(FloatPoint(0.0, 0.0)).x());
-  EXPECT_EQ(0.0, childMatrix.projectPoint(FloatPoint(0.0, 0.0)).y());
-  EXPECT_EQ(20.0, childMatrix.projectPoint(FloatPoint(10.0, 20.0)).x());
-  EXPECT_EQ(40.0, childMatrix.projectPoint(FloatPoint(10.0, 20.0)).y());
+  LayoutObject* child = GetLayoutObjectByElementId("child");
+  TransformationMatrix child_matrix = child->LocalToAbsoluteTransform();
+  EXPECT_FALSE(child_matrix.IsIdentityOrTranslation());
+  EXPECT_TRUE(child_matrix.IsAffine());
+  EXPECT_EQ(0.0, child_matrix.ProjectPoint(FloatPoint(0.0, 0.0)).X());
+  EXPECT_EQ(0.0, child_matrix.ProjectPoint(FloatPoint(0.0, 0.0)).Y());
+  EXPECT_EQ(20.0, child_matrix.ProjectPoint(FloatPoint(10.0, 20.0)).X());
+  EXPECT_EQ(40.0, child_matrix.ProjectPoint(FloatPoint(10.0, 20.0)).Y());
 }
 
 TEST_P(MapCoordinatesTest, LocalToAncestorTransform) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='container'>"
       "  <div id='rotate1' style='transform: rotate(45deg); transform-origin: "
       "left top;'>"
@@ -1572,41 +1580,42 @@ TEST_P(MapCoordinatesTest, LocalToAncestorTransform) {
       "  </div>"
       "</div>");
   LayoutBoxModelObject* container =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("container"));
   LayoutBoxModelObject* rotate1 =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("rotate1"));
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("rotate1"));
   LayoutBoxModelObject* rotate2 =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("rotate2"));
-  LayoutObject* child = getLayoutObjectByElementId("child");
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("rotate2"));
+  LayoutObject* child = GetLayoutObjectByElementId("child");
   TransformationMatrix matrix;
 
-  matrix = child->localToAncestorTransform(rotate2);
-  EXPECT_TRUE(matrix.isIdentity());
+  matrix = child->LocalToAncestorTransform(rotate2);
+  EXPECT_TRUE(matrix.IsIdentity());
 
   // Rotate (100, 0) 90 degrees to (0, 100)
-  matrix = child->localToAncestorTransform(rotate1);
-  EXPECT_FALSE(matrix.isIdentity());
-  EXPECT_TRUE(matrix.isAffine());
-  EXPECT_NEAR(0.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).x(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).y(),
-              LayoutUnit::epsilon());
+  matrix = child->LocalToAncestorTransform(rotate1);
+  EXPECT_FALSE(matrix.IsIdentity());
+  EXPECT_TRUE(matrix.IsAffine());
+  EXPECT_NEAR(0.0, matrix.ProjectPoint(FloatPoint(100.0, 0.0)).X(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(100.0, matrix.ProjectPoint(FloatPoint(100.0, 0.0)).Y(),
+              LayoutUnit::Epsilon());
 
   // Rotate (100, 0) 135 degrees to (-70.7, 70.7)
-  matrix = child->localToAncestorTransform(container);
-  EXPECT_FALSE(matrix.isIdentity());
-  EXPECT_TRUE(matrix.isAffine());
+  matrix = child->LocalToAncestorTransform(container);
+  EXPECT_FALSE(matrix.IsIdentity());
+  EXPECT_TRUE(matrix.IsAffine());
   EXPECT_NEAR(-100.0 * sqrt(2.0) / 2.0,
-              matrix.projectPoint(FloatPoint(100.0, 0.0)).x(),
-              LayoutUnit::epsilon());
+              matrix.ProjectPoint(FloatPoint(100.0, 0.0)).X(),
+              LayoutUnit::Epsilon());
   EXPECT_NEAR(100.0 * sqrt(2.0) / 2.0,
-              matrix.projectPoint(FloatPoint(100.0, 0.0)).y(),
-              LayoutUnit::epsilon());
+              matrix.ProjectPoint(FloatPoint(100.0, 0.0)).Y(),
+              LayoutUnit::Epsilon());
 }
 
 TEST_P(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
-  document().frame()->settings()->setAcceleratedCompositingEnabled(true);
-  setBodyInnerHTML(
+  GetDocument().GetFrame()->GetSettings()->SetAcceleratedCompositingEnabled(
+      true);
+  SetBodyInnerHTML(
       "<div style='position: absolute; left: 0; top: 0;'>"
       "  <div style='transform: rotateY(45deg); "
       "-webkit-transform-style:preserve-3d;'>"
@@ -1621,34 +1630,34 @@ TEST_P(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
       "    </div>"
       "  </div>"
       "</div>");
-  LayoutObject* child1 = getLayoutObjectByElementId("child1");
-  LayoutObject* child2 = getLayoutObjectByElementId("child2");
+  LayoutObject* child1 = GetLayoutObjectByElementId("child1");
+  LayoutObject* child2 = GetLayoutObjectByElementId("child2");
   TransformationMatrix matrix;
 
-  matrix = child1->localToAbsoluteTransform();
+  matrix = child1->LocalToAbsoluteTransform();
 
   // With child1, the rotations cancel and points should map basically back to
   // themselves.
-  EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).x(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).y(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).x(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).y(),
-              LayoutUnit::epsilon());
+  EXPECT_NEAR(100.0, matrix.ProjectPoint(FloatPoint(100.0, 50.0)).X(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(50.0, matrix.ProjectPoint(FloatPoint(100.0, 50.0)).Y(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(50.0, matrix.ProjectPoint(FloatPoint(50.0, 100.0)).X(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(100.0, matrix.ProjectPoint(FloatPoint(50.0, 100.0)).Y(),
+              LayoutUnit::Epsilon());
 
   // With child2, each rotation gets flattened and the end result is
   // approximately a 90-degree rotation.
-  matrix = child2->localToAbsoluteTransform();
-  EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).x(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).y(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(25.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).x(),
-              LayoutUnit::epsilon());
-  EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).y(),
-              LayoutUnit::epsilon());
+  matrix = child2->LocalToAbsoluteTransform();
+  EXPECT_NEAR(50.0, matrix.ProjectPoint(FloatPoint(100.0, 50.0)).X(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(50.0, matrix.ProjectPoint(FloatPoint(100.0, 50.0)).Y(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(25.0, matrix.ProjectPoint(FloatPoint(50.0, 100.0)).X(),
+              LayoutUnit::Epsilon());
+  EXPECT_NEAR(100.0, matrix.ProjectPoint(FloatPoint(50.0, 100.0)).Y(),
+              LayoutUnit::Epsilon());
 }
 
 }  // namespace blink

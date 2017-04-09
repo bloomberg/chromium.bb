@@ -29,30 +29,30 @@ class PLATFORM_EXPORT SharedGpuContext {
   // is created. For example, when the context is lost, then restored.
   // User code can rely on this Id to determine whether long-lived
   // gpu resources are still alive in the current context.
-  static unsigned contextId();
+  static unsigned ContextId();
   static gpu::gles2::GLES2Interface*
-  gl();                    // May re-create context if context was lost
-  static GrContext* gr();  // May re-create context if context was lost
-  static bool isValid();   // May re-create context if context was lost
-  static bool isValidWithoutRestoring();
+  Gl();                    // May re-create context if context was lost
+  static GrContext* Gr();  // May re-create context if context was lost
+  static bool IsValid();   // May re-create context if context was lost
+  static bool IsValidWithoutRestoring();
   typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()>
       ContextProviderFactory;
-  static void setContextProviderFactoryForTesting(ContextProviderFactory);
+  static void SetContextProviderFactoryForTesting(ContextProviderFactory);
 
   enum {
     kNoSharedContext = 0,
   };
 
  private:
-  static SharedGpuContext* getInstanceForCurrentThread();
+  static SharedGpuContext* GetInstanceForCurrentThread();
 
   SharedGpuContext();
-  void createContextProviderOnMainThread(WaitableEvent*);
-  void createContextProviderIfNeeded();
+  void CreateContextProviderOnMainThread(WaitableEvent*);
+  void CreateContextProviderIfNeeded();
 
-  ContextProviderFactory m_contextProviderFactory = nullptr;
-  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-  unsigned m_contextId;
+  ContextProviderFactory context_provider_factory_ = nullptr;
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  unsigned context_id_;
   friend class WTF::ThreadSpecific<SharedGpuContext>;
 };
 

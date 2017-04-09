@@ -30,257 +30,272 @@ namespace blink {
 
 namespace {
 InstallConditionalFeaturesFunction
-    s_originalInstallConditionalFeaturesFunction = nullptr;
+    g_original_install_conditional_features_function = nullptr;
 InstallPendingConditionalFeatureFunction
-    s_originalInstallPendingConditionalFeatureFunction = nullptr;
+    g_original_install_pending_conditional_feature_function = nullptr;
 }
 
-void installConditionalFeaturesForModules(
-    const WrapperTypeInfo* wrapperTypeInfo,
-    const ScriptState* scriptState,
-    v8::Local<v8::Object> prototypeObject,
-    v8::Local<v8::Function> interfaceObject) {
+void InstallConditionalFeaturesForModules(
+    const WrapperTypeInfo* wrapper_type_info,
+    const ScriptState* script_state,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object) {
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
   // configuration of origin trial enabled attibutes and interfaces in IDL
   // files. (crbug.com/615060)
-  (*s_originalInstallConditionalFeaturesFunction)(
-      wrapperTypeInfo, scriptState, prototypeObject, interfaceObject);
+  (*g_original_install_conditional_features_function)(
+      wrapper_type_info, script_state, prototype_object, interface_object);
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  if (!executionContext)
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  if (!execution_context)
     return;
-  v8::Isolate* isolate = scriptState->isolate();
-  const DOMWrapperWorld& world = scriptState->world();
-  if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  if (wrapper_type_info == &V8Navigator::wrapperTypeInfo) {
     // Mimics the [SecureContext] extended attribute. Work-around for
     // https://crbug.com/695123.
-    if (OriginTrials::installedAppEnabled(executionContext) &&
-        executionContext->isSecureContext()) {
-      V8NavigatorPartial::installInstalledApp(isolate, world,
-                                              v8::Local<v8::Object>(),
-                                              prototypeObject, interfaceObject);
+    if (OriginTrials::installedAppEnabled(execution_context) &&
+        execution_context->IsSecureContext()) {
+      V8NavigatorPartial::installInstalledApp(
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
-    if (OriginTrials::webShareEnabled(executionContext)) {
+    if (OriginTrials::webShareEnabled(execution_context)) {
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
     // Mimics the [SecureContext] extended attribute. Work-around for
     // https://crbug.com/695123.
-    if (OriginTrials::webUSBEnabled(executionContext) &&
-        executionContext->isSecureContext()) {
+    if (OriginTrials::webUSBEnabled(execution_context) &&
+        execution_context->IsSecureContext()) {
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
-                                        prototypeObject, interfaceObject);
+                                        prototype_object, interface_object);
     }
-    if (OriginTrials::webVREnabled(executionContext)) {
+    if (OriginTrials::webVREnabled(execution_context)) {
       V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
-                                       prototypeObject, interfaceObject);
+                                       prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    if (OriginTrials::imageCaptureEnabled(executionContext)) {
-      V8WindowPartial::installImageCapture(isolate, world, instanceObject,
-                                           prototypeObject, interfaceObject);
+  } else if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::imageCaptureEnabled(execution_context)) {
+      V8WindowPartial::installImageCapture(isolate, world, instance_object,
+                                           prototype_object, interface_object);
     }
     // Mimics the [SecureContext] extended attribute. Work-around for
     // https://crbug.com/695123.
-    if (OriginTrials::webUSBEnabled(executionContext) &&
-        executionContext->isSecureContext()) {
-      V8WindowPartial::installWebUSB(isolate, world, instanceObject,
-                                     prototypeObject, interfaceObject);
+    if (OriginTrials::webUSBEnabled(execution_context) &&
+        execution_context->IsSecureContext()) {
+      V8WindowPartial::installWebUSB(isolate, world, instance_object,
+                                     prototype_object, interface_object);
     }
-    if (OriginTrials::webVREnabled(executionContext)) {
-      V8WindowPartial::installWebVR(isolate, world, instanceObject,
-                                    prototypeObject, interfaceObject);
+    if (OriginTrials::webVREnabled(execution_context)) {
+      V8WindowPartial::installWebVR(isolate, world, instance_object,
+                                    prototype_object, interface_object);
     }
-    if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
+    if (OriginTrials::gamepadExtensionsEnabled(execution_context)) {
       V8WindowPartial::installGamepadExtensions(
-          isolate, world, instanceObject, prototypeObject, interfaceObject);
+          isolate, world, instance_object, prototype_object, interface_object);
     }
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8WindowPartial::installServiceWorkerNavigationPreload(
-          isolate, world, instanceObject, prototypeObject, interfaceObject);
+          isolate, world, instance_object, prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo ==
+  } else if (wrapper_type_info ==
              &V8DedicatedWorkerGlobalScope::wrapperTypeInfo) {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8DedicatedWorkerGlobalScopePartial::
-          installServiceWorkerNavigationPreload(
-              isolate, world, instanceObject, prototypeObject, interfaceObject);
+          installServiceWorkerNavigationPreload(isolate, world, instance_object,
+                                                prototype_object,
+                                                interface_object);
     }
-  } else if (wrapperTypeInfo == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+  } else if (wrapper_type_info == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8SharedWorkerGlobalScopePartial::installServiceWorkerNavigationPreload(
-          isolate, world, instanceObject, prototypeObject, interfaceObject);
+          isolate, world, instance_object, prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    if (OriginTrials::foreignFetchEnabled(executionContext)) {
+  } else if (wrapper_type_info ==
+             &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    if (OriginTrials::foreignFetchEnabled(execution_context)) {
       V8ServiceWorkerGlobalScope::installForeignFetch(
-          isolate, world, instanceObject, prototypeObject, interfaceObject);
+          isolate, world, instance_object, prototype_object, interface_object);
     }
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8ServiceWorkerGlobalScope::installServiceWorkerNavigationPreload(
-          isolate, world, instanceObject, prototypeObject, interfaceObject);
+          isolate, world, instance_object, prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo == &V8ServiceWorkerRegistration::wrapperTypeInfo) {
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+  } else if (wrapper_type_info ==
+             &V8ServiceWorkerRegistration::wrapperTypeInfo) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
-  } else if (wrapperTypeInfo == &V8FetchEvent::wrapperTypeInfo) {
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+  } else if (wrapper_type_info == &V8FetchEvent::wrapperTypeInfo) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
+            execution_context)) {
       V8FetchEvent::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
-  } else if (wrapperTypeInfo == &V8InstallEvent::wrapperTypeInfo) {
-    if (OriginTrials::foreignFetchEnabled(executionContext)) {
+  } else if (wrapper_type_info == &V8InstallEvent::wrapperTypeInfo) {
+    if (OriginTrials::foreignFetchEnabled(execution_context)) {
       V8InstallEvent::installForeignFetch(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo == &V8Gamepad::wrapperTypeInfo) {
-    if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
+  } else if (wrapper_type_info == &V8Gamepad::wrapperTypeInfo) {
+    if (OriginTrials::gamepadExtensionsEnabled(execution_context)) {
       V8Gamepad::installGamepadExtensions(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
-  } else if (wrapperTypeInfo == &V8GamepadButton::wrapperTypeInfo) {
-    if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
+  } else if (wrapper_type_info == &V8GamepadButton::wrapperTypeInfo) {
+    if (OriginTrials::gamepadExtensionsEnabled(execution_context)) {
       V8GamepadButton::installGamepadExtensions(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
   }
 }
 
-void installPendingConditionalFeatureForModules(
+void InstallPendingConditionalFeatureForModules(
     const String& feature,
-    const ScriptState* scriptState) {
+    const ScriptState* script_state) {
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
   // configuration of origin trial enabled attributes and interfaces in IDL
   // files. (crbug.com/615060)
-  (*s_originalInstallPendingConditionalFeatureFunction)(feature, scriptState);
-  v8::Local<v8::Object> globalInstanceObject;
-  v8::Local<v8::Object> prototypeObject;
-  v8::Local<v8::Function> interfaceObject;
-  v8::Isolate* isolate = scriptState->isolate();
-  const DOMWrapperWorld& world = scriptState->world();
-  V8PerContextData* contextData = scriptState->perContextData();
+  (*g_original_install_pending_conditional_feature_function)(feature,
+                                                             script_state);
+  v8::Local<v8::Object> global_instance_object;
+  v8::Local<v8::Object> prototype_object;
+  v8::Local<v8::Function> interface_object;
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  V8PerContextData* context_data = script_state->PerContextData();
   if (feature == "ForeignFetch") {
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8InstallEvent::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8InstallEvent::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8InstallEvent::installForeignFetch(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
     return;
   }
   if (feature == "ImageCapture") {
-    globalInstanceObject = scriptState->context()->Global();
-    V8WindowPartial::installImageCapture(isolate, world, globalInstanceObject,
+    global_instance_object = script_state->GetContext()->Global();
+    V8WindowPartial::installImageCapture(isolate, world, global_instance_object,
                                          v8::Local<v8::Object>(),
                                          v8::Local<v8::Function>());
     return;
   }
   if (feature == "InstalledApp") {
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
-      V8NavigatorPartial::installInstalledApp(isolate, world,
-                                              v8::Local<v8::Object>(),
-                                              prototypeObject, interfaceObject);
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
+      V8NavigatorPartial::installInstalledApp(
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
     return;
   }
   if (feature == "ServiceWorkerNavigationPreload") {
-    globalInstanceObject = scriptState->context()->Global();
+    global_instance_object = script_state->GetContext()->Global();
     V8WindowPartial::installServiceWorkerNavigationPreload(
-        isolate, world, globalInstanceObject, v8::Local<v8::Object>(),
+        isolate, world, global_instance_object, v8::Local<v8::Object>(),
         v8::Local<v8::Function>());
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8FetchEvent::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8FetchEvent::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8FetchEvent::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8ServiceWorkerRegistration::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8ServiceWorkerRegistration::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
     return;
   }
   if (feature == "WebShare") {
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
     return;
   }
   if (feature == "WebUSB2") {
-    globalInstanceObject = scriptState->context()->Global();
-    V8WindowPartial::installWebUSB(isolate, world, globalInstanceObject,
+    global_instance_object = script_state->GetContext()->Global();
+    V8WindowPartial::installWebUSB(isolate, world, global_instance_object,
                                    v8::Local<v8::Object>(),
                                    v8::Local<v8::Function>());
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
-                                        prototypeObject, interfaceObject);
+                                        prototype_object, interface_object);
     }
     return;
   }
   if (feature == "WebVR") {
-    globalInstanceObject = scriptState->context()->Global();
+    global_instance_object = script_state->GetContext()->Global();
     V8WindowPartial::installGamepadExtensions(
-        isolate, world, globalInstanceObject, v8::Local<v8::Object>(),
+        isolate, world, global_instance_object, v8::Local<v8::Object>(),
         v8::Local<v8::Function>());
-    V8WindowPartial::installWebVR(isolate, world, globalInstanceObject,
+    V8WindowPartial::installWebVR(isolate, world, global_instance_object,
                                   v8::Local<v8::Object>(),
                                   v8::Local<v8::Function>());
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Gamepad::wrapperTypeInfo, &prototypeObject, &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8Gamepad::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8Gamepad::installGamepadExtensions(isolate, world,
                                           v8::Local<v8::Object>(),
-                                          prototypeObject, interfaceObject);
+                                          prototype_object, interface_object);
     }
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8GamepadButton::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8GamepadButton::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8GamepadButton::installGamepadExtensions(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
-                                       prototypeObject, interfaceObject);
+                                       prototype_object, interface_object);
     }
     return;
   }
 }
 
-void registerInstallConditionalFeaturesForModules() {
-  registerInstallConditionalFeaturesForCore();
-  s_originalInstallConditionalFeaturesFunction =
-      setInstallConditionalFeaturesFunction(
-          &installConditionalFeaturesForModules);
-  s_originalInstallPendingConditionalFeatureFunction =
-      setInstallPendingConditionalFeatureFunction(
-          &installPendingConditionalFeatureForModules);
+void RegisterInstallConditionalFeaturesForModules() {
+  RegisterInstallConditionalFeaturesForCore();
+  g_original_install_conditional_features_function =
+      SetInstallConditionalFeaturesFunction(
+          &InstallConditionalFeaturesForModules);
+  g_original_install_pending_conditional_feature_function =
+      SetInstallPendingConditionalFeatureFunction(
+          &InstallPendingConditionalFeatureForModules);
 }
 
 }  // namespace blink

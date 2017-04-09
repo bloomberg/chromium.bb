@@ -43,97 +43,99 @@
 
 namespace blink {
 
-WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize) {
+WebImage WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-  std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
-      buffer, true, ImageDecoder::AlphaPremultiplied, ColorBehavior::ignore()));
-  if (!decoder || !decoder->isSizeAvailable())
+  std::unique_ptr<ImageDecoder> decoder(
+      ImageDecoder::Create(buffer, true, ImageDecoder::kAlphaPremultiplied,
+                           ColorBehavior::Ignore()));
+  if (!decoder || !decoder->IsSizeAvailable())
     return WebImage();
 
   // Frames are arranged by decreasing size, then decreasing bit depth.
   // Pick the frame closest to |desiredSize|'s area without being smaller,
   // which has the highest bit depth.
-  const size_t frameCount = decoder->frameCount();
+  const size_t frame_count = decoder->FrameCount();
   size_t index = 0;  // Default to first frame if none are large enough.
-  int frameAreaAtIndex = 0;
-  for (size_t i = 0; i < frameCount; ++i) {
-    const IntSize frameSize = decoder->frameSizeAtIndex(i);
-    if (WebSize(frameSize) == desiredSize) {
+  int frame_area_at_index = 0;
+  for (size_t i = 0; i < frame_count; ++i) {
+    const IntSize frame_size = decoder->FrameSizeAtIndex(i);
+    if (WebSize(frame_size) == desired_size) {
       index = i;
       break;  // Perfect match.
     }
 
-    const int frameArea = frameSize.width() * frameSize.height();
-    if (frameArea < (desiredSize.width * desiredSize.height))
+    const int frame_area = frame_size.Width() * frame_size.Height();
+    if (frame_area < (desired_size.width * desired_size.height))
       break;  // No more frames that are large enough.
 
-    if (!i || (frameArea < frameAreaAtIndex)) {
+    if (!i || (frame_area < frame_area_at_index)) {
       index = i;  // Closer to desired area than previous best match.
-      frameAreaAtIndex = frameArea;
+      frame_area_at_index = frame_area;
     }
   }
 
-  ImageFrame* frame = decoder->frameBufferAtIndex(index);
-  return (frame && !decoder->failed()) ? WebImage(frame->bitmap()) : WebImage();
+  ImageFrame* frame = decoder->FrameBufferAtIndex(index);
+  return (frame && !decoder->Failed()) ? WebImage(frame->Bitmap()) : WebImage();
 }
 
-WebVector<WebImage> WebImage::framesFromData(const WebData& data) {
+WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
   // This is to protect from malicious images. It should be big enough that it's
   // never hit in practice.
-  const size_t maxFrameCount = 8;
+  const size_t kMaxFrameCount = 8;
 
   RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-  std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
-      buffer, true, ImageDecoder::AlphaPremultiplied, ColorBehavior::ignore()));
-  if (!decoder || !decoder->isSizeAvailable())
+  std::unique_ptr<ImageDecoder> decoder(
+      ImageDecoder::Create(buffer, true, ImageDecoder::kAlphaPremultiplied,
+                           ColorBehavior::Ignore()));
+  if (!decoder || !decoder->IsSizeAvailable())
     return WebVector<WebImage>();
 
   // Frames are arranged by decreasing size, then decreasing bit depth.
   // Keep the first frame at every size, has the highest bit depth.
-  const size_t frameCount = decoder->frameCount();
-  IntSize lastSize;
+  const size_t frame_count = decoder->FrameCount();
+  IntSize last_size;
 
   Vector<WebImage> frames;
-  for (size_t i = 0; i < std::min(frameCount, maxFrameCount); ++i) {
-    const IntSize frameSize = decoder->frameSizeAtIndex(i);
-    if (frameSize == lastSize)
+  for (size_t i = 0; i < std::min(frame_count, kMaxFrameCount); ++i) {
+    const IntSize frame_size = decoder->FrameSizeAtIndex(i);
+    if (frame_size == last_size)
       continue;
-    lastSize = frameSize;
+    last_size = frame_size;
 
-    ImageFrame* frame = decoder->frameBufferAtIndex(i);
+    ImageFrame* frame = decoder->FrameBufferAtIndex(i);
     if (!frame)
       continue;
 
-    SkBitmap bitmap = frame->bitmap();
-    if (!bitmap.isNull() && frame->getStatus() == ImageFrame::FrameComplete)
+    SkBitmap bitmap = frame->Bitmap();
+    if (!bitmap.isNull() && frame->GetStatus() == ImageFrame::kFrameComplete)
       frames.push_back(WebImage(bitmap));
   }
 
   return frames;
 }
 
-void WebImage::reset() {
-  m_bitmap.reset();
+void WebImage::Reset() {
+  bitmap_.reset();
 }
 
-void WebImage::assign(const WebImage& image) {
-  m_bitmap = image.m_bitmap;
+void WebImage::Assign(const WebImage& image) {
+  bitmap_ = image.bitmap_;
 }
 
-bool WebImage::isNull() const {
-  return m_bitmap.isNull();
+bool WebImage::IsNull() const {
+  return bitmap_.isNull();
 }
 
 WebSize WebImage::size() const {
-  return WebSize(m_bitmap.width(), m_bitmap.height());
+  return WebSize(bitmap_.width(), bitmap_.height());
 }
 
 WebImage::WebImage(PassRefPtr<Image> image) {
   if (!image)
     return;
 
-  if (sk_sp<SkImage> skImage = image->imageForCurrentFrame())
-    skImage->asLegacyBitmap(&m_bitmap, SkImage::kRO_LegacyBitmapMode);
+  if (sk_sp<SkImage> sk_image = image->ImageForCurrentFrame())
+    sk_image->asLegacyBitmap(&bitmap_, SkImage::kRO_LegacyBitmapMode);
 }
 
 }  // namespace blink

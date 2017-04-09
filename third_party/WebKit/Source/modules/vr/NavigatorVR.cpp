@@ -25,162 +25,165 @@ namespace blink {
 
 namespace {
 
-void rejectNavigatorDetached(ScriptPromiseResolver* resolver) {
-  DOMException* exception = DOMException::create(
-      InvalidStateError, "The object is no longer associated with a document.");
-  resolver->reject(exception);
+void RejectNavigatorDetached(ScriptPromiseResolver* resolver) {
+  DOMException* exception = DOMException::Create(
+      kInvalidStateError,
+      "The object is no longer associated with a document.");
+  resolver->Reject(exception);
 }
 
 }  // namespace
 
-NavigatorVR* NavigatorVR::from(Document& document) {
-  if (!document.frame() || !document.frame()->domWindow())
+NavigatorVR* NavigatorVR::From(Document& document) {
+  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
     return nullptr;
-  Navigator& navigator = *document.frame()->domWindow()->navigator();
-  return &from(navigator);
+  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
+  return &From(navigator);
 }
 
-NavigatorVR& NavigatorVR::from(Navigator& navigator) {
+NavigatorVR& NavigatorVR::From(Navigator& navigator) {
   NavigatorVR* supplement = static_cast<NavigatorVR*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorVR(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState,
+ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
                                          Navigator& navigator) {
-  if (!navigator.frame()) {
+  if (!navigator.GetFrame()) {
     ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    rejectNavigatorDetached(resolver);
+        ScriptPromiseResolver::Create(script_state);
+    ScriptPromise promise = resolver->Promise();
+    RejectNavigatorDetached(resolver);
     return promise;
   }
-  return NavigatorVR::from(navigator).getVRDisplays(scriptState);
+  return NavigatorVR::From(navigator).getVRDisplays(script_state);
 }
 
-ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!document()) {
-    rejectNavigatorDetached(resolver);
+  if (!GetDocument()) {
+    RejectNavigatorDetached(resolver);
     return promise;
   }
 
-  UseCounter::count(*document(), UseCounter::VRGetDisplays);
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  if (!executionContext->isSecureContext())
-    UseCounter::count(*document(), UseCounter::VRGetDisplaysInsecureOrigin);
+  UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplays);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  if (!execution_context->IsSecureContext())
+    UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplaysInsecureOrigin);
 
-  Platform::current()->recordRapporURL("VR.WebVR.GetDisplays",
-                                       document()->url());
+  Platform::Current()->RecordRapporURL("VR.WebVR.GetDisplays",
+                                       GetDocument()->Url());
 
-  controller()->getDisplays(resolver);
+  Controller()->GetDisplays(resolver);
 
   return promise;
 }
 
-VRController* NavigatorVR::controller() {
-  if (!supplementable()->frame())
+VRController* NavigatorVR::Controller() {
+  if (!GetSupplementable()->GetFrame())
     return nullptr;
 
-  if (!m_controller) {
-    m_controller = new VRController(this);
-    m_controller->setListeningForActivate(m_focused && m_listeningForActivate);
-    m_controller->focusChanged();
+  if (!controller_) {
+    controller_ = new VRController(this);
+    controller_->SetListeningForActivate(focused_ && listening_for_activate_);
+    controller_->FocusChanged();
   }
 
-  return m_controller;
+  return controller_;
 }
 
-Document* NavigatorVR::document() {
-  if (!supplementable()->frame())
+Document* NavigatorVR::GetDocument() {
+  if (!GetSupplementable()->GetFrame())
     return nullptr;
 
-  return supplementable()->frame()->document();
+  return GetSupplementable()->GetFrame()->GetDocument();
 }
 
 DEFINE_TRACE(NavigatorVR) {
-  visitor->trace(m_controller);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(controller_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorVR::NavigatorVR(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      FocusChangedObserver(navigator.frame()->page()) {
-  navigator.frame()->domWindow()->registerEventListenerObserver(this);
-  focusedFrameChanged();
+      FocusChangedObserver(navigator.GetFrame()->GetPage()) {
+  navigator.GetFrame()->DomWindow()->RegisterEventListenerObserver(this);
+  FocusedFrameChanged();
 }
 
 NavigatorVR::~NavigatorVR() {}
 
-const char* NavigatorVR::supplementName() {
+const char* NavigatorVR::SupplementName() {
   return "NavigatorVR";
 }
 
-void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
-  if (!supplementable()->frame())
+void NavigatorVR::EnqueueVREvent(VRDisplayEvent* event) {
+  if (!GetSupplementable()->GetFrame())
     return;
 
-  supplementable()->frame()->domWindow()->enqueueWindowEvent(event);
+  GetSupplementable()->GetFrame()->DomWindow()->EnqueueWindowEvent(event);
 }
 
-void NavigatorVR::dispatchVREvent(VRDisplayEvent* event) {
-  if (!(supplementable()->frame()))
+void NavigatorVR::DispatchVREvent(VRDisplayEvent* event) {
+  if (!(GetSupplementable()->GetFrame()))
     return;
 
-  LocalDOMWindow* window = supplementable()->frame()->domWindow();
+  LocalDOMWindow* window = GetSupplementable()->GetFrame()->DomWindow();
   DCHECK(window);
-  event->setTarget(window);
-  window->dispatchEvent(event);
+  event->SetTarget(window);
+  window->DispatchEvent(event);
 }
 
-void NavigatorVR::focusedFrameChanged() {
-  bool focused = isFrameFocused(supplementable()->frame());
-  if (focused == m_focused)
+void NavigatorVR::FocusedFrameChanged() {
+  bool focused = IsFrameFocused(GetSupplementable()->GetFrame());
+  if (focused == focused_)
     return;
-  m_focused = focused;
-  if (m_controller) {
-    m_controller->setListeningForActivate(m_listeningForActivate && focused);
-    m_controller->focusChanged();
+  focused_ = focused;
+  if (controller_) {
+    controller_->SetListeningForActivate(listening_for_activate_ && focused);
+    controller_->FocusChanged();
   }
 }
 
-void NavigatorVR::didAddEventListener(LocalDOMWindow* window,
-                                      const AtomicString& eventType) {
+void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
+                                      const AtomicString& event_type) {
   // TODO(mthiesse): Remove fullscreen requirement for presentation. See
   // crbug.com/687369
-  if (eventType == EventTypeNames::vrdisplayactivate &&
-      supplementable()->frame() && supplementable()->frame()->document() &&
-      Fullscreen::fullscreenEnabled(*supplementable()->frame()->document())) {
-    m_listeningForActivate = true;
-    controller()->setListeningForActivate(m_focused);
-  } else if (eventType == EventTypeNames::vrdisplayconnect) {
+  if (event_type == EventTypeNames::vrdisplayactivate &&
+      GetSupplementable()->GetFrame() &&
+      GetSupplementable()->GetFrame()->GetDocument() &&
+      Fullscreen::FullscreenEnabled(
+          *GetSupplementable()->GetFrame()->GetDocument())) {
+    listening_for_activate_ = true;
+    Controller()->SetListeningForActivate(focused_);
+  } else if (event_type == EventTypeNames::vrdisplayconnect) {
     // If the page is listening for connection events make sure we've created a
     // controller so that we'll be notified of new devices.
-    controller();
+    Controller();
   }
 }
 
-void NavigatorVR::didRemoveEventListener(LocalDOMWindow* window,
-                                         const AtomicString& eventType) {
-  if (eventType == EventTypeNames::vrdisplayactivate &&
-      !window->hasEventListeners(EventTypeNames::vrdisplayactivate)) {
-    m_listeningForActivate = false;
-    controller()->setListeningForActivate(false);
+void NavigatorVR::DidRemoveEventListener(LocalDOMWindow* window,
+                                         const AtomicString& event_type) {
+  if (event_type == EventTypeNames::vrdisplayactivate &&
+      !window->HasEventListeners(EventTypeNames::vrdisplayactivate)) {
+    listening_for_activate_ = false;
+    Controller()->SetListeningForActivate(false);
   }
 }
 
-void NavigatorVR::didRemoveAllEventListeners(LocalDOMWindow* window) {
-  if (!m_controller)
+void NavigatorVR::DidRemoveAllEventListeners(LocalDOMWindow* window) {
+  if (!controller_)
     return;
 
-  m_controller->setListeningForActivate(false);
-  m_listeningForActivate = false;
+  controller_->SetListeningForActivate(false);
+  listening_for_activate_ = false;
 }
 
 }  // namespace blink

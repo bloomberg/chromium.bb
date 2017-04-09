@@ -15,7 +15,7 @@ class CompositorAnimator : public GarbageCollectedMixin {
   // Runs the animation frame callback for the frame starting at the given time.
   // Returns true if another animation frame was requested (i.e. should be
   // reinvoked next frame).
-  virtual bool mutate(double monotonicTimeNow,
+  virtual bool Mutate(double monotonic_time_now,
                       CompositorMutableStateProvider*) = 0;
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

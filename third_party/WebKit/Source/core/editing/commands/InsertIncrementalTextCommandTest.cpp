@@ -13,55 +13,55 @@ class InsertIncrementalTextCommandTest : public EditingTestBase {};
 
 // http://crbug.com/706166
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsReplace) {
-  setBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
-  Element* const sample = document().getElementById("sample");
-  const String newText(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(sample->lastChild(), 1))
-                               .extend(Position(sample->lastChild(), 3))
-                               .build());
+  SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
+  Element* const sample = GetDocument().GetElementById("sample");
+  const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(sample->LastChild(), 1))
+                               .Extend(Position(sample->LastChild(), 3))
+                               .Build());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::create(document(), newText);
-  command->apply();
+      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+  command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE38}),
-            sample->lastChild()->nodeValue())
+            sample->LastChild()->nodeValue())
       << "Replace 'U+D83D U+DE3A (U+1F63A) with 'U+D83D U+DE38'(U+1F638)";
 }
 
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsNoReplace) {
-  setBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
-  Element* const sample = document().getElementById("sample");
-  const String newText(Vector<UChar>{0xD83D, 0xDE3A});  // U+1F63A
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(sample->lastChild(), 1))
-                               .extend(Position(sample->lastChild(), 3))
-                               .build());
+  SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
+  Element* const sample = GetDocument().GetElementById("sample");
+  const String new_text(Vector<UChar>{0xD83D, 0xDE3A});  // U+1F63A
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(sample->LastChild(), 1))
+                               .Extend(Position(sample->LastChild(), 3))
+                               .Build());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::create(document(), newText);
-  command->apply();
+      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+  command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE3A}),
-            sample->lastChild()->nodeValue())
+            sample->LastChild()->nodeValue())
       << "Replace 'U+D83D U+DE3A(U+1F63A) with 'U+D83D U+DE3A'(U+1F63A)";
 }
 
 // http://crbug.com/706166
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsTwo) {
-  setBodyContent(
+  SetBodyContent(
       "<div id=sample contenteditable><a>a</a>b&#x1F63A;&#x1F63A;</div>");
-  Element* const sample = document().getElementById("sample");
-  const String newText(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(sample->lastChild(), 1))
-                               .extend(Position(sample->lastChild(), 5))
-                               .build());
+  Element* const sample = GetDocument().GetElementById("sample");
+  const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(sample->LastChild(), 1))
+                               .Extend(Position(sample->LastChild(), 5))
+                               .Build());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::create(document(), newText);
-  command->apply();
+      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+  command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE38}),
-            sample->lastChild()->nodeValue())
+            sample->LastChild()->nodeValue())
       << "Replace 'U+1F63A U+1F63A with U+1F638";
 }
 

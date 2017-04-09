@@ -21,25 +21,25 @@ class StereoPannerOptions;
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
  public:
-  static PassRefPtr<StereoPannerHandler> create(AudioNode&,
-                                                float sampleRate,
+  static PassRefPtr<StereoPannerHandler> Create(AudioNode&,
+                                                float sample_rate,
                                                 AudioParamHandler& pan);
   ~StereoPannerHandler() override;
 
-  void process(size_t framesToProcess) override;
-  void processOnlyAudioParams(size_t framesToProcess) override;
-  void initialize() override;
+  void Process(size_t frames_to_process) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+  void Initialize() override;
 
-  void setChannelCount(unsigned long, ExceptionState&) final;
-  void setChannelCountMode(const String&, ExceptionState&) final;
+  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCountMode(const String&, ExceptionState&) final;
 
  private:
-  StereoPannerHandler(AudioNode&, float sampleRate, AudioParamHandler& pan);
+  StereoPannerHandler(AudioNode&, float sample_rate, AudioParamHandler& pan);
 
-  std::unique_ptr<StereoPanner> m_stereoPanner;
-  RefPtr<AudioParamHandler> m_pan;
+  std::unique_ptr<StereoPanner> stereo_panner_;
+  RefPtr<AudioParamHandler> pan_;
 
-  AudioFloatArray m_sampleAccuratePanValues;
+  AudioFloatArray sample_accurate_pan_values_;
 
   FRIEND_TEST_ALL_PREFIXES(StereoPannerNodeTest, StereoPannerLifetime);
 };
@@ -48,8 +48,8 @@ class StereoPannerNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static StereoPannerNode* create(BaseAudioContext&, ExceptionState&);
-  static StereoPannerNode* create(BaseAudioContext*,
+  static StereoPannerNode* Create(BaseAudioContext&, ExceptionState&);
+  static StereoPannerNode* Create(BaseAudioContext*,
                                   const StereoPannerOptions&,
                                   ExceptionState&);
   DECLARE_VIRTUAL_TRACE();
@@ -59,7 +59,7 @@ class StereoPannerNode final : public AudioNode {
  private:
   StereoPannerNode(BaseAudioContext&);
 
-  Member<AudioParam> m_pan;
+  Member<AudioParam> pan_;
 };
 
 }  // namespace blink

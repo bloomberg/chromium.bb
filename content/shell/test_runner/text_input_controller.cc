@@ -68,9 +68,9 @@ gin::WrapperInfo TextInputControllerBindings::kWrapperInfo = {
 void TextInputControllerBindings::Install(
     base::WeakPtr<TextInputController> controller,
     blink::WebLocalFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -172,7 +172,7 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 
 void TextInputController::InsertText(const std::string& text) {
   if (auto* controller = GetInputMethodController()) {
-    controller->commitText(blink::WebString::fromUTF8(text),
+    controller->CommitText(blink::WebString::FromUTF8(text),
                            std::vector<blink::WebCompositionUnderline>(),
                            blink::WebRange(), 0);
   }
@@ -180,98 +180,98 @@ void TextInputController::InsertText(const std::string& text) {
 
 void TextInputController::UnmarkText() {
   if (auto* controller = GetInputMethodController()) {
-    controller->finishComposingText(
-        blink::WebInputMethodController::KeepSelection);
+    controller->FinishComposingText(
+        blink::WebInputMethodController::kKeepSelection);
   }
 }
 
 void TextInputController::DoCommand(const std::string& text) {
-  if (view()->mainFrame()) {
-    if (!view()->mainFrame()->toWebLocalFrame()) {
+  if (view()->MainFrame()) {
+    if (!view()->MainFrame()->ToWebLocalFrame()) {
       CHECK(false) << "This function cannot be called if the main frame is not"
                       "a local frame.";
     }
-    view()->mainFrame()->toWebLocalFrame()->executeCommand(
-        blink::WebString::fromUTF8(text));
+    view()->MainFrame()->ToWebLocalFrame()->ExecuteCommand(
+        blink::WebString::FromUTF8(text));
   }
 }
 
 void TextInputController::SetMarkedText(const std::string& text,
                                         int start,
                                         int length) {
-  blink::WebString web_text(blink::WebString::fromUTF8(text));
+  blink::WebString web_text(blink::WebString::FromUTF8(text));
 
   // Split underline into up to 3 elements (before, selection, and after).
   std::vector<blink::WebCompositionUnderline> underlines;
   blink::WebCompositionUnderline underline;
   if (!start) {
-    underline.endOffset = length;
+    underline.end_offset = length;
   } else {
-    underline.endOffset = start;
+    underline.end_offset = start;
     underlines.push_back(underline);
-    underline.startOffset = start;
-    underline.endOffset = start + length;
+    underline.start_offset = start;
+    underline.end_offset = start + length;
   }
   underline.thick = true;
   underlines.push_back(underline);
   if (start + length < static_cast<int>(web_text.length())) {
-    underline.startOffset = underline.endOffset;
-    underline.endOffset = web_text.length();
+    underline.start_offset = underline.end_offset;
+    underline.end_offset = web_text.length();
     underline.thick = false;
     underlines.push_back(underline);
   }
 
   if (auto* controller = GetInputMethodController()) {
-    controller->setComposition(web_text, underlines, blink::WebRange(), start,
+    controller->SetComposition(web_text, underlines, blink::WebRange(), start,
                                start + length);
   }
 }
 
 bool TextInputController::HasMarkedText() {
-  if (!view()->mainFrame())
+  if (!view()->MainFrame())
     return false;
 
-  if (!view()->mainFrame()->toWebLocalFrame()) {
+  if (!view()->MainFrame()->ToWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not"
                     "a local frame.";
   }
 
-  return view()->mainFrame()->toWebLocalFrame()->hasMarkedText();
+  return view()->MainFrame()->ToWebLocalFrame()->HasMarkedText();
 }
 
 std::vector<int> TextInputController::MarkedRange() {
-  if (!view()->mainFrame())
+  if (!view()->MainFrame())
     return std::vector<int>();
 
-  if (!view()->mainFrame()->toWebLocalFrame()) {
+  if (!view()->MainFrame()->ToWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not"
                     "a local frame.";
   }
 
-  blink::WebRange range = view()->mainFrame()->toWebLocalFrame()->markedRange();
+  blink::WebRange range = view()->MainFrame()->ToWebLocalFrame()->MarkedRange();
   std::vector<int> int_array(2);
-  int_array[0] = range.startOffset();
-  int_array[1] = range.endOffset();
+  int_array[0] = range.StartOffset();
+  int_array[1] = range.EndOffset();
 
   return int_array;
 }
 
 std::vector<int> TextInputController::SelectedRange() {
-  if (!view()->mainFrame())
+  if (!view()->MainFrame())
     return std::vector<int>();
 
-  if (!view()->mainFrame()->toWebLocalFrame()) {
+  if (!view()->MainFrame()->ToWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not"
                     "a local frame.";
   }
 
   blink::WebRange range =
-      view()->mainFrame()->toWebLocalFrame()->selectionRange();
-  if (range.isNull())
+      view()->MainFrame()->ToWebLocalFrame()->SelectionRange();
+  if (range.IsNull())
     return std::vector<int>();
   std::vector<int> int_array(2);
-  int_array[0] = range.startOffset();
-  int_array[1] = range.endOffset();
+  int_array[0] = range.StartOffset();
+  int_array[1] = range.EndOffset();
 
   return int_array;
 }
@@ -280,8 +280,8 @@ std::vector<int> TextInputController::FirstRectForCharacterRange(
     unsigned location,
     unsigned length) {
   blink::WebRect rect;
-  if (!view()->focusedFrame() ||
-      !view()->focusedFrame()->firstRectForCharacterRange(location, length,
+  if (!view()->FocusedFrame() ||
+      !view()->FocusedFrame()->FirstRectForCharacterRange(location, length,
                                                           rect)) {
     return std::vector<int>();
   }
@@ -299,23 +299,23 @@ void TextInputController::SetComposition(const std::string& text) {
   // Sends a keydown event with key code = 0xE5 to emulate input method
   // behavior.
   blink::WebKeyboardEvent key_down(
-      blink::WebInputEvent::RawKeyDown, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
 
-  key_down.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
-  view()->handleInputEvent(blink::WebCoalescedInputEvent(key_down));
+  key_down.windows_key_code = 0xE5;  // VKEY_PROCESSKEY
+  view()->HandleInputEvent(blink::WebCoalescedInputEvent(key_down));
 
   // The value returned by std::string::length() may not correspond to the
   // actual number of encoded characters in sequences of multi-byte or
   // variable-length characters.
-  blink::WebString newText = blink::WebString::fromUTF8(text);
+  blink::WebString newText = blink::WebString::FromUTF8(text);
   size_t textLength = newText.length();
 
   std::vector<blink::WebCompositionUnderline> underlines;
   underlines.push_back(blink::WebCompositionUnderline(
       0, textLength, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   if (auto* controller = GetInputMethodController()) {
-    controller->setComposition(
+    controller->SetComposition(
         newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
         blink::WebRange(), textLength, textLength);
   }
@@ -323,7 +323,7 @@ void TextInputController::SetComposition(const std::string& text) {
 
 void TextInputController::ForceTextInputStateUpdate() {
   web_view_test_proxy_base_->delegate()->ForceTextInputStateUpdate(
-      view()->mainFrame());
+      view()->MainFrame());
 }
 
 blink::WebView* TextInputController::view() {
@@ -332,15 +332,15 @@ blink::WebView* TextInputController::view() {
 
 blink::WebInputMethodController*
 TextInputController::GetInputMethodController() {
-  if (!view()->mainFrame())
+  if (!view()->MainFrame())
     return nullptr;
 
-  blink::WebLocalFrame* mainFrame = view()->mainFrame()->toWebLocalFrame();
+  blink::WebLocalFrame* mainFrame = view()->MainFrame()->ToWebLocalFrame();
   if (!mainFrame) {
     CHECK(false) << "WebView does not have a local main frame and"
                     " cannot handle input method controller tasks.";
   }
-  return mainFrame->frameWidget()->getActiveWebInputMethodController();
+  return mainFrame->FrameWidget()->GetActiveWebInputMethodController();
 }
 
 }  // namespace test_runner

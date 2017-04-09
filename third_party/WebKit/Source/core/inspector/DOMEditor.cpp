@@ -49,92 +49,92 @@ class DOMEditor::RemoveChildAction final : public InspectorHistory::Action {
   WTF_MAKE_NONCOPYABLE(RemoveChildAction);
 
  public:
-  RemoveChildAction(ContainerNode* parentNode, Node* node)
+  RemoveChildAction(ContainerNode* parent_node, Node* node)
       : InspectorHistory::Action("RemoveChild"),
-        m_parentNode(parentNode),
-        m_node(node) {}
+        parent_node_(parent_node),
+        node_(node) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    m_anchorNode = m_node->nextSibling();
-    return redo(exceptionState);
+  bool Perform(ExceptionState& exception_state) override {
+    anchor_node_ = node_->nextSibling();
+    return Redo(exception_state);
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(),
-                               exceptionState);
-    return !exceptionState.hadException();
+  bool Undo(ExceptionState& exception_state) override {
+    parent_node_->InsertBefore(node_.Get(), anchor_node_.Get(),
+                               exception_state);
+    return !exception_state.HadException();
   }
 
-  bool redo(ExceptionState& exceptionState) override {
-    m_parentNode->removeChild(m_node.get(), exceptionState);
-    return !exceptionState.hadException();
+  bool Redo(ExceptionState& exception_state) override {
+    parent_node_->RemoveChild(node_.Get(), exception_state);
+    return !exception_state.HadException();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parentNode);
-    visitor->trace(m_node);
-    visitor->trace(m_anchorNode);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(parent_node_);
+    visitor->Trace(node_);
+    visitor->Trace(anchor_node_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<ContainerNode> m_parentNode;
-  Member<Node> m_node;
-  Member<Node> m_anchorNode;
+  Member<ContainerNode> parent_node_;
+  Member<Node> node_;
+  Member<Node> anchor_node_;
 };
 
 class DOMEditor::InsertBeforeAction final : public InspectorHistory::Action {
   WTF_MAKE_NONCOPYABLE(InsertBeforeAction);
 
  public:
-  InsertBeforeAction(ContainerNode* parentNode, Node* node, Node* anchorNode)
+  InsertBeforeAction(ContainerNode* parent_node, Node* node, Node* anchor_node)
       : InspectorHistory::Action("InsertBefore"),
-        m_parentNode(parentNode),
-        m_node(node),
-        m_anchorNode(anchorNode) {}
+        parent_node_(parent_node),
+        node_(node),
+        anchor_node_(anchor_node) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    if (m_node->parentNode()) {
-      m_removeChildAction =
-          new RemoveChildAction(m_node->parentNode(), m_node.get());
-      if (!m_removeChildAction->perform(exceptionState))
+  bool Perform(ExceptionState& exception_state) override {
+    if (node_->parentNode()) {
+      remove_child_action_ =
+          new RemoveChildAction(node_->parentNode(), node_.Get());
+      if (!remove_child_action_->Perform(exception_state))
         return false;
     }
-    m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(),
-                               exceptionState);
-    return !exceptionState.hadException();
+    parent_node_->InsertBefore(node_.Get(), anchor_node_.Get(),
+                               exception_state);
+    return !exception_state.HadException();
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    m_parentNode->removeChild(m_node.get(), exceptionState);
-    if (exceptionState.hadException())
+  bool Undo(ExceptionState& exception_state) override {
+    parent_node_->RemoveChild(node_.Get(), exception_state);
+    if (exception_state.HadException())
       return false;
-    if (m_removeChildAction)
-      return m_removeChildAction->undo(exceptionState);
+    if (remove_child_action_)
+      return remove_child_action_->Undo(exception_state);
     return true;
   }
 
-  bool redo(ExceptionState& exceptionState) override {
-    if (m_removeChildAction && !m_removeChildAction->redo(exceptionState))
+  bool Redo(ExceptionState& exception_state) override {
+    if (remove_child_action_ && !remove_child_action_->Redo(exception_state))
       return false;
-    m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(),
-                               exceptionState);
-    return !exceptionState.hadException();
+    parent_node_->InsertBefore(node_.Get(), anchor_node_.Get(),
+                               exception_state);
+    return !exception_state.HadException();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parentNode);
-    visitor->trace(m_node);
-    visitor->trace(m_anchorNode);
-    visitor->trace(m_removeChildAction);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(parent_node_);
+    visitor->Trace(node_);
+    visitor->Trace(anchor_node_);
+    visitor->Trace(remove_child_action_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<ContainerNode> m_parentNode;
-  Member<Node> m_node;
-  Member<Node> m_anchorNode;
-  Member<RemoveChildAction> m_removeChildAction;
+  Member<ContainerNode> parent_node_;
+  Member<Node> node_;
+  Member<Node> anchor_node_;
+  Member<RemoveChildAction> remove_child_action_;
 };
 
 class DOMEditor::RemoveAttributeAction final : public InspectorHistory::Action {
@@ -143,33 +143,33 @@ class DOMEditor::RemoveAttributeAction final : public InspectorHistory::Action {
  public:
   RemoveAttributeAction(Element* element, const AtomicString& name)
       : InspectorHistory::Action("RemoveAttribute"),
-        m_element(element),
-        m_name(name) {}
+        element_(element),
+        name_(name) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    m_value = m_element->getAttribute(m_name);
-    return redo(exceptionState);
+  bool Perform(ExceptionState& exception_state) override {
+    value_ = element_->getAttribute(name_);
+    return Redo(exception_state);
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    m_element->setAttribute(m_name, m_value, exceptionState);
+  bool Undo(ExceptionState& exception_state) override {
+    element_->setAttribute(name_, value_, exception_state);
     return true;
   }
 
-  bool redo(ExceptionState&) override {
-    m_element->removeAttribute(m_name);
+  bool Redo(ExceptionState&) override {
+    element_->removeAttribute(name_);
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_element);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(element_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<Element> m_element;
-  AtomicString m_name;
-  AtomicString m_value;
+  Member<Element> element_;
+  AtomicString name_;
+  AtomicString value_;
 };
 
 class DOMEditor::SetAttributeAction final : public InspectorHistory::Action {
@@ -180,43 +180,43 @@ class DOMEditor::SetAttributeAction final : public InspectorHistory::Action {
                      const AtomicString& name,
                      const AtomicString& value)
       : InspectorHistory::Action("SetAttribute"),
-        m_element(element),
-        m_name(name),
-        m_value(value),
-        m_hadAttribute(false) {}
+        element_(element),
+        name_(name),
+        value_(value),
+        had_attribute_(false) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    const AtomicString& value = m_element->getAttribute(m_name);
-    m_hadAttribute = !value.isNull();
-    if (m_hadAttribute)
-      m_oldValue = value;
-    return redo(exceptionState);
+  bool Perform(ExceptionState& exception_state) override {
+    const AtomicString& value = element_->getAttribute(name_);
+    had_attribute_ = !value.IsNull();
+    if (had_attribute_)
+      old_value_ = value;
+    return Redo(exception_state);
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    if (m_hadAttribute)
-      m_element->setAttribute(m_name, m_oldValue, exceptionState);
+  bool Undo(ExceptionState& exception_state) override {
+    if (had_attribute_)
+      element_->setAttribute(name_, old_value_, exception_state);
     else
-      m_element->removeAttribute(m_name);
+      element_->removeAttribute(name_);
     return true;
   }
 
-  bool redo(ExceptionState& exceptionState) override {
-    m_element->setAttribute(m_name, m_value, exceptionState);
+  bool Redo(ExceptionState& exception_state) override {
+    element_->setAttribute(name_, value_, exception_state);
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_element);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(element_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<Element> m_element;
-  AtomicString m_name;
-  AtomicString m_value;
-  bool m_hadAttribute;
-  AtomicString m_oldValue;
+  Member<Element> element_;
+  AtomicString name_;
+  AtomicString value_;
+  bool had_attribute_;
+  AtomicString old_value_;
 };
 
 class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
@@ -225,49 +225,50 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
  public:
   SetOuterHTMLAction(Node* node, const String& html)
       : InspectorHistory::Action("SetOuterHTML"),
-        m_node(node),
-        m_nextSibling(node->nextSibling()),
-        m_html(html),
-        m_newNode(nullptr),
-        m_history(new InspectorHistory()),
-        m_domEditor(new DOMEditor(m_history.get())) {}
+        node_(node),
+        next_sibling_(node->nextSibling()),
+        html_(html),
+        new_node_(nullptr),
+        history_(new InspectorHistory()),
+        dom_editor_(new DOMEditor(history_.Get())) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    m_oldHTML = createMarkup(m_node.get());
-    ASSERT(m_node->ownerDocument());
-    DOMPatchSupport domPatchSupport(m_domEditor.get(),
-                                    *m_node->ownerDocument());
-    m_newNode = domPatchSupport.patchNode(m_node.get(), m_html, exceptionState);
-    return !exceptionState.hadException();
+  bool Perform(ExceptionState& exception_state) override {
+    old_html_ = CreateMarkup(node_.Get());
+    ASSERT(node_->ownerDocument());
+    DOMPatchSupport dom_patch_support(dom_editor_.Get(),
+                                      *node_->ownerDocument());
+    new_node_ =
+        dom_patch_support.PatchNode(node_.Get(), html_, exception_state);
+    return !exception_state.HadException();
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    return m_history->undo(exceptionState);
+  bool Undo(ExceptionState& exception_state) override {
+    return history_->Undo(exception_state);
   }
 
-  bool redo(ExceptionState& exceptionState) override {
-    return m_history->redo(exceptionState);
+  bool Redo(ExceptionState& exception_state) override {
+    return history_->Redo(exception_state);
   }
 
-  Node* newNode() { return m_newNode; }
+  Node* NewNode() { return new_node_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_node);
-    visitor->trace(m_nextSibling);
-    visitor->trace(m_newNode);
-    visitor->trace(m_history);
-    visitor->trace(m_domEditor);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(node_);
+    visitor->Trace(next_sibling_);
+    visitor->Trace(new_node_);
+    visitor->Trace(history_);
+    visitor->Trace(dom_editor_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<Node> m_node;
-  Member<Node> m_nextSibling;
-  String m_html;
-  String m_oldHTML;
-  Member<Node> m_newNode;
-  Member<InspectorHistory> m_history;
-  Member<DOMEditor> m_domEditor;
+  Member<Node> node_;
+  Member<Node> next_sibling_;
+  String html_;
+  String old_html_;
+  Member<Node> new_node_;
+  Member<InspectorHistory> history_;
+  Member<DOMEditor> dom_editor_;
 };
 
 class DOMEditor::ReplaceWholeTextAction final
@@ -275,35 +276,35 @@ class DOMEditor::ReplaceWholeTextAction final
   WTF_MAKE_NONCOPYABLE(ReplaceWholeTextAction);
 
  public:
-  ReplaceWholeTextAction(Text* textNode, const String& text)
+  ReplaceWholeTextAction(Text* text_node, const String& text)
       : InspectorHistory::Action("ReplaceWholeText"),
-        m_textNode(textNode),
-        m_text(text) {}
+        text_node_(text_node),
+        text_(text) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    m_oldText = m_textNode->wholeText();
-    return redo(exceptionState);
+  bool Perform(ExceptionState& exception_state) override {
+    old_text_ = text_node_->wholeText();
+    return Redo(exception_state);
   }
 
-  bool undo(ExceptionState&) override {
-    m_textNode->replaceWholeText(m_oldText);
+  bool Undo(ExceptionState&) override {
+    text_node_->ReplaceWholeText(old_text_);
     return true;
   }
 
-  bool redo(ExceptionState&) override {
-    m_textNode->replaceWholeText(m_text);
+  bool Redo(ExceptionState&) override {
+    text_node_->ReplaceWholeText(text_);
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_textNode);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(text_node_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<Text> m_textNode;
-  String m_text;
-  String m_oldText;
+  Member<Text> text_node_;
+  String text_;
+  String old_text_;
 };
 
 class DOMEditor::ReplaceChildNodeAction final
@@ -311,39 +312,39 @@ class DOMEditor::ReplaceChildNodeAction final
   WTF_MAKE_NONCOPYABLE(ReplaceChildNodeAction);
 
  public:
-  ReplaceChildNodeAction(ContainerNode* parentNode,
-                         Node* newNode,
-                         Node* oldNode)
+  ReplaceChildNodeAction(ContainerNode* parent_node,
+                         Node* new_node,
+                         Node* old_node)
       : InspectorHistory::Action("ReplaceChildNode"),
-        m_parentNode(parentNode),
-        m_newNode(newNode),
-        m_oldNode(oldNode) {}
+        parent_node_(parent_node),
+        new_node_(new_node),
+        old_node_(old_node) {}
 
-  bool perform(ExceptionState& exceptionState) override {
-    return redo(exceptionState);
+  bool Perform(ExceptionState& exception_state) override {
+    return Redo(exception_state);
   }
 
-  bool undo(ExceptionState& exceptionState) override {
-    m_parentNode->replaceChild(m_oldNode, m_newNode.get(), exceptionState);
-    return !exceptionState.hadException();
+  bool Undo(ExceptionState& exception_state) override {
+    parent_node_->ReplaceChild(old_node_, new_node_.Get(), exception_state);
+    return !exception_state.HadException();
   }
 
-  bool redo(ExceptionState& exceptionState) override {
-    m_parentNode->replaceChild(m_newNode, m_oldNode.get(), exceptionState);
-    return !exceptionState.hadException();
+  bool Redo(ExceptionState& exception_state) override {
+    parent_node_->ReplaceChild(new_node_, old_node_.Get(), exception_state);
+    return !exception_state.HadException();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parentNode);
-    visitor->trace(m_newNode);
-    visitor->trace(m_oldNode);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(parent_node_);
+    visitor->Trace(new_node_);
+    visitor->Trace(old_node_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<ContainerNode> m_parentNode;
-  Member<Node> m_newNode;
-  Member<Node> m_oldNode;
+  Member<ContainerNode> parent_node_;
+  Member<Node> new_node_;
+  Member<Node> old_node_;
 };
 
 class DOMEditor::SetNodeValueAction final : public InspectorHistory::Action {
@@ -351,154 +352,153 @@ class DOMEditor::SetNodeValueAction final : public InspectorHistory::Action {
 
  public:
   SetNodeValueAction(Node* node, const String& value)
-      : InspectorHistory::Action("SetNodeValue"),
-        m_node(node),
-        m_value(value) {}
+      : InspectorHistory::Action("SetNodeValue"), node_(node), value_(value) {}
 
-  bool perform(ExceptionState&) override {
-    m_oldValue = m_node->nodeValue();
-    return redo(IGNORE_EXCEPTION_FOR_TESTING);
+  bool Perform(ExceptionState&) override {
+    old_value_ = node_->nodeValue();
+    return Redo(IGNORE_EXCEPTION_FOR_TESTING);
   }
 
-  bool undo(ExceptionState&) override {
-    m_node->setNodeValue(m_oldValue);
+  bool Undo(ExceptionState&) override {
+    node_->setNodeValue(old_value_);
     return true;
   }
 
-  bool redo(ExceptionState&) override {
-    m_node->setNodeValue(m_value);
+  bool Redo(ExceptionState&) override {
+    node_->setNodeValue(value_);
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_node);
-    InspectorHistory::Action::trace(visitor);
+    visitor->Trace(node_);
+    InspectorHistory::Action::Trace(visitor);
   }
 
  private:
-  Member<Node> m_node;
-  String m_value;
-  String m_oldValue;
+  Member<Node> node_;
+  String value_;
+  String old_value_;
 };
 
-DOMEditor::DOMEditor(InspectorHistory* history) : m_history(history) {}
+DOMEditor::DOMEditor(InspectorHistory* history) : history_(history) {}
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode,
+bool DOMEditor::InsertBefore(ContainerNode* parent_node,
                              Node* node,
-                             Node* anchorNode,
-                             ExceptionState& exceptionState) {
-  return m_history->perform(
-      new InsertBeforeAction(parentNode, node, anchorNode), exceptionState);
+                             Node* anchor_node,
+                             ExceptionState& exception_state) {
+  return history_->Perform(
+      new InsertBeforeAction(parent_node, node, anchor_node), exception_state);
 }
 
-bool DOMEditor::removeChild(ContainerNode* parentNode,
+bool DOMEditor::RemoveChild(ContainerNode* parent_node,
                             Node* node,
-                            ExceptionState& exceptionState) {
-  return m_history->perform(new RemoveChildAction(parentNode, node),
-                            exceptionState);
+                            ExceptionState& exception_state) {
+  return history_->Perform(new RemoveChildAction(parent_node, node),
+                           exception_state);
 }
 
-bool DOMEditor::setAttribute(Element* element,
+bool DOMEditor::SetAttribute(Element* element,
                              const String& name,
                              const String& value,
-                             ExceptionState& exceptionState) {
-  return m_history->perform(
+                             ExceptionState& exception_state) {
+  return history_->Perform(
       new SetAttributeAction(element, AtomicString(name), AtomicString(value)),
-      exceptionState);
+      exception_state);
 }
 
-bool DOMEditor::removeAttribute(Element* element,
+bool DOMEditor::RemoveAttribute(Element* element,
                                 const String& name,
-                                ExceptionState& exceptionState) {
-  return m_history->perform(
-      new RemoveAttributeAction(element, AtomicString(name)), exceptionState);
+                                ExceptionState& exception_state) {
+  return history_->Perform(
+      new RemoveAttributeAction(element, AtomicString(name)), exception_state);
 }
 
-bool DOMEditor::setOuterHTML(Node* node,
+bool DOMEditor::SetOuterHTML(Node* node,
                              const String& html,
-                             Node** newNode,
-                             ExceptionState& exceptionState) {
+                             Node** new_node,
+                             ExceptionState& exception_state) {
   SetOuterHTMLAction* action = new SetOuterHTMLAction(node, html);
-  bool result = m_history->perform(action, exceptionState);
+  bool result = history_->Perform(action, exception_state);
   if (result)
-    *newNode = action->newNode();
+    *new_node = action->NewNode();
   return result;
 }
 
-bool DOMEditor::replaceWholeText(Text* textNode,
+bool DOMEditor::ReplaceWholeText(Text* text_node,
                                  const String& text,
-                                 ExceptionState& exceptionState) {
-  return m_history->perform(new ReplaceWholeTextAction(textNode, text),
-                            exceptionState);
+                                 ExceptionState& exception_state) {
+  return history_->Perform(new ReplaceWholeTextAction(text_node, text),
+                           exception_state);
 }
 
-bool DOMEditor::replaceChild(ContainerNode* parentNode,
-                             Node* newNode,
-                             Node* oldNode,
-                             ExceptionState& exceptionState) {
-  return m_history->perform(
-      new ReplaceChildNodeAction(parentNode, newNode, oldNode), exceptionState);
+bool DOMEditor::ReplaceChild(ContainerNode* parent_node,
+                             Node* new_node,
+                             Node* old_node,
+                             ExceptionState& exception_state) {
+  return history_->Perform(
+      new ReplaceChildNodeAction(parent_node, new_node, old_node),
+      exception_state);
 }
 
-bool DOMEditor::setNodeValue(Node* node,
+bool DOMEditor::SetNodeValue(Node* node,
                              const String& value,
-                             ExceptionState& exceptionState) {
-  return m_history->perform(new SetNodeValueAction(node, value),
-                            exceptionState);
+                             ExceptionState& exception_state) {
+  return history_->Perform(new SetNodeValueAction(node, value),
+                           exception_state);
 }
 
-static Response toResponse(ExceptionState& exceptionState) {
-  if (exceptionState.hadException()) {
-    return Response::Error(DOMException::getErrorName(exceptionState.code()) +
-                           " " + exceptionState.message());
+static Response ToResponse(ExceptionState& exception_state) {
+  if (exception_state.HadException()) {
+    return Response::Error(DOMException::GetErrorName(exception_state.Code()) +
+                           " " + exception_state.Message());
   }
   return Response::OK();
 }
 
-Response DOMEditor::insertBefore(ContainerNode* parentNode,
+Response DOMEditor::InsertBefore(ContainerNode* parent_node,
                                  Node* node,
-                                 Node* anchorNode) {
-  DummyExceptionStateForTesting exceptionState;
-  insertBefore(parentNode, node, anchorNode, exceptionState);
-  return toResponse(exceptionState);
+                                 Node* anchor_node) {
+  DummyExceptionStateForTesting exception_state;
+  InsertBefore(parent_node, node, anchor_node, exception_state);
+  return ToResponse(exception_state);
 }
 
-Response DOMEditor::removeChild(ContainerNode* parentNode, Node* node) {
-  DummyExceptionStateForTesting exceptionState;
-  removeChild(parentNode, node, exceptionState);
-  return toResponse(exceptionState);
+Response DOMEditor::RemoveChild(ContainerNode* parent_node, Node* node) {
+  DummyExceptionStateForTesting exception_state;
+  RemoveChild(parent_node, node, exception_state);
+  return ToResponse(exception_state);
 }
 
-Response DOMEditor::setAttribute(Element* element,
+Response DOMEditor::SetAttribute(Element* element,
                                  const String& name,
                                  const String& value) {
-  DummyExceptionStateForTesting exceptionState;
-  setAttribute(element, name, value, exceptionState);
-  return toResponse(exceptionState);
+  DummyExceptionStateForTesting exception_state;
+  SetAttribute(element, name, value, exception_state);
+  return ToResponse(exception_state);
 }
 
-Response DOMEditor::removeAttribute(Element* element, const String& name) {
-  DummyExceptionStateForTesting exceptionState;
-  removeAttribute(element, name, exceptionState);
-  return toResponse(exceptionState);
+Response DOMEditor::RemoveAttribute(Element* element, const String& name) {
+  DummyExceptionStateForTesting exception_state;
+  RemoveAttribute(element, name, exception_state);
+  return ToResponse(exception_state);
 }
 
-Response DOMEditor::setOuterHTML(Node* node,
+Response DOMEditor::SetOuterHTML(Node* node,
                                  const String& html,
-                                 Node** newNode) {
-  DummyExceptionStateForTesting exceptionState;
-  setOuterHTML(node, html, newNode, exceptionState);
-  return toResponse(exceptionState);
+                                 Node** new_node) {
+  DummyExceptionStateForTesting exception_state;
+  SetOuterHTML(node, html, new_node, exception_state);
+  return ToResponse(exception_state);
 }
 
-Response DOMEditor::replaceWholeText(Text* textNode, const String& text) {
-  DummyExceptionStateForTesting exceptionState;
-  replaceWholeText(textNode, text, exceptionState);
-  return toResponse(exceptionState);
+Response DOMEditor::ReplaceWholeText(Text* text_node, const String& text) {
+  DummyExceptionStateForTesting exception_state;
+  ReplaceWholeText(text_node, text, exception_state);
+  return ToResponse(exception_state);
 }
 
 DEFINE_TRACE(DOMEditor) {
-  visitor->trace(m_history);
+  visitor->Trace(history_);
 }
 
 }  // namespace blink

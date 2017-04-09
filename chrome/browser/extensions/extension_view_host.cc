@@ -178,8 +178,8 @@ content::KeyboardEventProcessingResult
 ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
                                           const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP &&
-      event.type() == NativeWebKeyboardEvent::RawKeyDown &&
-      event.windowsKeyCode == ui::VKEY_ESCAPE) {
+      event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+      event.windows_key_code == ui::VKEY_ESCAPE) {
     return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
   }
 
@@ -195,8 +195,8 @@ void ExtensionViewHost::HandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
-    if (event.type() == NativeWebKeyboardEvent::RawKeyDown &&
-        event.windowsKeyCode == ui::VKEY_ESCAPE) {
+    if (event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+        event.windows_key_code == ui::VKEY_ESCAPE) {
       Close();
       return;
     }
@@ -208,9 +208,9 @@ bool ExtensionViewHost::PreHandleGestureEvent(
     content::WebContents* source,
     const blink::WebGestureEvent& event) {
   // Disable pinch zooming.
-  return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
-         event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
-         event.type() == blink::WebGestureEvent::GesturePinchEnd;
+  return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
+         event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
+         event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
 }
 
 content::ColorChooser* ExtensionViewHost::OpenColorChooser(

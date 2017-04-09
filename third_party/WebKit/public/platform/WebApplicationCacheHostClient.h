@@ -41,14 +41,14 @@ class WebApplicationCacheHostClient {
  public:
   // Called when a different cache, including possibly no cache, is associated
   // with the host.
-  virtual void didChangeCacheAssociation() = 0;
+  virtual void DidChangeCacheAssociation() = 0;
 
   // Called to fire events in the scriptable interface.
-  virtual void notifyEventListener(WebApplicationCacheHost::EventID) = 0;
-  virtual void notifyProgressEventListener(const WebURL&,
+  virtual void NotifyEventListener(WebApplicationCacheHost::EventID) = 0;
+  virtual void NotifyProgressEventListener(const WebURL&,
                                            int num_total,
                                            int num_complete) = 0;
-  virtual void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
+  virtual void NotifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
                                         const WebURL&,
                                         int status,
                                         const WebString& message) = 0;

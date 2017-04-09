@@ -24,27 +24,27 @@ class MODULES_EXPORT NavigatorServiceWorker final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 
  public:
-  static NavigatorServiceWorker* from(Document&);
-  static NavigatorServiceWorker& from(Navigator&);
-  static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
+  static NavigatorServiceWorker* From(Document&);
+  static NavigatorServiceWorker& From(Navigator&);
+  static NavigatorServiceWorker* ToNavigatorServiceWorker(Navigator&);
   static ServiceWorkerContainer* serviceWorker(ScriptState*,
                                                Navigator&,
                                                ExceptionState&);
   static ServiceWorkerContainer* serviceWorker(ScriptState*,
                                                Navigator&,
-                                               String& errorMessage);
-  void clearServiceWorker();
+                                               String& error_message);
+  void ClearServiceWorker();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit NavigatorServiceWorker(Navigator&);
   ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
-  ServiceWorkerContainer* serviceWorker(LocalFrame*, String& errorMessage);
+  ServiceWorkerContainer* serviceWorker(LocalFrame*, String& error_message);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<ServiceWorkerContainer> m_serviceWorker;
+  Member<ServiceWorkerContainer> service_worker_;
 };
 
 }  // namespace blink

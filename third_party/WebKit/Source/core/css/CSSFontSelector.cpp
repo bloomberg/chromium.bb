@@ -43,141 +43,141 @@
 namespace blink {
 
 CSSFontSelector::CSSFontSelector(Document* document)
-    : m_document(document),
-      m_genericFontFamilySettings(
-          document->frame()->settings()->genericFontFamilySettings()) {
+    : document_(document),
+      generic_font_family_settings_(
+          document->GetFrame()->GetSettings()->GetGenericFontFamilySettings()) {
   // FIXME: An old comment used to say there was no need to hold a reference to
   // m_document because "we are guaranteed to be destroyed before the document".
   // But there does not seem to be any such guarantee.
-  DCHECK(m_document);
-  DCHECK(m_document->frame());
-  FontCache::fontCache()->addClient(this);
-  FontFaceSet::from(*document)->addFontFacesToFontFaceCache(&m_fontFaceCache,
+  DCHECK(document_);
+  DCHECK(document_->GetFrame());
+  FontCache::GetFontCache()->AddClient(this);
+  FontFaceSet::From(*document)->AddFontFacesToFontFaceCache(&font_face_cache_,
                                                             this);
 }
 
 CSSFontSelector::~CSSFontSelector() {}
 
-void CSSFontSelector::registerForInvalidationCallbacks(
+void CSSFontSelector::RegisterForInvalidationCallbacks(
     CSSFontSelectorClient* client) {
   CHECK(client);
-  m_clients.insert(client);
+  clients_.insert(client);
 }
 
-void CSSFontSelector::unregisterForInvalidationCallbacks(
+void CSSFontSelector::UnregisterForInvalidationCallbacks(
     CSSFontSelectorClient* client) {
-  m_clients.erase(client);
+  clients_.erase(client);
 }
 
-void CSSFontSelector::dispatchInvalidationCallbacks() {
-  m_fontFaceCache.incrementVersion();
+void CSSFontSelector::DispatchInvalidationCallbacks() {
+  font_face_cache_.IncrementVersion();
 
   HeapVector<Member<CSSFontSelectorClient>> clients;
-  copyToVector(m_clients, clients);
+  CopyToVector(clients_, clients);
   for (auto& client : clients)
-    client->fontsNeedUpdate(this);
+    client->FontsNeedUpdate(this);
 }
 
-void CSSFontSelector::fontFaceInvalidated() {
-  dispatchInvalidationCallbacks();
+void CSSFontSelector::FontFaceInvalidated() {
+  DispatchInvalidationCallbacks();
 }
 
-void CSSFontSelector::fontCacheInvalidated() {
-  dispatchInvalidationCallbacks();
+void CSSFontSelector::FontCacheInvalidated() {
+  DispatchInvalidationCallbacks();
 }
 
-static AtomicString familyNameFromSettings(
+static AtomicString FamilyNameFromSettings(
     const GenericFontFamilySettings& settings,
-    const FontDescription& fontDescription,
-    const AtomicString& genericFamilyName) {
+    const FontDescription& font_description,
+    const AtomicString& generic_family_name) {
 #if OS(ANDROID)
-  if (fontDescription.genericFamily() == FontDescription::StandardFamily)
-    return FontCache::getGenericFamilyNameForScript(
-        FontFamilyNames::webkit_standard, fontDescription);
+  if (font_description.GenericFamily() == FontDescription::kStandardFamily)
+    return FontCache::GetGenericFamilyNameForScript(
+        FontFamilyNames::webkit_standard, font_description);
 
-  if (genericFamilyName.startsWith("-webkit-"))
-    return FontCache::getGenericFamilyNameForScript(genericFamilyName,
-                                                    fontDescription);
+  if (generic_family_name.StartsWith("-webkit-"))
+    return FontCache::GetGenericFamilyNameForScript(generic_family_name,
+                                                    font_description);
 #else
-  UScriptCode script = fontDescription.script();
-  if (fontDescription.genericFamily() == FontDescription::StandardFamily)
-    return settings.standard(script);
-  if (genericFamilyName == FontFamilyNames::webkit_serif)
-    return settings.serif(script);
-  if (genericFamilyName == FontFamilyNames::webkit_sans_serif)
-    return settings.sansSerif(script);
-  if (genericFamilyName == FontFamilyNames::webkit_cursive)
-    return settings.cursive(script);
-  if (genericFamilyName == FontFamilyNames::webkit_fantasy)
-    return settings.fantasy(script);
-  if (genericFamilyName == FontFamilyNames::webkit_monospace)
-    return settings.fixed(script);
-  if (genericFamilyName == FontFamilyNames::webkit_pictograph)
-    return settings.pictograph(script);
-  if (genericFamilyName == FontFamilyNames::webkit_standard)
-    return settings.standard(script);
+  UScriptCode script = font_description.Script();
+  if (font_description.GenericFamily() == FontDescription::kStandardFamily)
+    return settings.Standard(script);
+  if (generic_family_name == FontFamilyNames::webkit_serif)
+    return settings.Serif(script);
+  if (generic_family_name == FontFamilyNames::webkit_sans_serif)
+    return settings.SansSerif(script);
+  if (generic_family_name == FontFamilyNames::webkit_cursive)
+    return settings.Cursive(script);
+  if (generic_family_name == FontFamilyNames::webkit_fantasy)
+    return settings.Fantasy(script);
+  if (generic_family_name == FontFamilyNames::webkit_monospace)
+    return settings.Fixed(script);
+  if (generic_family_name == FontFamilyNames::webkit_pictograph)
+    return settings.Pictograph(script);
+  if (generic_family_name == FontFamilyNames::webkit_standard)
+    return settings.Standard(script);
 #endif
-  return emptyAtom;
+  return g_empty_atom;
 }
 
-PassRefPtr<FontData> CSSFontSelector::getFontData(
-    const FontDescription& fontDescription,
-    const AtomicString& familyName) {
+PassRefPtr<FontData> CSSFontSelector::GetFontData(
+    const FontDescription& font_description,
+    const AtomicString& family_name) {
   if (CSSSegmentedFontFace* face =
-          m_fontFaceCache.get(fontDescription, familyName))
-    return face->getFontData(fontDescription);
+          font_face_cache_.Get(font_description, family_name))
+    return face->GetFontData(font_description);
 
   // Try to return the correct font based off our settings, in case we were
   // handed the generic font family name.
-  AtomicString settingsFamilyName = familyNameFromSettings(
-      m_genericFontFamilySettings, fontDescription, familyName);
-  if (settingsFamilyName.isEmpty())
+  AtomicString settings_family_name = FamilyNameFromSettings(
+      generic_font_family_settings_, font_description, family_name);
+  if (settings_family_name.IsEmpty())
     return nullptr;
 
-  return FontCache::fontCache()->getFontData(fontDescription,
-                                             settingsFamilyName);
+  return FontCache::GetFontCache()->GetFontData(font_description,
+                                                settings_family_name);
 }
 
-void CSSFontSelector::willUseFontData(const FontDescription& fontDescription,
+void CSSFontSelector::WillUseFontData(const FontDescription& font_description,
                                       const AtomicString& family,
                                       const String& text) {
-  CSSSegmentedFontFace* face = m_fontFaceCache.get(fontDescription, family);
+  CSSSegmentedFontFace* face = font_face_cache_.Get(font_description, family);
   if (face)
-    face->willUseFontData(fontDescription, text);
+    face->WillUseFontData(font_description, text);
 }
 
-void CSSFontSelector::willUseRange(const FontDescription& fontDescription,
+void CSSFontSelector::WillUseRange(const FontDescription& font_description,
                                    const AtomicString& family,
-                                   const FontDataForRangeSet& rangeSet) {
-  CSSSegmentedFontFace* face = m_fontFaceCache.get(fontDescription, family);
+                                   const FontDataForRangeSet& range_set) {
+  CSSSegmentedFontFace* face = font_face_cache_.Get(font_description, family);
   if (face)
-    face->willUseRange(fontDescription, rangeSet);
+    face->WillUseRange(font_description, range_set);
 }
 
-bool CSSFontSelector::isPlatformFamilyMatchAvailable(
-    const FontDescription& fontDescription,
-    const AtomicString& passedFamily) {
-  AtomicString family = familyNameFromSettings(m_genericFontFamilySettings,
-                                               fontDescription, passedFamily);
-  if (family.isEmpty())
-    family = passedFamily;
-  return FontCache::fontCache()->isPlatformFamilyMatchAvailable(fontDescription,
-                                                                family);
+bool CSSFontSelector::IsPlatformFamilyMatchAvailable(
+    const FontDescription& font_description,
+    const AtomicString& passed_family) {
+  AtomicString family = FamilyNameFromSettings(generic_font_family_settings_,
+                                               font_description, passed_family);
+  if (family.IsEmpty())
+    family = passed_family;
+  return FontCache::GetFontCache()->IsPlatformFamilyMatchAvailable(
+      font_description, family);
 }
 
-void CSSFontSelector::updateGenericFontFamilySettings(Document& document) {
-  if (!document.settings())
+void CSSFontSelector::UpdateGenericFontFamilySettings(Document& document) {
+  if (!document.GetSettings())
     return;
-  m_genericFontFamilySettings =
-      document.settings()->genericFontFamilySettings();
-  fontCacheInvalidated();
+  generic_font_family_settings_ =
+      document.GetSettings()->GetGenericFontFamilySettings();
+  FontCacheInvalidated();
 }
 
 DEFINE_TRACE(CSSFontSelector) {
-  visitor->trace(m_document);
-  visitor->trace(m_fontFaceCache);
-  visitor->trace(m_clients);
-  FontSelector::trace(visitor);
+  visitor->Trace(document_);
+  visitor->Trace(font_face_cache_);
+  visitor->Trace(clients_);
+  FontSelector::Trace(visitor);
 }
 
 }  // namespace blink

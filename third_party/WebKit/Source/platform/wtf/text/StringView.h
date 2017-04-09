@@ -32,12 +32,12 @@ class WTF_EXPORT StringView {
 
  public:
   // Null string.
-  StringView() { clear(); }
+  StringView() { Clear(); }
 
   // From a StringView:
   StringView(const StringView&, unsigned offset, unsigned length);
   StringView(const StringView& view, unsigned offset)
-      : StringView(view, offset, view.m_length - offset) {}
+      : StringView(view, offset, view.length_ - offset) {}
 
   // From a StringImpl:
   StringView(const StringImpl*);
@@ -46,13 +46,13 @@ class WTF_EXPORT StringView {
 
   // From a non-null StringImpl.
   StringView(const StringImpl& impl)
-      : m_impl(const_cast<StringImpl*>(&impl)),
-        m_bytes(impl.bytes()),
-        m_length(impl.length()) {}
+      : impl_(const_cast<StringImpl*>(&impl)),
+        bytes_(impl.Bytes()),
+        length_(impl.length()) {}
 
   // From a non-null StringImpl, avoids the null check.
   StringView(StringImpl& impl)
-      : m_impl(&impl), m_bytes(impl.bytes()), m_length(impl.length()) {}
+      : impl_(&impl), bytes_(impl.Bytes()), length_(impl.length()) {}
   StringView(StringImpl&, unsigned offset);
   StringView(StringImpl&, unsigned offset, unsigned length);
 
@@ -68,7 +68,7 @@ class WTF_EXPORT StringView {
 
   // From a literal string or LChar buffer:
   StringView(const LChar* chars, unsigned length)
-      : m_impl(StringImpl::empty), m_characters8(chars), m_length(length) {}
+      : impl_(StringImpl::empty_), characters8_(chars), length_(length) {}
   StringView(const char* chars, unsigned length)
       : StringView(reinterpret_cast<const LChar*>(chars), length) {}
   StringView(const LChar* chars)
@@ -79,9 +79,9 @@ class WTF_EXPORT StringView {
 
   // From a wide literal string or UChar buffer.
   StringView(const UChar* chars, unsigned length)
-      : m_impl(StringImpl::empty16Bit),
-        m_characters16(chars),
-        m_length(length) {}
+      : impl_(StringImpl::empty16_bit_),
+        characters16_(chars),
+        length_(length) {}
   StringView(const UChar* chars);
   StringView(const char16_t* chars)
       : StringView(reinterpret_cast<const UChar*>(chars)) {}
@@ -90,150 +90,150 @@ class WTF_EXPORT StringView {
   ~StringView();
 #endif
 
-  bool isNull() const { return !m_bytes; }
-  bool isEmpty() const { return !m_length; }
+  bool IsNull() const { return !bytes_; }
+  bool IsEmpty() const { return !length_; }
 
-  unsigned length() const { return m_length; }
+  unsigned length() const { return length_; }
 
-  bool is8Bit() const {
-    DCHECK(m_impl);
-    return m_impl->is8Bit();
+  bool Is8Bit() const {
+    DCHECK(impl_);
+    return impl_->Is8Bit();
   }
 
-  void clear();
+  void Clear();
 
   UChar operator[](unsigned i) const {
     SECURITY_DCHECK(i < length());
-    if (is8Bit())
-      return characters8()[i];
-    return characters16()[i];
+    if (Is8Bit())
+      return Characters8()[i];
+    return Characters16()[i];
   }
 
-  const LChar* characters8() const {
-    DCHECK(is8Bit());
-    return m_characters8;
+  const LChar* Characters8() const {
+    DCHECK(Is8Bit());
+    return characters8_;
   }
 
-  const UChar* characters16() const {
-    DCHECK(!is8Bit());
-    return m_characters16;
+  const UChar* Characters16() const {
+    DCHECK(!Is8Bit());
+    return characters16_;
   }
 
-  const void* bytes() const { return m_bytes; }
+  const void* Bytes() const { return bytes_; }
 
   // This is not named impl() like String because it has different semantics.
   // String::impl() is never null if String::isNull() is false. For StringView
   // sharedImpl() can be null if the StringView was created with a non-zero
   // offset, or a length that made it shorter than the underlying impl.
-  StringImpl* sharedImpl() const {
+  StringImpl* SharedImpl() const {
     // If this StringView is backed by a StringImpl, and was constructed
     // with a zero offset and the same length we can just access the impl
     // directly since this == StringView(m_impl).
-    if (m_impl->bytes() == bytes() && m_length == m_impl->length())
-      return getPtr(m_impl);
+    if (impl_->Bytes() == Bytes() && length_ == impl_->length())
+      return GetPtr(impl_);
     return nullptr;
   }
 
-  String toString() const;
-  AtomicString toAtomicString() const;
+  String ToString() const;
+  AtomicString ToAtomicString() const;
 
   template <bool isSpecialCharacter(UChar)>
-  bool isAllSpecialCharacters() const;
+  bool IsAllSpecialCharacters() const;
 
  private:
-  void set(const StringImpl&, unsigned offset, unsigned length);
+  void Set(const StringImpl&, unsigned offset, unsigned length);
 
 // We use the StringImpl to mark for 8bit or 16bit, even for strings where
 // we were constructed from a char pointer. So m_impl->bytes() might have
 // nothing to do with this view's bytes().
 #if DCHECK_IS_ON()
-  RefPtr<StringImpl> m_impl;
+  RefPtr<StringImpl> impl_;
 #else
-  StringImpl* m_impl;
+  StringImpl* impl_;
 #endif
   union {
-    const LChar* m_characters8;
-    const UChar* m_characters16;
-    const void* m_bytes;
+    const LChar* characters8_;
+    const UChar* characters16_;
+    const void* bytes_;
   };
-  unsigned m_length;
+  unsigned length_;
 };
 
 inline StringView::StringView(const StringView& view,
                               unsigned offset,
                               unsigned length)
-    : m_impl(view.m_impl), m_length(length) {
+    : impl_(view.impl_), length_(length) {
   SECURITY_DCHECK(offset + length <= view.length());
-  if (is8Bit())
-    m_characters8 = view.characters8() + offset;
+  if (Is8Bit())
+    characters8_ = view.Characters8() + offset;
   else
-    m_characters16 = view.characters16() + offset;
+    characters16_ = view.Characters16() + offset;
 }
 
 inline StringView::StringView(const StringImpl* impl) {
   if (!impl) {
-    clear();
+    Clear();
     return;
   }
-  m_impl = const_cast<StringImpl*>(impl);
-  m_length = impl->length();
-  m_bytes = impl->bytes();
+  impl_ = const_cast<StringImpl*>(impl);
+  length_ = impl->length();
+  bytes_ = impl->Bytes();
 }
 
 inline StringView::StringView(const StringImpl* impl, unsigned offset) {
-  impl ? set(*impl, offset, impl->length() - offset) : clear();
+  impl ? Set(*impl, offset, impl->length() - offset) : Clear();
 }
 
 inline StringView::StringView(const StringImpl* impl,
                               unsigned offset,
                               unsigned length) {
-  impl ? set(*impl, offset, length) : clear();
+  impl ? Set(*impl, offset, length) : Clear();
 }
 
 inline StringView::StringView(StringImpl& impl, unsigned offset) {
-  set(impl, offset, impl.length() - offset);
+  Set(impl, offset, impl.length() - offset);
 }
 
 inline StringView::StringView(StringImpl& impl,
                               unsigned offset,
                               unsigned length) {
-  set(impl, offset, length);
+  Set(impl, offset, length);
 }
 
-inline void StringView::clear() {
-  m_length = 0;
-  m_bytes = nullptr;
-  m_impl = StringImpl::empty;  // mark as 8 bit.
+inline void StringView::Clear() {
+  length_ = 0;
+  bytes_ = nullptr;
+  impl_ = StringImpl::empty_;  // mark as 8 bit.
 }
 
-inline void StringView::set(const StringImpl& impl,
+inline void StringView::Set(const StringImpl& impl,
                             unsigned offset,
                             unsigned length) {
   SECURITY_DCHECK(offset + length <= impl.length());
-  m_length = length;
-  m_impl = const_cast<StringImpl*>(&impl);
-  if (impl.is8Bit())
-    m_characters8 = impl.characters8() + offset;
+  length_ = length;
+  impl_ = const_cast<StringImpl*>(&impl);
+  if (impl.Is8Bit())
+    characters8_ = impl.Characters8() + offset;
   else
-    m_characters16 = impl.characters16() + offset;
+    characters16_ = impl.Characters16() + offset;
 }
 
 // Unicode aware case insensitive string matching. Non-ASCII characters might
 // match to ASCII characters. These functions are rarely used to implement web
 // platform features.
-WTF_EXPORT bool equalIgnoringCase(const StringView&, const StringView&);
-WTF_EXPORT bool equalIgnoringCaseAndNullity(const StringView&,
+WTF_EXPORT bool EqualIgnoringCase(const StringView&, const StringView&);
+WTF_EXPORT bool EqualIgnoringCaseAndNullity(const StringView&,
                                             const StringView&);
 
-WTF_EXPORT bool equalIgnoringASCIICase(const StringView&, const StringView&);
+WTF_EXPORT bool EqualIgnoringASCIICase(const StringView&, const StringView&);
 
 // TODO(esprehn): Can't make this an overload of WTF::equal since that makes
 // calls to equal() that pass literal strings ambiguous. Figure out if we can
 // replace all the callers with equalStringView and then rename it to equal().
-WTF_EXPORT bool equalStringView(const StringView&, const StringView&);
+WTF_EXPORT bool EqualStringView(const StringView&, const StringView&);
 
 inline bool operator==(const StringView& a, const StringView& b) {
-  return equalStringView(a, b);
+  return EqualStringView(a, b);
 }
 
 inline bool operator!=(const StringView& a, const StringView& b) {
@@ -241,7 +241,7 @@ inline bool operator!=(const StringView& a, const StringView& b) {
 }
 
 template <bool isSpecialCharacter(UChar), typename CharacterType>
-inline bool isAllSpecialCharacters(const CharacterType* characters,
+inline bool IsAllSpecialCharacters(const CharacterType* characters,
                                    size_t length) {
   for (size_t i = 0; i < length; ++i) {
     if (!isSpecialCharacter(characters[i]))
@@ -251,22 +251,22 @@ inline bool isAllSpecialCharacters(const CharacterType* characters,
 }
 
 template <bool isSpecialCharacter(UChar)>
-inline bool StringView::isAllSpecialCharacters() const {
+inline bool StringView::IsAllSpecialCharacters() const {
   size_t len = length();
   if (!len)
     return true;
 
-  return is8Bit() ? WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(
-                        characters8(), len)
-                  : WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(
-                        characters16(), len);
+  return Is8Bit() ? WTF::IsAllSpecialCharacters<isSpecialCharacter, LChar>(
+                        Characters8(), len)
+                  : WTF::IsAllSpecialCharacters<isSpecialCharacter, UChar>(
+                        Characters16(), len);
 }
 
 }  // namespace WTF
 
 using WTF::StringView;
-using WTF::equalIgnoringASCIICase;
-using WTF::equalIgnoringCase;
-using WTF::isAllSpecialCharacters;
+using WTF::EqualIgnoringASCIICase;
+using WTF::EqualIgnoringCase;
+using WTF::IsAllSpecialCharacters;
 
 #endif

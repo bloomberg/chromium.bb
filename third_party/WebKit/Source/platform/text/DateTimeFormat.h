@@ -41,61 +41,61 @@ class PLATFORM_EXPORT DateTimeFormat {
 
  public:
   enum FieldType {
-    FieldTypeInvalid,
-    FieldTypeLiteral,
+    kFieldTypeInvalid,
+    kFieldTypeLiteral,
 
     // Era: AD
-    FieldTypeEra = 'G',
+    kFieldTypeEra = 'G',
 
     // Year: 1996
-    FieldTypeYear = 'y',
-    FieldTypeYearOfWeekOfYear = 'Y',
-    FieldTypeExtendedYear = 'u',
+    kFieldTypeYear = 'y',
+    kFieldTypeYearOfWeekOfYear = 'Y',
+    kFieldTypeExtendedYear = 'u',
 
     // Quater: Q2
-    FieldTypeQuater = 'Q',
-    FieldTypeQuaterStandAlone = 'q',
+    kFieldTypeQuater = 'Q',
+    kFieldTypeQuaterStandAlone = 'q',
 
     // Month: September
-    FieldTypeMonth = 'M',
-    FieldTypeMonthStandAlone = 'L',
+    kFieldTypeMonth = 'M',
+    kFieldTypeMonthStandAlone = 'L',
 
     // Week: 42
-    FieldTypeWeekOfYear = 'w',
-    FieldTypeWeekOfMonth = 'W',
+    kFieldTypeWeekOfYear = 'w',
+    kFieldTypeWeekOfMonth = 'W',
 
     // Day: 12
-    FieldTypeDayOfMonth = 'd',
-    FieldTypeDayOfYear = 'D',
-    FieldTypeDayOfWeekInMonth = 'F',
-    FieldTypeModifiedJulianDay = 'g',
+    kFieldTypeDayOfMonth = 'd',
+    kFieldTypeDayOfYear = 'D',
+    kFieldTypeDayOfWeekInMonth = 'F',
+    kFieldTypeModifiedJulianDay = 'g',
 
     // Week Day: Tuesday
-    FieldTypeDayOfWeek = 'E',
-    FieldTypeLocalDayOfWeek = 'e',
-    FieldTypeLocalDayOfWeekStandAlon = 'c',
+    kFieldTypeDayOfWeek = 'E',
+    kFieldTypeLocalDayOfWeek = 'e',
+    kFieldTypeLocalDayOfWeekStandAlon = 'c',
 
     // Period: AM or PM
-    FieldTypePeriod = 'a',
+    kFieldTypePeriod = 'a',
 
     // Hour: 7
-    FieldTypeHour12 = 'h',
-    FieldTypeHour23 = 'H',
-    FieldTypeHour11 = 'K',
-    FieldTypeHour24 = 'k',
+    kFieldTypeHour12 = 'h',
+    kFieldTypeHour23 = 'H',
+    kFieldTypeHour11 = 'K',
+    kFieldTypeHour24 = 'k',
 
     // Minute: 59
-    FieldTypeMinute = 'm',
+    kFieldTypeMinute = 'm',
 
     // Second: 12
-    FieldTypeSecond = 's',
-    FieldTypeFractionalSecond = 'S',
-    FieldTypeMillisecondsInDay = 'A',
+    kFieldTypeSecond = 's',
+    kFieldTypeFractionalSecond = 'S',
+    kFieldTypeMillisecondsInDay = 'A',
 
     // Zone: PDT
-    FieldTypeZone = 'z',
-    FieldTypeRFC822Zone = 'Z',
-    FieldTypeNonLocationZone = 'v',
+    kFieldTypeZone = 'z',
+    kFieldTypeRFC822Zone = 'Z',
+    kFieldTypeNonLocationZone = 'v',
   };
 
   class TokenHandler {
@@ -105,13 +105,13 @@ class PLATFORM_EXPORT DateTimeFormat {
    public:
     TokenHandler() {}
     virtual ~TokenHandler() {}
-    virtual void visitField(FieldType, int numberOfPatternCharacters) = 0;
-    virtual void visitLiteral(const String&) = 0;
+    virtual void VisitField(FieldType, int number_of_pattern_characters) = 0;
+    virtual void VisitLiteral(const String&) = 0;
   };
 
   // Returns true if succeeded, false if failed.
-  static bool parse(const String&, TokenHandler&);
-  static void quoteAndappend(const String&, StringBuilder&);
+  static bool Parse(const String&, TokenHandler&);
+  static void QuoteAndappend(const String&, StringBuilder&);
 };
 
 }  // namespace blink

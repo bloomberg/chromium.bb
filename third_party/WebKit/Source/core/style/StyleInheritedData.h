@@ -39,11 +39,11 @@ namespace blink {
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
  public:
-  static PassRefPtr<StyleInheritedData> create() {
-    return adoptRef(new StyleInheritedData);
+  static PassRefPtr<StyleInheritedData> Create() {
+    return AdoptRef(new StyleInheritedData);
   }
-  PassRefPtr<StyleInheritedData> copy() const {
-    return adoptRef(new StyleInheritedData(*this));
+  PassRefPtr<StyleInheritedData> Copy() const {
+    return AdoptRef(new StyleInheritedData(*this));
   }
   ~StyleInheritedData();
 
@@ -59,8 +59,8 @@ class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
 
   Font font;
   Color color;
-  Color visitedLinkColor;
-  float textAutosizingMultiplier;
+  Color visited_link_color;
+  float text_autosizing_multiplier;
 
  private:
   StyleInheritedData();

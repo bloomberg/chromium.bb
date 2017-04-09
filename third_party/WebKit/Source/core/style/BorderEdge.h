@@ -15,35 +15,38 @@ struct BorderEdge {
   STACK_ALLOCATED();
 
  public:
-  BorderEdge(float edgeWidth,
-             const Color& edgeColor,
-             EBorderStyle edgeStyle,
-             bool edgeIsPresent = true);
+  BorderEdge(float edge_width,
+             const Color& edge_color,
+             EBorderStyle edge_style,
+             bool edge_is_present = true);
   BorderEdge();
 
-  bool hasVisibleColorAndStyle() const;
-  bool shouldRender() const;
-  bool presentButInvisible() const;
-  bool obscuresBackgroundEdge() const;
-  bool obscuresBackground() const;
-  float usedWidth() const;
+  bool HasVisibleColorAndStyle() const;
+  bool ShouldRender() const;
+  bool PresentButInvisible() const;
+  bool ObscuresBackgroundEdge() const;
+  bool ObscuresBackground() const;
+  float UsedWidth() const;
 
-  bool sharesColorWith(const BorderEdge& other) const;
+  bool SharesColorWith(const BorderEdge& other) const;
 
-  EBorderStyle borderStyle() const { return static_cast<EBorderStyle>(style); }
+  EBorderStyle BorderStyle() const { return static_cast<EBorderStyle>(style); }
 
-  enum DoubleBorderStripe { DoubleBorderStripeOuter, DoubleBorderStripeInner };
+  enum DoubleBorderStripe {
+    kDoubleBorderStripeOuter,
+    kDoubleBorderStripeInner
+  };
 
-  float getDoubleBorderStripeWidth(DoubleBorderStripe) const;
+  float GetDoubleBorderStripeWidth(DoubleBorderStripe) const;
 
-  float width() const { return m_width; }
+  float Width() const { return width_; }
 
   Color color;
-  bool isPresent;
+  bool is_present;
 
  private:
   unsigned style : 4;  // EBorderStyle
-  float m_width;
+  float width_;
 };
 
 }  // namespace blink

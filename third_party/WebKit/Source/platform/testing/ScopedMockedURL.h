@@ -22,15 +22,15 @@ class ScopedMockedURL {
   virtual ~ScopedMockedURL();
 
  private:
-  WebURL m_url;
+  WebURL url_;
 };
 
 class ScopedMockedURLLoad : ScopedMockedURL {
  public:
   ScopedMockedURLLoad(
-      const WebURL& fullURL,
-      const WebString& filePath,
-      const WebString& mimeType = WebString::fromUTF8("text/html"));
+      const WebURL& full_url,
+      const WebString& file_path,
+      const WebString& mime_type = WebString::FromUTF8("text/html"));
   ~ScopedMockedURLLoad() override = default;
 };
 

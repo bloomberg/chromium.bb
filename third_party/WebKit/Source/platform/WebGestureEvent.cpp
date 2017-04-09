@@ -6,151 +6,151 @@
 
 namespace blink {
 
-float WebGestureEvent::deltaXInRootFrame() const {
-  if (m_type == WebInputEvent::GestureScrollBegin)
-    return data.scrollBegin.deltaXHint / m_frameScale;
-  DCHECK(m_type == WebInputEvent::GestureScrollUpdate);
-  return data.scrollUpdate.deltaX / m_frameScale;
+float WebGestureEvent::DeltaXInRootFrame() const {
+  if (type_ == WebInputEvent::kGestureScrollBegin)
+    return data.scroll_begin.delta_x_hint / frame_scale_;
+  DCHECK(type_ == WebInputEvent::kGestureScrollUpdate);
+  return data.scroll_update.delta_x / frame_scale_;
 }
 
-float WebGestureEvent::deltaYInRootFrame() const {
-  if (m_type == WebInputEvent::GestureScrollBegin)
-    return data.scrollBegin.deltaYHint / m_frameScale;
-  DCHECK(m_type == WebInputEvent::GestureScrollUpdate);
-  return data.scrollUpdate.deltaY / m_frameScale;
+float WebGestureEvent::DeltaYInRootFrame() const {
+  if (type_ == WebInputEvent::kGestureScrollBegin)
+    return data.scroll_begin.delta_y_hint / frame_scale_;
+  DCHECK(type_ == WebInputEvent::kGestureScrollUpdate);
+  return data.scroll_update.delta_y / frame_scale_;
 }
 
-WebGestureEvent::ScrollUnits WebGestureEvent::deltaUnits() const {
-  if (m_type == WebInputEvent::GestureScrollBegin)
-    return data.scrollBegin.deltaHintUnits;
-  if (m_type == WebInputEvent::GestureScrollUpdate)
-    return data.scrollUpdate.deltaUnits;
-  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
-  return data.scrollEnd.deltaUnits;
+WebGestureEvent::ScrollUnits WebGestureEvent::DeltaUnits() const {
+  if (type_ == WebInputEvent::kGestureScrollBegin)
+    return data.scroll_begin.delta_hint_units;
+  if (type_ == WebInputEvent::kGestureScrollUpdate)
+    return data.scroll_update.delta_units;
+  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  return data.scroll_end.delta_units;
 }
 
-float WebGestureEvent::pinchScale() const {
-  DCHECK(m_type == WebInputEvent::GesturePinchUpdate);
-  return data.pinchUpdate.scale;
+float WebGestureEvent::PinchScale() const {
+  DCHECK(type_ == WebInputEvent::kGesturePinchUpdate);
+  return data.pinch_update.scale;
 }
 
-WebGestureEvent::InertialPhaseState WebGestureEvent::inertialPhase() const {
-  if (m_type == WebInputEvent::GestureScrollBegin)
-    return data.scrollBegin.inertialPhase;
-  if (m_type == WebInputEvent::GestureScrollUpdate)
-    return data.scrollUpdate.inertialPhase;
-  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
-  return data.scrollEnd.inertialPhase;
+WebGestureEvent::InertialPhaseState WebGestureEvent::InertialPhase() const {
+  if (type_ == WebInputEvent::kGestureScrollBegin)
+    return data.scroll_begin.inertial_phase;
+  if (type_ == WebInputEvent::kGestureScrollUpdate)
+    return data.scroll_update.inertial_phase;
+  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  return data.scroll_end.inertial_phase;
 }
 
-bool WebGestureEvent::synthetic() const {
-  if (m_type == WebInputEvent::GestureScrollBegin)
-    return data.scrollBegin.synthetic;
-  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
-  return data.scrollEnd.synthetic;
+bool WebGestureEvent::Synthetic() const {
+  if (type_ == WebInputEvent::kGestureScrollBegin)
+    return data.scroll_begin.synthetic;
+  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  return data.scroll_end.synthetic;
 }
 
-float WebGestureEvent::velocityX() const {
-  if (m_type == WebInputEvent::GestureScrollUpdate)
-    return data.scrollUpdate.velocityX;
-  DCHECK(m_type == WebInputEvent::GestureFlingStart);
-  return data.flingStart.velocityX;
+float WebGestureEvent::VelocityX() const {
+  if (type_ == WebInputEvent::kGestureScrollUpdate)
+    return data.scroll_update.velocity_x;
+  DCHECK(type_ == WebInputEvent::kGestureFlingStart);
+  return data.fling_start.velocity_x;
 }
 
-float WebGestureEvent::velocityY() const {
-  if (m_type == WebInputEvent::GestureScrollUpdate)
-    return data.scrollUpdate.velocityY;
-  DCHECK(m_type == WebInputEvent::GestureFlingStart);
-  return data.flingStart.velocityY;
+float WebGestureEvent::VelocityY() const {
+  if (type_ == WebInputEvent::kGestureScrollUpdate)
+    return data.scroll_update.velocity_y;
+  DCHECK(type_ == WebInputEvent::kGestureFlingStart);
+  return data.fling_start.velocity_y;
 }
 
-WebFloatSize WebGestureEvent::tapAreaInRootFrame() const {
-  if (m_type == WebInputEvent::GestureTwoFingerTap) {
-    return WebFloatSize(data.twoFingerTap.firstFingerWidth / m_frameScale,
-                        data.twoFingerTap.firstFingerHeight / m_frameScale);
-  } else if (m_type == WebInputEvent::GestureLongPress ||
-             m_type == WebInputEvent::GestureLongTap) {
-    return WebFloatSize(data.longPress.width / m_frameScale,
-                        data.longPress.height / m_frameScale);
-  } else if (m_type == WebInputEvent::GestureTap ||
-             m_type == WebInputEvent::GestureTapUnconfirmed) {
-    return WebFloatSize(data.tap.width / m_frameScale,
-                        data.tap.height / m_frameScale);
-  } else if (m_type == WebInputEvent::GestureTapDown) {
-    return WebFloatSize(data.tapDown.width / m_frameScale,
-                        data.tapDown.height / m_frameScale);
-  } else if (m_type == WebInputEvent::GestureShowPress) {
-    return WebFloatSize(data.showPress.width / m_frameScale,
-                        data.showPress.height / m_frameScale);
+WebFloatSize WebGestureEvent::TapAreaInRootFrame() const {
+  if (type_ == WebInputEvent::kGestureTwoFingerTap) {
+    return WebFloatSize(data.two_finger_tap.first_finger_width / frame_scale_,
+                        data.two_finger_tap.first_finger_height / frame_scale_);
+  } else if (type_ == WebInputEvent::kGestureLongPress ||
+             type_ == WebInputEvent::kGestureLongTap) {
+    return WebFloatSize(data.long_press.width / frame_scale_,
+                        data.long_press.height / frame_scale_);
+  } else if (type_ == WebInputEvent::kGestureTap ||
+             type_ == WebInputEvent::kGestureTapUnconfirmed) {
+    return WebFloatSize(data.tap.width / frame_scale_,
+                        data.tap.height / frame_scale_);
+  } else if (type_ == WebInputEvent::kGestureTapDown) {
+    return WebFloatSize(data.tap_down.width / frame_scale_,
+                        data.tap_down.height / frame_scale_);
+  } else if (type_ == WebInputEvent::kGestureShowPress) {
+    return WebFloatSize(data.show_press.width / frame_scale_,
+                        data.show_press.height / frame_scale_);
   }
   // This function is called for all gestures and determined if the tap
   // area is empty or not; so return an empty rect here.
   return WebFloatSize();
 }
 
-WebFloatPoint WebGestureEvent::positionInRootFrame() const {
-  return WebFloatPoint((x / m_frameScale) + m_frameTranslate.x,
-                       (y / m_frameScale) + m_frameTranslate.y);
+WebFloatPoint WebGestureEvent::PositionInRootFrame() const {
+  return WebFloatPoint((x / frame_scale_) + frame_translate_.x,
+                       (y / frame_scale_) + frame_translate_.y);
 }
 
-int WebGestureEvent::tapCount() const {
-  DCHECK(m_type == WebInputEvent::GestureTap);
-  return data.tap.tapCount;
+int WebGestureEvent::TapCount() const {
+  DCHECK(type_ == WebInputEvent::kGestureTap);
+  return data.tap.tap_count;
 }
 
-void WebGestureEvent::applyTouchAdjustment(WebFloatPoint rootFrameCoords) {
+void WebGestureEvent::ApplyTouchAdjustment(WebFloatPoint root_frame_coords) {
   // Update the window-relative position of the event so that the node that
   // was ultimately hit is under this point (i.e. elementFromPoint for the
   // client co-ordinates in a 'click' event should yield the target). The
   // global position is intentionally left unmodified because it's intended to
   // reflect raw co-ordinates unrelated to any content.
-  m_frameTranslate.x = rootFrameCoords.x - (x / m_frameScale);
-  m_frameTranslate.y = rootFrameCoords.y - (y / m_frameScale);
+  frame_translate_.x = root_frame_coords.x - (x / frame_scale_);
+  frame_translate_.y = root_frame_coords.y - (y / frame_scale_);
 }
 
-void WebGestureEvent::flattenTransform() {
-  if (m_frameScale != 1) {
-    switch (m_type) {
-      case WebInputEvent::GestureScrollBegin:
-        data.scrollBegin.deltaXHint /= m_frameScale;
-        data.scrollBegin.deltaYHint /= m_frameScale;
+void WebGestureEvent::FlattenTransform() {
+  if (frame_scale_ != 1) {
+    switch (type_) {
+      case WebInputEvent::kGestureScrollBegin:
+        data.scroll_begin.delta_x_hint /= frame_scale_;
+        data.scroll_begin.delta_y_hint /= frame_scale_;
         break;
-      case WebInputEvent::GestureScrollUpdate:
-        data.scrollUpdate.deltaX /= m_frameScale;
-        data.scrollUpdate.deltaY /= m_frameScale;
+      case WebInputEvent::kGestureScrollUpdate:
+        data.scroll_update.delta_x /= frame_scale_;
+        data.scroll_update.delta_y /= frame_scale_;
         break;
-      case WebInputEvent::GestureTwoFingerTap:
-        data.twoFingerTap.firstFingerWidth /= m_frameScale;
-        data.twoFingerTap.firstFingerHeight /= m_frameScale;
+      case WebInputEvent::kGestureTwoFingerTap:
+        data.two_finger_tap.first_finger_width /= frame_scale_;
+        data.two_finger_tap.first_finger_height /= frame_scale_;
         break;
-      case WebInputEvent::GestureLongPress:
-      case WebInputEvent::GestureLongTap:
-        data.longPress.width /= m_frameScale;
-        data.longPress.height /= m_frameScale;
+      case WebInputEvent::kGestureLongPress:
+      case WebInputEvent::kGestureLongTap:
+        data.long_press.width /= frame_scale_;
+        data.long_press.height /= frame_scale_;
         break;
-      case WebInputEvent::GestureTap:
-      case WebInputEvent::GestureTapUnconfirmed:
-        data.tap.width /= m_frameScale;
-        data.tap.height /= m_frameScale;
+      case WebInputEvent::kGestureTap:
+      case WebInputEvent::kGestureTapUnconfirmed:
+        data.tap.width /= frame_scale_;
+        data.tap.height /= frame_scale_;
         break;
-      case WebInputEvent::GestureTapDown:
-        data.tapDown.width /= m_frameScale;
-        data.tapDown.height /= m_frameScale;
+      case WebInputEvent::kGestureTapDown:
+        data.tap_down.width /= frame_scale_;
+        data.tap_down.height /= frame_scale_;
         break;
-      case WebInputEvent::GestureShowPress:
-        data.showPress.width /= m_frameScale;
-        data.showPress.height /= m_frameScale;
+      case WebInputEvent::kGestureShowPress:
+        data.show_press.width /= frame_scale_;
+        data.show_press.height /= frame_scale_;
         break;
       default:
         break;
     }
   }
 
-  x = (x / m_frameScale) + m_frameTranslate.x;
-  y = (y / m_frameScale) + m_frameTranslate.y;
-  m_frameTranslate.x = 0;
-  m_frameTranslate.y = 0;
-  m_frameScale = 1;
+  x = (x / frame_scale_) + frame_translate_.x;
+  y = (y / frame_scale_) + frame_translate_.y;
+  frame_translate_.x = 0;
+  frame_translate_.y = 0;
+  frame_scale_ = 1;
 }
 
 }  // namespace blink

@@ -40,9 +40,9 @@ class Node;
 template <typename NodeType>
 class StaticNodeTypeList final : public NodeList {
  public:
-  static StaticNodeTypeList* adopt(HeapVector<Member<NodeType>>& nodes);
+  static StaticNodeTypeList* Adopt(HeapVector<Member<NodeType>>& nodes);
 
-  static StaticNodeTypeList* createEmpty() { return new StaticNodeTypeList; }
+  static StaticNodeTypeList* CreateEmpty() { return new StaticNodeTypeList; }
 
   ~StaticNodeTypeList() override;
 
@@ -52,22 +52,22 @@ class StaticNodeTypeList final : public NodeList {
   DECLARE_VIRTUAL_TRACE();
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
     for (unsigned i = 0; i < length(); i++)
-      visitor->traceWrappers(m_nodes[i]);
-    NodeList::traceWrappers(visitor);
+      visitor->TraceWrappers(nodes_[i]);
+    NodeList::TraceWrappers(visitor);
   }
 
  private:
-  HeapVector<TraceWrapperMember<NodeType>> m_nodes;
+  HeapVector<TraceWrapperMember<NodeType>> nodes_;
 };
 
 using StaticNodeList = StaticNodeTypeList<Node>;
 
 template <typename NodeType>
-StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(
+StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::Adopt(
     HeapVector<Member<NodeType>>& nodes) {
-  StaticNodeTypeList<NodeType>* nodeList = new StaticNodeTypeList<NodeType>;
-  swap(nodeList->m_nodes, nodes, nodeList);
-  return nodeList;
+  StaticNodeTypeList<NodeType>* node_list = new StaticNodeTypeList<NodeType>;
+  swap(node_list->nodes_, nodes, node_list);
+  return node_list;
 }
 
 template <typename NodeType>
@@ -75,20 +75,20 @@ StaticNodeTypeList<NodeType>::~StaticNodeTypeList() {}
 
 template <typename NodeType>
 unsigned StaticNodeTypeList<NodeType>::length() const {
-  return m_nodes.size();
+  return nodes_.size();
 }
 
 template <typename NodeType>
 NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const {
-  if (index < m_nodes.size())
-    return m_nodes[index].get();
+  if (index < nodes_.size())
+    return nodes_[index].Get();
   return 0;
 }
 
 template <typename NodeType>
-void StaticNodeTypeList<NodeType>::trace(Visitor* visitor) {
-  visitor->trace(m_nodes);
-  NodeList::trace(visitor);
+void StaticNodeTypeList<NodeType>::Trace(Visitor* visitor) {
+  visitor->Trace(nodes_);
+  NodeList::Trace(visitor);
 }
 
 }  // namespace blink

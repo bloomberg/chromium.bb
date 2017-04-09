@@ -15,9 +15,9 @@ class ScriptState;
 
 class MODULES_EXPORT PaymentCompleter : public GarbageCollectedMixin {
  public:
-  enum PaymentComplete { Success, Fail, Unknown };
+  enum PaymentComplete { kSuccess, kFail, kUnknown };
 
-  virtual ScriptPromise complete(ScriptState*, PaymentComplete result) = 0;
+  virtual ScriptPromise Complete(ScriptState*, PaymentComplete result) = 0;
 
  protected:
   virtual ~PaymentCompleter() {}

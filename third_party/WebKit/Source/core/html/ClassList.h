@@ -38,31 +38,31 @@ class Element;
 
 class ClassList final : public DOMTokenList {
  public:
-  static ClassList* create(Element* element) { return new ClassList(element); }
+  static ClassList* Create(Element* element) { return new ClassList(element); }
 
   unsigned length() const override;
   const AtomicString item(unsigned index) const override;
 
-  void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
+  void ClearValueForQuirksMode() { class_names_for_quirks_mode_ = nullptr; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit ClassList(Element*);
 
-  bool containsInternal(const AtomicString&) const override;
+  bool ContainsInternal(const AtomicString&) const override;
 
-  const SpaceSplitString& classNames() const;
+  const SpaceSplitString& ClassNames() const;
 
   const AtomicString& value() const override {
-    return m_element->getAttribute(HTMLNames::classAttr);
+    return element_->getAttribute(HTMLNames::classAttr);
   }
   void setValue(const AtomicString& value) override {
-    m_element->setAttribute(HTMLNames::classAttr, value);
+    element_->setAttribute(HTMLNames::classAttr, value);
   }
 
-  Member<Element> m_element;
-  mutable std::unique_ptr<SpaceSplitString> m_classNamesForQuirksMode;
+  Member<Element> element_;
+  mutable std::unique_ptr<SpaceSplitString> class_names_for_quirks_mode_;
 };
 
 }  // namespace blink

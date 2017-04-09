@@ -89,7 +89,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
                       int request_id) override {
     SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
         embedded_worker_id, request_id,
-        blink::WebServiceWorkerEventResultRejected, true, base::Time::Now()));
+        blink::kWebServiceWorkerEventResultRejected, true, base::Time::Now()));
   }
 };
 

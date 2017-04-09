@@ -48,26 +48,26 @@ class CORE_EXPORT ThreadableLoaderClient {
   WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
 
  public:
-  virtual void didSendData(unsigned long long /*bytesSent*/,
+  virtual void DidSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
-  virtual void didReceiveRedirectTo(const KURL&) {}
-  virtual void didReceiveResponse(unsigned long /*identifier*/,
+  virtual void DidReceiveRedirectTo(const KURL&) {}
+  virtual void DidReceiveResponse(unsigned long /*identifier*/,
                                   const ResourceResponse&,
                                   std::unique_ptr<WebDataConsumerHandle>) {}
-  virtual void didReceiveData(const char*, unsigned /*dataLength*/) {}
-  virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) {}
-  virtual void didFinishLoading(unsigned long /*identifier*/,
+  virtual void DidReceiveData(const char*, unsigned /*dataLength*/) {}
+  virtual void DidReceiveCachedMetadata(const char*, int /*dataLength*/) {}
+  virtual void DidFinishLoading(unsigned long /*identifier*/,
                                 double /*finishTime*/) {}
-  virtual void didFail(const ResourceError&) {}
-  virtual void didFailAccessControlCheck(const ResourceError& error) {
-    didFail(error);
+  virtual void DidFail(const ResourceError&) {}
+  virtual void DidFailAccessControlCheck(const ResourceError& error) {
+    DidFail(error);
   }
-  virtual void didFailRedirectCheck() {}
-  virtual void didReceiveResourceTiming(const ResourceTimingInfo&) {}
+  virtual void DidFailRedirectCheck() {}
+  virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}
 
-  virtual bool isDocumentThreadableLoaderClient() { return false; }
+  virtual bool IsDocumentThreadableLoaderClient() { return false; }
 
-  virtual void didDownloadData(int /*dataLength*/) {}
+  virtual void DidDownloadData(int /*dataLength*/) {}
 
   virtual ~ThreadableLoaderClient() {}
 

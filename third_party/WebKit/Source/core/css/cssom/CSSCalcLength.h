@@ -21,92 +21,92 @@ class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
  public:
   class UnitData {
    public:
-    UnitData() : m_values(), m_hasValueForUnit() {}
+    UnitData() : values_(), has_value_for_unit_() {}
     UnitData(const UnitData& other)
-        : m_values(other.m_values),
-          m_hasValueForUnit(other.m_hasValueForUnit) {}
+        : values_(other.values_),
+          has_value_for_unit_(other.has_value_for_unit_) {}
 
-    static std::unique_ptr<UnitData> fromExpressionNode(
+    static std::unique_ptr<UnitData> FromExpressionNode(
         const CSSCalcExpressionNode*);
-    CSSCalcExpressionNode* toCSSCalcExpressionNode() const;
+    CSSCalcExpressionNode* ToCSSCalcExpressionNode() const;
 
-    bool has(CSSPrimitiveValue::UnitType) const;
-    void set(CSSPrimitiveValue::UnitType, double);
-    double get(CSSPrimitiveValue::UnitType) const;
+    bool Has(CSSPrimitiveValue::UnitType) const;
+    void Set(CSSPrimitiveValue::UnitType, double);
+    double Get(CSSPrimitiveValue::UnitType) const;
 
-    void add(const UnitData& right);
-    void subtract(const UnitData& right);
-    void multiply(double);
-    void divide(double);
+    void Add(const UnitData& right);
+    void Subtract(const UnitData& right);
+    void Multiply(double);
+    void Divide(double);
 
    private:
-    bool hasAtIndex(int) const;
-    void setAtIndex(int, double);
-    double getAtIndex(int) const;
+    bool HasAtIndex(int) const;
+    void SetAtIndex(int, double);
+    double GetAtIndex(int) const;
 
-    std::array<double, CSSLengthValue::kNumSupportedUnits> m_values;
-    std::bitset<CSSLengthValue::kNumSupportedUnits> m_hasValueForUnit;
+    std::array<double, CSSLengthValue::kNumSupportedUnits> values_;
+    std::bitset<CSSLengthValue::kNumSupportedUnits> has_value_for_unit_;
   };
 
-  static CSSCalcLength* create(const CSSCalcDictionary&, ExceptionState&);
-  static CSSCalcLength* create(const CSSLengthValue* length, ExceptionState&) {
-    return create(length);
+  static CSSCalcLength* Create(const CSSCalcDictionary&, ExceptionState&);
+  static CSSCalcLength* Create(const CSSLengthValue* length, ExceptionState&) {
+    return Create(length);
   }
-  static CSSCalcLength* create(const CSSLengthValue*);
-  static CSSCalcLength* fromCSSValue(const CSSPrimitiveValue&);
+  static CSSCalcLength* Create(const CSSLengthValue*);
+  static CSSCalcLength* FromCSSValue(const CSSPrimitiveValue&);
 
-  static CSSCalcLength* fromLength(const Length&);
+  static CSSCalcLength* FromLength(const Length&);
 
 #define GETTER_MACRO(name, type)    \
   double name(bool& isNull) {       \
-    isNull = !m_unitData.has(type); \
-    return m_unitData.get(type);    \
+    isNull = !unit_data_.Has(type); \
+    return unit_data_.Get(type);    \
   }
 
-  GETTER_MACRO(px, CSSPrimitiveValue::UnitType::Pixels)
-  GETTER_MACRO(percent, CSSPrimitiveValue::UnitType::Percentage)
-  GETTER_MACRO(em, CSSPrimitiveValue::UnitType::Ems)
-  GETTER_MACRO(ex, CSSPrimitiveValue::UnitType::Exs)
-  GETTER_MACRO(ch, CSSPrimitiveValue::UnitType::Chs)
-  GETTER_MACRO(rem, CSSPrimitiveValue::UnitType::Rems)
-  GETTER_MACRO(vw, CSSPrimitiveValue::UnitType::ViewportWidth)
-  GETTER_MACRO(vh, CSSPrimitiveValue::UnitType::ViewportHeight)
-  GETTER_MACRO(vmin, CSSPrimitiveValue::UnitType::ViewportMin)
-  GETTER_MACRO(vmax, CSSPrimitiveValue::UnitType::ViewportMax)
-  GETTER_MACRO(cm, CSSPrimitiveValue::UnitType::Centimeters)
-  GETTER_MACRO(mm, CSSPrimitiveValue::UnitType::Millimeters)
-  GETTER_MACRO(in, CSSPrimitiveValue::UnitType::Inches)
-  GETTER_MACRO(pc, CSSPrimitiveValue::UnitType::Picas)
-  GETTER_MACRO(pt, CSSPrimitiveValue::UnitType::Points)
+  GETTER_MACRO(px, CSSPrimitiveValue::UnitType::kPixels)
+  GETTER_MACRO(percent, CSSPrimitiveValue::UnitType::kPercentage)
+  GETTER_MACRO(em, CSSPrimitiveValue::UnitType::kEms)
+  GETTER_MACRO(ex, CSSPrimitiveValue::UnitType::kExs)
+  GETTER_MACRO(ch, CSSPrimitiveValue::UnitType::kChs)
+  GETTER_MACRO(rem, CSSPrimitiveValue::UnitType::kRems)
+  GETTER_MACRO(vw, CSSPrimitiveValue::UnitType::kViewportWidth)
+  GETTER_MACRO(vh, CSSPrimitiveValue::UnitType::kViewportHeight)
+  GETTER_MACRO(vmin, CSSPrimitiveValue::UnitType::kViewportMin)
+  GETTER_MACRO(vmax, CSSPrimitiveValue::UnitType::kViewportMax)
+  GETTER_MACRO(cm, CSSPrimitiveValue::UnitType::kCentimeters)
+  GETTER_MACRO(mm, CSSPrimitiveValue::UnitType::kMillimeters)
+  GETTER_MACRO(in, CSSPrimitiveValue::UnitType::kInches)
+  GETTER_MACRO(pc, CSSPrimitiveValue::UnitType::kPicas)
+  GETTER_MACRO(pt, CSSPrimitiveValue::UnitType::kPoints)
 
 #undef GETTER_MACRO
 
-  bool containsPercent() const override;
+  bool ContainsPercent() const override;
 
-  CSSValue* toCSSValue() const override;
+  CSSValue* ToCSSValue() const override;
 
-  StyleValueType type() const override { return CalcLengthType; }
+  StyleValueType GetType() const override { return kCalcLengthType; }
 
  protected:
-  CSSLengthValue* addInternal(const CSSLengthValue* other) override;
-  CSSLengthValue* subtractInternal(const CSSLengthValue* other) override;
-  CSSLengthValue* multiplyInternal(double) override;
-  CSSLengthValue* divideInternal(double) override;
+  CSSLengthValue* AddInternal(const CSSLengthValue* other) override;
+  CSSLengthValue* SubtractInternal(const CSSLengthValue* other) override;
+  CSSLengthValue* MultiplyInternal(double) override;
+  CSSLengthValue* DivideInternal(double) override;
 
  private:
   CSSCalcLength();
   CSSCalcLength(const CSSCalcLength& other);
   CSSCalcLength(const CSSSimpleLength& other);
-  CSSCalcLength(const UnitData& unitData) : m_unitData(unitData) {}
+  CSSCalcLength(const UnitData& unit_data) : unit_data_(unit_data) {}
 
-  UnitData m_unitData;
+  UnitData unit_data_;
 };
 
-#define DEFINE_CALC_LENGTH_TYPE_CASTS(argumentType)                    \
-  DEFINE_TYPE_CASTS(                                                   \
-      CSSCalcLength, argumentType, value,                              \
-      value->type() == CSSLengthValue::StyleValueType::CalcLengthType, \
-      value.type() == CSSLengthValue::StyleValueType::CalcLengthType)
+#define DEFINE_CALC_LENGTH_TYPE_CASTS(argumentType)                        \
+  DEFINE_TYPE_CASTS(                                                       \
+      CSSCalcLength, argumentType, value,                                  \
+      value->GetType() == CSSLengthValue::StyleValueType::kCalcLengthType, \
+      value.GetType() == CSSLengthValue::StyleValueType::kCalcLengthType)
 
 DEFINE_CALC_LENGTH_TYPE_CASTS(CSSStyleValue);
 

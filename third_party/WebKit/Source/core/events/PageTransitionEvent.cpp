@@ -27,28 +27,28 @@
 
 namespace blink {
 
-PageTransitionEvent::PageTransitionEvent() : m_persisted(false) {}
+PageTransitionEvent::PageTransitionEvent() : persisted_(false) {}
 
 PageTransitionEvent::PageTransitionEvent(const AtomicString& type,
                                          bool persisted)
-    : Event(type, true, true), m_persisted(persisted) {}
+    : Event(type, true, true), persisted_(persisted) {}
 
 PageTransitionEvent::PageTransitionEvent(
     const AtomicString& type,
     const PageTransitionEventInit& initializer)
-    : Event(type, initializer), m_persisted(false) {
+    : Event(type, initializer), persisted_(false) {
   if (initializer.hasPersisted())
-    m_persisted = initializer.persisted();
+    persisted_ = initializer.persisted();
 }
 
 PageTransitionEvent::~PageTransitionEvent() {}
 
-const AtomicString& PageTransitionEvent::interfaceName() const {
+const AtomicString& PageTransitionEvent::InterfaceName() const {
   return EventNames::PageTransitionEvent;
 }
 
 DEFINE_TRACE(PageTransitionEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

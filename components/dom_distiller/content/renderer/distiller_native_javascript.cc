@@ -29,7 +29,7 @@ DistillerNativeJavaScript::~DistillerNativeJavaScript() {}
 
 void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
     v8::Local<v8::Context> context) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   if (context.IsEmpty())
     return;

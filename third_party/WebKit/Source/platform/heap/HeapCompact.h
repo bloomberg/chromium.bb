@@ -41,8 +41,8 @@ class ThreadState;
 
 class PLATFORM_EXPORT HeapCompact final {
  public:
-  static std::unique_ptr<HeapCompact> create() {
-    return WTF::wrapUnique(new HeapCompact);
+  static std::unique_ptr<HeapCompact> Create() {
+    return WTF::WrapUnique(new HeapCompact);
   }
 
   ~HeapCompact();
@@ -50,35 +50,35 @@ class PLATFORM_EXPORT HeapCompact final {
   // Determine if a GC for the given type and reason should also perform
   // additional heap compaction.
   //
-  bool shouldCompact(ThreadState*, BlinkGC::GCType, BlinkGC::GCReason);
+  bool ShouldCompact(ThreadState*, BlinkGC::GCType, BlinkGC::GCReason);
 
   // Compaction should be performed as part of the ongoing GC, initialize
   // the heap compaction pass. Returns the appropriate visitor type to
   // use when running the marking phase.
-  void initialize(ThreadState*);
+  void Initialize(ThreadState*);
 
   // Returns true if the ongoing GC will perform compaction.
-  bool isCompacting() const { return m_doCompact; }
+  bool IsCompacting() const { return do_compact_; }
 
   // Returns true if the ongoing GC will perform compaction for the given
   // heap arena.
-  bool isCompactingArena(int arenaIndex) const {
-    return m_doCompact && (m_compactableArenas & (0x1u << arenaIndex));
+  bool IsCompactingArena(int arena_index) const {
+    return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
   }
 
   // Returns |true| if the ongoing GC may compact the given arena/sub-heap.
-  static bool isCompactableArena(int arenaIndex) {
-    return arenaIndex >= BlinkGC::Vector1ArenaIndex &&
-           arenaIndex <= BlinkGC::HashTableArenaIndex;
+  static bool IsCompactableArena(int arena_index) {
+    return arena_index >= BlinkGC::kVector1ArenaIndex &&
+           arena_index <= BlinkGC::kHashTableArenaIndex;
   }
 
   // See |Heap::registerMovingObjectReference()| documentation.
-  void registerMovingObjectReference(MovableReference* slot);
+  void RegisterMovingObjectReference(MovableReference* slot);
 
   // See |Heap::registerMovingObjectCallback()| documentation.
-  void registerMovingObjectCallback(MovableReference,
+  void RegisterMovingObjectCallback(MovableReference,
                                     MovingObjectCallback,
-                                    void* callbackData);
+                                    void* callback_data);
 
   // Thread signalling that a compaction pass is starting or has
   // completed.
@@ -87,29 +87,29 @@ class PLATFORM_EXPORT HeapCompact final {
   // of compaction across all threads. No thread can be allowed to
   // potentially access another thread's heap arenas while they're
   // still being compacted.
-  void startThreadCompaction();
-  void finishThreadCompaction();
+  void StartThreadCompaction();
+  void FinishThreadCompaction();
 
   // Perform any relocation post-processing after having completed compacting
   // the given arena. The number of pages that were freed together with the
   // total size (in bytes) of freed heap storage, are passed in as arguments.
-  void finishedArenaCompaction(NormalPageArena*,
-                               size_t freedPages,
-                               size_t freedSize);
+  void FinishedArenaCompaction(NormalPageArena*,
+                               size_t freed_pages,
+                               size_t freed_size);
 
   // Register the heap page as containing live objects that will all be
   // compacted. Registration happens as part of making the arenas ready
   // for a GC.
-  void addCompactingPage(BasePage*);
+  void AddCompactingPage(BasePage*);
 
   // Notify heap compaction that object at |from| has been relocated to.. |to|.
   // (Called by the sweep compaction pass.)
-  void relocate(Address from, Address to);
+  void Relocate(Address from, Address to);
 
   // For unit testing only: arrange for a compaction GC to be triggered
   // next time a non-conservative GC is run. Sets the compact-next flag
   // to the new value, returning old.
-  static bool scheduleCompactionGCForTesting(bool);
+  static bool ScheduleCompactionGCForTesting(bool);
 
  private:
   class MovableObjectFixups;
@@ -120,7 +120,7 @@ class PLATFORM_EXPORT HeapCompact final {
   // on the freelists of the arenas we're able to compact. The computed
   // numbers will be subsequently used to determine if a heap compaction
   // is on order (shouldCompact().)
-  void updateHeapResidency(ThreadState*);
+  void UpdateHeapResidency(ThreadState*);
 
   // Parameters controlling when compaction should be done:
 
@@ -131,30 +131,30 @@ class PLATFORM_EXPORT HeapCompact final {
   // should be considered.
   static const size_t kFreeListSizeThreshold = 512 * 1024;
 
-  MovableObjectFixups& fixups();
+  MovableObjectFixups& Fixups();
 
-  std::unique_ptr<MovableObjectFixups> m_fixups;
+  std::unique_ptr<MovableObjectFixups> fixups_;
 
   // Set to |true| when a compacting sweep will go ahead.
-  bool m_doCompact;
-  size_t m_gcCountSinceLastCompaction;
+  bool do_compact_;
+  size_t gc_count_since_last_compaction_;
 
   // Last reported freelist size, across all compactable arenas.
-  size_t m_freeListSize;
+  size_t free_list_size_;
 
   // If compacting, i'th heap arena will be compacted
   // if corresponding bit is set. Indexes are in
   // the range of BlinkGC::ArenaIndices.
-  unsigned m_compactableArenas;
+  unsigned compactable_arenas_;
 
   // Stats, number of (complete) pages freed/decommitted +
   // bytes freed (which will include partial pages.)
-  size_t m_freedPages;
-  size_t m_freedSize;
+  size_t freed_pages_;
+  size_t freed_size_;
 
-  double m_startCompactionTimeMS;
+  double start_compaction_time_ms_;
 
-  static bool s_forceCompactionGC;
+  static bool force_compaction_gc_;
 };
 
 }  // namespace blink

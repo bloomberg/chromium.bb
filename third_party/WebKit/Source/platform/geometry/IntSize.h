@@ -51,61 +51,61 @@ class PLATFORM_EXPORT IntSize {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  IntSize() : m_width(0), m_height(0) {}
-  IntSize(int width, int height) : m_width(width), m_height(height) {}
+  IntSize() : width_(0), height_(0) {}
+  IntSize(int width, int height) : width_(width), height_(height) {}
 
-  int width() const { return m_width; }
-  int height() const { return m_height; }
+  int Width() const { return width_; }
+  int Height() const { return height_; }
 
-  void setWidth(int width) { m_width = width; }
-  void setHeight(int height) { m_height = height; }
+  void SetWidth(int width) { width_ = width; }
+  void SetHeight(int height) { height_ = height; }
 
-  bool isEmpty() const { return m_width <= 0 || m_height <= 0; }
-  bool isZero() const { return !m_width && !m_height; }
+  bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
+  bool IsZero() const { return !width_ && !height_; }
 
-  float aspectRatio() const {
-    return static_cast<float>(m_width) / static_cast<float>(m_height);
+  float AspectRatio() const {
+    return static_cast<float>(width_) / static_cast<float>(height_);
   }
 
-  void expand(int width, int height) {
-    m_width += width;
-    m_height += height;
+  void Expand(int width, int height) {
+    width_ += width;
+    height_ += height;
   }
 
-  void scale(float widthScale, float heightScale) {
-    m_width = static_cast<int>(static_cast<float>(m_width) * widthScale);
-    m_height = static_cast<int>(static_cast<float>(m_height) * heightScale);
+  void Scale(float width_scale, float height_scale) {
+    width_ = static_cast<int>(static_cast<float>(width_) * width_scale);
+    height_ = static_cast<int>(static_cast<float>(height_) * height_scale);
   }
 
-  void scale(float scale) { this->scale(scale, scale); }
+  void Scale(float scale) { this->Scale(scale, scale); }
 
-  IntSize expandedTo(const IntSize& other) const {
-    return IntSize(m_width > other.m_width ? m_width : other.m_width,
-                   m_height > other.m_height ? m_height : other.m_height);
+  IntSize ExpandedTo(const IntSize& other) const {
+    return IntSize(width_ > other.width_ ? width_ : other.width_,
+                   height_ > other.height_ ? height_ : other.height_);
   }
 
-  IntSize shrunkTo(const IntSize& other) const {
-    return IntSize(m_width < other.m_width ? m_width : other.m_width,
-                   m_height < other.m_height ? m_height : other.m_height);
+  IntSize ShrunkTo(const IntSize& other) const {
+    return IntSize(width_ < other.width_ ? width_ : other.width_,
+                   height_ < other.height_ ? height_ : other.height_);
   }
 
-  void clampNegativeToZero() { *this = expandedTo(IntSize()); }
+  void ClampNegativeToZero() { *this = ExpandedTo(IntSize()); }
 
-  void clampToMinimumSize(const IntSize& minimumSize) {
-    if (m_width < minimumSize.width())
-      m_width = minimumSize.width();
-    if (m_height < minimumSize.height())
-      m_height = minimumSize.height();
+  void ClampToMinimumSize(const IntSize& minimum_size) {
+    if (width_ < minimum_size.Width())
+      width_ = minimum_size.Width();
+    if (height_ < minimum_size.Height())
+      height_ = minimum_size.Height();
   }
 
   // Return area in a uint64_t to avoid overflow.
-  uint64_t area() const { return static_cast<uint64_t>(width()) * height(); }
+  uint64_t Area() const { return static_cast<uint64_t>(Width()) * Height(); }
 
-  int diagonalLengthSquared() const {
-    return m_width * m_width + m_height * m_height;
+  int DiagonalLengthSquared() const {
+    return width_ * width_ + height_ * height_;
   }
 
-  IntSize transposedSize() const { return IntSize(m_height, m_width); }
+  IntSize TransposedSize() const { return IntSize(height_, width_); }
 
 #if OS(MACOSX)
   explicit IntSize(const CGSize&);  // don't do this implicitly since it's lossy
@@ -119,42 +119,42 @@ class PLATFORM_EXPORT IntSize {
 
   operator gfx::Size() const;
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  int m_width, m_height;
+  int width_, height_;
 };
 
 inline IntSize& operator+=(IntSize& a, const IntSize& b) {
-  a.setWidth(a.width() + b.width());
-  a.setHeight(a.height() + b.height());
+  a.SetWidth(a.Width() + b.Width());
+  a.SetHeight(a.Height() + b.Height());
   return a;
 }
 
 inline IntSize& operator-=(IntSize& a, const IntSize& b) {
-  a.setWidth(a.width() - b.width());
-  a.setHeight(a.height() - b.height());
+  a.SetWidth(a.Width() - b.Width());
+  a.SetHeight(a.Height() - b.Height());
   return a;
 }
 
 inline IntSize operator+(const IntSize& a, const IntSize& b) {
-  return IntSize(a.width() + b.width(), a.height() + b.height());
+  return IntSize(a.Width() + b.Width(), a.Height() + b.Height());
 }
 
 inline IntSize operator-(const IntSize& a, const IntSize& b) {
-  return IntSize(a.width() - b.width(), a.height() - b.height());
+  return IntSize(a.Width() - b.Width(), a.Height() - b.Height());
 }
 
 inline IntSize operator-(const IntSize& size) {
-  return IntSize(-size.width(), -size.height());
+  return IntSize(-size.Width(), -size.Height());
 }
 
 inline bool operator==(const IntSize& a, const IntSize& b) {
-  return a.width() == b.width() && a.height() == b.height();
+  return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
 inline bool operator!=(const IntSize& a, const IntSize& b) {
-  return a.width() != b.width() || a.height() != b.height();
+  return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
 // Redeclared here to avoid ODR issues.

@@ -26,51 +26,51 @@ namespace blink {
 
 inline SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(SVGNames::stopTag, document),
-      m_offset(SVGAnimatedNumber::create(this,
-                                         SVGNames::offsetAttr,
-                                         SVGNumberAcceptPercentage::create())) {
-  addToPropertyMap(m_offset);
+      offset_(SVGAnimatedNumber::Create(this,
+                                        SVGNames::offsetAttr,
+                                        SVGNumberAcceptPercentage::Create())) {
+  AddToPropertyMap(offset_);
 }
 
 DEFINE_TRACE(SVGStopElement) {
-  visitor->trace(m_offset);
-  SVGElement::trace(visitor);
+  visitor->Trace(offset_);
+  SVGElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGStopElement)
 
-void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::offsetAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGStopElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::offsetAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    if (layoutObject())
-      markForLayoutAndParentResourceInvalidation(layoutObject());
+    if (GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(GetLayoutObject());
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGStopElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGStopElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGGradientStop(this);
 }
 
-bool SVGStopElement::layoutObjectIsNeeded(const ComputedStyle&) {
-  return isValid() && hasSVGParent();
+bool SVGStopElement::LayoutObjectIsNeeded(const ComputedStyle&) {
+  return IsValid() && HasSVGParent();
 }
 
-Color SVGStopElement::stopColorIncludingOpacity() const {
+Color SVGStopElement::StopColorIncludingOpacity() const {
   const ComputedStyle* style =
-      layoutObject() ? layoutObject()->style() : nullptr;
+      GetLayoutObject() ? GetLayoutObject()->Style() : nullptr;
   // FIXME: This check for null style exists to address Bug WK 90814, a rare
   // crash condition in which the layoutObject or style is null. This entire
   // class is scheduled for removal (Bug WK 86941) and we will tolerate this
   // null check until then.
   if (!style)
-    return Color(Color::transparent);  // Transparent black.
+    return Color(Color::kTransparent);  // Transparent black.
 
-  const SVGComputedStyle& svgStyle = style->svgStyle();
-  return svgStyle.stopColor().combineWithAlpha(svgStyle.stopOpacity());
+  const SVGComputedStyle& svg_style = style->SvgStyle();
+  return svg_style.StopColor().CombineWithAlpha(svg_style.StopOpacity());
 }
 
 }  // namespace blink

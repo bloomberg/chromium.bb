@@ -42,88 +42,89 @@ namespace blink {
 class Canvas2DImageBufferSurface final : public ImageBufferSurface {
  public:
   Canvas2DImageBufferSurface(
-      std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       const IntSize& size,
-      int msaaSampleCount,
-      OpacityMode opacityMode,
-      Canvas2DLayerBridge::AccelerationMode accelerationMode,
-      const gfx::ColorSpace& colorSpace,
-      bool skSurfacesUseColorSpace,
-      SkColorType colorType)
-      : ImageBufferSurface(
-            size,
-            opacityMode,
-            skSurfacesUseColorSpace ? colorSpace.ToSkColorSpace() : nullptr,
-            colorType),
-        m_layerBridge(
-            adoptRef(new Canvas2DLayerBridge(std::move(contextProvider),
+      int msaa_sample_count,
+      OpacityMode opacity_mode,
+      Canvas2DLayerBridge::AccelerationMode acceleration_mode,
+      const gfx::ColorSpace& color_space,
+      bool sk_surfaces_use_color_space,
+      SkColorType color_type)
+      : ImageBufferSurface(size,
+                           opacity_mode,
+                           sk_surfaces_use_color_space
+                               ? color_space.ToSkColorSpace()
+                               : nullptr,
+                           color_type),
+        layer_bridge_(
+            AdoptRef(new Canvas2DLayerBridge(std::move(context_provider),
                                              size,
-                                             msaaSampleCount,
-                                             opacityMode,
-                                             accelerationMode,
-                                             colorSpace,
-                                             skSurfacesUseColorSpace,
-                                             colorType))) {
-    init();
+                                             msaa_sample_count,
+                                             opacity_mode,
+                                             acceleration_mode,
+                                             color_space,
+                                             sk_surfaces_use_color_space,
+                                             color_type))) {
+    Init();
   }
 
   Canvas2DImageBufferSurface(PassRefPtr<Canvas2DLayerBridge> bridge,
                              const IntSize& size)
       : ImageBufferSurface(size,
-                           bridge->opacityMode(),
-                           bridge->skSurfaceColorSpace(),
-                           bridge->colorType()),
-        m_layerBridge(std::move(bridge)) {
-    init();
+                           bridge->GetOpacityMode(),
+                           bridge->SkSurfaceColorSpace(),
+                           bridge->ColorType()),
+        layer_bridge_(std::move(bridge)) {
+    Init();
   }
 
-  ~Canvas2DImageBufferSurface() override { m_layerBridge->beginDestruction(); }
+  ~Canvas2DImageBufferSurface() override { layer_bridge_->BeginDestruction(); }
 
   // ImageBufferSurface implementation
-  void finalizeFrame() override { m_layerBridge->finalizeFrame(); }
-  void doPaintInvalidation(const FloatRect& dirtyRect) override {
-    m_layerBridge->doPaintInvalidation(dirtyRect);
+  void FinalizeFrame() override { layer_bridge_->FinalizeFrame(); }
+  void DoPaintInvalidation(const FloatRect& dirty_rect) override {
+    layer_bridge_->DoPaintInvalidation(dirty_rect);
   }
-  void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
-  PaintCanvas* canvas() override { return m_layerBridge->canvas(); }
-  void disableDeferral(DisableDeferralReason reason) override {
-    m_layerBridge->disableDeferral(reason);
+  void WillOverwriteCanvas() override { layer_bridge_->WillOverwriteCanvas(); }
+  PaintCanvas* Canvas() override { return layer_bridge_->Canvas(); }
+  void DisableDeferral(DisableDeferralReason reason) override {
+    layer_bridge_->DisableDeferral(reason);
   }
-  bool isValid() const override { return m_layerBridge->checkSurfaceValid(); }
-  bool restore() override { return m_layerBridge->restoreSurface(); }
-  WebLayer* layer() const override { return m_layerBridge->layer(); }
-  bool isAccelerated() const override { return m_layerBridge->isAccelerated(); }
-  void setFilterQuality(SkFilterQuality filterQuality) override {
-    m_layerBridge->setFilterQuality(filterQuality);
+  bool IsValid() const override { return layer_bridge_->CheckSurfaceValid(); }
+  bool Restore() override { return layer_bridge_->RestoreSurface(); }
+  WebLayer* Layer() const override { return layer_bridge_->Layer(); }
+  bool IsAccelerated() const override { return layer_bridge_->IsAccelerated(); }
+  void SetFilterQuality(SkFilterQuality filter_quality) override {
+    layer_bridge_->SetFilterQuality(filter_quality);
   }
-  void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
-  void setImageBuffer(ImageBuffer* imageBuffer) override {
-    m_layerBridge->setImageBuffer(imageBuffer);
+  void SetIsHidden(bool hidden) override { layer_bridge_->SetIsHidden(hidden); }
+  void SetImageBuffer(ImageBuffer* image_buffer) override {
+    layer_bridge_->SetImageBuffer(image_buffer);
   }
-  void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(rect); }
-  void flush(FlushReason) override { m_layerBridge->flush(); }
-  void flushGpu(FlushReason) override { m_layerBridge->flushGpu(); }
-  bool writePixels(const SkImageInfo& origInfo,
+  void DidDraw(const FloatRect& rect) override { layer_bridge_->DidDraw(rect); }
+  void Flush(FlushReason) override { layer_bridge_->Flush(); }
+  void FlushGpu(FlushReason) override { layer_bridge_->FlushGpu(); }
+  bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
-                   size_t rowBytes,
+                   size_t row_bytes,
                    int x,
                    int y) override {
-    return m_layerBridge->writePixels(origInfo, pixels, rowBytes, x, y);
+    return layer_bridge_->WritePixels(orig_info, pixels, row_bytes, x, y);
   }
 
-  sk_sp<SkImage> newImageSnapshot(AccelerationHint hint,
+  sk_sp<SkImage> NewImageSnapshot(AccelerationHint hint,
                                   SnapshotReason reason) override {
-    return m_layerBridge->newImageSnapshot(hint, reason);
+    return layer_bridge_->NewImageSnapshot(hint, reason);
   }
 
  private:
-  void init() {
-    clear();
-    if (isValid())
-      m_layerBridge->flush();
+  void Init() {
+    Clear();
+    if (IsValid())
+      layer_bridge_->Flush();
   }
 
-  RefPtr<Canvas2DLayerBridge> m_layerBridge;
+  RefPtr<Canvas2DLayerBridge> layer_bridge_;
 };
 
 }  // namespace blink

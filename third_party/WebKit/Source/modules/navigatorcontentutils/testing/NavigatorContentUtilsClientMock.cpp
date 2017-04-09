@@ -10,7 +10,7 @@
 
 namespace blink {
 
-void NavigatorContentUtilsClientMock::registerProtocolHandler(
+void NavigatorContentUtilsClientMock::RegisterProtocolHandler(
     const String& scheme,
     const KURL& url,
     const String& title) {
@@ -19,26 +19,26 @@ void NavigatorContentUtilsClientMock::registerProtocolHandler(
   info.url = url;
   info.title = title;
 
-  m_protocolMap.set(scheme, info);
+  protocol_map_.Set(scheme, info);
 }
 
 NavigatorContentUtilsClient::CustomHandlersState
-NavigatorContentUtilsClientMock::isProtocolHandlerRegistered(
+NavigatorContentUtilsClientMock::IsProtocolHandlerRegistered(
     const String& scheme,
     const KURL& url) {
   // "declined" state is checked by
   // NavigatorContentUtils::isProtocolHandlerRegistered() before calling this
   // function.
-  if (m_protocolMap.contains(scheme))
-    return NavigatorContentUtilsClient::CustomHandlersRegistered;
+  if (protocol_map_.Contains(scheme))
+    return NavigatorContentUtilsClient::kCustomHandlersRegistered;
 
-  return NavigatorContentUtilsClient::CustomHandlersNew;
+  return NavigatorContentUtilsClient::kCustomHandlersNew;
 }
 
-void NavigatorContentUtilsClientMock::unregisterProtocolHandler(
+void NavigatorContentUtilsClientMock::UnregisterProtocolHandler(
     const String& scheme,
     const KURL& url) {
-  m_protocolMap.erase(scheme);
+  protocol_map_.erase(scheme);
 }
 
 }  // namespace blink

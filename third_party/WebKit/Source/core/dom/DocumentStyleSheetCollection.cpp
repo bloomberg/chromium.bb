@@ -39,89 +39,91 @@
 
 namespace blink {
 
-DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
-    : TreeScopeStyleSheetCollection(treeScope) {
-  DCHECK_EQ(treeScope.rootNode(), treeScope.rootNode().document());
+DocumentStyleSheetCollection::DocumentStyleSheetCollection(
+    TreeScope& tree_scope)
+    : TreeScopeStyleSheetCollection(tree_scope) {
+  DCHECK_EQ(tree_scope.RootNode(), tree_scope.RootNode().GetDocument());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
-    StyleEngine& masterEngine,
+void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
+    StyleEngine& master_engine,
     DocumentStyleSheetCollector& collector) {
-  for (Node* n : m_styleSheetCandidateNodes) {
+  for (Node* n : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*n);
 
-    DCHECK(!candidate.isXSL());
-    if (candidate.isImport()) {
-      Document* document = candidate.importedDocument();
+    DCHECK(!candidate.IsXSL());
+    if (candidate.IsImport()) {
+      Document* document = candidate.ImportedDocument();
       if (!document)
         continue;
-      if (collector.hasVisited(document))
+      if (collector.HasVisited(document))
         continue;
-      collector.willVisit(document);
+      collector.WillVisit(document);
 
-      document->styleEngine().updateStyleSheetsInImport(masterEngine,
-                                                        collector);
+      document->GetStyleEngine().UpdateStyleSheetsInImport(master_engine,
+                                                           collector);
       continue;
     }
 
-    if (candidate.isEnabledAndLoading())
+    if (candidate.IsEnabledAndLoading())
       continue;
 
-    StyleSheet* sheet = candidate.sheet();
+    StyleSheet* sheet = candidate.Sheet();
     if (!sheet)
       continue;
 
-    collector.appendSheetForList(sheet);
-    if (!candidate.canBeActivated(
-            document().styleEngine().preferredStylesheetSetName()))
+    collector.AppendSheetForList(sheet);
+    if (!candidate.CanBeActivated(
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
 
-    CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
-    collector.appendActiveStyleSheet(
-        std::make_pair(cssSheet, masterEngine.ruleSetForSheet(*cssSheet)));
+    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    collector.AppendActiveStyleSheet(
+        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
   }
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(
-    StyleEngine& masterEngine,
+void DocumentStyleSheetCollection::CollectStyleSheets(
+    StyleEngine& master_engine,
     DocumentStyleSheetCollector& collector) {
-  for (auto& sheet : document().styleEngine().injectedAuthorStyleSheets()) {
-    collector.appendActiveStyleSheet(std::make_pair(
-        sheet, document().styleEngine().ruleSetForSheet(*sheet)));
+  for (auto& sheet :
+       GetDocument().GetStyleEngine().InjectedAuthorStyleSheets()) {
+    collector.AppendActiveStyleSheet(std::make_pair(
+        sheet, GetDocument().GetStyleEngine().RuleSetForSheet(*sheet)));
   }
-  collectStyleSheetsFromCandidates(masterEngine, collector);
-  if (CSSStyleSheet* inspectorSheet =
-          document().styleEngine().inspectorStyleSheet()) {
-    collector.appendActiveStyleSheet(std::make_pair(
-        inspectorSheet,
-        document().styleEngine().ruleSetForSheet(*inspectorSheet)));
+  CollectStyleSheetsFromCandidates(master_engine, collector);
+  if (CSSStyleSheet* inspector_sheet =
+          GetDocument().GetStyleEngine().InspectorStyleSheet()) {
+    collector.AppendActiveStyleSheet(std::make_pair(
+        inspector_sheet,
+        GetDocument().GetStyleEngine().RuleSetForSheet(*inspector_sheet)));
   }
 }
 
-void DocumentStyleSheetCollection::updateActiveStyleSheets(
-    StyleEngine& masterEngine) {
+void DocumentStyleSheetCollection::UpdateActiveStyleSheets(
+    StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  StyleSheetCollection* collection = StyleSheetCollection::create();
+  StyleSheetCollection* collection = StyleSheetCollection::Create();
   ActiveDocumentStyleSheetCollector collector(*collection);
-  collectStyleSheets(masterEngine, collector);
-  applyActiveStyleSheetChanges(*collection);
+  CollectStyleSheets(master_engine, collector);
+  ApplyActiveStyleSheetChanges(*collection);
 }
 
-void DocumentStyleSheetCollection::collectViewportRules(
-    ViewportStyleResolver& viewportResolver) {
-  for (Node* node : m_styleSheetCandidateNodes) {
+void DocumentStyleSheetCollection::CollectViewportRules(
+    ViewportStyleResolver& viewport_resolver) {
+  for (Node* node : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*node);
 
-    if (candidate.isImport())
+    if (candidate.IsImport())
       continue;
-    StyleSheet* sheet = candidate.sheet();
+    StyleSheet* sheet = candidate.Sheet();
     if (!sheet)
       continue;
-    if (!candidate.canBeActivated(
-            document().styleEngine().preferredStylesheetSetName()))
+    if (!candidate.CanBeActivated(
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
-    viewportResolver.collectViewportRulesFromAuthorSheet(
-        *toCSSStyleSheet(sheet));
+    viewport_resolver.CollectViewportRulesFromAuthorSheet(
+        *ToCSSStyleSheet(sheet));
   }
 }
 

@@ -10,27 +10,27 @@
 namespace blink {
 
 HistogramTester::HistogramTester()
-    : m_histogramTester(WTF::wrapUnique(new base::HistogramTester)) {}
+    : histogram_tester_(WTF::WrapUnique(new base::HistogramTester)) {}
 
 HistogramTester::~HistogramTester() {}
 
-void HistogramTester::expectUniqueSample(
+void HistogramTester::ExpectUniqueSample(
     const std::string& name,
     base::HistogramBase::Sample sample,
     base::HistogramBase::Count count) const {
-  m_histogramTester->ExpectUniqueSample(name, sample, count);
+  histogram_tester_->ExpectUniqueSample(name, sample, count);
 }
 
-void HistogramTester::expectBucketCount(
+void HistogramTester::ExpectBucketCount(
     const std::string& name,
     base::HistogramBase::Sample sample,
     base::HistogramBase::Count count) const {
-  m_histogramTester->ExpectBucketCount(name, sample, count);
+  histogram_tester_->ExpectBucketCount(name, sample, count);
 }
 
-void HistogramTester::expectTotalCount(const std::string& name,
+void HistogramTester::ExpectTotalCount(const std::string& name,
                                        base::HistogramBase::Count count) const {
-  m_histogramTester->ExpectTotalCount(name, count);
+  histogram_tester_->ExpectTotalCount(name, count);
 }
 
 }  // namespace blink

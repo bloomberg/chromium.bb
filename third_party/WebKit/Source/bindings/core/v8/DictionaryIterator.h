@@ -25,27 +25,27 @@ class CORE_EXPORT DictionaryIterator {
   STACK_ALLOCATED();
 
  public:
-  DictionaryIterator(std::nullptr_t) : m_isolate(nullptr), m_done(true) {}
+  DictionaryIterator(std::nullptr_t) : isolate_(nullptr), done_(true) {}
 
   DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
 
-  bool isNull() const { return m_iterator.IsEmpty(); }
+  bool IsNull() const { return iterator_.IsEmpty(); }
 
   // Returns true if the iterator is still not done.
-  bool next(ExecutionContext*, ExceptionState&);
+  bool Next(ExecutionContext*, ExceptionState&);
 
-  v8::MaybeLocal<v8::Value> value() { return m_value; }
-  bool valueAsDictionary(Dictionary& result, ExceptionState&);
-  bool valueAsString(WTF::String& result);
+  v8::MaybeLocal<v8::Value> GetValue() { return value_; }
+  bool ValueAsDictionary(Dictionary& result, ExceptionState&);
+  bool ValueAsString(WTF::String& result);
 
  private:
-  v8::Isolate* m_isolate;
-  v8::Local<v8::Object> m_iterator;
-  v8::Local<v8::String> m_nextKey;
-  v8::Local<v8::String> m_doneKey;
-  v8::Local<v8::String> m_valueKey;
-  bool m_done;
-  v8::MaybeLocal<v8::Value> m_value;
+  v8::Isolate* isolate_;
+  v8::Local<v8::Object> iterator_;
+  v8::Local<v8::String> next_key_;
+  v8::Local<v8::String> done_key_;
+  v8::Local<v8::String> value_key_;
+  bool done_;
+  v8::MaybeLocal<v8::Value> value_;
 };
 
 }  // namespace blink

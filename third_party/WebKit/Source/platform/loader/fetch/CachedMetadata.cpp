@@ -13,21 +13,21 @@ CachedMetadata::CachedMetadata(const char* data, size_t size) {
   DCHECK_GT(size, kDataStart);
   DCHECK(data);
 
-  m_serializedData.reserveInitialCapacity(size);
-  m_serializedData.append(data, size);
+  serialized_data_.ReserveInitialCapacity(size);
+  serialized_data_.Append(data, size);
 }
 
-CachedMetadata::CachedMetadata(uint32_t dataTypeID,
+CachedMetadata::CachedMetadata(uint32_t data_type_id,
                                const char* data,
                                size_t size) {
   // Don't allow an ID of 0, it is used internally to indicate errors.
-  DCHECK(dataTypeID);
+  DCHECK(data_type_id);
   DCHECK(data);
 
-  m_serializedData.reserveInitialCapacity(sizeof(uint32_t) + size);
-  m_serializedData.append(reinterpret_cast<const char*>(&dataTypeID),
+  serialized_data_.ReserveInitialCapacity(sizeof(uint32_t) + size);
+  serialized_data_.Append(reinterpret_cast<const char*>(&data_type_id),
                           sizeof(uint32_t));
-  m_serializedData.append(data, size);
+  serialized_data_.Append(data, size);
 }
 
 }  // namespace blink

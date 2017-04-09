@@ -11,8 +11,8 @@ namespace blink {
 
 // Test setting feature policy via the Element attribute (HTML codepath).
 TEST(HTMLIFrameElementTest, SetAllowAttribute) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
+  Document* document = Document::Create();
+  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
 
   iframe->setAttribute(HTMLNames::allowAttr, "fullscreen");
   EXPECT_EQ("fullscreen", iframe->allow()->value());
@@ -22,8 +22,8 @@ TEST(HTMLIFrameElementTest, SetAllowAttribute) {
 
 // Test setting feature policy via the DOMTokenList (JS codepath).
 TEST(HTMLIFrameElementTest, SetAllowAttributeJS) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
+  Document* document = Document::Create();
+  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
 
   iframe->allow()->setValue("fullscreen");
   EXPECT_EQ("fullscreen", iframe->getAttribute(HTMLNames::allowAttr));

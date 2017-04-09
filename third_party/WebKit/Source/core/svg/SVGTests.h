@@ -37,18 +37,18 @@ class CORE_EXPORT SVGTests : public GarbageCollectedMixin {
   SVGStringListTearOff* requiredExtensions();
   SVGStringListTearOff* systemLanguage();
 
-  bool isValid() const;
+  bool IsValid() const;
 
-  bool isKnownAttribute(const QualifiedName&);
+  bool IsKnownAttribute(const QualifiedName&);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  explicit SVGTests(SVGElement* contextElement);
+  explicit SVGTests(SVGElement* context_element);
 
  private:
-  Member<SVGStaticStringList> m_requiredExtensions;
-  Member<SVGStaticStringList> m_systemLanguage;
+  Member<SVGStaticStringList> required_extensions_;
+  Member<SVGStaticStringList> system_language_;
 };
 
 }  // namespace blink

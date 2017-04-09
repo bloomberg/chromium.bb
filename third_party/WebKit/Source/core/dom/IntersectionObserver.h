@@ -30,17 +30,17 @@ class CORE_EXPORT IntersectionObserver final
  public:
   using EventCallback =
       Function<void(const HeapVector<Member<IntersectionObserverEntry>>&),
-               WTF::SameThreadAffinity>;
+               WTF::kSameThreadAffinity>;
 
-  static IntersectionObserver* create(const IntersectionObserverInit&,
+  static IntersectionObserver* Create(const IntersectionObserverInit&,
                                       IntersectionObserverCallback&,
                                       ExceptionState&);
-  static IntersectionObserver* create(const Vector<Length>& rootMargin,
+  static IntersectionObserver* Create(const Vector<Length>& root_margin,
                                       const Vector<float>& thresholds,
                                       Document*,
                                       std::unique_ptr<EventCallback>,
                                       ExceptionState& = ASSERT_NO_EXCEPTION);
-  static void resumeSuspendedObservers();
+  static void ResumeSuspendedObservers();
 
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -49,33 +49,33 @@ class CORE_EXPORT IntersectionObserver final
   HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
 
   // API attributes.
-  Element* root() const { return m_root.get(); }
+  Element* root() const { return root_.Get(); }
   String rootMargin() const;
-  const Vector<float>& thresholds() const { return m_thresholds; }
+  const Vector<float>& thresholds() const { return thresholds_; }
 
   // An observer can either track intersections with an explicit root Element,
   // or with the the top-level frame's viewport (the "implicit root").  When
   // tracking the implicit root, m_root will be null, but because m_root is a
   // weak pointer, we cannot surmise that this observer tracks the implicit
   // root just because m_root is null.  Hence m_rootIsImplicit.
-  bool rootIsImplicit() const { return m_rootIsImplicit; }
+  bool RootIsImplicit() const { return root_is_implicit_; }
 
   // This is the document which is responsible for running
   // computeIntersectionObservations at frame generation time.
-  Document& trackingDocument() const;
+  Document& TrackingDocument() const;
 
-  const Length& topMargin() const { return m_topMargin; }
-  const Length& rightMargin() const { return m_rightMargin; }
-  const Length& bottomMargin() const { return m_bottomMargin; }
-  const Length& leftMargin() const { return m_leftMargin; }
-  void computeIntersectionObservations();
-  void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
-  unsigned firstThresholdGreaterThan(float ratio) const;
-  void deliver();
-  bool hasEntries() const { return m_entries.size(); }
-  const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& observations()
+  const Length& TopMargin() const { return top_margin_; }
+  const Length& RightMargin() const { return right_margin_; }
+  const Length& BottomMargin() const { return bottom_margin_; }
+  const Length& LeftMargin() const { return left_margin_; }
+  void ComputeIntersectionObservations();
+  void EnqueueIntersectionObserverEntry(IntersectionObserverEntry&);
+  unsigned FirstThresholdGreaterThan(float ratio) const;
+  void Deliver();
+  bool HasEntries() const { return entries_.size(); }
+  const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& Observations()
       const {
-    return m_observations;
+    return observations_;
   }
 
   DECLARE_TRACE();
@@ -83,24 +83,24 @@ class CORE_EXPORT IntersectionObserver final
  private:
   explicit IntersectionObserver(IntersectionObserverCallback&,
                                 Element*,
-                                const Vector<Length>& rootMargin,
+                                const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds);
-  void clearWeakMembers(Visitor*);
+  void ClearWeakMembers(Visitor*);
 
   // Returns false if this observer has an explicit root element which has been
   // deleted; true otherwise.
-  bool rootIsValid() const;
+  bool RootIsValid() const;
 
-  Member<IntersectionObserverCallback> m_callback;
-  WeakMember<Element> m_root;
-  HeapLinkedHashSet<WeakMember<IntersectionObservation>> m_observations;
-  HeapVector<Member<IntersectionObserverEntry>> m_entries;
-  Vector<float> m_thresholds;
-  Length m_topMargin;
-  Length m_rightMargin;
-  Length m_bottomMargin;
-  Length m_leftMargin;
-  unsigned m_rootIsImplicit : 1;
+  Member<IntersectionObserverCallback> callback_;
+  WeakMember<Element> root_;
+  HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
+  HeapVector<Member<IntersectionObserverEntry>> entries_;
+  Vector<float> thresholds_;
+  Length top_margin_;
+  Length right_margin_;
+  Length bottom_margin_;
+  Length left_margin_;
+  unsigned root_is_implicit_ : 1;
 };
 
 }  // namespace blink

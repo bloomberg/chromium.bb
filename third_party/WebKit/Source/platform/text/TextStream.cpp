@@ -42,15 +42,15 @@ namespace blink {
 
 // large enough for any integer or floating point value in string format,
 // including trailing null character
-static const size_t printBufferSize = 100;
+static const size_t kPrintBufferSize = 100;
 
-static inline bool hasFractions(double val) {
+static inline bool HasFractions(double val) {
   // We use 0.011 to more than match the number of significant digits we print
   // out when dumping the render tree.
-  static const double s_epsilon = 0.011;
+  static const double kEpsilon = 0.011;
   int ival = static_cast<int>(round(val));
   double dval = static_cast<double>(ival);
-  return fabs(val - dval) > s_epsilon;
+  return fabs(val - dval) > kEpsilon;
 }
 
 TextStream& TextStream::operator<<(bool b) {
@@ -58,108 +58,108 @@ TextStream& TextStream::operator<<(bool b) {
 }
 
 TextStream& TextStream::operator<<(int i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(unsigned i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(long i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(unsigned long i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(long long i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(unsigned long long i) {
-  m_text.appendNumber(i);
+  text_.AppendNumber(i);
   return *this;
 }
 
 TextStream& TextStream::operator<<(float f) {
-  m_text.append(String::numberToStringFixedWidth(f, 2));
+  text_.Append(String::NumberToStringFixedWidth(f, 2));
   return *this;
 }
 
 TextStream& TextStream::operator<<(double d) {
-  m_text.append(String::numberToStringFixedWidth(d, 2));
+  text_.Append(String::NumberToStringFixedWidth(d, 2));
   return *this;
 }
 
 TextStream& TextStream::operator<<(const char* string) {
-  m_text.append(string);
+  text_.Append(string);
   return *this;
 }
 
 TextStream& TextStream::operator<<(const void* p) {
-  char buffer[printBufferSize];
+  char buffer[kPrintBufferSize];
   snprintf(buffer, sizeof(buffer) - 1, "%p", p);
   return *this << buffer;
 }
 
 TextStream& TextStream::operator<<(const String& string) {
-  m_text.append(string);
+  text_.Append(string);
   return *this;
 }
 
 TextStream& TextStream::operator<<(
-    const FormatNumberRespectingIntegers& numberToFormat) {
-  if (hasFractions(numberToFormat.value))
-    return *this << numberToFormat.value;
+    const FormatNumberRespectingIntegers& number_to_format) {
+  if (HasFractions(number_to_format.value))
+    return *this << number_to_format.value;
 
-  m_text.appendNumber(static_cast<int>(round(numberToFormat.value)));
+  text_.AppendNumber(static_cast<int>(round(number_to_format.value)));
   return *this;
 }
 
-String TextStream::release() {
-  String result = m_text.toString();
-  m_text.clear();
+String TextStream::Release() {
+  String result = text_.ToString();
+  text_.Clear();
   return result;
 }
 
 TextStream& operator<<(TextStream& ts, const IntRect& r) {
-  return ts << "at (" << r.x() << "," << r.y() << ") size " << r.width() << "x"
-            << r.height();
+  return ts << "at (" << r.X() << "," << r.Y() << ") size " << r.Width() << "x"
+            << r.Height();
 }
 
 TextStream& operator<<(TextStream& ts, const IntPoint& p) {
-  return ts << "(" << p.x() << "," << p.y() << ")";
+  return ts << "(" << p.X() << "," << p.Y() << ")";
 }
 
 TextStream& operator<<(TextStream& ts, const FloatPoint& p) {
-  ts << "(" << TextStream::FormatNumberRespectingIntegers(p.x());
-  ts << "," << TextStream::FormatNumberRespectingIntegers(p.y());
+  ts << "(" << TextStream::FormatNumberRespectingIntegers(p.X());
+  ts << "," << TextStream::FormatNumberRespectingIntegers(p.Y());
   ts << ")";
   return ts;
 }
 
 TextStream& operator<<(TextStream& ts, const FloatSize& s) {
-  ts << "width=" << TextStream::FormatNumberRespectingIntegers(s.width());
-  ts << " height=" << TextStream::FormatNumberRespectingIntegers(s.height());
+  ts << "width=" << TextStream::FormatNumberRespectingIntegers(s.Width());
+  ts << " height=" << TextStream::FormatNumberRespectingIntegers(s.Height());
   return ts;
 }
 
 TextStream& operator<<(TextStream& ts, const FloatRect& r) {
-  ts << "at (" << TextStream::FormatNumberRespectingIntegers(r.x());
-  ts << "," << TextStream::FormatNumberRespectingIntegers(r.y());
-  ts << ") size " << TextStream::FormatNumberRespectingIntegers(r.width());
-  ts << "x" << TextStream::FormatNumberRespectingIntegers(r.height());
+  ts << "at (" << TextStream::FormatNumberRespectingIntegers(r.X());
+  ts << "," << TextStream::FormatNumberRespectingIntegers(r.Y());
+  ts << ") size " << TextStream::FormatNumberRespectingIntegers(r.Width());
+  ts << "x" << TextStream::FormatNumberRespectingIntegers(r.Height());
   return ts;
 }
 
 TextStream& operator<<(TextStream& ts, const LayoutUnit& unit) {
-  return ts << TextStream::FormatNumberRespectingIntegers(unit.toDouble());
+  return ts << TextStream::FormatNumberRespectingIntegers(unit.ToDouble());
 }
 
 TextStream& operator<<(TextStream& ts, const LayoutPoint& point) {
@@ -174,7 +174,7 @@ TextStream& operator<<(TextStream& ts, const LayoutSize& size) {
   return ts << FloatSize(size);
 }
 
-void writeIndent(TextStream& ts, int indent) {
+void WriteIndent(TextStream& ts, int indent) {
   for (int i = 0; i != indent; ++i)
     ts << "  ";
 }

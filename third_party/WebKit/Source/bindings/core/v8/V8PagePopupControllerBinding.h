@@ -20,8 +20,8 @@ class V8PagePopupControllerBinding {
 
  public:
   // Installs 'pagePopupController' attribute into 'window' object.
-  static void installPagePopupController(v8::Local<v8::Context>,
-                                         v8::Local<v8::Object> windowWrapper);
+  static void InstallPagePopupController(v8::Local<v8::Context>,
+                                         v8::Local<v8::Object> window_wrapper);
 };
 
 }  // namespace blink

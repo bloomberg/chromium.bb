@@ -36,25 +36,25 @@ class WebGLActiveInfo final : public GarbageCollectedFinalized<WebGLActiveInfo>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLActiveInfo* create(const String& name, GLenum type, GLint size) {
+  static WebGLActiveInfo* Create(const String& name, GLenum type, GLint size) {
     return new WebGLActiveInfo(name, type, size);
   }
-  String name() const { return m_name; }
-  GLenum type() const { return m_type; }
-  GLint size() const { return m_size; }
+  String name() const { return name_; }
+  GLenum type() const { return type_; }
+  GLint size() const { return size_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   WebGLActiveInfo(const String& name, GLenum type, GLint size)
-      : m_name(name), m_type(type), m_size(size) {
+      : name_(name), type_(type), size_(size) {
     ASSERT(name.length());
     ASSERT(type);
     ASSERT(size);
   }
-  String m_name;
-  GLenum m_type;
-  GLint m_size;
+  String name_;
+  GLenum type_;
+  GLint size_;
 };
 
 }  // namespace blink

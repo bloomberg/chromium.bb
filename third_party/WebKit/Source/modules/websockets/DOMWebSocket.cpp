@@ -69,294 +69,293 @@ static const int32_t kBucketCountForMessageSizeHistogram = 50;
 namespace blink {
 
 DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
-    : m_state(Active),
-      m_target(target),
-      m_resumeTimer(TaskRunnerHelper::get(TaskType::WebSocket,
-                                          target->getExecutionContext()),
+    : state_(kActive),
+      target_(target),
+      resume_timer_(TaskRunnerHelper::Get(TaskType::kWebSocket,
+                                          target->GetExecutionContext()),
                     this,
-                    &EventQueue::resumeTimerFired) {}
+                    &EventQueue::ResumeTimerFired) {}
 
 DOMWebSocket::EventQueue::~EventQueue() {
-  contextDestroyed();
+  ContextDestroyed();
 }
 
-void DOMWebSocket::EventQueue::dispatch(Event* event) {
-  switch (m_state) {
-    case Active:
-      DCHECK(m_events.isEmpty());
-      DCHECK(m_target->getExecutionContext());
-      m_target->dispatchEvent(event);
+void DOMWebSocket::EventQueue::Dispatch(Event* event) {
+  switch (state_) {
+    case kActive:
+      DCHECK(events_.IsEmpty());
+      DCHECK(target_->GetExecutionContext());
+      target_->DispatchEvent(event);
       break;
-    case Suspended:
-      m_events.push_back(event);
+    case kSuspended:
+      events_.push_back(event);
       break;
-    case Stopped:
-      DCHECK(m_events.isEmpty());
+    case kStopped:
+      DCHECK(events_.IsEmpty());
       // Do nothing.
       break;
   }
 }
 
-bool DOMWebSocket::EventQueue::isEmpty() const {
-  return m_events.isEmpty();
+bool DOMWebSocket::EventQueue::IsEmpty() const {
+  return events_.IsEmpty();
 }
 
-void DOMWebSocket::EventQueue::suspend() {
-  m_resumeTimer.stop();
-  if (m_state != Active)
+void DOMWebSocket::EventQueue::Suspend() {
+  resume_timer_.Stop();
+  if (state_ != kActive)
     return;
 
-  m_state = Suspended;
+  state_ = kSuspended;
 }
 
-void DOMWebSocket::EventQueue::resume() {
-  if (m_state != Suspended || m_resumeTimer.isActive())
+void DOMWebSocket::EventQueue::Resume() {
+  if (state_ != kSuspended || resume_timer_.IsActive())
     return;
 
-  m_resumeTimer.startOneShot(0, BLINK_FROM_HERE);
+  resume_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void DOMWebSocket::EventQueue::contextDestroyed() {
-  if (m_state == Stopped)
+void DOMWebSocket::EventQueue::ContextDestroyed() {
+  if (state_ == kStopped)
     return;
 
-  m_state = Stopped;
-  m_resumeTimer.stop();
-  m_events.clear();
+  state_ = kStopped;
+  resume_timer_.Stop();
+  events_.Clear();
 }
 
-void DOMWebSocket::EventQueue::dispatchQueuedEvents() {
-  if (m_state != Active)
+void DOMWebSocket::EventQueue::DispatchQueuedEvents() {
+  if (state_ != kActive)
     return;
 
   HeapDeque<Member<Event>> events;
-  events.swap(m_events);
-  while (!events.isEmpty()) {
-    if (m_state == Stopped || m_state == Suspended)
+  events.Swap(events_);
+  while (!events.IsEmpty()) {
+    if (state_ == kStopped || state_ == kSuspended)
       break;
-    DCHECK_EQ(m_state, Active);
-    DCHECK(m_target->getExecutionContext());
-    m_target->dispatchEvent(events.takeFirst());
+    DCHECK_EQ(state_, kActive);
+    DCHECK(target_->GetExecutionContext());
+    target_->DispatchEvent(events.TakeFirst());
     // |this| can be stopped here.
   }
-  if (m_state == Suspended) {
-    while (!m_events.isEmpty())
-      events.push_back(m_events.takeFirst());
-    events.swap(m_events);
+  if (state_ == kSuspended) {
+    while (!events_.IsEmpty())
+      events.push_back(events_.TakeFirst());
+    events.Swap(events_);
   }
 }
 
-void DOMWebSocket::EventQueue::resumeTimerFired(TimerBase*) {
-  DCHECK_EQ(m_state, Suspended);
-  m_state = Active;
-  dispatchQueuedEvents();
+void DOMWebSocket::EventQueue::ResumeTimerFired(TimerBase*) {
+  DCHECK_EQ(state_, kSuspended);
+  state_ = kActive;
+  DispatchQueuedEvents();
 }
 
 DEFINE_TRACE(DOMWebSocket::EventQueue) {
-  visitor->trace(m_target);
-  visitor->trace(m_events);
+  visitor->Trace(target_);
+  visitor->Trace(events_);
 }
 
-const size_t maxReasonSizeInBytes = 123;
+const size_t kMaxReasonSizeInBytes = 123;
 
-static inline bool isValidSubprotocolCharacter(UChar character) {
-  const UChar minimumProtocolCharacter = '!';  // U+0021.
-  const UChar maximumProtocolCharacter = '~';  // U+007E.
+static inline bool IsValidSubprotocolCharacter(UChar character) {
+  const UChar kMinimumProtocolCharacter = '!';  // U+0021.
+  const UChar kMaximumProtocolCharacter = '~';  // U+007E.
   // Set to true if character does not matches "separators" ABNF defined in
   // RFC2616. SP and HT are excluded since the range check excludes them.
-  bool isNotSeparator =
+  bool is_not_separator =
       character != '"' && character != '(' && character != ')' &&
       character != ',' && character != '/' &&
       !(character >= ':' &&
         character <=
             '@')  // U+003A - U+0040 (':', ';', '<', '=', '>', '?', '@').
-      &&
-      !(character >= '[' &&
-        character <= ']')  // U+005B - U+005D ('[', '\\', ']').
+      && !(character >= '[' &&
+           character <= ']')  // U+005B - U+005D ('[', '\\', ']').
       && character != '{' && character != '}';
-  return character >= minimumProtocolCharacter &&
-         character <= maximumProtocolCharacter && isNotSeparator;
+  return character >= kMinimumProtocolCharacter &&
+         character <= kMaximumProtocolCharacter && is_not_separator;
 }
 
-bool DOMWebSocket::isValidSubprotocolString(const String& protocol) {
-  if (protocol.isEmpty())
+bool DOMWebSocket::IsValidSubprotocolString(const String& protocol) {
+  if (protocol.IsEmpty())
     return false;
   for (size_t i = 0; i < protocol.length(); ++i) {
-    if (!isValidSubprotocolCharacter(protocol[i]))
+    if (!IsValidSubprotocolCharacter(protocol[i]))
       return false;
   }
   return true;
 }
 
-static String encodeSubprotocolString(const String& protocol) {
+static String EncodeSubprotocolString(const String& protocol) {
   StringBuilder builder;
   for (size_t i = 0; i < protocol.length(); i++) {
     if (protocol[i] < 0x20 || protocol[i] > 0x7E)
-      builder.append(String::format("\\u%04X", protocol[i]));
+      builder.Append(String::Format("\\u%04X", protocol[i]));
     else if (protocol[i] == 0x5c)
-      builder.append("\\\\");
+      builder.Append("\\\\");
     else
-      builder.append(protocol[i]);
+      builder.Append(protocol[i]);
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
-static String joinStrings(const Vector<String>& strings,
+static String JoinStrings(const Vector<String>& strings,
                           const char* separator) {
   StringBuilder builder;
   for (size_t i = 0; i < strings.size(); ++i) {
     if (i)
-      builder.append(separator);
-    builder.append(strings[i]);
+      builder.Append(separator);
+    builder.Append(strings[i]);
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
-static void setInvalidStateErrorForSendMethod(ExceptionState& exceptionState) {
-  exceptionState.throwDOMException(InvalidStateError,
-                                   "Still in CONNECTING state.");
+static void SetInvalidStateErrorForSendMethod(ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(kInvalidStateError,
+                                    "Still in CONNECTING state.");
 }
 
-const char* DOMWebSocket::subprotocolSeperator() {
+const char* DOMWebSocket::SubprotocolSeperator() {
   return ", ";
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
     : SuspendableObject(context),
-      m_state(kConnecting),
-      m_bufferedAmount(0),
-      m_consumedBufferedAmount(0),
-      m_bufferedAmountAfterClose(0),
-      m_binaryType(BinaryTypeBlob),
-      m_binaryTypeChangesAfterOpen(0),
-      m_subprotocol(""),
-      m_extensions(""),
-      m_eventQueue(EventQueue::create(this)),
-      m_bufferedAmountConsumeTimer(
-          TaskRunnerHelper::get(TaskType::WebSocket, context),
+      state_(kConnecting),
+      buffered_amount_(0),
+      consumed_buffered_amount_(0),
+      buffered_amount_after_close_(0),
+      binary_type_(kBinaryTypeBlob),
+      binary_type_changes_after_open_(0),
+      subprotocol_(""),
+      extensions_(""),
+      event_queue_(EventQueue::Create(this)),
+      buffered_amount_consume_timer_(
+          TaskRunnerHelper::Get(TaskType::kWebSocket, context),
           this,
-          &DOMWebSocket::reflectBufferedAmountConsumption) {}
+          &DOMWebSocket::ReflectBufferedAmountConsumption) {}
 
 DOMWebSocket::~DOMWebSocket() {
-  DCHECK(!m_channel);
+  DCHECK(!channel_);
 }
 
-void DOMWebSocket::logError(const String& message) {
-  if (getExecutionContext())
-    getExecutionContext()->addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+void DOMWebSocket::LogError(const String& message) {
+  if (GetExecutionContext())
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
 }
 
-DOMWebSocket* DOMWebSocket::create(ExecutionContext* context,
+DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
                                    const String& url,
-                                   ExceptionState& exceptionState) {
+                                   ExceptionState& exception_state) {
   StringOrStringSequence protocols;
-  return create(context, url, protocols, exceptionState);
+  return Create(context, url, protocols, exception_state);
 }
 
-DOMWebSocket* DOMWebSocket::create(ExecutionContext* context,
+DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
                                    const String& url,
                                    const StringOrStringSequence& protocols,
-                                   ExceptionState& exceptionState) {
-  if (url.isNull()) {
-    exceptionState.throwDOMException(
-        SyntaxError,
+                                   ExceptionState& exception_state) {
+  if (url.IsNull()) {
+    exception_state.ThrowDOMException(
+        kSyntaxError,
         "Failed to create a WebSocket: the provided URL is invalid.");
     return nullptr;
   }
 
-  DOMWebSocket* webSocket = new DOMWebSocket(context);
-  webSocket->suspendIfNeeded();
+  DOMWebSocket* web_socket = new DOMWebSocket(context);
+  web_socket->SuspendIfNeeded();
 
   if (protocols.isNull()) {
-    Vector<String> protocolsVector;
-    webSocket->connect(url, protocolsVector, exceptionState);
+    Vector<String> protocols_vector;
+    web_socket->Connect(url, protocols_vector, exception_state);
   } else if (protocols.isString()) {
-    Vector<String> protocolsVector;
-    protocolsVector.push_back(protocols.getAsString());
-    webSocket->connect(url, protocolsVector, exceptionState);
+    Vector<String> protocols_vector;
+    protocols_vector.push_back(protocols.getAsString());
+    web_socket->Connect(url, protocols_vector, exception_state);
   } else {
     DCHECK(protocols.isStringSequence());
-    webSocket->connect(url, protocols.getAsStringSequence(), exceptionState);
+    web_socket->Connect(url, protocols.getAsStringSequence(), exception_state);
   }
 
-  if (exceptionState.hadException())
+  if (exception_state.HadException())
     return nullptr;
 
-  return webSocket;
+  return web_socket;
 }
 
-void DOMWebSocket::connect(const String& url,
+void DOMWebSocket::Connect(const String& url,
                            const Vector<String>& protocols,
-                           ExceptionState& exceptionState) {
-  UseCounter::count(getExecutionContext(), UseCounter::WebSocket);
+                           ExceptionState& exception_state) {
+  UseCounter::Count(GetExecutionContext(), UseCounter::kWebSocket);
 
   NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
-  m_url = KURL(KURL(), url);
+  url_ = KURL(KURL(), url);
 
-  if (getExecutionContext()->securityContext().getInsecureRequestPolicy() &
+  if (GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
           kUpgradeInsecureRequests &&
-      m_url.protocol() == "ws") {
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::UpgradeInsecureRequestsUpgradedRequest);
-    m_url.setProtocol("wss");
-    if (m_url.port() == 80)
-      m_url.setPort(443);
+      url_.Protocol() == "ws") {
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kUpgradeInsecureRequestsUpgradedRequest);
+    url_.SetProtocol("wss");
+    if (url_.Port() == 80)
+      url_.SetPort(443);
   }
 
-  if (!m_url.isValid()) {
-    m_state = kClosed;
-    exceptionState.throwDOMException(SyntaxError,
-                                     "The URL '" + url + "' is invalid.");
+  if (!url_.IsValid()) {
+    state_ = kClosed;
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "The URL '" + url + "' is invalid.");
     return;
   }
-  if (!m_url.protocolIs("ws") && !m_url.protocolIs("wss")) {
-    m_state = kClosed;
-    exceptionState.throwDOMException(
-        SyntaxError, "The URL's scheme must be either 'ws' or 'wss'. '" +
-                         m_url.protocol() + "' is not allowed.");
+  if (!url_.ProtocolIs("ws") && !url_.ProtocolIs("wss")) {
+    state_ = kClosed;
+    exception_state.ThrowDOMException(
+        kSyntaxError, "The URL's scheme must be either 'ws' or 'wss'. '" +
+                          url_.Protocol() + "' is not allowed.");
     return;
   }
 
-  if (m_url.hasFragmentIdentifier()) {
-    m_state = kClosed;
-    exceptionState.throwDOMException(
-        SyntaxError,
+  if (url_.HasFragmentIdentifier()) {
+    state_ = kClosed;
+    exception_state.ThrowDOMException(
+        kSyntaxError,
         "The URL contains a fragment identifier ('" +
-            m_url.fragmentIdentifier() +
+            url_.FragmentIdentifier() +
             "'). Fragment identifiers are not allowed in WebSocket URLs.");
     return;
   }
 
-  if (!isPortAllowedForScheme(m_url)) {
-    m_state = kClosed;
-    exceptionState.throwSecurityError(
-        "The port " + String::number(m_url.port()) + " is not allowed.");
+  if (!IsPortAllowedForScheme(url_)) {
+    state_ = kClosed;
+    exception_state.ThrowSecurityError(
+        "The port " + String::Number(url_.Port()) + " is not allowed.");
     return;
   }
 
-  if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) &&
-      !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(
-          m_url)) {
-    m_state = kClosed;
+  if (!ContentSecurityPolicy::ShouldBypassMainWorld(GetExecutionContext()) &&
+      !GetExecutionContext()->GetContentSecurityPolicy()->AllowConnectToSource(
+          url_)) {
+    state_ = kClosed;
 
     // Delay the event dispatch until after the current task by suspending and
     // resuming the queue. If we don't do this, the event is fired synchronously
     // with the constructor, meaning that it's impossible to listen for.
-    m_eventQueue->suspend();
-    m_eventQueue->dispatch(Event::create(EventTypeNames::error));
-    m_eventQueue->resume();
+    event_queue_->Suspend();
+    event_queue_->Dispatch(Event::Create(EventTypeNames::error));
+    event_queue_->Resume();
     return;
   }
 
   // Fail if not all elements in |protocols| are valid.
   for (size_t i = 0; i < protocols.size(); ++i) {
-    if (!isValidSubprotocolString(protocols[i])) {
-      m_state = kClosed;
-      exceptionState.throwDOMException(
-          SyntaxError, "The subprotocol '" +
-                           encodeSubprotocolString(protocols[i]) +
-                           "' is invalid.");
+    if (!IsValidSubprotocolString(protocols[i])) {
+      state_ = kClosed;
+      exception_state.ThrowDOMException(
+          kSyntaxError, "The subprotocol '" +
+                            EncodeSubprotocolString(protocols[i]) +
+                            "' is invalid.");
       return;
     }
   }
@@ -364,160 +363,161 @@ void DOMWebSocket::connect(const String& url,
   // Fail if there're duplicated elements in |protocols|.
   HashSet<String> visited;
   for (size_t i = 0; i < protocols.size(); ++i) {
-    if (!visited.insert(protocols[i]).isNewEntry) {
-      m_state = kClosed;
-      exceptionState.throwDOMException(
-          SyntaxError, "The subprotocol '" +
-                           encodeSubprotocolString(protocols[i]) +
-                           "' is duplicated.");
+    if (!visited.insert(protocols[i]).is_new_entry) {
+      state_ = kClosed;
+      exception_state.ThrowDOMException(
+          kSyntaxError, "The subprotocol '" +
+                            EncodeSubprotocolString(protocols[i]) +
+                            "' is duplicated.");
       return;
     }
   }
 
-  if (getExecutionContext()->getSecurityOrigin()->hasSuborigin()) {
-    m_state = kClosed;
-    exceptionState.throwSecurityError(
+  if (GetExecutionContext()->GetSecurityOrigin()->HasSuborigin()) {
+    state_ = kClosed;
+    exception_state.ThrowSecurityError(
         "Connecting to a WebSocket from a suborigin is not allowed.");
     return;
   }
 
-  String protocolString;
-  if (!protocols.isEmpty())
-    protocolString = joinStrings(protocols, subprotocolSeperator());
+  String protocol_string;
+  if (!protocols.IsEmpty())
+    protocol_string = JoinStrings(protocols, SubprotocolSeperator());
 
-  m_channel = createChannel(getExecutionContext(), this);
+  channel_ = CreateChannel(GetExecutionContext(), this);
 
-  if (!m_channel->connect(m_url, protocolString)) {
-    m_state = kClosed;
-    exceptionState.throwSecurityError(
+  if (!channel_->Connect(url_, protocol_string)) {
+    state_ = kClosed;
+    exception_state.ThrowSecurityError(
         "An insecure WebSocket connection may not be initiated from a page "
         "loaded over HTTPS.");
-    releaseChannel();
+    ReleaseChannel();
     return;
   }
 }
 
-void DOMWebSocket::updateBufferedAmountAfterClose(uint64_t payloadSize) {
-  m_bufferedAmountAfterClose += payloadSize;
+void DOMWebSocket::UpdateBufferedAmountAfterClose(uint64_t payload_size) {
+  buffered_amount_after_close_ += payload_size;
 
-  logError("WebSocket is already in CLOSING or CLOSED state.");
+  LogError("WebSocket is already in CLOSING or CLOSED state.");
 }
 
-void DOMWebSocket::reflectBufferedAmountConsumption(TimerBase*) {
-  DCHECK_GE(m_bufferedAmount, m_consumedBufferedAmount);
+void DOMWebSocket::ReflectBufferedAmountConsumption(TimerBase*) {
+  DCHECK_GE(buffered_amount_, consumed_buffered_amount_);
   // Cast to unsigned long long is required since clang doesn't accept
   // combination of %llu and uint64_t (known as unsigned long).
   NETWORK_DVLOG(1) << "WebSocket " << this
-                   << " reflectBufferedAmountConsumption() " << m_bufferedAmount
-                   << " => " << (m_bufferedAmount - m_consumedBufferedAmount);
+                   << " reflectBufferedAmountConsumption() " << buffered_amount_
+                   << " => " << (buffered_amount_ - consumed_buffered_amount_);
 
-  m_bufferedAmount -= m_consumedBufferedAmount;
-  m_consumedBufferedAmount = 0;
+  buffered_amount_ -= consumed_buffered_amount_;
+  consumed_buffered_amount_ = 0;
 }
 
-void DOMWebSocket::releaseChannel() {
-  DCHECK(m_channel);
-  m_channel->disconnect();
-  m_channel = nullptr;
+void DOMWebSocket::ReleaseChannel() {
+  DCHECK(channel_);
+  channel_->Disconnect();
+  channel_ = nullptr;
 }
 
-void DOMWebSocket::logBinaryTypeChangesAfterOpen() {
+void DOMWebSocket::LogBinaryTypeChangesAfterOpen() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, binaryTypeChangesHistogram,
+      CustomCountHistogram, binary_type_changes_histogram,
       new CustomCountHistogram("WebCore.WebSocket.BinaryTypeChangesAfterOpen",
                                1, 1024, 10));
   DVLOG(3) << "WebSocket " << static_cast<void*>(this)
            << " logBinaryTypeChangesAfterOpen() logging "
-           << m_binaryTypeChangesAfterOpen;
-  binaryTypeChangesHistogram.count(m_binaryTypeChangesAfterOpen);
+           << binary_type_changes_after_open_;
+  binary_type_changes_histogram.Count(binary_type_changes_after_open_);
 }
 
-void DOMWebSocket::send(const String& message, ExceptionState& exceptionState) {
-  CString encodedMessage = message.utf8();
+void DOMWebSocket::send(const String& message,
+                        ExceptionState& exception_state) {
+  CString encoded_message = message.Utf8();
 
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending String "
                    << message;
-  if (m_state == kConnecting) {
-    setInvalidStateErrorForSendMethod(exceptionState);
+  if (state_ == kConnecting) {
+    SetInvalidStateErrorForSendMethod(exception_state);
     return;
   }
   // No exception is raised if the connection was once established but has
   // subsequently been closed.
-  if (m_state == kClosing || m_state == kClosed) {
-    updateBufferedAmountAfterClose(encodedMessage.length());
+  if (state_ == kClosing || state_ == kClosed) {
+    UpdateBufferedAmountAfterClose(encoded_message.length());
     return;
   }
 
-  recordSendTypeHistogram(WebSocketSendTypeString);
+  RecordSendTypeHistogram(kWebSocketSendTypeString);
 
-  DCHECK(m_channel);
-  m_bufferedAmount += encodedMessage.length();
-  m_channel->send(encodedMessage);
+  DCHECK(channel_);
+  buffered_amount_ += encoded_message.length();
+  channel_->Send(encoded_message);
 }
 
-void DOMWebSocket::send(DOMArrayBuffer* binaryData,
-                        ExceptionState& exceptionState) {
+void DOMWebSocket::send(DOMArrayBuffer* binary_data,
+                        ExceptionState& exception_state) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBuffer "
-                   << binaryData;
-  DCHECK(binaryData);
-  DCHECK(binaryData->buffer());
-  if (m_state == kConnecting) {
-    setInvalidStateErrorForSendMethod(exceptionState);
+                   << binary_data;
+  DCHECK(binary_data);
+  DCHECK(binary_data->Buffer());
+  if (state_ == kConnecting) {
+    SetInvalidStateErrorForSendMethod(exception_state);
     return;
   }
-  if (m_state == kClosing || m_state == kClosed) {
-    updateBufferedAmountAfterClose(binaryData->byteLength());
+  if (state_ == kClosing || state_ == kClosed) {
+    UpdateBufferedAmountAfterClose(binary_data->ByteLength());
     return;
   }
-  recordSendTypeHistogram(WebSocketSendTypeArrayBuffer);
-  recordSendMessageSizeHistogram(WebSocketSendTypeArrayBuffer,
-                                 binaryData->byteLength());
-  DCHECK(m_channel);
-  m_bufferedAmount += binaryData->byteLength();
-  m_channel->send(*binaryData, 0, binaryData->byteLength());
+  RecordSendTypeHistogram(kWebSocketSendTypeArrayBuffer);
+  RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBuffer,
+                                 binary_data->ByteLength());
+  DCHECK(channel_);
+  buffered_amount_ += binary_data->ByteLength();
+  channel_->Send(*binary_data, 0, binary_data->ByteLength());
 }
 
-void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView,
-                        ExceptionState& exceptionState) {
+void DOMWebSocket::send(DOMArrayBufferView* array_buffer_view,
+                        ExceptionState& exception_state) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBufferView "
-                   << arrayBufferView;
-  DCHECK(arrayBufferView);
-  if (m_state == kConnecting) {
-    setInvalidStateErrorForSendMethod(exceptionState);
+                   << array_buffer_view;
+  DCHECK(array_buffer_view);
+  if (state_ == kConnecting) {
+    SetInvalidStateErrorForSendMethod(exception_state);
     return;
   }
-  if (m_state == kClosing || m_state == kClosed) {
-    updateBufferedAmountAfterClose(arrayBufferView->byteLength());
+  if (state_ == kClosing || state_ == kClosed) {
+    UpdateBufferedAmountAfterClose(array_buffer_view->byteLength());
     return;
   }
-  recordSendTypeHistogram(WebSocketSendTypeArrayBufferView);
-  recordSendMessageSizeHistogram(WebSocketSendTypeArrayBufferView,
-                                 arrayBufferView->byteLength());
-  DCHECK(m_channel);
-  m_bufferedAmount += arrayBufferView->byteLength();
-  m_channel->send(*arrayBufferView->buffer(), arrayBufferView->byteOffset(),
-                  arrayBufferView->byteLength());
+  RecordSendTypeHistogram(kWebSocketSendTypeArrayBufferView);
+  RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBufferView,
+                                 array_buffer_view->byteLength());
+  DCHECK(channel_);
+  buffered_amount_ += array_buffer_view->byteLength();
+  channel_->Send(*array_buffer_view->buffer(), array_buffer_view->byteOffset(),
+                 array_buffer_view->byteLength());
 }
 
-void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState) {
+void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending Blob "
-                   << binaryData->uuid();
-  DCHECK(binaryData);
-  if (m_state == kConnecting) {
-    setInvalidStateErrorForSendMethod(exceptionState);
+                   << binary_data->Uuid();
+  DCHECK(binary_data);
+  if (state_ == kConnecting) {
+    SetInvalidStateErrorForSendMethod(exception_state);
     return;
   }
-  if (m_state == kClosing || m_state == kClosed) {
-    updateBufferedAmountAfterClose(binaryData->size());
+  if (state_ == kClosing || state_ == kClosed) {
+    UpdateBufferedAmountAfterClose(binary_data->size());
     return;
   }
-  unsigned long long size = binaryData->size();
-  recordSendTypeHistogram(WebSocketSendTypeBlob);
-  recordSendMessageSizeHistogram(
-      WebSocketSendTypeBlob,
+  unsigned long long size = binary_data->size();
+  RecordSendTypeHistogram(kWebSocketSendTypeBlob);
+  RecordSendMessageSizeHistogram(
+      kWebSocketSendTypeBlob,
       clampTo<size_t>(size, 0, kMaxByteSizeForHistogram));
-  m_bufferedAmount += size;
-  DCHECK(m_channel);
+  buffered_amount_ += size;
+  DCHECK(channel_);
 
   // When the runtime type of |binaryData| is File,
   // binaryData->blobDataHandle()->size() returns -1. However, in order to
@@ -525,85 +525,85 @@ void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState) {
   // needs to fix the size of the File at this point. For this reason,
   // construct a new BlobDataHandle here with the size that this method
   // observed.
-  m_channel->send(
-      BlobDataHandle::create(binaryData->uuid(), binaryData->type(), size));
+  channel_->Send(
+      BlobDataHandle::Create(binary_data->Uuid(), binary_data->type(), size));
 }
 
 void DOMWebSocket::close(unsigned short code,
                          const String& reason,
-                         ExceptionState& exceptionState) {
-  closeInternal(code, reason, exceptionState);
+                         ExceptionState& exception_state) {
+  CloseInternal(code, reason, exception_state);
 }
 
-void DOMWebSocket::close(ExceptionState& exceptionState) {
-  closeInternal(WebSocketChannel::CloseEventCodeNotSpecified, String(),
-                exceptionState);
+void DOMWebSocket::close(ExceptionState& exception_state) {
+  CloseInternal(WebSocketChannel::kCloseEventCodeNotSpecified, String(),
+                exception_state);
 }
 
-void DOMWebSocket::close(unsigned short code, ExceptionState& exceptionState) {
-  closeInternal(code, String(), exceptionState);
+void DOMWebSocket::close(unsigned short code, ExceptionState& exception_state) {
+  CloseInternal(code, String(), exception_state);
 }
 
-void DOMWebSocket::closeInternal(int code,
+void DOMWebSocket::CloseInternal(int code,
                                  const String& reason,
-                                 ExceptionState& exceptionState) {
-  String cleansedReason = reason;
-  if (code == WebSocketChannel::CloseEventCodeNotSpecified) {
+                                 ExceptionState& exception_state) {
+  String cleansed_reason = reason;
+  if (code == WebSocketChannel::kCloseEventCodeNotSpecified) {
     NETWORK_DVLOG(1) << "WebSocket " << this
                      << " close() without code and reason";
   } else {
     NETWORK_DVLOG(1) << "WebSocket " << this << " close() code=" << code
                      << " reason=" << reason;
-    if (!(code == WebSocketChannel::CloseEventCodeNormalClosure ||
-          (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code &&
-           code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
-      exceptionState.throwDOMException(
-          InvalidAccessError,
+    if (!(code == WebSocketChannel::kCloseEventCodeNormalClosure ||
+          (WebSocketChannel::kCloseEventCodeMinimumUserDefined <= code &&
+           code <= WebSocketChannel::kCloseEventCodeMaximumUserDefined))) {
+      exception_state.ThrowDOMException(
+          kInvalidAccessError,
           "The code must be either 1000, or between 3000 and 4999. " +
-              String::number(code) + " is neither.");
+              String::Number(code) + " is neither.");
       return;
     }
     // Bindings specify USVString, so unpaired surrogates are already replaced
     // with U+FFFD.
-    CString utf8 = reason.utf8();
-    if (utf8.length() > maxReasonSizeInBytes) {
-      exceptionState.throwDOMException(
-          SyntaxError, "The message must not be greater than " +
-                           String::number(maxReasonSizeInBytes) + " bytes.");
+    CString utf8 = reason.Utf8();
+    if (utf8.length() > kMaxReasonSizeInBytes) {
+      exception_state.ThrowDOMException(
+          kSyntaxError, "The message must not be greater than " +
+                            String::Number(kMaxReasonSizeInBytes) + " bytes.");
       return;
     }
-    if (!reason.isEmpty() && !reason.is8Bit()) {
+    if (!reason.IsEmpty() && !reason.Is8Bit()) {
       DCHECK_GT(utf8.length(), 0u);
       // reason might contain unpaired surrogates. Reconstruct it from
       // utf8.
-      cleansedReason = String::fromUTF8(utf8.data(), utf8.length());
+      cleansed_reason = String::FromUTF8(utf8.Data(), utf8.length());
     }
   }
 
-  if (m_state == kClosing || m_state == kClosed)
+  if (state_ == kClosing || state_ == kClosed)
     return;
-  if (m_state == kConnecting) {
-    m_state = kClosing;
-    m_channel->fail("WebSocket is closed before the connection is established.",
-                    WarningMessageLevel,
-                    SourceLocation::create(String(), 0, 0, nullptr));
+  if (state_ == kConnecting) {
+    state_ = kClosing;
+    channel_->Fail("WebSocket is closed before the connection is established.",
+                   kWarningMessageLevel,
+                   SourceLocation::Create(String(), 0, 0, nullptr));
     return;
   }
-  m_state = kClosing;
-  if (m_channel)
-    m_channel->close(code, cleansedReason);
+  state_ = kClosing;
+  if (channel_)
+    channel_->Close(code, cleansed_reason);
 }
 
 const KURL& DOMWebSocket::url() const {
-  return m_url;
+  return url_;
 }
 
 DOMWebSocket::State DOMWebSocket::readyState() const {
-  return m_state;
+  return state_;
 }
 
 unsigned DOMWebSocket::bufferedAmount() const {
-  uint64_t sum = m_bufferedAmountAfterClose + m_bufferedAmount;
+  uint64_t sum = buffered_amount_after_close_ + buffered_amount_;
 
   if (sum > std::numeric_limits<unsigned>::max())
     return std::numeric_limits<unsigned>::max();
@@ -611,211 +611,212 @@ unsigned DOMWebSocket::bufferedAmount() const {
 }
 
 String DOMWebSocket::protocol() const {
-  return m_subprotocol;
+  return subprotocol_;
 }
 
 String DOMWebSocket::extensions() const {
-  return m_extensions;
+  return extensions_;
 }
 
 String DOMWebSocket::binaryType() const {
-  switch (m_binaryType) {
-    case BinaryTypeBlob:
+  switch (binary_type_) {
+    case kBinaryTypeBlob:
       return "blob";
-    case BinaryTypeArrayBuffer:
+    case kBinaryTypeArrayBuffer:
       return "arraybuffer";
   }
   NOTREACHED();
   return String();
 }
 
-void DOMWebSocket::setBinaryType(const String& binaryType) {
-  if (binaryType == "blob") {
-    setBinaryTypeInternal(BinaryTypeBlob);
+void DOMWebSocket::setBinaryType(const String& binary_type) {
+  if (binary_type == "blob") {
+    SetBinaryTypeInternal(kBinaryTypeBlob);
     return;
   }
-  if (binaryType == "arraybuffer") {
-    setBinaryTypeInternal(BinaryTypeArrayBuffer);
+  if (binary_type == "arraybuffer") {
+    SetBinaryTypeInternal(kBinaryTypeArrayBuffer);
     return;
   }
   NOTREACHED();
 }
 
-void DOMWebSocket::setBinaryTypeInternal(BinaryType binaryType) {
-  if (m_binaryType == binaryType)
+void DOMWebSocket::SetBinaryTypeInternal(BinaryType binary_type) {
+  if (binary_type_ == binary_type)
     return;
-  m_binaryType = binaryType;
-  if (m_state == kOpen || m_state == kClosing)
-    ++m_binaryTypeChangesAfterOpen;
+  binary_type_ = binary_type;
+  if (state_ == kOpen || state_ == kClosing)
+    ++binary_type_changes_after_open_;
 }
 
-const AtomicString& DOMWebSocket::interfaceName() const {
+const AtomicString& DOMWebSocket::InterfaceName() const {
   return EventTargetNames::DOMWebSocket;
 }
 
-ExecutionContext* DOMWebSocket::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+ExecutionContext* DOMWebSocket::GetExecutionContext() const {
+  return SuspendableObject::GetExecutionContext();
 }
 
-void DOMWebSocket::contextDestroyed(ExecutionContext*) {
+void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
-  m_eventQueue->contextDestroyed();
-  if (m_channel) {
-    m_channel->close(WebSocketChannel::CloseEventCodeGoingAway, String());
-    releaseChannel();
+  event_queue_->ContextDestroyed();
+  if (channel_) {
+    channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
+    ReleaseChannel();
   }
-  if (m_state != kClosed) {
-    m_state = kClosed;
-    logBinaryTypeChangesAfterOpen();
+  if (state_ != kClosed) {
+    state_ = kClosed;
+    LogBinaryTypeChangesAfterOpen();
   }
 }
 
-bool DOMWebSocket::hasPendingActivity() const {
-  return m_channel || !m_eventQueue->isEmpty();
+bool DOMWebSocket::HasPendingActivity() const {
+  return channel_ || !event_queue_->IsEmpty();
 }
 
-void DOMWebSocket::suspend() {
-  m_eventQueue->suspend();
+void DOMWebSocket::Suspend() {
+  event_queue_->Suspend();
 }
 
-void DOMWebSocket::resume() {
-  m_eventQueue->resume();
+void DOMWebSocket::Resume() {
+  event_queue_->Resume();
 }
 
-void DOMWebSocket::didConnect(const String& subprotocol,
+void DOMWebSocket::DidConnect(const String& subprotocol,
                               const String& extensions) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didConnect()";
-  if (m_state != kConnecting)
+  if (state_ != kConnecting)
     return;
-  m_state = kOpen;
-  m_subprotocol = subprotocol;
-  m_extensions = extensions;
-  m_eventQueue->dispatch(Event::create(EventTypeNames::open));
+  state_ = kOpen;
+  subprotocol_ = subprotocol;
+  extensions_ = extensions;
+  event_queue_->Dispatch(Event::Create(EventTypeNames::open));
 }
 
-void DOMWebSocket::didReceiveTextMessage(const String& msg) {
+void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   NETWORK_DVLOG(1) << "WebSocket " << this
                    << " didReceiveTextMessage() Text message " << msg;
-  if (m_state != kOpen)
+  if (state_ != kOpen)
     return;
-  recordReceiveTypeHistogram(WebSocketReceiveTypeString);
+  RecordReceiveTypeHistogram(kWebSocketReceiveTypeString);
 
-  m_eventQueue->dispatch(
-      MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
+  event_queue_->Dispatch(
+      MessageEvent::Create(msg, SecurityOrigin::Create(url_)->ToString()));
 }
 
-void DOMWebSocket::didReceiveBinaryMessage(
-    std::unique_ptr<Vector<char>> binaryData) {
+void DOMWebSocket::DidReceiveBinaryMessage(
+    std::unique_ptr<Vector<char>> binary_data) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didReceiveBinaryMessage() "
-                   << binaryData->size() << " byte binary message";
-  switch (m_binaryType) {
-    case BinaryTypeBlob: {
-      size_t size = binaryData->size();
-      RefPtr<RawData> rawData = RawData::create();
-      binaryData->swap(*rawData->mutableData());
-      std::unique_ptr<BlobData> blobData = BlobData::create();
-      blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
+                   << binary_data->size() << " byte binary message";
+  switch (binary_type_) {
+    case kBinaryTypeBlob: {
+      size_t size = binary_data->size();
+      RefPtr<RawData> raw_data = RawData::Create();
+      binary_data->Swap(*raw_data->MutableData());
+      std::unique_ptr<BlobData> blob_data = BlobData::Create();
+      blob_data->AppendData(raw_data.Release(), 0, BlobDataItem::kToEndOfFile);
       Blob* blob =
-          Blob::create(BlobDataHandle::create(std::move(blobData), size));
-      recordReceiveTypeHistogram(WebSocketReceiveTypeBlob);
-      recordReceiveMessageSizeHistogram(WebSocketReceiveTypeBlob, size);
-      m_eventQueue->dispatch(MessageEvent::create(
-          blob, SecurityOrigin::create(m_url)->toString()));
+          Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+      RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
+      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeBlob, size);
+      event_queue_->Dispatch(
+          MessageEvent::Create(blob, SecurityOrigin::Create(url_)->ToString()));
       break;
     }
 
-    case BinaryTypeArrayBuffer:
-      DOMArrayBuffer* arrayBuffer =
-          DOMArrayBuffer::create(binaryData->data(), binaryData->size());
-      recordReceiveTypeHistogram(WebSocketReceiveTypeArrayBuffer);
-      recordReceiveMessageSizeHistogram(WebSocketReceiveTypeArrayBuffer,
-                                        binaryData->size());
-      m_eventQueue->dispatch(MessageEvent::create(
-          arrayBuffer, SecurityOrigin::create(m_url)->toString()));
+    case kBinaryTypeArrayBuffer:
+      DOMArrayBuffer* array_buffer =
+          DOMArrayBuffer::Create(binary_data->Data(), binary_data->size());
+      RecordReceiveTypeHistogram(kWebSocketReceiveTypeArrayBuffer);
+      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer,
+                                        binary_data->size());
+      event_queue_->Dispatch(MessageEvent::Create(
+          array_buffer, SecurityOrigin::Create(url_)->ToString()));
       break;
   }
 }
 
-void DOMWebSocket::didError() {
+void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didError()";
-  m_state = kClosed;
-  logBinaryTypeChangesAfterOpen();
-  m_eventQueue->dispatch(Event::create(EventTypeNames::error));
+  state_ = kClosed;
+  LogBinaryTypeChangesAfterOpen();
+  event_queue_->Dispatch(Event::Create(EventTypeNames::error));
 }
 
-void DOMWebSocket::didConsumeBufferedAmount(uint64_t consumed) {
-  DCHECK_GE(m_bufferedAmount, consumed + m_consumedBufferedAmount);
+void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {
+  DCHECK_GE(buffered_amount_, consumed + consumed_buffered_amount_);
   NETWORK_DVLOG(1) << "WebSocket " << this << " didConsumeBufferedAmount("
                    << consumed << ")";
-  if (m_state == kClosed)
+  if (state_ == kClosed)
     return;
-  m_consumedBufferedAmount += consumed;
-  if (!m_bufferedAmountConsumeTimer.isActive())
-    m_bufferedAmountConsumeTimer.startOneShot(0, BLINK_FROM_HERE);
+  consumed_buffered_amount_ += consumed;
+  if (!buffered_amount_consume_timer_.IsActive())
+    buffered_amount_consume_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void DOMWebSocket::didStartClosingHandshake() {
+void DOMWebSocket::DidStartClosingHandshake() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didStartClosingHandshake()";
-  m_state = kClosing;
+  state_ = kClosing;
 }
 
-void DOMWebSocket::didClose(
-    ClosingHandshakeCompletionStatus closingHandshakeCompletion,
+void DOMWebSocket::DidClose(
+    ClosingHandshakeCompletionStatus closing_handshake_completion,
     unsigned short code,
     const String& reason) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didClose()";
-  if (!m_channel)
+  if (!channel_)
     return;
-  bool allDataHasBeenConsumed = m_bufferedAmount == m_consumedBufferedAmount;
-  bool wasClean = m_state == kClosing && allDataHasBeenConsumed &&
-                  closingHandshakeCompletion == ClosingHandshakeComplete &&
-                  code != WebSocketChannel::CloseEventCodeAbnormalClosure;
-  m_state = kClosed;
+  bool all_data_has_been_consumed =
+      buffered_amount_ == consumed_buffered_amount_;
+  bool was_clean = state_ == kClosing && all_data_has_been_consumed &&
+                   closing_handshake_completion == kClosingHandshakeComplete &&
+                   code != WebSocketChannel::kCloseEventCodeAbnormalClosure;
+  state_ = kClosed;
 
-  m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
-  releaseChannel();
+  event_queue_->Dispatch(CloseEvent::Create(was_clean, code, reason));
+  ReleaseChannel();
 }
 
-void DOMWebSocket::recordSendTypeHistogram(WebSocketSendType type) {
+void DOMWebSocket::RecordSendTypeHistogram(WebSocketSendType type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, sendTypeHistogram,
+      EnumerationHistogram, send_type_histogram,
       new EnumerationHistogram("WebCore.WebSocket.SendType",
-                               WebSocketSendTypeMax));
-  sendTypeHistogram.count(type);
+                               kWebSocketSendTypeMax));
+  send_type_histogram.Count(type);
 }
 
-void DOMWebSocket::recordSendMessageSizeHistogram(WebSocketSendType type,
+void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
                                                   size_t size) {
   // Truncate |size| to avoid overflowing int32_t.
-  int32_t sizeToCount = clampTo<int32_t>(size, 0, kMaxByteSizeForHistogram);
+  int32_t size_to_count = clampTo<int32_t>(size, 0, kMaxByteSizeForHistogram);
   switch (type) {
-    case WebSocketSendTypeArrayBuffer: {
+    case kWebSocketSendTypeArrayBuffer: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, arrayBufferMessageSizeHistogram,
+          CustomCountHistogram, array_buffer_message_size_histogram,
           new CustomCountHistogram(
               "WebCore.WebSocket.MessageSize.Send.ArrayBuffer", 1,
               kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
-      arrayBufferMessageSizeHistogram.count(sizeToCount);
+      array_buffer_message_size_histogram.Count(size_to_count);
       return;
     }
 
-    case WebSocketSendTypeArrayBufferView: {
+    case kWebSocketSendTypeArrayBufferView: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, arrayBufferViewMessageSizeHistogram,
+          CustomCountHistogram, array_buffer_view_message_size_histogram,
           new CustomCountHistogram(
               "WebCore.WebSocket.MessageSize.Send.ArrayBufferView", 1,
               kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
-      arrayBufferViewMessageSizeHistogram.count(sizeToCount);
+      array_buffer_view_message_size_histogram.Count(size_to_count);
       return;
     }
 
-    case WebSocketSendTypeBlob: {
+    case kWebSocketSendTypeBlob: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, blobMessageSizeHistogram,
+          CustomCountHistogram, blob_message_size_histogram,
           new CustomCountHistogram("WebCore.WebSocket.MessageSize.Send.Blob", 1,
                                    kMaxByteSizeForHistogram,
                                    kBucketCountForMessageSizeHistogram));
-      blobMessageSizeHistogram.count(sizeToCount);
+      blob_message_size_histogram.Count(size_to_count);
       return;
     }
 
@@ -824,36 +825,36 @@ void DOMWebSocket::recordSendMessageSizeHistogram(WebSocketSendType type,
   }
 }
 
-void DOMWebSocket::recordReceiveTypeHistogram(WebSocketReceiveType type) {
+void DOMWebSocket::RecordReceiveTypeHistogram(WebSocketReceiveType type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, receiveTypeHistogram,
+      EnumerationHistogram, receive_type_histogram,
       new EnumerationHistogram("WebCore.WebSocket.ReceiveType",
-                               WebSocketReceiveTypeMax));
-  receiveTypeHistogram.count(type);
+                               kWebSocketReceiveTypeMax));
+  receive_type_histogram.Count(type);
 }
 
-void DOMWebSocket::recordReceiveMessageSizeHistogram(WebSocketReceiveType type,
+void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,
                                                      size_t size) {
   // Truncate |size| to avoid overflowing int32_t.
-  int32_t sizeToCount = clampTo<int32_t>(size, 0, kMaxByteSizeForHistogram);
+  int32_t size_to_count = clampTo<int32_t>(size, 0, kMaxByteSizeForHistogram);
   switch (type) {
-    case WebSocketReceiveTypeArrayBuffer: {
+    case kWebSocketReceiveTypeArrayBuffer: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, arrayBufferMessageSizeHistogram,
+          CustomCountHistogram, array_buffer_message_size_histogram,
           new CustomCountHistogram(
               "WebCore.WebSocket.MessageSize.Receive.ArrayBuffer", 1,
               kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
-      arrayBufferMessageSizeHistogram.count(sizeToCount);
+      array_buffer_message_size_histogram.Count(size_to_count);
       return;
     }
 
-    case WebSocketReceiveTypeBlob: {
+    case kWebSocketReceiveTypeBlob: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, blobMessageSizeHistogram,
+          CustomCountHistogram, blob_message_size_histogram,
           new CustomCountHistogram("WebCore.WebSocket.MessageSize.Receive.Blob",
                                    1, kMaxByteSizeForHistogram,
                                    kBucketCountForMessageSizeHistogram));
-      blobMessageSizeHistogram.count(sizeToCount);
+      blob_message_size_histogram.Count(size_to_count);
       return;
     }
 
@@ -863,11 +864,11 @@ void DOMWebSocket::recordReceiveMessageSizeHistogram(WebSocketReceiveType type,
 }
 
 DEFINE_TRACE(DOMWebSocket) {
-  visitor->trace(m_channel);
-  visitor->trace(m_eventQueue);
-  WebSocketChannelClient::trace(visitor);
-  EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  visitor->Trace(channel_);
+  visitor->Trace(event_queue_);
+  WebSocketChannelClient::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

@@ -15,61 +15,61 @@ void HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& type,
     const CanvasContextCreationAttributes& attributes,
-    ExceptionState& exceptionState,
+    ExceptionState& exception_state,
     RenderingContext& result) {
-  if (canvas.surfaceLayerBridge()) {
+  if (canvas.SurfaceLayerBridge()) {
     // The existence of canvas surfaceLayerBridge indicates that
     // HTMLCanvasElement.transferControlToOffscreen() has been called.
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Cannot get context from a canvas that "
-                                     "has transferred its control to "
-                                     "offscreen.");
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Cannot get context from a canvas that "
+                                      "has transferred its control to "
+                                      "offscreen.");
     return;
   }
 
   CanvasRenderingContext* context =
-      canvas.getCanvasRenderingContext(type, attributes);
+      canvas.GetCanvasRenderingContext(type, attributes);
   if (context) {
-    context->setCanvasGetContextResult(result);
+    context->SetCanvasGetContextResult(result);
   }
 }
 
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     HTMLCanvasElement& canvas,
-    ExceptionState& exceptionState) {
-  if (canvas.surfaceLayerBridge()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    ExceptionState& exception_state) {
+  if (canvas.SurfaceLayerBridge()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "Cannot transfer control from a canvas for more than one time.");
     return nullptr;
   }
 
-  canvas.createLayer();
+  canvas.CreateLayer();
 
-  return transferControlToOffscreenInternal(canvas, exceptionState);
+  return TransferControlToOffscreenInternal(canvas, exception_state);
 }
 
-OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(
+OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
     HTMLCanvasElement& canvas,
-    ExceptionState& exceptionState) {
-  if (canvas.renderingContext()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    ExceptionState& exception_state) {
+  if (canvas.RenderingContext()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "Cannot transfer control from a canvas that has a rendering context.");
     return nullptr;
   }
-  OffscreenCanvas* offscreenCanvas =
-      OffscreenCanvas::create(canvas.width(), canvas.height());
+  OffscreenCanvas* offscreen_canvas =
+      OffscreenCanvas::Create(canvas.width(), canvas.height());
 
-  int canvasId = DOMNodeIds::idForNode(&canvas);
-  offscreenCanvas->setPlaceholderCanvasId(canvasId);
-  canvas.registerPlaceholder(canvasId);
+  int canvas_id = DOMNodeIds::IdForNode(&canvas);
+  offscreen_canvas->SetPlaceholderCanvasId(canvas_id);
+  canvas.RegisterPlaceholder(canvas_id);
 
-  CanvasSurfaceLayerBridge* bridge = canvas.surfaceLayerBridge();
+  CanvasSurfaceLayerBridge* bridge = canvas.SurfaceLayerBridge();
   if (bridge) {
-    offscreenCanvas->setFrameSinkId(bridge->getFrameSinkId().client_id(),
-                                    bridge->getFrameSinkId().sink_id());
+    offscreen_canvas->SetFrameSinkId(bridge->GetFrameSinkId().client_id(),
+                                     bridge->GetFrameSinkId().sink_id());
   }
-  return offscreenCanvas;
+  return offscreen_canvas;
 }
 }

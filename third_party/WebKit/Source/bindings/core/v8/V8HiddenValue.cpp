@@ -10,41 +10,42 @@
 
 namespace blink {
 
-v8::Local<v8::Value> V8HiddenValue::getHiddenValue(ScriptState* scriptState,
+v8::Local<v8::Value> V8HiddenValue::GetHiddenValue(ScriptState* script_state,
                                                    v8::Local<v8::Object> object,
                                                    v8::Local<v8::String> key) {
-  v8::Local<v8::Context> context = scriptState->context();
-  v8::Local<v8::Private> privateKey =
-      v8::Private::ForApi(scriptState->isolate(), key);
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Private> private_key =
+      v8::Private::ForApi(script_state->GetIsolate(), key);
   v8::Local<v8::Value> value;
   // Callsites interpret an empty handle has absence of a result.
-  if (!v8CallBoolean(object->HasPrivate(context, privateKey)))
+  if (!V8CallBoolean(object->HasPrivate(context, private_key)))
     return v8::Local<v8::Value>();
-  if (object->GetPrivate(context, privateKey).ToLocal(&value))
+  if (object->GetPrivate(context, private_key).ToLocal(&value))
     return value;
   return v8::Local<v8::Value>();
 }
 
-bool V8HiddenValue::setHiddenValue(ScriptState* scriptState,
+bool V8HiddenValue::SetHiddenValue(ScriptState* script_state,
                                    v8::Local<v8::Object> object,
                                    v8::Local<v8::String> key,
                                    v8::Local<v8::Value> value) {
   if (UNLIKELY(value.IsEmpty()))
     return false;
-  return v8CallBoolean(object->SetPrivate(
-      scriptState->context(), v8::Private::ForApi(scriptState->isolate(), key),
-      value));
+  return V8CallBoolean(object->SetPrivate(
+      script_state->GetContext(),
+      v8::Private::ForApi(script_state->GetIsolate(), key), value));
 }
 
-bool V8HiddenValue::deleteHiddenValue(ScriptState* scriptState,
+bool V8HiddenValue::DeleteHiddenValue(ScriptState* script_state,
                                       v8::Local<v8::Object> object,
                                       v8::Local<v8::String> key) {
   // Actually deleting the value would make force the object into dictionary
   // mode which is unnecessarily slow. Instead, we replace the hidden value with
   // "undefined".
-  return v8CallBoolean(object->SetPrivate(
-      scriptState->context(), v8::Private::ForApi(scriptState->isolate(), key),
-      v8::Undefined(scriptState->isolate())));
+  return V8CallBoolean(
+      object->SetPrivate(script_state->GetContext(),
+                         v8::Private::ForApi(script_state->GetIsolate(), key),
+                         v8::Undefined(script_state->GetIsolate())));
 }
 
 }  // namespace blink

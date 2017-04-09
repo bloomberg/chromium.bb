@@ -40,18 +40,18 @@ class PLATFORM_EXPORT RawResource final : public Resource {
  public:
   using ClientType = RawResourceClient;
 
-  static RawResource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
-  static RawResource* fetch(FetchRequest&, ResourceFetcher*);
-  static RawResource* fetchMainResource(FetchRequest&,
+  static RawResource* FetchSynchronously(FetchRequest&, ResourceFetcher*);
+  static RawResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchMainResource(FetchRequest&,
                                         ResourceFetcher*,
                                         const SubstituteData&);
-  static RawResource* fetchImport(FetchRequest&, ResourceFetcher*);
-  static RawResource* fetchMedia(FetchRequest&, ResourceFetcher*);
-  static RawResource* fetchTextTrack(FetchRequest&, ResourceFetcher*);
-  static RawResource* fetchManifest(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchImport(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchMedia(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchTextTrack(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchManifest(FetchRequest&, ResourceFetcher*);
 
   // Exposed for testing
-  static RawResource* create(const ResourceRequest& request, Type type) {
+  static RawResource* Create(const ResourceRequest& request, Type type) {
     return new RawResource(request, type, ResourceLoaderOptions());
   }
 
@@ -59,11 +59,11 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   // therefore shouldn't use RawResource. However, it is, and it needs to be
   // able to defer loading. This can be fixed by splitting CORS preflighting out
   // of DocumentThreadableLoader.
-  void setDefersLoading(bool);
+  void SetDefersLoading(bool);
 
   // Resource implementation
-  bool canReuse(const FetchRequest&) const override;
-  bool willFollowRedirect(const ResourceRequest&,
+  bool CanReuse(const FetchRequest&) const override;
+  bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
  private:
@@ -71,51 +71,51 @@ class PLATFORM_EXPORT RawResource final : public Resource {
    public:
     explicit RawResourceFactory(Resource::Type type) : ResourceFactory(type) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
-      return new RawResource(request, m_type, options);
+      return new RawResource(request, type_, options);
     }
   };
 
   RawResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
   // Resource implementation
-  void didAddClient(ResourceClient*) override;
-  void appendData(const char*, size_t) override;
-  bool shouldIgnoreHTTPStatusCodeErrors() const override {
-    return !isLinkPreload();
+  void DidAddClient(ResourceClient*) override;
+  void AppendData(const char*, size_t) override;
+  bool ShouldIgnoreHTTPStatusCodeErrors() const override {
+    return !IsLinkPreload();
   }
-  void willNotFollowRedirect() override;
-  void responseReceived(const ResourceResponse&,
+  void WillNotFollowRedirect() override;
+  void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
-  void setSerializedCachedMetadata(const char*, size_t) override;
-  void didSendData(unsigned long long bytesSent,
-                   unsigned long long totalBytesToBeSent) override;
-  void didDownloadData(int) override;
-  void reportResourceTimingToClients(const ResourceTimingInfo&) override;
+  void SetSerializedCachedMetadata(const char*, size_t) override;
+  void DidSendData(unsigned long long bytes_sent,
+                   unsigned long long total_bytes_to_be_sent) override;
+  void DidDownloadData(int) override;
+  void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
 };
 
 #if ENABLE(SECURITY_ASSERT)
-inline bool isRawResource(const Resource& resource) {
-  Resource::Type type = resource.getType();
-  return type == Resource::MainResource || type == Resource::Raw ||
-         type == Resource::TextTrack || type == Resource::Media ||
-         type == Resource::Manifest || type == Resource::ImportResource;
+inline bool IsRawResource(const Resource& resource) {
+  Resource::Type type = resource.GetType();
+  return type == Resource::kMainResource || type == Resource::kRaw ||
+         type == Resource::kTextTrack || type == Resource::kMedia ||
+         type == Resource::kManifest || type == Resource::kImportResource;
 }
 #endif
-inline RawResource* toRawResource(Resource* resource) {
-  SECURITY_DCHECK(!resource || isRawResource(*resource));
+inline RawResource* ToRawResource(Resource* resource) {
+  SECURITY_DCHECK(!resource || IsRawResource(*resource));
   return static_cast<RawResource*>(resource);
 }
 
 class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
  public:
-  static bool isExpectedType(ResourceClient* client) {
-    return client->getResourceClientType() == RawResourceType;
+  static bool IsExpectedType(ResourceClient* client) {
+    return client->GetResourceClientType() == kRawResourceType;
   }
-  ResourceClientType getResourceClientType() const final {
-    return RawResourceType;
+  ResourceClientType GetResourceClientType() const final {
+    return kRawResourceType;
   }
 
   // The order of the callbacks is as follows:
@@ -135,24 +135,24 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
   // In all cases:
   //     No callbacks are made after notifyFinished() or
   //     removeClient() is called.
-  virtual void dataSent(Resource*,
+  virtual void DataSent(Resource*,
                         unsigned long long /* bytesSent */,
                         unsigned long long /* totalBytesToBeSent */) {}
-  virtual void responseReceived(Resource*,
+  virtual void ResponseReceived(Resource*,
                                 const ResourceResponse&,
                                 std::unique_ptr<WebDataConsumerHandle>) {}
-  virtual void setSerializedCachedMetadata(Resource*, const char*, size_t) {}
-  virtual void dataReceived(Resource*,
+  virtual void SetSerializedCachedMetadata(Resource*, const char*, size_t) {}
+  virtual void DataReceived(Resource*,
                             const char* /* data */,
                             size_t /* length */) {}
-  virtual bool redirectReceived(Resource*,
+  virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
                                 const ResourceResponse&) {
     return true;
   }
-  virtual void redirectBlocked() {}
-  virtual void dataDownloaded(Resource*, int) {}
-  virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
+  virtual void RedirectBlocked() {}
+  virtual void DataDownloaded(Resource*, int) {}
+  virtual void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
 };
 
 // Checks the sequence of callbacks of RawResourceClient. This can be used only
@@ -163,32 +163,32 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
   ~RawResourceClientStateChecker();
 
   // Call before addClient()/removeClient() is called.
-  void willAddClient();
-  void willRemoveClient();
+  void WillAddClient();
+  void WillRemoveClient();
 
   // Call RawResourceClientStateChecker::f() at the beginning of
   // RawResourceClient::f().
-  void redirectReceived();
-  void redirectBlocked();
-  void dataSent();
-  void responseReceived();
-  void setSerializedCachedMetadata();
-  void dataReceived();
-  void dataDownloaded();
-  void notifyFinished(Resource*);
+  void RedirectReceived();
+  void RedirectBlocked();
+  void DataSent();
+  void ResponseReceived();
+  void SetSerializedCachedMetadata();
+  void DataReceived();
+  void DataDownloaded();
+  void NotifyFinished(Resource*);
 
  private:
   enum State {
-    NotAddedAsClient,
-    Started,
-    RedirectBlocked,
-    ResponseReceived,
-    SetSerializedCachedMetadata,
-    DataReceived,
-    DataDownloaded,
-    NotifyFinished
+    kNotAddedAsClient,
+    kStarted,
+    kRedirectBlocked,
+    kResponseReceived,
+    kSetSerializedCachedMetadata,
+    kDataReceived,
+    kDataDownloaded,
+    kNotifyFinished
   };
-  State m_state;
+  State state_;
 };
 
 }  // namespace blink

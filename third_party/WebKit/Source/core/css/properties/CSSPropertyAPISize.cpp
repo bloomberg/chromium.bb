@@ -10,8 +10,8 @@
 
 namespace blink {
 
-static CSSValue* consumePageSize(CSSParserTokenRange& range) {
-  return CSSPropertyParserHelpers::consumeIdent<
+static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
+  return CSSPropertyParserHelpers::ConsumeIdent<
       CSSValueA3, CSSValueA4, CSSValueA5, CSSValueB4, CSSValueB5,
       CSSValueLedger, CSSValueLegal, CSSValueLetter>(range);
 }
@@ -19,36 +19,36 @@ static CSSValue* consumePageSize(CSSParserTokenRange& range) {
 const CSSValue* CSSPropertyAPISize::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueList* result = CSSValueList::createSpaceSeparated();
+  CSSValueList* result = CSSValueList::CreateSpaceSeparated();
 
-  if (range.peek().id() == CSSValueAuto) {
-    result->append(*CSSPropertyParserHelpers::consumeIdent(range));
+  if (range.Peek().Id() == CSSValueAuto) {
+    result->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
     return result;
   }
 
-  if (CSSValue* width = CSSPropertyParserHelpers::consumeLength(
-          range, context.mode(), ValueRangeNonNegative)) {
-    CSSValue* height = CSSPropertyParserHelpers::consumeLength(
-        range, context.mode(), ValueRangeNonNegative);
-    result->append(*width);
+  if (CSSValue* width = CSSPropertyParserHelpers::ConsumeLength(
+          range, context.Mode(), kValueRangeNonNegative)) {
+    CSSValue* height = CSSPropertyParserHelpers::ConsumeLength(
+        range, context.Mode(), kValueRangeNonNegative);
+    result->Append(*width);
     if (height)
-      result->append(*height);
+      result->Append(*height);
     return result;
   }
 
-  CSSValue* pageSize = consumePageSize(range);
+  CSSValue* page_size = ConsumePageSize(range);
   CSSValue* orientation =
-      CSSPropertyParserHelpers::consumeIdent<CSSValuePortrait,
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValuePortrait,
                                              CSSValueLandscape>(range);
-  if (!pageSize)
-    pageSize = consumePageSize(range);
+  if (!page_size)
+    page_size = ConsumePageSize(range);
 
-  if (!orientation && !pageSize)
+  if (!orientation && !page_size)
     return nullptr;
-  if (pageSize)
-    result->append(*pageSize);
+  if (page_size)
+    result->Append(*page_size);
   if (orientation)
-    result->append(*orientation);
+    result->Append(*orientation);
   return result;
 }
 

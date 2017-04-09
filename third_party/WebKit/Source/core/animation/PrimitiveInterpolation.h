@@ -25,13 +25,13 @@ class PrimitiveInterpolation {
  public:
   virtual ~PrimitiveInterpolation() {}
 
-  virtual void interpolateValue(
+  virtual void InterpolateValue(
       double fraction,
       std::unique_ptr<TypedInterpolationValue>& result) const = 0;
-  virtual double interpolateUnderlyingFraction(double start,
+  virtual double InterpolateUnderlyingFraction(double start,
                                                double end,
                                                double fraction) const = 0;
-  virtual bool isFlip() const { return false; }
+  virtual bool IsFlip() const { return false; }
 
  protected:
   PrimitiveInterpolation() {}
@@ -43,21 +43,21 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
  public:
   ~PairwisePrimitiveInterpolation() override {}
 
-  static std::unique_ptr<PairwisePrimitiveInterpolation> create(
+  static std::unique_ptr<PairwisePrimitiveInterpolation> Create(
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
-      PassRefPtr<NonInterpolableValue> nonInterpolableValue) {
-    return WTF::wrapUnique(new PairwisePrimitiveInterpolation(
+      PassRefPtr<NonInterpolableValue> non_interpolable_value) {
+    return WTF::WrapUnique(new PairwisePrimitiveInterpolation(
         type, std::move(start), std::move(end),
-        std::move(nonInterpolableValue)));
+        std::move(non_interpolable_value)));
   }
 
-  const InterpolationType& type() const { return m_type; }
+  const InterpolationType& GetType() const { return type_; }
 
-  std::unique_ptr<TypedInterpolationValue> initialValue() const {
-    return TypedInterpolationValue::create(m_type, m_start->clone(),
-                                           m_nonInterpolableValue);
+  std::unique_ptr<TypedInterpolationValue> InitialValue() const {
+    return TypedInterpolationValue::Create(type_, start_->Clone(),
+                                           non_interpolable_value_);
   }
 
  private:
@@ -65,35 +65,35 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
-      PassRefPtr<NonInterpolableValue> nonInterpolableValue)
-      : m_type(type),
-        m_start(std::move(start)),
-        m_end(std::move(end)),
-        m_nonInterpolableValue(std::move(nonInterpolableValue)) {
-    DCHECK(m_start);
-    DCHECK(m_end);
+      PassRefPtr<NonInterpolableValue> non_interpolable_value)
+      : type_(type),
+        start_(std::move(start)),
+        end_(std::move(end)),
+        non_interpolable_value_(std::move(non_interpolable_value)) {
+    DCHECK(start_);
+    DCHECK(end_);
   }
 
-  void interpolateValue(
+  void InterpolateValue(
       double fraction,
       std::unique_ptr<TypedInterpolationValue>& result) const final {
     DCHECK(result);
-    DCHECK_EQ(&result->type(), &m_type);
-    DCHECK_EQ(result->getNonInterpolableValue(), m_nonInterpolableValue.get());
-    m_start->interpolate(*m_end, fraction,
-                         *result->mutableValue().interpolableValue);
+    DCHECK_EQ(&result->GetType(), &type_);
+    DCHECK_EQ(result->GetNonInterpolableValue(), non_interpolable_value_.Get());
+    start_->Interpolate(*end_, fraction,
+                        *result->MutableValue().interpolable_value);
   }
 
-  double interpolateUnderlyingFraction(double start,
+  double InterpolateUnderlyingFraction(double start,
                                        double end,
                                        double fraction) const final {
-    return blend(start, end, fraction);
+    return Blend(start, end, fraction);
   }
 
-  const InterpolationType& m_type;
-  std::unique_ptr<InterpolableValue> m_start;
-  std::unique_ptr<InterpolableValue> m_end;
-  RefPtr<NonInterpolableValue> m_nonInterpolableValue;
+  const InterpolationType& type_;
+  std::unique_ptr<InterpolableValue> start_;
+  std::unique_ptr<InterpolableValue> end_;
+  RefPtr<NonInterpolableValue> non_interpolable_value_;
 };
 
 // Represents a pair of incompatible keyframes that fall back to 50% flip
@@ -102,43 +102,43 @@ class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
  public:
   ~FlipPrimitiveInterpolation() override {}
 
-  static std::unique_ptr<FlipPrimitiveInterpolation> create(
+  static std::unique_ptr<FlipPrimitiveInterpolation> Create(
       std::unique_ptr<TypedInterpolationValue> start,
       std::unique_ptr<TypedInterpolationValue> end) {
-    return WTF::wrapUnique(
+    return WTF::WrapUnique(
         new FlipPrimitiveInterpolation(std::move(start), std::move(end)));
   }
 
  private:
   FlipPrimitiveInterpolation(std::unique_ptr<TypedInterpolationValue> start,
                              std::unique_ptr<TypedInterpolationValue> end)
-      : m_start(std::move(start)),
-        m_end(std::move(end)),
-        m_lastFraction(std::numeric_limits<double>::quiet_NaN()) {}
+      : start_(std::move(start)),
+        end_(std::move(end)),
+        last_fraction_(std::numeric_limits<double>::quiet_NaN()) {}
 
-  void interpolateValue(
+  void InterpolateValue(
       double fraction,
       std::unique_ptr<TypedInterpolationValue>& result) const final {
-    if (!std::isnan(m_lastFraction) &&
-        (fraction < 0.5) == (m_lastFraction < 0.5))
+    if (!std::isnan(last_fraction_) &&
+        (fraction < 0.5) == (last_fraction_ < 0.5))
       return;
     const TypedInterpolationValue* side =
-        ((fraction < 0.5) ? m_start : m_end).get();
-    result = side ? side->clone() : nullptr;
-    m_lastFraction = fraction;
+        ((fraction < 0.5) ? start_ : end_).get();
+    result = side ? side->Clone() : nullptr;
+    last_fraction_ = fraction;
   }
 
-  double interpolateUnderlyingFraction(double start,
+  double InterpolateUnderlyingFraction(double start,
                                        double end,
                                        double fraction) const final {
     return fraction < 0.5 ? start : end;
   }
 
-  bool isFlip() const final { return true; }
+  bool IsFlip() const final { return true; }
 
-  std::unique_ptr<TypedInterpolationValue> m_start;
-  std::unique_ptr<TypedInterpolationValue> m_end;
-  mutable double m_lastFraction;
+  std::unique_ptr<TypedInterpolationValue> start_;
+  std::unique_ptr<TypedInterpolationValue> end_;
+  mutable double last_fraction_;
 };
 
 }  // namespace blink

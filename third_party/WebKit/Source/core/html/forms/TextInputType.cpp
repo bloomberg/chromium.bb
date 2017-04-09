@@ -37,30 +37,30 @@ namespace blink {
 
 using namespace HTMLNames;
 
-InputType* TextInputType::create(HTMLInputElement& element) {
+InputType* TextInputType::Create(HTMLInputElement& element) {
   return new TextInputType(element);
 }
 
-void TextInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeText);
-  if (element().fastHasAttribute(maxlengthAttr))
-    countUsageIfVisible(UseCounter::InputTypeTextMaxLength);
-  const AtomicString& type = element().fastGetAttribute(typeAttr);
-  if (equalIgnoringCase(type, InputTypeNames::datetime))
-    countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);
-  else if (equalIgnoringCase(type, InputTypeNames::week))
-    countUsageIfVisible(UseCounter::InputTypeWeekFallback);
+void TextInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeText);
+  if (GetElement().FastHasAttribute(maxlengthAttr))
+    CountUsageIfVisible(UseCounter::kInputTypeTextMaxLength);
+  const AtomicString& type = GetElement().FastGetAttribute(typeAttr);
+  if (EqualIgnoringCase(type, InputTypeNames::datetime))
+    CountUsageIfVisible(UseCounter::kInputTypeDateTimeFallback);
+  else if (EqualIgnoringCase(type, InputTypeNames::week))
+    CountUsageIfVisible(UseCounter::kInputTypeWeekFallback);
 }
 
-const AtomicString& TextInputType::formControlType() const {
+const AtomicString& TextInputType::FormControlType() const {
   return InputTypeNames::text;
 }
 
-bool TextInputType::supportsInputModeAttribute() const {
+bool TextInputType::SupportsInputModeAttribute() const {
   return true;
 }
 
-const AtomicString& TextInputType::defaultAutocapitalize() const {
+const AtomicString& TextInputType::DefaultAutocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
   return sentences;
 }

@@ -40,7 +40,7 @@ using Mode = ParsedContentType::Mode;
 
 namespace {
 
-bool isTokenCharacter(Mode mode, UChar c) {
+bool IsTokenCharacter(Mode mode, UChar c) {
   if (c >= 128)
     return false;
   if (c < 0x20)
@@ -64,13 +64,13 @@ bool isTokenCharacter(Mode mode, UChar c) {
     case ']':
     case '?':
     case '=':
-      return mode == Mode::Relaxed;
+      return mode == Mode::kRelaxed;
     default:
       return true;
   }
 }
 
-bool consume(char c, const String& input, unsigned& index) {
+bool Consume(char c, const String& input, unsigned& index) {
   DCHECK_NE(c, ' ');
   while (index < input.length() && input[index] == ' ')
     ++index;
@@ -82,17 +82,17 @@ bool consume(char c, const String& input, unsigned& index) {
   return false;
 }
 
-bool consumeToken(Mode mode,
+bool ConsumeToken(Mode mode,
                   const String& input,
                   unsigned& index,
                   StringView& output) {
-  DCHECK(output.isNull());
+  DCHECK(output.IsNull());
 
   while (index < input.length() && input[index] == ' ')
     ++index;
 
   auto start = index;
-  while (index < input.length() && isTokenCharacter(mode, input[index]))
+  while (index < input.length() && IsTokenCharacter(mode, input[index]))
     ++index;
 
   if (start == index)
@@ -102,7 +102,7 @@ bool consumeToken(Mode mode,
   return true;
 }
 
-bool consumeQuotedString(const String& input, unsigned& index, String& output) {
+bool ConsumeQuotedString(const String& input, unsigned& index, String& output) {
   StringBuilder builder;
   DCHECK_EQ('"', input[index]);
   ++index;
@@ -111,22 +111,22 @@ bool consumeQuotedString(const String& input, unsigned& index, String& output) {
       ++index;
       if (index == input.length())
         return false;
-      builder.append(input[index]);
+      builder.Append(input[index]);
       ++index;
       continue;
     }
     if (input[index] == '"') {
-      output = builder.toString();
+      output = builder.ToString();
       ++index;
       return true;
     }
-    builder.append(input[index]);
+    builder.Append(input[index]);
     ++index;
   }
   return false;
 }
 
-bool consumeTokenOrQuotedString(Mode mode,
+bool ConsumeTokenOrQuotedString(Mode mode,
                                 const String& input,
                                 unsigned& index,
                                 String& output) {
@@ -135,15 +135,15 @@ bool consumeTokenOrQuotedString(Mode mode,
   if (input.length() == index)
     return false;
   if (input[index] == '"') {
-    return consumeQuotedString(input, index, output);
+    return ConsumeQuotedString(input, index, output);
   }
   StringView view;
-  auto result = consumeToken(mode, input, index, view);
-  output = view.toString();
+  auto result = ConsumeToken(mode, input, index, view);
+  output = view.ToString();
   return result;
 }
 
-bool isEnd(const String& input, unsigned index) {
+bool IsEnd(const String& input, unsigned index) {
   while (index < input.length()) {
     if (input[index] != ' ')
       return false;
@@ -154,23 +154,23 @@ bool isEnd(const String& input, unsigned index) {
 
 }  // namespace
 
-ParsedContentType::ParsedContentType(const String& contentType, Mode mode)
-    : m_mode(mode) {
-  m_isValid = parse(contentType);
+ParsedContentType::ParsedContentType(const String& content_type, Mode mode)
+    : mode_(mode) {
+  is_valid_ = Parse(content_type);
 }
 
-String ParsedContentType::charset() const {
-  return parameterValueForName("charset");
+String ParsedContentType::Charset() const {
+  return ParameterValueForName("charset");
 }
 
-String ParsedContentType::parameterValueForName(const String& name) const {
-  if (!name.containsOnlyASCII())
+String ParsedContentType::ParameterValueForName(const String& name) const {
+  if (!name.ContainsOnlyASCII())
     return String();
-  return m_parameters.at(name.lower());
+  return parameters_.at(name.Lower());
 }
 
-size_t ParsedContentType::parameterCount() const {
-  return m_parameters.size();
+size_t ParsedContentType::ParameterCount() const {
+  return parameters_.size();
 }
 
 // From http://tools.ietf.org/html/rfc2045#section-5.1:
@@ -219,62 +219,62 @@ size_t ParsedContentType::parameterCount() const {
 //               ; Must be in quoted-string,
 //               ; to use within parameter values
 
-bool ParsedContentType::parse(const String& contentType) {
+bool ParsedContentType::Parse(const String& content_type) {
   unsigned index = 0;
 
   StringView type, subtype;
-  if (!consumeToken(Mode::Normal, contentType, index, type)) {
-    DVLOG(1) << "Failed to find `type' in '" << contentType << "'";
+  if (!ConsumeToken(Mode::kNormal, content_type, index, type)) {
+    DVLOG(1) << "Failed to find `type' in '" << content_type << "'";
     return false;
   }
-  if (!consume('/', contentType, index)) {
-    DVLOG(1) << "Failed to find '/' in '" << contentType << "'";
+  if (!Consume('/', content_type, index)) {
+    DVLOG(1) << "Failed to find '/' in '" << content_type << "'";
     return false;
   }
-  if (!consumeToken(Mode::Normal, contentType, index, subtype)) {
-    DVLOG(1) << "Failed to find `type' in '" << contentType << "'";
+  if (!ConsumeToken(Mode::kNormal, content_type, index, subtype)) {
+    DVLOG(1) << "Failed to find `type' in '" << content_type << "'";
     return false;
   }
 
   StringBuilder builder;
-  builder.append(type);
-  builder.append('/');
-  builder.append(subtype);
-  m_mimeType = builder.toString();
+  builder.Append(type);
+  builder.Append('/');
+  builder.Append(subtype);
+  mime_type_ = builder.ToString();
 
   KeyValuePairs map;
-  while (!isEnd(contentType, index)) {
-    if (!consume(';', contentType, index)) {
+  while (!IsEnd(content_type, index)) {
+    if (!Consume(';', content_type, index)) {
       DVLOG(1) << "Failed to find ';'";
       return false;
     }
 
     StringView key;
     String value;
-    if (!consumeToken(Mode::Normal, contentType, index, key)) {
+    if (!ConsumeToken(Mode::kNormal, content_type, index, key)) {
       DVLOG(1) << "Invalid Content-Type parameter name. (at " << index << ")";
       return false;
     }
-    if (!consume('=', contentType, index)) {
+    if (!Consume('=', content_type, index)) {
       DVLOG(1) << "Failed to find '='";
       return false;
     }
-    if (!consumeTokenOrQuotedString(m_mode, contentType, index, value)) {
+    if (!ConsumeTokenOrQuotedString(mode_, content_type, index, value)) {
       DVLOG(1) << "Invalid Content-Type, invalid parameter value (at " << index
-               << ", for '" << key.toString() << "').";
+               << ", for '" << key.ToString() << "').";
       return false;
     }
     // As |key| is parsed as a token, it consists of ascii characters
     // and hence we don't need to care about non-ascii lowercasing.
-    DCHECK(key.toString().containsOnlyASCII());
-    String keyString = key.toString().lower();
-    if (m_mode == Mode::Strict && map.find(keyString) != map.end()) {
-      DVLOG(1) << "Parameter " << keyString << " is defined multiple times.";
+    DCHECK(key.ToString().ContainsOnlyASCII());
+    String key_string = key.ToString().Lower();
+    if (mode_ == Mode::kStrict && map.Find(key_string) != map.end()) {
+      DVLOG(1) << "Parameter " << key_string << " is defined multiple times.";
       return false;
     }
-    map.set(keyString, value);
+    map.Set(key_string, value);
   }
-  m_parameters = std::move(map);
+  parameters_ = std::move(map);
   return true;
 }
 

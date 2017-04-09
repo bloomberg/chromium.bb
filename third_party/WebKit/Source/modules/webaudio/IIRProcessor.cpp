@@ -10,26 +10,26 @@
 
 namespace blink {
 
-IIRProcessor::IIRProcessor(float sampleRate,
-                           size_t numberOfChannels,
-                           const Vector<double>& feedforwardCoef,
-                           const Vector<double>& feedbackCoef)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels) {
-  unsigned feedbackLength = feedbackCoef.size();
-  unsigned feedforwardLength = feedforwardCoef.size();
-  DCHECK_GT(feedbackLength, 0u);
-  DCHECK_GT(feedforwardLength, 0u);
+IIRProcessor::IIRProcessor(float sample_rate,
+                           size_t number_of_channels,
+                           const Vector<double>& feedforward_coef,
+                           const Vector<double>& feedback_coef)
+    : AudioDSPKernelProcessor(sample_rate, number_of_channels) {
+  unsigned feedback_length = feedback_coef.size();
+  unsigned feedforward_length = feedforward_coef.size();
+  DCHECK_GT(feedback_length, 0u);
+  DCHECK_GT(feedforward_length, 0u);
 
-  m_feedforward.allocate(feedforwardLength);
-  m_feedback.allocate(feedbackLength);
-  m_feedforward.copyToRange(feedforwardCoef.data(), 0, feedforwardLength);
-  m_feedback.copyToRange(feedbackCoef.data(), 0, feedbackLength);
+  feedforward_.Allocate(feedforward_length);
+  feedback_.Allocate(feedback_length);
+  feedforward_.CopyToRange(feedforward_coef.Data(), 0, feedforward_length);
+  feedback_.CopyToRange(feedback_coef.Data(), 0, feedback_length);
 
   // Need to scale the feedback and feedforward coefficients appropriately.
   // (It's up to the caller to ensure feedbackCoef[0] is not 0.)
-  DCHECK_NE(feedbackCoef[0], 0);
+  DCHECK_NE(feedback_coef[0], 0);
 
-  if (feedbackCoef[0] != 1) {
+  if (feedback_coef[0] != 1) {
     // The provided filter is:
     //
     //   a[0]*y(n) + a[1]*y(n-1) + ... = b[0]*x(n) + b[1]*x(n-1) + ...
@@ -40,51 +40,51 @@ IIRProcessor::IIRProcessor(float sampleRate,
     //
     // Thus, the feedback and feedforward coefficients need to be scaled by
     // 1/a[0].
-    float scale = feedbackCoef[0];
-    for (unsigned k = 1; k < feedbackLength; ++k)
-      m_feedback[k] /= scale;
+    float scale = feedback_coef[0];
+    for (unsigned k = 1; k < feedback_length; ++k)
+      feedback_[k] /= scale;
 
-    for (unsigned k = 0; k < feedforwardLength; ++k)
-      m_feedforward[k] /= scale;
+    for (unsigned k = 0; k < feedforward_length; ++k)
+      feedforward_[k] /= scale;
 
     // The IIRFilter checks to make sure this coefficient is 1, so make it so.
-    m_feedback[0] = 1;
+    feedback_[0] = 1;
   }
 
-  m_responseKernel = WTF::makeUnique<IIRDSPKernel>(this);
+  response_kernel_ = WTF::MakeUnique<IIRDSPKernel>(this);
 }
 
 IIRProcessor::~IIRProcessor() {
-  if (isInitialized())
-    uninitialize();
+  if (IsInitialized())
+    Uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> IIRProcessor::createKernel() {
-  return WTF::makeUnique<IIRDSPKernel>(this);
+std::unique_ptr<AudioDSPKernel> IIRProcessor::CreateKernel() {
+  return WTF::MakeUnique<IIRDSPKernel>(this);
 }
 
-void IIRProcessor::process(const AudioBus* source,
+void IIRProcessor::Process(const AudioBus* source,
                            AudioBus* destination,
-                           size_t framesToProcess) {
-  if (!isInitialized()) {
-    destination->zero();
+                           size_t frames_to_process) {
+  if (!IsInitialized()) {
+    destination->Zero();
     return;
   }
 
   // For each channel of our input, process using the corresponding IIRDSPKernel
   // into the output channel.
-  for (unsigned i = 0; i < m_kernels.size(); ++i)
-    m_kernels[i]->process(source->channel(i)->data(),
-                          destination->channel(i)->mutableData(),
-                          framesToProcess);
+  for (unsigned i = 0; i < kernels_.size(); ++i)
+    kernels_[i]->Process(source->Channel(i)->Data(),
+                         destination->Channel(i)->MutableData(),
+                         frames_to_process);
 }
 
-void IIRProcessor::getFrequencyResponse(int nFrequencies,
-                                        const float* frequencyHz,
-                                        float* magResponse,
-                                        float* phaseResponse) {
-  m_responseKernel->getFrequencyResponse(nFrequencies, frequencyHz, magResponse,
-                                         phaseResponse);
+void IIRProcessor::GetFrequencyResponse(int n_frequencies,
+                                        const float* frequency_hz,
+                                        float* mag_response,
+                                        float* phase_response) {
+  response_kernel_->GetFrequencyResponse(n_frequencies, frequency_hz,
+                                         mag_response, phase_response);
 }
 
 }  // namespace blink

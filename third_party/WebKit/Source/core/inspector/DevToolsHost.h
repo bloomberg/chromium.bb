@@ -47,24 +47,24 @@ class CORE_EXPORT DevToolsHost final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DevToolsHost* create(InspectorFrontendClient* client,
-                              LocalFrame* frontendFrame) {
-    return new DevToolsHost(client, frontendFrame);
+  static DevToolsHost* Create(InspectorFrontendClient* client,
+                              LocalFrame* frontend_frame) {
+    return new DevToolsHost(client, frontend_frame);
   }
 
   ~DevToolsHost();
   DECLARE_TRACE();
-  void disconnectClient();
+  void DisconnectClient();
 
   float zoomFactor();
 
-  float convertLengthForEmbedder(float length);
+  float ConvertLengthForEmbedder(float length);
 
   void setInjectedScriptForOrigin(const String& origin, const String& script);
 
   void copyText(const String& text);
 
-  void showContextMenu(LocalFrame* targetFrame,
+  void ShowContextMenu(LocalFrame* target_frame,
                        float x,
                        float y,
                        const Vector<ContextMenuItem>& items);
@@ -76,19 +76,19 @@ class CORE_EXPORT DevToolsHost final
   bool isUnderTest();
   bool isHostedMode();
 
-  LocalFrame* frontendFrame() { return m_frontendFrame; }
+  LocalFrame* FrontendFrame() { return frontend_frame_; }
 
-  void clearMenuProvider() { m_menuProvider = nullptr; }
+  void ClearMenuProvider() { menu_provider_ = nullptr; }
 
  private:
   friend class FrontendMenuProvider;
 
-  DevToolsHost(InspectorFrontendClient*, LocalFrame* frontendFrame);
-  void evaluateScript(const String&);
+  DevToolsHost(InspectorFrontendClient*, LocalFrame* frontend_frame);
+  void EvaluateScript(const String&);
 
-  InspectorFrontendClient* m_client;
-  Member<LocalFrame> m_frontendFrame;
-  Member<FrontendMenuProvider> m_menuProvider;
+  InspectorFrontendClient* client_;
+  Member<LocalFrame> frontend_frame_;
+  Member<FrontendMenuProvider> menu_provider_;
 };
 
 }  // namespace blink

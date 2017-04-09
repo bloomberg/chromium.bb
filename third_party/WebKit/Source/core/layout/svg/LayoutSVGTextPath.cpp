@@ -28,44 +28,46 @@
 namespace blink {
 
 PathPositionMapper::PathPositionMapper(const Path& path)
-    : m_positionCalculator(path), m_pathLength(path.length()) {}
+    : position_calculator_(path), path_length_(path.length()) {}
 
-PathPositionMapper::PositionType PathPositionMapper::pointAndNormalAtLength(
+PathPositionMapper::PositionType PathPositionMapper::PointAndNormalAtLength(
     float length,
     FloatPoint& point,
     float& angle) {
   if (length < 0)
-    return BeforePath;
-  if (length > m_pathLength)
-    return AfterPath;
+    return kBeforePath;
+  if (length > path_length_)
+    return kAfterPath;
   DCHECK_GE(length, 0);
-  DCHECK_LE(length, m_pathLength);
-  m_positionCalculator.pointAndNormalAtLength(length, point, angle);
-  return OnPath;
+  DCHECK_LE(length, path_length_);
+  position_calculator_.PointAndNormalAtLength(length, point, angle);
+  return kOnPath;
 }
 
 LayoutSVGTextPath::LayoutSVGTextPath(Element* element)
     : LayoutSVGInline(element) {}
 
-bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child,
+bool LayoutSVGTextPath::IsChildAllowed(LayoutObject* child,
                                        const ComputedStyle&) const {
-  if (child->isText())
-    return SVGLayoutSupport::isLayoutableTextNode(child);
+  if (child->IsText())
+    return SVGLayoutSupport::IsLayoutableTextNode(child);
 
-  return child->isSVGInline() && !child->isSVGTextPath();
+  return child->IsSVGInline() && !child->IsSVGTextPath();
 }
 
-std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const {
-  const SVGTextPathElement& textPathElement = toSVGTextPathElement(*node());
-  Element* targetElement = SVGURIReference::targetElementFromIRIString(
-      textPathElement.hrefString(), textPathElement.treeScopeForIdResolution());
+std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
+  const SVGTextPathElement& text_path_element =
+      toSVGTextPathElement(*GetNode());
+  Element* target_element = SVGURIReference::TargetElementFromIRIString(
+      text_path_element.HrefString(),
+      text_path_element.TreeScopeForIdResolution());
 
-  if (!isSVGPathElement(targetElement))
+  if (!isSVGPathElement(target_element))
     return nullptr;
 
-  SVGPathElement& pathElement = toSVGPathElement(*targetElement);
-  Path pathData = pathElement.asPath();
-  if (pathData.isEmpty())
+  SVGPathElement& path_element = toSVGPathElement(*target_element);
+  Path path_data = path_element.AsPath();
+  if (path_data.IsEmpty())
     return nullptr;
 
   // Spec:  The transform attribute on the referenced 'path' element represents
@@ -73,21 +75,21 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const {
   // system for the current 'text' element, including any adjustments to the
   // current user coordinate system due to a possible transform attribute on the
   // current 'text' element. http://www.w3.org/TR/SVG/text.html#TextPathElement
-  pathData.transform(
-      pathElement.calculateTransform(SVGElement::IncludeMotionTransform));
+  path_data.Transform(
+      path_element.CalculateTransform(SVGElement::kIncludeMotionTransform));
 
-  return PathPositionMapper::create(pathData);
+  return PathPositionMapper::Create(path_data);
 }
 
-float LayoutSVGTextPath::calculateStartOffset(float pathLength) const {
-  const SVGLength& startOffset =
-      *toSVGTextPathElement(node())->startOffset()->currentValue();
-  float textPathStartOffset = startOffset.valueAsPercentage();
-  if (startOffset.typeWithCalcResolved() ==
-      CSSPrimitiveValue::UnitType::Percentage)
-    textPathStartOffset *= pathLength;
+float LayoutSVGTextPath::CalculateStartOffset(float path_length) const {
+  const SVGLength& start_offset =
+      *toSVGTextPathElement(GetNode())->startOffset()->CurrentValue();
+  float text_path_start_offset = start_offset.ValueAsPercentage();
+  if (start_offset.TypeWithCalcResolved() ==
+      CSSPrimitiveValue::UnitType::kPercentage)
+    text_path_start_offset *= path_length;
 
-  return textPathStartOffset;
+  return text_path_start_offset;
 }
 
 }  // namespace blink

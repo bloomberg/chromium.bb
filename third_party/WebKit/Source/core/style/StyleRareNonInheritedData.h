@@ -82,11 +82,11 @@ enum PageSizeType {
 class CORE_EXPORT StyleRareNonInheritedData
     : public RefCounted<StyleRareNonInheritedData> {
  public:
-  static PassRefPtr<StyleRareNonInheritedData> create() {
-    return adoptRef(new StyleRareNonInheritedData);
+  static PassRefPtr<StyleRareNonInheritedData> Create() {
+    return AdoptRef(new StyleRareNonInheritedData);
   }
-  PassRefPtr<StyleRareNonInheritedData> copy() const {
-    return adoptRef(new StyleRareNonInheritedData(*this));
+  PassRefPtr<StyleRareNonInheritedData> Copy() const {
+    return AdoptRef(new StyleRareNonInheritedData(*this));
   }
   ~StyleRareNonInheritedData();
 
@@ -95,148 +95,148 @@ class CORE_EXPORT StyleRareNonInheritedData
     return !(*this == o);
   }
 
-  bool contentDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool counterDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool shadowDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool reflectionDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool animationDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool transitionDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool shapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool clipPathDataEquivalent(const StyleRareNonInheritedData&) const;
-  bool hasFilters() const;
-  bool hasBackdropFilters() const;
-  bool hasOpacity() const { return opacity < 1; }
+  bool ContentDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool CounterDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool ShadowDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool ReflectionDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool AnimationDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool TransitionDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool ShapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool ClipPathDataEquivalent(const StyleRareNonInheritedData&) const;
+  bool HasFilters() const;
+  bool HasBackdropFilters() const;
+  bool HasOpacity() const { return opacity < 1; }
 
   float opacity;  // Whether or not we're transparent.
 
-  float m_perspective;
-  float m_shapeImageThreshold;
+  float perspective_;
+  float shape_image_threshold_;
 
-  int m_order;
+  int order_;
 
-  LengthPoint m_perspectiveOrigin;
-  LengthPoint m_objectPosition;
+  LengthPoint perspective_origin_;
+  LengthPoint object_position_;
 
-  LineClampValue lineClamp;  // An Apple extension.
-  DraggableRegionMode m_draggableRegionMode;
+  LineClampValue line_clamp;  // An Apple extension.
+  DraggableRegionMode draggable_region_mode_;
 
   DataRef<StyleDeprecatedFlexibleBoxData>
-      m_deprecatedFlexibleBox;  // Flexible box properties
-  DataRef<StyleFlexibleBoxData> m_flexibleBox;
-  DataRef<StyleMultiColData> m_multiCol;  //  CSS3 multicol properties
+      deprecated_flexible_box_;  // Flexible box properties
+  DataRef<StyleFlexibleBoxData> flexible_box_;
+  DataRef<StyleMultiColData> multi_col_;  //  CSS3 multicol properties
   DataRef<StyleTransformData>
-      m_transform;  // Transform properties (rotate, scale, skew, etc.)
-  DataRef<StyleWillChangeData> m_willChange;  // CSS Will Change
+      transform_;  // Transform properties (rotate, scale, skew, etc.)
+  DataRef<StyleWillChangeData> will_change_;  // CSS Will Change
 
   DataPersistent<StyleFilterData>
-      m_filter;  // Filter operations (url, sepia, blur, etc.)
+      filter_;  // Filter operations (url, sepia, blur, etc.)
   DataPersistent<StyleFilterData>
-      m_backdropFilter;  // Backdrop filter operations (url, sepia, blur, etc.)
+      backdrop_filter_;  // Backdrop filter operations (url, sepia, blur, etc.)
 
-  DataRef<StyleGridData> m_grid;
-  DataRef<StyleGridItemData> m_gridItem;
-  DataRef<StyleScrollSnapData> m_scrollSnap;
+  DataRef<StyleGridData> grid_;
+  DataRef<StyleGridItemData> grid_item_;
+  DataRef<StyleScrollSnapData> scroll_snap_;
 
-  Persistent<ContentData> m_content;
-  std::unique_ptr<CounterDirectiveMap> m_counterDirectives;
-  std::unique_ptr<CSSAnimationData> m_animations;
-  std::unique_ptr<CSSTransitionData> m_transitions;
+  Persistent<ContentData> content_;
+  std::unique_ptr<CounterDirectiveMap> counter_directives_;
+  std::unique_ptr<CSSAnimationData> animations_;
+  std::unique_ptr<CSSTransitionData> transitions_;
 
-  RefPtr<ShadowList> m_boxShadow;
+  RefPtr<ShadowList> box_shadow_;
 
-  RefPtr<StyleReflection> m_boxReflect;
+  RefPtr<StyleReflection> box_reflect_;
 
-  Persistent<ShapeValue> m_shapeOutside;
-  RefPtr<ClipPathOperation> m_clipPath;
+  Persistent<ShapeValue> shape_outside_;
+  RefPtr<ClipPathOperation> clip_path_;
 
-  FillLayer m_mask;
-  NinePieceImage m_maskBoxImage;
+  FillLayer mask_;
+  NinePieceImage mask_box_image_;
 
-  FloatSize m_pageSize;
-  Length m_shapeMargin;
+  FloatSize page_size_;
+  Length shape_margin_;
 
-  OutlineValue m_outline;
+  OutlineValue outline_;
 
-  StyleColor m_textDecorationColor;
-  StyleColor m_visitedLinkTextDecorationColor;
-  StyleColor m_visitedLinkBackgroundColor;
-  StyleColor m_visitedLinkOutlineColor;
-  StyleColor m_visitedLinkBorderLeftColor;
-  StyleColor m_visitedLinkBorderRightColor;
-  StyleColor m_visitedLinkBorderTopColor;
-  StyleColor m_visitedLinkBorderBottomColor;
+  StyleColor text_decoration_color_;
+  StyleColor visited_link_text_decoration_color_;
+  StyleColor visited_link_background_color_;
+  StyleColor visited_link_outline_color_;
+  StyleColor visited_link_border_left_color_;
+  StyleColor visited_link_border_right_color_;
+  StyleColor visited_link_border_top_color_;
+  StyleColor visited_link_border_bottom_color_;
 
-  Vector<String> m_callbackSelectors;
+  Vector<String> callback_selectors_;
 
-  std::unique_ptr<Vector<Persistent<StyleImage>>> m_paintImages;
+  std::unique_ptr<Vector<Persistent<StyleImage>>> paint_images_;
 
-  std::unique_ptr<StyleNonInheritedVariables> m_variables;
+  std::unique_ptr<StyleNonInheritedVariables> variables_;
 
-  StyleContentAlignmentData m_alignContent;
-  StyleSelfAlignmentData m_alignItems;
-  StyleSelfAlignmentData m_alignSelf;
-  StyleContentAlignmentData m_justifyContent;
-  StyleSelfAlignmentData m_justifyItems;
-  StyleSelfAlignmentData m_justifySelf;
+  StyleContentAlignmentData align_content_;
+  StyleSelfAlignmentData align_items_;
+  StyleSelfAlignmentData align_self_;
+  StyleContentAlignmentData justify_content_;
+  StyleSelfAlignmentData justify_items_;
+  StyleSelfAlignmentData justify_self_;
 
-  unsigned m_pageSizeType : 2;        // PageSizeType
-  unsigned m_transformStyle3D : 1;    // ETransformStyle3D
-  unsigned m_backfaceVisibility : 1;  // EBackfaceVisibility
+  unsigned page_size_type_ : 2;       // PageSizeType
+  unsigned transform_style3d_ : 1;    // ETransformStyle3D
+  unsigned backface_visibility_ : 1;  // EBackfaceVisibility
 
-  unsigned userDrag : 2;      // EUserDrag
-  unsigned textOverflow : 1;  // Whether or not lines that spill out should be
-                              // truncated with "..."
-  unsigned marginBeforeCollapse : 2;  // EMarginCollapse
-  unsigned marginAfterCollapse : 2;   // EMarginCollapse
-  unsigned m_appearance : 6;          // EAppearance
+  unsigned user_drag : 2;      // EUserDrag
+  unsigned text_overflow : 1;  // Whether or not lines that spill out should be
+                               // truncated with "..."
+  unsigned margin_before_collapse : 2;  // EMarginCollapse
+  unsigned margin_after_collapse : 2;   // EMarginCollapse
+  unsigned appearance_ : 6;             // EAppearance
 
-  unsigned m_textDecorationStyle : 3;  // TextDecorationStyle
+  unsigned text_decoration_style_ : 3;  // TextDecorationStyle
 
-  unsigned m_hasCurrentOpacityAnimation : 1;
-  unsigned m_hasCurrentTransformAnimation : 1;
-  unsigned m_hasCurrentFilterAnimation : 1;
-  unsigned m_hasCurrentBackdropFilterAnimation : 1;
-  unsigned m_runningOpacityAnimationOnCompositor : 1;
-  unsigned m_runningTransformAnimationOnCompositor : 1;
-  unsigned m_runningFilterAnimationOnCompositor : 1;
-  unsigned m_runningBackdropFilterAnimationOnCompositor : 1;
+  unsigned has_current_opacity_animation_ : 1;
+  unsigned has_current_transform_animation_ : 1;
+  unsigned has_current_filter_animation_ : 1;
+  unsigned has_current_backdrop_filter_animation_ : 1;
+  unsigned running_opacity_animation_on_compositor_ : 1;
+  unsigned running_transform_animation_on_compositor_ : 1;
+  unsigned running_filter_animation_on_compositor_ : 1;
+  unsigned running_backdrop_filter_animation_on_compositor_ : 1;
 
-  unsigned m_isStackingContext : 1;
+  unsigned is_stacking_context_ : 1;
 
-  unsigned m_effectiveBlendMode : 5;  // EBlendMode
+  unsigned effective_blend_mode_ : 5;  // EBlendMode
 
-  unsigned m_touchAction : TouchActionBits;  // TouchAction
+  unsigned touch_action_ : kTouchActionBits;  // TouchAction
 
-  unsigned m_objectFit : 3;  // ObjectFit
+  unsigned object_fit_ : 3;  // ObjectFit
 
-  unsigned m_isolation : 1;  // Isolation
+  unsigned isolation_ : 1;  // Isolation
 
-  unsigned m_contain : 4;  // Containment
+  unsigned contain_ : 4;  // Containment
 
   // ScrollBehavior. 'scroll-behavior' has 2 accepted values, but ScrollBehavior
   // has a third value (that can only be specified using CSSOM scroll APIs) so 2
   // bits are needed.
-  unsigned m_scrollBehavior : 2;
+  unsigned scroll_behavior_ : 2;
 
-  unsigned m_scrollSnapType : 2;  // ScrollSnapType
+  unsigned scroll_snap_type_ : 2;  // ScrollSnapType
 
   // Plugins require accelerated compositing for reasons external to blink.
   // In which case, we need to update the ComputedStyle on the
   // LayoutEmbeddedObject, so store this bit so that the style actually changes
   // when the plugin becomes composited.
-  unsigned m_requiresAcceleratedCompositingForExternalReasons : 1;
+  unsigned requires_accelerated_compositing_for_external_reasons_ : 1;
 
   // Whether the transform (if it exists) is stored in the element's inline
   // style.
-  unsigned m_hasInlineTransform : 1;
-  unsigned m_resize : 2;  // EResize
-  unsigned m_hasCompositorProxy : 1;
+  unsigned has_inline_transform_ : 1;
+  unsigned resize_ : 2;  // EResize
+  unsigned has_compositor_proxy_ : 1;
 
   // Style adjustment for appearance is disabled when certain properties are
   // set.
-  unsigned m_hasAuthorBackground : 1;  // Whether there is a author-defined
-                                       // background.
-  unsigned m_hasAuthorBorder : 1;  // Whether there is a author-defined border.
+  unsigned has_author_background_ : 1;  // Whether there is a author-defined
+                                        // background.
+  unsigned has_author_border_ : 1;  // Whether there is a author-defined border.
 
  private:
   StyleRareNonInheritedData();

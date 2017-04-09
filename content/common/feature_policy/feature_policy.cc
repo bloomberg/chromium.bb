@@ -130,7 +130,7 @@ void FeaturePolicy::SetHeaderPolicy(
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        parsed_header) {
     blink::WebFeaturePolicyFeature feature = parsed_declaration.feature;
-    DCHECK(feature != blink::WebFeaturePolicyFeature::NotFound);
+    DCHECK(feature != blink::WebFeaturePolicyFeature::kNotFound);
     whitelists_[feature] = WhitelistFromDeclaration(parsed_declaration);
   }
 }
@@ -175,7 +175,7 @@ void FeaturePolicy::AddContainerPolicy(
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.
     blink::WebFeaturePolicyFeature feature = parsed_declaration.feature;
-    if (feature == blink::WebFeaturePolicyFeature::NotFound)
+    if (feature == blink::WebFeaturePolicyFeature::kNotFound)
       continue;
     if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
         parent_policy->IsFeatureEnabled(feature)) {
@@ -191,39 +191,39 @@ void FeaturePolicy::AddContainerPolicy(
 // features (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
-                         ({{blink::WebFeaturePolicyFeature::Camera,
+                         ({{blink::WebFeaturePolicyFeature::kCamera,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Eme,
+                           {blink::WebFeaturePolicyFeature::kEme,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Fullscreen,
+                           {blink::WebFeaturePolicyFeature::kFullscreen,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Geolocation,
+                           {blink::WebFeaturePolicyFeature::kGeolocation,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Microphone,
+                           {blink::WebFeaturePolicyFeature::kMicrophone,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::MidiFeature,
+                           {blink::WebFeaturePolicyFeature::kMidiFeature,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Payment,
+                           {blink::WebFeaturePolicyFeature::kPayment,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Speaker,
+                           {blink::WebFeaturePolicyFeature::kSpeaker,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::Vibrate,
+                           {blink::WebFeaturePolicyFeature::kVibrate,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::DocumentCookie,
+                           {blink::WebFeaturePolicyFeature::kDocumentCookie,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::DocumentDomain,
+                           {blink::WebFeaturePolicyFeature::kDocumentDomain,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::DocumentWrite,
+                           {blink::WebFeaturePolicyFeature::kDocumentWrite,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::Notifications,
+                           {blink::WebFeaturePolicyFeature::kNotifications,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::Push,
+                           {blink::WebFeaturePolicyFeature::kPush,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::SyncScript,
+                           {blink::WebFeaturePolicyFeature::kSyncScript,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::SyncXHR,
+                           {blink::WebFeaturePolicyFeature::kSyncXHR,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {blink::WebFeaturePolicyFeature::WebRTC,
+                           {blink::WebFeaturePolicyFeature::kWebRTC,
                             FeaturePolicy::FeatureDefault::EnableForAll}}));
   return default_feature_list;
 }

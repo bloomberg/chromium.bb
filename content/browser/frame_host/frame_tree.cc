@@ -105,7 +105,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
-                              blink::WebTreeScopeType::Document,
+                              blink::WebTreeScopeType::kDocument,
                               std::string(),
                               std::string(),
                               FrameOwnerProperties())),

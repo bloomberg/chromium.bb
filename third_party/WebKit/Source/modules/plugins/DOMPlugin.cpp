@@ -24,50 +24,50 @@
 
 namespace blink {
 
-DOMPlugin::DOMPlugin(PluginData* pluginData, LocalFrame* frame, unsigned index)
-    : ContextClient(frame), m_pluginData(pluginData), m_index(index) {}
+DOMPlugin::DOMPlugin(PluginData* plugin_data, LocalFrame* frame, unsigned index)
+    : ContextClient(frame), plugin_data_(plugin_data), index_(index) {}
 
 DOMPlugin::~DOMPlugin() {}
 
 DEFINE_TRACE(DOMPlugin) {
-  ContextClient::trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 String DOMPlugin::name() const {
-  return pluginInfo().name;
+  return GetPluginInfo().name;
 }
 
 String DOMPlugin::filename() const {
-  return pluginInfo().file;
+  return GetPluginInfo().file;
 }
 
 String DOMPlugin::description() const {
-  return pluginInfo().desc;
+  return GetPluginInfo().desc;
 }
 
 unsigned DOMPlugin::length() const {
-  return pluginInfo().mimes.size();
+  return GetPluginInfo().mimes.size();
 }
 
 DOMMimeType* DOMPlugin::item(unsigned index) {
-  if (index >= pluginInfo().mimes.size())
+  if (index >= GetPluginInfo().mimes.size())
     return nullptr;
 
-  const MimeClassInfo& mime = pluginInfo().mimes[index];
+  const MimeClassInfo& mime = GetPluginInfo().mimes[index];
 
-  const Vector<MimeClassInfo>& mimes = m_pluginData->mimes();
+  const Vector<MimeClassInfo>& mimes = plugin_data_->Mimes();
   for (unsigned i = 0; i < mimes.size(); ++i) {
-    if (mimes[i] == mime && m_pluginData->mimePluginIndices()[i] == m_index)
-      return DOMMimeType::create(m_pluginData.get(), frame(), i);
+    if (mimes[i] == mime && plugin_data_->MimePluginIndices()[i] == index_)
+      return DOMMimeType::Create(plugin_data_.Get(), GetFrame(), i);
   }
   return nullptr;
 }
 
-DOMMimeType* DOMPlugin::namedItem(const AtomicString& propertyName) {
-  const Vector<MimeClassInfo>& mimes = m_pluginData->mimes();
+DOMMimeType* DOMPlugin::namedItem(const AtomicString& property_name) {
+  const Vector<MimeClassInfo>& mimes = plugin_data_->Mimes();
   for (unsigned i = 0; i < mimes.size(); ++i) {
-    if (mimes[i].type == propertyName)
-      return DOMMimeType::create(m_pluginData.get(), frame(), i);
+    if (mimes[i].type == property_name)
+      return DOMMimeType::Create(plugin_data_.Get(), GetFrame(), i);
   }
   return nullptr;
 }

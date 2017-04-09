@@ -13,59 +13,59 @@ namespace blink {
 
 StyleRuleKeyframe::StyleRuleKeyframe(std::unique_ptr<Vector<double>> keys,
                                      StylePropertySet* properties)
-    : StyleRuleBase(Keyframe), m_properties(properties), m_keys(*keys) {}
+    : StyleRuleBase(kKeyframe), properties_(properties), keys_(*keys) {}
 
-String StyleRuleKeyframe::keyText() const {
-  DCHECK(!m_keys.isEmpty());
+String StyleRuleKeyframe::KeyText() const {
+  DCHECK(!keys_.IsEmpty());
 
-  StringBuilder keyText;
-  for (unsigned i = 0; i < m_keys.size(); ++i) {
+  StringBuilder key_text;
+  for (unsigned i = 0; i < keys_.size(); ++i) {
     if (i)
-      keyText.append(", ");
-    keyText.appendNumber(m_keys.at(i) * 100);
-    keyText.append('%');
+      key_text.Append(", ");
+    key_text.AppendNumber(keys_.at(i) * 100);
+    key_text.Append('%');
   }
 
-  return keyText.toString();
+  return key_text.ToString();
 }
 
-bool StyleRuleKeyframe::setKeyText(const String& keyText) {
-  DCHECK(!keyText.isNull());
+bool StyleRuleKeyframe::SetKeyText(const String& key_text) {
+  DCHECK(!key_text.IsNull());
 
   std::unique_ptr<Vector<double>> keys =
-      CSSParser::parseKeyframeKeyList(keyText);
-  if (!keys || keys->isEmpty())
+      CSSParser::ParseKeyframeKeyList(key_text);
+  if (!keys || keys->IsEmpty())
     return false;
 
-  m_keys = *keys;
+  keys_ = *keys;
   return true;
 }
 
-const Vector<double>& StyleRuleKeyframe::keys() const {
-  return m_keys;
+const Vector<double>& StyleRuleKeyframe::Keys() const {
+  return keys_;
 }
 
-MutableStylePropertySet& StyleRuleKeyframe::mutableProperties() {
-  if (!m_properties->isMutable())
-    m_properties = m_properties->mutableCopy();
-  return *toMutableStylePropertySet(m_properties.get());
+MutableStylePropertySet& StyleRuleKeyframe::MutableProperties() {
+  if (!properties_->IsMutable())
+    properties_ = properties_->MutableCopy();
+  return *ToMutableStylePropertySet(properties_.Get());
 }
 
-String StyleRuleKeyframe::cssText() const {
+String StyleRuleKeyframe::CssText() const {
   StringBuilder result;
-  result.append(keyText());
-  result.append(" { ");
-  String decls = m_properties->asText();
-  result.append(decls);
-  if (!decls.isEmpty())
-    result.append(' ');
-  result.append('}');
-  return result.toString();
+  result.Append(KeyText());
+  result.Append(" { ");
+  String decls = properties_->AsText();
+  result.Append(decls);
+  if (!decls.IsEmpty())
+    result.Append(' ');
+  result.Append('}');
+  return result.ToString();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleKeyframe) {
-  visitor->trace(m_properties);
-  StyleRuleBase::traceAfterDispatch(visitor);
+  visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

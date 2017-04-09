@@ -24,71 +24,71 @@ class RootFrameViewport;
 
 namespace {
 
-bool fillsViewport(const Element& element) {
-  DCHECK(element.layoutObject());
-  DCHECK(element.layoutObject()->isBox());
+bool FillsViewport(const Element& element) {
+  DCHECK(element.GetLayoutObject());
+  DCHECK(element.GetLayoutObject()->IsBox());
 
-  LayoutObject* layoutObject = element.layoutObject();
+  LayoutObject* layout_object = element.GetLayoutObject();
 
   // TODO(bokan): Broken for OOPIF. crbug.com/642378.
-  Document& topDocument = element.document().topDocument();
+  Document& top_document = element.GetDocument().TopDocument();
 
   Vector<FloatQuad> quads;
-  layoutObject->absoluteQuads(quads);
+  layout_object->AbsoluteQuads(quads);
   DCHECK_EQ(quads.size(), 1u);
 
-  if (!quads[0].isRectilinear())
+  if (!quads[0].IsRectilinear())
     return false;
 
-  LayoutRect boundingBox(quads[0].boundingBox());
+  LayoutRect bounding_box(quads[0].BoundingBox());
 
-  return boundingBox.location() == LayoutPoint::zero() &&
-         boundingBox.size() == topDocument.layoutViewItem().size();
+  return bounding_box.Location() == LayoutPoint::Zero() &&
+         bounding_box.size() == top_document.GetLayoutViewItem().size();
 }
 
 }  // namespace
 
 // static
-RootScrollerController* RootScrollerController::create(Document& document) {
+RootScrollerController* RootScrollerController::Create(Document& document) {
   return new RootScrollerController(document);
 }
 
 RootScrollerController::RootScrollerController(Document& document)
-    : m_document(&document),
-      m_effectiveRootScroller(&document),
-      m_documentHasDocumentElement(false) {}
+    : document_(&document),
+      effective_root_scroller_(&document),
+      document_has_document_element_(false) {}
 
 DEFINE_TRACE(RootScrollerController) {
-  visitor->trace(m_document);
-  visitor->trace(m_rootScroller);
-  visitor->trace(m_effectiveRootScroller);
+  visitor->Trace(document_);
+  visitor->Trace(root_scroller_);
+  visitor->Trace(effective_root_scroller_);
 }
 
-void RootScrollerController::set(Element* newRootScroller) {
-  m_rootScroller = newRootScroller;
-  recomputeEffectiveRootScroller();
+void RootScrollerController::Set(Element* new_root_scroller) {
+  root_scroller_ = new_root_scroller;
+  RecomputeEffectiveRootScroller();
 }
 
-Element* RootScrollerController::get() const {
-  return m_rootScroller;
+Element* RootScrollerController::Get() const {
+  return root_scroller_;
 }
 
-Node& RootScrollerController::effectiveRootScroller() const {
-  DCHECK(m_effectiveRootScroller);
-  return *m_effectiveRootScroller;
+Node& RootScrollerController::EffectiveRootScroller() const {
+  DCHECK(effective_root_scroller_);
+  return *effective_root_scroller_;
 }
 
-void RootScrollerController::didUpdateLayout() {
-  recomputeEffectiveRootScroller();
+void RootScrollerController::DidUpdateLayout() {
+  RecomputeEffectiveRootScroller();
 }
 
-void RootScrollerController::recomputeEffectiveRootScroller() {
-  bool rootScrollerValid =
-      m_rootScroller && isValidRootScroller(*m_rootScroller);
+void RootScrollerController::RecomputeEffectiveRootScroller() {
+  bool root_scroller_valid =
+      root_scroller_ && IsValidRootScroller(*root_scroller_);
 
-  Node* newEffectiveRootScroller = m_document;
-  if (rootScrollerValid)
-    newEffectiveRootScroller = m_rootScroller;
+  Node* new_effective_root_scroller = document_;
+  if (root_scroller_valid)
+    new_effective_root_scroller = root_scroller_;
 
   // TODO(bokan): This is a terrible hack but required because the viewport
   // apply scroll works on Elements rather than Nodes. If we're going from
@@ -97,42 +97,42 @@ void RootScrollerController::recomputeEffectiveRootScroller() {
   // Element previously to put it's ViewportScrollCallback onto. We need this
   // to kick the global root scroller to recompute itself. We can remove this
   // if ScrollCustomization is moved to the Node rather than Element.
-  bool oldHasDocumentElement = m_documentHasDocumentElement;
-  m_documentHasDocumentElement = m_document->documentElement();
+  bool old_has_document_element = document_has_document_element_;
+  document_has_document_element_ = document_->documentElement();
 
-  if (oldHasDocumentElement || !m_documentHasDocumentElement) {
-    if (m_effectiveRootScroller == newEffectiveRootScroller)
+  if (old_has_document_element || !document_has_document_element_) {
+    if (effective_root_scroller_ == new_effective_root_scroller)
       return;
   }
 
-  m_effectiveRootScroller = newEffectiveRootScroller;
+  effective_root_scroller_ = new_effective_root_scroller;
 
-  if (Page* page = m_document->page())
-    page->globalRootScrollerController().didChangeRootScroller();
+  if (Page* page = document_->GetPage())
+    page->GlobalRootScrollerController().DidChangeRootScroller();
 }
 
-bool RootScrollerController::isValidRootScroller(const Element& element) const {
-  if (!element.layoutObject())
+bool RootScrollerController::IsValidRootScroller(const Element& element) const {
+  if (!element.GetLayoutObject())
     return false;
 
-  if (!RootScrollerUtil::scrollableAreaForRootScroller(&element))
+  if (!RootScrollerUtil::ScrollableAreaForRootScroller(&element))
     return false;
 
-  if (!fillsViewport(element))
+  if (!FillsViewport(element))
     return false;
 
   return true;
 }
 
-PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
-  return RootScrollerUtil::paintLayerForRootScroller(m_effectiveRootScroller);
+PaintLayer* RootScrollerController::RootScrollerPaintLayer() const {
+  return RootScrollerUtil::PaintLayerForRootScroller(effective_root_scroller_);
 }
 
-bool RootScrollerController::scrollsViewport(const Element& element) const {
-  if (m_effectiveRootScroller->isDocumentNode())
-    return element == m_document->documentElement();
+bool RootScrollerController::ScrollsViewport(const Element& element) const {
+  if (effective_root_scroller_->IsDocumentNode())
+    return element == document_->documentElement();
 
-  return element == m_effectiveRootScroller.get();
+  return element == effective_root_scroller_.Get();
 }
 
 }  // namespace blink

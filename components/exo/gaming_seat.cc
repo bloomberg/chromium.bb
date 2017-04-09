@@ -124,7 +124,7 @@ class GamingSeat::ThreadSafeGamepadChangeFetcher
     fetcher_->GetGamepadData(
         false /* No hardware changed notification from the system */);
 
-    for (size_t i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+    for (size_t i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
       device::PadState& pad_state = pad_states_.get()[i];
 
       // After querying the gamepad clear the state if it did not have it's
@@ -216,7 +216,7 @@ GamingSeat::~GamingSeat() {
   gamepad_change_fetcher_->EnablePolling(false);
 
   delegate_->OnGamingSeatDestroying(this);
-  for (size_t i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+  for (size_t i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
     if (gamepad_delegates_[i]) {
       gamepad_delegates_[i]->OnRemoved();
     }
@@ -279,7 +279,7 @@ void GamingSeat::ProcessGamepadChanges(int index,
 
   // Notify delegate of updated axes.
   for (size_t axis = 0;
-       axis < std::max(pad_state.axesLength, new_pad.axesLength); ++axis) {
+       axis < std::max(pad_state.axes_length, new_pad.axes_length); ++axis) {
     if (!GamepadButtonValuesAreEqual(new_pad.axes[axis],
                                      pad_state.axes[axis])) {
       send_frame = true;
@@ -289,7 +289,7 @@ void GamingSeat::ProcessGamepadChanges(int index,
 
   // Notify delegate of updated buttons.
   for (size_t button_id = 0;
-       button_id < std::max(pad_state.buttonsLength, new_pad.buttonsLength);
+       button_id < std::max(pad_state.buttons_length, new_pad.buttons_length);
        ++button_id) {
     auto button = pad_state.buttons[button_id];
     auto new_button = new_pad.buttons[button_id];

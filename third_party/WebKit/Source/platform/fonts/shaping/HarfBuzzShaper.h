@@ -54,7 +54,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // occur, such as at the beginning or end of lines or at element boundaries.
   // If given arbitrary positions the results are not guaranteed to be correct.
   // May be called multiple times; font and direction may vary between calls.
-  PassRefPtr<ShapeResult> shape(const Font*,
+  PassRefPtr<ShapeResult> Shape(const Font*,
                                 TextDirection,
                                 unsigned start,
                                 unsigned end) const;
@@ -62,10 +62,10 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // Shape the entire string with a single font and direction.
   // Equivalent to calling the range version with a start offset of zero and an
   // end offset equal to the length.
-  PassRefPtr<ShapeResult> shape(const Font*, TextDirection) const;
+  PassRefPtr<ShapeResult> Shape(const Font*, TextDirection) const;
 
-  const UChar* text() const { return m_text; }
-  unsigned textLength() const { return m_textLength; }
+  const UChar* GetText() const { return text_; }
+  unsigned TextLength() const { return text_length_; }
 
   ~HarfBuzzShaper() {}
 
@@ -76,23 +76,23 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // one or more times taking font fallback into account. The start and end
   // parameters are for the entire text run, not the segment, and are used to
   // determine pre- and post-context for shaping.
-  void shapeSegment(RangeData*,
+  void ShapeSegment(RangeData*,
                     RunSegmenter::RunSegmenterRange,
                     ShapeResult*) const;
 
-  bool extractShapeResults(RangeData*,
-                           bool& fontCycleQueued,
+  bool ExtractShapeResults(RangeData*,
+                           bool& font_cycle_queued,
                            const HolesQueueItem&,
                            const SimpleFontData*,
                            UScriptCode,
-                           bool isLastResort,
+                           bool is_last_resort,
                            ShapeResult*) const;
 
-  bool collectFallbackHintChars(const Deque<HolesQueueItem>&,
+  bool CollectFallbackHintChars(const Deque<HolesQueueItem>&,
                                 Vector<UChar32>& hint) const;
 
-  const UChar* m_text;
-  unsigned m_textLength;
+  const UChar* text_;
+  unsigned text_length_;
 };
 
 }  // namespace blink

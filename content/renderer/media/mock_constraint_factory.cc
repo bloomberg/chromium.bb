@@ -25,21 +25,21 @@ blink::WebMediaTrackConstraintSet& MockConstraintFactory::AddAdvanced() {
 blink::WebMediaConstraints MockConstraintFactory::CreateWebMediaConstraints()
     const {
   blink::WebMediaConstraints constraints;
-  constraints.initialize(basic_, advanced_);
+  constraints.Initialize(basic_, advanced_);
   return constraints;
 }
 
 void MockConstraintFactory::DisableDefaultAudioConstraints() {
-  basic_.googEchoCancellation.setExact(false);
-  basic_.googExperimentalEchoCancellation.setExact(false);
-  basic_.googAutoGainControl.setExact(false);
-  basic_.googExperimentalAutoGainControl.setExact(false);
-  basic_.googNoiseSuppression.setExact(false);
-  basic_.googNoiseSuppression.setExact(false);
-  basic_.googHighpassFilter.setExact(false);
-  basic_.googTypingNoiseDetection.setExact(false);
-  basic_.googExperimentalNoiseSuppression.setExact(false);
-  basic_.googBeamforming.setExact(false);
+  basic_.goog_echo_cancellation.SetExact(false);
+  basic_.goog_experimental_echo_cancellation.SetExact(false);
+  basic_.goog_auto_gain_control.SetExact(false);
+  basic_.goog_experimental_auto_gain_control.SetExact(false);
+  basic_.goog_noise_suppression.SetExact(false);
+  basic_.goog_noise_suppression.SetExact(false);
+  basic_.goog_highpass_filter.SetExact(false);
+  basic_.goog_typing_noise_detection.SetExact(false);
+  basic_.goog_experimental_noise_suppression.SetExact(false);
+  basic_.goog_beamforming.SetExact(false);
 }
 
 void MockConstraintFactory::Reset() {

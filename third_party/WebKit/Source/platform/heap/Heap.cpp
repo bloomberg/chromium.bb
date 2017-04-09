@@ -54,140 +54,143 @@
 
 namespace blink {
 
-HeapAllocHooks::AllocationHook* HeapAllocHooks::m_allocationHook = nullptr;
-HeapAllocHooks::FreeHook* HeapAllocHooks::m_freeHook = nullptr;
+HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
+HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
-void ThreadHeap::flushHeapDoesNotContainCache() {
-  m_heapDoesNotContainCache->flush();
+void ThreadHeap::FlushHeapDoesNotContainCache() {
+  heap_does_not_contain_cache_->Flush();
 }
 
-void ProcessHeap::init() {
-  s_totalAllocatedSpace = 0;
-  s_totalAllocatedObjectSize = 0;
-  s_totalMarkedObjectSize = 0;
+void ProcessHeap::Init() {
+  total_allocated_space_ = 0;
+  total_allocated_object_size_ = 0;
+  total_marked_object_size_ = 0;
 
-  GCInfoTable::init();
-  CallbackStackMemoryPool::instance().initialize();
+  GCInfoTable::Init();
+  CallbackStackMemoryPool::Instance().Initialize();
 }
 
-void ProcessHeap::resetHeapCounters() {
-  s_totalAllocatedObjectSize = 0;
-  s_totalMarkedObjectSize = 0;
+void ProcessHeap::ResetHeapCounters() {
+  total_allocated_object_size_ = 0;
+  total_marked_object_size_ = 0;
 }
 
-CrossThreadPersistentRegion& ProcessHeap::crossThreadPersistentRegion() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion,
+CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadPersistentRegion() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion,
+                                  persistent_region,
                                   new CrossThreadPersistentRegion());
-  return persistentRegion;
+  return persistent_region;
 }
 
-size_t ProcessHeap::s_totalAllocatedSpace = 0;
-size_t ProcessHeap::s_totalAllocatedObjectSize = 0;
-size_t ProcessHeap::s_totalMarkedObjectSize = 0;
+size_t ProcessHeap::total_allocated_space_ = 0;
+size_t ProcessHeap::total_allocated_object_size_ = 0;
+size_t ProcessHeap::total_marked_object_size_ = 0;
 
 ThreadHeapStats::ThreadHeapStats()
-    : m_allocatedSpace(0),
-      m_allocatedObjectSize(0),
-      m_objectSizeAtLastGC(0),
-      m_markedObjectSize(0),
-      m_markedObjectSizeAtLastCompleteSweep(0),
-      m_wrapperCount(0),
-      m_wrapperCountAtLastGC(0),
-      m_collectedWrapperCount(0),
-      m_partitionAllocSizeAtLastGC(
-          WTF::Partitions::totalSizeOfCommittedPages()),
-      m_estimatedMarkingTimePerByte(0.0) {}
+    : allocated_space_(0),
+      allocated_object_size_(0),
+      object_size_at_last_gc_(0),
+      marked_object_size_(0),
+      marked_object_size_at_last_complete_sweep_(0),
+      wrapper_count_(0),
+      wrapper_count_at_last_gc_(0),
+      collected_wrapper_count_(0),
+      partition_alloc_size_at_last_gc_(
+          WTF::Partitions::TotalSizeOfCommittedPages()),
+      estimated_marking_time_per_byte_(0.0) {}
 
-double ThreadHeapStats::estimatedMarkingTime() {
+double ThreadHeapStats::EstimatedMarkingTime() {
   // Use 8 ms as initial estimated marking time.
   // 8 ms is long enough for low-end mobile devices to mark common
   // real-world object graphs.
-  if (m_estimatedMarkingTimePerByte == 0)
+  if (estimated_marking_time_per_byte_ == 0)
     return 0.008;
 
   // Assuming that the collection rate of this GC will be mostly equal to
   // the collection rate of the last GC, estimate the marking time of this GC.
-  return m_estimatedMarkingTimePerByte *
-         (allocatedObjectSize() + markedObjectSize());
+  return estimated_marking_time_per_byte_ *
+         (AllocatedObjectSize() + MarkedObjectSize());
 }
 
-void ThreadHeapStats::reset() {
-  m_objectSizeAtLastGC = m_allocatedObjectSize + m_markedObjectSize;
-  m_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
-  m_allocatedObjectSize = 0;
-  m_markedObjectSize = 0;
-  m_wrapperCountAtLastGC = m_wrapperCount;
-  m_collectedWrapperCount = 0;
+void ThreadHeapStats::Reset() {
+  object_size_at_last_gc_ = allocated_object_size_ + marked_object_size_;
+  partition_alloc_size_at_last_gc_ =
+      WTF::Partitions::TotalSizeOfCommittedPages();
+  allocated_object_size_ = 0;
+  marked_object_size_ = 0;
+  wrapper_count_at_last_gc_ = wrapper_count_;
+  collected_wrapper_count_ = 0;
 }
 
-void ThreadHeapStats::increaseAllocatedObjectSize(size_t delta) {
-  atomicAdd(&m_allocatedObjectSize, static_cast<long>(delta));
-  ProcessHeap::increaseTotalAllocatedObjectSize(delta);
+void ThreadHeapStats::IncreaseAllocatedObjectSize(size_t delta) {
+  AtomicAdd(&allocated_object_size_, static_cast<long>(delta));
+  ProcessHeap::IncreaseTotalAllocatedObjectSize(delta);
 }
 
-void ThreadHeapStats::decreaseAllocatedObjectSize(size_t delta) {
-  atomicSubtract(&m_allocatedObjectSize, static_cast<long>(delta));
-  ProcessHeap::decreaseTotalAllocatedObjectSize(delta);
+void ThreadHeapStats::DecreaseAllocatedObjectSize(size_t delta) {
+  AtomicSubtract(&allocated_object_size_, static_cast<long>(delta));
+  ProcessHeap::DecreaseTotalAllocatedObjectSize(delta);
 }
 
-void ThreadHeapStats::increaseMarkedObjectSize(size_t delta) {
-  atomicAdd(&m_markedObjectSize, static_cast<long>(delta));
-  ProcessHeap::increaseTotalMarkedObjectSize(delta);
+void ThreadHeapStats::IncreaseMarkedObjectSize(size_t delta) {
+  AtomicAdd(&marked_object_size_, static_cast<long>(delta));
+  ProcessHeap::IncreaseTotalMarkedObjectSize(delta);
 }
 
-void ThreadHeapStats::increaseAllocatedSpace(size_t delta) {
-  atomicAdd(&m_allocatedSpace, static_cast<long>(delta));
-  ProcessHeap::increaseTotalAllocatedSpace(delta);
+void ThreadHeapStats::IncreaseAllocatedSpace(size_t delta) {
+  AtomicAdd(&allocated_space_, static_cast<long>(delta));
+  ProcessHeap::IncreaseTotalAllocatedSpace(delta);
 }
 
-void ThreadHeapStats::decreaseAllocatedSpace(size_t delta) {
-  atomicSubtract(&m_allocatedSpace, static_cast<long>(delta));
-  ProcessHeap::decreaseTotalAllocatedSpace(delta);
+void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
+  AtomicSubtract(&allocated_space_, static_cast<long>(delta));
+  ProcessHeap::DecreaseTotalAllocatedSpace(delta);
 }
 
-ThreadHeap::ThreadHeap(ThreadState* threadState)
-    : m_threadState(threadState),
-      m_regionTree(WTF::makeUnique<RegionTree>()),
-      m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
-      m_freePagePool(WTF::wrapUnique(new PagePool)),
-      m_markingStack(CallbackStack::create()),
-      m_postMarkingCallbackStack(CallbackStack::create()),
-      m_weakCallbackStack(CallbackStack::create()),
-      m_ephemeronStack(CallbackStack::create()) {
-  if (ThreadState::current()->isMainThread())
-    s_mainThreadHeap = this;
+ThreadHeap::ThreadHeap(ThreadState* thread_state)
+    : thread_state_(thread_state),
+      region_tree_(WTF::MakeUnique<RegionTree>()),
+      heap_does_not_contain_cache_(
+          WTF::WrapUnique(new HeapDoesNotContainCache)),
+      free_page_pool_(WTF::WrapUnique(new PagePool)),
+      marking_stack_(CallbackStack::Create()),
+      post_marking_callback_stack_(CallbackStack::Create()),
+      weak_callback_stack_(CallbackStack::Create()),
+      ephemeron_stack_(CallbackStack::Create()) {
+  if (ThreadState::Current()->IsMainThread())
+    main_thread_heap_ = this;
 }
 
 ThreadHeap::~ThreadHeap() {
 }
 
 #if DCHECK_IS_ON()
-BasePage* ThreadHeap::findPageFromAddress(Address address) {
-  return m_threadState->findPageFromAddress(address);
+BasePage* ThreadHeap::FindPageFromAddress(Address address) {
+  return thread_state_->FindPageFromAddress(address);
 }
 #endif
 
-Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
-  ASSERT(ThreadState::current()->isInGC());
+Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
+  ASSERT(ThreadState::Current()->IsInGC());
 
 #if !DCHECK_IS_ON()
-  if (m_heapDoesNotContainCache->lookup(address))
+  if (heap_does_not_contain_cache_->Lookup(address))
     return nullptr;
 #endif
 
-  if (BasePage* page = lookupPageForAddress(address)) {
-    ASSERT(page->contains(address));
-    ASSERT(!m_heapDoesNotContainCache->lookup(address));
-    DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
-    page->checkAndMarkPointer(visitor, address);
+  if (BasePage* page = LookupPageForAddress(address)) {
+    ASSERT(page->Contains(address));
+    ASSERT(!heap_does_not_contain_cache_->Lookup(address));
+    DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
+    page->CheckAndMarkPointer(visitor, address);
     return address;
   }
 
 #if !DCHECK_IS_ON()
-  m_heapDoesNotContainCache->addEntry(address);
+  heap_does_not_contain_cache_->AddEntry(address);
 #else
-  if (!m_heapDoesNotContainCache->lookup(address))
-    m_heapDoesNotContainCache->addEntry(address);
+  if (!heap_does_not_contain_cache_->Lookup(address))
+    heap_does_not_contain_cache_->AddEntry(address);
 #endif
   return nullptr;
 }
@@ -196,131 +199,132 @@ Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
 // To support unit testing of the marking of off-heap root references
 // into the heap, provide a checkAndMarkPointer() version with an
 // extra notification argument.
-Address ThreadHeap::checkAndMarkPointer(
+Address ThreadHeap::CheckAndMarkPointer(
     Visitor* visitor,
     Address address,
     MarkedPointerCallbackForTesting callback) {
-  DCHECK(ThreadState::current()->isInGC());
+  DCHECK(ThreadState::Current()->IsInGC());
 
-  if (BasePage* page = lookupPageForAddress(address)) {
-    DCHECK(page->contains(address));
-    DCHECK(!m_heapDoesNotContainCache->lookup(address));
-    DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
-    page->checkAndMarkPointer(visitor, address, callback);
+  if (BasePage* page = LookupPageForAddress(address)) {
+    DCHECK(page->Contains(address));
+    DCHECK(!heap_does_not_contain_cache_->Lookup(address));
+    DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
+    page->CheckAndMarkPointer(visitor, address, callback);
     return address;
   }
-  if (!m_heapDoesNotContainCache->lookup(address))
-    m_heapDoesNotContainCache->addEntry(address);
+  if (!heap_does_not_contain_cache_->Lookup(address))
+    heap_does_not_contain_cache_->AddEntry(address);
   return nullptr;
 }
 #endif
 
-void ThreadHeap::pushTraceCallback(void* object, TraceCallback callback) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::PushTraceCallback(void* object, TraceCallback callback) {
+  ASSERT(ThreadState::Current()->IsInGC());
 
-  CallbackStack::Item* slot = m_markingStack->allocateEntry();
+  CallbackStack::Item* slot = marking_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
 }
 
-bool ThreadHeap::popAndInvokeTraceCallback(Visitor* visitor) {
-  CallbackStack::Item* item = m_markingStack->pop();
+bool ThreadHeap::PopAndInvokeTraceCallback(Visitor* visitor) {
+  CallbackStack::Item* item = marking_stack_->Pop();
   if (!item)
     return false;
-  item->call(visitor);
+  item->Call(visitor);
   return true;
 }
 
-void ThreadHeap::pushPostMarkingCallback(void* object, TraceCallback callback) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::PushPostMarkingCallback(void* object, TraceCallback callback) {
+  ASSERT(ThreadState::Current()->IsInGC());
 
-  CallbackStack::Item* slot = m_postMarkingCallbackStack->allocateEntry();
+  CallbackStack::Item* slot = post_marking_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
 }
 
-bool ThreadHeap::popAndInvokePostMarkingCallback(Visitor* visitor) {
-  if (CallbackStack::Item* item = m_postMarkingCallbackStack->pop()) {
-    item->call(visitor);
+bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
+  if (CallbackStack::Item* item = post_marking_callback_stack_->Pop()) {
+    item->Call(visitor);
     return true;
   }
   return false;
 }
 
-void ThreadHeap::pushWeakCallback(void* closure, WeakCallback callback) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
+  ASSERT(ThreadState::Current()->IsInGC());
 
-  CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry();
+  CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(closure, callback);
 }
 
-bool ThreadHeap::popAndInvokeWeakCallback(Visitor* visitor) {
-  if (CallbackStack::Item* item = m_weakCallbackStack->pop()) {
-    item->call(visitor);
+bool ThreadHeap::PopAndInvokeWeakCallback(Visitor* visitor) {
+  if (CallbackStack::Item* item = weak_callback_stack_->Pop()) {
+    item->Call(visitor);
     return true;
   }
   return false;
 }
 
-void ThreadHeap::registerWeakTable(void* table,
-                                   EphemeronCallback iterationCallback,
-                                   EphemeronCallback iterationDoneCallback) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::RegisterWeakTable(void* table,
+                                   EphemeronCallback iteration_callback,
+                                   EphemeronCallback iteration_done_callback) {
+  ASSERT(ThreadState::Current()->IsInGC());
 
-  CallbackStack::Item* slot = m_ephemeronStack->allocateEntry();
-  *slot = CallbackStack::Item(table, iterationCallback);
+  CallbackStack::Item* slot = ephemeron_stack_->AllocateEntry();
+  *slot = CallbackStack::Item(table, iteration_callback);
 
   // Register a post-marking callback to tell the tables that
   // ephemeron iteration is complete.
-  pushPostMarkingCallback(table, iterationDoneCallback);
+  PushPostMarkingCallback(table, iteration_done_callback);
 }
 
 #if DCHECK_IS_ON()
-bool ThreadHeap::weakTableRegistered(const void* table) {
-  ASSERT(m_ephemeronStack);
-  return m_ephemeronStack->hasCallbackForObject(table);
+bool ThreadHeap::WeakTableRegistered(const void* table) {
+  ASSERT(ephemeron_stack_);
+  return ephemeron_stack_->HasCallbackForObject(table);
 }
 #endif
 
-void ThreadHeap::commitCallbackStacks() {
-  m_markingStack->commit();
-  m_postMarkingCallbackStack->commit();
-  m_weakCallbackStack->commit();
-  m_ephemeronStack->commit();
+void ThreadHeap::CommitCallbackStacks() {
+  marking_stack_->Commit();
+  post_marking_callback_stack_->Commit();
+  weak_callback_stack_->Commit();
+  ephemeron_stack_->Commit();
 }
 
-HeapCompact* ThreadHeap::compaction() {
-  if (!m_compaction)
-    m_compaction = HeapCompact::create();
-  return m_compaction.get();
+HeapCompact* ThreadHeap::Compaction() {
+  if (!compaction_)
+    compaction_ = HeapCompact::Create();
+  return compaction_.get();
 }
 
-void ThreadHeap::registerMovingObjectReference(MovableReference* slot) {
+void ThreadHeap::RegisterMovingObjectReference(MovableReference* slot) {
   DCHECK(slot);
   DCHECK(*slot);
-  compaction()->registerMovingObjectReference(slot);
+  Compaction()->RegisterMovingObjectReference(slot);
 }
 
-void ThreadHeap::registerMovingObjectCallback(MovableReference reference,
+void ThreadHeap::RegisterMovingObjectCallback(MovableReference reference,
                                               MovingObjectCallback callback,
-                                              void* callbackData) {
+                                              void* callback_data) {
   DCHECK(reference);
-  compaction()->registerMovingObjectCallback(reference, callback, callbackData);
+  Compaction()->RegisterMovingObjectCallback(reference, callback,
+                                             callback_data);
 }
 
-void ThreadHeap::decommitCallbackStacks() {
-  m_markingStack->decommit();
-  m_postMarkingCallbackStack->decommit();
-  m_weakCallbackStack->decommit();
-  m_ephemeronStack->decommit();
+void ThreadHeap::DecommitCallbackStacks() {
+  marking_stack_->Decommit();
+  post_marking_callback_stack_->Decommit();
+  weak_callback_stack_->Decommit();
+  ephemeron_stack_->Decommit();
 }
 
-void ThreadHeap::processMarkingStack(Visitor* visitor) {
+void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
   // Ephemeron fixed point loop.
   do {
     {
       // Iteratively mark all objects that are reachable from the objects
       // currently pushed onto the marking stack.
       TRACE_EVENT0("blink_gc", "ThreadHeap::processMarkingStackSingleThreaded");
-      while (popAndInvokeTraceCallback(visitor)) {
+      while (PopAndInvokeTraceCallback(visitor)) {
       }
     }
 
@@ -328,76 +332,76 @@ void ThreadHeap::processMarkingStack(Visitor* visitor) {
       // Mark any strong pointers that have now become reachable in
       // ephemeron maps.
       TRACE_EVENT0("blink_gc", "ThreadHeap::processEphemeronStack");
-      m_ephemeronStack->invokeEphemeronCallbacks(visitor);
+      ephemeron_stack_->InvokeEphemeronCallbacks(visitor);
     }
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
-  } while (!m_markingStack->isEmpty());
+  } while (!marking_stack_->IsEmpty());
 }
 
-void ThreadHeap::postMarkingProcessing(Visitor* visitor) {
+void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::postMarkingProcessing");
   // Call post-marking callbacks including:
   // 1. the ephemeronIterationDone callbacks on weak tables to do cleanup
   //    (specifically to clear the queued bits for weak hash tables), and
   // 2. the markNoTracing callbacks on collection backings to mark them
   //    if they are only reachable from their front objects.
-  while (popAndInvokePostMarkingCallback(visitor)) {
+  while (PopAndInvokePostMarkingCallback(visitor)) {
   }
 
   // Post-marking callbacks should not trace any objects and
   // therefore the marking stack should be empty after the
   // post-marking callbacks.
-  ASSERT(m_markingStack->isEmpty());
+  ASSERT(marking_stack_->IsEmpty());
 }
 
-void ThreadHeap::weakProcessing(Visitor* visitor) {
+void ThreadHeap::WeakProcessing(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::weakProcessing");
-  double startTime = WTF::currentTimeMS();
+  double start_time = WTF::CurrentTimeMS();
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
-  while (popAndInvokeWeakCallback(visitor)) {
+  while (PopAndInvokeWeakCallback(visitor)) {
   }
 
   // It is not permitted to trace pointers of live objects in the weak
   // callback phase, so the marking stack should still be empty here.
-  ASSERT(m_markingStack->isEmpty());
+  ASSERT(marking_stack_->IsEmpty());
 
-  double timeForWeakProcessing = WTF::currentTimeMS() - startTime;
+  double time_for_weak_processing = WTF::CurrentTimeMS() - start_time;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, weakProcessingTimeHistogram,
+      CustomCountHistogram, weak_processing_time_histogram,
       new CustomCountHistogram("BlinkGC.TimeForGlobalWeakProcessing", 1,
                                10 * 1000, 50));
-  weakProcessingTimeHistogram.count(timeForWeakProcessing);
+  weak_processing_time_histogram.Count(time_for_weak_processing);
 }
 
-void ThreadHeap::reportMemoryUsageHistogram() {
-  static size_t supportedMaxSizeInMB = 4 * 1024;
-  static size_t observedMaxSizeInMB = 0;
+void ThreadHeap::ReportMemoryUsageHistogram() {
+  static size_t supported_max_size_in_mb = 4 * 1024;
+  static size_t observed_max_size_in_mb = 0;
 
   // We only report the memory in the main thread.
-  if (!isMainThread())
+  if (!IsMainThread())
     return;
   // +1 is for rounding up the sizeInMB.
-  size_t sizeInMB =
-      ThreadState::current()->heap().heapStats().allocatedSpace() / 1024 /
+  size_t size_in_mb =
+      ThreadState::Current()->Heap().HeapStats().AllocatedSpace() / 1024 /
           1024 +
       1;
-  if (sizeInMB >= supportedMaxSizeInMB)
-    sizeInMB = supportedMaxSizeInMB - 1;
-  if (sizeInMB > observedMaxSizeInMB) {
+  if (size_in_mb >= supported_max_size_in_mb)
+    size_in_mb = supported_max_size_in_mb - 1;
+  if (size_in_mb > observed_max_size_in_mb) {
     // Send a UseCounter only when we see the highest memory usage
     // we've ever seen.
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, commitedSizeHistogram,
+        EnumerationHistogram, commited_size_histogram,
         new EnumerationHistogram("BlinkGC.CommittedSize",
-                                 supportedMaxSizeInMB));
-    commitedSizeHistogram.count(sizeInMB);
-    observedMaxSizeInMB = sizeInMB;
+                                 supported_max_size_in_mb));
+    commited_size_histogram.Count(size_in_mb);
+    observed_max_size_in_mb = size_in_mb;
   }
 }
 
-void ThreadHeap::reportMemoryUsageForTracing() {
+void ThreadHeap::ReportMemoryUsageForTracing() {
 #if PRINT_HEAP_STATS
 // dataLogF("allocatedSpace=%ldMB, allocatedObjectSize=%ldMB, "
 //          "markedObjectSize=%ldMB, partitionAllocSize=%ldMB, "
@@ -409,102 +413,102 @@ void ThreadHeap::reportMemoryUsageForTracing() {
 //          ThreadHeap::wrapperCount(), ThreadHeap::collectedWrapperCount());
 #endif
 
-  bool gcTracingEnabled;
+  bool gc_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                                     &gcTracingEnabled);
-  if (!gcTracingEnabled)
+                                     &gc_tracing_enabled);
+  if (!gc_tracing_enabled)
     return;
 
-  ThreadHeap& heap = ThreadState::current()->heap();
+  ThreadHeap& heap = ThreadState::Current()->Heap();
   // These values are divided by 1024 to avoid overflow in practical cases
   // (TRACE_COUNTER values are 32-bit ints).
   // They are capped to INT_MAX just in case.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::allocatedObjectSizeKB",
-                 std::min(heap.heapStats().allocatedObjectSize() / 1024,
+                 std::min(heap.HeapStats().AllocatedObjectSize() / 1024,
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::markedObjectSizeKB",
-                 std::min(heap.heapStats().markedObjectSize() / 1024,
+                 std::min(heap.HeapStats().MarkedObjectSize() / 1024,
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"),
       "ThreadHeap::markedObjectSizeAtLastCompleteSweepKB",
-      std::min(heap.heapStats().markedObjectSizeAtLastCompleteSweep() / 1024,
+      std::min(heap.HeapStats().MarkedObjectSizeAtLastCompleteSweep() / 1024,
                static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::allocatedSpaceKB",
-                 std::min(heap.heapStats().allocatedSpace() / 1024,
+                 std::min(heap.HeapStats().AllocatedSpace() / 1024,
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::objectSizeAtLastGCKB",
-                 std::min(heap.heapStats().objectSizeAtLastGC() / 1024,
+                 std::min(heap.HeapStats().ObjectSizeAtLastGC() / 1024,
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadHeap::wrapperCount",
-      std::min(heap.heapStats().wrapperCount(), static_cast<size_t>(INT_MAX)));
+      std::min(heap.HeapStats().WrapperCount(), static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::wrapperCountAtLastGC",
-                 std::min(heap.heapStats().wrapperCountAtLastGC(),
+                 std::min(heap.HeapStats().WrapperCountAtLastGC(),
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::collectedWrapperCount",
-                 std::min(heap.heapStats().collectedWrapperCount(),
+                 std::min(heap.HeapStats().CollectedWrapperCount(),
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::partitionAllocSizeAtLastGCKB",
-                 std::min(heap.heapStats().partitionAllocSizeAtLastGC() / 1024,
+                 std::min(heap.HeapStats().PartitionAllocSizeAtLastGC() / 1024,
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "Partitions::totalSizeOfCommittedPagesKB",
-                 std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024,
+                 std::min(WTF::Partitions::TotalSizeOfCommittedPages() / 1024,
                           static_cast<size_t>(INT_MAX)));
 }
 
-size_t ThreadHeap::objectPayloadSizeForTesting() {
-  size_t objectPayloadSize = 0;
-  m_threadState->setGCState(ThreadState::GCRunning);
-  m_threadState->makeConsistentForGC();
-  objectPayloadSize += m_threadState->objectPayloadSizeForTesting();
-  m_threadState->setGCState(ThreadState::Sweeping);
-  m_threadState->setGCState(ThreadState::NoGCScheduled);
-  return objectPayloadSize;
+size_t ThreadHeap::ObjectPayloadSizeForTesting() {
+  size_t object_payload_size = 0;
+  thread_state_->SetGCState(ThreadState::kGCRunning);
+  thread_state_->MakeConsistentForGC();
+  object_payload_size += thread_state_->ObjectPayloadSizeForTesting();
+  thread_state_->SetGCState(ThreadState::kSweeping);
+  thread_state_->SetGCState(ThreadState::kNoGCScheduled);
+  return object_payload_size;
 }
 
-void ThreadHeap::visitPersistentRoots(Visitor* visitor) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
+  ASSERT(ThreadState::Current()->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
-  ProcessHeap::crossThreadPersistentRegion().tracePersistentNodes(visitor);
+  ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
 
-  m_threadState->visitPersistents(visitor);
+  thread_state_->VisitPersistents(visitor);
 }
 
-void ThreadHeap::visitStackRoots(Visitor* visitor) {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::VisitStackRoots(Visitor* visitor) {
+  ASSERT(ThreadState::Current()->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
-  m_threadState->visitStack(visitor);
+  thread_state_->VisitStack(visitor);
 }
 
-BasePage* ThreadHeap::lookupPageForAddress(Address address) {
-  ASSERT(ThreadState::current()->isInGC());
-  if (PageMemoryRegion* region = m_regionTree->lookup(address)) {
-    return region->pageFromAddress(address);
+BasePage* ThreadHeap::LookupPageForAddress(Address address) {
+  ASSERT(ThreadState::Current()->IsInGC());
+  if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
+    return region->PageFromAddress(address);
   }
   return nullptr;
 }
 
-void ThreadHeap::resetHeapCounters() {
-  ASSERT(ThreadState::current()->isInGC());
+void ThreadHeap::ResetHeapCounters() {
+  ASSERT(ThreadState::Current()->IsInGC());
 
-  ThreadHeap::reportMemoryUsageForTracing();
+  ThreadHeap::ReportMemoryUsageForTracing();
 
-  ProcessHeap::decreaseTotalAllocatedObjectSize(m_stats.allocatedObjectSize());
-  ProcessHeap::decreaseTotalMarkedObjectSize(m_stats.markedObjectSize());
+  ProcessHeap::DecreaseTotalAllocatedObjectSize(stats_.AllocatedObjectSize());
+  ProcessHeap::DecreaseTotalMarkedObjectSize(stats_.MarkedObjectSize());
 
-  m_stats.reset();
-  m_threadState->resetHeapCounters();
+  stats_.Reset();
+  thread_state_->ResetHeapCounters();
 }
 
-ThreadHeap* ThreadHeap::s_mainThreadHeap = nullptr;
+ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;
 
 }  // namespace blink

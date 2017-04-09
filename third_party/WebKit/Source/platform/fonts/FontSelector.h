@@ -41,19 +41,19 @@ class FontDescription;
 class PLATFORM_EXPORT FontSelector : public FontCacheClient {
  public:
   virtual ~FontSelector() {}
-  virtual PassRefPtr<FontData> getFontData(const FontDescription&,
-                                           const AtomicString& familyName) = 0;
+  virtual PassRefPtr<FontData> GetFontData(const FontDescription&,
+                                           const AtomicString& family_name) = 0;
 
   // TODO crbug.com/542629 - The String variant of this method shouldbe replaced
   // with a better approach, now that we only have complex text.
-  virtual void willUseFontData(const FontDescription&,
-                               const AtomicString& familyName,
+  virtual void WillUseFontData(const FontDescription&,
+                               const AtomicString& family_name,
                                const String& text) = 0;
-  virtual void willUseRange(const FontDescription&,
-                            const AtomicString& familyName,
+  virtual void WillUseRange(const FontDescription&,
+                            const AtomicString& family_name,
                             const FontDataForRangeSet&) = 0;
 
-  virtual unsigned version() const = 0;
+  virtual unsigned Version() const = 0;
 };
 
 }  // namespace blink

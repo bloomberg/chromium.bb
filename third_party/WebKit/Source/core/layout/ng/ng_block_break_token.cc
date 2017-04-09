@@ -14,7 +14,7 @@ NGBlockBreakToken::NGBlockBreakToken(
     Vector<RefPtr<NGBreakToken>>& child_break_tokens)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
       used_block_size_(used_block_size) {
-  child_break_tokens_.swap(child_break_tokens);
+  child_break_tokens_.Swap(child_break_tokens);
 }
 
 NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode* node)

@@ -14,8 +14,8 @@ class LayoutView;
 
 class TracedLayoutObject {
  public:
-  static std::unique_ptr<TracedValue> create(const LayoutView&,
-                                             bool traceGeometry = true);
+  static std::unique_ptr<TracedValue> Create(const LayoutView&,
+                                             bool trace_geometry = true);
 };
 
 }  // namespace blink

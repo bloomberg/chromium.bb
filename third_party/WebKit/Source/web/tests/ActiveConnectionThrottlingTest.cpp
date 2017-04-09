@@ -22,22 +22,22 @@ namespace blink {
 class ActiveConnectionThrottlingTest : public SimTest {};
 
 TEST_F(ActiveConnectionThrottlingTest, WebSocketStopsThrottling) {
-  SimRequest mainResource("https://example.com/", "text/html");
+  SimRequest main_resource("https://example.com/", "text/html");
 
-  loadURL("https://example.com/");
+  LoadURL("https://example.com/");
 
-  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_FALSE(WebView().Scheduler()->HasActiveConnectionForTest());
 
-  mainResource.complete(
+  main_resource.Complete(
       "(<script>"
       "  var socket = new WebSocket(\"ws://www.example.com/websocket\");"
       "</script>)");
 
-  EXPECT_TRUE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_TRUE(WebView().Scheduler()->HasActiveConnectionForTest());
 
-  mainFrame().executeScript(WebString("socket.close();"));
+  MainFrame().ExecuteScript(WebString("socket.close();"));
 
-  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_FALSE(WebView().Scheduler()->HasActiveConnectionForTest());
 }
 
 namespace {
@@ -47,57 +47,57 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   MockWebRTCPeerConnectionHandler() {}
   ~MockWebRTCPeerConnectionHandler() override {}
 
-  bool initialize(const WebRTCConfiguration&,
+  bool Initialize(const WebRTCConfiguration&,
                   const WebMediaConstraints&) override {
     return true;
   }
 
-  void createOffer(const WebRTCSessionDescriptionRequest&,
+  void CreateOffer(const WebRTCSessionDescriptionRequest&,
                    const WebMediaConstraints&) override {}
-  void createOffer(const WebRTCSessionDescriptionRequest&,
+  void CreateOffer(const WebRTCSessionDescriptionRequest&,
                    const WebRTCOfferOptions&) override {}
-  void createAnswer(const WebRTCSessionDescriptionRequest&,
+  void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebMediaConstraints&) override {}
-  void createAnswer(const WebRTCSessionDescriptionRequest&,
+  void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebRTCAnswerOptions&) override {}
-  void setLocalDescription(const WebRTCVoidRequest&,
+  void SetLocalDescription(const WebRTCVoidRequest&,
                            const WebRTCSessionDescription&) override {}
-  void setRemoteDescription(const WebRTCVoidRequest&,
+  void SetRemoteDescription(const WebRTCVoidRequest&,
                             const WebRTCSessionDescription&) override {}
-  WebRTCSessionDescription localDescription() override {
+  WebRTCSessionDescription LocalDescription() override {
     return WebRTCSessionDescription();
   }
-  WebRTCSessionDescription remoteDescription() override {
+  WebRTCSessionDescription RemoteDescription() override {
     return WebRTCSessionDescription();
   }
-  WebRTCErrorType setConfiguration(const WebRTCConfiguration&) override {
+  WebRTCErrorType SetConfiguration(const WebRTCConfiguration&) override {
     return WebRTCErrorType::kNone;
   }
-  bool addStream(const WebMediaStream&, const WebMediaConstraints&) override {
+  bool AddStream(const WebMediaStream&, const WebMediaConstraints&) override {
     return true;
   }
-  void removeStream(const WebMediaStream&) override {}
-  void getStats(const WebRTCStatsRequest&) override {}
-  void getStats(std::unique_ptr<WebRTCStatsReportCallback>) override {}
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> getReceivers()
+  void RemoveStream(const WebMediaStream&) override {}
+  void GetStats(const WebRTCStatsRequest&) override {}
+  void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override {}
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> GetReceivers()
       override {
     return blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>();
   }
-  WebRTCDataChannelHandler* createDataChannel(
+  WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) override {
     return nullptr;
   }
-  WebRTCDTMFSenderHandler* createDTMFSender(
+  WebRTCDTMFSenderHandler* CreateDTMFSender(
       const WebMediaStreamTrack&) override {
     return nullptr;
   }
-  void stop() override {}
+  void Stop() override {}
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
  public:
-  blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
+  blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient*) override {
     return new MockWebRTCPeerConnectionHandler();
   }
@@ -108,22 +108,22 @@ class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
 TEST_F(ActiveConnectionThrottlingTest, WebRTCStopsThrottling) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithWebRTC> platform;
 
-  SimRequest mainResource("https://example.com/", "text/html");
+  SimRequest main_resource("https://example.com/", "text/html");
 
-  loadURL("https://example.com/");
+  LoadURL("https://example.com/");
 
-  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_FALSE(WebView().Scheduler()->HasActiveConnectionForTest());
 
-  mainResource.complete(
+  main_resource.Complete(
       "(<script>"
       "  var data_channel = new RTCPeerConnection();"
       "</script>)");
 
-  EXPECT_TRUE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_TRUE(WebView().Scheduler()->HasActiveConnectionForTest());
 
-  mainFrame().executeScript(WebString("data_channel.close();"));
+  MainFrame().ExecuteScript(WebString("data_channel.close();"));
 
-  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
+  EXPECT_FALSE(WebView().Scheduler()->HasActiveConnectionForTest());
 }
 
 }  // namespace blink

@@ -40,24 +40,25 @@ class LayoutRubyText final : public LayoutBlockFlow {
   LayoutRubyText(Element*);
   ~LayoutRubyText() override;
 
-  const char* name() const override { return "LayoutRubyText"; }
+  const char* GetName() const override { return "LayoutRubyText"; }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectRubyText || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectRubyText || LayoutBlockFlow::IsOfType(type);
   }
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
  private:
-  bool avoidsFloats() const override;
+  bool AvoidsFloats() const override;
 
-  ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
-  void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount,
-                                       LayoutUnit& logicalLeft,
-                                       LayoutUnit& logicalWidth) const override;
+  ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
+  void AdjustInlineDirectionLineBounds(
+      unsigned expansion_opportunity_count,
+      LayoutUnit& logical_left,
+      LayoutUnit& logical_width) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyText, isRubyText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyText, IsRubyText());
 
 }  // namespace blink
 

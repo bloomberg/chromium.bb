@@ -34,33 +34,33 @@
 
 namespace blink {
 
-static bool s_isRunningLayoutTest = false;
-static bool s_isMockThemeEnabled = false;
-static bool s_isFontAntialiasingEnabled = false;
+static bool g_is_running_layout_test = false;
+static bool g_is_mock_theme_enabled = false;
+static bool g_is_font_antialiasing_enabled = false;
 
-bool LayoutTestSupport::isRunningLayoutTest() {
-  return s_isRunningLayoutTest;
+bool LayoutTestSupport::IsRunningLayoutTest() {
+  return g_is_running_layout_test;
 }
 
-void LayoutTestSupport::setIsRunningLayoutTest(bool value) {
-  s_isRunningLayoutTest = value;
+void LayoutTestSupport::SetIsRunningLayoutTest(bool value) {
+  g_is_running_layout_test = value;
 }
 
-bool LayoutTestSupport::isMockThemeEnabledForTest() {
-  return s_isMockThemeEnabled;
+bool LayoutTestSupport::IsMockThemeEnabledForTest() {
+  return g_is_mock_theme_enabled;
 }
 
-void LayoutTestSupport::setMockThemeEnabledForTest(bool value) {
-  ASSERT(s_isRunningLayoutTest);
-  s_isMockThemeEnabled = value;
+void LayoutTestSupport::SetMockThemeEnabledForTest(bool value) {
+  ASSERT(g_is_running_layout_test);
+  g_is_mock_theme_enabled = value;
 }
 
-bool LayoutTestSupport::isFontAntialiasingEnabledForTest() {
-  return s_isFontAntialiasingEnabled;
+bool LayoutTestSupport::IsFontAntialiasingEnabledForTest() {
+  return g_is_font_antialiasing_enabled;
 }
 
-void LayoutTestSupport::setFontAntialiasingEnabledForTest(bool value) {
-  s_isFontAntialiasingEnabled = value;
+void LayoutTestSupport::SetFontAntialiasingEnabledForTest(bool value) {
+  g_is_font_antialiasing_enabled = value;
 }
 
 }  // namespace blink

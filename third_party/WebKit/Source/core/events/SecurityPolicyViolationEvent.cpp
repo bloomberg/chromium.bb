@@ -38,43 +38,43 @@ const char kReport[] = "report";
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
     const AtomicString& type,
     const SecurityPolicyViolationEventInit& initializer)
-    : Event(type, true, false, ComposedMode::Composed),
-      m_disposition(ContentSecurityPolicyHeaderTypeEnforce),
-      m_lineNumber(0),
-      m_columnNumber(0),
-      m_statusCode(0) {
+    : Event(type, true, false, ComposedMode::kComposed),
+      disposition_(kContentSecurityPolicyHeaderTypeEnforce),
+      line_number_(0),
+      column_number_(0),
+      status_code_(0) {
   if (initializer.hasDocumentURI())
-    m_documentURI = initializer.documentURI();
+    document_uri_ = initializer.documentURI();
   if (initializer.hasReferrer())
-    m_referrer = initializer.referrer();
+    referrer_ = initializer.referrer();
   if (initializer.hasBlockedURI())
-    m_blockedURI = initializer.blockedURI();
+    blocked_uri_ = initializer.blockedURI();
   if (initializer.hasViolatedDirective())
-    m_violatedDirective = initializer.violatedDirective();
+    violated_directive_ = initializer.violatedDirective();
   if (initializer.hasEffectiveDirective())
-    m_effectiveDirective = initializer.effectiveDirective();
+    effective_directive_ = initializer.effectiveDirective();
   if (initializer.hasOriginalPolicy())
-    m_originalPolicy = initializer.originalPolicy();
-  m_disposition = initializer.disposition() == kReport
-                      ? ContentSecurityPolicyHeaderTypeReport
-                      : ContentSecurityPolicyHeaderTypeEnforce;
+    original_policy_ = initializer.originalPolicy();
+  disposition_ = initializer.disposition() == kReport
+                     ? kContentSecurityPolicyHeaderTypeReport
+                     : kContentSecurityPolicyHeaderTypeEnforce;
   if (initializer.hasSourceFile())
-    m_sourceFile = initializer.sourceFile();
+    source_file_ = initializer.sourceFile();
   if (initializer.hasLineNumber())
-    m_lineNumber = initializer.lineNumber();
+    line_number_ = initializer.lineNumber();
   if (initializer.hasColumnNumber())
-    m_columnNumber = initializer.columnNumber();
+    column_number_ = initializer.columnNumber();
   if (initializer.hasStatusCode())
-    m_statusCode = initializer.statusCode();
+    status_code_ = initializer.statusCode();
   if (initializer.hasSample())
-    m_sample = initializer.sample();
+    sample_ = initializer.sample();
 }
 
 const String& SecurityPolicyViolationEvent::disposition() const {
   DEFINE_STATIC_LOCAL(const String, enforce, (kEnforce));
   DEFINE_STATIC_LOCAL(const String, report, (kReport));
 
-  if (m_disposition == ContentSecurityPolicyHeaderTypeReport)
+  if (disposition_ == kContentSecurityPolicyHeaderTypeReport)
     return report;
   return enforce;
 }

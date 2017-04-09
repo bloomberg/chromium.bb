@@ -18,30 +18,30 @@ class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
-  static CSSPerspective* fromCSSValue(const CSSFunctionValue&);
+  static CSSPerspective* Create(const CSSLengthValue*, ExceptionState&);
+  static CSSPerspective* FromCSSValue(const CSSFunctionValue&);
 
   // Bindings require a non const return value.
   CSSLengthValue* length() const {
-    return const_cast<CSSLengthValue*>(m_length.get());
+    return const_cast<CSSLengthValue*>(length_.Get());
   }
 
-  TransformComponentType type() const override { return PerspectiveType; }
+  TransformComponentType GetType() const override { return kPerspectiveType; }
 
   // TODO: Implement asMatrix for CSSPerspective.
   CSSMatrixComponent* asMatrix() const override { return nullptr; }
 
-  CSSFunctionValue* toCSSValue() const override;
+  CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_length);
-    CSSTransformComponent::trace(visitor);
+    visitor->Trace(length_);
+    CSSTransformComponent::Trace(visitor);
   }
 
  private:
-  CSSPerspective(const CSSLengthValue* length) : m_length(length) {}
+  CSSPerspective(const CSSLengthValue* length) : length_(length) {}
 
-  Member<const CSSLengthValue> m_length;
+  Member<const CSSLengthValue> length_;
 };
 
 }  // namespace blink

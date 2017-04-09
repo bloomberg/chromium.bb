@@ -33,7 +33,7 @@ WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
   RemoveProviderClient();
 }
 
-void WebServiceWorkerProviderImpl::setClient(
+void WebServiceWorkerProviderImpl::SetClient(
     blink::WebServiceWorkerProviderClient* client) {
   if (!client) {
     RemoveProviderClient();
@@ -56,12 +56,12 @@ void WebServiceWorkerProviderImpl::setClient(
 
   // Sync the controllee's use counter with the service worker's one.
   for (uint32_t feature : context_->used_features())
-    client->countFeature(feature);
-  client->setController(WebServiceWorkerImpl::CreateHandle(controller),
+    client->CountFeature(feature);
+  client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
                         false /* shouldNotifyControllerChange */);
 }
 
-void WebServiceWorkerProviderImpl::registerServiceWorker(
+void WebServiceWorkerProviderImpl::RegisterServiceWorker(
     const WebURL& pattern,
     const WebURL& script_url,
     std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
@@ -69,27 +69,27 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
                                          script_url, std::move(callbacks));
 }
 
-void WebServiceWorkerProviderImpl::getRegistration(
+void WebServiceWorkerProviderImpl::GetRegistration(
     const blink::WebURL& document_url,
     std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks) {
   GetDispatcher()->GetRegistration(context_->provider_id(), document_url,
                                    std::move(callbacks));
 }
 
-void WebServiceWorkerProviderImpl::getRegistrations(
+void WebServiceWorkerProviderImpl::GetRegistrations(
     std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks) {
   GetDispatcher()->GetRegistrations(context_->provider_id(),
                                     std::move(callbacks));
 }
 
-void WebServiceWorkerProviderImpl::getRegistrationForReady(
+void WebServiceWorkerProviderImpl::GetRegistrationForReady(
     std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
         callbacks) {
   GetDispatcher()->GetRegistrationForReady(context_->provider_id(),
                                            std::move(callbacks));
 }
 
-bool WebServiceWorkerProviderImpl::validateScopeAndScriptURL(
+bool WebServiceWorkerProviderImpl::ValidateScopeAndScriptURL(
     const blink::WebURL& scope,
     const blink::WebURL& script_url,
     blink::WebString* error_message) {
@@ -97,7 +97,7 @@ bool WebServiceWorkerProviderImpl::validateScopeAndScriptURL(
   bool has_error = ServiceWorkerUtils::ContainsDisallowedCharacter(
       scope, script_url, &error);
   if (has_error)
-    *error_message = blink::WebString::fromUTF8(error);
+    *error_message = blink::WebString::FromUTF8(error);
   return !has_error;
 }
 

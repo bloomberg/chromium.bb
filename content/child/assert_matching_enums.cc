@@ -24,23 +24,23 @@ namespace content {
                 "mismatching enums: " #a)
 
 // ScreenOrientationValues
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockDefault,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockDefault,
                    SCREEN_ORIENTATION_VALUES_DEFAULT);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortraitPrimary,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockPortraitPrimary,
                    SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortraitSecondary,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockPortraitSecondary,
                    SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscapePrimary,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockLandscapePrimary,
                    SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscapeSecondary,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockLandscapeSecondary,
                    SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockAny,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockAny,
                    SCREEN_ORIENTATION_VALUES_ANY);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscape,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockLandscape,
                    SCREEN_ORIENTATION_VALUES_LANDSCAPE);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortrait,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockPortrait,
                    SCREEN_ORIENTATION_VALUES_PORTRAIT);
-STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockNatural,
+STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLockNatural,
                    SCREEN_ORIENTATION_VALUES_NATURAL);
 
 // WebTextInputMode
@@ -65,45 +65,45 @@ STATIC_ASSERT_ENUM(blink::kWebTextInputModeEmail, ui::TEXT_INPUT_MODE_EMAIL);
 STATIC_ASSERT_ENUM(blink::kWebTextInputModeUrl, ui::TEXT_INPUT_MODE_URL);
 
 // WebTextInputType
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeNone, ui::TEXT_INPUT_TYPE_NONE);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeText, ui::TEXT_INPUT_TYPE_TEXT);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypePassword,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeNone, ui::TEXT_INPUT_TYPE_NONE);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeText, ui::TEXT_INPUT_TYPE_TEXT);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypePassword,
                    ui::TEXT_INPUT_TYPE_PASSWORD);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeSearch, ui::TEXT_INPUT_TYPE_SEARCH);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeEmail, ui::TEXT_INPUT_TYPE_EMAIL);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeNumber, ui::TEXT_INPUT_TYPE_NUMBER);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeTelephone,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeSearch, ui::TEXT_INPUT_TYPE_SEARCH);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeEmail, ui::TEXT_INPUT_TYPE_EMAIL);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeNumber, ui::TEXT_INPUT_TYPE_NUMBER);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeTelephone,
                    ui::TEXT_INPUT_TYPE_TELEPHONE);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeURL, ui::TEXT_INPUT_TYPE_URL);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeDate, ui::TEXT_INPUT_TYPE_DATE);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTime,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeURL, ui::TEXT_INPUT_TYPE_URL);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeDate, ui::TEXT_INPUT_TYPE_DATE);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeDateTime,
                    ui::TEXT_INPUT_TYPE_DATE_TIME);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTimeLocal,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeDateTimeLocal,
                    ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeMonth, ui::TEXT_INPUT_TYPE_MONTH);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeTime, ui::TEXT_INPUT_TYPE_TIME);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeWeek, ui::TEXT_INPUT_TYPE_WEEK);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeTextArea,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeMonth, ui::TEXT_INPUT_TYPE_MONTH);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeTime, ui::TEXT_INPUT_TYPE_TIME);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeWeek, ui::TEXT_INPUT_TYPE_WEEK);
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeTextArea,
                    ui::TEXT_INPUT_TYPE_TEXT_AREA);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeContentEditable,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeContentEditable,
                    ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
-STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTimeField,
+STATIC_ASSERT_ENUM(blink::kWebTextInputTypeDateTimeField,
                    ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD);
 
 // Check blink::WebTouchAction and content::TouchAction is kept in sync.
-STATIC_ASSERT_ENUM(blink::WebTouchActionNone, TOUCH_ACTION_NONE);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanLeft, TOUCH_ACTION_PAN_LEFT);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanRight, TOUCH_ACTION_PAN_RIGHT);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanX, TOUCH_ACTION_PAN_X);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanUp, TOUCH_ACTION_PAN_UP);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanDown, TOUCH_ACTION_PAN_DOWN);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPanY, TOUCH_ACTION_PAN_Y);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPan, TOUCH_ACTION_PAN);
-STATIC_ASSERT_ENUM(blink::WebTouchActionPinchZoom, TOUCH_ACTION_PINCH_ZOOM);
-STATIC_ASSERT_ENUM(blink::WebTouchActionManipulation,
+STATIC_ASSERT_ENUM(blink::kWebTouchActionNone, TOUCH_ACTION_NONE);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanLeft, TOUCH_ACTION_PAN_LEFT);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanRight, TOUCH_ACTION_PAN_RIGHT);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanX, TOUCH_ACTION_PAN_X);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanUp, TOUCH_ACTION_PAN_UP);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanDown, TOUCH_ACTION_PAN_DOWN);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPanY, TOUCH_ACTION_PAN_Y);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPan, TOUCH_ACTION_PAN);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionPinchZoom, TOUCH_ACTION_PINCH_ZOOM);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionManipulation,
                    TOUCH_ACTION_MANIPULATION);
-STATIC_ASSERT_ENUM(blink::WebTouchActionDoubleTapZoom,
+STATIC_ASSERT_ENUM(blink::kWebTouchActionDoubleTapZoom,
                    TOUCH_ACTION_DOUBLE_TAP_ZOOM);
-STATIC_ASSERT_ENUM(blink::WebTouchActionAuto, TOUCH_ACTION_AUTO);
+STATIC_ASSERT_ENUM(blink::kWebTouchActionAuto, TOUCH_ACTION_AUTO);
 
 } // namespace content

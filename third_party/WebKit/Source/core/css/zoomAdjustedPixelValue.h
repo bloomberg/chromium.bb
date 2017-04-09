@@ -11,10 +11,10 @@
 namespace blink {
 class ComputedStyle;
 
-inline CSSPrimitiveValue* zoomAdjustedPixelValue(double value,
+inline CSSPrimitiveValue* ZoomAdjustedPixelValue(double value,
                                                  const ComputedStyle& style) {
-  return CSSPrimitiveValue::create(adjustFloatForAbsoluteZoom(value, style),
-                                   CSSPrimitiveValue::UnitType::Pixels);
+  return CSSPrimitiveValue::Create(AdjustFloatForAbsoluteZoom(value, style),
+                                   CSSPrimitiveValue::UnitType::kPixels);
 }
 }
 #endif  // zoomAdjustedPixelValue_h

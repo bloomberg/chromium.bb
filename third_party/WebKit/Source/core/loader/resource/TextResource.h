@@ -17,21 +17,21 @@ class CORE_EXPORT TextResource : public Resource {
  public:
   // Returns the decoded data in text form. The data has to be available at
   // call time.
-  String decodedText() const;
+  String DecodedText() const;
 
-  void setEncoding(const String&) override;
-  String encoding() const override;
+  void SetEncoding(const String&) override;
+  String Encoding() const override;
 
  protected:
   TextResource(const ResourceRequest&,
                Type,
                const ResourceLoaderOptions&,
-               const String& mimeType,
+               const String& mime_type,
                const String& charset);
   ~TextResource() override;
 
  private:
-  std::unique_ptr<TextResourceDecoder> m_decoder;
+  std::unique_ptr<TextResourceDecoder> decoder_;
 };
 
 }  // namespace blink
