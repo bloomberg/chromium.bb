@@ -44,9 +44,12 @@ namespace views {
 // Testing button that exposes protected methods.
 class TestLabelButton : public LabelButton {
  public:
-  TestLabelButton() : LabelButton(nullptr, base::string16()) {}
+  explicit TestLabelButton(const base::string16& text = base::string16())
+      : LabelButton(nullptr, text) {}
 
   using LabelButton::label;
+  using LabelButton::image;
+  using LabelButton::ResetColorsFromNativeTheme;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLabelButton);
@@ -120,7 +123,7 @@ class LabelButtonTest : public test::WidgetTest {
 
 TEST_F(LabelButtonTest, Init) {
   const base::string16 text(ASCIIToUTF16("abc"));
-  LabelButton button(NULL, text);
+  TestLabelButton button(text);
 
   EXPECT_TRUE(button.GetImage(Button::STATE_NORMAL).isNull());
   EXPECT_TRUE(button.GetImage(Button::STATE_HOVERED).isNull());
@@ -138,8 +141,8 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_EQ(button.style(), Button::STYLE_TEXTBUTTON);
   EXPECT_EQ(Button::STATE_NORMAL, button.state());
 
-  EXPECT_EQ(button.image_->parent(), &button);
-  EXPECT_EQ(button.label_->parent(), &button);
+  EXPECT_EQ(button.image()->parent(), &button);
+  EXPECT_EQ(button.label()->parent(), &button);
 }
 
 TEST_F(LabelButtonTest, Label) {
@@ -263,16 +266,17 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   button_size.Enlarge(50, 0);
   button_->SetSize(button_size);
   button_->Layout();
-  EXPECT_LT(button_->image_->bounds().right(), button_->label_->bounds().x());
-  int left_align_label_midpoint = button_->label_->bounds().CenterPoint().x();
+  EXPECT_LT(button_->image()->bounds().right(), button_->label()->bounds().x());
+  int left_align_label_midpoint = button_->label()->bounds().CenterPoint().x();
   button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button_->Layout();
-  EXPECT_LT(button_->image_->bounds().right(), button_->label_->bounds().x());
-  int center_align_label_midpoint = button_->label_->bounds().CenterPoint().x();
+  EXPECT_LT(button_->image()->bounds().right(), button_->label()->bounds().x());
+  int center_align_label_midpoint =
+      button_->label()->bounds().CenterPoint().x();
   EXPECT_LT(left_align_label_midpoint, center_align_label_midpoint);
   button_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   button_->Layout();
-  EXPECT_LT(button_->label_->bounds().right(), button_->image_->bounds().x());
+  EXPECT_LT(button_->label()->bounds().right(), button_->image()->bounds().x());
 
   button_->SetText(base::string16());
   EXPECT_GT(button_->GetPreferredSize().width(), text_width + image_size);

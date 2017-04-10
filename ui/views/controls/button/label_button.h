@@ -156,13 +156,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, ResetColorsFromNativeTheme);
-
   void SetTextInternal(const base::string16& text);
 
   // View:
