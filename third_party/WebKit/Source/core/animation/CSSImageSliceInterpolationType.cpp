@@ -10,7 +10,7 @@
 #include "core/animation/SideIndex.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

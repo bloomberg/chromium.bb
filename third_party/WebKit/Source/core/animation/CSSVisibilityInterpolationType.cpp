@@ -4,10 +4,10 @@
 
 #include "core/animation/CSSVisibilityInterpolationType.h"
 
+#include <memory>
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

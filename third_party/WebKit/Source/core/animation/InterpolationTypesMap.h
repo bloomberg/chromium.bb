@@ -5,8 +5,8 @@
 #ifndef InterpolationTypesMap_h
 #define InterpolationTypesMap_h
 
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

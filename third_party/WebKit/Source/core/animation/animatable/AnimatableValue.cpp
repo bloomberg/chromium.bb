@@ -30,8 +30,8 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-#include "wtf/StdLibExtras.h"
 #include <algorithm>
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

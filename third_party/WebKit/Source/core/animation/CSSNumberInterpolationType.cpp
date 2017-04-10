@@ -4,11 +4,11 @@
 
 #include "core/animation/CSSNumberInterpolationType.h"
 
+#include <memory>
 #include "core/animation/NumberPropertyFunctions.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

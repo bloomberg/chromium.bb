@@ -5,11 +5,11 @@
 #ifndef CSSTransitionData_h
 #define CSSTransitionData_h
 
+#include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/animation/css/CSSTimingData.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -43,7 +43,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

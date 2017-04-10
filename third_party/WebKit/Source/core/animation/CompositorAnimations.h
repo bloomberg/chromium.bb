@@ -31,13 +31,13 @@
 #ifndef CompositorAnimations_h
 #define CompositorAnimations_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/animation/EffectModel.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

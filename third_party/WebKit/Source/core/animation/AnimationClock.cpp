@@ -30,8 +30,8 @@
 
 #include "core/animation/AnimationClock.h"
 
-#include "wtf/CurrentTime.h"
 #include <math.h>
+#include "platform/wtf/CurrentTime.h"
 
 namespace {
 

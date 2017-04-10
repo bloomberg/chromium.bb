@@ -4,7 +4,7 @@
 
 #include "core/animation/PropertyHandle.h"
 
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

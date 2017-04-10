@@ -64,8 +64,8 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/Histogram.h"
 #include "platform/animation/TimingFunction.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 

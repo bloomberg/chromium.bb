@@ -5,6 +5,7 @@
 #ifndef InterpolationType_h
 #define InterpolationType_h
 
+#include <memory>
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/Keyframe.h"
 #include "core/animation/PairwiseInterpolationValue.h"
@@ -12,8 +13,7 @@
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/UnderlyingValueOwner.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

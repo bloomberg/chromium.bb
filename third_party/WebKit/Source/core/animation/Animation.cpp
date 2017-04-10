@@ -48,10 +48,10 @@
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/heap/Persistent.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

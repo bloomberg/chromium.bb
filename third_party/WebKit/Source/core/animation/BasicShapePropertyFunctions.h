@@ -8,7 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

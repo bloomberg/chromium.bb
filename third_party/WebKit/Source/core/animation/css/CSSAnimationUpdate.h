@@ -12,10 +12,10 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSPropertyEquality.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

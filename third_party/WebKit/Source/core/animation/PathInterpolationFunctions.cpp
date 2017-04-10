@@ -4,6 +4,7 @@
 
 #include "core/animation/PathInterpolationFunctions.h"
 
+#include <memory>
 #include "core/animation/InterpolatedSVGPathSource.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
@@ -12,8 +13,7 @@
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathParser.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

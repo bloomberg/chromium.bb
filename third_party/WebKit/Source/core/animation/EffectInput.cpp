@@ -45,9 +45,9 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/HashSet.h"
-#include "wtf/NonCopyingSort.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 

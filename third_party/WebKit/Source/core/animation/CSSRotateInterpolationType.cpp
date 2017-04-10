@@ -4,11 +4,11 @@
 
 #include "core/animation/CSSRotateInterpolationType.h"
 
+#include <memory>
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/Rotation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

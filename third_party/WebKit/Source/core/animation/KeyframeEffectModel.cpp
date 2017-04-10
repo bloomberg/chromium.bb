@@ -40,8 +40,8 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

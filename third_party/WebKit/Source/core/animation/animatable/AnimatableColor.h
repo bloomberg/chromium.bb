@@ -34,7 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/graphics/Color.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

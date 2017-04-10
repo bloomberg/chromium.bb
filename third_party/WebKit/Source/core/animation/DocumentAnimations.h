@@ -34,7 +34,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "platform/graphics/CompositorElementId.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

@@ -5,9 +5,9 @@
 #ifndef TypedInterpolationValue_h
 #define TypedInterpolationValue_h
 
-#include "core/animation/InterpolationValue.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/animation/InterpolationValue.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

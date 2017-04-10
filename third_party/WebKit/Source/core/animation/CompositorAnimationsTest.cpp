@@ -30,6 +30,7 @@
 
 #include "core/animation/CompositorAnimations.h"
 
+#include <memory>
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
@@ -51,12 +52,11 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

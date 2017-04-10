@@ -30,12 +30,12 @@
 
 #include "core/animation/EffectStack.h"
 
+#include <algorithm>
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/NonCopyingSort.h"
-#include <algorithm>
+#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 

@@ -4,13 +4,13 @@
 
 #include "core/animation/CSSColorInterpolationType.h"
 
+#include <memory>
 #include "core/animation/ColorPropertyFunctions.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/LayoutTheme.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

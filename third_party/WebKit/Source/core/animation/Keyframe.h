@@ -10,10 +10,10 @@
 #include "core/animation/EffectModel.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

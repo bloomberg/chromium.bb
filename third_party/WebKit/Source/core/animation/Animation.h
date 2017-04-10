@@ -46,7 +46,7 @@
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

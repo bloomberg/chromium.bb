@@ -34,7 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

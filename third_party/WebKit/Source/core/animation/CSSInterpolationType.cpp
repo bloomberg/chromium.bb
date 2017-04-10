@@ -18,7 +18,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/DataEquivalency.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

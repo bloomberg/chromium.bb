@@ -35,7 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/PropertyHandle.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

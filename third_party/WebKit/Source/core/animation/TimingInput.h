@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/Timing.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

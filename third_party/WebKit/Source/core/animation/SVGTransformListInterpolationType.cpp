@@ -4,14 +4,14 @@
 
 #include "core/animation/SVGTransformListInterpolationType.h"
 
+#include <memory>
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/NonInterpolableValue.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -34,10 +34,10 @@
 #include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/EffectStack.h"
 #include "core/animation/css/CSSAnimations.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

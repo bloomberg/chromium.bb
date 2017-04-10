@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -4,6 +4,7 @@
 
 #include "core/animation/CSSLengthListInterpolationType.h"
 
+#include <memory>
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/LengthListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
@@ -11,8 +12,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

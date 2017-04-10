@@ -8,7 +8,7 @@
 #include "core/animation/Keyframe.h"
 #include "core/css/StylePropertySet.h"
 
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

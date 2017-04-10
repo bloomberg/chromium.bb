@@ -13,7 +13,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

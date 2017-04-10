@@ -40,8 +40,8 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

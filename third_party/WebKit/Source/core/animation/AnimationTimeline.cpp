@@ -30,6 +30,7 @@
 
 #include "core/animation/AnimationTimeline.h"
 
+#include <algorithm>
 #include "core/animation/AnimationClock.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/Document.h"
@@ -39,10 +40,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
 
 namespace blink {
 

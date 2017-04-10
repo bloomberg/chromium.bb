@@ -4,6 +4,7 @@
 
 #include "core/animation/CSSTransformInterpolationType.h"
 
+#include <memory>
 #include "core/animation/LengthUnitsChecker.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -12,8 +13,7 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

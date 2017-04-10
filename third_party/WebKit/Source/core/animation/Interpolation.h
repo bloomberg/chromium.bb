@@ -5,11 +5,11 @@
 #ifndef Interpolation_h
 #define Interpolation_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/animation/InterpolableValue.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

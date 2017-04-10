@@ -7,7 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/style/FillLayer.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

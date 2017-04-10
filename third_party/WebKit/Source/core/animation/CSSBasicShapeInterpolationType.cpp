@@ -4,14 +4,14 @@
 
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 
+#include <memory>
 #include "core/animation/BasicShapeInterpolationFunctions.h"
 #include "core/animation/BasicShapePropertyFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/DataEquivalency.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

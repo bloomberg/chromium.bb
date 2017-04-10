@@ -5,7 +5,7 @@
 #ifndef NonInterpolableValue_h
 #define NonInterpolableValue_h
 
-#include "wtf/RefCounted.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

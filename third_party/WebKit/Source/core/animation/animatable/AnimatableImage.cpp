@@ -31,7 +31,7 @@
 #include "core/animation/animatable/AnimatableImage.h"
 
 #include "core/css/CSSImageValue.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

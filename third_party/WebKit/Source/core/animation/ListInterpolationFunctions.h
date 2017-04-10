@@ -5,10 +5,10 @@
 #ifndef ListInterpolationFunctions_h
 #define ListInterpolationFunctions_h
 
+#include <memory>
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/PairwiseInterpolationValue.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

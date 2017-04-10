@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/AnimationEffectTimingReadOnly.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

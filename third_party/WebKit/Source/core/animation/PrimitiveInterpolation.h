@@ -5,13 +5,13 @@
 #ifndef PrimitiveInterpolation_h
 #define PrimitiveInterpolation_h
 
+#include <cmath>
+#include <memory>
 #include "core/animation/TypedInterpolationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <cmath>
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -4,12 +4,12 @@
 
 #include "core/animation/CSSClipInterpolationType.h"
 
+#include <memory>
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

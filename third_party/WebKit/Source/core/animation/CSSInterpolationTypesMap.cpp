@@ -39,7 +39,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/PropertyRegistry.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

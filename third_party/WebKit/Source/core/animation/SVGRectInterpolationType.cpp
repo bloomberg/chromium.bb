@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 #include "core/animation/SVGRectInterpolationType.h"
 
+#include <memory>
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGRect.h"
-#include "wtf/StdLibExtras.h"
-#include <memory>
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

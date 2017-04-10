@@ -7,7 +7,7 @@
 
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
 #include "core/svg/SVGPathData.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -34,9 +34,9 @@
 #include "core/style/DataEquivalency.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

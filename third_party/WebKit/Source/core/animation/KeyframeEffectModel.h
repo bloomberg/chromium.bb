@@ -42,10 +42,10 @@
 #include "core/animation/animatable/AnimatableValueKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

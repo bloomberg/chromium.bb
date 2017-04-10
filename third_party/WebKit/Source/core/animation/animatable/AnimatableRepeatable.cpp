@@ -30,7 +30,7 @@
 
 #include "core/animation/animatable/AnimatableRepeatable.h"
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -5,10 +5,10 @@
 #ifndef UnderlyingValueOwner_h
 #define UnderlyingValueOwner_h
 
-#include "core/animation/TypedInterpolationValue.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "core/animation/TypedInterpolationValue.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

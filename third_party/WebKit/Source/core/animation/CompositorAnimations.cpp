@@ -30,6 +30,9 @@
 
 #include "core/animation/CompositorAnimations.h"
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -54,11 +57,8 @@
 #include "platform/animation/CompositorTransformAnimationCurve.h"
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/geometry/FloatBox.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <cmath>
-#include <memory>
 
 namespace blink {
 

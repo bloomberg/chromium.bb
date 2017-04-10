@@ -38,8 +38,8 @@
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/SampledEffect.h"
 #include "platform/geometry/FloatBox.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
