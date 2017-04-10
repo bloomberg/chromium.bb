@@ -711,7 +711,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
   FrameView* parent_view = ToFrameView(Parent());
 
   WebMouseEventBuilder transformed_event(
-      this, LayoutItem(element_->GetLayoutObject()), *event);
+      ToFrameView(Parent()), LayoutItem(element_->GetLayoutObject()), *event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
 
@@ -882,8 +882,8 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
-  WebMouseEventBuilder web_event(this, LayoutItem(element_->GetLayoutObject()),
-                                 *event);
+  WebMouseEventBuilder web_event(
+      ToFrameView(Parent()), LayoutItem(element_->GetLayoutObject()), *event);
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 

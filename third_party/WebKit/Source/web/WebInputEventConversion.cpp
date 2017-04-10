@@ -42,30 +42,29 @@
 #include "core/layout/api/LayoutItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/FrameViewBase.h"
 #include "platform/KeyboardCodes.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
 namespace {
-float FrameScale(const FrameViewBase* frame_view_base) {
+float FrameScale(const FrameView* frame_view) {
   float scale = 1;
-  if (frame_view_base) {
-    FrameView* root_view = ToFrameView(frame_view_base->Root());
+  if (frame_view) {
+    FrameView* root_view = ToFrameView(frame_view->Root());
     if (root_view)
       scale = root_view->InputEventsScaleFactor();
   }
   return scale;
 }
 
-FloatPoint FrameTranslation(const FrameViewBase* frame_view_base) {
+FloatPoint FrameTranslation(const FrameView* frame_view) {
   float scale = 1;
   FloatSize offset;
   IntPoint visual_viewport;
   FloatSize overscroll_offset;
-  if (frame_view_base) {
-    FrameView* root_view = ToFrameView(frame_view_base->Root());
+  if (frame_view) {
+    FrameView* root_view = ToFrameView(frame_view->Root());
     if (root_view) {
       scale = root_view->InputEventsScaleFactor();
       offset = FloatSize(root_view->InputEventsOffsetForEmulation());
@@ -94,23 +93,23 @@ IntPoint ConvertAbsoluteLocationForLayoutObjectInt(
       ConvertAbsoluteLocationForLayoutObjectFloat(location, layout_item));
 }
 
-// FIXME: Change |FrameViewBase| to const FrameViewBase& after RemoteFrames get
+// FIXME: Change |FrameView| to const FrameView& after RemoteFrames get
 // RemoteFrameViews.
 void UpdateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
-                                           const FrameViewBase* frame_view_base,
+                                           const FrameView* plugin_parent,
                                            const LayoutItem layout_item,
                                            WebMouseEvent& web_event) {
   web_event.SetTimeStampSeconds(event.PlatformTimeStamp().InSeconds());
   web_event.SetModifiers(event.GetModifiers());
 
-  FrameView* view =
-      frame_view_base ? ToFrameView(frame_view_base->Parent()) : 0;
-  // TODO(bokan): If view == nullptr, pointInRootFrame will really be
+  // TODO(bokan): If plugin_parent == nullptr, pointInRootFrame will really be
   // pointInRootContent.
   IntPoint point_in_root_frame(event.AbsoluteLocation().X(),
                                event.AbsoluteLocation().Y());
-  if (view)
-    point_in_root_frame = view->ContentsToRootFrame(point_in_root_frame);
+  if (plugin_parent) {
+    point_in_root_frame =
+        plugin_parent->ContentsToRootFrame(point_in_root_frame);
+  }
   web_event.SetPositionInScreen(event.screenX(), event.screenY());
   IntPoint local_point = ConvertAbsoluteLocationForLayoutObjectInt(
       event.AbsoluteLocation(), layout_item);
@@ -131,7 +130,7 @@ unsigned ToWebInputEventModifierFrom(WebMouseEvent::Button button) {
 
 }  // namespace
 
-WebMouseEvent TransformWebMouseEvent(FrameViewBase* frame_view_base,
+WebMouseEvent TransformWebMouseEvent(FrameView* frame_view,
                                      const WebMouseEvent& event) {
   WebMouseEvent result = event;
 
@@ -149,25 +148,25 @@ WebMouseEvent TransformWebMouseEvent(FrameViewBase* frame_view_base,
     result.SetModifiers(event.GetModifiers() &
                         ~ToWebInputEventModifierFrom(event.button));
   }
-  result.SetFrameScale(FrameScale(frame_view_base));
-  result.SetFrameTranslate(FrameTranslation(frame_view_base));
+  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
 
 WebMouseWheelEvent TransformWebMouseWheelEvent(
-    FrameViewBase* frame_view_base,
+    FrameView* frame_view,
     const WebMouseWheelEvent& event) {
   WebMouseWheelEvent result = event;
-  result.SetFrameScale(FrameScale(frame_view_base));
-  result.SetFrameTranslate(FrameTranslation(frame_view_base));
+  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
 
-WebGestureEvent TransformWebGestureEvent(FrameViewBase* frame_view_base,
+WebGestureEvent TransformWebGestureEvent(FrameView* frame_view,
                                          const WebGestureEvent& event) {
   WebGestureEvent result = event;
-  result.SetFrameScale(FrameScale(frame_view_base));
-  result.SetFrameTranslate(FrameTranslation(frame_view_base));
+  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
 
@@ -184,13 +183,13 @@ WebTouchEvent TransformWebTouchEvent(float frame_scale,
   return result;
 }
 
-WebTouchEvent TransformWebTouchEvent(FrameViewBase* frame_view_base,
+WebTouchEvent TransformWebTouchEvent(FrameView* frame_view,
                                      const WebTouchEvent& event) {
-  return TransformWebTouchEvent(FrameScale(frame_view_base),
-                                FrameTranslation(frame_view_base), event);
+  return TransformWebTouchEvent(FrameScale(frame_view),
+                                FrameTranslation(frame_view), event);
 }
 
-WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frame_view_base,
+WebMouseEventBuilder::WebMouseEventBuilder(const FrameView* plugin_parent,
                                            const LayoutItem layout_item,
                                            const MouseEvent& event) {
   if (event.NativeEvent()) {
@@ -224,7 +223,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frame_view_base,
 
   time_stamp_seconds_ = event.PlatformTimeStamp().InSeconds();
   modifiers_ = event.GetModifiers();
-  UpdateWebMouseEventFromCoreMouseEvent(event, frame_view_base, layout_item,
+  UpdateWebMouseEventFromCoreMouseEvent(event, plugin_parent, layout_item,
                                         *this);
 
   switch (event.button()) {
@@ -274,7 +273,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frame_view_base,
 
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a
 // mouse with touch input for plugins that don't support touch input).
-WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frame_view_base,
+WebMouseEventBuilder::WebMouseEventBuilder(const FrameView* plugin_parent,
                                            const LayoutItem layout_item,
                                            const TouchEvent& event) {
   if (!event.touches())
@@ -307,12 +306,13 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frame_view_base,
 
   // The mouse event co-ordinates should be generated from the co-ordinates of
   // the touch point.
-  FrameView* view = ToFrameView(frame_view_base->Parent());
-  // FIXME: if view == nullptr, pointInRootFrame will really be
+  // FIXME: if plugin_parent == nullptr, pointInRootFrame will really be
   // pointInRootContent.
   IntPoint point_in_root_frame = RoundedIntPoint(touch->AbsoluteLocation());
-  if (view)
-    point_in_root_frame = view->ContentsToRootFrame(point_in_root_frame);
+  if (plugin_parent) {
+    point_in_root_frame =
+        plugin_parent->ContentsToRootFrame(point_in_root_frame);
+  }
   IntPoint screen_point = RoundedIntPoint(touch->ScreenLocation());
   SetPositionInScreen(screen_point.X(), screen_point.Y());
 
@@ -353,22 +353,22 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
 }
 
 Vector<WebMouseEvent> TransformWebMouseEventVector(
-    FrameViewBase* frame_view_base,
+    FrameView* frame_view,
     const std::vector<const WebInputEvent*>& coalesced_events) {
   Vector<WebMouseEvent> result;
   for (const auto& event : coalesced_events) {
     DCHECK(WebInputEvent::IsMouseEventType(event->GetType()));
     result.push_back(TransformWebMouseEvent(
-        frame_view_base, static_cast<const WebMouseEvent&>(*event)));
+        frame_view, static_cast<const WebMouseEvent&>(*event)));
   }
   return result;
 }
 
 Vector<WebTouchEvent> TransformWebTouchEventVector(
-    FrameViewBase* frame_view_base,
+    FrameView* frame_view,
     const std::vector<const WebInputEvent*>& coalesced_events) {
-  float scale = FrameScale(frame_view_base);
-  FloatPoint translation = FrameTranslation(frame_view_base);
+  float scale = FrameScale(frame_view);
+  FloatPoint translation = FrameTranslation(frame_view);
   Vector<WebTouchEvent> result;
   for (const auto& event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
