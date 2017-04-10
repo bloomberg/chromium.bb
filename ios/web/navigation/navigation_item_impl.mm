@@ -48,8 +48,7 @@ NavigationItemImpl::NavigationItemImpl()
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
-      is_unsafe_(false),
-      facade_delegate_(nullptr) {}
+      is_unsafe_(false) {}
 
 NavigationItemImpl::~NavigationItemImpl() {
 }
@@ -77,17 +76,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       post_data_([item.post_data_ copy]),
       navigation_initiation_type_(item.navigation_initiation_type_),
       is_unsafe_(item.is_unsafe_),
-      cached_display_title_(item.cached_display_title_),
-      facade_delegate_(nullptr) {}
-
-void NavigationItemImpl::SetFacadeDelegate(
-    std::unique_ptr<NavigationItemFacadeDelegate> facade_delegate) {
-  facade_delegate_ = std::move(facade_delegate);
-}
-
-NavigationItemFacadeDelegate* NavigationItemImpl::GetFacadeDelegate() const {
-  return facade_delegate_.get();
-}
+      cached_display_title_(item.cached_display_title_) {}
 
 int NavigationItemImpl::GetUniqueID() const {
   return unique_id_;

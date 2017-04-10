@@ -18,7 +18,6 @@
 #include "ios/web/history_state_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/navigation/navigation_manager_facade_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/time_smoother.h"
 #include "ios/web/public/browser_state.h"
@@ -298,12 +297,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (![self shouldCreatePendingItemWithURL:url
                                  transition:trans
                     userAgentOverrideOption:userAgentOverrideOption]) {
-    // Send the notification anyway, to preserve old behavior. It's unknown
-    // whether anything currently relies on this, but since both this whole
-    // hack and the content facade will both be going away, it's not worth
-    // trying to unwind.
-    if (_navigationManager && _navigationManager->GetFacadeDelegate())
-      _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
     return;
   }
 
@@ -311,9 +304,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
                           referrer:ref
                         transition:trans
                     initiationType:initiationType];
-
-  if (_navigationManager && _navigationManager->GetFacadeDelegate())
-    _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
   DCHECK_EQ(-1, self.pendingItemIndex);
 }
 
@@ -395,11 +385,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
     item->SetPostData(nil);
     item->ResetHttpRequestHeaders();
   }
-
-  // This should probably not be sent if the URLs matched, but that's what was
-  // done before, so preserve behavior in case something relies on it.
-  if (_navigationManager && _navigationManager->GetFacadeDelegate())
-    _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
 }
 
 - (void)clearForwardItems {

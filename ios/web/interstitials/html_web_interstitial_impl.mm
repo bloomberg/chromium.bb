@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/interstitials/web_interstitial_facade_delegate.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_view_creation_util.h"

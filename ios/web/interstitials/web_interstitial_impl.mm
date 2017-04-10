@@ -5,7 +5,6 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 
 #include "base/logging.h"
-#include "ios/web/interstitials/web_interstitial_facade_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/navigation_manager.h"
@@ -29,7 +28,6 @@ WebInterstitialImpl::WebInterstitialImpl(WebStateImpl* web_state,
     : WebStateObserver(web_state),
       navigation_manager_(&web_state->GetNavigationManagerImpl()),
       url_(url),
-      facade_delegate_(nullptr),
       new_navigation_(new_navigation),
       action_taken_(false) {
   DCHECK(web_state);
@@ -37,21 +35,10 @@ WebInterstitialImpl::WebInterstitialImpl(WebStateImpl* web_state,
 
 WebInterstitialImpl::~WebInterstitialImpl() {
   Hide();
-  if (facade_delegate_)
-    facade_delegate_->WebInterstitialDestroyed();
 }
 
 const GURL& WebInterstitialImpl::GetUrl() const {
   return url_;
-}
-
-void WebInterstitialImpl::SetFacadeDelegate(
-    WebInterstitialFacadeDelegate* facade_delegate) {
-  facade_delegate_ = facade_delegate;
-}
-
-WebInterstitialFacadeDelegate* WebInterstitialImpl::GetFacadeDelegate() const {
-  return facade_delegate_;
 }
 
 void WebInterstitialImpl::Show() {

@@ -25,7 +25,6 @@ class BrowserState;
 class NavigationItem;
 struct Referrer;
 class NavigationManagerDelegate;
-class NavigationManagerFacadeDelegate;
 class SessionStorageBuilder;
 
 // Defines the ways how a pending navigation can be initiated.
@@ -76,11 +75,7 @@ class NavigationManagerImpl : public NavigationManager {
   void ReplaceSessionHistory(std::vector<std::unique_ptr<NavigationItem>> items,
                              int current_index);
 
-  // Sets the delegate used to drive the navigation controller facade.
-  void SetFacadeDelegate(NavigationManagerFacadeDelegate* facade_delegate);
-  NavigationManagerFacadeDelegate* GetFacadeDelegate() const;
-
-  // Helper functions for communicating with the facade layer.
+  // Helper functions for notifying WebStateObservers of changes.
   // TODO(stuartmorgan): Make these private once the logic triggering them moves
   // into this layer.
   void OnNavigationItemsPruned(size_t pruned_item_count);
@@ -177,9 +172,6 @@ class NavigationManagerImpl : public NavigationManager {
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.
   base::scoped_nsobject<CRWSessionController> session_controller_;
-
-  // Weak pointer to the facade delegate.
-  NavigationManagerFacadeDelegate* facade_delegate_;
 
   // List of transient url rewriters added by |AddTransientURLRewriter()|.
   std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>

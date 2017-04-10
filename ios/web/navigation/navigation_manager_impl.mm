@@ -14,7 +14,6 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/navigation/navigation_manager_facade_delegate.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"
@@ -73,12 +72,9 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
-    : delegate_(nullptr), browser_state_(nullptr), facade_delegate_(nullptr) {}
+    : delegate_(nullptr), browser_state_(nullptr) {}
 
 NavigationManagerImpl::~NavigationManagerImpl() {
-  // The facade layer should be deleted before this object.
-  DCHECK(!facade_delegate_);
-
   [session_controller_ setNavigationManager:nullptr];
 }
 
@@ -111,28 +107,12 @@ void NavigationManagerImpl::ReplaceSessionHistory(
       lastCommittedItemIndex:lastCommittedItemIndex]);
 }
 
-void NavigationManagerImpl::SetFacadeDelegate(
-    NavigationManagerFacadeDelegate* facade_delegate) {
-  facade_delegate_ = facade_delegate;
-}
-
-NavigationManagerFacadeDelegate* NavigationManagerImpl::GetFacadeDelegate()
-    const {
-  return facade_delegate_;
-}
-
 void NavigationManagerImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
   delegate_->OnNavigationItemsPruned(pruned_item_count);
-
-  if (facade_delegate_)
-    facade_delegate_->OnNavigationItemsPruned(pruned_item_count);
 }
 
 void NavigationManagerImpl::OnNavigationItemChanged() {
   delegate_->OnNavigationItemChanged();
-
-  if (facade_delegate_)
-    facade_delegate_->OnNavigationItemChanged();
 }
 
 void NavigationManagerImpl::OnNavigationItemCommitted() {
@@ -151,11 +131,6 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
   }
 
   delegate_->OnNavigationItemCommitted(details);
-
-  if (facade_delegate_) {
-    facade_delegate_->OnNavigationItemCommitted(details.previous_item_index,
-                                                details.is_in_page);
-  }
 }
 
 CRWSessionController* NavigationManagerImpl::GetSessionController() {

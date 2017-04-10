@@ -45,7 +45,6 @@ struct LoadCommittedDetails;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
-class WebStateFacadeDelegate;
 class WebStatePolicyDecider;
 class WebUIIOS;
 
@@ -72,10 +71,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Gets/Sets the CRWWebController that backs this object.
   CRWWebController* GetWebController();
   void SetWebController(CRWWebController* web_controller);
-
-  // Gets or sets the delegate used to communicate with the web contents facade.
-  WebStateFacadeDelegate* GetFacadeDelegate() const;
-  void SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate);
 
   // Notifies the observers that a provisional navigation has started.
   void OnProvisionalNavigationStarted(const GURL& url);
@@ -332,9 +327,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Stores whether the web state is currently being destroyed.
   bool is_being_destroyed_;
-
-  // The delegate used to pass state to the web contents facade.
-  WebStateFacadeDelegate* facade_delegate_;
 
   // The CRWWebController that backs this object.
   base::scoped_nsobject<CRWWebController> web_controller_;

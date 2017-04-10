@@ -11,7 +11,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "ios/web/navigation/navigation_item_facade_delegate.h"
 #include "ios/web/public/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
@@ -20,7 +19,6 @@
 
 namespace web {
 
-class NavigationItemFacadeDelegate;
 class NavigationItemStorageBuilder;
 enum class NavigationInitiationType;
 
@@ -34,13 +32,6 @@ class NavigationItemImpl : public web::NavigationItem {
   // Since NavigationItemImpls own their facade delegates, there is no implicit
   // copy constructor (scoped_ptrs can't be copied), so one is defined here.
   NavigationItemImpl(const NavigationItemImpl& item);
-
-  // Accessors for the delegate used to drive the navigation entry facade.
-  // NOTE: to minimize facade synchronization code, NavigationItems take
-  // ownership of their facade delegates.
-  void SetFacadeDelegate(
-      std::unique_ptr<NavigationItemFacadeDelegate> facade_delegate);
-  NavigationItemFacadeDelegate* GetFacadeDelegate() const;
 
   // NavigationItem implementation:
   int GetUniqueID() const override;
@@ -165,9 +156,6 @@ class NavigationItemImpl : public web::NavigationItem {
   // This is a cached version of the result of GetTitleForDisplay. When the URL,
   // virtual URL, or title is set, this should be cleared to force a refresh.
   mutable base::string16 cached_display_title_;
-
-  // Weak pointer to the facade delegate.
-  std::unique_ptr<NavigationItemFacadeDelegate> facade_delegate_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

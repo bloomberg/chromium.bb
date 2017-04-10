@@ -34,7 +34,6 @@
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
-#include "ios/web/web_state/web_state_facade_delegate.h"
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
@@ -73,7 +72,6 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     : delegate_(nullptr),
       is_loading_(false),
       is_being_destroyed_(false),
-      facade_delegate_(nullptr),
       web_controller_(nil),
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
@@ -101,10 +99,6 @@ WebStateImpl::~WebStateImpl() {
   // WebUI depends on web state so it must be destroyed first in case any WebUI
   // implementations depends on accessing web state during destruction.
   ClearWebUI();
-
-  // The facade layer (owned by the delegate) should be destroyed before the web
-  // layer.
-  DCHECK(!facade_delegate_);
 
   for (auto& observer : observers_)
     observer.WebStateDestroyed();
@@ -172,14 +166,6 @@ void WebStateImpl::SetWebController(CRWWebController* web_controller) {
   web_controller_.reset([web_controller retain]);
 }
 
-WebStateFacadeDelegate* WebStateImpl::GetFacadeDelegate() const {
-  return facade_delegate_;
-}
-
-void WebStateImpl::SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate) {
-  facade_delegate_ = facade_delegate;
-}
-
 void WebStateImpl::OnNavigationCommitted(const GURL& url) {
   std::unique_ptr<NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(this, url,
@@ -245,8 +231,6 @@ void WebStateImpl::SetIsLoading(bool is_loading) {
     return;
 
   is_loading_ = is_loading;
-  if (facade_delegate_)
-    facade_delegate_->OnLoadingStateChanged();
 
   if (is_loading) {
     for (auto& observer : observers_)
@@ -270,9 +254,6 @@ bool WebStateImpl::IsBeingDestroyed() const {
 }
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
-  if (facade_delegate_)
-    facade_delegate_->OnPageLoaded();
-
   PageLoadCompletionStatus load_completion_status =
       load_success ? PageLoadCompletionStatus::SUCCESS
                    : PageLoadCompletionStatus::FAILURE;

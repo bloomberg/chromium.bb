@@ -17,7 +17,6 @@ namespace web {
 
 class NavigationManagerImpl;
 class WebInterstitialDelegate;
-class WebInterstitialFacadeDelegate;
 class WebInterstitialImpl;
 class WebStateImpl;
 
@@ -41,10 +40,6 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
 
   // Returns the url corresponding to this interstitial.
   const GURL& GetUrl() const;
-
-  // Sets the delegate used to drive the InterstitialPage facade.
-  void SetFacadeDelegate(WebInterstitialFacadeDelegate* facade_delegate);
-  WebInterstitialFacadeDelegate* GetFacadeDelegate() const;
 
   // WebInterstitial implementation:
   void Show() override;
@@ -79,8 +74,6 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   NavigationManagerImpl* navigation_manager_;
   // The URL corresponding to the page that resulted in this interstitial.
   GURL url_;
-  // The delegate used to communicate with the InterstitialPageImplsIOS facade.
-  WebInterstitialFacadeDelegate* facade_delegate_;
   // Whether or not to create a new transient entry on display.
   bool new_navigation_;
   // Whether or not either Proceed() or DontProceed() has been called.
