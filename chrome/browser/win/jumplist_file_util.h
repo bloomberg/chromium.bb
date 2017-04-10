@@ -78,4 +78,8 @@ FolderDeleteResult DeleteDirectory(const base::FilePath& path,
 void DeleteDirectoryAndLogResults(const base::FilePath& path,
                                   int max_file_deleted);
 
+// Deletes the content in the directory at |path| and records the result to UMA.
+void DeleteDirectoryContentAndLogResults(const base::FilePath& path,
+                                         int max_file_deleted);
+
 #endif  // CHROME_BROWSER_WIN_JUMPLIST_FILE_UTIL_H_

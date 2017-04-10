@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -250,31 +251,10 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
     local_recently_closed_pages = data->recently_closed_pages_;
   }
 
-  // Delete the contents in JumpListIcons directory and log the delete status
-  // to UMA.
-  FolderDeleteResult delete_status =
-      DeleteDirectoryContent(icon_dir, kFileDeleteLimit);
-
-  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DeleteStatusJumpListIcons",
-                            delete_status, END);
-
-  // If JumpListIcons directory is not empty, skip updating the jumplist icons.
-  // If the directory doesn't exist which shouldn't though, try to create
-  // a new JumpListIcons directory. If the creation fails, skip updating the
+  // If JumpListIcons directory doesn't exist or is not empty, skip updating the
   // jumplist icons. The jumplist links should be updated anyway, as it doesn't
   // involve disk IO.
-
-  DirectoryStatus dir_status = NON_EXIST;
-  if (base::DirectoryExists(icon_dir))
-    dir_status = base::IsDirectoryEmpty(icon_dir) ? EMPTY : NON_EMPTY;
-
-  if (dir_status == NON_EXIST && base::CreateDirectory(icon_dir))
-    dir_status = EMPTY;
-
-  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DirectoryStatusJumpListIcons",
-                            dir_status, DIRECTORY_STATUS_END);
-
-  if (dir_status == EMPTY) {
+  if (base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir)) {
     // Create icon files for shortcuts in the "Most Visited" category.
     CreateIconFiles(icon_dir, local_most_visited_pages);
 
@@ -302,12 +282,19 @@ JumpList::JumpList(Profile* profile)
       profile_(profile),
       jumplist_data_(new base::RefCountedData<JumpListData>),
       task_id_(base::CancelableTaskTracker::kBadTaskId),
-      single_thread_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
+      update_jumplisticons_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
           base::TaskTraits()
               .WithPriority(base::TaskPriority::BACKGROUND)
               .WithShutdownBehavior(
                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
               .MayBlock())),
+      delete_jumplisticonsold_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                  .MayBlock())),
       weak_ptr_factory_(this) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
@@ -604,17 +591,22 @@ void JumpList::DeferredRunUpdate() {
       profile_ ? IncognitoModePrefs::GetAvailability(profile_->GetPrefs())
                : IncognitoModePrefs::ENABLED;
 
+  // Post a task to delete the content in JumpListIcons folder and log the
+  // results to UMA.
+  update_jumplisticons_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DeleteDirectoryContentAndLogResults, icon_dir_,
+                            kFileDeleteLimit));
+
   // Post a task to update the jumplist used by the shell.
-  single_thread_task_runner_->PostTask(
+  update_jumplisticons_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RunUpdateJumpList, incognito_availability, app_id_,
                             icon_dir_, base::RetainedRef(jumplist_data_)));
 
-  // Post a task to delete JumpListIconsOld folder if it exists and log the
-  // delete results to UMA.
+  // Post a task to delete JumpListIconsOld folder and log the results to UMA.
   base::FilePath icon_dir_old = icon_dir_.DirName().Append(
       icon_dir_.BaseName().value() + FILE_PATH_LITERAL("Old"));
 
-  single_thread_task_runner_->PostTask(
+  delete_jumplisticonsold_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DeleteDirectoryAndLogResults,
                             std::move(icon_dir_old), kFileDeleteLimit));
 }

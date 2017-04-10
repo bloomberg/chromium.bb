@@ -32,6 +32,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace chrome {
@@ -185,9 +186,11 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // comes in before it finishes.
   base::CancelableTaskTracker::TaskId task_id_;
 
-  // A task runner running tasks to update the jumplist in JumpListIcons and to
-  // delete JumpListIconsOld sequentially.
-  scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner_;
+  // A task runner running tasks to update the jumplist in JumpListIcons.
+  scoped_refptr<base::SingleThreadTaskRunner> update_jumplisticons_task_runner_;
+
+  // A task runner running tasks to delete JumpListIconsOld directory.
+  scoped_refptr<base::SequencedTaskRunner> delete_jumplisticonsold_task_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;

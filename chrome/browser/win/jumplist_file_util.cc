@@ -122,3 +122,25 @@ void DeleteDirectoryAndLogResults(const base::FilePath& path,
   UMA_HISTOGRAM_ENUMERATION("WinJumplist.DirectoryStatusJumpListIconsOld",
                             dir_status, DIRECTORY_STATUS_END);
 }
+
+void DeleteDirectoryContentAndLogResults(const base::FilePath& path,
+                                         int max_file_deleted) {
+  DirectoryStatus dir_status = NON_EXIST;
+
+  // Delete the content in |path|. If |path| doesn't exist, create one.
+  if (base::DirectoryExists(path)) {
+    FolderDeleteResult delete_status =
+        DeleteDirectoryContent(path, kFileDeleteLimit);
+
+    UMA_HISTOGRAM_ENUMERATION("WinJumplist.DeleteStatusJumpListIcons",
+                              delete_status, FolderDeleteResult::END);
+
+    if (base::DirectoryExists(path))
+      dir_status = base::IsDirectoryEmpty(path) ? EMPTY : NON_EMPTY;
+  } else if (base::CreateDirectory(path)) {
+    dir_status = EMPTY;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DirectoryStatusJumpListIcons",
+                            dir_status, DIRECTORY_STATUS_END);
+}
