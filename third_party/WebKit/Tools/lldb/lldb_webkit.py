@@ -56,7 +56,7 @@ def WTFStringImpl_SummaryProvider(valobj, dict):
 
 
 def WTFAtomicString_SummaryProvider(valobj, dict):
-    return WTFString_SummaryProvider(valobj.GetChildMemberWithName('m_string'), dict)
+    return WTFString_SummaryProvider(valobj.GetChildMemberWithName('string_'), dict)
 
 
 def WTFVector_SummaryProvider(valobj, dict):
@@ -135,12 +135,14 @@ class WTFStringImplProvider:
         self.valobj = valobj
 
     def get_length(self):
-        return self.valobj.GetChildMemberWithName('m_length').GetValueAsUnsigned(0)
+        return self.valobj.GetChildMemberWithName('length_').GetValueAsUnsigned(0)
 
     def get_data8(self):
+        # FIXME: This should be the equivalent of reinterpret_cast<LChar*>(self.valobj + 1)
         return self.valobj.GetChildAtIndex(2).GetChildMemberWithName('m_data8')
 
     def get_data16(self):
+        # FIXME: This should be the equivalent of reinterpret_cast<UChar*>(self.valobj + 1)
         return self.valobj.GetChildAtIndex(2).GetChildMemberWithName('m_data16')
 
     def to_string(self):
@@ -150,9 +152,7 @@ class WTFStringImplProvider:
         return ustring_to_string(self.get_data16(), error, self.get_length())
 
     def is_8bit(self):
-        # FIXME: find a way to access WTF::StringImpl::s_hashFlag8BitBuffer
-        return bool(self.valobj.GetChildMemberWithName('m_hashAndFlags').GetValueAsUnsigned(0) \
-            & 1 << 6)
+        return self.valobj.GetChildMemberWithName('is8_bit_')
 
 
 class WTFStringProvider:
@@ -160,7 +160,7 @@ class WTFStringProvider:
         self.valobj = valobj
 
     def stringimpl(self):
-        impl_ptr = self.valobj.GetChildMemberWithName('m_impl').GetChildMemberWithName('m_ptr')
+        impl_ptr = self.valobj.GetChildMemberWithName('impl_').GetChildMemberWithName('ptr_')
         return WTFStringImplProvider(impl_ptr, dict)
 
     def get_length(self):
@@ -182,7 +182,7 @@ class WebCoreLayoutUnitProvider:
         self.valobj = valobj
 
     def to_string(self):
-        return "%gpx" % (self.valobj.GetChildMemberWithName('m_value').GetValueAsUnsigned(0) / 64.0)
+        return "%gpx" % (self.valobj.GetChildMemberWithName('value_').GetValueAsUnsigned(0) / 64.0)
 
 
 class WebCoreLayoutSizeProvider:
@@ -191,10 +191,10 @@ class WebCoreLayoutSizeProvider:
         self.valobj = valobj
 
     def get_width(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_width'), dict).to_string()
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('width_'), dict).to_string()
 
     def get_height(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_height'), dict).to_string()
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('height_'), dict).to_string()
 
 
 class WebCoreLayoutPointProvider:
@@ -203,10 +203,10 @@ class WebCoreLayoutPointProvider:
         self.valobj = valobj
 
     def get_x(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_x'), dict).to_string()
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('x_'), dict).to_string()
 
     def get_y(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_y'), dict).to_string()
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('y_'), dict).to_string()
 
 
 class WTFVectorProvider:
@@ -218,20 +218,20 @@ class WTFVectorProvider:
         return self.size + 3
 
     def get_child_index(self, name):
-        if name == "m_size":
+        if name == "size_":
             return self.size
-        elif name == "m_capacity":
+        elif name == "capacity_":
             return self.size + 1
-        elif name == "m_buffer":
+        elif name == "buffer_":
             return self.size + 2
         else:
             return int(name.lstrip('[').rstrip(']'))
 
     def get_child_at_index(self, index):
         if index == self.size:
-            return self.valobj.GetChildMemberWithName("m_size")
+            return self.valobj.GetChildMemberWithName("size_")
         elif index == self.size + 1:
-            return self.valobj.GetChildMemberWithName("m_capacity")
+            return self.valobj.GetChildMemberWithName("capacity_")
         elif index == self.size + 2:
             return self.buffer
         elif index < self.size:
@@ -242,9 +242,9 @@ class WTFVectorProvider:
             return None
 
     def update(self):
-        self.buffer = self.valobj.GetChildMemberWithName('m_buffer')
-        self.size = self.valobj.GetChildMemberWithName('m_size').GetValueAsUnsigned(0)
-        self.capacity = self.buffer.GetChildMemberWithName('m_capacity').GetValueAsUnsigned(0)
+        self.buffer = self.valobj.GetChildMemberWithName('buffer_')
+        self.size = self.valobj.GetChildMemberWithName('size_').GetValueAsUnsigned(0)
+        self.capacity = self.buffer.GetChildMemberWithName('capacity_').GetValueAsUnsigned(0)
         self.data_type = self.buffer.GetType().GetPointeeType()
         self.data_size = self.data_type.GetByteSize()
 
@@ -261,41 +261,41 @@ class WTFHashTableProvider:
         return self.tableSize() + 5
 
     def get_child_index(self, name):
-        if name == "m_table":
+        if name == "table_":
             return self.tableSize()
-        elif name == "m_tableSize":
+        elif name == "table_size_":
             return self.tableSize() + 1
-        elif name == "m_tableSizeMask":
+        elif name == "table_size_mask_":
             return self.tableSize() + 2
-        elif name == "m_keyCount":
+        elif name == "key_count_":
             return self.tableSize() + 3
-        elif name == "m_deletedCount":
+        elif name == "deleted_count_":
             return self.tableSize() + 4
         else:
             return int(name.lstrip('[').rstrip(']'))
 
     def get_child_at_index(self, index):
         if index == self.tableSize():
-            return self.valobj.GetChildMemberWithName('m_table')
+            return self.valobj.GetChildMemberWithName('table_')
         elif index == self.tableSize() + 1:
-            return self.valobj.GetChildMemberWithName('m_tableSize')
+            return self.valobj.GetChildMemberWithName('table_size_')
         elif index == self.tableSize() + 2:
-            return self.valobj.GetChildMemberWithName('m_tableSizeMask')
+            return self.valobj.GetChildMemberWithName('table_size_mask_')
         elif index == self.tableSize() + 3:
-            return self.valobj.GetChildMemberWithName('m_keyCount')
+            return self.valobj.GetChildMemberWithName('key_count_')
         elif index == self.tableSize() + 4:
-            return self.valobj.GetChildMemberWithName('m_deletedCount')
+            return self.valobj.GetChildMemberWithName('deleted_count_')
         elif index < self.tableSize():
-            table = self.valobj.GetChildMemberWithName('m_table')
+            table = self.valobj.GetChildMemberWithName('table_')
             return table.CreateChildAtOffset('[' + str(index) + ']', index * self.data_size, self.data_type)
         else:
             return None
 
     def tableSize(self):
-        return self.valobj.GetChildMemberWithName('m_tableSize').GetValueAsUnsigned(0)
+        return self.valobj.GetChildMemberWithName('table_size_').GetValueAsUnsigned(0)
 
     def keyCount(self):
-        return self.valobj.GetChildMemberWithName('m_keyCount').GetValueAsUnsigned(0)
+        return self.valobj.GetChildMemberWithName('key_count_').GetValueAsUnsigned(0)
 
     def update(self):
         self.data_type = self.valobj.GetType().GetTemplateArgumentType(0)

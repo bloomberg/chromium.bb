@@ -110,25 +110,25 @@ class LCharStringPrinter(StringPrinter):
 class WTFAtomicStringPrinter(StringPrinter):
     "Print a WTF::AtomicString"
     def to_string(self):
-        return self.val['m_string']
+        return self.val['string_']
 
 
 class WTFCStringPrinter(StringPrinter):
     "Print a WTF::CString"
     def to_string(self):
         # The CString holds a buffer, which is a refptr to a WTF::CStringBuffer.
-        buf_ptr = self.val['m_buffer']['m_ptr']
+        buf_ptr = self.val['buffer_']['ptr_']
         if not buf_ptr:
             return 0
         data = (buf_ptr + 1).cast(gdb.lookup_type('char').pointer())
-        length = self.val['m_buffer']['m_ptr']['m_length']
+        length = self.val['buffer_']['ptr_']['length_']
         return ''.join([chr((data + i).dereference()) for i in range(length)])
 
 
 class WTFStringImplPrinter(StringPrinter):
     "Print a WTF::StringImpl"
     def get_length(self):
-        return self.val['m_length']
+        return self.val['length_']
 
     def to_string(self):
         chars_start = self.val.address + 1
@@ -139,13 +139,13 @@ class WTFStringImplPrinter(StringPrinter):
                                  self.get_length())
 
     def is_8bit(self):
-        return self.val['m_is8Bit']
+        return self.val['is8_bit_']
 
 
 class WTFStringPrinter(StringPrinter):
     "Print a WTF::String"
     def stringimpl_ptr(self):
-        return self.val['m_impl']['m_ptr']
+        return self.val['impl_']['ptr_']
 
     def get_length(self):
         if not self.stringimpl_ptr():
@@ -162,7 +162,7 @@ class WTFStringPrinter(StringPrinter):
 class blinkKURLPrinter(StringPrinter):
     "Print a blink::KURL"
     def to_string(self):
-        return WTFStringPrinter(self.val['m_string']).to_string()
+        return WTFStringPrinter(self.val['string_']).to_string()
 
 
 class blinkLayoutUnitPrinter:
@@ -171,7 +171,7 @@ class blinkLayoutUnitPrinter:
         self.val = val
 
     def to_string(self):
-        return "%.14gpx" % (self.val['m_value'] / 64.0)
+        return "%.14gpx" % (self.val['value_'] / 64.0)
 
 
 class blinkLayoutSizePrinter:
@@ -180,7 +180,9 @@ class blinkLayoutSizePrinter:
         self.val = val
 
     def to_string(self):
-        return 'LayoutSize(%s, %s)' % (blinkLayoutUnitPrinter(self.val['m_width']).to_string(), blinkLayoutUnitPrinter(self.val['m_height']).to_string())
+        return 'LayoutSize(%s, %s)' % (
+            blinkLayoutUnitPrinter(self.val['width_']).to_string(),
+            blinkLayoutUnitPrinter(self.val['height_']).to_string())
 
 
 class blinkLayoutPointPrinter:
@@ -189,7 +191,9 @@ class blinkLayoutPointPrinter:
         self.val = val
 
     def to_string(self):
-        return 'LayoutPoint(%s, %s)' % (blinkLayoutUnitPrinter(self.val['m_x']).to_string(), blinkLayoutUnitPrinter(self.val['m_y']).to_string())
+        return 'LayoutPoint(%s, %s)' % (
+            blinkLayoutUnitPrinter(self.val['x_']).to_string(),
+            blinkLayoutUnitPrinter(self.val['y_']).to_string())
 
 
 class blinkQualifiedNamePrinter(StringPrinter):
@@ -199,11 +203,11 @@ class blinkQualifiedNamePrinter(StringPrinter):
         super(blinkQualifiedNamePrinter, self).__init__(val)
         self.prefix_length = 0
         self.length = 0
-        if self.val['m_impl']:
+        if self.val['impl_']:
             self.prefix_printer = WTFStringPrinter(
-                self.val['m_impl']['m_ptr']['m_prefix']['m_string'])
+                self.val['impl_']['ptr_']['prefix_']['string_'])
             self.local_name_printer = WTFStringPrinter(
-                self.val['m_impl']['m_ptr']['m_localName']['m_string'])
+                self.val['impl_']['ptr_']['local_name_']['string_'])
             self.prefix_length = self.prefix_printer.get_length()
             if self.prefix_length > 0:
                 self.length = (self.prefix_length + 1 +
@@ -240,14 +244,14 @@ class BlinkLengthPrinter:
         self.val = val
 
     def to_string(self):
-        ltype = self.val['m_type']
-        if self.val['m_isFloat']:
-            val = self.val['m_floatValue']
+        ltype = self.val['type_']
+        if self.val['is_float_']:
+            val = self.val['float_value_']
         else:
-            val = int(self.val['m_intValue'])
+            val = int(self.val['int_value_'])
 
         quirk = ''
-        if self.val['m_quirk']:
+        if self.val['quirk_']:
             quirk = ', quirk=true'
 
         if ltype == 0:
@@ -342,12 +346,12 @@ class WTFVectorPrinter:
         self.val = val
 
     def children(self):
-        start = self.val['m_buffer']
-        return self.Iterator(start, start + self.val['m_size'])
+        start = self.val['buffer_']
+        return self.Iterator(start, start + self.val['size_'])
 
     def to_string(self):
         return ('%s of length %d, capacity %d'
-                % ('WTF::Vector', self.val['m_size'], self.val['m_capacity']))
+                % ('WTF::Vector', self.val['size_'], self.val['capacity_']))
 
     def display_hint(self):
         return 'array'
@@ -371,7 +375,7 @@ class WTFRefOrOwnPtrPrinter:
 
     def to_string(self):
         type_without_param = re.sub(r'<.*>', '', self.val.type.name)
-        return '%s%s' % (type_without_param, typed_ptr(self.val['m_ptr']))
+        return '%s%s' % (type_without_param, typed_ptr(self.val['ptr_']))
 
 
 class BlinkDataRefPrinter:
@@ -380,7 +384,7 @@ class BlinkDataRefPrinter:
 
     def to_string(self):
         return 'DataRef(%s)' % (
-            WTFRefOrOwnPtrPrinter(self.val['m_data']).to_string())
+            WTFRefOrOwnPtrPrinter(self.val['data_']).to_string())
 
 
 def add_pretty_printers():
@@ -452,8 +456,9 @@ class PrintPathToRootCommand(gdb.Command):
             stack = []
             while val:
                 stack.append([val,
-                    val.cast(element_type.pointer()).dereference()['m_tagName']])
-                val = val.dereference()['m_parent']
+                              val.cast(element_type.pointer()).dereference()[
+                                  'tag_name_']])
+                val = val.dereference()['parent_']
 
             padding = ''
             while len(stack) > 0:
