@@ -13,7 +13,7 @@
  *   isInfected: boolean,
  *   detectionStatusText: string,
  *   detectionTimeText: string,
- * }};
+ * }}
  */
 var LastScanResult;
 

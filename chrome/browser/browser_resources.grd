@@ -16,6 +16,9 @@
       <if expr="is_win">
         <structure name="IDR_CLEANUP_TOOL_BROWSER_PROXY_HTML" file="resources\cleanup_tool\cleanup_browser_proxy.html" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_BROWSER_PROXY_JS" file="resources\cleanup_tool\cleanup_browser_proxy.js" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_ICONS_HTML" file="resources\cleanup_tool\icons.html" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_MANAGER_HTML" file="resources\cleanup_tool\manager.html" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_MANAGER_JS" file="resources\cleanup_tool\manager.js" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_HTML" file="resources\cleanup_tool\cleanup.html" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_TOOLBAR_HTML" file="resources\cleanup_tool\toolbar.html" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_TOOLBAR_JS" file="resources\cleanup_tool\toolbar.js" type="chrome_html" />
