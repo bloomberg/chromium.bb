@@ -42,9 +42,11 @@ void TabCaptureAccessHandler::HandleRequest(
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  if (!extension)
+  if (!extension) {
     callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE,
                  std::move(ui));
+    return;
+  }
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
