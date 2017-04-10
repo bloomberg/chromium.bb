@@ -206,6 +206,10 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     BackgroundFetchSettledFetch settled_fetch;
     settled_fetch.request = request->fetch_request();
 
+    // TODO(peter): Find the appropriate way to generalize CORS security checks.
+    const bool opaque = !registration_id.origin().IsSameOriginWith(
+        url::Origin(request->GetURLChain().back().GetOrigin()));
+
     settled_fetch.response.url_list = request->GetURLChain();
 
     // TODO(peter): The |status_code| should match what the download manager ran
@@ -218,12 +222,12 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
 
     // TODO(peter): The |headers| should be set to the real response headers,
     // but the download manager does not relay those to us yet.
-    if (!request->GetResponseType().empty()) {
+    if (!request->GetResponseType().empty() && !opaque) {
       settled_fetch.response.headers["Content-Type"] =
           request->GetResponseType();
     }
 
-    if (request->GetFileSize() > 0) {
+    if (request->GetFileSize() > 0 && !opaque) {
       DCHECK(!request->GetFilePath().empty());
 
       std::unique_ptr<BlobHandle> blob_handle =
