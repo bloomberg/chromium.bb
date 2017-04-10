@@ -2827,7 +2827,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               'failed to fetch description from current Gerrit change %d\n'
               '%s' % (self.GetIssue(), self.GetIssueURL()))
         if not title:
-          default_title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
+          if options.message:
+            # For compatibility with Rietveld, if -m|--message is given on
+            # command line, title should be the first line of that message,
+            # which shouldn't be confused with CL description.
+            default_title = options.message.strip().split()[0]
+          else:
+            default_title = RunGit(
+                ['show', '-s', '--format=%s', 'HEAD']).strip()
           if options.force:
             title = default_title
           else:
@@ -2939,6 +2946,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if change_desc.get_reviewers(tbr_only=True):
       print('Adding self-LGTM (Code-Review +1) because of TBRs')
       refspec_opts.append('l=Code-Review+1')
+
+
+    # TODO(tandrii): options.message should be posted as a comment
+    # if --send-email is set on non-initial upload as Rietveld used to do it.
 
     if title:
       if not re.match(r'^[\w ]+$', title):
