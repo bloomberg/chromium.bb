@@ -312,9 +312,9 @@ def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
       newline = parent_blame[lineno_previous - 1]
 
       # Replace the commit and lineno_then, but not the lineno_now or context.
-      logging.debug('    replacing with %r', newline)
-      line = BlameLine(newline.commit, line.context, lineno_previous,
+      line = BlameLine(newline.commit, line.context, newline.lineno_then,
                        line.lineno_now, True)
+      logging.debug('    replacing with %r', line)
 
     # If any line has a different filename to the file's current name, turn on
     # filename display for the entire blame output.

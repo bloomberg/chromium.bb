@@ -498,6 +498,52 @@ class GitHyperBlameLineMotionTest(GitHyperBlameTestBase):
     self.assertEqual(expected_output, output)
 
 
+class GitHyperBlameLineNumberTest(GitHyperBlameTestBase):
+  REPO_SCHEMA = """
+  A B C D
+  """
+
+  COMMIT_A = {
+    'file':  {'data': 'red\nblue\n'},
+  }
+
+  # Change "blue" to "green".
+  COMMIT_B = {
+    'file': {'data': 'red\ngreen\n'},
+  }
+
+  # Insert 2 lines at the top,
+  COMMIT_C = {
+    'file': {'data': '\n\nred\ngreen\n'},
+  }
+
+  # Change "green" to "yellow".
+  COMMIT_D = {
+    'file': {'data': '\n\nred\nyellow\n'},
+  }
+
+  def testTwoChangesWithAddedLines(self):
+    """Regression test for https://crbug.com/709831.
+
+    Tests a line with multiple ignored edits, and a line number change in
+    between (such that the line number in the current revision is bigger than
+    the file's line count at the older ignored revision).
+    """
+    expected_output = [self.blame_line('C', ' 1) '),
+                       self.blame_line('C', ' 2) '),
+                       self.blame_line('A', ' 3) red'),
+                       self.blame_line('A', '4*) yellow'),
+                       ]
+    # Due to https://crbug.com/709831, ignoring both B and D would crash,
+    # because of C (in between those revisions) which moves Line 2 to Line 4.
+    # The algorithm would incorrectly think that Line 4 was still on Line 4 in
+    # Commit B, even though it was Line 2 at that time. Its index is out of
+    # range in the number of lines in Commit B.
+    retval, output = self.run_hyperblame(['B', 'D'], 'file', 'tag_D')
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, output)
+
+
 if __name__ == '__main__':
   sys.exit(coverage_utils.covered_main(
     os.path.join(DEPOT_TOOLS_ROOT, 'git_hyper_blame.py')))
