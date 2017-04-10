@@ -34,7 +34,7 @@ class AutofillDriverIOS : public AutofillDriver,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
 
   // AutofillDriver:
-  bool IsOffTheRecord() const override;
+  bool IsIncognito() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   bool RendererIsAvailable() override;
   void SendFormDataToRenderer(int query_id,

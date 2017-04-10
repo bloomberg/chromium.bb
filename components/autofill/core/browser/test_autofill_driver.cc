@@ -17,7 +17,7 @@ TestAutofillDriver::TestAutofillDriver()
 
 TestAutofillDriver::~TestAutofillDriver() {}
 
-bool TestAutofillDriver::IsOffTheRecord() const {
+bool TestAutofillDriver::IsIncognito() const {
   return false;
 }
 

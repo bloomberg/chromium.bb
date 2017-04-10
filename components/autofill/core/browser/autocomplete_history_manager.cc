@@ -78,7 +78,7 @@ void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
   if (!autofill_client_->IsAutocompleteEnabled())
     return;
 
-  if (driver_->IsOffTheRecord())
+  if (driver_->IsIncognito())
     return;
 
   // We put the following restriction on stored FormFields:

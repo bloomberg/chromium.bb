@@ -40,9 +40,8 @@ class AutofillDriver {
 
   virtual ~AutofillDriver() {}
 
-  // Returns whether the user is currently operating in an off-the-record
-  // (i.e., incognito) context.
-  virtual bool IsOffTheRecord() const = 0;
+  // Returns whether the user is currently operating in an incognito context.
+  virtual bool IsIncognito() const = 0;
 
   // Returns the URL request context information associated with this driver.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;

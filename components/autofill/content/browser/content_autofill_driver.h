@@ -47,7 +47,7 @@ class ContentAutofillDriver : public AutofillDriver,
   void BindRequest(mojom::AutofillDriverRequest request);
 
   // AutofillDriver:
-  bool IsOffTheRecord() const override;
+  bool IsIncognito() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   base::SequencedWorkerPool* GetBlockingPool() override;
   bool RendererIsAvailable() override;

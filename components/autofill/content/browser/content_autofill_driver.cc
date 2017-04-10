@@ -62,7 +62,7 @@ void ContentAutofillDriver::BindRequest(mojom::AutofillDriverRequest request) {
   binding_.Bind(std::move(request));
 }
 
-bool ContentAutofillDriver::IsOffTheRecord() const {
+bool ContentAutofillDriver::IsIncognito() const {
   return render_frame_host_->GetSiteInstance()
       ->GetBrowserContext()
       ->IsOffTheRecord();

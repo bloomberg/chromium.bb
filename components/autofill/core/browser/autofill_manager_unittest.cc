@@ -497,18 +497,18 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
 class MockAutofillDriver : public TestAutofillDriver {
  public:
   MockAutofillDriver()
-      : is_off_the_record_(false), did_interact_with_credit_card_form_(false) {}
+      : is_incognito_(false), did_interact_with_credit_card_form_(false) {}
 
   // Mock methods to enable testability.
   MOCK_METHOD3(SendFormDataToRenderer, void(int query_id,
                                             RendererFormDataAction action,
                                             const FormData& data));
 
-  void SetIsOffTheRecord(bool is_off_the_record) {
-    is_off_the_record_ = is_off_the_record;
+  void SetIsIncognito(bool is_incognito) {
+    is_incognito_ = is_incognito;
   }
 
-  bool IsOffTheRecord() const override { return is_off_the_record_; }
+  bool IsIncognito() const override { return is_incognito_; }
 
   void DidInteractWithCreditCardForm() override {
     did_interact_with_credit_card_form_ = true;
@@ -523,7 +523,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   }
 
  private:
-  bool is_off_the_record_;
+  bool is_incognito_;
   bool did_interact_with_credit_card_form_;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
 };
@@ -5682,11 +5682,11 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_4));
 
   // Is off the record.
-  autofill_driver_->SetIsOffTheRecord(true);
+  autofill_driver_->SetIsIncognito(true);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_4));
 
   // Make sure it's reset for the next test case.
-  autofill_driver_->SetIsOffTheRecord(false);
+  autofill_driver_->SetIsIncognito(false);
   EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_4));
 
   // Has one field which is a password field.
