@@ -1168,6 +1168,96 @@ LayoutRect LayoutBox::ClippingRect() const {
   return result;
 }
 
+bool LayoutBox::MapVisualRectToContainer(
+    const LayoutObject* container_object,
+    const LayoutPoint& container_offset,
+    const LayoutObject* ancestor,
+    VisualRectFlags visual_rect_flags,
+    TransformState& transform_state) const {
+  bool preserve3D = container_object->Style()->Preserves3D();
+
+  TransformState::TransformAccumulation accumulation =
+      preserve3D ? TransformState::kAccumulateTransform
+                 : TransformState::kFlattenTransform;
+
+  // If there is no transform on this box, adjust for container offset and
+  // container scrolling, then apply container clip.
+  if (!ShouldUseTransformFromContainer(container_object)) {
+    transform_state.MoveBy(container_offset, accumulation);
+    if (container_object->IsBox() && container_object != ancestor &&
+        !ToLayoutBox(container_object)
+             ->MapScrollingContentsRectToBoxSpace(transform_state, accumulation,
+                                                  visual_rect_flags))
+      return false;
+    return true;
+  }
+
+  // Otherwise, apply the following:
+  // 1. Transform.
+  // 2. Container offset.
+  // 3. Container scroll offset.
+  // 4. Perspective applied by container.
+  // 5. Transform flattening.
+  // 6. Expansion for pixel snapping.
+  // 7. Container clip.
+
+  // 1. Transform.
+  TransformationMatrix transform;
+  if (Layer() && Layer()->Transform())
+    transform.Multiply(Layer()->CurrentTransform());
+
+  // 2. Container offset.
+  transform.TranslateRight(container_offset.X().ToFloat(),
+                           container_offset.Y().ToFloat());
+
+  // 3. Container scroll offset.
+  if (container_object->IsBox() && container_object != ancestor &&
+      container_object->HasOverflowClip()) {
+    IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
+    transform.TranslateRight(offset.Width(), offset.Height());
+  }
+
+  // 4. Perspective applied by container.
+  if (container_object && container_object->HasLayer() &&
+      container_object->Style()->HasPerspective()) {
+    // Perspective on the container affects us, so we have to factor it in here.
+    DCHECK(container_object->HasLayer());
+    FloatPoint perspective_origin =
+        ToLayoutBoxModelObject(container_object)->Layer()->PerspectiveOrigin();
+
+    TransformationMatrix perspective_matrix;
+    perspective_matrix.ApplyPerspective(
+        container_object->Style()->Perspective());
+    perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
+                                            perspective_origin.Y(), 0);
+
+    transform = perspective_matrix * transform;
+  }
+
+  // 5. Transform flattening.
+  transform_state.ApplyTransform(transform, accumulation);
+
+  // 6. Expansion for pixel snapping.
+  // Use enclosingBoundingBox because we cannot properly compute pixel
+  // snapping for painted elements within the transform since we don't know
+  // the desired subpixel accumulation at this point, and the transform may
+  // include a scale.
+  if (!preserve3D) {
+    transform_state.Flatten();
+    transform_state.SetQuad(
+        FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
+  }
+
+  // 7. Container clip.
+  if (container_object->IsBox() && container_object != ancestor &&
+      container_object->HasClipRelatedProperty()) {
+    return ToLayoutBox(container_object)
+        ->ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
+  }
+
+  return true;
+}
+
 bool LayoutBox::MapScrollingContentsRectToBoxSpace(
     TransformState& transform_state,
     TransformState::TransformAccumulation accumulation,
@@ -1180,6 +1270,13 @@ bool LayoutBox::MapScrollingContentsRectToBoxSpace(
     transform_state.Move(offset, accumulation);
   }
 
+  return ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
+}
+
+bool LayoutBox::ApplyBoxClips(
+    TransformState& transform_state,
+    TransformState::TransformAccumulation accumulation,
+    VisualRectFlags visual_rect_flags) const {
   // This won't work fully correctly for fixed-position elements, who should
   // receive CSS clip but for whom the current object is not in the containing
   // block chain.
@@ -2429,46 +2526,21 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     container_offset.Move(Layer()->OffsetForInFlowPosition());
   }
 
-  bool preserve3d = container->Style()->Preserves3D();
-
-  TransformState::TransformAccumulation accumulation =
-      preserve3d ? TransformState::kAccumulateTransform
-                 : TransformState::kFlattenTransform;
-
   if (skip_info.FilterSkipped()) {
     InflateVisualRectForFilterUnderContainer(transform_state, *container,
                                              ancestor);
   }
 
-  // We are now in our parent container's coordinate space. Apply our transform
-  // to obtain a bounding box in the parent's coordinate space that encloses us.
-  if (ShouldUseTransformFromContainer(container)) {
-    TransformationMatrix t;
-    GetTransformFromContainer(container, ToLayoutSize(container_offset), t);
-    transform_state.ApplyTransform(t, accumulation);
-
-    // Use enclosingBoundingBox because we cannot properly compute pixel
-    // snapping for painted elements within the transform since we don't know
-    // the desired subpixel accumulation at this point, and the transform may
-    // include a scale.
-    if (!preserve3d) {
-      transform_state.Flatten();
-      transform_state.SetQuad(
-          FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
-    }
-  } else {
-    transform_state.Move(ToLayoutSize(container_offset), accumulation);
-  }
-
-  // FIXME: We ignore the lightweight clipping rect that controls use, since if
-  // |o| is in mid-layout, its controlClipRect will be wrong. For overflow clip
-  // we use the values cached by the layer.
-  if (container->IsBox() && container != ancestor &&
-      !ToLayoutBox(container)->MapScrollingContentsRectToBoxSpace(
-          transform_state, accumulation, visual_rect_flags))
+  if (!MapVisualRectToContainer(container, container_offset, ancestor,
+                                visual_rect_flags, transform_state))
     return false;
 
   if (skip_info.AncestorSkipped()) {
+    bool preserve3D = container->Style()->Preserves3D();
+    TransformState::TransformAccumulation accumulation =
+        preserve3D ? TransformState::kAccumulateTransform
+                   : TransformState::kFlattenTransform;
+
     // If the ancestor is below the container, then we need to map the rect into
     // ancestor's coordinates.
     LayoutSize container_offset =

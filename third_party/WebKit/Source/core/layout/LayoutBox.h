@@ -1257,6 +1257,22 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       TransformState::TransformAccumulation,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
+  // Applies the box clip. This is like mapScrollingContentsRectToBoxSpace,
+  // except it does not apply scroll.
+  bool ApplyBoxClips(TransformState&,
+                     TransformState::TransformAccumulation,
+                     VisualRectFlags) const;
+
+  // Maps the visual rect state |transformState| from this box into its
+  // container, applying adjustments for the given container offset,
+  // scrolling, container clipping, and transform (including container
+  // perspective).
+  bool MapVisualRectToContainer(const LayoutObject* container_bject,
+                                const LayoutPoint& container_offset,
+                                const LayoutObject* ancestor,
+                                VisualRectFlags,
+                                TransformState&) const;
+
   virtual bool HasRelativeLogicalWidth() const;
   virtual bool HasRelativeLogicalHeight() const;
 

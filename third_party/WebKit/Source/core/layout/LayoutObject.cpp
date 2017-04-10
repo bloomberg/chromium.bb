@@ -2302,15 +2302,16 @@ void LayoutObject::GetTransformFromContainer(
     const LayoutSize& offset_in_container,
     TransformationMatrix& transform) const {
   transform.MakeIdentity();
-  transform.Translate(offset_in_container.Width().ToFloat(),
-                      offset_in_container.Height().ToFloat());
   PaintLayer* layer = HasLayer() ? ToLayoutBoxModelObject(this)->Layer() : 0;
   if (layer && layer->Transform())
     transform.Multiply(layer->CurrentTransform());
 
+  transform.TranslateRight(offset_in_container.Width().ToFloat(),
+                           offset_in_container.Height().ToFloat());
+
   if (container_object && container_object->HasLayer() &&
       container_object->Style()->HasPerspective()) {
-    // Perpsective on the container affects us, so we have to factor it in here.
+    // Perspective on the container affects us, so we have to factor it in here.
     DCHECK(container_object->HasLayer());
     FloatPoint perspective_origin =
         ToLayoutBoxModelObject(container_object)->Layer()->PerspectiveOrigin();
@@ -2318,12 +2319,10 @@ void LayoutObject::GetTransformFromContainer(
     TransformationMatrix perspective_matrix;
     perspective_matrix.ApplyPerspective(
         container_object->Style()->Perspective());
+    perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
+                                            perspective_origin.Y(), 0);
 
-    transform.TranslateRight3d(-perspective_origin.X(), -perspective_origin.Y(),
-                               0);
     transform = perspective_matrix * transform;
-    transform.TranslateRight3d(perspective_origin.X(), perspective_origin.Y(),
-                               0);
   }
 }
 

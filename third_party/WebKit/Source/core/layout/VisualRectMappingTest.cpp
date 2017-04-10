@@ -35,10 +35,12 @@ class VisualRectMappingTest : public RenderingTest {
                        const LayoutBoxModelObject& ancestor,
                        const LayoutRect& local_rect,
                        const LayoutRect& expected_visual_rect,
-                       bool adjust_for_backing = false) {
+                       bool adjust_for_backing = false,
+                       bool allow_empty_cache_slot = true) {
     LayoutRect slow_map_rect = local_rect;
     object.MapToVisualRectInAncestorSpace(&ancestor, slow_map_rect);
-    if (slow_map_rect.IsEmpty() && object.VisualRect().IsEmpty())
+    if (allow_empty_cache_slot && slow_map_rect.IsEmpty() &&
+        object.VisualRect().IsEmpty())
       return;
 
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
@@ -833,6 +835,46 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
   LayoutRect output(matrix.MapRect(FloatRect(original_rect)));
 
   CheckVisualRect(*target, *target->View(), original_rect, output);
+}
+
+TEST_F(VisualRectMappingTest, PerspectivePlusScroll) {
+  EnableCompositing();
+  SetBodyInnerHTML(
+      "<style>"
+      "* { margin: 0; }"
+      "#container {"
+      "  perspective: 100px;"
+      "  width: 100px; height: 100px;"
+      "  overflow: scroll;"
+      "}"
+      "#target {"
+      "  transform: rotatex(45eg);"
+      "  background: lightblue;"
+      "  width: 100px; height: 100px;"
+      "}"
+      "#spacer {"
+      "  width: 10px; height:2000px;"
+      "}"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='target'></div>"
+      "  <div id='spacer'></div>"
+      "</div>");
+  LayoutBlock* container =
+      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  ToElement(container->GetNode())->scrollTo(0, 5);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  LayoutRect originalRect(0, 0, 100, 100);
+  TransformationMatrix transform;
+  target->GetTransformFromContainer(
+      container, target->OffsetFromContainer(container), transform);
+  transform.FlattenTo2d();
+
+  LayoutRect output(transform.MapRect(FloatRect(originalRect)));
+  output.Intersect(container->ClippingRect());
+  CheckVisualRect(*target, *target->View(), originalRect, output, false, false);
 }
 
 }  // namespace blink
