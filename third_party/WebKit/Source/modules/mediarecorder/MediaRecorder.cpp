@@ -65,17 +65,17 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
   // Clamp incoming values into a signed integer's range.
   // TODO(mcasas): This section would no be needed if the bit rates are signed
   // or double, see https://github.com/w3c/mediacapture-record/issues/48.
-  const unsigned k_max_int_as_unsigned = std::numeric_limits<int>::max();
+  const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
 
   int overall_bps = 0;
   if (options.hasBitsPerSecond())
-    overall_bps = std::min(options.bitsPerSecond(), k_max_int_as_unsigned);
+    overall_bps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
   int video_bps = 0;
   if (options.hasVideoBitsPerSecond() && use_video)
-    video_bps = std::min(options.videoBitsPerSecond(), k_max_int_as_unsigned);
+    video_bps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
   int audio_bps = 0;
   if (options.hasAudioBitsPerSecond() && use_audio)
-    audio_bps = std::min(options.audioBitsPerSecond(), k_max_int_as_unsigned);
+    audio_bps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
 
   if (use_audio) {
     // |overallBps| overrides the specific audio and video bit rates.

@@ -4835,12 +4835,12 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   web_view_helper.WebView()->Resize(WebSize(640, 480));
   RunPendingTasks();
 
-  const char* k_find_string = "a";
+  const char* kFindString = "a";
   const int kFindIdentifier = 7777;
   const int kActiveIndex = 1;
 
   WebFindOptions options;
-  WebString search_text = WebString::FromUTF8(k_find_string);
+  WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.WebView()->MainFrameImpl();
   EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
   main_frame->EnsureTextFinder().ResetMatchCount();
@@ -4865,8 +4865,8 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(kActiveIndex, client.ActiveIndex());
 
-  const char* k_find_string_new = "e";
-  WebString search_text_new = WebString::FromUTF8(k_find_string_new);
+  const char* kFindStringNew = "e";
+  WebString search_text_new = WebString::FromUTF8(kFindStringNew);
 
   EXPECT_TRUE(
       main_frame->Find(kFindIdentifier, search_text_new, options, false));
@@ -5101,8 +5101,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM) {
 
   WebLocalFrameImpl* frame = web_view_helper.WebView()->MainFrameImpl();
   const int kFindIdentifier = 12345;
-  static const char* k_find_string = "foo";
-  WebString search_text = WebString::FromUTF8(k_find_string);
+  static const char* kFindString = "foo";
+  WebString search_text = WebString::FromUTF8(kFindString);
   WebFindOptions options;
   bool active_now;
 

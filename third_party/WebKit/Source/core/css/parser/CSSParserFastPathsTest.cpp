@@ -63,23 +63,23 @@ TEST(CSSParserFastPathsTest, ParseTransform) {
 
 TEST(CSSParserFastPathsTest, ParseComplexTransform) {
   // Random whitespace is on purpose.
-  static const char* k_complex_transform =
+  static const char* kComplexTransform =
       "translateX(5px) "
       "translateZ(20.5px)   "
       "translateY(10px) "
       "scale3d(0.5, 1, 0.7)   "
       "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)   ";
-  static const char* k_complex_transform_normalized =
+  static const char* kComplexTransformNormalized =
       "translateX(5px) "
       "translateZ(20.5px) "
       "translateY(10px) "
       "scale3d(0.5, 1, 0.7) "
       "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)";
   CSSValue* value = CSSParserFastPaths::MaybeParseValue(
-      CSSPropertyTransform, k_complex_transform, kHTMLStandardMode);
+      CSSPropertyTransform, kComplexTransform, kHTMLStandardMode);
   ASSERT_NE(nullptr, value);
   ASSERT_TRUE(value->IsValueList());
-  ASSERT_EQ(k_complex_transform_normalized, value->CssText());
+  ASSERT_EQ(kComplexTransformNormalized, value->CssText());
 }
 
 TEST(CSSParserFastPathsTest, ParseTransformNotFastPath) {

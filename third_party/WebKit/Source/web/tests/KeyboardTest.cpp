@@ -172,11 +172,11 @@ TEST_F(KeyboardTest, TestDomKeyMap) {
   struct TestCase {
     const char* key;
     const char* command;
-  } k_dom_key_test_cases[] = {
+  } kDomKeyTestCases[] = {
       {"Copy", "Copy"}, {"Cut", "Cut"}, {"Paste", "Paste"},
   };
 
-  for (const auto& test_case : k_dom_key_test_cases)
+  for (const auto& test_case : kDomKeyTestCases)
     EXPECT_STREQ(test_case.command, InterpretDomKey(test_case.key));
 }
 

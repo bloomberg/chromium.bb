@@ -59,16 +59,16 @@ TEST(WebVectorTest, IsEmpty) {
 TEST(WebVectorTest, Swap) {
   const int kFirstData[] = {1, 2, 3, 4, 5};
   const int kSecondData[] = {6, 5, 8};
-  const size_t k_first_data_length = WTF_ARRAY_LENGTH(kFirstData);
-  const size_t k_second_data_length = WTF_ARRAY_LENGTH(kSecondData);
+  const size_t kFirstDataLength = WTF_ARRAY_LENGTH(kFirstData);
+  const size_t kSecondDataLength = WTF_ARRAY_LENGTH(kSecondData);
 
-  WebVector<int> first(kFirstData, k_first_data_length);
-  WebVector<int> second(kSecondData, k_second_data_length);
-  ASSERT_EQ(k_first_data_length, first.size());
-  ASSERT_EQ(k_second_data_length, second.size());
+  WebVector<int> first(kFirstData, kFirstDataLength);
+  WebVector<int> second(kSecondData, kSecondDataLength);
+  ASSERT_EQ(kFirstDataLength, first.size());
+  ASSERT_EQ(kSecondDataLength, second.size());
   first.Swap(second);
-  ASSERT_EQ(k_second_data_length, first.size());
-  ASSERT_EQ(k_first_data_length, second.size());
+  ASSERT_EQ(kSecondDataLength, first.size());
+  ASSERT_EQ(kFirstDataLength, second.size());
   for (size_t i = 0; i < first.size(); ++i)
     EXPECT_EQ(kSecondData[i], first[i]);
   for (size_t i = 0; i < second.size(); ++i)

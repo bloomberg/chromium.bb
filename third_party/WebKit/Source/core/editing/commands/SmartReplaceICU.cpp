@@ -49,13 +49,12 @@ static USet* GetSmartSet(bool is_previous_character) {
   USet* smart_set = is_previous_character ? pre_smart_set : post_smart_set;
   if (!smart_set) {
     // Whitespace and newline (kCFCharacterSetWhitespaceAndNewline)
-    static const UChar* k_whitespace_and_new_line =
-        reinterpret_cast<const UChar*>(
-            u"[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
+    static const UChar* kWhitespaceAndNewLine = reinterpret_cast<const UChar*>(
+        u"[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
     UErrorCode ec = U_ZERO_ERROR;
     smart_set = uset_openPattern(
-        k_whitespace_and_new_line,
-        LengthOfNullTerminatedString(k_whitespace_and_new_line), &ec);
+        kWhitespaceAndNewLine,
+        LengthOfNullTerminatedString(kWhitespaceAndNewLine), &ec);
     DCHECK(U_SUCCESS(ec)) << ec;
 
     // CJK ranges
@@ -90,12 +89,12 @@ static USet* GetSmartSet(bool is_previous_character) {
       AddAllCodePoints(smart_set, ")].,;:?\'!\"%*-/}");
 
       // Punctuation (kCFCharacterSetPunctuation)
-      static const UChar* k_punctuation_class =
+      static const UChar* kPunctuationClass =
           reinterpret_cast<const UChar*>(u"[:P:]");
       UErrorCode ec = U_ZERO_ERROR;
       USet* icu_punct = uset_openPattern(
-          k_punctuation_class,
-          LengthOfNullTerminatedString(k_punctuation_class), &ec);
+          kPunctuationClass, LengthOfNullTerminatedString(kPunctuationClass),
+          &ec);
       DCHECK(U_SUCCESS(ec)) << ec;
       uset_addAll(smart_set, icu_punct);
       uset_close(icu_punct);

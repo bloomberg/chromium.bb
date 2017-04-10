@@ -64,11 +64,11 @@ TEST_F(EditingCommandTest, CreateCommandFromStringCaseFolding) {
 }
 
 TEST_F(EditingCommandTest, CreateCommandFromInvalidString) {
-  const String k_invalid_command_name[] = {
+  const String kInvalidCommandName[] = {
       "", "iNvAlId", "12345",
   };
   Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
-  for (const auto& command_name : k_invalid_command_name) {
+  for (const auto& command_name : kInvalidCommandName) {
     Editor::Command command = dummy_editor.CreateCommand(command_name);
     EXPECT_EQ(0, command.IdForHistogram());
   }

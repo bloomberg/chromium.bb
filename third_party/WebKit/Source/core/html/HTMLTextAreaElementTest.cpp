@@ -10,12 +10,12 @@
 namespace blink {
 
 TEST(HTMLTextAreaElementTest, SanitizeUserInputValue) {
-  UChar k_lead_surrogate = 0xD800;
+  UChar kLeadSurrogate = 0xD800;
   EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("", 0));
   EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("a", 0));
   EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("\n", 0));
   StringBuilder builder;
-  builder.Append(k_lead_surrogate);
+  builder.Append(kLeadSurrogate);
   String lead_surrogate = builder.ToString();
   EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue(lead_surrogate, 0));
 

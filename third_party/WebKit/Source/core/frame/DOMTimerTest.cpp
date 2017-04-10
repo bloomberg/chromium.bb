@@ -30,7 +30,7 @@ class DOMTimerTest : public RenderingTest {
   // Expected time between each iterator for setInterval(..., 1) or nested
   // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minumum clamp of 4m
   // is applied from the 5th iteration onwards.
-  const std::vector<Matcher<double>> k_expected_timings = {
+  const std::vector<Matcher<double>> kExpectedTimings = {
       DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
       DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
       DoubleNear(4., 0.000001), DoubleNear(4., 0.000001),
@@ -90,7 +90,7 @@ TEST_F(DOMTimerTest, setTimeout_ClampsAfter4Nestings) {
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
+  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
 }
 
 const char* g_k_set_interval_script_text =
@@ -113,7 +113,7 @@ TEST_F(DOMTimerTest, setInterval_ClampsAfter4Iterations) {
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
+  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
 }
 
 TEST_F(DOMTimerTest, setInterval_NestingResetsForLaterCalls) {
@@ -128,7 +128,7 @@ TEST_F(DOMTimerTest, setInterval_NestingResetsForLaterCalls) {
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
+  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
 }
 
 }  // namespace

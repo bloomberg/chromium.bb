@@ -2020,14 +2020,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, NoFragmentation) {
       <div id='container'></div>
   )HTML");
 
-  LayoutUnit k_fragmentainer_space_available(200);
+  LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode* node = new NGBlockNode(
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
-      k_fragmentainer_space_available);
+      kFragmentainerSpaceAvailable);
 
   // We should only have one 150x200 fragment with no fragmentation.
   RefPtr<const NGPhysicalFragment> fragment =
@@ -2049,14 +2049,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, SimpleFragmentation) {
       <div id='container'></div>
   )HTML");
 
-  LayoutUnit k_fragmentainer_space_available(200);
+  LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode* node = new NGBlockNode(
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
-      k_fragmentainer_space_available);
+      kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
@@ -2096,14 +2096,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentation) {
       </div>
   )HTML");
 
-  LayoutUnit k_fragmentainer_space_available(200);
+  LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode* node = new NGBlockNode(
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
-      k_fragmentainer_space_available);
+      kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
@@ -2164,14 +2164,14 @@ TEST_F(NGBlockLayoutAlgorithmTest,
       </div>
   )HTML");
 
-  LayoutUnit k_fragmentainer_space_available(200);
+  LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode* node = new NGBlockNode(
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
-      k_fragmentainer_space_available);
+      kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
@@ -2230,14 +2230,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
       </div>
   )HTML");
 
-  LayoutUnit k_fragmentainer_space_available(200);
+  LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode* node = new NGBlockNode(
       ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
-      k_fragmentainer_space_available);
+      kFragmentainerSpaceAvailable);
 
   RefPtr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();

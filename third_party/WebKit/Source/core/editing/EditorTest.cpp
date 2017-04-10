@@ -70,10 +70,10 @@ TEST_F(EditorTest, copyGeneratedPassword) {
   HTMLInputElement& element =
       toHTMLInputElement(*GetDocument().GetElementById("password"));
 
-  const String k_password_value = "secret";
+  const String kPasswordValue = "secret";
   element.focus();
-  element.setValue(k_password_value);
-  element.SetSelectionRange(0, k_password_value.length());
+  element.setValue(kPasswordValue);
+  element.SetSelectionRange(0, kPasswordValue.length());
 
   Editor& editor = GetDocument().GetFrame()->GetEditor();
   EXPECT_FALSE(editor.CanCopy());

@@ -98,7 +98,7 @@ CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
 }
 
 Vector<String> InlineStylePropertyMap::getProperties() {
-  DEFINE_STATIC_LOCAL(const String, k_at_apply, ("@apply"));
+  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   Vector<String> result;
   bool contains_at_apply = false;
   StylePropertySet& inline_style_set =
@@ -113,7 +113,7 @@ Vector<String> InlineStylePropertyMap::getProperties() {
       result.push_back(custom_declaration.GetName());
     } else if (property_id == CSSPropertyApplyAtRule) {
       if (!contains_at_apply) {
-        result.push_back(k_at_apply);
+        result.push_back(kAtApply);
         contains_at_apply = true;
       }
     } else {
@@ -211,7 +211,7 @@ void InlineStylePropertyMap::remove(CSSPropertyID property_id,
 
 HeapVector<StylePropertyMap::StylePropertyMapEntry>
 InlineStylePropertyMap::GetIterationEntries() {
-  DEFINE_STATIC_LOCAL(const String, k_at_apply, ("@apply"));
+  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
   StylePropertySet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
@@ -231,7 +231,7 @@ InlineStylePropertyMap::GetIterationEntries() {
       value.setCSSStyleValue(
           CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
     } else if (property_id == CSSPropertyApplyAtRule) {
-      name = k_at_apply;
+      name = kAtApply;
       value.setCSSStyleValue(CSSUnsupportedStyleValue::Create(
           ToCSSCustomIdentValue(property_reference.Value()).Value()));
     } else {
