@@ -133,37 +133,34 @@ void NGBlockLayoutAlgorithm::UpdateFragmentBfcOffset(
 }
 
 RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
-  WTF::Optional<MinMaxContentSize> sizes;
+  WTF::Optional<MinMaxContentSize> min_max_size;
   if (NeedMinMaxContentSize(ConstraintSpace(), Style()))
-    sizes = ComputeMinMaxContentSize();
+    min_max_size = ComputeMinMaxContentSize();
 
   border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
                         ComputePadding(ConstraintSpace(), Style());
 
-  LayoutUnit inline_size =
-      ComputeInlineSizeForFragment(ConstraintSpace(), Style(), sizes);
-  LayoutUnit adjusted_inline_size =
-      inline_size - border_and_padding_.InlineSum();
-  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
-  // -1?
-  LayoutUnit block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), NGSizeIndefinite);
-  LayoutUnit adjusted_block_size(block_size);
+  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
+  NGLogicalSize size(
+      ComputeInlineSizeForFragment(ConstraintSpace(), Style(), min_max_size),
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
+                                  NGSizeIndefinite));
+
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
   // borders and padding.
-  if (adjusted_block_size != NGSizeIndefinite)
-    adjusted_block_size -= border_and_padding_.BlockSum();
+  NGLogicalSize adjusted_size(size);
+  if (size.block_size == NGSizeIndefinite)
+    adjusted_size.inline_size -= border_and_padding_.InlineSum();
+  else
+    adjusted_size -= border_and_padding_;
 
-  space_builder_
-      .SetAvailableSize(
-          NGLogicalSize(adjusted_inline_size, adjusted_block_size))
-      .SetPercentageResolutionSize(
-          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+  space_builder_.SetAvailableSize(adjusted_size)
+      .SetPercentageResolutionSize(adjusted_size);
 
   builder_.SetDirection(constraint_space_->Direction());
   builder_.SetWritingMode(constraint_space_->WritingMode());
-  builder_.SetInlineSize(inline_size).SetBlockSize(block_size);
+  builder_.SetInlineSize(size.inline_size).SetBlockSize(size.block_size);
 
   NGBlockChildIterator child_iterator(Node()->FirstChild(), BreakToken());
   NGBlockChildIterator::Entry entry = child_iterator.NextChild();
@@ -241,15 +238,15 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   }
 
   // Recompute the block-axis size now that we know our content size.
-  block_size =
+  size.block_size =
       ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
-  builder_.SetBlockSize(block_size);
+  builder_.SetBlockSize(size.block_size);
 
   // Layout our absolute and fixed positioned children.
   NGOutOfFlowLayoutPart(ConstraintSpace(), Style(), &builder_).Run();
 
   // Non-empty blocks always know their position in space:
-  if (block_size) {
+  if (size.block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset,

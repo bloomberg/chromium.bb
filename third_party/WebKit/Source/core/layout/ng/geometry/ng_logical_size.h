@@ -6,6 +6,7 @@
 #define NGLogicalSize_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 
@@ -31,6 +32,12 @@ struct CORE_EXPORT NGLogicalSize {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
 };
+
+inline NGLogicalSize& operator-=(NGLogicalSize& a, const NGBoxStrut& b) {
+  a.inline_size -= b.InlineSum();
+  a.block_size -= b.BlockSum();
+  return a;
+}
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLogicalSize&);
 
