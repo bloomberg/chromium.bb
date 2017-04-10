@@ -40,5 +40,6 @@ dictionary TestDictionary {
     record<ByteString, byte> recordMember;
     record<USVString, TestObject> garbageCollectedRecordMember;
     record<ByteString, (long or boolean)> unionInRecordMember;
+    record<DOMString, any> anyInRecordMember;
     (Float or BooleanType) unionWithTypedefs;
 };

@@ -43,6 +43,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   TestDictionary(const TestDictionary&);
   TestDictionary& operator=(const TestDictionary&);
 
+  bool hasAnyInRecordMember() const;
+  const Vector<std::pair<String, ScriptValue>>& anyInRecordMember() const;
+  void setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>&);
+
   bool hasAnyMember() const;
   ScriptValue anyMember() const;
   void setAnyMember(ScriptValue);
@@ -201,6 +205,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  bool m_hasAnyInRecordMember = false;
+  Vector<std::pair<String, ScriptValue>> m_anyInRecordMember;
   ScriptValue m_anyMember;
   bool m_hasBooleanMember = false;
   bool m_booleanMember;

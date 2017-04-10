@@ -329,6 +329,24 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
+static void partial2VoidTestEnumModulesRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidTestEnumModulesRecordMethod");
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  Vector<std::pair<String, String>> arg;
+  arg = NativeValueTraits<IDLRecord<IDLString, IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  TestInterfacePartial3Implementation::partial2VoidTestEnumModulesRecordMethod(*impl, arg);
+}
+
 static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
@@ -379,6 +397,10 @@ void V8TestInterfacePartial::partialVoidTestEnumModulesArgMethodMethodCallback(c
   TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
 }
 
+void V8TestInterfacePartial::partial2VoidTestEnumModulesRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::partial2VoidTestEnumModulesRecordMethodMethod(info);
+}
+
 void V8TestInterfacePartial::unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
 }
@@ -397,6 +419,7 @@ void V8TestInterfacePartial::partial4StaticVoidMethodMethodCallback(const v8::Fu
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"partialVoidTestEnumModulesArgMethod", V8TestInterfacePartial::partialVoidTestEnumModulesArgMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"partial2VoidTestEnumModulesRecordMethod", V8TestInterfacePartial::partial2VoidTestEnumModulesRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"unscopableVoidMethod", V8TestInterfacePartial::unscopableVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"unionWithTypedefMethod", V8TestInterfacePartial::unionWithTypedefMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };

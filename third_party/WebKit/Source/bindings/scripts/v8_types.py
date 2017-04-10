@@ -548,6 +548,8 @@ IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
 def native_value_traits_type_name(idl_type):
+    idl_type = idl_type.preprocessed_type
+
     if idl_type.is_nullable:
         idl_type = idl_type.inner_type
 

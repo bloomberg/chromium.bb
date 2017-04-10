@@ -39,6 +39,17 @@ TestDictionary::TestDictionary(const TestDictionary&) = default;
 
 TestDictionary& TestDictionary::operator=(const TestDictionary&) = default;
 
+bool TestDictionary::hasAnyInRecordMember() const {
+  return m_hasAnyInRecordMember;
+}
+const Vector<std::pair<String, ScriptValue>>& TestDictionary::anyInRecordMember() const {
+  DCHECK(m_hasAnyInRecordMember);
+  return m_anyInRecordMember;
+}
+void TestDictionary::setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>& value) {
+  m_anyInRecordMember = value;
+  m_hasAnyInRecordMember = true;
+}
 bool TestDictionary::hasAnyMember() const {
   return !(m_anyMember.IsEmpty() || m_anyMember.IsNull() || m_anyMember.IsUndefined());
 }
