@@ -113,11 +113,15 @@
 #pragma mark - NavigationCommands
 
 - (void)goBack {
-  self.webState->GetNavigationManager()->GoBack();
+  if (self.webState->GetNavigationManager()->CanGoBack()) {
+    self.webState->GetNavigationManager()->GoBack();
+  }
 }
 
 - (void)goForward {
-  self.webState->GetNavigationManager()->GoForward();
+  if (self.webState->GetNavigationManager()->CanGoForward()) {
+    self.webState->GetNavigationManager()->GoForward();
+  }
 }
 
 - (void)stopLoadingPage {
