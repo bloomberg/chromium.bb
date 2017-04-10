@@ -435,7 +435,7 @@ bool AccessibilityManager::IsIncognitoAllowed() {
              IncognitoModePrefs::DISABLED;
 }
 
-bool AccessibilityManager::IsLargeCursorEnabled() {
+bool AccessibilityManager::IsLargeCursorEnabled() const {
   return large_cursor_enabled_;
 }
 
@@ -447,7 +447,7 @@ void AccessibilityManager::EnableStickyKeys(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-bool AccessibilityManager::IsStickyKeysEnabled() {
+bool AccessibilityManager::IsStickyKeysEnabled() const {
   return sticky_keys_enabled_;
 }
 
@@ -525,7 +525,7 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
   UpdateFocusHighlightFromPref();
 }
 
-bool AccessibilityManager::IsSpokenFeedbackEnabled() {
+bool AccessibilityManager::IsSpokenFeedbackEnabled() const {
   return spoken_feedback_enabled_;
 }
 
@@ -655,7 +655,7 @@ void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
   root_window_controller->SetTouchAccessibilityAnchorPoint(anchor_point);
 }
 
-bool AccessibilityManager::IsHighContrastEnabled() {
+bool AccessibilityManager::IsHighContrastEnabled() const {
   return high_contrast_enabled_;
 }
 
@@ -668,7 +668,7 @@ void AccessibilityManager::EnableAutoclick(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-bool AccessibilityManager::IsAutoclickEnabled() {
+bool AccessibilityManager::IsAutoclickEnabled() const {
   return autoclick_enabled_;
 }
 
@@ -744,7 +744,7 @@ void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-bool AccessibilityManager::IsVirtualKeyboardEnabled() {
+bool AccessibilityManager::IsVirtualKeyboardEnabled() const {
   return virtual_keyboard_enabled_;
 }
 
@@ -792,7 +792,7 @@ void AccessibilityManager::EnableMonoAudio(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-bool AccessibilityManager::IsMonoAudioEnabled() {
+bool AccessibilityManager::IsMonoAudioEnabled() const {
   return mono_audio_enabled_;
 }
 
@@ -920,7 +920,7 @@ void AccessibilityManager::EnableTapDragging(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-bool AccessibilityManager::IsTapDraggingEnabled() {
+bool AccessibilityManager::IsTapDraggingEnabled() const {
   return tap_dragging_enabled_;
 }
 
