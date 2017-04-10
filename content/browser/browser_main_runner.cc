@@ -44,7 +44,7 @@ namespace content {
 
 namespace {
 
-bool g_exited_main_message_loop = false;
+base::LazyInstance<base::AtomicFlag>::Leaky g_exited_main_message_loop;
 const char kMainThreadName[] = "CrBrowserMain";
 
 }  // namespace
@@ -195,7 +195,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     {
       // The trace event has to stay between profiler creation and destruction.
       TRACE_EVENT0("shutdown", "BrowserMainRunner");
-      g_exited_main_message_loop = true;
+      g_exited_main_message_loop.Get().Set();
 
       main_loop_->ShutdownThreadsAndCleanUp();
 
@@ -242,7 +242,8 @@ BrowserMainRunner* BrowserMainRunner::Create() {
 
 // static
 bool BrowserMainRunner::ExitedMainMessageLoop() {
-  return g_exited_main_message_loop;
+  return !(g_exited_main_message_loop == nullptr) &&
+         g_exited_main_message_loop.Get().IsSet();
 }
 
 }  // namespace content
