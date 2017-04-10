@@ -4258,6 +4258,11 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 
 void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                       const ContextMenuParams& params) {
+  // If a renderer fires off a second command to show a context menu before the
+  // first context menu is closed, just ignore it. https://crbug.com/707534
+  if (GetRenderWidgetHostView()->IsShowingContextMenu())
+    return;
+
   ContextMenuParams context_menu_params(params);
   // Allow WebContentsDelegates to handle the context menu operation first.
   if (delegate_ && delegate_->HandleContextMenu(context_menu_params))
