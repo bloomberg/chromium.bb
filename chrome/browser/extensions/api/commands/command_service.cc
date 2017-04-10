@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
@@ -278,12 +277,12 @@ bool CommandService::AddKeybindingPref(
     RemoveKeybindingPrefs(extension_id, command_name);
 
   // Set the keybinding pref.
-  auto keybinding = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* keybinding = new base::DictionaryValue();
   keybinding->SetString(kExtension, extension_id);
   keybinding->SetString(kCommandName, command_name);
   keybinding->SetBoolean(kGlobal, global);
 
-  bindings->Set(key, std::move(keybinding));
+  bindings->Set(key, keybinding);
 
   // Set the was_assigned pref for the suggested key.
   std::unique_ptr<base::DictionaryValue> command_keys(
@@ -291,7 +290,7 @@ bool CommandService::AddKeybindingPref(
   command_keys->SetBoolean(kSuggestedKeyWasAssigned, true);
   std::unique_ptr<base::DictionaryValue> suggested_key_prefs(
       new base::DictionaryValue);
-  suggested_key_prefs->Set(command_name, std::move(command_keys));
+  suggested_key_prefs->Set(command_name, command_keys.release());
   MergeSuggestedKeyPrefs(extension_id, ExtensionPrefs::Get(profile_),
                          std::move(suggested_key_prefs));
 
@@ -647,7 +646,7 @@ void CommandService::UpdateExtensionSuggestedCommandPrefs(
       command_keys->SetString(
           kSuggestedKey,
           Command::AcceleratorToString(command.accelerator()));
-      suggested_key_prefs->Set(command.command_name(), std::move(command_keys));
+      suggested_key_prefs->Set(command.command_name(), command_keys.release());
     }
   }
 
@@ -664,7 +663,7 @@ void CommandService::UpdateExtensionSuggestedCommandPrefs(
         kSuggestedKey,
         Command::AcceleratorToString(browser_action_command->accelerator()));
     suggested_key_prefs->Set(browser_action_command->command_name(),
-                             std::move(command_keys));
+                             command_keys.release());
   }
 
   const Command* page_action_command =
@@ -676,7 +675,7 @@ void CommandService::UpdateExtensionSuggestedCommandPrefs(
         kSuggestedKey,
         Command::AcceleratorToString(page_action_command->accelerator()));
     suggested_key_prefs->Set(page_action_command->command_name(),
-                             std::move(command_keys));
+               command_keys.release());
   }
 
   // Merge into current prefs, if present.

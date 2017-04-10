@@ -4,11 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_protocol.h"
 
-#include <utility>
-
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace {
@@ -35,7 +32,7 @@ std::string DevToolsProtocol::SerializeCommand(
   command.SetInteger(kIdParam, command_id);
   command.SetString(kMethodParam, method);
   if (params)
-    command.Set(kParamsParam, std::move(params));
+    command.Set(kParamsParam, params.release());
 
   std::string json_command;
   base::JSONWriter::Write(command, &json_command);
@@ -48,11 +45,11 @@ DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
                                               const std::string& param) {
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   response->SetInteger(kIdParam, command_id);
-  auto error_object = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* error_object = new base::DictionaryValue();
+  response->Set(kErrorParam, error_object);
   error_object->SetInteger(kErrorCodeParam, kErrorInvalidParams);
   error_object->SetString(kErrorMessageParam,
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
-  response->Set(kErrorParam, std::move(error_object));
 
   return response;
 }
@@ -76,9 +73,8 @@ std::unique_ptr<base::DictionaryValue> DevToolsProtocol::CreateSuccessResponse(
     std::unique_ptr<base::DictionaryValue> result) {
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   response->SetInteger(kIdParam, command_id);
-  response->Set(kResultParam, result
-                                  ? std::move(result)
-                                  : base::MakeUnique<base::DictionaryValue>());
+  response->Set(kResultParam,
+                result ? result.release() : new base::DictionaryValue());
 
   return response;
 }

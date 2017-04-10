@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -986,10 +985,10 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
     base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
-    auto dummy_payload = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* dummy_payload = new base::DictionaryValue;
     dummy_payload->SetInteger("setting", CONTENT_SETTING_ALLOW);
     all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
-                                                     std::move(dummy_payload));
+                                                     dummy_payload);
   }
 
   HostContentSettingsMapFactory::GetForProfile(&profile);
@@ -1521,10 +1520,10 @@ TEST_F(HostContentSettingsMapTest, DomainToOriginMigrationStatus) {
     base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
-    auto domain_setting = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* domain_setting = new base::DictionaryValue;
     domain_setting->SetInteger("setting", CONTENT_SETTING_ALLOW);
     all_settings_dictionary->SetWithoutPathExpansion(host_pattern_string + ",*",
-                                                     std::move(domain_setting));
+                                                     domain_setting);
   }
 
   const base::DictionaryValue* all_settings_dictionary =

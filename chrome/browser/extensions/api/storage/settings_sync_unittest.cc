@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
@@ -403,8 +402,8 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
           base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  expected1.Set("foo", value1.CreateDeepCopy());
-  expected2.Set("bar", value2.CreateDeepCopy());
+  expected1.Set("foo", value1.DeepCopy());
+  expected2.Set("bar", value2.DeepCopy());
 
   ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
 
@@ -435,7 +434,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set(DEFAULTS, "foo", value1);
-  expected1.Set("foo", value1.CreateDeepCopy());
+  expected1.Set("foo", value1.DeepCopy());
 
   syncer::SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
@@ -445,7 +444,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
           base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  expected2.Set("bar", value2.CreateDeepCopy());
+  expected2.Set("bar", value2.DeepCopy());
 
   // Make sync add some settings.
   syncer::SyncChangeList change_list;
@@ -454,8 +453,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   change_list.push_back(settings_sync_util::CreateAdd(
       "s2", "foo", value1, model_type));
   GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
-  expected1.Set("bar", value2.CreateDeepCopy());
-  expected2.Set("foo", value1.CreateDeepCopy());
+  expected1.Set("bar", value2.DeepCopy());
+  expected2.Set("foo", value1.DeepCopy());
 
   EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
   EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
@@ -468,8 +467,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   change_list.push_back(settings_sync_util::CreateUpdate(
       "s2", "bar", value1, model_type));
   GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
-  expected1.Set("bar", value2.CreateDeepCopy());
-  expected2.Set("bar", value1.CreateDeepCopy());
+  expected1.Set("bar", value2.DeepCopy());
+  expected2.Set("bar", value1.DeepCopy());
 
   EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
   EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
@@ -708,7 +707,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
@@ -727,13 +726,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -752,13 +751,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -774,13 +773,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -799,13 +798,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -853,13 +852,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("bar", fooValue.CreateDeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 }
@@ -893,12 +892,12 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -916,13 +915,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -947,13 +946,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 }
@@ -1055,14 +1054,14 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", fooValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -1141,13 +1140,13 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -1228,13 +1227,13 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
 
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
-    dict.Set("bar", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
     base::DictionaryValue dict;
-    dict.Set("foo", barValue.CreateDeepCopy());
+    dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -1304,7 +1303,7 @@ TEST_F(ExtensionSettingsSyncTest,
   }
   {
     base::DictionaryValue expected;
-    expected.Set("large_value", large_value.CreateDeepCopy());
+    expected.Set("large_value", large_value.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, expected, storage1->Get());
     EXPECT_PRED_FORMAT2(SettingsEq, expected, storage2->Get());
   }
@@ -1336,8 +1335,8 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     ASSERT_TRUE(data->status().ok());
 
     base::DictionaryValue expected_data;
-    expected_data.SetWithoutPathExpansion(
-        "key.with.dot", base::MakeUnique<base::Value>("value"));
+    expected_data.SetWithoutPathExpansion("key.with.dot",
+                                          new base::Value("value"));
     EXPECT_TRUE(base::Value::Equals(&expected_data, &data->settings()));
   }
 

@@ -11,11 +11,9 @@
 #include <cstdlib>
 #include <memory>
 #include <set>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -89,11 +87,11 @@ static scoped_refptr<Extension> CreateExtension(
   base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extensions::manifest_keys::kName, name);
-  auto permissions = base::MakeUnique<base::ListValue>();
+  base::ListValue* permissions = new base::ListValue();
+  manifest.Set(extensions::manifest_keys::kPermissions, permissions);
   if (background_permission) {
     permissions->AppendString("background");
   }
-  manifest.Set(extensions::manifest_keys::kPermissions, std::move(permissions));
 
   std::string error;
   scoped_refptr<Extension> extension;

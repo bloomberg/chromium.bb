@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/error_utils.h"
@@ -59,16 +56,16 @@ class ExtensionSyncTypeTest : public testing::Test {
       if (num_plugins >= 0) {
         base::ListValue* plugins = new base::ListValue();
         for (int i = 0; i < num_plugins; ++i) {
-          auto plugin = base::MakeUnique<base::DictionaryValue>();
+          base::DictionaryValue* plugin = new base::DictionaryValue();
           plugin->SetString(keys::kPluginsPath, std::string());
-          plugins->Set(i, std::move(plugin));
+          plugins->Set(i, plugin);
         }
         source.Set(keys::kPlugins, plugins);
       }
     }
     if (has_plugin_permission) {
       base::ListValue* plugins = new base::ListValue();
-      plugins->Set(0, base::MakeUnique<base::Value>("plugin"));
+      plugins->Set(0, new base::Value("plugin"));
       source.Set(keys::kPermissions, plugins);
     }
 

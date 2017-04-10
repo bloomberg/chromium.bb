@@ -94,8 +94,8 @@ void ExtensionSyncEventObserver::OnFileSynced(
     sync_file_system::SyncDirection direction) {
   std::unique_ptr<base::ListValue> params(new base::ListValue());
 
-  std::unique_ptr<base::DictionaryValue> entry =
-      CreateDictionaryValueForFileSystemEntry(url, file_type);
+  std::unique_ptr<base::DictionaryValue> entry(
+      CreateDictionaryValueForFileSystemEntry(url, file_type));
   if (!entry)
     return;
   params->Append(std::move(entry));

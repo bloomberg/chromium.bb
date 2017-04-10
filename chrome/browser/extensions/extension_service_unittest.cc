@@ -37,7 +37,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -623,7 +622,7 @@ class ExtensionServiceTest
 
   void SetPref(const std::string& extension_id,
                const std::string& pref_path,
-               std::unique_ptr<base::Value> value,
+               base::Value* value,
                const std::string& msg) {
     DictionaryPrefUpdate update(profile()->GetPrefs(), "extensions.settings");
     base::DictionaryValue* dict = update.Get();
@@ -631,7 +630,7 @@ class ExtensionServiceTest
     base::DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
-    pref->Set(pref_path, std::move(value));
+    pref->Set(pref_path, value);
   }
 
   void SetPrefInteg(const std::string& extension_id,
@@ -644,7 +643,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += base::IntToString(value);
 
-    SetPref(extension_id, pref_path, base::MakeUnique<base::Value>(value), msg);
+    SetPref(extension_id, pref_path, new base::Value(value), msg);
   }
 
   void SetPrefBool(const std::string& extension_id,
@@ -655,7 +654,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += (value ? "true" : "false");
 
-    SetPref(extension_id, pref_path, base::MakeUnique<base::Value>(value), msg);
+    SetPref(extension_id, pref_path, new base::Value(value), msg);
   }
 
   void ClearPref(const std::string& extension_id,
@@ -678,12 +677,12 @@ class ExtensionServiceTest
     std::string msg = " while setting: ";
     msg += extension_id + " " + pref_path;
 
-    auto list_value = base::MakeUnique<base::ListValue>();
+    base::ListValue* list_value = new base::ListValue();
     for (std::set<std::string>::const_iterator iter = value.begin();
          iter != value.end(); ++iter)
       list_value->AppendString(*iter);
 
-    SetPref(extension_id, pref_path, std::move(list_value), msg);
+    SetPref(extension_id, pref_path, list_value, msg);
   }
 
   void InitPluginService() {
@@ -1715,7 +1714,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // the extension's granted api permissions preference. (This simulates
   // updating the browser to a version which recognizes a new API permission).
   SetPref(extension_id, "granted_permissions.api",
-          base::MakeUnique<base::ListValue>(), "granted_permissions.api");
+          new base::ListValue(), "granted_permissions.api");
   service()->ReloadExtensionsForTest();
 
   EXPECT_EQ(1u, registry()->disabled_extensions().size());
@@ -1751,10 +1750,10 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   host_permissions.insert("https://*.google.com/*");
   host_permissions.insert("http://*.google.com.hk/*");
 
-  auto api_permissions = base::MakeUnique<base::ListValue>();
+  base::ListValue* api_permissions = new base::ListValue();
   api_permissions->AppendString("tabs");
-  SetPref(extension_id, "granted_permissions.api", std::move(api_permissions),
-          "granted_permissions.api");
+  SetPref(extension_id, "granted_permissions.api",
+          api_permissions, "granted_permissions.api");
   SetPrefStringSet(
       extension_id, "granted_permissions.scriptable_host", host_permissions);
 

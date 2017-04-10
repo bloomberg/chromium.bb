@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_HELPERS_H_
 
-#include <memory>
-
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
@@ -54,7 +52,7 @@ ExtensionEnumToConflictResolutionPolicy(
 // in the renderer's customer binding to create a FileEntry object.
 // This returns NULL if the given |url| is not valid or |file_type| is
 // SYNC_FILE_TYPE_UNKNOWN.
-std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
+base::DictionaryValue* CreateDictionaryValueForFileSystemEntry(
     const storage::FileSystemURL& url,
     sync_file_system::SyncFileType file_type);
 

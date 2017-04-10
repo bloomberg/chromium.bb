@@ -7,10 +7,8 @@
 #include <stddef.h>
 
 #include <memory>
-#include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -97,7 +95,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   // Origins shouldn't have to be present.
   {
     Permissions permissions_object;
-    value->Set("permissions", apis->CreateDeepCopy());
+    value->Set("permissions", apis->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
@@ -109,7 +107,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("origins", origins->CreateDeepCopy());
+    value->Set("origins", origins->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_TRUE(permissions.get());
@@ -121,9 +119,9 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    std::unique_ptr<base::ListValue> invalid_apis = apis->CreateDeepCopy();
+    std::unique_ptr<base::ListValue> invalid_apis(apis->DeepCopy());
     invalid_apis->AppendInteger(3);
-    value->Set("permissions", std::move(invalid_apis));
+    value->Set("permissions", invalid_apis->DeepCopy());
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
@@ -131,10 +129,9 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    std::unique_ptr<base::ListValue> invalid_origins =
-        origins->CreateDeepCopy();
+    std::unique_ptr<base::ListValue> invalid_origins(origins->DeepCopy());
     invalid_origins->AppendInteger(3);
-    value->Set("origins", std::move(invalid_origins));
+    value->Set("origins", invalid_origins->DeepCopy());
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
@@ -142,14 +139,14 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("origins", base::MakeUnique<base::Value>(2));
+    value->Set("origins", new base::Value(2));
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("permissions", base::MakeUnique<base::Value>(2));
+    value->Set("permissions", new base::Value(2));
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
@@ -157,8 +154,8 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("origins", origins->CreateDeepCopy());
-    value->Set("random", base::MakeUnique<base::Value>(3));
+    value->Set("origins", origins->DeepCopy());
+    value->Set("random", new base::Value(3));
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_TRUE(permissions.get());
@@ -170,9 +167,9 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    std::unique_ptr<base::ListValue> invalid_apis = apis->CreateDeepCopy();
+    std::unique_ptr<base::ListValue> invalid_apis(apis->DeepCopy());
     invalid_apis->AppendString("unknown_permission");
-    value->Set("permissions", std::move(invalid_apis));
+    value->Set("permissions", invalid_apis->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_FALSE(permissions.get());

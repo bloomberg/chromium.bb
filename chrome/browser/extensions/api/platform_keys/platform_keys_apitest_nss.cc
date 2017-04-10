@@ -5,7 +5,6 @@
 #include <cryptohi.h>
 
 #include <memory>
-#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -198,7 +197,7 @@ class PlatformKeysTest : public ExtensionApiTest {
       cert1_key_permission->SetBooleanWithoutPathExpansion(
           "allowCorporateKeyUsage", true);
       key_permissions_policy.SetWithoutPathExpansion(
-          extension_->id(), std::move(cert1_key_permission));
+          extension_->id(), cert1_key_permission.release());
     }
 
     std::string key_permissions_policy_str;

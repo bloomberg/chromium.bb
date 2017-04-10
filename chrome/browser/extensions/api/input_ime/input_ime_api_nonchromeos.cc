@@ -12,8 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -380,7 +378,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
     return RespondNow(Error(error));
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set("frameId", base::MakeUnique<base::Value>(frame_id));
+  result->Set("frameId", new base::Value(frame_id));
 
   return RespondNow(OneArgument(std::move(result)));
 }

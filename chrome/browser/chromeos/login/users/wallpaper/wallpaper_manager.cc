@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
@@ -714,14 +713,14 @@ void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
   DictionaryPrefUpdate wallpaper_update(local_state,
                                         wallpaper::kUsersWallpaperInfo);
 
-  auto wallpaper_info_dict = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* wallpaper_info_dict = new base::DictionaryValue();
   wallpaper_info_dict->SetString(kNewWallpaperDateNodeName,
       base::Int64ToString(info.date.ToInternalValue()));
   wallpaper_info_dict->SetString(kNewWallpaperLocationNodeName, info.location);
   wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
   wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
   wallpaper_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
-                                            std::move(wallpaper_info_dict));
+                                            wallpaper_info_dict);
 }
 
 void WallpaperManager::ScheduleSetUserWallpaper(const AccountId& account_id,

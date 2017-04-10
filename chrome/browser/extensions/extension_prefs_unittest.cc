@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 
-#include <utility>
-
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -574,7 +572,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     manifest.SetString(manifest_keys::kVersion, "0.2");
     std::unique_ptr<base::ListValue> scripts(new base::ListValue);
     scripts->AppendString("test.js");
-    manifest.Set(manifest_keys::kBackgroundScripts, std::move(scripts));
+    manifest.Set(manifest_keys::kBackgroundScripts, scripts.release());
     base::FilePath path =
         prefs_.extensions_dir().AppendASCII("test_0.2");
     std::string errors;

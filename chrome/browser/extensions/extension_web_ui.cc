@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -472,14 +471,12 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
   DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
   base::DictionaryValue* all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
-    base::ListValue* page_overrides_weak = nullptr;
-    if (!all_overrides->GetList(page_override_pair.first,
-                                &page_overrides_weak)) {
-      auto page_overrides = base::MakeUnique<base::ListValue>();
-      page_overrides_weak = page_overrides.get();
-      all_overrides->Set(page_override_pair.first, std::move(page_overrides));
+    base::ListValue* page_overrides = nullptr;
+    if (!all_overrides->GetList(page_override_pair.first, &page_overrides)) {
+      page_overrides = new base::ListValue();
+      all_overrides->Set(page_override_pair.first, page_overrides);
     }
-    AddOverridesToList(page_overrides_weak, page_override_pair.second.spec());
+    AddOverridesToList(page_overrides, page_override_pair.second.spec());
   }
 }
 

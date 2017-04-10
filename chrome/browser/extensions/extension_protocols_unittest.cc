@@ -6,12 +6,10 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -105,9 +103,9 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
   manifest.SetString("name", "An extension with web-accessible resources");
   manifest.SetString("version", "2");
 
-  auto web_accessible_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* web_accessible_list = new base::ListValue();
   web_accessible_list->AppendString("test.dat");
-  manifest.Set("web_accessible_resources", std::move(web_accessible_list));
+  manifest.Set("web_accessible_resources", web_accessible_list);
 
   base::FilePath path = GetTestPath("response_headers");
 

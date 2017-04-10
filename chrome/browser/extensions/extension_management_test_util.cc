@@ -49,7 +49,7 @@ void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
 void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->SetWithoutPathExpansion(id, base::MakeUnique<base::DictionaryValue>());
+  pref_->SetWithoutPathExpansion(id, new base::DictionaryValue());
 }
 
 // Helper functions for 'installation_mode' manipulation -----------------------
@@ -222,20 +222,18 @@ ExtensionManagementPrefUpdaterBase::TakePref() {
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearList(const std::string& path) {
-  pref_->Set(path, base::MakeUnique<base::ListValue>());
+  pref_->Set(path, new base::ListValue());
 }
 
 void ExtensionManagementPrefUpdaterBase::AddStringToList(
     const std::string& path,
     const std::string& str) {
-  base::ListValue* list_value_weak = nullptr;
-  if (!pref_->GetList(path, &list_value_weak)) {
-    auto list_value = base::MakeUnique<base::ListValue>();
-    list_value_weak = list_value.get();
-    pref_->Set(path, std::move(list_value));
+  base::ListValue* list_value = nullptr;
+  if (!pref_->GetList(path, &list_value)) {
+    list_value = new base::ListValue();
+    pref_->Set(path, list_value);
   }
-  CHECK(
-      list_value_weak->AppendIfNotPresent(base::MakeUnique<base::Value>(str)));
+  CHECK(list_value->AppendIfNotPresent(base::MakeUnique<base::Value>(str)));
 }
 
 void ExtensionManagementPrefUpdaterBase::RemoveStringFromList(

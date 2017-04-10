@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/app_base_window.h"
@@ -57,9 +56,9 @@ AppWindowController::CreateWindowValueWithTabs(
   if (!tab_value)
     return result;
 
-  auto tab_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* tab_list = new base::ListValue();
   tab_list->Append(std::move(tab_value));
-  result->Set(tabs_constants::kTabsKey, std::move(tab_list));
+  result->Set(tabs_constants::kTabsKey, tab_list);
 
   return result;
 }

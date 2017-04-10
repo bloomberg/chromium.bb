@@ -533,26 +533,24 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
   DictionaryPrefUpdate update(local_state_,
                               prefs::kRegisteredSupervisedUserWhitelists);
   base::DictionaryValue* pref_dict = update.Get();
-  base::DictionaryValue* whitelist_dict_weak = nullptr;
-  const bool newly_added = !pref_dict->GetDictionaryWithoutPathExpansion(
-      crx_id, &whitelist_dict_weak);
+  base::DictionaryValue* whitelist_dict = nullptr;
+  const bool newly_added =
+      !pref_dict->GetDictionaryWithoutPathExpansion(crx_id, &whitelist_dict);
   if (newly_added) {
-    auto whitelist_dict = base::MakeUnique<base::DictionaryValue>();
-    whitelist_dict_weak = whitelist_dict.get();
+    whitelist_dict = new base::DictionaryValue;
     whitelist_dict->SetString(kName, name);
-    pref_dict->SetWithoutPathExpansion(crx_id, std::move(whitelist_dict));
+    pref_dict->SetWithoutPathExpansion(crx_id, whitelist_dict);
   }
 
   if (!client_id.empty()) {
-    base::ListValue* clients_weak = nullptr;
-    if (!whitelist_dict_weak->GetList(kClients, &clients_weak)) {
+    base::ListValue* clients = nullptr;
+    if (!whitelist_dict->GetList(kClients, &clients)) {
       DCHECK(newly_added);
-      auto clients = base::MakeUnique<base::ListValue>();
-      clients_weak = clients.get();
-      whitelist_dict_weak->Set(kClients, std::move(clients));
+      clients = new base::ListValue;
+      whitelist_dict->Set(kClients, clients);
     }
-    bool success = clients_weak->AppendIfNotPresent(
-        base::MakeUnique<base::Value>(client_id));
+    bool success =
+        clients->AppendIfNotPresent(base::MakeUnique<base::Value>(client_id));
     DCHECK(success);
   }
 
@@ -560,7 +558,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
     // Sanity-check that the stored name is equal to the name passed in.
     // In release builds this is a no-op.
     std::string stored_name;
-    DCHECK(whitelist_dict_weak->GetString(kName, &stored_name));
+    DCHECK(whitelist_dict->GetString(kName, &stored_name));
     DCHECK_EQ(stored_name, name);
     return;
   }

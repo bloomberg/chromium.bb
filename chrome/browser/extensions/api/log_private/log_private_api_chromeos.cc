@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -544,9 +543,9 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
   entry->SetString("baseName", file_entry.registered_name);
   entry->SetString("id", file_entry.id);
   entry->SetBoolean("isDirectory", false);
-  auto entry_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* entry_list = new base::ListValue();
   entry_list->Append(std::move(entry));
-  response->Set("entries", std::move(entry_list));
+  response->Set("entries", entry_list);
   response->SetBoolean("multiple", false);
   SetResult(std::move(response));
   SendResponse(succeeded);

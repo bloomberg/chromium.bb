@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -45,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
     list.Append(std::move(node));
     node.reset(new base::DictionaryValue());
     node->SetString("name", "Managed Folder");
-    node->Set("children", base::MakeUnique<base::ListValue>());
+    node->Set("children", new base::ListValue());
     list.Append(std::move(node));
     profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
     ASSERT_EQ(2, managed->managed_node()->child_count());
@@ -59,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
     list.Append(std::move(node));
     node.reset(new base::DictionaryValue());
     node->SetString("name", "Supervised Folder");
-    node->Set("children", base::MakeUnique<base::ListValue>());
+    node->Set("children", new base::ListValue());
     list.Append(std::move(node));
     profile->GetPrefs()->Set(bookmarks::prefs::kSupervisedBookmarks, list);
     ASSERT_EQ(2, managed->supervised_node()->child_count());

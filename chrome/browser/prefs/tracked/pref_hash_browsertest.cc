@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -12,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -887,9 +885,9 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
 
     // Drop a fake extension (for the purpose of this test, dropped settings
     // don't need to be valid extension settings).
-    auto fake_extension = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* fake_extension = new base::DictionaryValue;
     fake_extension->SetString("name", "foo");
-    extensions_dict->Set(std::string(32, 'a'), std::move(fake_extension));
+    extensions_dict->Set(std::string(32, 'a'), fake_extension);
   }
 
   void VerifyReactionToPrefAttack() override {

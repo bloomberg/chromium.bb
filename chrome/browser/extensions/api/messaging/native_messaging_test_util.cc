@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 
 #include <memory>
-#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -38,7 +37,7 @@ void WriteTestNativeHostManifest(const base::FilePath& target_dir,
   std::unique_ptr<base::ListValue> origins(new base::ListValue());
   origins->AppendString(base::StringPrintf(
       "chrome-extension://%s/", ScopedTestNativeMessagingHost::kExtensionId));
-  manifest->Set("allowed_origins", std::move(origins));
+  manifest->Set("allowed_origins", origins.release());
 
   base::FilePath manifest_path = target_dir.AppendASCII(host_name + ".json");
   JSONFileValueSerializer serializer(manifest_path);

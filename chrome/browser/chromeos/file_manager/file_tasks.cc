@@ -11,7 +11,6 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -198,8 +197,8 @@ void UpdateDefaultTask(PrefService* pref_service,
                                         prefs::kDefaultTasksByMimeType);
     for (std::set<std::string>::const_iterator iter = mime_types.begin();
         iter != mime_types.end(); ++iter) {
-      mime_type_pref->SetWithoutPathExpansion(
-          *iter, base::MakeUnique<base::Value>(task_id));
+      base::Value* value = new base::Value(task_id);
+      mime_type_pref->SetWithoutPathExpansion(*iter, value);
     }
   }
 
@@ -208,10 +207,10 @@ void UpdateDefaultTask(PrefService* pref_service,
                                         prefs::kDefaultTasksBySuffix);
     for (std::set<std::string>::const_iterator iter = suffixes.begin();
         iter != suffixes.end(); ++iter) {
+      base::Value* value = new base::Value(task_id);
       // Suffixes are case insensitive.
       std::string lower_suffix = base::ToLowerASCII(*iter);
-      mime_type_pref->SetWithoutPathExpansion(
-          lower_suffix, base::MakeUnique<base::Value>(task_id));
+      mime_type_pref->SetWithoutPathExpansion(lower_suffix, value);
     }
   }
 }

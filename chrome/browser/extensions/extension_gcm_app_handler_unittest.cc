@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -288,9 +287,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(manifest_keys::kName, kTestExtensionName);
-    auto permission_list = base::MakeUnique<base::ListValue>();
+    base::ListValue* permission_list = new base::ListValue;
     permission_list->AppendString("gcm");
-    manifest.Set(manifest_keys::kPermissions, std::move(permission_list));
+    manifest.Set(manifest_keys::kPermissions, permission_list);
 
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
-#include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -114,11 +110,11 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest,
   // another platform.
   std::string anotherPlatformKey = GetAnotherCommandPlatform() + ":Alt+G";
   const char kNamedCommandName[] = "toggle-feature";
-  auto keybinding = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* keybinding = new base::DictionaryValue();
   keybinding->SetString("extension", extension->id());
   keybinding->SetString("command_name", kNamedCommandName);
   keybinding->SetBoolean("global", false);
-  bindings->Set(anotherPlatformKey, std::move(keybinding));
+  bindings->Set(anotherPlatformKey, keybinding);
 
   CommandService* command_service = CommandService::Get(browser()->profile());
   command_service->RemoveKeybindingPrefs(extension->id(), kNamedCommandName);

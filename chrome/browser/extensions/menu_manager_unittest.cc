@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/menu_manager.h"
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
@@ -232,11 +231,11 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   int contexts_value = 0;
   ASSERT_TRUE(contexts.ToValue()->GetAsInteger(&contexts_value));
 
-  auto document_url_patterns = base::MakeUnique<base::ListValue>();
+  base::ListValue* document_url_patterns(new base::ListValue());
   document_url_patterns->AppendString("http://www.google.com/*");
   document_url_patterns->AppendString("http://www.reddit.com/*");
 
-  auto target_url_patterns = base::MakeUnique<base::ListValue>();
+  base::ListValue* target_url_patterns(new base::ListValue());
   target_url_patterns->AppendString("http://www.yahoo.com/*");
   target_url_patterns->AppendString("http://www.facebook.com/*");
 
@@ -248,16 +247,10 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   value.SetBoolean("checked", checked);
   value.SetBoolean("enabled", enabled);
   value.SetInteger("contexts", contexts_value);
-  std::string error;
-  URLPatternSet document_url_pattern_set;
-  document_url_pattern_set.Populate(*document_url_patterns,
-                                    URLPattern::SCHEME_ALL, true, &error);
-  value.Set("document_url_patterns", std::move(document_url_patterns));
-  URLPatternSet target_url_pattern_set;
-  target_url_pattern_set.Populate(*target_url_patterns, URLPattern::SCHEME_ALL,
-                                  true, &error);
-  value.Set("target_url_patterns", std::move(target_url_patterns));
+  value.Set("document_url_patterns", document_url_patterns);
+  value.Set("target_url_patterns", target_url_patterns);
 
+  std::string error;
   std::unique_ptr<MenuItem> item(
       MenuItem::Populate(extension->id(), value, &error));
   ASSERT_TRUE(item.get());
@@ -270,8 +263,18 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   EXPECT_EQ(enabled, item->enabled());
   EXPECT_EQ(contexts, item->contexts());
 
+  URLPatternSet document_url_pattern_set;
+  document_url_pattern_set.Populate(*document_url_patterns,
+                                    URLPattern::SCHEME_ALL,
+                                    true,
+                                    &error);
   EXPECT_EQ(document_url_pattern_set, item->document_url_patterns());
 
+  URLPatternSet target_url_pattern_set;
+  target_url_pattern_set.Populate(*target_url_patterns,
+                                   URLPattern::SCHEME_ALL,
+                                   true,
+                                   &error);
   EXPECT_EQ(target_url_pattern_set, item->target_url_patterns());
 }
 

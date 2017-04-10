@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -107,11 +105,11 @@ ConflictResolutionPolicyToExtensionEnum(
   return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
 }
 
-std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
+base::DictionaryValue* CreateDictionaryValueForFileSystemEntry(
     const storage::FileSystemURL& url,
     sync_file_system::SyncFileType file_type) {
   if (!url.is_valid() || file_type == sync_file_system::SYNC_FILE_TYPE_UNKNOWN)
-    return nullptr;
+    return NULL;
 
   std::string file_path =
       base::FilePath(storage::VirtualPath::GetNormalizedFilePath(url.path()))
@@ -124,7 +122,7 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
     root_url.append("/");
   }
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString("fileSystemType",
                   storage::GetFileSystemTypeString(url.mount_type()));
   dict->SetString("fileSystemName",

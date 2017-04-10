@@ -5,12 +5,11 @@
 // Tests common functionality used by the Chrome Extensions Cookies API
 // implementation.
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 #include <stddef.h>
 
-#include <utility>
-
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
@@ -19,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using extensions::api::cookies::Cookie;
@@ -121,10 +119,10 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ(10000, *cookie2.expiration_date);
 
   TestingProfile profile;
-  auto tab_ids_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* tab_ids_list = new base::ListValue();
   std::vector<int> tab_ids;
   CookieStore cookie_store =
-      cookies_helpers::CreateCookieStore(&profile, std::move(tab_ids_list));
+      cookies_helpers::CreateCookieStore(&profile, tab_ids_list);
   EXPECT_EQ("0", cookie_store.id);
   EXPECT_EQ(tab_ids, cookie_store.tab_ids);
 }
@@ -170,9 +168,9 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Build up the Params struct.
     base::ListValue args;
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString(keys::kDomainKey, std::string(tests[i].filter));
-    args.Set(0, std::move(dict));
+    args.Set(0, dict);
     std::unique_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);

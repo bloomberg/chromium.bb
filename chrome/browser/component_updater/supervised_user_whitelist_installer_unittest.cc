@@ -4,8 +4,6 @@
 
 #include <stddef.h>
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -238,13 +236,13 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     std::unique_ptr<base::DictionaryValue> whitelist_dict(
         new base::DictionaryValue);
     whitelist_dict->SetString("sites", kWhitelistFile);
-    manifest_.Set("whitelisted_content", std::move(whitelist_dict));
+    manifest_.Set("whitelisted_content", whitelist_dict.release());
 
     large_icon_path_ = whitelist_version_directory_.AppendASCII(kLargeIconFile);
     std::unique_ptr<base::DictionaryValue> icons_dict(
         new base::DictionaryValue);
     icons_dict->SetString("128", kLargeIconFile);
-    manifest_.Set("icons", std::move(icons_dict));
+    manifest_.Set("icons", icons_dict.release());
 
     manifest_.SetString("version", kVersion);
 
@@ -253,8 +251,8 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     std::unique_ptr<base::ListValue> clients(new base::ListValue);
     clients->AppendString(kClientId);
     clients->AppendString(kOtherClientId);
-    crx_dict->Set("clients", std::move(clients));
-    pref_.Set(kCrxId, std::move(crx_dict));
+    crx_dict->Set("clients", clients.release());
+    pref_.Set(kCrxId, crx_dict.release());
   }
 
  protected:

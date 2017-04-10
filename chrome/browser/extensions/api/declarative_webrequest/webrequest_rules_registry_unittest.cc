@@ -8,13 +8,11 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -103,23 +101,24 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that roughly matches http://*.example.com and
   // https://www.example.com and cancels it
   linked_ptr<api::events::Rule> CreateRule1() {
-    auto scheme_http = base::MakeUnique<base::ListValue>();
+    base::ListValue* scheme_http = new base::ListValue();
     scheme_http->AppendString("http");
-    auto http_condition_dict = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* http_condition_dict = new base::DictionaryValue();
+    http_condition_dict->Set(keys2::kSchemesKey, scheme_http);
     http_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
     base::DictionaryValue http_condition_url_filter;
+    http_condition_url_filter.Set(keys::kUrlKey, http_condition_dict);
     http_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                         keys::kRequestMatcherType);
 
+    base::ListValue* scheme_https = new base::ListValue();
     scheme_http->AppendString("https");
-    auto https_condition_dict = base::MakeUnique<base::DictionaryValue>();
-    https_condition_dict->Set(keys2::kSchemesKey,
-                              base::MakeUnique<base::ListValue>());
+    base::DictionaryValue* https_condition_dict = new base::DictionaryValue();
+    https_condition_dict->Set(keys2::kSchemesKey, scheme_https);
     https_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
     https_condition_dict->SetString(keys2::kHostPrefixKey, "www");
     base::DictionaryValue https_condition_url_filter;
-    https_condition_url_filter.Set(keys::kUrlKey,
-                                   std::move(https_condition_dict));
+    https_condition_url_filter.Set(keys::kUrlKey, https_condition_dict);
     https_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                          keys::kRequestMatcherType);
 
@@ -130,9 +129,6 @@ class WebRequestRulesRegistryTest : public testing::Test {
     rule->id.reset(new std::string(kRuleId1));
     rule->priority.reset(new int(100));
     rule->actions.push_back(action_dict.CreateDeepCopy());
-    http_condition_dict->Set(keys2::kSchemesKey, std::move(scheme_http));
-    http_condition_url_filter.Set(keys::kUrlKey,
-                                  std::move(http_condition_dict));
     rule->conditions.push_back(http_condition_url_filter.CreateDeepCopy());
     rule->conditions.push_back(https_condition_url_filter.CreateDeepCopy());
     return rule;
@@ -175,10 +171,10 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // contains index.html.
   linked_ptr<api::events::Rule> CreateIgnoreRule() {
     base::DictionaryValue condition_dict;
-    auto http_condition_dict = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* http_condition_dict = new base::DictionaryValue();
     http_condition_dict->SetString(keys2::kPathContainsKey, "index.html");
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
-    condition_dict.Set(keys::kUrlKey, std::move(http_condition_dict));
+    condition_dict.Set(keys::kUrlKey, http_condition_dict);
 
     base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);

@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -764,10 +763,10 @@ void BackgroundContentsService::RegisterBackgroundContents(
   }
 
   // No entry for this application yet, so add one.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
-  pref->SetWithoutPathExpansion(base::UTF16ToUTF8(appid), std::move(dict));
+  pref->SetWithoutPathExpansion(base::UTF16ToUTF8(appid), dict);
 }
 
 bool BackgroundContentsService::HasRegisteredBackgroundContents(

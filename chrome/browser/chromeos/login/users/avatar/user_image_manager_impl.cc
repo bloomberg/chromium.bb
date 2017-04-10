@@ -552,7 +552,7 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
                base::MakeUnique<base::Value>(image_url_.spec()));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               kUserImageProperties);
-  update->SetWithoutPathExpansion(user_id(), std::move(entry));
+  update->SetWithoutPathExpansion(user_id(), entry.release());
 
   parent_->user_manager_->NotifyLocalStateChanged();
 }

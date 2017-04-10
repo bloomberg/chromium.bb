@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -41,14 +40,13 @@
 namespace extensions {
 namespace {
 
-std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
-                                                    bool effective_perm) {
+base::ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   const PermissionsData* permissions_data = ext->permissions_data();
   const URLPatternSet& pattern_set =
       effective_perm ? permissions_data->GetEffectiveHostPermissions()
                      : permissions_data->active_permissions().explicit_hosts();
 
-  auto permissions = base::MakeUnique<base::ListValue>();
+  base::ListValue* permissions = new base::ListValue;
   for (URLPatternSet::const_iterator perm = pattern_set.begin();
        perm != pattern_set.end();
        ++perm) {
@@ -58,8 +56,8 @@ std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
   return permissions;
 }
 
-std::unique_ptr<base::ListValue> GetAPIPermissions(const Extension* ext) {
-  auto permissions = base::MakeUnique<base::ListValue>();
+base::ListValue* GetAPIPermissions(const Extension* ext) {
+  base::ListValue* permissions = new base::ListValue;
   std::set<std::string> perm_list =
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
@@ -168,7 +166,7 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_context());
 
-  auto extensions_values = base::MakeUnique<base::ListValue>();
+  base::ListValue* extensions_values = new base::ListValue;
   ExtensionList all;
   all.insert(all.end(), extensions.begin(), extensions.end());
   all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
@@ -214,7 +212,7 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
 
   std::unique_ptr<base::DictionaryValue> return_value(
       new base::DictionaryValue);
-  return_value->Set("extensions", std::move(extensions_values));
+  return_value->Set("extensions", extensions_values);
   return RespondNow(OneArgument(std::move(return_value)));
 }
 

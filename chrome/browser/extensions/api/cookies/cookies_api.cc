@@ -556,12 +556,12 @@ ExtensionFunction::ResponseAction CookiesGetAllCookieStoresFunction::Run() {
   std::vector<cookies::CookieStore> cookie_stores;
   if (original_tab_ids->GetSize() > 0) {
     cookie_stores.push_back(cookies_helpers::CreateCookieStore(
-        original_profile, std::move(original_tab_ids)));
+        original_profile, original_tab_ids.release()));
   }
   if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0 &&
       incognito_profile) {
     cookie_stores.push_back(cookies_helpers::CreateCookieStore(
-        incognito_profile, std::move(incognito_tab_ids)));
+        incognito_profile, incognito_tab_ids.release()));
   }
   return RespondNow(
       ArgumentList(GetAllCookieStores::Results::Create(cookie_stores)));
