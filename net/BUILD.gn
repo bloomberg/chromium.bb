@@ -354,7 +354,6 @@ component("net") {
     "//base",
     "//net/base/registry_controlled_domains",
     "//net/data/ssl/wosign:wosign_domains",
-    "//net/http:generate_transport_security_state",
     "//third_party/protobuf:protobuf_lite",
     "//url:url_features",
   ]
