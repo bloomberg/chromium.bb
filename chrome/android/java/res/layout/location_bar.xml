@@ -5,11 +5,25 @@
 
 <!-- The location bar also know as URL bar -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
-    <ViewStub
-        android:id="@+id/google_g_container_stub"
+    <!-- The container for the Google G is kept at a fixed width to make the horizonal translation
+         calculations work. The contents are end-aligned, so when the location bar expands,
+         the space in the start margin will be pushed out, creating the effect of both margins
+         shrinking simultaneously. -->
+    <FrameLayout android:id="@+id/google_g_container"
         android:layout_width="@dimen/location_bar_google_g_container_width"
-        android:layout_height="match_parent"
-        android:layout="@layout/location_bar_google_g" />
+        android:layout_height="match_parent" >
+
+        <ImageView android:id="@+id/google_g"
+            style="@style/LocationBarButton"
+            android:layout_width="@dimen/location_bar_google_g_width"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/location_bar_google_g_margin"
+            android:layout_gravity="end"
+            android:scaleType="fitCenter"
+            android:src="@drawable/googleg"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
 
     <ImageView android:id="@+id/incognito_badge"
         style="@style/LocationBarButton"
