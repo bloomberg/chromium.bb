@@ -411,6 +411,12 @@ void RenderWidgetHostViewChildFrame::OnBeginFrameDidNotSwap(
   support_->BeginFrameDidNotSwap(ack);
 }
 
+void RenderWidgetHostViewChildFrame::OnSurfaceChanged(
+    const cc::SurfaceInfo& surface_info) {
+  cc::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
+  SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
+}
+
 void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
   // We only use callbacks once, therefore we make a new list for registration
   // before we start, and discard the old list entries when we are done.

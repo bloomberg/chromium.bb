@@ -324,6 +324,8 @@ const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
 void WindowPortMus::SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) {
   primary_surface_info_ = surface_info;
   UpdateClientSurfaceEmbedder();
+  if (window_->delegate())
+    window_->delegate()->OnWindowSurfaceChanged(surface_info);
 }
 
 void WindowPortMus::SetFallbackSurfaceInfo(
@@ -528,11 +530,9 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
   if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
-  primary_surface_info_ =
+  SetPrimarySurfaceInfo(
       cc::SurfaceInfo(cc::SurfaceId(frame_sink_id_, local_surface_id_),
-                      ScaleFactorForDisplay(window_), last_surface_size_);
-
-  UpdateClientSurfaceEmbedder();
+                      ScaleFactorForDisplay(window_), last_surface_size_));
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {

@@ -46,6 +46,7 @@ struct ViewHostMsg_SelectionBounds_Params;
 
 namespace cc {
 struct BeginFrameAck;
+class SurfaceInfo;
 }  // namespace cc
 
 namespace media {
@@ -227,6 +228,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                      cc::CompositorFrame frame) = 0;
 
   virtual void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {}
+  virtual void OnSurfaceChanged(const cc::SurfaceInfo& surface_info) {}
 
   // This method exists to allow removing of displayed graphics, after a new
   // page has been loaded, to prevent the displayed URL from being out of sync

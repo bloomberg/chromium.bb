@@ -12,6 +12,10 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace cc {
+class SurfaceInfo;
+}
+
 namespace gfx {
 class Path;
 class Point;
@@ -93,6 +97,8 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // Called from Window::HitTest to retrieve hit test mask when HasHitTestMask
   // above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const = 0;
+
+  virtual void OnWindowSurfaceChanged(const cc::SurfaceInfo& surface_info) {}
 
  protected:
   ~WindowDelegate() override {}
