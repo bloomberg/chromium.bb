@@ -177,7 +177,8 @@ static uint32_t bo2idx(struct etna_cmd_stream *stream, struct etna_bo *bo,
 	return idx;
 }
 
-static void flush(struct etna_cmd_stream *stream)
+static void flush(struct etna_cmd_stream *stream, int in_fence_fd,
+		  int *out_fence_fd)
 {
 	struct etna_cmd_stream_priv *priv = etna_cmd_stream_priv(stream);
 	int ret, id = priv->pipe->id;
@@ -194,8 +195,22 @@ static void flush(struct etna_cmd_stream *stream)
 		.stream_size = stream->offset * 4, /* in bytes */
 	};
 
+	if (in_fence_fd != -1) {
+		req.flags |= ETNA_SUBMIT_FENCE_FD_IN | ETNA_SUBMIT_NO_IMPLICIT;
+		req.fence_fd = in_fence_fd;
+	}
+
+	if (out_fence_fd)
+		req.flags |= ETNA_SUBMIT_FENCE_FD_OUT;
+
+	/*
+	 * Pass the complete submit structure only if flags are set. Otherwise,
+	 * only pass the fields up to, but not including the flags field for
+	 * backwards compatiblity with older kernels.
+	 */
 	ret = drmCommandWriteRead(gpu->dev->fd, DRM_ETNAVIV_GEM_SUBMIT,
-			&req, sizeof(req));
+			&req, req.flags ? sizeof(req) :
+			offsetof(struct drm_etnaviv_gem_submit, flags));
 
 	if (ret)
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
@@ -208,11 +223,21 @@ static void flush(struct etna_cmd_stream *stream)
 		bo->current_stream = NULL;
 		etna_bo_del(bo);
 	}
+
+	if (out_fence_fd)
+		*out_fence_fd = req.fence_fd;
 }
 
 void etna_cmd_stream_flush(struct etna_cmd_stream *stream)
 {
-	flush(stream);
+	flush(stream, -1, NULL);
+	reset_buffer(stream);
+}
+
+void etna_cmd_stream_flush2(struct etna_cmd_stream *stream, int in_fence_fd,
+			    int *out_fence_fd)
+{
+	flush(stream, in_fence_fd, out_fence_fd);
 	reset_buffer(stream);
 }
 
@@ -220,7 +245,7 @@ void etna_cmd_stream_finish(struct etna_cmd_stream *stream)
 {
 	struct etna_cmd_stream_priv *priv = etna_cmd_stream_priv(stream);
 
-	flush(stream);
+	flush(stream, -1, NULL);
 	etna_pipe_wait(priv->pipe, priv->last_timestamp, 5000);
 	reset_buffer(stream);
 }

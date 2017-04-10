@@ -39,6 +39,7 @@ etna_cmd_stream_new
 etna_cmd_stream_del
 etna_cmd_stream_timestamp
 etna_cmd_stream_flush
+etna_cmd_stream_flush2
 etna_cmd_stream_finish
 etna_cmd_stream_reloc
 EOF
