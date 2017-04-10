@@ -64,7 +64,10 @@
 
 namespace blink {
 
-void LocalWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
+void LocalWindowProxy::DisposeContext(Lifecycle next_status) {
+  DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
+         next_status == Lifecycle::kFrameIsDetached);
+
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
@@ -77,7 +80,7 @@ void LocalWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
                                                           world_->GetWorldId());
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.Get());
 
-  if (behavior == kDetachGlobal) {
+  if (next_status == Lifecycle::kGlobalObjectIsDetached) {
     v8::Local<v8::Context> context = script_state_->GetContext();
     // Clean up state on the global proxy, which will be reused.
     if (!global_proxy_.IsEmpty()) {
@@ -104,8 +107,7 @@ void LocalWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
       GetFrame()->IsMainFrame());
 
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);
-  lifecycle_ = behavior == kDetachGlobal ? Lifecycle::kGlobalObjectIsDetached
-                                         : Lifecycle::kFrameIsDetached;
+  lifecycle_ = next_status;
 }
 
 void LocalWindowProxy::Initialize() {

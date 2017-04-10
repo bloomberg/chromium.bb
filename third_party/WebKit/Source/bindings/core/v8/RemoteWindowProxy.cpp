@@ -49,11 +49,15 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
                                      RefPtr<DOMWrapperWorld> world)
     : WindowProxy(isolate, frame, std::move(world)) {}
 
-void RemoteWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
+void RemoteWindowProxy::DisposeContext(Lifecycle next_status) {
+  DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
+         next_status == Lifecycle::kFrameIsDetached);
+
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  if (behavior == kDetachGlobal && !global_proxy_.IsEmpty()) {
+  if (next_status == Lifecycle::kGlobalObjectIsDetached &&
+      !global_proxy_.IsEmpty()) {
     global_proxy_.Get().SetWrapperClassId(0);
     V8DOMWrapper::ClearNativeInfo(GetIsolate(),
                                   global_proxy_.NewLocal(GetIsolate()));
@@ -63,8 +67,7 @@ void RemoteWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
   }
 
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);
-  lifecycle_ = behavior == kDetachGlobal ? Lifecycle::kGlobalObjectIsDetached
-                                         : Lifecycle::kFrameIsDetached;
+  lifecycle_ = next_status;
 }
 
 void RemoteWindowProxy::Initialize() {

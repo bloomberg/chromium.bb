@@ -224,8 +224,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
   virtual void Initialize() = 0;
 
-  enum GlobalDetachmentBehavior { kDoNotDetachGlobal, kDetachGlobal };
-  virtual void DisposeContext(GlobalDetachmentBehavior) = 0;
+  virtual void DisposeContext(Lifecycle next_status) = 0;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       DOMWindow*,
