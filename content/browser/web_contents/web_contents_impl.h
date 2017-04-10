@@ -132,13 +132,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   static std::vector<WebContentsImpl*> GetAllWebContents();
 
-  static WebContentsImpl* FromFrameTreeNode(
-      const FrameTreeNode* frame_tree_node);
+  static WebContentsImpl* FromFrameTreeNode(FrameTreeNode* frame_tree_node);
   static WebContents* FromRenderFrameHostID(int render_process_host_id,
                                             int render_frame_host_id);
   static WebContents* FromFrameTreeNodeId(int frame_tree_node_id);
-  static WebContentsImpl* FromOuterFrameTreeNode(
-      const FrameTreeNode* frame_tree_node);
 
   // Complex initialization here. Specifically needed to avoid having
   // members call back into our virtual functions in the constructor.
@@ -270,24 +267,6 @@ class CONTENT_EXPORT WebContentsImpl
   // WebContents. Returns null of there is no registered binder for the
   // interface.
   WebContentsBindingSet* GetBindingSet(const std::string& interface_name);
-
-  // Returns the focused WebContents.
-  // If there are multiple inner/outer WebContents (when embedding <webview>,
-  // <guestview>, ...) returns the single one containing the currently focused
-  // frame. Otherwise, returns this WebContents.
-  WebContentsImpl* GetFocusedWebContents();
-
-  // TODO(paulmeyer): Once GuestViews are no longer implemented as
-  // BrowserPluginGuests, frame traversal across WebContents should be moved to
-  // be handled by FrameTreeNode, and |GetInnerWebContents| and
-  // |GetWebContentsAndAllInner| can be removed.
-
-  // Returns a vector to the inner WebContents within this WebContents.
-  std::vector<WebContentsImpl*> GetInnerWebContents();
-
-  // Returns a vector containing this WebContents and all inner WebContents
-  // within it (recursively).
-  std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
 
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
@@ -833,10 +812,6 @@ class CONTENT_EXPORT WebContentsImpl
   // |IsFullscreen| must return |true| when this method is called.
   bool HasActiveEffectivelyFullscreenVideo() const;
 
-  // Called by this WebContents's BrowserPluginGuest (if one exists) to indicate
-  // that the guest will be destroyed.
-  void BrowserPluginGuestWillDestroy();
-
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.
   void NotifyFindMatchRectsReply(int version,
@@ -912,16 +887,7 @@ class CONTENT_EXPORT WebContentsImpl
     WebContentsImpl* focused_web_contents() { return focused_web_contents_; }
     void SetFocusedWebContents(WebContentsImpl* web_contents);
 
-    // Returns the inner WebContents within |frame|, if one exists, or nullptr
-    // otherwise.
-    WebContentsImpl* GetInnerWebContentsInFrame(const FrameTreeNode* frame);
-
-    const std::vector<WebContentsImpl*>& inner_web_contents() const;
-
    private:
-    void AttachInnerWebContents(WebContentsImpl* inner_web_contents);
-    void DetachInnerWebContents(WebContentsImpl* inner_web_contents);
-
     // FrameTreeNode::Observer implementation.
     void OnFrameTreeNodeDestroyed(FrameTreeNode* node) final;
 
@@ -935,9 +901,6 @@ class CONTENT_EXPORT WebContentsImpl
     // The ID of the FrameTreeNode in the |outer_web_contents_| that hosts
     // |current_web_contents_| as an inner WebContents.
     int outer_contents_frame_tree_node_id_;
-
-    // List of inner WebContents that we host.
-    std::vector<WebContentsImpl*> inner_web_contents_;
 
     // Only the root node should have this set. This indicates the WebContents
     // whose frame tree has the focused frame. The WebContents tree could be
@@ -1116,6 +1079,12 @@ class CONTENT_EXPORT WebContentsImpl
   // receive page focus and blur events when the containing window changes focus
   // state.
 
+  // Returns the focused WebContents.
+  // If there are multiple inner/outer WebContents (when embedding <webview>,
+  // <guestview>, ...) returns the single one containing the currently focused
+  // frame. Otherwise, returns this WebContents.
+  WebContentsImpl* GetFocusedWebContents();
+
   // Returns true if |this| is the focused WebContents or an ancestor of the
   // focused WebContents.
   bool ContainsOrIsFocusedWebContents();
@@ -1224,11 +1193,7 @@ class CONTENT_EXPORT WebContentsImpl
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);
 
-  // Returns the FindRequestManager, which may be found in an outer WebContents.
-  FindRequestManager* GetFindRequestManager();
-
-  // Returns the FindRequestManager, or creates one if it doesn't already
-  // exist. The FindRequestManager may be found in an outer WebContents.
+  // Returns the FindRequestManager, or creates one if it doesn't already exist.
   FindRequestManager* GetOrCreateFindRequestManager();
 
   // Removes a registered WebContentsBindingSet by interface name.

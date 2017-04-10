@@ -347,8 +347,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     }
   }
 
-  // Allow the plugin to handle find requests.
-  SetPluginToHandleFindRequests();
+  // Only allow the plugin to handle find requests if it is full frame.
+  if (full_)
+    SetPluginToHandleFindRequests();
 
   text_input_ = base::MakeUnique<pp::TextInput_Dev>(this);
 

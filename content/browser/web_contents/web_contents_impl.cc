@@ -257,14 +257,6 @@ class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
   AXTreeSnapshotCallback callback_;
 };
 
-// Helper for GetInnerWebContents().
-bool GetInnerWebContentsHelper(
-    std::vector<WebContentsImpl*>* all_guest_contents,
-    WebContents* guest_contents) {
-  all_guest_contents->push_back(static_cast<WebContentsImpl*>(guest_contents));
-  return false;
-}
-
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -389,9 +381,6 @@ WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
 WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
   if (OuterContentsFrameTreeNode())
     OuterContentsFrameTreeNode()->RemoveObserver(this);
-
-  if (outer_web_contents_)
-    outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
 }
 
 void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
@@ -402,23 +391,7 @@ void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
   outer_contents_frame_tree_node_id_ =
       outer_contents_frame->frame_tree_node()->frame_tree_node_id();
 
-  outer_web_contents_->node_.AttachInnerWebContents(current_web_contents_);
   outer_contents_frame->frame_tree_node()->AddObserver(this);
-}
-
-void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
-    WebContentsImpl* inner_web_contents) {
-  inner_web_contents_.push_back(inner_web_contents);
-}
-
-void WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
-    WebContentsImpl* inner_web_contents) {
-  DCHECK(std::find(inner_web_contents_.begin(), inner_web_contents_.end(),
-                   inner_web_contents) != inner_web_contents_.end());
-  inner_web_contents_.erase(
-      std::remove(inner_web_contents_.begin(), inner_web_contents_.end(),
-                  inner_web_contents),
-      inner_web_contents_.end());
 }
 
 FrameTreeNode*
@@ -439,23 +412,6 @@ void WebContentsImpl::WebContentsTreeNode::SetFocusedWebContents(
   DCHECK(!outer_web_contents())
       << "Only the outermost WebContents tracks focus.";
   focused_web_contents_ = web_contents;
-}
-
-WebContentsImpl*
-WebContentsImpl::WebContentsTreeNode::GetInnerWebContentsInFrame(
-    const FrameTreeNode* frame) {
-  auto ftn_id = frame->frame_tree_node_id();
-  for (WebContentsImpl* contents : inner_web_contents_) {
-    if (contents->node_.outer_contents_frame_tree_node_id() == ftn_id) {
-      return contents;
-    }
-  }
-  return nullptr;
-}
-
-const std::vector<WebContentsImpl*>&
-WebContentsImpl::WebContentsTreeNode::inner_web_contents() const {
-  return inner_web_contents_;
 }
 
 // WebContentsImpl -------------------------------------------------------------
@@ -708,7 +664,7 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetAllWebContents() {
 
 // static
 WebContentsImpl* WebContentsImpl::FromFrameTreeNode(
-    const FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node) {
   return static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(frame_tree_node->current_frame_host()));
 }
@@ -723,13 +679,6 @@ WebContents* WebContentsImpl::FromRenderFrameHostID(int render_process_host_id,
     return nullptr;
 
   return WebContents::FromRenderFrameHost(render_frame_host);
-}
-
-// static
-WebContentsImpl* WebContentsImpl::FromOuterFrameTreeNode(
-    const FrameTreeNode* frame_tree_node) {
-  return WebContentsImpl::FromFrameTreeNode(frame_tree_node)
-      ->node_.GetInnerWebContentsInFrame(frame_tree_node);
 }
 
 RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
@@ -1087,29 +1036,6 @@ WebContentsBindingSet* WebContentsImpl::GetBindingSet(
   if (it == binding_sets_.end())
     return nullptr;
   return it->second;
-}
-
-std::vector<WebContentsImpl*> WebContentsImpl::GetInnerWebContents() {
-  if (browser_plugin_embedder_) {
-    std::vector<WebContentsImpl*> inner_contents;
-    GetBrowserContext()->GetGuestManager()->ForEachGuest(
-        this, base::Bind(&GetInnerWebContentsHelper, &inner_contents));
-    return inner_contents;
-  }
-
-  return node_.inner_web_contents();
-}
-
-std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
-  std::vector<WebContentsImpl*> all_contents(1, this);
-
-  for (size_t i = 0; i != all_contents.size(); ++i) {
-    for (auto* inner_contents : all_contents[i]->GetInnerWebContents()) {
-      all_contents.push_back(inner_contents);
-    }
-  }
-
-  return all_contents;
 }
 
 void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
@@ -1925,16 +1851,8 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
   if (receiving_widget != GetMainFrame()->GetRenderWidgetHost())
     return receiving_widget;
 
-  // If the focused WebContents is a guest WebContents, then get the focused
-  // frame in the embedder WebContents instead.
-  FrameTreeNode* focused_frame = nullptr;
-  WebContentsImpl* focused_contents = GetFocusedWebContents();
-  if (focused_contents->browser_plugin_guest_ &&
-      !GuestMode::IsCrossProcessFrameGuest(focused_contents)) {
-    focused_frame = frame_tree_.GetFocusedFrame();
-  } else {
-    focused_frame = GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
-  }
+  FrameTreeNode* focused_frame =
+      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
   if (!focused_frame)
     return receiving_widget;
 
@@ -3360,12 +3278,25 @@ void WebContentsImpl::Find(int request_id,
     return;
   }
 
+  // See if a top level browser plugin handles the find request first.
+  // TODO(paulmeyer): Remove this after find-in-page works across GuestViews.
+  if (browser_plugin_embedder_ &&
+      browser_plugin_embedder_->Find(request_id, search_text, options)) {
+    return;
+  }
+
   GetOrCreateFindRequestManager()->Find(request_id, search_text, options);
 }
 
 void WebContentsImpl::StopFinding(StopFindAction action) {
-  if (FindRequestManager* manager = GetFindRequestManager())
-    manager->StopFinding(action);
+  // See if a top level browser plugin handles the stop finding request first.
+  // TODO(paulmeyer): Remove this after find-in-page works across GuestViews.
+  if (browser_plugin_embedder_ &&
+      browser_plugin_embedder_->StopFinding(action)) {
+    return;
+  }
+
+  GetOrCreateFindRequestManager()->StopFinding(action);
 }
 
 bool WebContentsImpl::WasRecentlyAudible() {
@@ -4845,8 +4776,6 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   // input redirection mechanism. It must not become focused direcly.
   if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_) {
     frame_tree_.SetFocusedFrame(node, source);
-    if (GetFocusedWebContents() != this)
-      GetOutermostWebContents()->node_.SetFocusedWebContents(this);
     return;
   }
 
@@ -5294,34 +5223,12 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(
   return nullptr;
 }
 
-FindRequestManager* WebContentsImpl::GetFindRequestManager() {
-  for (WebContentsImpl* contents = this; contents;
-       contents = contents->GetOuterWebContents()) {
-    if (contents->find_request_manager_)
-      return contents->find_request_manager_.get();
-  }
-
-  return nullptr;
-}
-
 FindRequestManager* WebContentsImpl::GetOrCreateFindRequestManager() {
-  if (FindRequestManager* manager = GetFindRequestManager())
-    return manager;
-
-  // No existing FindRequestManager found, so one must be created.
-  find_request_manager_.reset(new FindRequestManager(this));
-
-  // Concurrent find sessions must not overlap, so destroy any existing
-  // FindRequestManagers in any inner WebContentses.
-  for (WebContentsImpl* contents : GetWebContentsAndAllInner()) {
-    if (contents == this)
-      continue;
-    if (contents->find_request_manager_) {
-      contents->find_request_manager_->StopFinding(
-          content::STOP_FIND_ACTION_CLEAR_SELECTION);
-      contents->find_request_manager_.release();
-    }
-  }
+  // TODO(paulmeyer): This method will need to access (or potentially create)
+  // the FindRequestManager in the outermost WebContents once find-in-page
+  // across GuestViews is implemented.
+  if (!find_request_manager_)
+    find_request_manager_.reset(new FindRequestManager(this));
 
   return find_request_manager_.get();
 }
@@ -5371,12 +5278,6 @@ void WebContentsImpl::SetHasPersistentVideo(bool has_persistent_video) {
   has_persistent_video_ = has_persistent_video;
   NotifyPreferencesChanged();
   media_web_contents_observer()->RequestPersistentVideo(has_persistent_video);
-}
-
-void WebContentsImpl::BrowserPluginGuestWillDestroy() {
-  WebContentsImpl* outermost = GetOutermostWebContents();
-  if (this != outermost && ContainsOrIsFocusedWebContents())
-    outermost->SetAsFocusedWebContentsIfNecessary();
 }
 
 #if defined(OS_ANDROID)

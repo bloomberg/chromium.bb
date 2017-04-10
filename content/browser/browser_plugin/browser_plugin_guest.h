@@ -241,6 +241,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   virtual void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
                                     const cc::SurfaceSequence& sequence);
 
+  // Find the given |search_text| in the page. Returns true if the find request
+  // is handled by this browser plugin guest.
+  bool HandleFindForEmbedder(int request_id,
+                             const base::string16& search_text,
+                             const blink::WebFindOptions& options);
+  bool HandleStopFindingForEmbedder(StopFindAction action);
+
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 
   // TODO(ekaramad): Remove this once https://crbug.com/642826 is resolved.

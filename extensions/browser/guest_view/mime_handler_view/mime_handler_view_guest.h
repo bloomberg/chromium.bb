@@ -80,6 +80,7 @@ class MimeHandlerViewGuest :
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) final;
+  bool ShouldHandleFindRequestsForEmbedder() const final;
   bool ZoomPropagatesFromEmbedderToGuest() const final;
 
   // WebContentsDelegate implementation.
