@@ -24,6 +24,7 @@ class ReportingCache;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
 class ReportingEndpointManager;
+class ReportingGarbageCollector;
 class ReportingObserver;
 class ReportingUploader;
 class URLRequestContext;
@@ -51,6 +52,9 @@ class NET_EXPORT ReportingContext {
     return endpoint_manager_.get();
   }
   ReportingDeliveryAgent* delivery_agent() { return delivery_agent_.get(); }
+  ReportingGarbageCollector* garbage_collector() {
+    return garbage_collector_.get();
+  }
 
   void AddObserver(ReportingObserver* observer);
   void RemoveObserver(ReportingObserver* observer);
@@ -82,6 +86,9 @@ class NET_EXPORT ReportingContext {
   // |delivery_agent_| must come after |tick_clock_|, |uploader_|, |cache_|,
   // and |endpoint_manager_|.
   std::unique_ptr<ReportingDeliveryAgent> delivery_agent_;
+
+  // |garbage_collector_| must come after |tick_clock_| and |cache_|.
+  std::unique_ptr<ReportingGarbageCollector> garbage_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingContext);
 };

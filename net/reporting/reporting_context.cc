@@ -13,11 +13,13 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_endpoint_manager.h"
+#include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_policy.h"
 
@@ -79,6 +81,7 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       uploader_(std::move(uploader)),
       cache_(base::MakeUnique<ReportingCache>(this)),
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
-      delivery_agent_(base::MakeUnique<ReportingDeliveryAgent>(this)) {}
+      delivery_agent_(base::MakeUnique<ReportingDeliveryAgent>(this)),
+      garbage_collector_(ReportingGarbageCollector::Create(this)) {}
 
 }  // namespace net

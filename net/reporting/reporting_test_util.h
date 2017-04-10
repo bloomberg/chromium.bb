@@ -18,6 +18,7 @@
 class GURL;
 
 namespace base {
+class MockTimer;
 class SimpleTestClock;
 class SimpleTestTickClock;
 class Value;
@@ -31,6 +32,7 @@ namespace net {
 
 class ReportingCache;
 struct ReportingClient;
+class ReportingGarbageCollector;
 
 // Finds a particular client (by origin and endpoint) in the cache and returns
 // it (or nullptr if not found).
@@ -108,11 +110,17 @@ class TestReportingContext : public ReportingContext {
   base::SimpleTestTickClock* test_tick_clock() {
     return reinterpret_cast<base::SimpleTestTickClock*>(tick_clock());
   }
+  base::MockTimer* test_garbage_collection_timer() {
+    return garbage_collection_timer_;
+  }
   TestReportingUploader* test_uploader() {
     return reinterpret_cast<TestReportingUploader*>(uploader());
   }
 
  private:
+  // Owned by the garbage collector but referenced here to preserve type.
+  base::MockTimer* garbage_collection_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(TestReportingContext);
 };
 
@@ -134,6 +142,9 @@ class ReportingTestBase : public ::testing::Test {
   base::SimpleTestTickClock* tick_clock() {
     return context_->test_tick_clock();
   }
+  base::MockTimer* garbage_collection_timer() {
+    return context_->test_garbage_collection_timer();
+  }
   TestReportingUploader* uploader() { return context_->test_uploader(); }
 
   ReportingCache* cache() { return context_->cache(); }
@@ -142,6 +153,9 @@ class ReportingTestBase : public ::testing::Test {
   }
   ReportingDeliveryAgent* delivery_agent() {
     return context_->delivery_agent();
+  }
+  ReportingGarbageCollector* garbage_collector() {
+    return context_->garbage_collector();
   }
 
   base::TimeTicks yesterday();

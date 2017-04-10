@@ -13,10 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/timer/mock_timer.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
+#include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,9 +121,17 @@ TestReportingContext::TestReportingContext(const ReportingPolicy& policy)
                        base::MakeUnique<TestReportingDelegate>(),
                        base::MakeUnique<base::SimpleTestClock>(),
                        base::MakeUnique<base::SimpleTestTickClock>(),
-                       base::MakeUnique<TestReportingUploader>()) {}
+                       base::MakeUnique<TestReportingUploader>()),
+      garbage_collection_timer_(
+          new base::MockTimer(/* retain_user_task= */ false,
+                              /* is_repeating= */ false)) {
+  garbage_collector()->SetTimerForTesting(
+      base::WrapUnique(garbage_collection_timer_));
+}
 
-TestReportingContext::~TestReportingContext() {}
+TestReportingContext::~TestReportingContext() {
+  garbage_collection_timer_ = nullptr;
+}
 
 ReportingTestBase::ReportingTestBase() {
   // For tests, disable jitter.

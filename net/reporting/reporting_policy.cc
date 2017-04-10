@@ -6,7 +6,10 @@
 
 namespace net {
 
-ReportingPolicy::ReportingPolicy() {
+ReportingPolicy::ReportingPolicy()
+    : max_report_age(base::TimeDelta::FromMinutes(15)),
+      max_report_attempts(5),
+      garbage_collection_interval(base::TimeDelta::FromMinutes(5)) {
   endpoint_backoff_policy.num_errors_to_ignore = 0;
   endpoint_backoff_policy.initial_delay_ms = 60 * 1000;  // 1 minute
   endpoint_backoff_policy.multiply_factor = 2.0;
@@ -17,7 +20,10 @@ ReportingPolicy::ReportingPolicy() {
 }
 
 ReportingPolicy::ReportingPolicy(const ReportingPolicy& other)
-    : endpoint_backoff_policy(other.endpoint_backoff_policy) {}
+    : max_report_age(other.max_report_age),
+      max_report_attempts(other.max_report_attempts),
+      endpoint_backoff_policy(other.endpoint_backoff_policy),
+      garbage_collection_interval(other.garbage_collection_interval) {}
 
 ReportingPolicy::~ReportingPolicy() {}
 
