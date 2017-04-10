@@ -5,10 +5,14 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 
 #include <math.h>  // For floor()
+
+#include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -151,14 +155,14 @@ void GetMetaInfo(const BookmarkNode& node,
     return;
 
   const BookmarkNode::MetaInfoMap* meta_info = node.GetMetaInfoMap();
-  base::DictionaryValue* value = new base::DictionaryValue();
+  auto value = base::MakeUnique<base::DictionaryValue>();
   if (meta_info) {
     BookmarkNode::MetaInfoMap::const_iterator itr;
     for (itr = meta_info->begin(); itr != meta_info->end(); ++itr) {
       value->SetStringWithoutPathExpansion(itr->first, itr->second);
     }
   }
-  id_to_meta_info_map->Set(base::Int64ToString(node.id()), value);
+  id_to_meta_info_map->Set(base::Int64ToString(node.id()), std::move(value));
 
   if (node.is_folder()) {
     for (int i = 0; i < node.child_count(); ++i) {

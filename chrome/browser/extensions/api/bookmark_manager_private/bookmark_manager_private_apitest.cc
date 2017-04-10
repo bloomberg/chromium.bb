@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   list.Append(std::move(node));
   node.reset(new base::DictionaryValue());
   node->SetString("name", "Managed Folder");
-  node->Set("children", new base::ListValue());
+  node->Set("children", base::MakeUnique<base::ListValue>());
   list.Append(std::move(node));
   profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   ASSERT_EQ(2, managed->managed_node()->child_count());

@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -103,12 +104,13 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   return cookie;
 }
 
-CookieStore CreateCookieStore(Profile* profile, base::ListValue* tab_ids) {
+CookieStore CreateCookieStore(Profile* profile,
+                              std::unique_ptr<base::ListValue> tab_ids) {
   DCHECK(profile);
   DCHECK(tab_ids);
   base::DictionaryValue dict;
   dict.SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
-  dict.Set(keys::kTabIdsKey, tab_ids);
+  dict.Set(keys::kTabIdsKey, std::move(tab_ids));
 
   CookieStore cookie_store;
   bool rv = CookieStore::Populate(dict, &cookie_store);

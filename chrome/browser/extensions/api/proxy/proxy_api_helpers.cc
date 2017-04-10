@@ -330,12 +330,12 @@ std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
       } else if (!pac_data.empty()) {
         if (!CreateDataURLFromPACScript(pac_data, &url)) {
           *error = "Internal error, at base64 encoding of 'pacScript.data'.";
-          return NULL;
+          return nullptr;
         }
       } else {
         *error = "Proxy mode 'pac_script' requires a 'pacScript' field with "
                  "either a 'url' field or a 'data' field.";
-        return NULL;
+        return nullptr;
       }
       result_proxy_config =
           ProxyConfigDictionary::CreatePacScript(url, pac_mandatory);
@@ -344,7 +344,7 @@ std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
     case ProxyPrefs::MODE_FIXED_SERVERS: {
       if (proxy_rules_string.empty()) {
         *error = "Proxy mode 'fixed_servers' requires a 'rules' field.";
-        return NULL;
+        return nullptr;
       }
       result_proxy_config = ProxyConfigDictionary::CreateFixedServers(
           proxy_rules_string, bypass_list);

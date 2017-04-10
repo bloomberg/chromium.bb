@@ -96,7 +96,7 @@ ProxyPrefTransformer::ProxyPrefTransformer() {
 ProxyPrefTransformer::~ProxyPrefTransformer() {
 }
 
-base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
+std::unique_ptr<base::Value> ProxyPrefTransformer::ExtensionToBrowserPref(
     const base::Value* extension_pref,
     std::string* error,
     bool* bad_message) {
@@ -130,16 +130,15 @@ base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
           config, &proxy_rules_string, error, bad_message) ||
       !helpers::GetBypassListFromExtensionPref(
           config, &bypass_list, error, bad_message)) {
-    return NULL;
+    return nullptr;
   }
 
   return helpers::CreateProxyConfigDict(mode_enum, pac_mandatory, pac_url,
                                         pac_data, proxy_rules_string,
-                                        bypass_list, error)
-      .release();
+                                        bypass_list, error);
 }
 
-base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
+std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
     const base::Value* browser_pref) {
   CHECK(browser_pref->IsType(base::Value::Type::DICTIONARY));
 
@@ -152,7 +151,7 @@ base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
   ProxyPrefs::ProxyMode mode;
   if (!config.GetMode(&mode)) {
     LOG(ERROR) << "Cannot determine proxy mode.";
-    return NULL;
+    return nullptr;
   }
 
   // Build a new ProxyConfig instance as defined in the extension API.
@@ -174,7 +173,7 @@ base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
       // in the extension API.
       base::DictionaryValue* pac_dict = helpers::CreatePacScriptDict(config);
       if (!pac_dict)
-        return NULL;
+        return nullptr;
       extension_pref->Set(keys::kProxyConfigPacScript, pac_dict);
       break;
     }
@@ -183,14 +182,14 @@ base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
       base::DictionaryValue* proxy_rules_dict =
           helpers::CreateProxyRulesDict(config);
       if (!proxy_rules_dict)
-        return NULL;
+        return nullptr;
       extension_pref->Set(keys::kProxyConfigRules, proxy_rules_dict);
       break;
     }
     case ProxyPrefs::kModeCount:
       NOTREACHED();
   }
-  return extension_pref.release();
+  return extension_pref;
 }
 
 }  // namespace extensions

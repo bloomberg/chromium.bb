@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_H__
 #define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_H__
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -151,7 +152,7 @@ class PrefTransformerInterface {
   // |error| and returns NULL otherwise. |bad_message| is passed to simulate
   // the behavior of EXTENSION_FUNCTION_VALIDATE. It is never NULL.
   // The ownership of the returned value is passed to the caller.
-  virtual base::Value* ExtensionToBrowserPref(
+  virtual std::unique_ptr<base::Value> ExtensionToBrowserPref(
       const base::Value* extension_pref,
       std::string* error,
       bool* bad_message) = 0;
@@ -160,7 +161,7 @@ class PrefTransformerInterface {
   // into a representation that is used by the extension.
   // Returns the extension representation in case of success or NULL otherwise.
   // The ownership of the returned value is passed to the caller.
-  virtual base::Value* BrowserToExtensionPref(
+  virtual std::unique_ptr<base::Value> BrowserToExtensionPref(
       const base::Value* browser_pref) = 0;
 };
 

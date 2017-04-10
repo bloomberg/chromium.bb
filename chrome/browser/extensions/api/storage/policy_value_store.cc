@@ -46,7 +46,7 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
        it != policy.end(); ++it) {
     if (it->second.level == policy::POLICY_LEVEL_MANDATORY) {
       current_policy.SetWithoutPathExpansion(
-          it->first, it->second.value->DeepCopy());
+          it->first, it->second.value->CreateDeepCopy());
     }
   }
 

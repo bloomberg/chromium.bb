@@ -5,10 +5,12 @@
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
@@ -1307,14 +1309,14 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   if (!prefs->GetDictionary(prefs::kAppWindowPlacement)->HasKey(kDevToolsApp)) {
     DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
     base::DictionaryValue* wp_prefs = update.Get();
-    base::DictionaryValue* dev_tools_defaults = new base::DictionaryValue;
-    wp_prefs->Set(kDevToolsApp, dev_tools_defaults);
+    auto dev_tools_defaults = base::MakeUnique<base::DictionaryValue>();
     dev_tools_defaults->SetInteger("left", 100);
     dev_tools_defaults->SetInteger("top", 100);
     dev_tools_defaults->SetInteger("right", 740);
     dev_tools_defaults->SetInteger("bottom", 740);
     dev_tools_defaults->SetBoolean("maximized", false);
     dev_tools_defaults->SetBoolean("always_on_top", false);
+    wp_prefs->Set(kDevToolsApp, std::move(dev_tools_defaults));
   }
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));

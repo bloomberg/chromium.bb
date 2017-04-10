@@ -22,6 +22,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -433,8 +434,8 @@ TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
   extension_service_->AddExtension(extension.get());
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::Value("hello"));
-  args->Set(1, new base::Value("world"));
+  args->Set(0, base::MakeUnique<base::Value>("hello"));
+  args->Set(1, base::MakeUnique<base::Value>("world"));
   scoped_refptr<Action> action = new Action(extension->id(),
                                             base::Time::Now(),
                                             Action::ACTION_API_CALL,

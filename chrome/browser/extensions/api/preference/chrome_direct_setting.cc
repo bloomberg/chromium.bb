@@ -39,7 +39,7 @@ ExtensionFunction::ResponseAction GetDirectSettingFunction::Run() {
   const base::Value* value = preference->GetValue();
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  result->Set(preference_api_constants::kValue, value->DeepCopy());
+  result->Set(preference_api_constants::kValue, value->CreateDeepCopy());
   return RespondNow(OneArgument(std::move(result)));
 }
 

@@ -176,7 +176,7 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
                                                 kPrefKeyUsageCorporate);
 
   update->SetWithoutPathExpansion(public_key_spki_der_b64,
-                                  new_pref_entry.release());
+                                  std::move(new_pref_entry));
 }
 
 void KeyPermissions::PermissionsForExtension::SetUserGrantedPermission(

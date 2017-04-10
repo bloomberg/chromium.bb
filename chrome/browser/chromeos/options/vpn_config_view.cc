@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -865,11 +868,11 @@ void VPNConfigView::SetConfigProperties(
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT: {
       if (server_ca_cert_combobox_) {
         std::string ca_cert_pem = GetServerCACertPEM();
-        base::ListValue* pem_list = new base::ListValue;
+        auto pem_list = base::MakeUnique<base::ListValue>();
         if (!ca_cert_pem.empty())
           pem_list->AppendString(ca_cert_pem);
         properties->SetWithoutPathExpansion(shill::kL2tpIpsecCaCertPemProperty,
-                                            pem_list);
+                                            std::move(pem_list));
       }
       SetUserCertProperties(client_cert::CONFIG_TYPE_IPSEC, properties);
       if (!group_name.empty()) {
@@ -889,11 +892,11 @@ void VPNConfigView::SetConfigProperties(
     case PROVIDER_TYPE_INDEX_OPEN_VPN: {
       if (server_ca_cert_combobox_) {
         std::string ca_cert_pem = GetServerCACertPEM();
-        base::ListValue* pem_list = new base::ListValue;
+        auto pem_list = base::MakeUnique<base::ListValue>();
         if (!ca_cert_pem.empty())
           pem_list->AppendString(ca_cert_pem);
         properties->SetWithoutPathExpansion(shill::kOpenVPNCaCertPemProperty,
-                                            pem_list);
+                                            std::move(pem_list));
       }
       SetUserCertProperties(client_cert::CONFIG_TYPE_OPENVPN, properties);
       properties->SetStringWithoutPathExpansion(

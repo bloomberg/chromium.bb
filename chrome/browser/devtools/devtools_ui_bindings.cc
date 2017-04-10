@@ -1099,10 +1099,9 @@ void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(it != pending_requests_.end());
 
   base::DictionaryValue response;
-  base::DictionaryValue* headers = new base::DictionaryValue();
+  auto headers = base::MakeUnique<base::DictionaryValue>();
   net::HttpResponseHeaders* rh = source->GetResponseHeaders();
   response.SetInteger("statusCode", rh ? rh->response_code() : 200);
-  response.Set("headers", headers);
 
   size_t iterator = 0;
   std::string name;
@@ -1110,6 +1109,7 @@ void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
   while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
     headers->SetString(name, value);
 
+  response.Set("headers", std::move(headers));
   it->second.Run(&response);
   pending_requests_.erase(it);
   delete source;
@@ -1271,16 +1271,14 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
 
     std::unique_ptr<base::DictionaryValue> extension_info(
         new base::DictionaryValue());
-    extension_info->Set(
+    extension_info->SetString(
         "startPage",
-        new base::Value(
-            extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
-                .spec()));
-    extension_info->Set("name", new base::Value(extension->name()));
-    extension_info->Set(
-        "exposeExperimentalAPIs",
-        new base::Value(extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kExperimental)));
+        extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
+            .spec());
+    extension_info->SetString("name", extension->name());
+    extension_info->SetBoolean("exposeExperimentalAPIs",
+                               extension->permissions_data()->HasAPIPermission(
+                                   extensions::APIPermission::kExperimental));
     results.Append(std::move(extension_info));
   }
 

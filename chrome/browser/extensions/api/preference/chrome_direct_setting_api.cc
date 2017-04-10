@@ -137,7 +137,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
     const base::Value* value = preference->GetValue();
 
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-    result->Set(preference_api_constants::kValue, value->DeepCopy());
+    result->Set(preference_api_constants::kValue, value->CreateDeepCopy());
     base::ListValue args;
     args.Append(std::move(result));
 
