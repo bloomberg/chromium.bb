@@ -82,9 +82,9 @@ def FetchGitRevision(directory, hash_only):
   return VersionInfo('git', '%s-%s' % (hsh, pos))
 
 
-def FetchVersionInfo(default_lastchange, directory=None,
+def FetchVersionInfo(directory=None,
                      directory_regex_prior_to_src_url='chrome|blink|svn',
-                     go_deeper=False, hash_only=False):
+                     hash_only=False):
   """
   Returns the last change (in the form of a branch, revision tuple),
   from some appropriate revision control system.
@@ -94,11 +94,7 @@ def FetchVersionInfo(default_lastchange, directory=None,
 
   version_info = FetchGitRevision(directory, hash_only)
   if not version_info:
-    if default_lastchange and os.path.exists(default_lastchange):
-      revision = open(default_lastchange, 'r').read().strip()
-      version_info = VersionInfo(None, revision)
-    else:
-      version_info = VersionInfo(None, None)
+    version_info = VersionInfo(None, None)
   return version_info
 
 
@@ -162,8 +158,6 @@ def main(argv=None):
     argv = sys.argv
 
   parser = optparse.OptionParser(usage="lastchange.py [options]")
-  parser.add_option("-d", "--default-lastchange", metavar="FILE",
-                    help="Default last change input FILE.")
   parser.add_option("-m", "--version-macro",
                     help="Name of C #define when using --header. Defaults to " +
                     "LAST_CHANGE.",
@@ -179,9 +173,6 @@ def main(argv=None):
                     "file-output-related options.")
   parser.add_option("-s", "--source-dir", metavar="DIR",
                     help="Use repository in the given directory.")
-  parser.add_option("--git-svn-go-deeper", action='store_true',
-                    help="In a Git-SVN repo, dig down to the last committed " +
-                    "SVN change (historic behaviour).")
   parser.add_option("--git-hash-only", action="store_true",
                     help="In a Git repo with commit positions, report only " +
                     "the hash of the latest commit with a position.")
@@ -203,9 +194,7 @@ def main(argv=None):
   else:
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
-  version_info = FetchVersionInfo(opts.default_lastchange,
-                                  directory=src_dir,
-                                  go_deeper=opts.git_svn_go_deeper,
+  version_info = FetchVersionInfo(directory=src_dir,
                                   hash_only=opts.git_hash_only)
 
   if version_info.revision == None:
