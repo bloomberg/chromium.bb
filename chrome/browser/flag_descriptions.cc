@@ -2070,6 +2070,14 @@ const char kOfflinePagesSvelteConcurrentLoadingDescription[] =
     "Android svelte (512MB RAM) devices. Otherwise, background loading will "
     "happen when the svelte device is idle.";
 
+const char kOfflinePagesLoadSignalCollectingName[] =
+    "Enables collecting load timing data for offline page snapshots.";
+
+const char kOfflinePagesLoadSignalCollectingDescription[] =
+    "Enables loading completeness data collection while writing an offline "
+    "page.  This data is collected in the snapshotted offline page to allow "
+    "data analysis to improve deciding when to make the offline snapshot.";
+
 const char kOfflinePagesPrefetchingName[] =
     "Enables suggested offline pages to be prefetched.";
 

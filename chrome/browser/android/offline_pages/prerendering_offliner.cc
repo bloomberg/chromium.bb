@@ -14,9 +14,18 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/web_contents.h"
+
+namespace {
+const char kContentType[] = "text/plain";
+const char kContentTransferEncodingBinary[] =
+    "Content-Transfer-Encoding: binary";
+const char kXHeaderForSignals[] = "X-Chrome-Loading-Metrics-Data: 1";
+}  // namespace
 
 namespace offline_pages {
 
@@ -83,6 +92,24 @@ void PrerenderingOffliner::OnLoadPageDone(
     else if (save_page_params.url != request.url())
       save_page_params.original_url = request.url();
 
+    if (IsOfflinePagesLoadSignalCollectingEnabled()) {
+      // Stash loading signals for writing when we write out the MHTML.
+      std::string headers =
+          base::StringPrintf("%s\r\n%s\r\n\r\n", kContentTransferEncodingBinary,
+                             kXHeaderForSignals);
+      std::string body = headers + SerializeLoadingSignalData();
+      std::string content_type = kContentType;
+      std::string content_location = base::StringPrintf(
+          "cid:signal-data-%" PRId64 "@mhtml.blink", request.request_id());
+
+      content::MHTMLExtraParts* extra_parts =
+          content::MHTMLExtraParts::FromWebContents(web_contents);
+      DCHECK(extra_parts);
+      if (extra_parts != nullptr) {
+        extra_parts->AddExtraMHTMLPart(content_type, content_location, body);
+      }
+    }
+
     SavePage(save_page_params, std::move(archiver),
              base::Bind(&PrerenderingOffliner::OnSavePageDone,
                         weak_ptr_factory_.GetWeakPtr(), request));
@@ -92,6 +119,19 @@ void PrerenderingOffliner::OnLoadPageDone(
     app_listener_.reset(nullptr);
     completion_callback_.Run(request, load_status);
   }
+}
+
+std::string PrerenderingOffliner::SerializeLoadingSignalData() {
+  // Write the signal data into a single string.
+  std::string signal_string;
+  const std::vector<std::string>& signals = loader_->GetLoadingSignalData();
+
+  // TODO(petewil): Convert this to JSON, use json_writer.h
+  for (std::string signal : signals) {
+    signal_string += signal;
+    signal_string += "\n";
+  }
+  return signal_string;
 }
 
 void PrerenderingOffliner::OnSavePageDone(

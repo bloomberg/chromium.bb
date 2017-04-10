@@ -72,6 +72,9 @@ class PrerenderingOffliner : public Offliner {
                       SavePageResult save_result,
                       int64_t offline_id);
 
+  // Write the payload of the loading signal data MHTML section into a string.
+  std::string SerializeLoadingSignalData();
+
   PrerenderingLoader* GetOrCreateLoader();
 
   // Listener function for changes to application background/foreground state.

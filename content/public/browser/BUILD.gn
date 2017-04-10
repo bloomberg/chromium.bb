@@ -150,6 +150,7 @@ source_set("browser_sources") {
     "memory_pressure_controller.cc",
     "memory_pressure_controller.h",
     "message_port_provider.h",
+    "mhtml_extra_parts.h",
     "native_web_keyboard_event.h",
     "navigation_controller.cc",
     "navigation_controller.h",

@@ -1872,6 +1872,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflinePagesAsyncDownloadName,
      flag_descriptions::kOfflinePagesAsyncDownloadDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesAsyncDownloadFeature)},
+    {"offline-pages-load-signal-collecting",
+     flag_descriptions::kOfflinePagesLoadSignalCollectingName,
+     flag_descriptions::kOfflinePagesLoadSignalCollectingDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesLoadSignalCollectingFeature)},
     {"offline-pages-sharing", flag_descriptions::kOfflinePagesSharingName,
      flag_descriptions::kOfflinePagesSharingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesSharingFeature)},
@@ -2608,10 +2614,8 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-zip-archiver-on-file-manager",
      flag_descriptions::kEnableZipArchiverOnFileManagerName,
-     flag_descriptions::kEnableZipArchiverOnFileManagerDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableZipArchiverOnFileManager)},
+     flag_descriptions::kEnableZipArchiverOnFileManagerDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverOnFileManager)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)

@@ -21,16 +21,24 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/download/mhtml_extra_parts_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "net/base/mime_util.h"
+
+namespace {
+const char kContentLocation[] = "Content-Location: ";
+const char kContentType[] = "Content-Type: ";
+int kInvalidFileSize = -1;
+}  // namespace
 
 namespace content {
 
@@ -98,11 +106,26 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // Note: The same |boundary| marker must be used for all "boundaries" -- in
   // the header, parts and footer -- that belong to the same MHTML document (see
   // also rfc1341, section 7.2.1, "boundary" description).
-  static std::tuple<MhtmlSaveStatus, int64_t> CloseFileOnFileThread(
+  static std::tuple<MhtmlSaveStatus, int64_t> FinalizeAndCloseFileOnFileThread(
       MhtmlSaveStatus save_status,
       const std::string& boundary,
-      base::File file);
+      base::File file,
+      const MHTMLExtraPartsImpl* extra_parts);
   void AddFrame(RenderFrameHost* render_frame_host);
+
+  // If we have any extra MHTML parts to write out, write them into the file
+  // while on the file thread.  Returns true for success, or if there is no data
+  // to write.
+  static bool WriteExtraDataParts(const std::string& boundary,
+                                  base::File& file,
+                                  const MHTMLExtraPartsImpl* extra_parts);
+
+  // Writes the footer into the MHTML file.  Returns false for faiulre.
+  static bool WriteFooter(const std::string& boundary, base::File& file);
+
+  // Close the MHTML file if it looks good, setting the size param.  Returns
+  // false for failure.
+  static bool CloseFileIfValid(base::File& file, int64_t* file_size);
 
   // Creates a new map with values (content ids) the same as in
   // |frame_tree_node_to_content_id_| map, but with the keys translated from
@@ -156,6 +179,9 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // destroyed by MHTMLGenerationManager::OnFileClosed).
   bool is_finished_;
 
+  // Any extra data parts that should be emitted into the output MHTML.
+  MHTMLExtraPartsImpl* extra_parts_;
+
   // RAII helper for registering this Job as a RenderProcessHost observer.
   ScopedObserver<RenderProcessHost, MHTMLGenerationManager::Job>
       observed_renderer_process_host_;
@@ -185,6 +211,10 @@ MHTMLGenerationManager::Job::Job(int job_id,
   DCHECK(!pending_frame_tree_node_ids_.empty());
   DCHECK(FrameTreeNode::GloballyFindByID(pending_frame_tree_node_ids_.front())
              ->parent() == nullptr);
+
+  // Save off any extra data.
+  extra_parts_ = static_cast<MHTMLExtraPartsImpl*>(
+      MHTMLExtraParts::FromWebContents(web_contents));
 }
 
 MHTMLGenerationManager::Job::~Job() {
@@ -352,10 +382,11 @@ void MHTMLGenerationManager::Job::CloseFile(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
-          &MHTMLGenerationManager::Job::CloseFileOnFileThread, save_status,
+          &MHTMLGenerationManager::Job::FinalizeAndCloseFileOnFileThread,
+          save_status,
           (save_status == MhtmlSaveStatus::SUCCESS ? mhtml_boundary_marker_
                                                    : std::string()),
-          base::Passed(&browser_file_)),
+          base::Passed(&browser_file_), extra_parts_),
       callback);
 }
 
@@ -401,9 +432,11 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
 
 // static
 std::tuple<MhtmlSaveStatus, int64_t>
-MHTMLGenerationManager::Job::CloseFileOnFileThread(MhtmlSaveStatus save_status,
-                                                   const std::string& boundary,
-                                                   base::File file) {
+MHTMLGenerationManager::Job::FinalizeAndCloseFileOnFileThread(
+    MhtmlSaveStatus save_status,
+    const std::string& boundary,
+    base::File file,
+    const MHTMLExtraPartsImpl* extra_parts) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // If no previous error occurred the boundary should have been provided.
@@ -411,23 +444,87 @@ MHTMLGenerationManager::Job::CloseFileOnFileThread(MhtmlSaveStatus save_status,
     TRACE_EVENT0("page-serialization",
                  "MHTMLGenerationManager::Job MHTML footer writing");
     DCHECK(!boundary.empty());
-    std::string footer = base::StringPrintf("--%s--\r\n", boundary.c_str());
-    DCHECK(base::IsStringASCII(footer));
-    if (file.WriteAtCurrentPos(footer.data(), footer.size()) < 0)
+
+    // Write the extra data into a part of its own, if we have any.
+    if (!WriteExtraDataParts(boundary, file, extra_parts)) {
       save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+    }
+
+    // Write out the footer at the bottom of the file.
+    if (save_status == MhtmlSaveStatus::SUCCESS &&
+        !WriteFooter(boundary, file)) {
+      save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+    }
   }
 
   // If the file is still valid try to close it. Only update the status if that
   // won't hide an earlier error.
-  int64_t file_size = -1;
-  if (file.IsValid()) {
-    file_size = file.GetLength();
-    file.Close();
-  } else if (save_status == MhtmlSaveStatus::SUCCESS) {
+  int64_t file_size = kInvalidFileSize;
+  if (!CloseFileIfValid(file, &file_size) &&
+      save_status == MhtmlSaveStatus::SUCCESS) {
     save_status = MhtmlSaveStatus::FILE_CLOSING_ERROR;
   }
 
   return std::make_tuple(save_status, file_size);
+}
+
+// static
+bool MHTMLGenerationManager::Job::WriteExtraDataParts(
+    const std::string& boundary,
+    base::File& file,
+    const MHTMLExtraPartsImpl* extra_parts) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  // Don't write an extra data part if there is none.
+  if (extra_parts == nullptr)
+    return true;
+
+  const std::vector<MHTMLExtraDataPart>& extra_data_parts(extra_parts->parts());
+  if (extra_data_parts.empty())
+    return true;
+
+  std::string serialized_extra_data_parts;
+
+  // For each extra part, serialize that part and add to our accumulator
+  // string.
+  for (auto part : extra_data_parts) {
+    // Write a newline, then a boundary, another newline, then the content
+    // location, another newline, the content type, another newline, the another
+    // newline, the extra data string, and end with a newline.
+    std::string serialized_extra_data_part = base::StringPrintf(
+        "--%s\r\n%s%s\r\n%s%s\r\n%s\r\n", boundary.c_str(), kContentLocation,
+        part.content_location.c_str(), kContentType, part.content_type.c_str(),
+        part.body.c_str());
+    DCHECK(base::IsStringASCII(serialized_extra_data_part));
+
+    serialized_extra_data_parts += serialized_extra_data_part;
+  }
+
+  // Write the string into the file.  Returns false if we failed the write.
+  return (file.WriteAtCurrentPos(serialized_extra_data_parts.data(),
+                                 serialized_extra_data_parts.size()) >= 0);
+}
+
+// static
+bool MHTMLGenerationManager::Job::WriteFooter(const std::string& boundary,
+                                              base::File& file) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  std::string footer = base::StringPrintf("--%s--\r\n", boundary.c_str());
+  DCHECK(base::IsStringASCII(footer));
+  return (file.WriteAtCurrentPos(footer.data(), footer.size()) >= 0);
+}
+
+// static
+bool MHTMLGenerationManager::Job::CloseFileIfValid(base::File& file,
+                                                   int64_t* file_size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_size);
+  if (file.IsValid()) {
+    *file_size = file.GetLength();
+    file.Close();
+    return true;
+  }
+
+  return false;
 }
 
 MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {

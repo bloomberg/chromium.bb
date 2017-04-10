@@ -2260,6 +2260,14 @@ extern const char kOfflinePagesSvelteConcurrentLoadingName[];
 // (512MB RAM) devices.
 extern const char kOfflinePagesSvelteConcurrentLoadingDescription[];
 
+// Name for the flag to enable collecting load completeness signals to improve
+// prerendering snapshot timing.
+extern const char kOfflinePagesLoadSignalCollectingName[];
+
+// Description for the flag to enable collecting load timing signals to improve
+// prerendering snapshot timing.
+extern const char kOfflinePagesLoadSignalCollectingDescription[];
+
 // Name for the flag to enable offline pages to be prefetched.
 extern const char kOfflinePagesPrefetchingName[];
 

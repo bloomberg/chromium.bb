@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_PRERENDERING_LOADER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/android/offline_pages/prerender_adapter.h"
@@ -82,6 +84,11 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // Returns true if the lowbar of snapshotting a page is met.
   virtual bool IsLowbarMet();
 
+  // Returns a vector of strings for analysis of loading progress.
+  const std::vector<std::string>& GetLoadingSignalData() {
+    return signal_data_;
+  }
+
  private:
   // State of the loader (only one request may be active at a time).
   enum class State {
@@ -104,6 +111,12 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // Cancels any current prerender and moves loader to idle state.
   void CancelPrerender();
 
+  // Mark the time when we started loading the page.
+  void MarkLoadStartTime();
+
+  // Add a signal to the signal data.
+  void AddLoadingSignal(const char* signal_name);
+
   // Tracks loading state including whether the Loader is idle.
   State state_;
 
@@ -120,6 +133,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // storage namespace for rendering. This will NOT have the loaded page.
   std::unique_ptr<content::WebContents> session_contents_;
 
+  // Signal data collected for this rendering attempt
+  std::vector<std::string> signal_data_;
+
   // Callback to call when the active load request completes, fails, or is
   // canceled.
   LoadPageCallback load_done_callback_;
@@ -129,6 +145,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
 
   // True if the lowbar of snapshotting a page is met.
   bool is_lowbar_met_;
+
+  // Time in ticks of when we start loading the page.
+  base::TimeTicks load_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingLoader);
 };

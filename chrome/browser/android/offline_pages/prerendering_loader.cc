@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,6 +89,19 @@ PrerenderingLoader::~PrerenderingLoader() {
   CancelPrerender();
 }
 
+void PrerenderingLoader::MarkLoadStartTime() {
+  load_start_time_ = base::TimeTicks::Now();
+}
+
+void PrerenderingLoader::AddLoadingSignal(const char* signal_name) {
+  std::string signal(signal_name);
+  signal += ": ";
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeDelta delay_so_far = current_time - load_start_time_;
+  signal += std::to_string(delay_so_far.InMilliseconds());
+  signal_data_.push_back(signal);
+}
+
 bool PrerenderingLoader::LoadPage(const GURL& url,
                                   const LoadPageCallback& load_done_callback,
                                   const ProgressCallback& progress_callback) {
@@ -97,6 +111,9 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
         << "WARNING: Existing request in progress or waiting for StopLoading()";
     return false;
   }
+
+  // Add this signal to signal_data_.
+  MarkLoadStartTime();
 
   // Create a WebContents instance to define and hold a SessionStorageNamespace
   // for this load request.
@@ -152,6 +169,9 @@ void PrerenderingLoader::OnPrerenderStopLoading() {
   // Inform SnapshotController of OnLoad event so it can determine
   // when to consider it really LOADED.
   snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
+
+  // Add this signal to signal_data_.
+  AddLoadingSignal("OnLoad");
 }
 
 void PrerenderingLoader::OnPrerenderDomContentLoaded() {
@@ -168,6 +188,9 @@ void PrerenderingLoader::OnPrerenderDomContentLoaded() {
       // second delay from this event).
       snapshot_controller_->DocumentAvailableInMainFrame();
     }
+
+    // Add this signal to signal_data_.
+    AddLoadingSignal("OnDomContentLoaded");
   }
 }
 
@@ -183,6 +206,10 @@ void PrerenderingLoader::OnPrerenderNetworkBytesChanged(int64_t bytes) {
 
 void PrerenderingLoader::StartSnapshot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Add this signal to signal_data_.
+  AddLoadingSignal("Snapshotting");
+
   HandleLoadEvent();
 }
 

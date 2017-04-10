@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -18,8 +19,10 @@
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +46,7 @@ class MockPrerenderingLoader : public PrerenderingLoader {
         mock_loaded_(false),
         mock_is_lowbar_met_(false),
         start_snapshot_called_(false) {}
-  ~MockPrerenderingLoader() override {}
+  ~MockPrerenderingLoader() override { delete web_contents_; }
 
   bool LoadPage(const GURL& url,
                 const LoadPageCallback& load_done_callback,
@@ -79,11 +82,11 @@ class MockPrerenderingLoader : public PrerenderingLoader {
     DCHECK(mock_loading_);
     mock_loading_ = false;
     mock_loaded_ = true;
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        new TestingProfile(), NULL);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(load_page_callback_, Offliner::RequestStatus::LOADED,
-                   content::WebContentsTester::CreateTestWebContents(
-                       new TestingProfile(), NULL)));
+        FROM_HERE, base::Bind(load_page_callback_,
+                              Offliner::RequestStatus::LOADED, web_contents_));
   }
 
   void CompleteLoadingAsCanceled() {
@@ -103,6 +106,8 @@ class MockPrerenderingLoader : public PrerenderingLoader {
   }
   bool start_snapshot_called() { return start_snapshot_called_; }
 
+  content::WebContents* web_contents() { return web_contents_; }
+
  private:
   bool can_prerender_;
   bool mock_loading_;
@@ -111,6 +116,7 @@ class MockPrerenderingLoader : public PrerenderingLoader {
   bool start_snapshot_called_;
   LoadPageCallback load_page_callback_;
   ProgressCallback progress_callback_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrerenderingLoader);
 };
@@ -523,6 +529,59 @@ TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithOnlyLowbarMet) {
   loader()->set_is_lowbar_met(true);
   EXPECT_FALSE(offliner()->HandleTimeout(request));
   EXPECT_FALSE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest, SignalCollectionDisabled) {
+  // Ensure feature flag for Signal collection is off,
+  EXPECT_FALSE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_EQ(Offliner::RequestStatus::UNKNOWN, request_status());
+
+  loader()->CompleteLoadingAsLoaded();
+  PumpLoop();
+
+  model()->CompleteSavingAsSuccess();
+  PumpLoop();
+  EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
+
+  // No extra parts should be added if the flag is off.
+  content::MHTMLExtraParts* extra_parts =
+      content::MHTMLExtraParts::FromWebContents(loader()->web_contents());
+  EXPECT_EQ(extra_parts->size(), 0);
+}
+
+TEST_F(PrerenderingOfflinerTest, SignalCollectionEnabled) {
+  // Ensure feature flag for signal collection is on.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesLoadSignalCollectingFeature);
+  EXPECT_TRUE(IsOfflinePagesLoadSignalCollectingEnabled());
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_EQ(Offliner::RequestStatus::UNKNOWN, request_status());
+
+  loader()->CompleteLoadingAsLoaded();
+  PumpLoop();
+
+  model()->CompleteSavingAsSuccess();
+  PumpLoop();
+  EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
+
+  // One extra part should be added if the flag is on.
+  content::MHTMLExtraParts* extra_parts =
+      content::MHTMLExtraParts::FromWebContents(loader()->web_contents());
+  EXPECT_EQ(extra_parts->size(), 1);
 }
 
 }  // namespace offline_pages

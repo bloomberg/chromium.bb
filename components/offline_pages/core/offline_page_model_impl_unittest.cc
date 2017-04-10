@@ -1347,4 +1347,15 @@ TEST(CommandLineFlagsTest, OfflinePagesSvelteConcurrentLoading) {
   EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
 }
 
+TEST(CommandLineFlagsTest, OfflinePagesLoadSignalCollecting) {
+  // This feature is disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesLoadSignalCollectingFeature);
+  EXPECT_TRUE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
+}
+
 }  // namespace offline_pages
