@@ -20,8 +20,8 @@ class IIRFilterNode : public AudioNode {
 
  public:
   static IIRFilterNode* Create(BaseAudioContext&,
-                               const Vector<double> feedforward,
-                               const Vector<double> feedback,
+                               const Vector<double>& feedforward,
+                               const Vector<double>& feedback,
                                ExceptionState&);
 
   static IIRFilterNode* Create(BaseAudioContext*,
@@ -39,8 +39,8 @@ class IIRFilterNode : public AudioNode {
 
  private:
   IIRFilterNode(BaseAudioContext&,
-                const Vector<double> denominator,
-                const Vector<double> numerator);
+                const Vector<double>& denominator,
+                const Vector<double>& numerator);
 
   IIRProcessor* IirProcessor() const;
 };

@@ -16,8 +16,8 @@
 namespace blink {
 
 IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
-                             const Vector<double> feedforward_coef,
-                             const Vector<double> feedback_coef)
+                             const Vector<double>& feedforward_coef,
+                             const Vector<double>& feedback_coef)
     : AudioNode(context) {
   SetHandler(AudioBasicProcessorHandler::Create(
       AudioHandler::kNodeTypeIIRFilter, *this, context.sampleRate(),
@@ -34,8 +34,8 @@ IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
 }
 
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
-                                     const Vector<double> feedforward_coef,
-                                     const Vector<double> feedback_coef,
+                                     const Vector<double>& feedforward_coef,
+                                     const Vector<double>& feedback_coef,
                                      ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
