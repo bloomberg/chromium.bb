@@ -2701,6 +2701,34 @@
             ]
         }
     ],
+    "SubresourceFilter": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledForPhishingSites",
+                    "params": {
+                        "activation_lists": "phishing_interstitial",
+                        "activation_scope": "activation_list",
+                        "activation_state": "enabled"
+                    },
+                    "enable_features": [
+                        "SubresourceFilter"
+                    ]
+                },
+                {
+                    "name": "VerifyFeatureIsStillDisabledByDefault",
+                    "forcing_flag": "suppress-enabling-subresource-filter-from-fieldtrial-testing-config"
+                }
+            ]
+        }
+    ],
     "SyncUSSAutocomplete": [
         {
             "platforms": [
