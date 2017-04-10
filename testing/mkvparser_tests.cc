@@ -803,6 +803,12 @@ TEST_F(ParserTest, InvalidBlockGroupBlockEndsBlockGroup) {
             segment_->GetFirst()->GetNext(block_entry, block_entry));
 }
 
+TEST_F(ParserTest, InvalidPrimaryChromaticityParseFail) {
+  ASSERT_NO_FATAL_FAILURE(CreateSegmentNoHeaderChecks(
+      "invalid/primarychromaticity_fieldtoolarge.webm"));
+  EXPECT_EQ(mkvparser::E_FILE_FORMAT_INVALID, segment_->Load());
+}
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {
