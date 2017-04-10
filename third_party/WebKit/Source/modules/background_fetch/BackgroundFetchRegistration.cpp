@@ -25,6 +25,7 @@ BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
 void BackgroundFetchRegistration::SetServiceWorkerRegistration(
     ServiceWorkerRegistration* registration) {
+  DCHECK(registration);
   registration_ = registration;
 }
 
