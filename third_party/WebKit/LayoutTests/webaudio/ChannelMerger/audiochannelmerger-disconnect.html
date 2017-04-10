@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -22,7 +22,7 @@
 
     // Task: Check if the merger outputs a silent channel when an input is
     // disconnected.
-    audit.defineTask('silent-disconnect', function (done) {
+    audit.define('silent-disconnect', (task, should) => {
       var context = new OfflineAudioContext(numberOfChannels, renderDuration * sampleRate, sampleRate);
       var merger = context.createChannelMerger();
       var source1 = context.createBufferSource();
@@ -49,7 +49,7 @@
 
       context.startRendering().then(function (buffer) {
         // The entire first channel of the output should be 1.
-        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(1);
+        should(buffer.getChannelData(0), 'Channel #0').beConstantValueOf(1);
 
         // Calculate the first zero index in the second channel.
         var channel1 = buffer.getChannelData(1);
@@ -61,20 +61,14 @@
         });
 
         // The second channel should contain 1, and 0 after the disconnection.
-        Should('Channel #1', channel1).containValues([1, 0]);
-        Should('The index of first zero in the channel #1', firstZeroIndex)
+        should(channel1, 'Channel #1').containValues([1, 0]);
+        should(firstZeroIndex, 'The index of first zero in the channel #1')
           .beEqualTo(disconnectIndex);
 
-      }).then(done);
+      }).then(() => task.done());
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks();
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -30,7 +30,7 @@
 
     var audit = Audit.createTaskRunner();
 
-    audit.defineTask('merger-cyclic-graph', function (done) {
+    audit.define('merger-cyclic-graph', (task, should) => {
 
       var context = new OfflineAudioContext(
         numberOfChannels, renderLength, sampleRate
@@ -59,7 +59,6 @@
         // the stereo channel will be summed to mono resulting in 0.5.
         var expected_left = [];
         var expected_right = [];
-        var success = true;
 
         for (var i = 0; i < renderLength; i++) {
           // Note that the delayed channel will be zero for the first 128 samples
@@ -71,29 +70,17 @@
 
         var actual_left = buffer.getChannelData(0);
         var actual_right = buffer.getChannelData(1);
-        success = Should("Left channel", actual_left)
-          .beEqualToArray(expected_left) && success;
-        success = Should("Right channel", actual_right)
-          .beEqualToArray(expected_right) && success;
+        should(actual_left, "Left channel")
+          .beEqualToArray(expected_left);
+        should(actual_right, "Right channel")
+          .beEqualToArray(expected_right);
 
-        Should("ChannelMergerNode cyclic audio graph test", success)
-          .summarize("passed", "failed");
-
-        done();
+        task.done();
       });
 
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks(
-      'merger-cyclic-graph',
-      'finish'
-    );
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -14,63 +14,53 @@
     var audit = Audit.createTaskRunner();
 
     // Task: Checking constraints in ChannelMergerNode.
-    audit.defineTask('exceptions-channels', function (done) {
+    audit.define('exceptions-channels', (task, should) => {
       var context = new OfflineAudioContext(2, 128, 44100);
       var merger;
 
-      Should('context.createChannelMerger()', function () {
+      should(function () {
         merger = context.createChannelMerger();
-      }).notThrow();
+      }, 'context.createChannelMerger()').notThrow();
 
-      Should('context.createChannelMerger(0)', function () {
+      should(function () {
         merger = context.createChannelMerger(0);
-      }).throw('IndexSizeError');
+      }, 'context.createChannelMerger(0)').throw('IndexSizeError');
 
-      Should('context.createChannelMerger(32)', function () {
+      should(function () {
         merger = context.createChannelMerger(32);
-      }).notThrow();
+      }, 'context.createChannelMerger(32)').notThrow();
 
       // Can't create a channel merger with 33 channels because the audio
       // context has a 32-channel-limit in Chrome.
-      Should('context.createChannelMerger(33)', function () {
+      should(function () {
         merger = context.createChannelMerger(33);
-      }).throw('IndexSizeError');
+      }, 'context.createChannelMerger(33)').throw('IndexSizeError');
 
-      done();
+      task.done();
     });
 
     // Task: checking the channel-related properties have the correct value and 
     // can't be changed.
-    audit.defineTask('exceptions-properties', function (done) {
+    audit.define('exceptions-properties', (task, should) => {
       var context = new OfflineAudioContext(2, 128, 44100);
       var merger = context.createChannelMerger();
 
-      Should('merger.channelCount', merger.channelCount).beEqualTo(1);
+      should(merger.channelCount, 'merger.channelCount').beEqualTo(1);
 
-      Should('merger.channelCount = 3', function () {
+      should(function () {
         merger.channelCount = 3;
-      }).throw('InvalidStateError');
+      }, 'merger.channelCount = 3').throw('InvalidStateError');
 
-      Should('merger.channelCountMode', merger.channelCountMode).beEqualTo('explicit');
+      should(merger.channelCountMode, 'merger.channelCountMode').beEqualTo('explicit');
 
-      Should('merger.channelCountMode = "max"', function () {
+      should(function () {
         merger.channelCountMode = 'max';
-      }).throw('InvalidStateError');
+      }, 'merger.channelCountMode = "max"').throw('InvalidStateError');
 
-      done();
+      task.done();
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks(
-      'exceptions-channels',
-      'exceptions-properties',
-      'finish'
-    );
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

@@ -1,7 +1,7 @@
 // This file is for the audiochannelmerger-* layout tests.
 // Requires |audio-testing.js| to work properly.
 
-function testMergerInput(config, done) {
+function testMergerInput(should, config) {
   var context = new OfflineAudioContext(config.numberOfChannels, 128, 44100);
   var merger = context.createChannelMerger(config.numberOfChannels);
   var source = context.createBufferSource();
@@ -15,11 +15,10 @@ function testMergerInput(config, done) {
   merger.connect(context.destination);
   source.start();
 
-  context.startRendering().then(function (buffer) {
+  return context.startRendering().then(function (buffer) {
     let prefix = config.testBufferContent.length + '-channel source: ';
     for (var i = 0; i < config.numberOfChannels; i++)
-      Should(prefix + 'Channel #' + i, buffer.getChannelData(i))
+      should(buffer.getChannelData(i), prefix + 'Channel #' + i)
         .beConstantValueOf(config.expected[i]);
-    done();
   });
 }
