@@ -324,7 +324,6 @@ class ContentSettingSubresourceFilterBubbleModel
 
   ~ContentSettingSubresourceFilterBubbleModel() override;
 
-
  private:
   void SetMessage();
 

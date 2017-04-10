@@ -483,6 +483,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
     // Toggling the check state may change the dialog button text.
     GetDialogClientView()->UpdateDialogButtons();
+    GetDialogClientView()->Layout();
   } else {
     RadioGroup::const_iterator i(
         std::find(radio_group_.begin(), radio_group_.end(), sender));
