@@ -17,7 +17,12 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8XMLHttpRequest.h"
+#include "core/dom/NameNodeList.h"
+#include "core/dom/NodeList.h"
+#include "core/dom/StaticNodeList.h"
+#include "core/html/LabelsNodeList.h"
 
 namespace blink {
 

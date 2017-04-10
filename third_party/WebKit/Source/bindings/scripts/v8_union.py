@@ -140,14 +140,12 @@ def _update_includes_and_forward_decls(member, info_provider):
             _update_includes_and_forward_decls(member.value_type, info_provider)
         elif member.is_array_or_sequence_type:
             _update_includes_and_forward_decls(member.element_type, info_provider)
-        else:
-            if member.is_union_type:
-                # Reaching this block means we have a union that is inside a
-                # record or sequence.
-                header_forward_decls.add(member.name)
-                cpp_includes.update([info_provider.include_path_for_union_types(member)])
-            else:
-                cpp_includes.update(member.includes_for_type())
+        elif member.is_union_type:
+            # Reaching this block means we have a union that is inside a
+            # record or sequence.
+            header_forward_decls.add(member.name)
+            cpp_includes.update([info_provider.include_path_for_union_types(member)])
+        cpp_includes.update(member.includes_for_type())
 
 
 def member_context(member, info_provider):
