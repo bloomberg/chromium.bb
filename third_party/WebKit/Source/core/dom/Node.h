@@ -846,7 +846,6 @@ class CORE_EXPORT Node : public EventTarget {
     kCreateOther = kDefaultNodeFlags,
     kCreateText = kDefaultNodeFlags | kIsTextFlag,
     kCreateContainer = kDefaultNodeFlags | kChildNeedsStyleRecalcFlag |
-                       kChildNeedsReattachLayoutTree |
                        kIsContainerFlag,
     kCreateElement = kCreateContainer | kIsElementFlag,
     kCreateShadowRoot =
