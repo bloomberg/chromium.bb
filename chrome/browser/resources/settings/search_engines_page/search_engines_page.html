@@ -41,8 +41,8 @@
     <div id="noOtherEngines" hidden="[[otherEngines.length]]">
       $i18n{searchEnginesNoOtherEngines}
     </div>
-    <settings-search-engines-list engines="[[otherEngines]]" hide-headers
-          scroll-target="[[subpageScrollTarget]]">
+    <settings-search-engines-list id="otherEngines" engines="[[otherEngines]]"
+          hide-headers scroll-target="[[subpageScrollTarget]]">
     </settings-search-engines-list>
     <template is="dom-if" if="[[showExtensionsList_]]">
       <div class="settings-box first">

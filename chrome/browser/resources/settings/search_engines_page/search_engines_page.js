@@ -59,6 +59,11 @@ Polymer({
         getSearchEnginesList().then(this.enginesChanged_.bind(this));
     this.addWebUIListener(
         'search-engines-changed', this.enginesChanged_.bind(this));
+
+    // Sets offset in iron-list that uses the page as a scrollTarget.
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      this.$.otherEngines.scrollOffset = this.$.otherEngines.offsetTop;
+    });
   },
 
   /** @private */

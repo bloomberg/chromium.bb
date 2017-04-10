@@ -25,6 +25,9 @@ Polymer({
       value: null,  // Required to populate class.
     },
 
+    /** Used to fix scrolling glitch when list is not top most element. */
+    scrollOffset: Number,
+
     /** @private {Object}*/
     lastFocused_: Object,
   },

@@ -46,7 +46,8 @@
       </div>
       <div id="container" class="scroll-container">
         <iron-list items="[[engines]]" scroll-target="[[scrollTarget]]"
-            class$="[[getIronListClass_(scrollTarget)]]">
+            class$="[[getIronListClass_(scrollTarget)]]"
+            scroll-offset="[[scrollOffset]]">
           <template>
             <settings-search-engine-entry engine="[[item]]"
                 tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
