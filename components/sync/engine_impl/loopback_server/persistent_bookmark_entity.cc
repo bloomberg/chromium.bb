@@ -26,7 +26,8 @@ std::unique_ptr<LoopbackServerEntity> PersistentBookmarkEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity,
     const string& parent_id,
     const string& client_guid) {
-  CHECK(client_entity.version() == 0) << "New entities must have version = 0.";
+  DLOG_IF(WARNING, client_entity.version() == 0)
+      << "Possible roaming store corruption. Should self heal.";
   CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   const string id =

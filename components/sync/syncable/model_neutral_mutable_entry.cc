@@ -321,12 +321,15 @@ void ModelNeutralMutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
 
   if (!kernel_->ref(UNIQUE_BOOKMARK_TAG).empty() &&
       tag != kernel_->ref(UNIQUE_BOOKMARK_TAG)) {
-    // There is only one scenario where our tag is expected to change.  That
+    // There are two scenarios where our tag is expected to change.  The first
     // scenario occurs when our current tag is a non-correct tag assigned during
-    // the UniquePosition migration.
+    // the UniquePosition migration. The second is when the local sync backend
+    // database has been deleted ans is being recreated from the current client.
     std::string migration_generated_tag = GenerateSyncableBookmarkHash(
         std::string(), kernel_->ref(ID).GetServerId());
-    DCHECK_EQ(migration_generated_tag, kernel_->ref(UNIQUE_BOOKMARK_TAG));
+    DLOG_IF(WARNING,
+            migration_generated_tag == kernel_->ref(UNIQUE_BOOKMARK_TAG))
+        << "Unique bookmark tag mismatch!";
   }
 
   kernel_->put(UNIQUE_BOOKMARK_TAG, tag);
