@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 #include <vector>
+
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
@@ -19,6 +24,15 @@ namespace {
 struct TestScriptAndExpectedValue {
   NSString* test_script;
   id expected_value;
+};
+
+// Test coordinates and expected result for __gCrWeb.getElementFromPoint call.
+struct TestCoordinatesAndExpectedValue {
+  TestCoordinatesAndExpectedValue(CGFloat x, CGFloat y, id expected_value)
+      : x(x), y(y), expected_value(expected_value) {}
+  CGFloat x = 0;
+  CGFloat y = 0;
+  id expected_value = nil;
 };
 
 }  // namespace
@@ -42,26 +56,35 @@ class CoreJsTest : public web::WebTestWithWebState {
     NSString* page_content =
         [NSString stringWithFormat:page_content_template, html];
 
-    TestScriptAndExpectedValue test_data[] = {
+    TestCoordinatesAndExpectedValue test_data[] = {
         // Point outside the document margins.
-        {
-            @"__gCrWeb.getElementFromPoint(0, 0)", @{},
-        },
-        // Point outside the <p> element.
-        {@"__gCrWeb.getElementFromPoint(100, 100)", expected_value},
+        {0, 0, @{}},
         // Point inside the <p> element.
-        {
-            @"__gCrWeb.getElementFromPoint(300, 300)", @{},
-        },
+        {20, 20, expected_value},
+        // Point outside the <p> element.
+        {GetWebViewContentSize().width / 2, 50, @{}},
     };
     for (size_t i = 0; i < arraysize(test_data); i++) {
-      TestScriptAndExpectedValue& data = test_data[i];
+      const TestCoordinatesAndExpectedValue& data = test_data[i];
       LoadHtml(page_content);
-      id result = ExecuteJavaScript(data.test_script);
+      id result = ExecuteGetElementFromPointJavaScript(data.x, data.y);
       EXPECT_NSEQ(data.expected_value, result)
-          << " in test " << i << ": "
-          << base::SysNSStringToUTF8(data.test_script);
+          << " in test " << i << ": (" << data.x << ", " << data.y << ")";
     }
+  }
+  // Returns web view's content size from the current web state.
+  CGSize GetWebViewContentSize() {
+    return web_state()->GetWebViewProxy().scrollViewProxy.contentSize;
+  }
+
+  // Executes __gCrWeb.getElementFromPoint script and syncronously returns the
+  // result. |x| and |y| are points in web view coordinate system.
+  id ExecuteGetElementFromPointJavaScript(CGFloat x, CGFloat y) {
+    CGSize contentSize = GetWebViewContentSize();
+    NSString* const script = [NSString
+        stringWithFormat:@"__gCrWeb.getElementFromPoint(%g, %g, %g, %g)", x, y,
+                         contentSize.width, contentSize.height];
+    return ExecuteJavaScript(script);
   }
 };
 
@@ -120,18 +143,16 @@ TEST_F(CoreJsTest, TextAreaStopsProximity) {
   };
   NSDictionary* failure = @{};
 
-  TestScriptAndExpectedValue test_data[] = {
-      {@"__gCrWeb.getElementFromPoint(2, 20)", success},
-      {@"__gCrWeb.getElementFromPoint(5, 20)", failure},
+  TestCoordinatesAndExpectedValue test_data[] = {
+      {2, 20, success}, {10, 10, failure},
   };
 
   for (size_t i = 0; i < arraysize(test_data); i++) {
-    TestScriptAndExpectedValue& data = test_data[i];
+    const TestCoordinatesAndExpectedValue& data = test_data[i];
     LoadHtml(html);
-    id result = ExecuteJavaScript(data.test_script);
+    id result = ExecuteGetElementFromPointJavaScript(data.x, data.y);
     EXPECT_NSEQ(data.expected_value, result)
-        << " in test " << i << ": "
-        << base::SysNSStringToUTF8(data.test_script);
+        << " in test " << i << ": (" << data.x << ", " << data.y << ")";
   }
 }
 
@@ -244,7 +265,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
 
   // A page with a link to a destination URL.
   LoadHtml(base::StringPrintf(image, "http://destination"));
-  id result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+  id result = ExecuteGetElementFromPointJavaScript(20, 20);
   NSDictionary* expected_result = @{
     @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
     @"referrerPolicy" : @"default",
@@ -254,7 +275,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
 
   // A page with a link with some JavaScript that does not result in a NOP.
   LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
-  result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+  result = ExecuteGetElementFromPointJavaScript(20, 20);
   expected_result = @{
     @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
     @"referrerPolicy" : @"default",
@@ -272,7 +293,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
     // A page with a link with some JavaScript that results in a NOP.
     const std::string javascript = std::string("javascript:") + js;
     LoadHtml(base::StringPrintf(image, javascript.c_str()));
-    result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+    result = ExecuteGetElementFromPointJavaScript(20, 20);
     expected_result = @{
       @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
       @"referrerPolicy" : @"default",

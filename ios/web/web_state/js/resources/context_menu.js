@@ -13,9 +13,13 @@ goog.provide('__crWeb.contextMenu');
 
   /**
    * Returns the url of the image or link under the selected point. Returns an
-   * empty string if no links or images are found.
-   * @param {number} x Horizontal center of the selected point.
-   * @param {number} y Vertical center of the selected point.
+   * empty object if no links or images are found.
+   * @param {number} x Horizontal center of the selected point in web view
+   *                   coordinates.
+   * @param {number} y Vertical center of the selected point in web view
+   *                 coordinates.
+   * @param {number} webViewWidth the width of web view.
+   * @param {number} webViewHeight the height of web view.
    * @return {!Object} An object of the form {
    *     href,  // URL of the link under the point
    *     innerText,  // innerText of the link, if the selected element is a link
@@ -32,7 +36,36 @@ goog.provide('__crWeb.contextMenu');
    *         from the current page.
    *     </ul>
    */
-  __gCrWeb['getElementFromPoint'] = function(x, y) {
+  __gCrWeb['getElementFromPoint'] =
+      function(x, y, webViewWidth, webViewHeight) {
+        var scale = getPageWidth() / webViewWidth;
+        return getElementFromPointInPageCoordinates(x * scale, y * scale)
+      };
+
+  /**
+   * Suppresses the next click such that they are not handled by JS click
+   * event handlers.
+   * @type {void}
+   */
+  __gCrWeb['suppressNextClick'] = function() {
+    var suppressNextClick = function(evt) {
+      evt.preventDefault();
+      document.removeEventListener('click', suppressNextClick, false);
+    };
+    document.addEventListener('click', suppressNextClick);
+  };
+
+  /**
+   * Returns the url of the image or link under the selected point in page
+   * coordinates. Returns an empty object if no links or images are found.
+   * @param {number} x Horizontal center of the selected point in page
+   *                 coordinates.
+   * @param {number} y Vertical center of the selected point in page
+   *                 coordinates.
+   * @return {!Object} An object in the same form as
+   *                   {@code getElementFromPoint} result.
+   */
+  var getElementFromPointInPageCoordinates = function(x, y) {
     var hitCoordinates = spiralCoordinates_(x, y);
     for (var index = 0; index < hitCoordinates.length; index++) {
       var coordinates = hitCoordinates[index];
@@ -109,24 +142,11 @@ goog.provide('__crWeb.contextMenu');
   };
 
   /**
-   * Suppresses the next click such that they are not handled by JS click
-   * event handlers.
-   * @type {void}
-   */
-  __gCrWeb['suppressNextClick'] = function() {
-    var suppressNextClick = function(evt) {
-      evt.preventDefault();
-      document.removeEventListener('click', suppressNextClick, false);
-    };
-    document.addEventListener('click', suppressNextClick);
-  };
-
-  /**
    * Returns the margin in points around touchable elements (e.g. links for
    * custom context menu).
    * @type {number}
    */
-  __gCrWeb['getPageWidth'] = function() {
+  var getPageWidth = function() {
     var documentElement = document.documentElement;
     var documentBody = document.body;
     return Math.max(documentElement.clientWidth,
