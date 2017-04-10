@@ -269,6 +269,13 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutChannelDialogBeta", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_BETA},
     {"aboutChannelDialogDev", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV},
     {"aboutChannelDialogStable", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_STABLE},
+
+    // About page, update warning dialog.
+    {"aboutUpdateWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE},
+    {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
+    {"aboutUpdateWarningContinue",
+     IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

@@ -107,6 +107,17 @@
     <message name="IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV" desc="The development option in the channel select.">
       Developer - unstable
     </message>
+
+    <!-- About Page: Update warning dialog -->
+    <message name="IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE" desc="Warning about update over mobile data, specifying the size in megabytes.">
+      Update will be downloaded using <ph name="UPDATE_SIZE_MB">$1<ex>0</ex></ph> MB of mobile data. Would you like to continue?
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE" desc="The title of the warning about update over mobile data.">
+      Download update using mobile data
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON" desc="A button that accepts downloading the update over mobile data.">
+      Continue
+    </message>
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">

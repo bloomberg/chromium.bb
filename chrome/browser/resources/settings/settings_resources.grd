@@ -58,6 +58,12 @@
         <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_HTML"
                    file="about_page/detailed_build_info.html"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_UPDATE_WARNING_DIALOG_HTML"
+                   file="about_page/update_warning_dialog.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_UPDATE_WARNING_DIALOG_JS"
+                   file="about_page/update_warning_dialog.js"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_SETTINGS_ADD_SITE_DIALOG_HTML"
                  file="site_settings/add_site_dialog.html"
