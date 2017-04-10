@@ -26,10 +26,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kBrowserViewControllerSnackbarCategory =
     @"BrowserViewControllerSnackbarCategory";
 
-@implementation BrowserViewControllerDependencyFactory
+@implementation BrowserViewControllerDependencyFactory {
+  ios::ChromeBrowserState* browserState_;
+}
 
 - (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   self = [super init];
@@ -98,10 +104,10 @@ newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                                        message:(NSString*)message
                                 viewController:
                                     (UIViewController*)viewController {
-  AlertCoordinator* alertCoordinator = [[[AlertCoordinator alloc]
-      initWithBaseViewController:viewController
-                           title:title
-                         message:message] autorelease];
+  AlertCoordinator* alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                     title:title
+                                                   message:message];
   [alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
                               action:nil
                                style:UIAlertActionStyleDefault];

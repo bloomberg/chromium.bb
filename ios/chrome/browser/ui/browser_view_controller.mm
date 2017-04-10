@@ -26,7 +26,7 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
+
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -199,6 +199,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkNode;
@@ -490,17 +494,16 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   base::scoped_nsobject<AlertCoordinator> _alertCoordinator;
 
   // Releaser for properties that aren't backed by scoped_nsobjects.
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BrowserViewController;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
-@property(nonatomic, retain, readonly) SideSwipeController* sideSwipeController;
+@property(nonatomic, strong, readonly) SideSwipeController* sideSwipeController;
 // The browser's preload controller.
-@property(nonatomic, retain, readonly) PreloadController* preloadController;
+@property(nonatomic, strong, readonly) PreloadController* preloadController;
 // The dialog presenter for this BVC's tab model.
-@property(nonatomic, retain, readonly) DialogPresenter* dialogPresenter;
+@property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
-@property(nonatomic, retain, readonly) KeyCommandsProvider* keyCommandsProvider;
+@property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
 // Whether the current tab can enable the reader mode menu item.
 @property(nonatomic, assign, readonly) BOOL canUseReaderMode;
 // Whether the current tab can enable the request desktop menu item.
@@ -530,7 +533,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 @property(nonatomic, readonly) BOOL shouldShowVoiceSearchBar;
 // Coordinator for displaying a modal overlay with activity indicator to prevent
 // the user from interacting with the browser view.
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     ActivityOverlayCoordinator* activityOverlayCoordinator;
 
 // The user agent type used to load the currently visible page. User agent type
@@ -825,7 +828,7 @@ class InfoBarContainerDelegateIOS
 
   bool DrawInfoBarArrows(int* x) const override { return false; }
 
-  BrowserViewController* controller_;  // weak
+  __weak BrowserViewController* controller_;
 };
 
 // Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
@@ -884,7 +887,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 
  private:
-  BrowserViewController* owner_;  // Weak.
+  __weak BrowserViewController* owner_;
 };
 
 @implementation BrowserViewController
@@ -908,11 +911,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];
   if (self) {
     DCHECK(factory);
-    _propertyReleaser_BrowserViewController.Init(self,
-                                                 [BrowserViewController class]);
-    _dependencyFactory.reset([factory retain]);
-    _nativeControllersForTabIDs.reset(
-        [[NSMapTable strongToWeakObjectsMapTable] retain]);
+
+    _dependencyFactory.reset(factory);
+    _nativeControllersForTabIDs.reset([NSMapTable strongToWeakObjectsMapTable]);
     _dialogPresenter.reset([[DialogPresenter alloc] initWithDelegate:self
                                             presentingViewController:self]);
     _javaScriptDialogPresenter.reset(
@@ -956,7 +957,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _voiceSearchController->SetDelegate(nil);
   [_rateThisAppDialog setDelegate:nil];
   [_model closeAllTabs];
-  [super dealloc];
 }
 
 #pragma mark - Accessibility
@@ -982,8 +982,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [self.activityOverlayCoordinator stop];
     self.activityOverlayCoordinator = nil;
   } else if (!self.activityOverlayCoordinator) {
-    self.activityOverlayCoordinator = [[[ActivityOverlayCoordinator alloc]
-        initWithBaseViewController:self] autorelease];
+    self.activityOverlayCoordinator =
+        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
     [self.activityOverlayCoordinator start];
   }
 
@@ -1172,11 +1172,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-  self.contentArea = [[[BrowserContainerView alloc]
-      initWithFrame:initialViewsRect] autorelease];
+  self.contentArea =
+      [[BrowserContainerView alloc] initWithFrame:initialViewsRect];
   self.contentArea.autoresizingMask = initialViewAutoresizing;
-  self.typingShield =
-      [[[UIButton alloc] initWithFrame:initialViewsRect] autorelease];
+  self.typingShield = [[UIButton alloc] initWithFrame:initialViewsRect];
   self.typingShield.autoresizingMask = initialViewAutoresizing;
   [self.typingShield addTarget:self
                         action:@selector(shieldWasTapped:)
@@ -1338,7 +1337,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   base::WeakNSObject<BrowserViewController> weakSelf(self);
   void (^completion)(id<UIViewControllerTransitionCoordinatorContext>) = ^(
       id<UIViewControllerTransitionCoordinatorContext> context) {
-    base::scoped_nsobject<BrowserViewController> strongSelf([weakSelf retain]);
+    base::scoped_nsobject<BrowserViewController> strongSelf(weakSelf);
     if (strongSelf)
       [strongSelf showFindBarWithAnimation:NO
                                 selectText:NO
@@ -1359,7 +1358,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [super dismissViewControllerAnimated:flag
                             completion:^{
                               base::scoped_nsobject<BrowserViewController>
-                                  strongSelf([weakSelf retain]);
+                                  strongSelf(weakSelf);
                               [strongSelf setDismissingModal:NO];
                               [strongSelf setPresenting:NO];
                               if (completion)
@@ -1632,7 +1631,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK(!_browserState);
   _browserState = browserState;
   _isOffTheRecord = browserState->IsOffTheRecord() ? YES : NO;
-  _model.reset([model retain]);
+  _model.reset(model);
   [_model addObserver:self];
 
   if (!_isOffTheRecord) {
@@ -1763,8 +1762,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // Create contextual search views and controller.
   if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice] &&
       !_browserState->IsOffTheRecord()) {
-    _contextualSearchMask =
-        [[[ContextualSearchMaskView alloc] init] autorelease];
+    _contextualSearchMask = [[ContextualSearchMaskView alloc] init];
     [self.view insertSubview:_contextualSearchMask
                 belowSubview:[_toolbarController view]];
     _contextualSearchPanel = [self createPanelView];
@@ -2045,8 +2043,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     NSString* contentType = base::SysUTF8ToNSString(postData->first);
     NSData* data = [NSData dataWithBytes:(void*)postData->second.data()
                                   length:postData->second.length()];
-    params.post_data.reset([data retain]);
-    params.extra_headers.reset([@{ @"Content-Type" : contentType } retain]);
+    params.post_data.reset(data);
+    params.extra_headers.reset(@{ @"Content-Type" : contentType });
   }
   Tab* tab = [_model insertTabWithLoadParams:params
                                       opener:nil
@@ -2076,7 +2074,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CGRect viewBounds, remainder;
   CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
                CGRectMinYEdge);
-  return [[[UIImageView alloc] initWithFrame:viewBounds] autorelease];
+  return [[UIImageView alloc] initWithFrame:viewBounds];
 }
 
 - (UIImageView*)pageOpenCloseAnimationView {
@@ -2085,8 +2083,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   frame.size.height = frame.size.height - [self headerHeight];
   frame.origin.y = [self headerHeight];
 
-  UIImageView* pageView =
-      [[[UIImageView alloc] initWithFrame:frame] autorelease];
+  UIImageView* pageView = [[UIImageView alloc] initWithFrame:frame];
   CGPoint center = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));
   pageView.center = center;
 
@@ -2190,9 +2187,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   int delay = immediately ? 0 : kExternalFilesCleanupDelaySeconds;
   _externalFileRemover->RemoveAfterDelay(
       base::TimeDelta::FromSeconds(delay),
-      base::BindBlock(completionHandler ? completionHandler
-                                        : ^{
-                                          }));
+      base::BindBlockArc(completionHandler ? completionHandler
+                                           : ^{
+                                             }));
 }
 
 #pragma mark - SnapshotOverlayProvider methods
@@ -2298,9 +2295,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CGFloat width = CGRectGetWidth([[self view] bounds]);
   CGFloat y = CGRectGetHeight([[self view] bounds]) - kVoiceSearchBarHeight;
   CGRect frame = CGRectMake(0.0, y, width, kVoiceSearchBarHeight);
-  _voiceSearchBar.reset([ios::GetChromeBrowserProvider()
-                             ->GetVoiceSearchProvider()
-                             ->BuildVoiceSearchBar(frame) retain]);
+  _voiceSearchBar.reset(ios::GetChromeBrowserProvider()
+                            ->GetVoiceSearchProvider()
+                            ->BuildVoiceSearchBar(frame));
   [_voiceSearchBar setVoiceSearchBarDelegate:self];
   [_voiceSearchBar setHidden:YES];
   [_voiceSearchBar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
@@ -2625,7 +2622,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       CGPointMake(CGRectGetMidX(view.frame),
                   CGRectGetMinY(view.frame) + [self headerHeightForTab:tab]);
   auto* helper = RepostFormTabHelper::FromWebState(webState);
-  helper->PresentDialog(dialogLocation, base::BindBlock(^(bool shouldContinue) {
+  helper->PresentDialog(dialogLocation,
+                        base::BindBlockArc(^(bool shouldContinue) {
                           handler(shouldContinue);
                         }));
 }
@@ -2671,30 +2669,30 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (!IsIPadIdiom()) {
     if ([_toolbarController view]) {
       HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([[_toolbarController view] retain]),
-          Hideable, [ToolbarController toolbarDropShadowHeight], 0.0,
+          base::scoped_nsobject<UIView>([_toolbarController view]), Hideable,
+          [ToolbarController toolbarDropShadowHeight], 0.0,
       };
       results.push_back(header);
     }
   } else {
     if ([_tabStripController view]) {
       HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([[_tabStripController view] retain]),
-          Hideable, 0.0, 0.0,
+          base::scoped_nsobject<UIView>([_tabStripController view]), Hideable,
+          0.0, 0.0,
       };
       results.push_back(header);
     }
     if ([_toolbarController view]) {
       HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([[_toolbarController view] retain]),
-          Hideable, [ToolbarController toolbarDropShadowHeight], 0.0,
+          base::scoped_nsobject<UIView>([_toolbarController view]), Hideable,
+          [ToolbarController toolbarDropShadowHeight], 0.0,
       };
       results.push_back(header);
     }
     if ([_findBarController view]) {
       HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([[_findBarController view] retain]),
-          Overlap, 0.0, kIPadFindBarOverlap,
+          base::scoped_nsobject<UIView>([_findBarController view]), Overlap,
+          0.0, kIPadFindBarOverlap,
       };
       results.push_back(header);
     }
@@ -2869,8 +2867,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     (StaticHtmlNativeContent*)nativeContent {
   if (!IsIPadIdiom() && !FirstRun::IsChromeFirstRun()) {
     OverscrollActionsController* controller =
-        [[[OverscrollActionsController alloc]
-            initWithScrollView:[nativeContent scrollView]] autorelease];
+        [[OverscrollActionsController alloc]
+            initWithScrollView:[nativeContent scrollView]];
     [controller setDelegate:self];
     OverscrollStyle style = _isOffTheRecord
                                 ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
@@ -2961,12 +2959,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost {
   ErrorPageContent* errorPageContent =
-      [[[ErrorPageContent alloc] initWithLoader:self
-                                   browserState:self.browserState
-                                            url:url
-                                          error:error
-                                         isPost:isPost
-                                    isIncognito:_isOffTheRecord] autorelease];
+      [[ErrorPageContent alloc] initWithLoader:self
+                                  browserState:self.browserState
+                                           url:url
+                                         error:error
+                                        isPost:isPost
+                                   isIncognito:_isOffTheRecord];
   [self setOverScrollActionControllerToStaticNativeContent:errorPageContent];
   return errorPageContent;
 }
@@ -2991,14 +2989,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   std::string url_host = url.host();
   if (url_host == kChromeUINewTabHost || url_host == kChromeUIBookmarksHost) {
     NewTabPageController* pageController =
-        [[[NewTabPageController alloc] initWithUrl:url
-                                            loader:self
-                                           focuser:_toolbarController
-                                       ntpObserver:self
-                                      browserState:_browserState
-                                        colorCache:_dominantColorCache
-                                webToolbarDelegate:self
-                                          tabModel:_model] autorelease];
+        [[NewTabPageController alloc] initWithUrl:url
+                                           loader:self
+                                          focuser:_toolbarController
+                                      ntpObserver:self
+                                     browserState:_browserState
+                                       colorCache:_dominantColorCache
+                               webToolbarDelegate:self
+                                         tabModel:_model];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
 
     // Panel is always NTP for iPhone.
@@ -3025,21 +3023,21 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     const std::string& filename = GetTermsOfServicePath();
 
     StaticHtmlNativeContent* staticNativeController =
-        [[[StaticHtmlNativeContent alloc]
+        [[StaticHtmlNativeContent alloc]
             initWithResourcePathResource:base::SysUTF8ToNSString(filename)
                                   loader:self
                             browserState:_browserState
-                                     url:GURL(kChromeUITermsURL)] autorelease];
+                                     url:GURL(kChromeUITermsURL)];
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
   } else if (url_host == kChromeUIOfflineHost &&
              [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =
-        [[[OfflinePageNativeContent alloc] initWithLoader:self
-                                             browserState:_browserState
-                                                 webState:webState
-                                                      URL:url] autorelease];
+        [[OfflinePageNativeContent alloc] initWithLoader:self
+                                            browserState:_browserState
+                                                webState:webState
+                                                     URL:url];
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
@@ -3048,15 +3046,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // still in the sandbox.
     NSString* filePath = [ExternalFileController pathForExternalFileURL:url];
     if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-      nativeController = [[[ExternalFileController alloc]
-           initWithURL:url
-          browserState:_browserState] autorelease];
+      nativeController =
+          [[ExternalFileController alloc] initWithURL:url
+                                         browserState:_browserState];
     }
   } else {
     DCHECK(![self hasControllerForURL:url]);
     // In any other case the PageNotAvailableController is returned.
-    nativeController =
-        [[[PageNotAvailableController alloc] initWithUrl:url] autorelease];
+    nativeController = [[PageNotAvailableController alloc] initWithUrl:url];
     if (url_host == kChromeUIHistoryFrameHost) {
       base::mac::ObjCCastStrict<PageNotAvailableController>(nativeController)
           .descriptionText = l10n_util::GetNSStringFWithFixup(
@@ -3207,7 +3204,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                    withFileExtension:(NSString*)fileExtension {
   switch ([PHPhotoLibrary authorizationStatus]) {
     // User was never asked for permission to access photos.
-    case PHAuthorizationStatusNotDetermined:
+    case PHAuthorizationStatusNotDetermined: {
       [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
         // Call -saveImage again to check if chrome needs to display an error or
         // saves the image.
@@ -3216,6 +3213,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                            withFileExtension:fileExtension];
       }];
       break;
+    }
 
     // The application doesn't have permission to access photo and the user
     // cannot grant it.
@@ -3234,7 +3232,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // The application has permission to access the photos.
     default: {
       web::WebThread::PostTask(
-          web::WebThread::FILE, FROM_HERE, base::BindBlock(^{
+          web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^{
             [self saveImage:data withFileExtension:fileExtension];
           }));
       break;
@@ -3270,7 +3268,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
         // Cleanup the temporary file.
         web::WebThread::PostTask(
-            web::WebThread::FILE, FROM_HERE, base::BindBlock(^{
+            web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^{
               NSError* error = nil;
               [[NSFileManager defaultManager] removeItemAtURL:fileURL
                                                         error:&error];
@@ -3915,8 +3913,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CGRect cardFrame = {frame.origin, cardSize};
 
   CardView* card =
-      [[[CardView alloc] initWithFrame:cardFrame isIncognito:_isOffTheRecord]
-          autorelease];
+      [[CardView alloc] initWithFrame:cardFrame isIncognito:_isOffTheRecord];
   card.closeButtonSide = IsPortrait() ? CardCloseButtonSide::TRAILING
                                       : CardCloseButtonSide::LEADING;
   [_contentArea addSubview:card];
@@ -4436,7 +4433,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   base::WeakNSObject<Tab> weakTab(tab);
   base::WeakNSObject<BrowserViewController> weakSelf(self);
   web::JavaScriptResultBlock completionHandlerBlock = ^(id result, NSError*) {
-    base::scoped_nsobject<Tab> strongTab([weakTab retain]);
+    base::scoped_nsobject<Tab> strongTab(weakTab);
     if (!strongTab)
       return;
     if (![result isKindOfClass:[NSString class]])
@@ -4740,8 +4737,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         configurationForContainerSize:panelContainerSize
                   horizontalSizeClass:self.traitCollection.horizontalSizeClass];
   }
-  ContextualSearchPanelView* newPanel = [[[ContextualSearchPanelView alloc]
-      initWithConfiguration:config] autorelease];
+  ContextualSearchPanelView* newPanel =
+      [[ContextualSearchPanelView alloc] initWithConfiguration:config];
   [newPanel addMotionObserver:self];
   [newPanel addMotionObserver:_contextualSearchMask];
   return newPanel;
@@ -5028,10 +5025,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // Dismiss current alert.
   [_alertCoordinator stop];
 
-  _alertCoordinator.reset(
-      [[_dependencyFactory alertCoordinatorWithTitle:title
-                                             message:message
-                                      viewController:self] retain]);
+  _alertCoordinator.reset([_dependencyFactory alertCoordinatorWithTitle:title
+                                                                message:message
+                                                         viewController:self]);
   [_alertCoordinator start];
 }
 

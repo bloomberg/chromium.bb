@@ -37,10 +37,7 @@ class ChromeBrowserState;
 extern NSString* const kBrowserViewControllerSnackbarCategory;
 
 // Creates helper objects needed by BrowserViewController.
-@interface BrowserViewControllerDependencyFactory : NSObject {
- @private
-  ios::ChromeBrowserState* browserState_;
-}
+@interface BrowserViewControllerDependencyFactory : NSObject
 
 // Creates a new factory backed by |browserState|. This must be the same browser
 // state provided to BrowserViewController (and like BVC, this is a weak

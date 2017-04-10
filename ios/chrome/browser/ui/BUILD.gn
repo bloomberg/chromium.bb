@@ -344,6 +344,7 @@ source_set("ui_internal_arc") {
 }
 
 source_set("ui_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "browser_container_view.h",
     "browser_container_view.mm",

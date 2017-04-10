@@ -4,24 +4,22 @@
 
 #import "ios/chrome/browser/ui/browser_container_view.h"
 
-#import "base/ios/weak_nsobject.h"
+#include "base/logging.h"
 
 @implementation BrowserContainerView {
   // Weak reference to content view, so old _contentView can be removed from
   // superview when new one is added.
-  base::WeakNSObject<UIView> _contentView;
+  __weak UIView* _contentView;
 }
 
 - (void)dealloc {
   DCHECK(![_contentView superview] || [_contentView superview] == self);
-
-  [super dealloc];
 }
 
 - (void)displayContentView:(UIView*)contentView {
   DCHECK(![_contentView superview] || [_contentView superview] == self);
   [_contentView removeFromSuperview];
-  _contentView.reset(contentView);
+  _contentView = contentView;
 
   if (contentView) {
     [self addSubview:contentView];
