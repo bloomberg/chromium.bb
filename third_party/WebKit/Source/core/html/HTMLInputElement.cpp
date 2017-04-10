@@ -576,6 +576,7 @@ String HTMLInputElement::selectionDirectionForBinding(
 
 void HTMLInputElement::setSelectionStartForBinding(
     unsigned start,
+    bool is_null,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
     exception_state.ThrowDOMException(kInvalidStateError,
@@ -589,6 +590,7 @@ void HTMLInputElement::setSelectionStartForBinding(
 
 void HTMLInputElement::setSelectionEndForBinding(
     unsigned end,
+    bool is_null,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
     exception_state.ThrowDOMException(kInvalidStateError,
@@ -1130,6 +1132,7 @@ double HTMLInputElement::valueAsDate(bool& is_null) const {
 }
 
 void HTMLInputElement::setValueAsDate(double value,
+                                      bool is_null,
                                       ExceptionState& exception_state) {
   input_type_->SetValueAsDate(value, exception_state);
 }

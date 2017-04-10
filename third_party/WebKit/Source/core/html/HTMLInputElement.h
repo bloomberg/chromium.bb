@@ -144,7 +144,7 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   void SetEditingValue(const String&);
 
   double valueAsDate(bool& is_null) const;
-  void setValueAsDate(double, ExceptionState&);
+  void setValueAsDate(double, bool is_null, ExceptionState&);
 
   double valueAsNumber() const;
   void setValueAsNumber(double,
@@ -161,8 +161,8 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   unsigned selectionStartForBinding(bool&, ExceptionState&) const;
   unsigned selectionEndForBinding(bool&, ExceptionState&) const;
   String selectionDirectionForBinding(ExceptionState&) const;
-  void setSelectionStartForBinding(unsigned, ExceptionState&);
-  void setSelectionEndForBinding(unsigned, ExceptionState&);
+  void setSelectionStartForBinding(unsigned, bool is_null, ExceptionState&);
+  void setSelectionEndForBinding(unsigned, bool is_null, ExceptionState&);
   void setSelectionDirectionForBinding(const String&, ExceptionState&);
   void setSelectionRangeForBinding(unsigned start,
                                    unsigned end,

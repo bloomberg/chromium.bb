@@ -1325,6 +1325,41 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
   impl->setTestInterfaceEmptyFrozenArrayAttribute(cppValue);
 }
 
+static void booleanOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::toImpl(holder);
+
+  bool isNull = false;
+
+  bool cppValue(impl->booleanOrNullAttribute(isNull));
+
+  if (isNull) {
+    V8SetReturnValueNull(info);
+    return;
+  }
+
+  V8SetReturnValueBool(info, cppValue);
+}
+
+static void booleanOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  TestObject* impl = V8TestObject::toImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "booleanOrNullAttribute");
+
+  // Prepare the value to be set.
+  bool cppValue = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  bool isNull = IsUndefinedOrNull(v8Value);
+  impl->setBooleanOrNullAttribute(cppValue, isNull);
+}
+
 static void stringOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -1379,7 +1414,8 @@ static void longOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   if (exceptionState.HadException())
     return;
 
-  impl->setLongOrNullAttribute(cppValue);
+  bool isNull = IsUndefinedOrNull(v8Value);
+  impl->setLongOrNullAttribute(cppValue, isNull);
 }
 
 static void testInterfaceOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -9550,6 +9586,16 @@ void V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback
   TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestObject::booleanOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::booleanOrNullAttributeAttributeGetter(info);
+}
+
+void V8TestObject::booleanOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestObjectV8Internal::booleanOrNullAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestObject::stringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::stringOrNullAttributeAttributeGetter(info);
 }
@@ -11814,6 +11860,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
     {"floatArrayAttribute", V8TestObject::floatArrayAttributeAttributeGetterCallback, V8TestObject::floatArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"stringFrozenArrayAttribute", V8TestObject::stringFrozenArrayAttributeAttributeGetterCallback, V8TestObject::stringFrozenArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceEmptyFrozenArrayAttribute", V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback, V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
+    {"booleanOrNullAttribute", V8TestObject::booleanOrNullAttributeAttributeGetterCallback, V8TestObject::booleanOrNullAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"stringOrNullAttribute", V8TestObject::stringOrNullAttributeAttributeGetterCallback, V8TestObject::stringOrNullAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"longOrNullAttribute", V8TestObject::longOrNullAttributeAttributeGetterCallback, V8TestObject::longOrNullAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceOrNullAttribute", V8TestObject::testInterfaceOrNullAttributeAttributeGetterCallback, V8TestObject::testInterfaceOrNullAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},

@@ -267,7 +267,7 @@ Response InspectorAnimationAgent::setPaused(
       double current_time =
           clone->timeline()->currentTime() - clone->startTime();
       clone->pause();
-      clone->setCurrentTime(current_time);
+      clone->setCurrentTime(current_time, false);
     } else if (!paused && clone->Paused()) {
       clone->Unpause();
     }
@@ -323,7 +323,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
-    clone->setStartTime(animation->startTime());
+    clone->setStartTime(animation->startTime(), false);
 
     animation->SetEffectSuppressed(true);
   }
@@ -344,7 +344,7 @@ Response InspectorAnimationAgent::seekAnimations(
       return Response::Error("Failed to clone a detached animation.");
     if (!clone->Paused())
       clone->play();
-    clone->setCurrentTime(current_time);
+    clone->setCurrentTime(current_time, false);
   }
   return Response::OK();
 }

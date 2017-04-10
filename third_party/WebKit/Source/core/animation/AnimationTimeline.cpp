@@ -222,7 +222,7 @@ double AnimationTimeline::CurrentTimeInternal() {
   return CurrentTimeInternal(is_null);
 }
 
-void AnimationTimeline::setCurrentTime(double current_time) {
+void AnimationTimeline::setCurrentTime(double current_time, bool is_null) {
   SetCurrentTimeInternal(current_time / 1000);
 }
 

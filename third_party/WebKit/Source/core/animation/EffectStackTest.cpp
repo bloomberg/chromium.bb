@@ -29,7 +29,7 @@ class AnimationEffectStackTest : public ::testing::Test {
 
   Animation* Play(KeyframeEffect* effect, double start_time) {
     Animation* animation = timeline->Play(effect);
-    animation->setStartTime(start_time * 1000);
+    animation->setStartTime(start_time * 1000, false);
     animation->Update(kTimingUpdateOnDemand);
     return animation;
   }

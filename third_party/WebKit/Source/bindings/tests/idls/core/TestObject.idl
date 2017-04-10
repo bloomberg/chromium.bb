@@ -112,6 +112,7 @@ interface TestObject {
     attribute FrozenArray<DOMString> stringFrozenArrayAttribute;
     attribute FrozenArray<TestInterfaceEmpty> testInterfaceEmptyFrozenArrayAttribute;
     // Nullable attributes
+    attribute boolean? booleanOrNullAttribute;
     attribute DOMString? stringOrNullAttribute;
     attribute long? longOrNullAttribute;
     attribute TestInterface? testInterfaceOrNullAttribute;

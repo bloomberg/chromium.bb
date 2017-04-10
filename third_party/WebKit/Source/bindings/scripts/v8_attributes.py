@@ -460,6 +460,8 @@ def setter_expression(interface, attribute, context):
                 'kListenerFindOrCreate)')
     else:
         arguments.append('cppValue')
+    if idl_type.is_explicit_nullable:
+        arguments.append('isNull')
     if context['is_setter_raises_exception']:
         arguments.append('exceptionState')
 

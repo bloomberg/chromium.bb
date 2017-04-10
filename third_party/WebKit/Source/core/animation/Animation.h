@@ -91,7 +91,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   double currentTime(bool& is_null);
   double currentTime();
-  void setCurrentTime(double new_current_time);
+  void setCurrentTime(double new_current_time, bool is_null);
 
   double CurrentTimeInternal() const;
   double UnlimitedCurrentTimeInternal() const;
@@ -136,7 +136,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   double startTime(bool& is_null) const;
   double startTime() const;
   double StartTimeInternal() const { return start_time_; }
-  void setStartTime(double);
+  void setStartTime(double, bool is_null);
   void SetStartTimeInternal(double);
 
   const AnimationEffectReadOnly* effect() const { return content_.Get(); }

@@ -606,8 +606,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       animation->setId(getPropertyName(property.CssProperty()));
     }
     // Set the current time as the start time for retargeted transitions
-    if (retargeted_compositor_transitions.Contains(property))
-      animation->setStartTime(element->GetDocument().Timeline().currentTime());
+    if (retargeted_compositor_transitions.Contains(property)) {
+      animation->setStartTime(element->GetDocument().Timeline().currentTime(),
+                              false);
+    }
     animation->Update(kTimingUpdateOnDemand);
     running_transition.animation = animation;
     transitions_.Set(property, running_transition);

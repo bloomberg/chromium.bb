@@ -136,7 +136,7 @@ bool Animation::Limited(double current_time) const {
          (playback_rate_ > 0 && current_time >= EffectEnd());
 }
 
-void Animation::setCurrentTime(double new_current_time) {
+void Animation::setCurrentTime(double new_current_time, bool is_null) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   if (PlayStateInternal() == kIdle)
@@ -411,7 +411,7 @@ double Animation::CalculateCurrentTime() const {
   return (timeline_->EffectiveTime() - start_time_) * playback_rate_;
 }
 
-void Animation::setStartTime(double start_time) {
+void Animation::setStartTime(double start_time, bool is_null) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   if (start_time == start_time_)

@@ -396,6 +396,9 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_replaceable %}
   v8::Local<v8::String> propertyName = V8AtomicString(isolate, "{{attribute.name}}");
   {% endif %}
+  {% if attribute.is_explicit_nullable %}
+  bool isNull = IsUndefinedOrNull(v8Value);
+  {% endif %}
   {{attribute.cpp_setter}};
 
   {% if attribute.cached_attribute_validation_method %}

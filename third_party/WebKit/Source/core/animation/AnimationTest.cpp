@@ -60,7 +60,7 @@ class AnimationAnimationTest : public ::testing::Test {
     timeline = AnimationTimeline::Create(document.Get());
     timeline->ResetForTesting();
     animation = timeline->Play(0);
-    animation->setStartTime(0);
+    animation->setStartTime(0, false);
     animation->setEffect(MakeAnimation());
   }
 
@@ -159,12 +159,12 @@ TEST_F(AnimationAnimationTest,
   SimulateFrame(30);
   EXPECT_EQ(20, animation->CurrentTimeInternal());
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
-  animation->setCurrentTime(-10 * 1000);
+  animation->setCurrentTime(-10 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd) {
-  animation->setCurrentTime(50 * 1000);
+  animation->setCurrentTime(50 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(50, animation->CurrentTimeInternal());
   SimulateFrame(20);
@@ -172,7 +172,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd) {
   EXPECT_EQ(50, animation->CurrentTimeInternal());
 
   animation->setPlaybackRate(-2);
-  animation->setCurrentTime(50 * 1000);
+  animation->setCurrentTime(50 * 1000, false);
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(50, animation->CurrentTimeInternal());
   SimulateFrame(20);
@@ -192,7 +192,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimeMax) {
 
 TEST_F(AnimationAnimationTest, SetCurrentTimeSetsStartTime) {
   EXPECT_EQ(0, animation->startTime());
-  animation->setCurrentTime(1000);
+  animation->setCurrentTime(1000, false);
   EXPECT_EQ(-1000, animation->startTime());
   SimulateFrame(1);
   EXPECT_EQ(-1000, animation->startTime());
@@ -204,24 +204,24 @@ TEST_F(AnimationAnimationTest, SetStartTime) {
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->StartTimeInternal());
   EXPECT_EQ(20 * 1000, animation->currentTime());
-  animation->setStartTime(10 * 1000);
+  animation->setStartTime(10 * 1000, false);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(10, animation->StartTimeInternal());
   EXPECT_EQ(10 * 1000, animation->currentTime());
   SimulateFrame(30);
   EXPECT_EQ(10, animation->StartTimeInternal());
   EXPECT_EQ(20 * 1000, animation->currentTime());
-  animation->setStartTime(-20 * 1000);
+  animation->setStartTime(-20 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation) {
-  animation->setStartTime(-50 * 1000);
+  animation->setStartTime(-50 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->setPlaybackRate(-1);
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
-  animation->setStartTime(-100 * 1000);
+  animation->setStartTime(-100 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->CurrentTimeInternal());
   EXPECT_TRUE(animation->Limited());
@@ -229,11 +229,11 @@ TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation) {
 
 TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation) {
   SimulateFrame(30);
-  animation->setStartTime(-10 * 1000);
+  animation->setStartTime(-10 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->SetCurrentTimeInternal(50);
-  animation->setStartTime(-40 * 1000);
+  animation->setStartTime(-40 * 1000, false);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_TRUE(animation->Limited());
@@ -386,7 +386,7 @@ TEST_F(AnimationAnimationTest, ReverseSeeksToStart) {
 }
 
 TEST_F(AnimationAnimationTest, ReverseSeeksToEnd) {
-  animation->setCurrentTime(40 * 1000);
+  animation->setCurrentTime(40 * 1000, false);
   animation->reverse();
   EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
@@ -418,7 +418,7 @@ TEST_F(AnimationAnimationTest, Finish) {
 
 TEST_F(AnimationAnimationTest, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
-  animation->setCurrentTime(40 * 1000);
+  animation->setCurrentTime(40 * 1000, false);
   animation->finish(exception_state);
   EXPECT_EQ(40, animation->CurrentTimeInternal());
 }
@@ -539,7 +539,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
 
 TEST_F(AnimationAnimationTest, SetEffect) {
   animation = timeline->Play(0);
-  animation->setStartTime(0);
+  animation->setStartTime(0, false);
   AnimationEffectReadOnly* effect1 = MakeAnimation();
   AnimationEffectReadOnly* effect2 = MakeAnimation();
   animation->setEffect(effect1);
@@ -597,7 +597,7 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   timing.end_delay = 1;
   KeyframeEffect* keyframe_effect = KeyframeEffect::Create(0, nullptr, timing);
   animation = timeline->Play(keyframe_effect);
-  animation->setStartTime(0);
+  animation->setStartTime(0, false);
 
   SimulateFrame(0);
   EXPECT_EQ(1, animation->TimeToEffectChange());
@@ -734,7 +734,7 @@ TEST_F(AnimationAnimationTest, PlayAfterCancel) {
 
 TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel) {
   animation->setPlaybackRate(-1);
-  animation->setCurrentTime(15 * 1000);
+  animation->setCurrentTime(15 * 1000, false);
   SimulateFrame(0);
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());

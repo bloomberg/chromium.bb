@@ -275,15 +275,15 @@ TEST_F(AnimationAnimationTimelineTest, SetCurrentTime) {
   EXPECT_EQ(200, timeline->CurrentTimeInternal());
   EXPECT_EQ(zero_time, timeline->ZeroTime());
 
-  timeline->setCurrentTime(0);
+  timeline->setCurrentTime(0, false);
   EXPECT_EQ(0, timeline->currentTime());
   EXPECT_EQ(zero_time + 200, timeline->ZeroTime());
 
-  timeline->setCurrentTime(1000);
+  timeline->setCurrentTime(1000, false);
   EXPECT_EQ(1000, timeline->currentTime());
   EXPECT_EQ(zero_time + 199, timeline->ZeroTime());
 
-  timeline->setCurrentTime(2000);
+  timeline->setCurrentTime(2000, false);
   EXPECT_EQ(2000, timeline->currentTime());
   EXPECT_EQ(zero_time + 198, timeline->ZeroTime());
 }
@@ -338,7 +338,7 @@ TEST_F(AnimationAnimationTimelineTest, UseAnimationAfterTimelineDeref) {
   Animation* animation = timeline->Play(0);
   timeline.Clear();
   // Test passes if this does not crash.
-  animation->setStartTime(0);
+  animation->setStartTime(0, false);
 }
 
 }  // namespace blink
