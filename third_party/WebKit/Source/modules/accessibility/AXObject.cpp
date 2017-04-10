@@ -1769,6 +1769,16 @@ bool AXObject::NameFromContents() const {
     case kTreeItemRole:
     case kUserInterfaceTooltipRole:
       return true;
+    case kRowRole: {
+      // Spec says we should always expose the name on rows,
+      // but for performance reasons we only do it
+      // if the row might receive focus
+      if (AncestorExposesActiveDescendant()) {
+        return true;
+      }
+      const Node* node = this->GetNode();
+      return node && node->IsElementNode() && ToElement(node)->IsFocusable();
+    }
     default:
       return false;
   }
