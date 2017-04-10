@@ -186,7 +186,7 @@ static void PreconnectIfNeeded(
 
 WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
     const String& as) {
-  DCHECK_EQ(as.Lower(), as);
+  DCHECK_EQ(as.DeprecatedLower(), as);
   if (as == "image") {
     return Resource::kImage;
   } else if (as == "script") {

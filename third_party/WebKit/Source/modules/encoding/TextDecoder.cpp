@@ -67,7 +67,7 @@ TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
 TextDecoder::~TextDecoder() {}
 
 String TextDecoder::encoding() const {
-  String name = String(encoding_.GetName()).Lower();
+  String name = String(encoding_.GetName()).DeprecatedLower();
   // Where possible, encoding aliases should be handled by changes to Chromium's
   // ICU or Blink's WTF.  The same codec is used, but WTF maintains a different
   // name/identity for these.

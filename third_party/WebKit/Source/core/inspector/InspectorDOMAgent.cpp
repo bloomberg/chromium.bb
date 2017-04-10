@@ -758,8 +758,9 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
   if (!parsed_element)
     return Response::Error("Could not parse value as attributes");
 
-  String case_adjusted_name =
-      should_ignore_case ? name.fromMaybe("").Lower() : name.fromMaybe("");
+  String case_adjusted_name = should_ignore_case
+                                  ? name.fromMaybe("").DeprecatedLower()
+                                  : name.fromMaybe("");
 
   AttributeCollection attributes = parsed_element->Attributes();
   if (attributes.IsEmpty() && name.isJust())
@@ -770,7 +771,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
     // Add attribute pair
     String attribute_name = attribute.GetName().ToString();
     if (should_ignore_case)
-      attribute_name = attribute_name.Lower();
+      attribute_name = attribute_name.DeprecatedLower();
     found_original_attribute |=
         name.isJust() && attribute_name == case_adjusted_name;
     Response response =

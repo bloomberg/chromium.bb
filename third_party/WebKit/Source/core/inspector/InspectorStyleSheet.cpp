@@ -776,13 +776,13 @@ void InspectorStyle::PopulateAllProperties(
         source_data_->property_data;
     for (const auto& data : source_property_data) {
       result.push_back(data);
-      source_property_names.insert(data.name.Lower());
+      source_property_names.insert(data.name.DeprecatedLower());
     }
   }
 
   for (int i = 0, size = style_->length(); i < size; ++i) {
     String name = style_->item(i);
-    if (!source_property_names.insert(name.Lower()).is_new_entry)
+    if (!source_property_names.insert(name.DeprecatedLower()).is_new_entry)
       continue;
 
     String value = style_->getPropertyValue(name);

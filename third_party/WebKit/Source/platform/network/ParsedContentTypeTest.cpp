@@ -118,7 +118,7 @@ TEST(ParsedContentTypeTest, ParameterName) {
   EXPECT_EQ("S", t.ParameterValueForName("T"));
 
   String kelvin = String::FromUTF8("\xe2\x84\xaa");
-  DCHECK_EQ(kelvin.Lower(), "k");
+  DCHECK_EQ(kelvin.DeprecatedLower(), "k");
   EXPECT_EQ(String(), t.ParameterValueForName(kelvin));
 }
 

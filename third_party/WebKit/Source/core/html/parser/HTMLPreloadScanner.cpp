@@ -355,7 +355,7 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (Match(attribute_name, nonceAttr)) {
       SetNonce(attribute_value);
     } else if (Match(attribute_name, asAttr)) {
-      as_attribute_value_ = attribute_value.Lower();
+      as_attribute_value_ = attribute_value.DeprecatedLower();
     } else if (Match(attribute_name, typeAttr)) {
       type_attribute_value_ = attribute_value;
     } else if (!referrer_policy_set_ &&

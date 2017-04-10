@@ -821,7 +821,7 @@ void KURL::InitProtocolMetadata() {
     protocol_is_in_http_family_ =
         protocol_ == "http-so" || protocol_ == "https-so";
   }
-  DCHECK_EQ(protocol_, protocol_.Lower());
+  DCHECK_EQ(protocol_, protocol_.DeprecatedLower());
 }
 
 bool KURL::ProtocolIs(const StringView protocol) const {

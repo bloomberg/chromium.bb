@@ -182,7 +182,7 @@ const UChar* ParseSuboriginName(const UChar* begin,
   }
 
   size_t length = position - begin;
-  name = String(begin, length).Lower();
+  name = String(begin, length).DeprecatedLower();
   return position;
 }
 
@@ -576,7 +576,7 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
 
 ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
     const String& header) {
-  if (header.StripWhiteSpace().Lower() == "nosniff")
+  if (header.StripWhiteSpace().DeprecatedLower() == "nosniff")
     return kContentTypeOptionsNosniff;
   return kContentTypeOptionsNone;
 }

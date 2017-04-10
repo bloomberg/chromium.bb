@@ -889,7 +889,7 @@ static bool ExecuteFormatBlock(LocalFrame& frame,
                                Event*,
                                EditorCommandSource,
                                const String& value) {
-  String tag_name = value.Lower();
+  String tag_name = value.DeprecatedLower();
   if (tag_name[0] == '<' && tag_name[tag_name.length() - 1] == '>')
     tag_name = tag_name.Substring(1, tag_name.length() - 2);
 

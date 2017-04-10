@@ -54,10 +54,10 @@ TEST_F(EditingCommandTest, CreateCommandFromStringCaseFolding) {
   Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& entry : kCommandNameEntries) {
     Editor::Command command =
-        dummy_editor.CreateCommand(String(entry.name).Lower());
+        dummy_editor.CreateCommand(String(entry.name).DeprecatedLower());
     EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
-    command = dummy_editor.CreateCommand(String(entry.name).Upper());
+    command = dummy_editor.CreateCommand(String(entry.name).DeprecatedUpper());
     EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
   }

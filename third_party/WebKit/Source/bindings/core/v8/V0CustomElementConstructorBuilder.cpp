@@ -108,7 +108,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
   AtomicString local_name;
 
   if (options_.hasExtends()) {
-    local_name = AtomicString(options_.extends().Lower());
+    local_name = AtomicString(options_.extends().DeprecatedLower());
 
     if (!Document::IsValidName(local_name)) {
       V0CustomElementException::ThrowException(

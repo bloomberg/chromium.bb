@@ -270,13 +270,13 @@ String String::Substring(unsigned pos, unsigned len) const {
   return impl_->Substring(pos, len);
 }
 
-String String::Lower() const {
+String String::DeprecatedLower() const {
   if (!impl_)
     return String();
   return impl_->Lower();
 }
 
-String String::Upper() const {
+String String::DeprecatedUpper() const {
   if (!impl_)
     return String();
   return impl_->Upper();

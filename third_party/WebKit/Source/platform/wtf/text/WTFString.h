@@ -285,11 +285,14 @@ class WTF_EXPORT String {
   String Right(unsigned len) const { return Substring(length() - len, len); }
 
   // Returns a lowercase/uppercase version of the string. These functions might
-  // convert non-ASCII characters to ASCII characters. For example, lower() for
-  // U+212A is 'k', upper() for U+017F is 'S'.
-  // These functions are rarely used to implement web platform features.
-  String Lower() const;
-  String Upper() const;
+  // convert non-ASCII characters to ASCII characters. For example,
+  // DeprecatedLower() for U+212A is 'k', DeprecatedUpper() for U+017F is 'S'.
+  // These functions are rarely used to implement web platform features. See
+  // crbug.com/627682.
+  // These functions are deprecated. We should use UpperASCII(), or introduce
+  // UpperUnicode(), and should introduce LowerASCII() or LowerUnicode().
+  String DeprecatedLower() const;
+  String DeprecatedUpper() const;
 
   String Lower(const AtomicString& locale_identifier) const;
   String Upper(const AtomicString& locale_identifier) const;

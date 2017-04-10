@@ -98,7 +98,7 @@ static String ConvertDragOperationToEffectAllowed(DragOperation op) {
 // specified in the WHATWG Web Applications 1.0 draft see
 // http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
 static String NormalizeType(const String& type, bool* convert_to_url = 0) {
-  String clean_type = type.StripWhiteSpace().Lower();
+  String clean_type = type.StripWhiteSpace().DeprecatedLower();
   if (clean_type == kMimeTypeText ||
       clean_type.StartsWith(kMimeTypeTextPlainEtc))
     return kMimeTypeTextPlain;

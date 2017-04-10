@@ -239,7 +239,7 @@ String Blob::NormalizeType(const String& type) {
         return g_empty_string;
     }
   }
-  return type.Lower();
+  return type.DeprecatedLower();
 }
 
 }  // namespace blink

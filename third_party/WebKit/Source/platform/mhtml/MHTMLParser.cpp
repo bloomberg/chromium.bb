@@ -121,7 +121,8 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
       // This is not a key value pair, ignore.
       continue;
     }
-    key = line.Substring(0, semi_colon_index).Lower().StripWhiteSpace();
+    key =
+        line.Substring(0, semi_colon_index).DeprecatedLower().StripWhiteSpace();
     value.Append(line.Substring(semi_colon_index + 1));
   }
   // Store the last property if there is one.
@@ -176,7 +177,7 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
 
 MIMEHeader::Encoding MIMEHeader::ParseContentTransferEncoding(
     const String& text) {
-  String encoding = text.StripWhiteSpace().Lower();
+  String encoding = text.StripWhiteSpace().DeprecatedLower();
   if (encoding == "base64")
     return kBase64;
   if (encoding == "quoted-printable")

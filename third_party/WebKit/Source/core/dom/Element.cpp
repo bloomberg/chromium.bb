@@ -2463,7 +2463,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   }
 
   if (!IsHTMLElement() && attr_node->GetDocument().IsHTMLDocument() &&
-      attr_node->name() != attr_node->name().Lower())
+      attr_node->name() != attr_node->name().DeprecatedLower())
     UseCounter::Count(
         GetDocument(),
         UseCounter::

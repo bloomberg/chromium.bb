@@ -289,7 +289,7 @@ bool CanLoadURL(const KURL& url, const String& content_type_str) {
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
   ContentType content_type(content_type_str);
-  String content_mime_type = content_type.GetType().Lower();
+  String content_mime_type = content_type.GetType().DeprecatedLower();
   String content_type_codecs = content_type.Parameter(codecs);
 
   // If the MIME type is missing or is not meaningful, try to figure it out from
@@ -380,7 +380,7 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
     const ContentType& content_type) {
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
-  String type = content_type.GetType().Lower();
+  String type = content_type.GetType().DeprecatedLower();
   // The codecs string is not lower-cased because MP4 values are case sensitive
   // per http://tools.ietf.org/html/rfc4281#page-7.
   String type_codecs = content_type.Parameter(codecs);

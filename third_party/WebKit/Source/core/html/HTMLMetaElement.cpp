@@ -66,7 +66,7 @@ void HTMLMetaElement::ParseContentAttribute(
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
-  String buffer = content.Lower();
+  String buffer = content.DeprecatedLower();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length; /* no increment here */) {
     // skip to first non-separator, but don't skip past the end of the string

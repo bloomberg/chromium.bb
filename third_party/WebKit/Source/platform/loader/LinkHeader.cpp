@@ -41,17 +41,17 @@ static LinkHeader::LinkParameterName ParameterNameFromString(
 
 void LinkHeader::SetValue(LinkParameterName name, const String& value) {
   if (name == kLinkParameterRel && !rel_)
-    rel_ = value.Lower();
+    rel_ = value.DeprecatedLower();
   else if (name == kLinkParameterAnchor)
     is_valid_ = false;
   else if (name == kLinkParameterCrossOrigin)
     cross_origin_ = value;
   else if (name == kLinkParameterAs)
-    as_ = value.Lower();
+    as_ = value.DeprecatedLower();
   else if (name == kLinkParameterType)
-    mime_type_ = value.Lower();
+    mime_type_ = value.DeprecatedLower();
   else if (name == kLinkParameterMedia)
-    media_ = value.Lower();
+    media_ = value.DeprecatedLower();
 }
 
 template <typename Iterator>

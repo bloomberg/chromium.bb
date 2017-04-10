@@ -277,7 +277,7 @@ Response InspectorDOMDebuggerAgent::SetBreakpoint(const String& event_name,
     breakpoints_by_target->setBoolean(DOMDebuggerAgentState::kEventTargetAny,
                                       true);
   else
-    breakpoints_by_target->setBoolean(target_name.Lower(), true);
+    breakpoints_by_target->setBoolean(target_name.DeprecatedLower(), true);
   DidAddBreakpoint();
   return Response::OK();
 }
@@ -305,7 +305,7 @@ Response InspectorDOMDebuggerAgent::RemoveBreakpoint(
   if (target_name.IsEmpty())
     breakpoints_by_target->remove(DOMDebuggerAgentState::kEventTargetAny);
   else
-    breakpoints_by_target->remove(target_name.Lower());
+    breakpoints_by_target->remove(target_name.DeprecatedLower());
   DidRemoveBreakpoint();
   return Response::OK();
 }
@@ -642,7 +642,7 @@ InspectorDOMDebuggerAgent::PreparePauseOnNativeEventData(
   breakpoints_by_target->getBoolean(DOMDebuggerAgentState::kEventTargetAny,
                                     &match);
   if (!match && target_name)
-    breakpoints_by_target->getBoolean(target_name->Lower(), &match);
+    breakpoints_by_target->getBoolean(target_name->DeprecatedLower(), &match);
   if (!match)
     return nullptr;
 

@@ -79,7 +79,7 @@ WindowFeatures::WindowFeatures(const String& features)
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
-  String buffer = features.Lower();
+  String buffer = features.DeprecatedLower();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length;) {
     // skip to first non-separator, but don't skip past the end of the string
@@ -274,15 +274,16 @@ void WindowFeatures::ParseDialogFeatures(const String& string,
     if (separator_position == kNotFound)
       separator_position = colon_position;
 
-    String key =
-        feature_string.Left(separator_position).StripWhiteSpace().Lower();
+    String key = feature_string.Left(separator_position)
+                     .StripWhiteSpace()
+                     .DeprecatedLower();
 
     // Null string for value indicates key without value.
     String value;
     if (separator_position != kNotFound) {
       value = feature_string.Substring(separator_position + 1)
                   .StripWhiteSpace()
-                  .Lower();
+                  .DeprecatedLower();
       value = value.Left(value.Find(' '));
     }
 

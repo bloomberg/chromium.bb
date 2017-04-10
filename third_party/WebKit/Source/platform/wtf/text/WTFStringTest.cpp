@@ -360,8 +360,8 @@ TEST(StringTest, StartsWithIgnoringASCIICase) {
       all_ascii.StartsWith(all_ascii_different, kTextCaseASCIIInsensitive));
   String non_ascii = String::FromUTF8("LIN\xE2\x84\xAA");
   EXPECT_FALSE(all_ascii.StartsWith(non_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_TRUE(
-      all_ascii.StartsWith(non_ascii.Lower(), kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.StartsWith(non_ascii.DeprecatedLower(),
+                                   kTextCaseASCIIInsensitive));
 
   EXPECT_FALSE(non_ascii.StartsWith(all_ascii, kTextCaseASCIIInsensitive));
   EXPECT_FALSE(
@@ -385,7 +385,8 @@ TEST(StringTest, EndsWithIgnoringASCIICase) {
       all_ascii.EndsWith(all_ascii_different, kTextCaseASCIIInsensitive));
   String non_ascii = String::FromUTF8("LIN\xE2\x84\xAA");
   EXPECT_FALSE(all_ascii.EndsWith(non_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_TRUE(all_ascii.EndsWith(non_ascii.Lower(), kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.EndsWith(non_ascii.DeprecatedLower(),
+                                 kTextCaseASCIIInsensitive));
 
   EXPECT_FALSE(non_ascii.EndsWith(all_ascii, kTextCaseASCIIInsensitive));
   EXPECT_FALSE(
@@ -406,7 +407,7 @@ TEST(StringTest, EqualIgnoringASCIICase) {
   EXPECT_FALSE(EqualIgnoringASCIICase(all_ascii, all_ascii_different));
   String non_ascii = String::FromUTF8("LIN\xE2\x84\xAA");
   EXPECT_FALSE(EqualIgnoringASCIICase(all_ascii, non_ascii));
-  EXPECT_TRUE(EqualIgnoringASCIICase(all_ascii, non_ascii.Lower()));
+  EXPECT_TRUE(EqualIgnoringASCIICase(all_ascii, non_ascii.DeprecatedLower()));
 
   EXPECT_FALSE(EqualIgnoringASCIICase(non_ascii, all_ascii));
   EXPECT_FALSE(EqualIgnoringASCIICase(non_ascii, all_ascii_lower_case));
@@ -431,19 +432,23 @@ TEST(StringTest, FindIgnoringASCIICase) {
   EXPECT_EQ(kNotFound, haystack2.FindIgnoringASCIICase(needle, 5));
 }
 
-TEST(StringTest, Lower) {
-  EXPECT_STREQ("link", String("LINK").Lower().Ascii().Data());
-  EXPECT_STREQ("link", String("lInk").Lower().Ascii().Data());
-  EXPECT_STREQ("lin\xE1k", String("lIn\xC1k").Lower().Latin1().Data());
+TEST(StringTest, DeprecatedLower) {
+  EXPECT_STREQ("link", String("LINK").DeprecatedLower().Ascii().Data());
+  EXPECT_STREQ("link", String("lInk").DeprecatedLower().Ascii().Data());
+  EXPECT_STREQ("lin\xE1k",
+               String("lIn\xC1k").DeprecatedLower().Latin1().Data());
   // U+212A -> k
-  EXPECT_STREQ("link",
-               String::FromUTF8("LIN\xE2\x84\xAA").Lower().Utf8().Data());
+  EXPECT_STREQ(
+      "link",
+      String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8().Data());
 }
 
-TEST(StringTest, Upper) {
-  EXPECT_STREQ("CROSS", String("cross").Upper().Utf8().Data());
+TEST(StringTest, DeprecatedUpper) {
+  EXPECT_STREQ("CROSS", String("cross").DeprecatedUpper().Utf8().Data());
   // U+017F -> S
-  EXPECT_STREQ("CROSS", String::FromUTF8("cro\xC5\xBFs").Upper().Utf8().Data());
+  EXPECT_STREQ(
+      "CROSS",
+      String::FromUTF8("cro\xC5\xBFs").DeprecatedUpper().Utf8().Data());
 }
 
 TEST(StringTest, Ensure16Bit) {

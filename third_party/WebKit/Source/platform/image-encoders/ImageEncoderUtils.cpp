@@ -27,7 +27,7 @@ enum RequestedImageMimeType {
 
 String ImageEncoderUtils::ToEncodingMimeType(const String& mime_type,
                                              const EncodeReason encode_reason) {
-  String lowercase_mime_type = mime_type.Lower();
+  String lowercase_mime_type = mime_type.DeprecatedLower();
 
   if (mime_type.IsNull())
     lowercase_mime_type = kDefaultMimeType;

@@ -79,7 +79,7 @@ bool WebElement::HasHTMLTagName(const WebString& tag_name) const {
   // createElementNS(xhtmlNS, 'INPUT') HTMLUnknownElement INPUT    INPUT
   const Element* element = ConstUnwrap<Element>();
   return HTMLNames::xhtmlNamespaceURI == element->namespaceURI() &&
-         element->localName() == String(tag_name).Lower();
+         element->localName() == String(tag_name).DeprecatedLower();
 }
 
 bool WebElement::HasAttribute(const WebString& attr_name) const {

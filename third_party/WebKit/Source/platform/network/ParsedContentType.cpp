@@ -166,7 +166,7 @@ String ParsedContentType::Charset() const {
 String ParsedContentType::ParameterValueForName(const String& name) const {
   if (!name.ContainsOnlyASCII())
     return String();
-  return parameters_.at(name.Lower());
+  return parameters_.at(name.DeprecatedLower());
 }
 
 size_t ParsedContentType::ParameterCount() const {
@@ -267,7 +267,7 @@ bool ParsedContentType::Parse(const String& content_type) {
     // As |key| is parsed as a token, it consists of ascii characters
     // and hence we don't need to care about non-ascii lowercasing.
     DCHECK(key.ToString().ContainsOnlyASCII());
-    String key_string = key.ToString().Lower();
+    String key_string = key.ToString().DeprecatedLower();
     if (mode_ == Mode::kStrict && map.Find(key_string) != map.end()) {
       DVLOG(1) << "Parameter " << key_string << " is defined multiple times.";
       return false;

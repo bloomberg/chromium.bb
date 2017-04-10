@@ -225,7 +225,7 @@ MediaQueryExp* MediaQueryExp::CreateIfValid(
 
   MediaQueryExpValue exp_value;
   String lower_media_feature =
-      AttemptStaticStringCreation(media_feature.Lower());
+      AttemptStaticStringCreation(media_feature.DeprecatedLower());
 
   // Create value for media query expression that must have 1 or more values.
   if (token_list.size() == 0 && FeatureWithoutValue(lower_media_feature)) {
@@ -306,7 +306,7 @@ bool MediaQueryExp::operator==(const MediaQueryExp& other) const {
 String MediaQueryExp::Serialize() const {
   StringBuilder result;
   result.Append('(');
-  result.Append(media_feature_.Lower());
+  result.Append(media_feature_.DeprecatedLower());
   if (exp_value_.IsValid()) {
     result.Append(": ");
     result.Append(exp_value_.CssText());

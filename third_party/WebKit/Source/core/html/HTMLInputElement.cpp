@@ -1365,7 +1365,7 @@ static Vector<String> ParseAcceptAttribute(const String& accept_string,
       continue;
     if (!predicate(trimmed_type))
       continue;
-    types.push_back(trimmed_type.Lower());
+    types.push_back(trimmed_type.DeprecatedLower());
   }
 
   return types;

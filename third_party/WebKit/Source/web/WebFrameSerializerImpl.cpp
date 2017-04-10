@@ -300,7 +300,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
     return;
   // Add open tag
   result.Append('<');
-  result.Append(element->nodeName().Lower());
+  result.Append(element->nodeName().DeprecatedLower());
 
   // Find out if we need to do frame-specific link rewriting.
   WebFrame* frame = nullptr;
@@ -378,7 +378,7 @@ void WebFrameSerializerImpl::EndTagToString(Element* element,
   // Write end tag when element has child/children.
   if (element->HasChildren() || param->have_added_contents_before_end) {
     result.Append("</");
-    result.Append(element->nodeName().Lower());
+    result.Append(element->nodeName().DeprecatedLower());
     result.Append('>');
   } else {
     // Check whether we have to write end tag for empty element.
@@ -389,7 +389,7 @@ void WebFrameSerializerImpl::EndTagToString(Element* element,
           ToHTMLElement(element)->ShouldSerializeEndTag()) {
         // We need to write end tag when it is required.
         result.Append("</");
-        result.Append(element->nodeName().Lower());
+        result.Append(element->nodeName().DeprecatedLower());
         result.Append('>');
       }
     } else {

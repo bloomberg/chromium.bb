@@ -21,7 +21,7 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
                      WildcardDisposition host_wildcard,
                      WildcardDisposition port_wildcard)
     : policy_(policy),
-      scheme_(scheme.Lower()),
+      scheme_(scheme.DeprecatedLower()),
       host_(host),
       port_(port),
       path_(path),
@@ -54,7 +54,7 @@ bool CSPSource::Matches(const KURL& url,
 
 CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
     const String& protocol) const {
-  DCHECK_EQ(protocol, protocol.Lower());
+  DCHECK_EQ(protocol, protocol.DeprecatedLower());
   const String& scheme =
       (scheme_.IsEmpty() ? policy_->GetSelfProtocol() : scheme_);
 

@@ -69,7 +69,8 @@ PasswordCredential* PasswordCredential::Create(
     ToHTMLElement(element)
         ->FastGetAttribute(HTMLNames::autocompleteAttr)
         .GetString()
-        .Lower()  // Lowercase here once to avoid the case-folding logic below.
+        .DeprecatedLower()  // Lowercase here once to avoid the case-folding
+                            // logic below.
         .Split(' ', autofill_tokens);
     for (const auto& token : autofill_tokens) {
       if (token == "current-password" || token == "new-password") {

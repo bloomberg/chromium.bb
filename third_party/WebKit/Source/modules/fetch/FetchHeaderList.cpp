@@ -30,7 +30,8 @@ void FetchHeaderList::Append(const String& name, const String& value) {
   // "To append a name/value (|name|/|value|) pair to a header list (|list|),
   // append a new header whose name is |name|, byte lowercased, and value is
   // |value|, to |list|."
-  header_list_.push_back(WTF::WrapUnique(new Header(name.Lower(), value)));
+  header_list_.push_back(
+      WTF::WrapUnique(new Header(name.DeprecatedLower(), value)));
 }
 
 void FetchHeaderList::Set(const String& name, const String& value) {
@@ -41,7 +42,7 @@ void FetchHeaderList::Set(const String& name, const String& value) {
   //    of the first such header to |value| and remove the others.
   // 3. Otherwise, append a new header whose name is |name| and value is
   //    |value|, to |list|."
-  const String lowercased_name = name.Lower();
+  const String lowercased_name = name.DeprecatedLower();
   for (size_t i = 0; i < header_list_.size(); ++i) {
     if (header_list_[i]->first == lowercased_name) {
       header_list_[i]->second = value;
@@ -66,7 +67,7 @@ String FetchHeaderList::ExtractMIMEType() const {
     return String();
   }
   // 3. Return MIMEType, byte lowercased.
-  return mime_type.Lower();
+  return mime_type.DeprecatedLower();
 }
 
 size_t FetchHeaderList::size() const {
@@ -76,7 +77,7 @@ size_t FetchHeaderList::size() const {
 void FetchHeaderList::Remove(const String& name) {
   // "To delete a name (|name|) from a header list (|list|), remove all headers
   // whose name is |name|, byte lowercased, from |list|."
-  const String lowercased_name = name.Lower();
+  const String lowercased_name = name.DeprecatedLower();
   for (size_t i = 0; i < header_list_.size();) {
     if (header_list_[i]->first == lowercased_name)
       header_list_.erase(i);
@@ -86,7 +87,7 @@ void FetchHeaderList::Remove(const String& name) {
 }
 
 bool FetchHeaderList::Get(const String& name, String& result) const {
-  const String lowercased_name = name.Lower();
+  const String lowercased_name = name.DeprecatedLower();
   bool found = false;
   for (const auto& header : header_list_) {
     if (header->first == lowercased_name) {
@@ -104,7 +105,7 @@ bool FetchHeaderList::Get(const String& name, String& result) const {
 }
 
 void FetchHeaderList::GetAll(const String& name, Vector<String>& result) const {
-  const String lowercased_name = name.Lower();
+  const String lowercased_name = name.DeprecatedLower();
   result.Clear();
   for (size_t i = 0; i < header_list_.size(); ++i) {
     if (header_list_[i]->first == lowercased_name)
@@ -113,7 +114,7 @@ void FetchHeaderList::GetAll(const String& name, Vector<String>& result) const {
 }
 
 bool FetchHeaderList::Has(const String& name) const {
-  const String lowercased_name = name.Lower();
+  const String lowercased_name = name.DeprecatedLower();
   for (size_t i = 0; i < header_list_.size(); ++i) {
     if (header_list_[i]->first == lowercased_name)
       return true;

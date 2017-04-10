@@ -367,9 +367,9 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
 
 void LinkStyle::Process() {
   DCHECK(owner_->ShouldProcessStyle());
-  String type = owner_->TypeValue().Lower();
-  String as = owner_->AsValue().Lower();
-  String media = owner_->Media().Lower();
+  String type = owner_->TypeValue().DeprecatedLower();
+  String as = owner_->AsValue().DeprecatedLower();
+  String media = owner_->Media().DeprecatedLower();
   LinkRequestBuilder builder(owner_);
 
   if (owner_->RelAttribute().GetIconType() != kInvalidIcon &&

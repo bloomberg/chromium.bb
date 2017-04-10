@@ -154,7 +154,8 @@ bool KeyboardEventManager::HandleAccessKey(const WebKeyboardEvent& evt) {
                              ~WebInputEvent::kShiftKey)) != kAccessKeyModifiers)
     return false;
   String key = String(evt.unmodified_text);
-  Element* elem = frame_->GetDocument()->GetElementByAccessKey(key.Lower());
+  Element* elem =
+      frame_->GetDocument()->GetElementByAccessKey(key.DeprecatedLower());
   if (!elem)
     return false;
   elem->AccessKeyAction(false);

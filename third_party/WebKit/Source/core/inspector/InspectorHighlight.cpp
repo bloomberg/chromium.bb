@@ -187,9 +187,9 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
     real_element = element->ParentOrShadowHostElement();
   }
   bool is_xhtml = real_element->GetDocument().IsXHTMLDocument();
-  element_info->setString("tagName", is_xhtml
-                                         ? real_element->nodeName()
-                                         : real_element->nodeName().Lower());
+  element_info->setString(
+      "tagName", is_xhtml ? real_element->nodeName()
+                          : real_element->nodeName().DeprecatedLower());
   element_info->setString("idValue", real_element->GetIdAttribute());
   StringBuilder class_names;
   if (real_element->HasClass() && real_element->IsStyledElement()) {
