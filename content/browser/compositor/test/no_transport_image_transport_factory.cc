@@ -38,6 +38,12 @@ NoTransportImageTransportFactory::GetContextFactoryPrivate() {
   return context_factory_.get();
 }
 
+FrameSinkManagerHost*
+NoTransportImageTransportFactory::GetFrameSinkManagerHost() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 display_compositor::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();

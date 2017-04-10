@@ -44,6 +44,7 @@ class VulkanContextProvider;
 
 namespace content {
 class CompositorClient;
+class FrameSinkManagerHost;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -61,6 +62,7 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
 
   static cc::SurfaceManager* GetSurfaceManager();
+  static FrameSinkManagerHost* GetFrameSinkManagerHost();
   static cc::FrameSinkId AllocateFrameSinkId();
 
   // ui::ResourceProvider implementation.

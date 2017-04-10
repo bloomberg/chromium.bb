@@ -50,6 +50,7 @@ source_set("browser") {
     "//components/tracing:startup_tracing",
     "//components/url_formatter",
     "//components/variations",
+    "//components/viz/frame_sinks",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",
@@ -463,6 +464,8 @@ source_set("browser") {
     # NOTE: These files are here instead of in compositor_browser_sources
     # because the latter is not built on Android, whereas these files are
     # needed on all platforms.
+    "compositor/frame_sink_manager_host.cc",
+    "compositor/frame_sink_manager_host.h",
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
     "devtools/browser_devtools_agent_host.cc",

@@ -33,6 +33,7 @@
 #include "components/display_compositor/gl_helper.h"
 #include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
@@ -195,7 +196,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
 
-  surface_manager_ = base::WrapUnique(new cc::SurfaceManager);
+  frame_sink_manager_host_ = base::MakeUnique<FrameSinkManagerHost>();
 
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
@@ -598,12 +599,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   auto compositor_frame_sink =
       vulkan_context_provider
           ? base::MakeUnique<cc::DirectCompositorFrameSink>(
-                compositor->frame_sink_id(), surface_manager_.get(),
+                compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
           : base::MakeUnique<cc::DirectCompositorFrameSink>(
-                compositor->frame_sink_id(), surface_manager_.get(),
+                compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
                 display_compositor::HostSharedBitmapManager::current());
@@ -793,7 +794,11 @@ void GpuProcessTransportFactory::RemoveObserver(
 }
 
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
-  return surface_manager_.get();
+  return frame_sink_manager_host_->surface_manager();
+}
+
+FrameSinkManagerHost* GpuProcessTransportFactory::GetFrameSinkManagerHost() {
+  return frame_sink_manager_host_.get();
 }
 
 display_compositor::GLHelper* GpuProcessTransportFactory::GetGLHelper() {

@@ -11,6 +11,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
 #include "components/display_compositor/gl_helper.h"
+#include "content/browser/compositor/frame_sink_manager_host.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -175,6 +176,17 @@ cc::SurfaceManager* GetSurfaceManager() {
   if (factory == NULL)
     return nullptr;
   return factory->GetContextFactoryPrivate()->GetSurfaceManager();
+#endif
+}
+
+FrameSinkManagerHost* GetFrameSinkManagerHost() {
+#if defined(OS_ANDROID)
+  return CompositorImpl::GetFrameSinkManagerHost();
+#else
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  if (!factory)
+    return nullptr;
+  return factory->GetFrameSinkManagerHost();
 #endif
 }
 

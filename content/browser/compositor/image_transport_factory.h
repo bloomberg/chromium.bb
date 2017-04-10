@@ -35,6 +35,8 @@ class GpuChannelEstablishFactory;
 
 namespace content {
 
+class FrameSinkManagerHost;
+
 // This class provides the interface for creating the support for the
 // cross-process image transport, both for creating the shared surface handle
 // (destination surface for the GPU process) and the transport client (logic for
@@ -69,6 +71,9 @@ class CONTENT_EXPORT ImageTransportFactory {
   // GLHelper will get destroyed whenever the shared context is lost
   // (ImageTransportFactoryObserver::OnLostResources is called).
   virtual display_compositor::GLHelper* GetGLHelper() = 0;
+
+  // Gets the frame sink manager host instance.
+  virtual FrameSinkManagerHost* GetFrameSinkManagerHost() = 0;
 
   virtual void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) = 0;

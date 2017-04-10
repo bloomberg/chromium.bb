@@ -32,6 +32,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   display_compositor::GLHelper* GetGLHelper() override;
+  FrameSinkManagerHost* GetFrameSinkManagerHost() override;
   void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) override;
 #if defined(OS_MACOSX)
