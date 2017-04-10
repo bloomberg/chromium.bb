@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/sync/protocol/history_status.pb.h"
 #include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace history {
@@ -165,11 +166,13 @@ FakeWebHistoryService::FakeWebHistoryService(
     OAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : history::WebHistoryService(
-          token_service,
-          signin_manager,
-          request_context) {
-}
+    : history::WebHistoryService(token_service,
+                                 signin_manager,
+                                 request_context),
+      emulate_success_(true),
+      emulate_response_code_(net::HTTP_OK),
+      web_and_app_activity_enabled_(false),
+      other_forms_of_browsing_history_present_(false) {}
 
 FakeWebHistoryService::~FakeWebHistoryService() {
 }
