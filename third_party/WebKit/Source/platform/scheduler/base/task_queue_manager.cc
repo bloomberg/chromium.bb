@@ -166,16 +166,16 @@ void TaskQueueManager::ReloadEmptyWorkQueues(
   }
 }
 
-void TaskQueueManager::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
+void TaskQueueManager::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   TRACE_EVENT0(disabled_by_default_tracing_category_,
-               "TaskQueueManager::WakeUpReadyDelayedQueues");
+               "TaskQueueManager::WakeupReadyDelayedQueues");
 
   for (TimeDomain* time_domain : time_domains_) {
     if (time_domain == real_time_domain_.get()) {
-      time_domain->WakeUpReadyDelayedQueues(lazy_now);
+      time_domain->WakeupReadyDelayedQueues(lazy_now);
     } else {
       LazyNow time_domain_lazy_now = time_domain->CreateLazyNow();
-      time_domain->WakeUpReadyDelayedQueues(&time_domain_lazy_now);
+      time_domain->WakeupReadyDelayedQueues(&time_domain_lazy_now);
     }
   }
 }
@@ -240,7 +240,7 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
     base::TimeTicks now,
     base::TimeTicks run_time) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Make sure we don't cancel another TimeDomain's wake_up.
+  // Make sure we don't cancel another TimeDomain's wakeup.
   DCHECK(!next_delayed_do_work_ ||
          next_delayed_do_work_.time_domain() == requesting_time_domain);
   {
@@ -326,7 +326,7 @@ void TaskQueueManager::DoWork(bool delayed) {
     // avoid a lock order inversion.
     ReloadEmptyWorkQueues(queues_to_reload);
 
-    WakeUpReadyDelayedQueues(&lazy_now);
+    WakeupReadyDelayedQueues(&lazy_now);
 
     internal::WorkQueue* work_queue = nullptr;
     if (!SelectWorkQueueToService(&work_queue))
@@ -444,7 +444,7 @@ TaskQueueManager::ComputeDelayTillNextTaskLocked(LazyNow* lazy_now) {
     return NextTaskDelay();
 
   // Otherwise we need to find the shortest delay, if any.  NB we don't need to
-  // call WakeUpReadyDelayedQueues because it's assumed DelayTillNextTask will
+  // call WakeupReadyDelayedQueues because it's assumed DelayTillNextTask will
   // return base::TimeDelta>() if the delayed task is due to run now.
   base::Optional<NextTaskDelay> delay_till_next_task;
   for (TimeDomain* time_domain : time_domains_) {

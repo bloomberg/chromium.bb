@@ -150,7 +150,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   }));
 
   thread_->PostIdleTask(BLINK_FROM_HERE, task.release());
-  // We need to post a wake-up task or idle work will never happen.
+  // We need to post a wakeup task or idle work will never happen.
   thread_->GetWebTaskRunner()->PostDelayedTask(BLINK_FROM_HERE,
                                                WTF::Bind([] {}), 50ll);
 

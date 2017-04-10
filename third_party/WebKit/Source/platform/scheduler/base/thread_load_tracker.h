@@ -36,7 +36,7 @@ class BLINK_PLATFORM_EXPORT ThreadLoadTracker {
 
   void RecordIdle(base::TimeTicks now);
 
-  // TODO(altimin): Count wake_ups.
+  // TODO(altimin): Count wakeups.
 
  private:
   enum class ThreadState { ACTIVE, PAUSED };

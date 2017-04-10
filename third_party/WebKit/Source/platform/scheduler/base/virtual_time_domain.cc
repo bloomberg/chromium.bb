@@ -12,8 +12,9 @@
 namespace blink {
 namespace scheduler {
 
-VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time)
-    : now_(initial_time), task_queue_manager_(nullptr) {}
+VirtualTimeDomain::VirtualTimeDomain(TimeDomain::Observer* observer,
+                                     base::TimeTicks initial_time)
+    : TimeDomain(observer), now_(initial_time), task_queue_manager_(nullptr) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() {}
 
@@ -33,15 +34,15 @@ base::TimeTicks VirtualTimeDomain::Now() const {
   return now_;
 }
 
-void VirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
+void VirtualTimeDomain::RequestWakeupAt(base::TimeTicks now,
                                         base::TimeTicks run_time) {
   // We don't need to do anything here because the caller of AdvanceTo is
   // responsible for calling TaskQueueManager::MaybeScheduleImmediateWork if
   // needed.
 }
 
-void VirtualTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeUpAt is a NOP.
+void VirtualTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
+  // We ignore this because RequestWakeupAt is a NOP.
 }
 
 base::Optional<base::TimeDelta> VirtualTimeDomain::DelayTillNextTask(

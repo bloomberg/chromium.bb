@@ -7,8 +7,9 @@
 namespace blink {
 namespace scheduler {
 
-ThrottledTimeDomain::ThrottledTimeDomain(const char* tracing_category)
-    : RealTimeDomain(tracing_category) {}
+ThrottledTimeDomain::ThrottledTimeDomain(TimeDomain::Observer* observer,
+                                         const char* tracing_category)
+    : RealTimeDomain(observer, tracing_category) {}
 
 ThrottledTimeDomain::~ThrottledTimeDomain() {}
 
@@ -16,14 +17,14 @@ const char* ThrottledTimeDomain::GetName() const {
   return "ThrottledTimeDomain";
 }
 
-void ThrottledTimeDomain::RequestWakeUpAt(base::TimeTicks now,
+void ThrottledTimeDomain::RequestWakeupAt(base::TimeTicks now,
                                           base::TimeTicks run_time) {
-  // We assume the owner (i.e. TaskQueueThrottler) will manage wake_ups on our
+  // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
   // behalf.
 }
 
-void ThrottledTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeUpAt is a NOP.
+void ThrottledTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
+  // We ignore this because RequestWakeupAt is a NOP.
 }
 
 base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
@@ -36,7 +37,7 @@ base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
   if (now >= next_run_time)
     return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 
-  // We assume the owner (i.e. TaskQueueThrottler) will manage wake_ups on our
+  // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
   // behalf.
   return base::nullopt;
 }

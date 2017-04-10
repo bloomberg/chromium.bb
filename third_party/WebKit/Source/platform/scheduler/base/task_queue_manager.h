@@ -252,7 +252,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.
-  void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
+  void WakeupReadyDelayedQueues(LazyNow* lazy_now);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to

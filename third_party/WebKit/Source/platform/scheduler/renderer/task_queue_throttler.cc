@@ -79,13 +79,13 @@ TaskQueueThrottler::TaskQueueThrottler(
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
-      time_domain_(new ThrottledTimeDomain(tracing_category)),
+      time_domain_(new ThrottledTimeDomain(this, tracing_category)),
       allow_throttling_(true),
       weak_factory_(this) {
   pump_throttled_tasks_closure_.Reset(base::Bind(
       &TaskQueueThrottler::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
   forward_immediate_work_callback_ =
-      base::Bind(&TaskQueueThrottler::OnQueueNextWakeUpChanged,
+      base::Bind(&TaskQueueThrottler::OnTimeDomainHasImmediateWork,
                  weak_factory_.GetWeakPtr());
 
   renderer_scheduler_->RegisterTimeDomain(time_domain_.get());
@@ -100,8 +100,6 @@ TaskQueueThrottler::~TaskQueueThrottler() {
       task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
       task_queue->RemoveFence();
     }
-    if (map_entry.second.throttling_ref_count != 0)
-      task_queue->SetObserver(nullptr);
   }
 
   renderer_scheduler_->UnregisterTimeDomain(time_domain_.get());
@@ -121,8 +119,6 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueThrottled",
                "task_queue", task_queue);
 
-  task_queue->SetObserver(this);
-
   if (!allow_throttling_)
     return;
 
@@ -135,9 +131,11 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
     return;
 
   if (!task_queue->IsEmpty()) {
-    LazyNow lazy_now(tick_clock_);
-    OnQueueNextWakeUpChanged(task_queue,
-                             NextTaskRunTime(&lazy_now, task_queue).value());
+    if (task_queue->HasPendingImmediateWork()) {
+      OnTimeDomainHasImmediateWork(task_queue);
+    } else {
+      OnTimeDomainHasDelayedWork(task_queue);
+    }
   }
 }
 
@@ -151,8 +149,6 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
 
   TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUnthrottled",
                "task_queue", task_queue);
-
-  task_queue->SetObserver(nullptr);
 
   MaybeDeleteQueueMetadata(iter);
 
@@ -187,22 +183,17 @@ void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
   // Iterator may have been deleted by BudgetPool::RemoveQueue, so don't
   // use it here.
   queue_details_.erase(task_queue);
-
-  // NOTE: Observer is automatically unregistered when unregistering task queue.
 }
 
-void TaskQueueThrottler::OnQueueNextWakeUpChanged(
-    TaskQueue* queue,
-    base::TimeTicks next_wake_up) {
+void TaskQueueThrottler::OnTimeDomainHasImmediateWork(TaskQueue* queue) {
+  // Forward to the main thread if called from another thread
   if (!task_runner_->RunsTasksOnCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(forward_immediate_work_callback_, queue, next_wake_up));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(forward_immediate_work_callback_, queue));
     return;
   }
-
   TRACE_EVENT0(tracing_category_,
-               "TaskQueueThrottler::OnQueueNextWakeUpChanged");
+               "TaskQueueThrottler::OnTimeDomainHasImmediateWork");
 
   // We don't expect this to get called for disabled queues, but we can't DCHECK
   // because of the above thread hop.  Just bail out if the queue is disabled.
@@ -210,9 +201,22 @@ void TaskQueueThrottler::OnQueueNextWakeUpChanged(
     return;
 
   base::TimeTicks now = tick_clock_->NowTicks();
-  MaybeSchedulePumpThrottledTasks(
-      FROM_HERE, now,
-      std::max(GetNextAllowedRunTime(now, queue), next_wake_up));
+  base::TimeTicks next_allowed_run_time = GetNextAllowedRunTime(now, queue);
+  MaybeSchedulePumpThrottledTasks(FROM_HERE, now, next_allowed_run_time);
+}
+
+void TaskQueueThrottler::OnTimeDomainHasDelayedWork(TaskQueue* queue) {
+  TRACE_EVENT0(tracing_category_,
+               "TaskQueueThrottler::OnTimeDomainHasDelayedWork");
+  DCHECK(queue->IsQueueEnabled());
+  base::TimeTicks now = tick_clock_->NowTicks();
+  LazyNow lazy_now(now);
+
+  base::Optional<base::TimeTicks> next_scheduled_delayed_task =
+      NextTaskRunTime(&lazy_now, queue);
+  DCHECK(next_scheduled_delayed_task);
+  MaybeSchedulePumpThrottledTasks(FROM_HERE, now,
+                                  next_scheduled_delayed_task.value());
 }
 
 void TaskQueueThrottler::PumpThrottledTasks() {
