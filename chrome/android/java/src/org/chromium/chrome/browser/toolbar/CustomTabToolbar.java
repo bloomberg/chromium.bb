@@ -345,6 +345,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         }
 
         String url = getCurrentTab().getUrl().trim();
+        if (mState == STATE_TITLE_ONLY) {
+            if (!TextUtils.isEmpty(getCurrentTab().getTitle())) setTitleToPageTitle();
+        }
 
         // Don't show anything for Chrome URLs and "about:blank".
         // If we have taken a pre-initialized WebContents, then the starting URL
