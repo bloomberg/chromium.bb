@@ -374,7 +374,8 @@ def EnableCrashDumpCollection():
   if sys.platform == 'win32' and os.environ.get('CHROME_HEADLESS') == '1':
     key_name = r'SOFTWARE\Microsoft\Windows\Windows Error Reporting'
     try:
-      key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_name)
+      key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_name, 0,
+                               winreg.KEY_WOW64_64KEY | winreg.KEY_ALL_ACCESS)
       # Merely creating LocalDumps is sufficient to enable the defaults.
       winreg.CreateKey(key, "LocalDumps")
       # Disable the WER UI, as documented here:
