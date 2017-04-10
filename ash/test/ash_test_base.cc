@@ -340,7 +340,6 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
     case BLOCKED_BY_LOCK_SCREEN:
       SetSessionStarted(true);
       Shell::Get()->session_controller()->LockScreenAndFlushForTest();
-      Shell::Get()->OnLockStateChanged(true);
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
       SetSessionStarted(false);

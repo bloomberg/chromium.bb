@@ -112,7 +112,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Called when ScreenLocker is ready to close, but not yet destroyed.
   // Can be used to display "hiding" animations on unlock.
   // |callback| will be called when all animations are done.
-  void OnLockScreenHide(base::Closure& callback);
+  void OnLockScreenHide(base::Closure callback);
 
   // Sets up the callback that should be called once lock animation is finished.
   // Callback is guaranteed to be called once and then discarded.

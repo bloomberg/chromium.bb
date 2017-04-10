@@ -175,8 +175,7 @@ void LockStateController::RequestShutdown() {
   StartRealShutdownTimer(true);
 }
 
-void LockStateController::OnLockScreenHide(
-    base::Callback<void(void)>& callback) {
+void LockStateController::OnLockScreenHide(base::Closure callback) {
   StartUnlockAnimationBeforeUIDestroyed(callback);
 }
 

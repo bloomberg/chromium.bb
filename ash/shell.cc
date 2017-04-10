@@ -333,20 +333,6 @@ void Shell::OnAppTerminating() {
     observer.OnAppTerminating();
 }
 
-void Shell::OnLockStateChanged(bool locked) {
-  for (auto& observer : shell_observers_)
-    observer.OnLockStateChanged(locked);
-#ifndef NDEBUG
-  // Make sure that there is no system modal in Lock layer when unlocked.
-  if (!locked) {
-    aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
-        kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
-    for (aura::Window* container : containers)
-      DCHECK(container->children().empty());
-  }
-#endif
-}
-
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
   for (auto& observer : shell_observers_)
     observer.OnCastingSessionStartedOrStopped(started);
@@ -1247,6 +1233,22 @@ void Shell::LoginStatusChanged(LoginStatus login_status) {
   // TODO(xiyuan): Update OnLoginStateChanged -> OnLoginStatusChanged.
   for (auto& observer : shell_observers_)
     observer.OnLoginStateChanged(login_status);
+}
+
+void Shell::LockStateChanged(bool locked) {
+  // TODO(xiyuan): Convert OnLockStateChanged() ShellObservers to
+  // SessionStateObservers.
+  for (auto& observer : shell_observers_)
+    observer.OnLockStateChanged(locked);
+#ifndef NDEBUG
+  // Make sure that there is no system modal in Lock layer when unlocked.
+  if (!locked) {
+    aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
+        kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
+    for (aura::Window* container : containers)
+      DCHECK(container->children().empty());
+  }
+#endif
 }
 
 void Shell::OnPrefServiceInitialized(

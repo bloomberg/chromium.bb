@@ -100,6 +100,16 @@ SessionControllerClient::~SessionControllerClient() {
   UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
+// static
+SessionControllerClient* SessionControllerClient::Get() {
+  return g_instance;
+}
+
+void SessionControllerClient::RunUnlockAnimation(
+    base::Closure animation_finished_callback) {
+  session_controller_->RunUnlockAnimation(animation_finished_callback);
+}
+
 void SessionControllerClient::RequestLockScreen() {
   DoLockScreen();
 }

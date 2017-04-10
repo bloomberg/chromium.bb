@@ -7,12 +7,16 @@
 #include <algorithm>
 
 #include "ash/session/session_state_observer.h"
+#include "ash/shell.h"
+#include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+using session_manager::SessionState;
 
 namespace ash {
 
@@ -28,12 +32,11 @@ namespace {
 // (oobe/login), there is only one login window. The login window always gets
 // focus so default session state does not matter. Use UNKNOWN and wait for
 // chrome to update ash for such cases.
-session_manager::SessionState GetDefaultSessionState() {
+SessionState GetDefaultSessionState() {
   const bool start_with_user =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kLoginUser);
-  return start_with_user ? session_manager::SessionState::ACTIVE
-                         : session_manager::SessionState::UNKNOWN;
+  return start_with_user ? SessionState::ACTIVE : SessionState::UNKNOWN;
 }
 
 }  // namespace
@@ -67,7 +70,7 @@ bool SessionController::CanLockScreen() const {
 }
 
 bool SessionController::IsScreenLocked() const {
-  return state_ == session_manager::SessionState::LOCKED;
+  return state_ == SessionState::LOCKED;
 }
 
 bool SessionController::ShouldLockScreenAutomatically() const {
@@ -75,14 +78,21 @@ bool SessionController::ShouldLockScreenAutomatically() const {
 }
 
 bool SessionController::IsUserSessionBlocked() const {
-  return state_ != session_manager::SessionState::ACTIVE;
+  // User sessions are blocked when session state is not ACTIVE, except that
+  // LOCKED state with a running unlocking animation. This is made an exception
+  // because the unlocking animation hides lock container at the end. During the
+  // unlock animation, IsUserSessionBlocked needs to return unblocked so that
+  // user windows are deemed activatable and ash correctly restore the active
+  // window before locking.
+  return state_ != SessionState::ACTIVE &&
+         !(state_ == SessionState::LOCKED && is_unlocking_);
 }
 
 bool SessionController::IsInSecondaryLoginScreen() const {
-  return state_ == session_manager::SessionState::LOGIN_SECONDARY;
+  return state_ == SessionState::LOGIN_SECONDARY;
 }
 
-session_manager::SessionState SessionController::GetSessionState() const {
+SessionState SessionController::GetSessionState() const {
   return state_;
 }
 
@@ -185,6 +195,15 @@ void SessionController::SetUserSessionOrder(
   }
 }
 
+void SessionController::RunUnlockAnimation(
+    const RunUnlockAnimationCallback& callback) {
+  is_unlocking_ = true;
+
+  // Shell could have no instance in tests.
+  if (Shell::HasInstance())
+    Shell::Get()->lock_state_controller()->OnLockScreenHide(callback);
+}
+
 void SessionController::ClearUserSessionsForTest() {
   user_sessions_.clear();
 }
@@ -198,15 +217,25 @@ void SessionController::LockScreenAndFlushForTest() {
   FlushMojoForTest();
 }
 
-void SessionController::SetSessionState(session_manager::SessionState state) {
+void SessionController::SetSessionState(SessionState state) {
   if (state_ == state)
     return;
 
+  const bool was_locked = state_ == SessionState::LOCKED;
   state_ = state;
   for (auto& observer : observers_)
     observer.SessionStateChanged(state_);
 
   UpdateLoginStatus();
+
+  const bool locked = state_ == SessionState::LOCKED;
+  if (was_locked != locked) {
+    if (!locked)
+      is_unlocking_ = false;
+
+    for (auto& observer : observers_)
+      observer.LockStateChanged(locked);
+  }
 }
 
 void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
@@ -219,8 +248,6 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
 }
 
 LoginStatus SessionController::CalculateLoginStatus() const {
-  using session_manager::SessionState;
-
   // TODO(jamescook|xiyuan): There is not a 1:1 mapping of SessionState to
   // LoginStatus. Fix the cases that don't match. http://crbug.com/701193
   switch (state_) {
@@ -245,7 +272,7 @@ LoginStatus SessionController::CalculateLoginStatus() const {
 }
 
 LoginStatus SessionController::CalculateLoginStatusForActiveSession() const {
-  DCHECK(state_ == session_manager::SessionState::ACTIVE);
+  DCHECK(state_ == SessionState::ACTIVE);
 
   if (user_sessions_.empty())  // Can be empty in tests.
     return LoginStatus::USER;

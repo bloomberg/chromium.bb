@@ -41,6 +41,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -472,19 +473,8 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
-
-  // Sets session state to ACTIVE before destroying screen locker. Otherwise,
-  // ash thinks the session is blocked and does not correct set focus on
-  // screen lock dismissal.
-  // TODO(xiyuan): Figure out a better way to ensure state change go through.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind([] {
-        base::Callback<void(void)> callback =
-            base::Bind(&ScreenLocker::ScheduleDeletion);
-        ash::Shell::Get()->lock_state_controller()->OnLockScreenHide(callback);
-      }));
+  SessionControllerClient::Get()->RunUnlockAnimation(
+      base::Bind(&ScreenLocker::ScheduleDeletion));
 }
 
 // static
@@ -526,6 +516,9 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
+
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);

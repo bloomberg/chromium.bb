@@ -65,6 +65,12 @@ class LoginStateNotificationBlockerChromeOSTest
     return blocker_->ShouldShowNotificationAsPopup(notification);
   }
 
+  void SetLockedState(bool locked) {
+    // TODO(xiyuan): Use SessionManager and not call ash.
+    static_cast<ash::SessionStateObserver*>(ash::Shell::Get())
+        ->LockStateChanged(locked);
+  }
+
  private:
   int state_changed_count_;
   std::unique_ptr<message_center::NotificationBlocker> blocker_;
@@ -93,12 +99,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
-  ash::Shell::Get()->OnLockStateChanged(true);
+  SetLockedState(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
-  ash::Shell::Get()->OnLockStateChanged(false);
+  SetLockedState(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
@@ -127,12 +133,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
-  ash::Shell::Get()->OnLockStateChanged(true);
+  SetLockedState(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
-  ash::Shell::Get()->OnLockStateChanged(false);
+  SetLockedState(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }

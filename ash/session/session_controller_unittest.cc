@@ -13,10 +13,13 @@
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/session_state_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using session_manager::SessionState;
 
 namespace ash {
 namespace {
@@ -35,9 +38,7 @@ class TestSessionStateObserver : public SessionStateObserver {
     user_session_account_ids_.push_back(account_id);
   }
 
-  void SessionStateChanged(session_manager::SessionState state) override {
-    state_ = state;
-  }
+  void SessionStateChanged(SessionState state) override { state_ = state; }
 
   std::string GetUserSessionEmails() const {
     std::string emails;
@@ -47,14 +48,14 @@ class TestSessionStateObserver : public SessionStateObserver {
     return emails;
   }
 
-  session_manager::SessionState state() const { return state_; }
+  SessionState state() const { return state_; }
   const AccountId& active_account_id() const { return active_account_id_; }
   const std::vector<AccountId>& user_session_account_ids() const {
     return user_session_account_ids_;
   }
 
  private:
-  session_manager::SessionState state_ = session_manager::SessionState::UNKNOWN;
+  SessionState state_ = SessionState::UNKNOWN;
   AccountId active_account_id_;
   std::vector<AccountId> user_session_account_ids_;
 
@@ -65,7 +66,7 @@ void FillDefaultSessionInfo(mojom::SessionInfo* info) {
   info->can_lock_screen = true;
   info->should_lock_screen_automatically = true;
   info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;
-  info->state = session_manager::SessionState::LOGIN_PRIMARY;
+  info->state = SessionState::LOGIN_PRIMARY;
 }
 
 class SessionControllerTest : public testing::Test {
@@ -179,16 +180,16 @@ TEST_F(SessionControllerTest, AddUserPolicy) {
 // Tests that session state can be set and reflected properly.
 TEST_F(SessionControllerTest, SessionState) {
   const struct {
-    session_manager::SessionState state;
+    SessionState state;
     bool expected_is_screen_locked;
     bool expected_is_user_session_blocked;
   } kTestCases[] = {
-      {session_manager::SessionState::OOBE, false, true},
-      {session_manager::SessionState::LOGIN_PRIMARY, false, true},
-      {session_manager::SessionState::LOGGED_IN_NOT_ACTIVE, false, true},
-      {session_manager::SessionState::ACTIVE, false, false},
-      {session_manager::SessionState::LOCKED, true, true},
-      {session_manager::SessionState::LOGIN_SECONDARY, false, true},
+      {SessionState::OOBE, false, true},
+      {SessionState::LOGIN_PRIMARY, false, true},
+      {SessionState::LOGGED_IN_NOT_ACTIVE, false, true},
+      {SessionState::ACTIVE, false, false},
+      {SessionState::LOCKED, true, true},
+      {SessionState::LOGIN_SECONDARY, false, true},
   };
 
   mojom::SessionInfo info;
@@ -212,8 +213,6 @@ TEST_F(SessionControllerTest, SessionState) {
 
 // Tests that LoginStatus is computed correctly for most session states.
 TEST_F(SessionControllerTest, GetLoginStatus) {
-  using session_manager::SessionState;
-
   const struct {
     SessionState state;
     LoginStatus expected_status;
@@ -241,7 +240,7 @@ TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
   // Simulate an active user session.
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
-  info.state = session_manager::SessionState::ACTIVE;
+  info.state = SessionState::ACTIVE;
   SetSessionInfo(info);
 
   const struct {
@@ -310,6 +309,45 @@ TEST_F(SessionControllerTest, ActiveSession) {
   controller()->SetUserSessionOrder(order);
   EXPECT_EQ("user1@test.com,user2@test.com,", GetUserSessionEmails());
   EXPECT_EQ("user1@test.com", observer()->active_account_id().GetUserEmail());
+}
+
+// Tests that user session is unblocked with a running unlock animation so that
+// focus rules can find a correct activatable window after screen lock is
+// dismissed.
+TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+
+  // LOCKED means blocked user session.
+  info.state = SessionState::LOCKED;
+  SetSessionInfo(info);
+  EXPECT_TRUE(controller()->IsUserSessionBlocked());
+
+  // Mark a running unlock animation unblocks user session.
+  controller()->RunUnlockAnimation(base::Closure());
+  EXPECT_FALSE(controller()->IsUserSessionBlocked());
+
+  const struct {
+    SessionState state;
+    bool expected_is_user_session_blocked;
+  } kTestCases[] = {
+      {SessionState::OOBE, true},
+      {SessionState::LOGIN_PRIMARY, true},
+      {SessionState::LOGGED_IN_NOT_ACTIVE, true},
+      {SessionState::ACTIVE, false},
+      {SessionState::LOGIN_SECONDARY, true},
+  };
+  for (const auto& test_case : kTestCases) {
+    info.state = test_case.state;
+    SetSessionInfo(info);
+
+    // Mark a running unlock animation.
+    controller()->RunUnlockAnimation(base::Closure());
+
+    EXPECT_EQ(test_case.expected_is_user_session_blocked,
+              controller()->IsUserSessionBlocked())
+        << "Test case state=" << static_cast<int>(test_case.state);
+  }
 }
 
 }  // namespace

@@ -164,13 +164,17 @@ class ShellTest : public test::AshTestBase {
     // Create a LockScreen window.
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW);
-    SessionController* controller = Shell::Get()->session_controller();
-    controller->LockScreenAndFlushForTest();
     views::Widget* lock_widget = CreateTestWindow(widget_params);
     Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                         kShellWindowId_LockScreenContainer)
         ->AddChild(lock_widget->GetNativeView());
     lock_widget->Show();
+
+    // Simulate real screen locker to change session state to LOCKED
+    // when it is shown.
+    SessionController* controller = Shell::Get()->session_controller();
+    controller->LockScreenAndFlushForTest();
+
     EXPECT_TRUE(controller->IsScreenLocked());
     EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
 

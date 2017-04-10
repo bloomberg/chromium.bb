@@ -104,6 +104,7 @@ class ASH_EXPORT SessionController
   void UpdateUserSession(mojom::UserSessionPtr user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
+  void RunUnlockAnimation(const RunUnlockAnimationCallback& callback) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
@@ -147,6 +148,10 @@ class ASH_EXPORT SessionController
 
   // Last known login status. Used to track login status changes.
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
+
+  // Whether unlocking is in progress. The flag is set when the pre-unlock
+  // animation starts and reset when session state is no longer LOCKED.
+  bool is_unlocking_ = false;
 
   base::ObserverList<ash::SessionStateObserver> observers_;
 

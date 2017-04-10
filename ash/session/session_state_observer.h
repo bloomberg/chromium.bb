@@ -15,6 +15,7 @@ namespace ash {
 
 enum class LoginStatus;
 
+// TODO(xiyuan): Rename to On*Changed().
 class ASH_EXPORT SessionStateObserver {
  public:
   // Called when active user has changed.
@@ -31,6 +32,9 @@ class ASH_EXPORT SessionStateObserver {
 
   // Called when the login status is changed. |login_status| is the new status.
   virtual void LoginStatusChanged(LoginStatus login_status) {}
+
+  // Called when the lock state is changed. |locked| is the current lock stated.
+  virtual void LockStateChanged(bool locked) {}
 
  protected:
   virtual ~SessionStateObserver() {}

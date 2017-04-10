@@ -358,10 +358,14 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     // Create a window in the lock screen container and ensure that it receives
     // the mouse event instead of the modal window (crbug.com/110920).
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+
     EventTestWindow* lock_delegate = new EventTestWindow(false);
     std::unique_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
         Shell::GetPrimaryRootWindowController()->GetContainer(
             ash::kShellWindowId_LockScreenContainer)));
+    // BlockUserSession could change the workspace size. Make sure |lock| has
+    // the same bounds as |main| so that |lock| gets the generated mouse events.
+    lock->SetBounds(main->bounds());
     EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
     e1.ClickLeftButton();
     EXPECT_EQ(1, lock_delegate->mouse_presses());
@@ -378,6 +382,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     EXPECT_EQ(1, lock_delegate->mouse_presses());
     EXPECT_EQ(1, main_delegate->mouse_presses());
     EXPECT_EQ(1, transient_delegate->mouse_presses());
+
+    // Close |lock| before unlocking so that Shell::OnLockStateChanged does
+    // not DCHECK on finding a system modal in Lock layer when unlocked.
+    lock.reset();
+
     UnblockUserSession();
   }
 }
@@ -581,6 +590,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
     EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
     EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
     TestWindow::CloseTestWindow(modal_window.release());
+
+    // Close |lock_parent| before unlocking so that Shell::OnLockStateChanged
+    // does not DCHECK on finding a system modal in Lock layer when unlocked.
+    lock_parent.reset();
+
     UnblockUserSession();
     // Here we should check the behavior of the locked system modal dialog when
     // unlocked, but such case isn't handled very well right now.

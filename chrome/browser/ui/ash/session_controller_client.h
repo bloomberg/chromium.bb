@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_H_
 
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -30,6 +31,12 @@ class SessionControllerClient
  public:
   SessionControllerClient();
   ~SessionControllerClient() override;
+
+  static SessionControllerClient* Get();
+
+  // Calls ash SessionController to run unlock animation.
+  // |animation_finished_callback| will be invoked when the animation finishes.
+  void RunUnlockAnimation(base::Closure animation_finished_callback);
 
   // ash::mojom::SessionControllerClient:
   void RequestLockScreen() override;

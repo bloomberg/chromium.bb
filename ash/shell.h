@@ -272,10 +272,6 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   // Called when the application is exiting.
   void OnAppTerminating();
 
-  // Called when the screen is locked (after the lock window is visible) or
-  // unlocked.
-  void OnLockStateChanged(bool locked);
-
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
@@ -638,6 +634,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
   void LoginStatusChanged(LoginStatus login_status) override;
+  void LockStateChanged(bool locked) override;
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);
