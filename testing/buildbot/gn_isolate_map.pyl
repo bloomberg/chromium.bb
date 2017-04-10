@@ -150,6 +150,7 @@
   },
   "ash_mus_unittests": {
     "label": "//ash:ash_unittests",
+    "label_type": "group",
     "type": "windowed_test_launcher",
     "args": [
       "--mus",
