@@ -190,7 +190,7 @@ class LocalErrorCallback final : public ErrorCallbackBase {
 FileWriterSync* DOMFileSystemSync::CreateWriter(
     const FileEntrySync* file_entry,
     ExceptionState& exception_state) {
-  ASSERT(file_entry);
+  DCHECK(file_entry);
 
   FileWriterSync* file_writer = FileWriterSync::Create();
   ReceiveFileWriterCallback* success_callback =

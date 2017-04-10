@@ -108,7 +108,7 @@ KURL DOMFileSystemBase::CreateFileSystemRootURL(const String& origin,
 }
 
 bool DOMFileSystemBase::SupportsToURL() const {
-  ASSERT(IsValidType(type_));
+  DCHECK(IsValidType(type_));
   return type_ != kFileSystemTypeIsolated;
 }
 
@@ -117,7 +117,7 @@ KURL DOMFileSystemBase::CreateFileSystemURL(const EntryBase* entry) const {
 }
 
 KURL DOMFileSystemBase::CreateFileSystemURL(const String& full_path) const {
-  ASSERT(DOMFilePath::IsAbsolute(full_path));
+  DCHECK(DOMFilePath::IsAbsolute(full_path));
 
   if (GetType() == kFileSystemTypeExternal) {
     // For external filesystem originString could be different from what we have
@@ -136,7 +136,7 @@ KURL DOMFileSystemBase::CreateFileSystemURL(const String& full_path) const {
   // For regular types we can just append the entry's fullPath to the
   // m_filesystemRootURL that should look like
   // 'filesystem:<origin>/<typePrefix>'.
-  ASSERT(!filesystem_root_url_.IsEmpty());
+  DCHECK(!filesystem_root_url_.IsEmpty());
   KURL url = filesystem_root_url_;
   // Remove the extra leading slash.
   url.SetPath(url.GetPath() +
@@ -148,7 +148,7 @@ bool DOMFileSystemBase::PathToAbsolutePath(FileSystemType type,
                                            const EntryBase* base,
                                            String path,
                                            String& absolute_path) {
-  ASSERT(base);
+  DCHECK(base);
 
   if (!DOMFilePath::IsAbsolute(path))
     path = DOMFilePath::Append(base->fullPath(), path);
@@ -227,7 +227,7 @@ static bool VerifyAndGetDestinationPathForCopyOrMove(const EntryBase* source,
                                                      EntryBase* parent,
                                                      const String& new_name,
                                                      String& destination_path) {
-  ASSERT(source);
+  DCHECK(source);
 
   if (!parent || !parent->isDirectory())
     return false;
@@ -327,7 +327,7 @@ void DOMFileSystemBase::Remove(const EntryBase* entry,
     return;
   }
 
-  ASSERT(entry);
+  DCHECK(entry);
   // We don't allow calling remove() on the root directory.
   if (entry->fullPath() == String(DOMFilePath::kRoot)) {
     ReportError(error_callback, FileError::kInvalidModificationErr);
@@ -350,7 +350,8 @@ void DOMFileSystemBase::RemoveRecursively(const EntryBase* entry,
     return;
   }
 
-  ASSERT(entry && entry->isDirectory());
+  DCHECK(entry);
+  DCHECK(entry->isDirectory());
   // We don't allow calling remove() on the root directory.
   if (entry->fullPath() == String(DOMFilePath::kRoot)) {
     ReportError(error_callback, FileError::kInvalidModificationErr);
@@ -373,7 +374,7 @@ void DOMFileSystemBase::GetParent(const EntryBase* entry,
     return;
   }
 
-  ASSERT(entry);
+  DCHECK(entry);
   String path = DOMFilePath::GetDirectory(entry->fullPath());
 
   FileSystem()->DirectoryExists(
@@ -450,7 +451,7 @@ int DOMFileSystemBase::ReadDirectory(DirectoryReaderBase* reader,
     return 0;
   }
 
-  ASSERT(DOMFilePath::IsAbsolute(path));
+  DCHECK(DOMFilePath::IsAbsolute(path));
 
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::Create(
       success_callback, error_callback, context_, reader, path));

@@ -57,7 +57,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
   // The clipboard may not be in a readable state.
   if (!file)
     return 0;
-  ASSERT(file->IsFile());
+  DCHECK(file->IsFile());
 
   DOMFileSystem* dom_file_system =
       DraggedIsolatedFileSystemImpl::GetDOMFileSystem(

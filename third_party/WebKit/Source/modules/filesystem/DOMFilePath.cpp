@@ -66,8 +66,8 @@ String DOMFilePath::GetDirectory(const String& path) {
 }
 
 bool DOMFilePath::IsParentOf(const String& parent, const String& may_be_child) {
-  ASSERT(DOMFilePath::IsAbsolute(parent));
-  ASSERT(DOMFilePath::IsAbsolute(may_be_child));
+  DCHECK(DOMFilePath::IsAbsolute(parent));
+  DCHECK(DOMFilePath::IsAbsolute(may_be_child));
   if (parent == DOMFilePath::kRoot && may_be_child != DOMFilePath::kRoot)
     return true;
   if (parent.length() >= may_be_child.length() ||
@@ -79,7 +79,7 @@ bool DOMFilePath::IsParentOf(const String& parent, const String& may_be_child) {
 }
 
 String DOMFilePath::RemoveExtraParentReferences(const String& path) {
-  ASSERT(DOMFilePath::IsAbsolute(path));
+  DCHECK(DOMFilePath::IsAbsolute(path));
   Vector<String> components;
   Vector<String> canonicalized;
   path.Split(DOMFilePath::kSeparator, components);

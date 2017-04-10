@@ -120,12 +120,12 @@ void DOMFileSystem::AddPendingCallbacks() {
 }
 
 void DOMFileSystem::RemovePendingCallbacks() {
-  ASSERT(number_of_pending_callbacks_ > 0);
+  DCHECK_GT(number_of_pending_callbacks_, 0);
   --number_of_pending_callbacks_;
 }
 
 bool DOMFileSystem::HasPendingActivity() const {
-  ASSERT(number_of_pending_callbacks_ >= 0);
+  DCHECK_GE(number_of_pending_callbacks_, 0);
   return number_of_pending_callbacks_;
 }
 
@@ -172,7 +172,7 @@ class ConvertToFileWriterCallback : public FileWriterBaseCallback {
 void DOMFileSystem::CreateWriter(const FileEntry* file_entry,
                                  FileWriterCallback* success_callback,
                                  ErrorCallbackBase* error_callback) {
-  ASSERT(file_entry);
+  DCHECK(file_entry);
 
   if (!FileSystem()) {
     ReportError(error_callback, FileError::kAbortErr);

@@ -58,7 +58,7 @@ DOMFileSystem* DraggedIsolatedFileSystemImpl::GetDOMFileSystem(
 
 // static
 const char* DraggedIsolatedFileSystemImpl::SupplementName() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   return "DraggedIsolatedFileSystemImpl";
 }
 

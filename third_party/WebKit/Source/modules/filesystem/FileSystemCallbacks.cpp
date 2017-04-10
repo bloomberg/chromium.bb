@@ -216,7 +216,7 @@ EntriesCallbacks::EntriesCallbacks(EntriesCallback* success_callback,
       success_callback_(success_callback),
       directory_reader_(directory_reader),
       base_path_(base_path) {
-  ASSERT(directory_reader_);
+  DCHECK(directory_reader_);
 }
 
 void EntriesCallbacks::DidReadDirectoryEntry(const String& name,

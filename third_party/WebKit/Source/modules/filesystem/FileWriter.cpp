@@ -60,7 +60,7 @@ FileWriter::FileWriter(ExecutionContext* context)
       last_progress_notification_time_ms_(0) {}
 
 FileWriter::~FileWriter() {
-  ASSERT(!recursion_depth_);
+  DCHECK(!recursion_depth_);
   DCHECK(!Writer());
 }
 
@@ -80,9 +80,9 @@ bool FileWriter::HasPendingActivity() const {
 void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
-  ASSERT(data);
-  ASSERT(Writer());
-  ASSERT(truncate_length_ == -1);
+  DCHECK(data);
+  DCHECK(Writer());
+  DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting) {
     SetError(FileError::kInvalidStateErr, exception_state);
     return;
@@ -96,11 +96,11 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   ready_state_ = kWriting;
   bytes_written_ = 0;
   bytes_to_write_ = data->size();
-  ASSERT(queued_operation_ == kOperationNone);
+  DCHECK_EQ(queued_operation_, kOperationNone);
   if (operation_in_progress_ != kOperationNone) {
     // We must be waiting for an abort to complete, since m_readyState wasn't
     // kWriting.
-    ASSERT(operation_in_progress_ == kOperationAbort);
+    DCHECK_EQ(operation_in_progress_, kOperationAbort);
     queued_operation_ = kOperationWrite;
   } else
     DoOperation(kOperationWrite);
@@ -111,22 +111,22 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
 void FileWriter::seek(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
-  ASSERT(Writer());
+  DCHECK(Writer());
   if (ready_state_ == kWriting) {
     SetError(FileError::kInvalidStateErr, exception_state);
     return;
   }
 
-  ASSERT(truncate_length_ == -1);
-  ASSERT(queued_operation_ == kOperationNone);
+  DCHECK_EQ(truncate_length_, -1);
+  DCHECK_EQ(queued_operation_, kOperationNone);
   SeekInternal(position);
 }
 
 void FileWriter::truncate(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
-  ASSERT(Writer());
-  ASSERT(truncate_length_ == -1);
+  DCHECK(Writer());
+  DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting || position < 0) {
     SetError(FileError::kInvalidStateErr, exception_state);
     return;
@@ -140,11 +140,11 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
   bytes_written_ = 0;
   bytes_to_write_ = 0;
   truncate_length_ = position;
-  ASSERT(queued_operation_ == kOperationNone);
+  DCHECK_EQ(queued_operation_, kOperationNone);
   if (operation_in_progress_ != kOperationNone) {
     // We must be waiting for an abort to complete, since m_readyState wasn't
     // kWriting.
-    ASSERT(operation_in_progress_ == kOperationAbort);
+    DCHECK_EQ(operation_in_progress_, kOperationAbort);
     queued_operation_ = kOperationTruncate;
   } else
     DoOperation(kOperationTruncate);
@@ -154,7 +154,7 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
 void FileWriter::abort(ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
-  ASSERT(Writer());
+  DCHECK(Writer());
   if (ready_state_ != kWriting)
     return;
   ++num_aborts_;
@@ -205,8 +205,8 @@ void FileWriter::DidTruncate() {
     CompleteAbort();
     return;
   }
-  ASSERT(operation_in_progress_ == kOperationTruncate);
-  ASSERT(truncate_length_ >= 0);
+  DCHECK_EQ(operation_in_progress_, kOperationTruncate);
+  DCHECK_GE(truncate_length_, 0);
   SetLength(truncate_length_);
   if (position() > length())
     SetPosition(length());
@@ -229,7 +229,7 @@ void FileWriter::DidFail(WebFileError code) {
 }
 
 void FileWriter::CompleteAbort() {
-  ASSERT(operation_in_progress_ == kOperationAbort);
+  DCHECK_EQ(operation_in_progress_, kOperationAbort);
   operation_in_progress_ = kOperationNone;
   Operation operation = queued_operation_;
   queued_operation_ = kOperationNone;
@@ -269,7 +269,7 @@ void FileWriter::DoOperation(Operation operation) {
       truncate_length_ = -1;
       break;
   }
-  ASSERT(queued_operation_ == kOperationNone);
+  DCHECK_EQ(queued_operation_, kOperationNone);
   operation_in_progress_ = operation;
 }
 
@@ -295,12 +295,12 @@ void FileWriter::FireEvent(const AtomicString& type) {
   DispatchEvent(
       ProgressEvent::Create(type, true, bytes_written_, bytes_to_write_));
   --recursion_depth_;
-  ASSERT(recursion_depth_ >= 0);
+  DCHECK_GE(recursion_depth_, 0);
 }
 
 void FileWriter::SetError(FileError::ErrorCode error_code,
                           ExceptionState& exception_state) {
-  ASSERT(error_code);
+  DCHECK(error_code);
   FileError::ThrowDOMException(exception_state, error_code);
   error_ = FileError::CreateDOMException(error_code);
 }

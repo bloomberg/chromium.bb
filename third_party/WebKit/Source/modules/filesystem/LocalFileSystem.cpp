@@ -202,7 +202,7 @@ LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
   }
 
   WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
-  ASSERT(clients);
+  DCHECK(clients);
   LocalFileSystem* file_system = static_cast<LocalFileSystem*>(
       Supplement<WorkerClients>::From(clients, SupplementName()));
   DCHECK(file_system);

@@ -39,8 +39,8 @@
 namespace blink {
 
 void FileWriterSync::write(Blob* data, ExceptionState& exception_state) {
-  ASSERT(data);
-  ASSERT(Writer());
+  DCHECK(data);
+  DCHECK(Writer());
   DCHECK(complete_);
 
   PrepareForWrite();
@@ -56,14 +56,14 @@ void FileWriterSync::write(Blob* data, ExceptionState& exception_state) {
 }
 
 void FileWriterSync::seek(long long position, ExceptionState& exception_state) {
-  ASSERT(Writer());
+  DCHECK(Writer());
   DCHECK(complete_);
   SeekInternal(position);
 }
 
 void FileWriterSync::truncate(long long offset,
                               ExceptionState& exception_state) {
-  ASSERT(Writer());
+  DCHECK(Writer());
   DCHECK(complete_);
   if (offset < 0) {
     exception_state.ThrowDOMException(kInvalidStateError,

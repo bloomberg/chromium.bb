@@ -42,8 +42,8 @@ FileWriterBase::~FileWriterBase() {}
 
 void FileWriterBase::Initialize(std::unique_ptr<WebFileWriter> writer,
                                 long long length) {
-  ASSERT(!writer_);
-  ASSERT(length >= 0);
+  DCHECK(!writer_);
+  DCHECK_GE(length, 0);
   writer_ = std::move(writer);
   length_ = length;
 }
