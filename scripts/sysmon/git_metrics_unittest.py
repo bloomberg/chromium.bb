@@ -17,8 +17,8 @@ from chromite.scripts.sysmon import git_metrics
 # pylint: disable=protected-access
 # pylint: disable=attribute-defined-outside-init
 
-class TestGitMetrics(cros_test_lib.TempDirTestCase):
-  """Tests for git metrics."""
+class TestGitMetricsWithTempdir(cros_test_lib.TempDirTestCase):
+  """Tests for git metrics using a Git fixture."""
 
   def setUp(self):
     self.git_dir = os.path.join(self.tempdir, '.git')
