@@ -67,9 +67,8 @@ void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
 void DownloadNotifyingObserver::OnNetworkProgress(
     const SavePageRequest& request,
     int64_t received_bytes) {
-  DownloadUIItem item(request);
-  item.download_progress_bytes = received_bytes;
-  notifier_->NotifyDownloadProgress(item);
+  // TODO(dimich): Enable this back in M59. See bug 704049 for more info and
+  // what was temporarily (for M58) reverted.
 }
 
 void DownloadNotifyingObserver::OnCompleted(

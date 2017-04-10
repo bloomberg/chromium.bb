@@ -799,8 +799,9 @@ public class DownloadNotificationService extends Service {
         if (isDownloadPending) {
             contentText = mContext.getResources().getString(R.string.download_notification_pending);
         } else if (indeterminate) {
-            contentText = DownloadUtils.getStringForBytes(
-                    mContext, DownloadUtils.BYTES_DOWNLOADED_STRINGS, bytesReceived);
+            // TODO(dimich): Enable the byte count back in M59. See bug 704049 for more info and
+            // details of what was temporarily reverted (for M58).
+            contentText = mContext.getResources().getString(R.string.download_started);
         } else {
             contentText = timeRemainingInMillis < 0
                     ? mContext.getResources().getString(R.string.download_started)
