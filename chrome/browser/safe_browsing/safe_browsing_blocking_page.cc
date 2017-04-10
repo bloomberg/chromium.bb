@@ -7,6 +7,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -118,8 +119,13 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       ShouldReportThreatDetails(unsafe_resources[0].threat_type) &&
       threat_details_.get() == NULL &&
       sb_error_ui()->CanShowExtendedReportingOption()) {
-    threat_details_ = ThreatDetails::NewThreatDetails(ui_manager, web_contents,
-                                                      unsafe_resources[0]);
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    threat_details_ = ThreatDetails::NewThreatDetails(
+        ui_manager, web_contents, unsafe_resources[0],
+        profile->GetRequestContext(),
+        HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS));
   }
 }
 

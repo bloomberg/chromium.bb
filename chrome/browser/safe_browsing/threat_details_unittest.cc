@@ -159,8 +159,13 @@ class ThreatDetailsWrap : public ThreatDetails {
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
-      net::URLRequestContextGetter* request_context_getter)
-      : ThreatDetails(ui_manager, web_contents, unsafe_resource) {
+      net::URLRequestContextGetter* request_context_getter,
+      history::HistoryService* history_service)
+      : ThreatDetails(ui_manager,
+                      web_contents,
+                      unsafe_resource,
+                      request_context_getter,
+                      history_service) {
     request_context_getter_ = request_context_getter;
   }
 
@@ -384,8 +389,8 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   InitResource(&resource, SB_THREAT_TYPE_URL_MALWARE, true /* is_subresource */,
                GURL(kThreatURL));
 
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
@@ -428,8 +433,8 @@ TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
                true /* is_subresource */, GURL(kThreatURL));
   resource.original_url = GURL(kOriginalLandingURL);
 
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, 1 /* num_visit */);
@@ -473,8 +478,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   InitResource(&resource, SB_THREAT_TYPE_URL_UNWANTED,
                true /* is_subresource */, GURL(kThreatURL));
 
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   // Send a message from the DOM, with 2 nodes, a parent and a child.
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
@@ -671,7 +676,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
   // Send both sets of nodes, from different render frames.
   {
     scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
-        ui_manager_.get(), web_contents(), resource, NULL);
+        ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
     // We call AddDOMDetails directly so we can specify different render frame
     // IDs.
@@ -715,7 +720,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
     elem_dom_outer_iframe->add_child_ids(1);
 
     scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
-        ui_manager_.get(), web_contents(), resource, NULL);
+        ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
     // We call AddDOMDetails directly so we can specify different render frame
     // IDs.
@@ -824,8 +829,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
   UnsafeResource resource;
   InitResource(&resource, SB_THREAT_TYPE_URL_UNWANTED,
                true /* is_subresource */, GURL(kThreatURL));
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
   base::HistogramTester histograms;
 
   // Send both sets of nodes, from different render frames. We call
@@ -860,8 +865,8 @@ TEST_F(ThreatDetailsTest, ThreatWithRedirectUrl) {
   resource.redirect_urls.push_back(GURL(kSecondRedirectURL));
   resource.redirect_urls.push_back(GURL(kThreatURL));
 
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 0 /* num_visit */);
@@ -931,8 +936,8 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
                false /* is_subresource */, GURL(kLandingURL));
 
   // Start ThreatDetails collection.
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   // Simulate clicking don't proceed.
   controller().DiscardNonCommittedEntries();
@@ -992,8 +997,8 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   // Do ThreatDetails collection.
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
@@ -1037,8 +1042,8 @@ TEST_F(ThreatDetailsTest, ThreatOnFreshTab) {
                GURL(kThreatURL));
 
   // Do ThreatDetails collection.
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
@@ -1070,7 +1075,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
-                            profile()->GetRequestContext());
+                            profile()->GetRequestContext(), history_service());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1153,7 +1158,7 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
-                            profile()->GetRequestContext());
+                            profile()->GetRequestContext(), history_service());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1233,7 +1238,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
-                            profile()->GetRequestContext());
+                            profile()->GetRequestContext(), history_service());
 
   // No call to FillCache
 
@@ -1288,8 +1293,8 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   UnsafeResource resource;
   InitResource(&resource, SB_THREAT_TYPE_URL_MALWARE, true /* is_subresource */,
                GURL(kThreatURL));
-  scoped_refptr<ThreatDetailsWrap> report =
-      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
   // The redirects collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;

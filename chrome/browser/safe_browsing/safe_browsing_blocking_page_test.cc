@@ -216,8 +216,11 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
   ThreatDetails* CreateThreatDetails(
       BaseUIManager* delegate,
       WebContents* web_contents,
-      const security_interstitials::UnsafeResource& unsafe_resource) override {
-    details_ = new ThreatDetails(delegate, web_contents, unsafe_resource);
+      const security_interstitials::UnsafeResource& unsafe_resource,
+      net::URLRequestContextGetter* request_context_getter,
+      history::HistoryService* history_service) override {
+    details_ = new ThreatDetails(delegate, web_contents, unsafe_resource,
+                                 request_context_getter, history_service);
     return details_;
   }
 

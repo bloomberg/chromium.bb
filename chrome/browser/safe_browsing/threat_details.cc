@@ -8,18 +8,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <unordered_set>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -140,8 +137,11 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
   ThreatDetails* CreateThreatDetails(
       BaseUIManager* ui_manager,
       WebContents* web_contents,
-      const security_interstitials::UnsafeResource& unsafe_resource) override {
-    return new ThreatDetails(ui_manager, web_contents, unsafe_resource);
+      const security_interstitials::UnsafeResource& unsafe_resource,
+      net::URLRequestContextGetter* request_context_getter,
+      history::HistoryService* history_service) override {
+    return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
+                             request_context_getter, history_service);
   }
 
  private:
@@ -160,21 +160,26 @@ static base::LazyInstance<ThreatDetailsFactoryImpl>::DestructorAtExit
 ThreatDetails* ThreatDetails::NewThreatDetails(
     BaseUIManager* ui_manager,
     WebContents* web_contents,
-    const UnsafeResource& resource) {
+    const UnsafeResource& resource,
+    net::URLRequestContextGetter* request_context_getter,
+    history::HistoryService* history_service) {
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
     factory_ = g_threat_details_factory_impl.Pointer();
-  return factory_->CreateThreatDetails(ui_manager, web_contents, resource);
+  return factory_->CreateThreatDetails(ui_manager, web_contents, resource,
+                                       request_context_getter, history_service);
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.
-ThreatDetails::ThreatDetails(BaseUIManager* ui_manager,
-                             content::WebContents* web_contents,
-                             const UnsafeResource& resource)
+ThreatDetails::ThreatDetails(
+    BaseUIManager* ui_manager,
+    content::WebContents* web_contents,
+    const UnsafeResource& resource,
+    net::URLRequestContextGetter* request_context_getter,
+    history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      request_context_getter_(profile_->GetRequestContext()),
+      request_context_getter_(request_context_getter),
       ui_manager_(ui_manager),
       resource_(resource),
       cache_result_(false),
@@ -182,9 +187,6 @@ ThreatDetails::ThreatDetails(BaseUIManager* ui_manager,
       num_visits_(0),
       ambiguous_dom_(false),
       cache_collector_(new ThreatDetailsCacheCollector) {
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
