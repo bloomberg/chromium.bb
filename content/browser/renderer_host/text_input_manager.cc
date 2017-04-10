@@ -72,11 +72,7 @@ const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(
 }
 
 const TextInputManager::CompositionRangeInfo*
-TextInputManager::GetCompositionRangeInfo(
-    RenderWidgetHostViewBase* view) const {
-  DCHECK(!view || IsRegistered(view));
-  if (!view)
-    view = active_view_;
+TextInputManager::GetCompositionRangeInfo() const {
   return active_view_ ? &composition_range_info_map_.at(active_view_) : nullptr;
 }
 

@@ -157,10 +157,8 @@ class CONTENT_EXPORT TextInputManager {
       RenderWidgetHostViewBase* view = nullptr) const;
 
   // Returns the composition range and character bounds information for the
-  // |view|. If |view| == nullptr, it will assume |active_view_| and return its
-  // state. If |active_view_| == nullptr, this method will return nullptr.
-  const TextInputManager::CompositionRangeInfo* GetCompositionRangeInfo(
-      RenderWidgetHostViewBase* view = nullptr) const;
+  // |active_view_|. Returns nullptr If |active_view_| == nullptr.
+  const TextInputManager::CompositionRangeInfo* GetCompositionRangeInfo() const;
 
   // The following method returns the text selection state for the given |view|.
   // If |view| == nullptr, it will assume |active_view_| and return its state.
