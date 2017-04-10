@@ -1038,10 +1038,12 @@ class _CQState(object):
 
 
 class _ParsedIssueNumberArgument(object):
-  def __init__(self, issue=None, patchset=None, hostname=None):
+  def __init__(self, issue=None, patchset=None, hostname=None, codereview=None):
     self.issue = issue
     self.patchset = patchset
     self.hostname = hostname
+    assert codereview in (None, 'rietveld', 'gerrit')
+    self.codereview = codereview
 
   @property
   def valid(self):
@@ -2172,20 +2174,23 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
           patchset=int(match2.group(1)),
-          hostname=parsed_url.netloc)
+          hostname=parsed_url.netloc,
+          codereview='rietveld')
     # Typical url: https://domain/<issue_number>[/[other]]
     match = re.match('/(\d+)(/.*)?$', parsed_url.path)
     if match:
       return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
-          hostname=parsed_url.netloc)
+          hostname=parsed_url.netloc,
+          codereview='rietveld')
     # Rietveld patch: https://domain/download/issue<number>_<patchset>.diff
     match = re.match(r'/download/issue(\d+)_(\d+).diff$', parsed_url.path)
     if match:
       return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
           patchset=int(match.group(2)),
-          hostname=parsed_url.netloc)
+          hostname=parsed_url.netloc,
+          codereview='rietveld')
     return None
 
   def CMDUploadChange(self, options, args, change):
@@ -2780,7 +2785,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return _ParsedIssueNumberArgument(
           issue=int(match.group(2)),
           patchset=int(match.group(4)) if match.group(4) else None,
-          hostname=parsed_url.netloc)
+          hostname=parsed_url.netloc,
+          codereview='gerrit')
     return None
 
   def _GerritCommitMsgHookCheck(self, offer_removal):

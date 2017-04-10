@@ -219,97 +219,6 @@ class TestGitClBasic(unittest.TestCase):
       'Gnarly-Dude: beans',
     ])
 
-  def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
-    parsed = urlparse.urlparse(url)
-    result = func(parsed)
-    if fail:
-      self.assertIsNone(result)
-      return None
-    self.assertIsNotNone(result)
-    self.assertEqual(result.issue, issue)
-    self.assertEqual(result.patchset, patchset)
-    self.assertEqual(result.hostname, hostname)
-    return result
-
-  def test_ParseIssueURL_rietveld(self):
-    def test(url, issue=None, patchset=None, hostname=None, fail=None):
-      self._test_ParseIssueUrl(
-          git_cl._RietveldChangelistImpl.ParseIssueURL,
-          url, issue, patchset, hostname, fail)
-
-    test('http://codereview.chromium.org/123',
-         123, None, 'codereview.chromium.org')
-    test('https://codereview.chromium.org/123',
-         123, None, 'codereview.chromium.org')
-    test('https://codereview.chromium.org/123/',
-         123, None, 'codereview.chromium.org')
-    test('https://codereview.chromium.org/123/whatever',
-         123, None, 'codereview.chromium.org')
-    test('https://codereview.chromium.org/123/#ps20001',
-         123, 20001, 'codereview.chromium.org')
-    test('http://codereview.chromium.org/download/issue123_4.diff',
-         123, 4, 'codereview.chromium.org')
-    # This looks like bad Gerrit, but is actually valid Rietveld.
-    test('https://chrome-review.source.com/123/4/',
-         123, None, 'chrome-review.source.com')
-
-    test('https://codereview.chromium.org/deadbeaf', fail=True)
-    test('https://codereview.chromium.org/api/123', fail=True)
-    test('bad://codereview.chromium.org/123', fail=True)
-    test('http://codereview.chromium.org/download/issue123_4.diffff', fail=True)
-
-  def test_ParseIssueURL_gerrit(self):
-    def test(url, issue=None, patchset=None, hostname=None, fail=None):
-      self._test_ParseIssueUrl(
-          git_cl._GerritChangelistImpl.ParseIssueURL,
-          url, issue, patchset, hostname, fail)
-
-    test('http://chrome-review.source.com/c/123',
-         123, None, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/c/123/',
-         123, None, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/c/123/4',
-         123, 4, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/#/c/123/4',
-         123, 4, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/c/123/4',
-         123, 4, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/123',
-         123, None, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/123/4',
-         123, 4, 'chrome-review.source.com')
-
-    test('https://chrome-review.source.com/c/123/1/whatisthis', fail=True)
-    test('https://chrome-review.source.com/c/abc/', fail=True)
-    test('ssh://chrome-review.source.com/c/123/1/', fail=True)
-
-  def test_ParseIssueNumberArgument(self):
-    def test(arg, issue=None, patchset=None, hostname=None, fail=False):
-      result = git_cl.ParseIssueNumberArgument(arg)
-      self.assertIsNotNone(result)
-      if fail:
-        self.assertFalse(result.valid)
-      else:
-        self.assertEqual(result.issue, issue)
-        self.assertEqual(result.patchset, patchset)
-        self.assertEqual(result.hostname, hostname)
-
-    test('123', 123)
-    test('', fail=True)
-    test('abc', fail=True)
-    test('123/1', fail=True)
-    test('123a', fail=True)
-    test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
-    # Rietveld.
-    test('https://codereview.source.com/www123', fail=True)
-    # Matches both, but we take Rietveld now.
-    test('https://codereview.source.com/123',
-         123, None, 'codereview.source.com')
-    # Gerrrit.
-    test('https://chrome-review.source.com/c/123/4',
-         123, 4, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/bad/123/4', fail=True)
-
   def test_get_bug_line_values(self):
     f = lambda p, bugs: list(git_cl._get_bug_line_values(p, bugs))
     self.assertEqual(f('', ''), [])
@@ -482,6 +391,101 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Original-Commit-Position: refs/heads/master@{#100}\n'
         'Cr-Commit-Position: refs/heads/branch@{#2}\n'
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
+
+class TestParseIssueURL(unittest.TestCase):
+  def _validate(self, parsed, issue=None, patchset=None, hostname=None,
+                codereview=None, fail=False):
+    self.assertIsNotNone(parsed)
+    if fail:
+      self.assertFalse(parsed.valid)
+      return
+    self.assertTrue(parsed.valid)
+    self.assertEqual(parsed.issue, issue)
+    self.assertEqual(parsed.patchset, patchset)
+    self.assertEqual(parsed.hostname, hostname)
+    self.assertEqual(parsed.codereview, codereview)
+
+  def _run_and_validate(self, func, url, *args, **kwargs):
+    result = func(urlparse.urlparse(url))
+    if kwargs.pop('fail', False):
+      self.assertIsNone(result)
+      return None
+    self._validate(result, *args, fail=False, **kwargs)
+
+  def test_rietveld(self):
+    def test(url, *args, **kwargs):
+      self._run_and_validate(git_cl._RietveldChangelistImpl.ParseIssueURL, url,
+                             *args, codereview='rietveld', **kwargs)
+
+    test('http://codereview.chromium.org/123',
+         123, None, 'codereview.chromium.org')
+    test('https://codereview.chromium.org/123',
+         123, None, 'codereview.chromium.org')
+    test('https://codereview.chromium.org/123/',
+         123, None, 'codereview.chromium.org')
+    test('https://codereview.chromium.org/123/whatever',
+         123, None, 'codereview.chromium.org')
+    test('https://codereview.chromium.org/123/#ps20001',
+         123, 20001, 'codereview.chromium.org')
+    test('http://codereview.chromium.org/download/issue123_4.diff',
+         123, 4, 'codereview.chromium.org')
+    # This looks like bad Gerrit, but is actually valid Rietveld, too.
+    test('https://chrome-review.source.com/123/4/',
+         123, None, 'chrome-review.source.com')
+
+    test('https://codereview.chromium.org/deadbeaf', fail=True)
+    test('https://codereview.chromium.org/api/123', fail=True)
+    test('bad://codereview.chromium.org/123', fail=True)
+    test('http://codereview.chromium.org/download/issue123_4.diffff', fail=True)
+
+  def test_gerrit(self):
+    def test(url, issue=None, patchset=None, hostname=None, fail=None):
+      self._test_ParseIssueUrl(
+          git_cl._GerritChangelistImpl.ParseIssueURL,
+          url, issue, patchset, hostname, fail)
+    def test(url, *args, **kwargs):
+      self._run_and_validate(git_cl._GerritChangelistImpl.ParseIssueURL, url,
+                             *args, codereview='gerrit', **kwargs)
+
+    test('http://chrome-review.source.com/c/123',
+         123, None, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/c/123/',
+         123, None, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/c/123/4',
+         123, 4, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/#/c/123/4',
+         123, 4, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/c/123/4',
+         123, 4, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/123',
+         123, None, 'chrome-review.source.com')
+    test('https://chrome-review.source.com/123/4',
+         123, 4, 'chrome-review.source.com')
+
+    test('https://chrome-review.source.com/c/123/1/whatisthis', fail=True)
+    test('https://chrome-review.source.com/c/abc/', fail=True)
+    test('ssh://chrome-review.source.com/c/123/1/', fail=True)
+
+  def test_ParseIssueNumberArgument(self):
+    def test(arg, *args, **kwargs):
+      self._validate(git_cl.ParseIssueNumberArgument(arg), *args, **kwargs)
+
+    test('123', 123)
+    test('', fail=True)
+    test('abc', fail=True)
+    test('123/1', fail=True)
+    test('123a', fail=True)
+    test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
+    # Rietveld.
+    test('https://codereview.source.com/www123', fail=True)
+    # Matches both, but we take Rietveld now.
+    test('https://codereview.source.com/123',
+         123, None, 'codereview.source.com', 'rietveld')
+    # Gerrrit.
+    test('https://chrome-review.source.com/c/123/4',
+         123, 4, 'chrome-review.source.com', 'gerrit')
+    test('https://chrome-review.source.com/bad/123/4', fail=True)
 
 
 class GitCookiesCheckerTest(TestCase):
