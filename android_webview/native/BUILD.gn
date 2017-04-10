@@ -36,6 +36,10 @@ source_set("native") {
   ]
 
   sources = [
+    "address_parser.cc",
+    "address_parser.h",
+    "address_parser_internal.cc",
+    "address_parser_internal.h",
     "android_protocol_handler.cc",
     "android_protocol_handler.h",
     "android_webview_jni_registrar.cc",

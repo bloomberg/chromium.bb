@@ -8,6 +8,7 @@
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_version_info_values.h"
+#include "android_webview/native/address_parser.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -104,6 +105,18 @@ void SetCheckClearTextPermitted(JNIEnv* env,
                                 const JavaParamRef<jclass>&,
                                 jboolean permitted) {
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
+}
+
+// static
+ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
+                                        const JavaParamRef<jclass>& clazz,
+                                        const JavaParamRef<jstring>& addr) {
+  base::string16 content_16 =
+      base::android::ConvertJavaStringToUTF16(env, addr);
+  base::string16 result_16;
+  if (android_webview::address_parser::FindAddress(content_16, &result_16))
+    return base::android::ConvertUTF16ToJavaString(env, result_16);
+  return ScopedJavaLocalRef<jstring>();
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {

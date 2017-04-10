@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/address_parser.h"
+#include "android_webview/native/address_parser.h"
 
 #include <stddef.h>
 
 #include <memory>
 
+#include "android_webview/native/address_parser_internal.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/android/address_parser_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace content::address_parser;
-using namespace content::address_parser::internal;
+using namespace android_webview::address_parser;
+using namespace android_webview::address_parser::internal;
 
 class AddressParserTest : public testing::Test {
  public:
@@ -518,12 +518,12 @@ TEST_F(AddressParserTest, LocationName) {
 
 TEST_F(AddressParserTest, NumberPrefixCases) {
   EXPECT_EQ(FindAddress("Cafe 21\n750 Fifth Ave. San Diego, California 92101"),
-      "750 Fifth Ave. San Diego, California 92101");
-  EXPECT_EQ(FindAddress(
-      "Century City 15\n 10250 Santa Monica Boulevard Los Angeles, CA 90067"),
-      "10250 Santa Monica Boulevard Los Angeles, CA 90067");
+            "750 Fifth Ave. San Diego, California 92101");
+  EXPECT_EQ(FindAddress("Century City 15\n 10250 Santa Monica Boulevard Los "
+                        "Angeles, CA 90067"),
+            "10250 Santa Monica Boulevard Los Angeles, CA 90067");
   EXPECT_EQ(FindAddress("123 45\n67 My Street, Somewhere, NY 10000"),
-      "67 My Street, Somewhere, NY 10000");
+            "67 My Street, Somewhere, NY 10000");
   EXPECT_TRUE(IsAddress("123 4th Avenue, Somewhere in NY 10000"));
 }
 
@@ -533,8 +533,8 @@ TEST_F(AddressParserTest, FullAddress) {
   EXPECT_TRUE(IsAddress("201 S. Division St. Suite 500 Ann Arbor, MI 48104"));
   EXPECT_TRUE(ContainsAddress(
       "Millennium at Midtown 10 10th Street NE Suite 600 Atlanta, GA 30309"));
-  EXPECT_TRUE(IsAddress(
-      "9606 North MoPac Expressway Suite 400 Austin, TX 78759"));
+  EXPECT_TRUE(
+      IsAddress("9606 North MoPac Expressway Suite 400 Austin, TX 78759"));
   EXPECT_TRUE(IsAddress("2590 Pearl Street Suite 100 Boulder, CO 80302"));
   EXPECT_TRUE(IsAddress("5 Cambridge Center, Floors 3-6 Cambridge, MA 02142"));
   EXPECT_TRUE(IsAddress("410 Market St Suite 415 Chapel Hill, NC 27516"));
@@ -563,14 +563,16 @@ TEST_F(AddressParserTest, FullAddress) {
   EXPECT_TRUE(ContainsAddress(
       "Lincoln Park | 100 34th Avenue • San Francisco, CA 94121 | 41575036"));
 
-  EXPECT_EQ(FindAddress("Lorem ipsum dolor sit amet, consectetur adipisicing " \
-      "elit, sed do 1600 Amphitheatre Parkway Mountain View, CA 94043 " \
-      "eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+  EXPECT_EQ(
+      FindAddress(
+          "Lorem ipsum dolor sit amet, consectetur adipisicing "
+          "elit, sed do 1600 Amphitheatre Parkway Mountain View, CA 94043 "
+          "eiusmod tempor incididunt ut labore et dolore magna aliqua."),
       "1600 Amphitheatre Parkway Mountain View, CA 94043");
 
-  EXPECT_EQ(FindAddress("2590 Pearl Street Suite 100 Boulder, CO 80302 6425 " \
-      "Penn Ave. Suite 700 Pittsburgh, PA 15206"),
-      "2590 Pearl Street Suite 100 Boulder, CO 80302");
+  EXPECT_EQ(FindAddress("2590 Pearl Street Suite 100 Boulder, CO 80302 6425 "
+                        "Penn Ave. Suite 700 Pittsburgh, PA 15206"),
+            "2590 Pearl Street Suite 100 Boulder, CO 80302");
 
   EXPECT_TRUE(IsAddress("5400 Preston Oaks Rd Dallas TX 75254"));
   EXPECT_TRUE(IsAddress("5400 Preston Oaks Road Dallas TX 75254"));
@@ -589,7 +591,7 @@ TEST_F(AddressParserTest, FullAddress) {
   EXPECT_TRUE(ContainsAddress("1 this is ok: street, CA 90000"));
 
   EXPECT_FALSE(ContainsAddress(
-      "1 street I love verbosity, so I'm writing an address with too many " \
+      "1 street I love verbosity, so I'm writing an address with too many "
       "words CA 90000"));
   EXPECT_TRUE(ContainsAddress("1 street 2 3 4 5 6 7 8 9 10 11 12, CA 90000"));
 

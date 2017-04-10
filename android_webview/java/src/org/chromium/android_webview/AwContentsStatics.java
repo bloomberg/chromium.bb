@@ -132,6 +132,21 @@ public class AwContentsStatics {
         nativeSetCheckClearTextPermitted(permitted);
     }
 
+    /**
+     * Return the first substring consisting of the address of a physical location.
+     * @see {@link android.webkit.WebView#findAddress(String)}
+     *
+     * @param addr The string to search for addresses.
+     * @return the address, or if no address is found, return null.
+     */
+    public static String findAddress(String addr) {
+        if (addr == null) {
+            throw new NullPointerException("addr is null");
+        }
+        String result = nativeFindAddress(addr);
+        return result == null || result.isEmpty() ? null : result;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -144,4 +159,5 @@ public class AwContentsStatics {
     private static native boolean nativeGetSafeBrowsingEnabled();
     private static native void nativeSetSafeBrowsingEnabled(boolean enable);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
+    private static native String nativeFindAddress(String addr);
 }

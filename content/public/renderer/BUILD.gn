@@ -29,8 +29,6 @@ target(link_target_type, "renderer_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "android_content_detection_prefixes.cc",
-    "android_content_detection_prefixes.h",
     "associated_resource_fetcher.h",
     "browser_plugin_delegate.cc",
     "browser_plugin_delegate.h",

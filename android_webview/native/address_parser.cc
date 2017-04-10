@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/address_parser.h"
+#include "android_webview/native/address_parser.h"
 
+#include "android_webview/native/address_parser_internal.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "content/common/android/address_parser_internal.h"
 
 namespace {
 
@@ -33,16 +33,14 @@ const size_t kMaxLocationNameDistance = 4;
 
 // Additional characters used as new line delimiters.
 const base::char16 kNewlineDelimiters[] = {
-  '\n',
-  ',',
-  '*',
-  0x2022,  // Unicode bullet
-  0,
+    '\n',   ',', '*',
+    0x2022,  // Unicode bullet
+    0,
 };
 
 }  // anonymous namespace
 
-namespace content {
+namespace android_webview {
 
 namespace address_parser {
 
@@ -72,7 +70,7 @@ bool FindAddress(const base::string16::const_iterator& begin,
   // state names not followed by a zip code (e.g. New York, NY 10000).
   const base::string16 newline_delimiters = kNewlineDelimiters;
   const base::string16 delimiters = base::kWhitespaceUTF16 + newline_delimiters;
-  for (base::string16::const_iterator it = begin; it != end; ) {
+  for (base::string16::const_iterator it = begin; it != end;) {
     Word house_number;
     if (!house_number_parser.Parse(it, end, &house_number))
       return false;
@@ -92,7 +90,6 @@ bool FindAddress(const base::string16::const_iterator& begin,
     // Don't include the house number in the word count.
     size_t next_word = 1;
     for (; next_word <= kMaxAddressWords + 1; ++next_word) {
-
       // Extract a new word from the tokenizer.
       if (next_word == words.size()) {
         do {
@@ -100,8 +97,9 @@ bool FindAddress(const base::string16::const_iterator& begin,
             return false;
 
           // Check the number of address lines.
-          if (tokenizer.token_is_delim() && newline_delimiters.find(
-              *tokenizer.token_begin()) != base::string16::npos) {
+          if (tokenizer.token_is_delim() &&
+              newline_delimiters.find(*tokenizer.token_begin()) !=
+                  base::string16::npos) {
             ++num_lines;
           }
         } while (tokenizer.token_is_delim());
@@ -116,8 +114,8 @@ bool FindAddress(const base::string16::const_iterator& begin,
       // the next house number as no address can hold this word.
       const Word& current_word = words[next_word];
       DCHECK_GT(std::distance(current_word.begin, current_word.end), 0);
-      size_t current_word_length = std::distance(
-          current_word.begin, current_word.end);
+      size_t current_word_length =
+          std::distance(current_word.begin, current_word.end);
       if (current_word_length > kMaxAddressNameWordLength) {
         continue_on_house_number = false;
         break;
@@ -125,7 +123,7 @@ bool FindAddress(const base::string16::const_iterator& begin,
 
       // Check if the new word is a valid house number.
       if (house_number_parser.Parse(current_word.begin, current_word.end,
-          NULL)) {
+                                    NULL)) {
         // Increase the number of consecutive house numbers since the beginning.
         if (consecutive_house_numbers) {
           // Check if there is a new line between consecutive house numbers.
@@ -162,7 +160,6 @@ bool FindAddress(const base::string16::const_iterator& begin,
         size_t state_last_word, state_index;
         if (FindStateStartingInWord(&words, state_first_word, &state_last_word,
                                     &tokenizer, &state_index)) {
-
           // A location name should have been found at this point.
           if (!found_location_name)
             break;
@@ -175,8 +172,8 @@ bool FindAddress(const base::string16::const_iterator& begin,
                     base::StringPiece16(previous_word.begin, previous_word.end),
                     "et") &&
                 base::LowerCaseEqualsASCII(
-                     base::StringPiece16(current_word.begin, current_word.end),
-                     "al"))
+                    base::StringPiece16(current_word.begin, current_word.end),
+                    "al"))
               break;
           }
 
@@ -193,8 +190,8 @@ bool FindAddress(const base::string16::const_iterator& begin,
                 return true;
               }
             } while (tokenizer.token_is_delim());
-            words.push_back(Word(tokenizer.token_begin(),
-                            tokenizer.token_end()));
+            words.push_back(
+                Word(tokenizer.token_begin(), tokenizer.token_end()));
           }
 
           // Check the parsing validity and state range of the zip code.
@@ -225,4 +222,4 @@ bool FindAddress(const base::string16::const_iterator& begin,
 
 }  // namespace address_parser
 
-}  // namespace content
+}  // namespace android_webview

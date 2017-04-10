@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_ADDRESS_PARSER_H_
-#define CONTENT_COMMON_ANDROID_ADDRESS_PARSER_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_H_
+#define ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_H_
 
 #include <stddef.h>
 
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace android_webview {
 
 // Provides methods to find a geographical address (currently US only)
 // in a given text string.
@@ -25,13 +24,13 @@ bool FindAddress(const base::string16& text, base::string16* address);
 // position to search from, |end| is the position to search to.  |start_pos|
 // and |end_pos| are set to the starting and ending position of the address,
 // if found.
-CONTENT_EXPORT bool FindAddress(const base::string16::const_iterator& begin,
-                                const base::string16::const_iterator& end,
-                                size_t* start_pos,
-                                size_t* end_pos);
+bool FindAddress(const base::string16::const_iterator& begin,
+                 const base::string16::const_iterator& end,
+                 size_t* start_pos,
+                 size_t* end_pos);
 
 }  // namespace address_parser
 
-}  // namespace content
+}  // namespace android_webview
 
-#endif  // CONTENT_COMMON_ANDROID_ADDRESS_PARSER_H_
+#endif  // ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_H_

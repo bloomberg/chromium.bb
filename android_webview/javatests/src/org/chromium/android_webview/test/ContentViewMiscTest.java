@@ -13,6 +13,7 @@ import android.support.test.filters.SmallTest;
 import android.test.mock.MockContext;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
@@ -45,11 +46,11 @@ public class ContentViewMiscTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testFindAddress() {
-        assertNull(ContentViewStatics.findAddress("This is some random text"));
+        assertNull(AwContentsStatics.findAddress("This is some random text"));
 
         String googleAddr = "1600 Amphitheatre Pkwy, Mountain View, CA 94043";
         String testString = "Address: " + googleAddr + "  in a string";
-        assertEquals(googleAddr, ContentViewStatics.findAddress(testString));
+        assertEquals(googleAddr, AwContentsStatics.findAddress(testString));
     }
 
     @SmallTest

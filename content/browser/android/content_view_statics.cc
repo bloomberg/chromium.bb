@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/android/address_parser.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -91,18 +90,6 @@ base::LazyInstance<SuspendedProcessWatcher>::DestructorAtExit
     g_suspended_processes_watcher = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-// Returns the first substring consisting of the address of a physical location.
-static ScopedJavaLocalRef<jstring> FindAddress(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& addr) {
-  base::string16 content_16 = ConvertJavaStringToUTF16(env, addr);
-  base::string16 result_16;
-  if (content::address_parser::FindAddress(content_16, &result_16))
-    return ConvertUTF16ToJavaString(env, result_16);
-  return ScopedJavaLocalRef<jstring>();
-}
 
 static void SetWebKitSharedTimersSuspended(JNIEnv* env,
                                            const JavaParamRef<jclass>& obj,

@@ -33,10 +33,6 @@ source_set("common") {
   sources = [
     "accessibility_messages.h",
     "all_messages.h",
-    "android/address_parser.cc",
-    "android/address_parser.h",
-    "android/address_parser_internal.cc",
-    "android/address_parser_internal.h",
     "android/common_jni_registrar.cc",
     "android/common_jni_registrar.h",
     "android/gin_java_bridge_errors.cc",

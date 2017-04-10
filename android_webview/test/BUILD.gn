@@ -257,6 +257,7 @@ test("android_webview_unittests") {
     "../browser/test/rendering_test.cc",
     "../browser/test/rendering_test.h",
     "../lib/main/webview_tests.cc",
+    "../native/address_parser_unittest.cc",
     "../native/aw_contents_client_bridge_unittest.cc",
     "../native/aw_media_url_interceptor_unittest.cc",
     "../native/input_stream_unittest.cc",

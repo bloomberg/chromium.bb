@@ -6,7 +6,6 @@
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/renderer/android_content_detection_prefixes.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -29,6 +28,10 @@
 namespace android_webview {
 
 namespace {
+
+const char kAddressPrefix[] = "geo:0,0?q=";
+const char kEmailPrefix[] = "mailto:";
+const char kPhoneNumberPrefix[] = "tel:";
 
 GURL GetAbsoluteUrl(const blink::WebNode& node,
                     const base::string16& url_fragment) {
@@ -81,13 +84,13 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
 }
 
 void DistinguishAndAssignSrcLinkType(const GURL& url, AwHitTestData* data) {
-  if (RemovePrefixAndAssignIfMatches(content::kAddressPrefix, url,
+  if (RemovePrefixAndAssignIfMatches(kAddressPrefix, url,
                                      &data->extra_data_for_type)) {
     data->type = AwHitTestData::GEO_TYPE;
-  } else if (RemovePrefixAndAssignIfMatches(content::kPhoneNumberPrefix, url,
+  } else if (RemovePrefixAndAssignIfMatches(kPhoneNumberPrefix, url,
                                             &data->extra_data_for_type)) {
     data->type = AwHitTestData::PHONE_TYPE;
-  } else if (RemovePrefixAndAssignIfMatches(content::kEmailPrefix, url,
+  } else if (RemovePrefixAndAssignIfMatches(kEmailPrefix, url,
                                             &data->extra_data_for_type)) {
     data->type = AwHitTestData::EMAIL_TYPE;
   } else {

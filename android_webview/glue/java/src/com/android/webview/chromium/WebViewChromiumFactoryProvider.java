@@ -63,7 +63,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -524,7 +523,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 mStaticMethods = new WebViewFactoryProvider.Statics() {
                     @Override
                     public String findAddress(String addr) {
-                        return ContentViewStatics.findAddress(addr);
+                        return AwContentsStatics.findAddress(addr);
                     }
 
                     @Override

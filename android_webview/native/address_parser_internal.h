@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
-#define CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_INTERNAL_H_
+#define ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_INTERNAL_H_
 
 #include <stddef.h>
 
@@ -11,9 +11,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string_tokenizer.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace android_webview {
 
 namespace address_parser {
 
@@ -21,7 +20,7 @@ namespace address_parser {
 namespace internal {
 
 // Exposed for tests.
-struct CONTENT_EXPORT Word {
+struct Word {
   base::string16::const_iterator begin;
   base::string16::const_iterator end;
 
@@ -32,7 +31,7 @@ struct CONTENT_EXPORT Word {
 };
 
 // Exposed for tests.
-class CONTENT_EXPORT HouseNumberParser {
+class HouseNumberParser {
  public:
   HouseNumberParser();
 
@@ -71,20 +70,20 @@ typedef base::StringTokenizerT<base::string16, base::string16::const_iterator>
     String16Tokenizer;
 
 // These are exposed for tests.
-CONTENT_EXPORT bool FindStateStartingInWord(WordList* words,
-                                            size_t state_first_word,
-                                            size_t* state_last_word,
-                                            String16Tokenizer* tokenizer,
-                                            size_t* state_index);
+bool FindStateStartingInWord(WordList* words,
+                             size_t state_first_word,
+                             size_t* state_last_word,
+                             String16Tokenizer* tokenizer,
+                             size_t* state_index);
 
-CONTENT_EXPORT bool IsValidLocationName(const Word& word);
-CONTENT_EXPORT bool IsZipValid(const Word& word, size_t state_index);
-CONTENT_EXPORT bool IsZipValidForState(const Word& word, size_t state_index);
+bool IsValidLocationName(const Word& word);
+bool IsZipValid(const Word& word, size_t state_index);
+bool IsZipValidForState(const Word& word, size_t state_index);
 
 }  // namespace internal
 
 }  // namespace address_parser
 
-}  // namespace content
+}  // namespace android_webview
 
-#endif  // CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
+#endif  // ANDROID_WEBVIEW_NATIVE_ADDRESS_PARSER_INTERNAL_H_
