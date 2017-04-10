@@ -6,17 +6,14 @@ package org.chromium.base.process_launcher;
 
 import android.os.Bundle;
 
-import org.chromium.base.process_launcher.ICallbackInt;
-
 interface IChildProcessService {
   // On the first call to this method, the service will record the calling PID
   // and return true. Subsequent calls will only return true if the calling PID
   // is the same as the recorded one.
   boolean bindToCaller();
 
-  // Sets up the initial IPC channel.
-  oneway void setupConnection(in Bundle args, ICallbackInt pidCallback,
-                              IBinder gpuCallback);
+  // Sets up the initial IPC channel and returns the pid of the child process.
+  int setupConnection(in Bundle args, IBinder callback);
 
   // Asks the child service to crash so that we can test the termination logic.
   oneway void crashIntentionallyForTesting();

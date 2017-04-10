@@ -21,7 +21,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 
 import java.io.IOException;
@@ -390,18 +389,6 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         }
     }
 
-    private void onSetupConnectionResult(int pid) {
-        synchronized (mLock) {
-            mPid = pid;
-            assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
-
-            if (mConnectionCallback != null) {
-                mConnectionCallback.onConnected(mPid);
-            }
-            mConnectionCallback = null;
-        }
-    }
-
     /**
      * Called after the connection parameters have been set (in setupConnection()) *and* a
      * connection has been established (as signaled by onServiceConnected()). These two events can
@@ -415,20 +402,10 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
             Bundle bundle = ChildProcessLauncher.createsServiceBundle(
                     mConnectionParams.mCommandLine, mConnectionParams.mFilesToBeMapped);
-            ICallbackInt pidCallback = new ICallbackInt.Stub() {
-                @Override
-                public void call(final int pid) {
-                    LauncherThread.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            onSetupConnectionResult(pid);
-                        }
-                    });
-                }
-            };
             try {
-                mService.setupConnection(bundle, pidCallback, mConnectionParams.mCallback);
-            } catch (RemoteException re) {
+                mPid = mService.setupConnection(bundle, mConnectionParams.mCallback);
+                assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
+            } catch (android.os.RemoteException re) {
                 Log.e(TAG, "Failed to setup connection.", re);
             }
             // We proactively close the FDs rather than wait for GC & finalizer.
@@ -440,6 +417,11 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 Log.w(TAG, "Failed to close FD.", ioe);
             }
             mConnectionParams = null;
+
+            if (mConnectionCallback != null) {
+                mConnectionCallback.onConnected(mPid);
+            }
+            mConnectionCallback = null;
         } finally {
             TraceEvent.end("ChildProcessConnectionImpl.doConnectionSetupLocked");
         }
