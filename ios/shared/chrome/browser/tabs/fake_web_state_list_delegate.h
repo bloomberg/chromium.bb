@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_FAKE_WEB_STATE_LIST_DELEGATE_H_
-#define IOS_CHROME_BROWSER_WEB_STATE_LIST_FAKE_WEB_STATE_LIST_DELEGATE_H_
+#ifndef IOS_SHARED_CHROME_BROWSER_TABS_FAKE_WEB_STATE_LIST_DELEGATE_H_
+#define IOS_SHARED_CHROME_BROWSER_TABS_FAKE_WEB_STATE_LIST_DELEGATE_H_
 
 #include "base/macros.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
 
 // Fake WebStateList delegate for tests.
 class FakeWebStateListDelegate : public WebStateListDelegate {
@@ -22,4 +22,4 @@ class FakeWebStateListDelegate : public WebStateListDelegate {
   DISALLOW_COPY_AND_ASSIGN(FakeWebStateListDelegate);
 };
 
-#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_FAKE_WEB_STATE_LIST_DELEGATE_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_TABS_FAKE_WEB_STATE_LIST_DELEGATE_H_

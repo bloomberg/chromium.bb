@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/ssl_status.h"

@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"

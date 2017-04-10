@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_H_
-#define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_H_
+#ifndef IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_H_
+#define IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_H_
 
 #include <memory>
 #include <vector>
@@ -159,4 +159,4 @@ class WebStateList {
   DISALLOW_COPY_AND_ASSIGN(WebStateList);
 };
 
-#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_H_

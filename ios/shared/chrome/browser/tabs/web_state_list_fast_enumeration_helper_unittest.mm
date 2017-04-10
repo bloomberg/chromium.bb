@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list_fast_enumeration_helper.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_fast_enumeration_helper.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

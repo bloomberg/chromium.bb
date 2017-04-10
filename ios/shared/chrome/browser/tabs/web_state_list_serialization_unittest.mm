@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_serialization.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

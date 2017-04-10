@@ -52,7 +52,7 @@ source_set("sessions_non_arc") {
     "//components/sessions",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/web_state_list",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
     "//net",
   ]

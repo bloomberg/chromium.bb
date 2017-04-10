@@ -5,10 +5,10 @@
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 
 #include "base/memory/ptr_util.h"
-#include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
+#include "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#include "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

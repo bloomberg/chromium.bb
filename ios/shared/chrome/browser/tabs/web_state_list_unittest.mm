@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -416,24 +416,30 @@ TEST_F(WebStateListTest, OpenersChildsAfterOpener) {
   web_state_list_.SetOpenerOfWebStateAt(2, WebStateOpener(opener));
 
   const int start_index = web_state_list_.GetIndexOfWebState(opener);
-  EXPECT_EQ(1, web_state_list_.GetIndexOfNextWebStateOpenedBy(
-                   opener, start_index, false));
-  EXPECT_EQ(2, web_state_list_.GetIndexOfLastWebStateOpenedBy(
-                   opener, start_index, false));
+  EXPECT_EQ(1,
+            web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
+                                                           false));
+  EXPECT_EQ(2,
+            web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
+                                                           false));
 
-  EXPECT_EQ(1, web_state_list_.GetIndexOfNextWebStateOpenedBy(
-                   opener, start_index, true));
-  EXPECT_EQ(2, web_state_list_.GetIndexOfLastWebStateOpenedBy(
-                   opener, start_index, true));
+  EXPECT_EQ(1,
+            web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
+                                                           true));
+  EXPECT_EQ(2,
+            web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
+                                                           true));
 
   // Simulate a navigation on the opener, results should not change if not
   // using groups, but should now be kInvalidIndex otherwise.
   opener->GetNavigationManager()->GoForward();
 
-  EXPECT_EQ(1, web_state_list_.GetIndexOfNextWebStateOpenedBy(
-                   opener, start_index, false));
-  EXPECT_EQ(2, web_state_list_.GetIndexOfLastWebStateOpenedBy(
-                   opener, start_index, false));
+  EXPECT_EQ(1,
+            web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
+                                                           false));
+  EXPECT_EQ(2,
+            web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
+                                                           false));
 
   EXPECT_EQ(WebStateList::kInvalidIndex,
             web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
@@ -448,15 +454,19 @@ TEST_F(WebStateListTest, OpenersChildsAfterOpener) {
   web_state_list_.InsertWebState(3, CreateWebState(kURL2));
   web_state_list_.SetOpenerOfWebStateAt(3, WebStateOpener(opener));
 
-  EXPECT_EQ(1, web_state_list_.GetIndexOfNextWebStateOpenedBy(
-                   opener, start_index, false));
-  EXPECT_EQ(3, web_state_list_.GetIndexOfLastWebStateOpenedBy(
-                   opener, start_index, false));
+  EXPECT_EQ(1,
+            web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
+                                                           false));
+  EXPECT_EQ(3,
+            web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
+                                                           false));
 
-  EXPECT_EQ(3, web_state_list_.GetIndexOfNextWebStateOpenedBy(
-                   opener, start_index, true));
-  EXPECT_EQ(3, web_state_list_.GetIndexOfLastWebStateOpenedBy(
-                   opener, start_index, true));
+  EXPECT_EQ(3,
+            web_state_list_.GetIndexOfNextWebStateOpenedBy(opener, start_index,
+                                                           true));
+  EXPECT_EQ(3,
+            web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
+                                                           true));
 }
 
 TEST_F(WebStateListTest, OpenersChildsBeforeOpener) {

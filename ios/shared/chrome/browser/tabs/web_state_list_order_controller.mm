@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
 
 #include <cstdint>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 
 WebStateListOrderController::WebStateListOrderController(
     WebStateList* web_state_list)

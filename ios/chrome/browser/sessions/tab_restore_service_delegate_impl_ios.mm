@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/web_state/web_state_impl.h"

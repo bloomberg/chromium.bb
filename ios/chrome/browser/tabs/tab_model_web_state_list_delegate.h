@@ -7,7 +7,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
 
 @class TabModel;
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("web_state_list") {
+source_set("tabs") {
   sources = [
     "web_state_list.h",
     "web_state_list.mm",
@@ -38,7 +38,7 @@ source_set("test_support") {
     "fake_web_state_list_delegate.mm",
   ]
   deps = [
-    ":web_state_list",
+    ":tabs",
     "//base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -54,8 +54,8 @@ source_set("unit_tests") {
     "web_state_opener_unittest.mm",
   ]
   deps = [
+    ":tabs",
     ":test_support",
-    ":web_state_list",
     "//base",
     "//ios/web",
     "//ios/web:test_support",

@@ -16,7 +16,7 @@ source_set("browser_list") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/ssl",
-    "//ios/chrome/browser/web_state_list",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/shared/chrome/browser/ui/commands",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

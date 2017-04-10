@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_serialization.h"
 
 #include <memory>
 #include <unordered_map>
@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 

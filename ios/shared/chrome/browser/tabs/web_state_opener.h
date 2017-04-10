@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_OPENER_H_
-#define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_OPENER_H_
+#ifndef IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_OPENER_H_
+#define IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_OPENER_H_
 
 namespace web {
 class WebState;
@@ -31,4 +31,4 @@ struct WebStateOpener {
   WebStateOpener() = delete;
 };
 
-#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_OPENER_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_OPENER_H_

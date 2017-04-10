@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

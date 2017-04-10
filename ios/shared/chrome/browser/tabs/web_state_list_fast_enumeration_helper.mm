@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web_state_list/web_state_list_fast_enumeration_helper.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_fast_enumeration_helper.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

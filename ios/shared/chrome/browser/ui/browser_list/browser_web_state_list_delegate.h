@@ -6,7 +6,7 @@
 #define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_WEB_STATE_LIST_DELEGATE_H_
 
 #include "base/macros.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
 
 class Browser;
 
