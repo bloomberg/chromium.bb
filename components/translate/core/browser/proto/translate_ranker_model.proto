@@ -32,7 +32,7 @@ message TranslateRankerModel {
     // each contain an element 'UNKNOWN' to use in case the key is not
     // found in the map.
     map<string, float> source_language_weight = 5;
-    map<string, float> dest_language_weight = 6;
+    map<string, float> target_language_weight = 6;
     map<string, float> country_weight = 7;
     map<string, float> locale_weight = 8;
   }

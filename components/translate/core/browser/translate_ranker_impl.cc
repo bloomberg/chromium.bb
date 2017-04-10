@@ -259,7 +259,7 @@ double TranslateRankerImpl::CalculateScore(
       (features.denied_ratio * logit.decline_ratio_weight()) +
       (features.ignored_ratio * logit.ignore_ratio_weight()) +
       ScoreComponent(logit.source_language_weight(), features.src_lang) +
-      ScoreComponent(logit.dest_language_weight(), features.dst_lang) +
+      ScoreComponent(logit.target_language_weight(), features.dst_lang) +
       ScoreComponent(logit.country_weight(), features.country) +
       ScoreComponent(logit.locale_weight(), features.app_locale);
 

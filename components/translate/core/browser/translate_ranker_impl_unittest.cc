@@ -152,8 +152,8 @@ std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
   src_language_weight["fr"] = 0.05f;
   src_language_weight["zh"] = 0.06f;
 
-  auto& dest_language_weight = *details->mutable_dest_language_weight();
-  dest_language_weight["UNKNOWN"] = 0.00f;
+  auto& target_language_weight = *details->mutable_target_language_weight();
+  target_language_weight["UNKNOWN"] = 0.00f;
 
   auto& country_weight = *details->mutable_country_weight();
   country_weight["de"] = 0.07f;
