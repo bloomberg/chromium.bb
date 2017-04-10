@@ -660,8 +660,8 @@ void HttpStreamFactoryImpl::JobController::
   }
 }
 
-const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog()
-    const {
+const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog(
+    Job* job) const {
   return &net_log_;
 }
 
@@ -773,11 +773,10 @@ void HttpStreamFactoryImpl::JobController::CancelJobs() {
 
 void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
   DCHECK(request_);
-  DCHECK(bound_job_);
   RemoveRequestFromSpdySessionRequestMap();
 
+  DCHECK(bound_job_);
   if (bound_job_->job_type() == MAIN && alternative_job_) {
-    DCHECK(!for_websockets());
     alternative_job_->Orphan();
   } else if (bound_job_->job_type() == ALTERNATIVE && main_job_) {
     // Orphan main job.
@@ -790,7 +789,6 @@ void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
       DCHECK(alternative_job_);
       main_job_.reset();
     } else {
-      DCHECK(!for_websockets());
       main_job_->Orphan();
     }
   }
