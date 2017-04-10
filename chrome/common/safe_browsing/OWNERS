@@ -1,7 +1,7 @@
 jialiul@chromium.org
 mattm@chromium.org
 nparker@chromium.org
-shess@chromium.org
+vakh@chromium.org
 
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
