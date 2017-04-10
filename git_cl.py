@@ -2958,12 +2958,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     reviewers = change_desc.get_reviewers()
     if reviewers:
-      # TODO(tandrii): remove this horrible hack once (Poly)Gerrit fixes their
-      # side for real (b/34702620).
-      def clean_invisible_chars(email):
-        return email.decode('unicode_escape').encode('ascii', 'ignore')
-      refspec_opts.extend('r=' + clean_invisible_chars(email).strip()
-                          for email in reviewers)
+      refspec_opts.extend('r=' + email.strip() for email in reviewers)
 
     if options.private:
       refspec_opts.append('draft')
