@@ -334,6 +334,19 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   form.fields.push_back(field);
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->ShouldBeParsed());
+
+  // There are 2 fields, one of which is password, and this is an upload of
+  // a sign-in form submission, should be parsed.
+  form.fields.clear();
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+  field.name = ASCIIToUTF16("pw");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+  form_structure.reset(new FormStructure(form));
+  form_structure->set_is_signin_upload(true);
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 }
 
 // Tests that ShouldBeParsed returns true for a form containing less than three

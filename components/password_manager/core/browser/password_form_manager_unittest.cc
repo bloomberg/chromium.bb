@@ -58,6 +58,7 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SaveArgPointee;
 using ::testing::UnorderedElementsAre;
+using ::testing::WithArg;
 
 namespace password_manager {
 
@@ -253,6 +254,17 @@ class MockAutofillManager : public autofill::AutofillManager {
     set_download_manager(manager);
   }
 
+  // Workaround for std::unique_ptr<> lacking a copy constructor.
+  void StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
+                          const base::TimeTicks& timestamp,
+                          bool observed_submission) {
+    StartUploadProcessPtr(form_structure.release(), timestamp,
+                          observed_submission);
+  }
+
+  MOCK_METHOD3(StartUploadProcessPtr,
+               void(FormStructure*, const base::TimeTicks&, bool));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
 };
@@ -323,6 +335,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<MockPasswordManagerDriver> driver_;
 };
+
+ACTION_P(SaveToUniquePtr, scoped) {
+  scoped->reset(arg0);
+}
 
 }  // namespace
 
@@ -3096,6 +3112,72 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Remove) {
   EXPECT_CALL(*new_fetcher, AddConsumer(&form_manager));
   EXPECT_CALL(old_fetcher, RemoveConsumer(&form_manager));
   form_manager.GrabFetcher(std::move(new_fetcher));
+}
+
+TEST_F(PasswordFormManagerTest, UploadSignInForm_WithAutofillTypes) {
+  // For newly saved passwords on a sign-in form, upload an autofill vote for a
+  // username field and a autofill::PASSWORD vote for a password field.
+  autofill::FormFieldData field;
+  field.name = ASCIIToUTF16("Email");
+  field.form_control_type = "text";
+  observed_form()->form_data.fields.push_back(field);
+
+  field.name = ASCIIToUTF16("Passwd");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  PasswordForm form_to_save(*observed_form());
+  form_to_save.preferred = true;
+  form_to_save.username_value = ASCIIToUTF16("test@gmail.com");
+  form_to_save.password_value = ASCIIToUTF16("password");
+
+  std::unique_ptr<FormStructure> uploaded_form_structure;
+  auto* mock_autofill_manager =
+      client()->mock_driver()->mock_autofill_manager();
+  EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, true))
+      .WillOnce(WithArg<0>(SaveToUniquePtr(&uploaded_form_structure)));
+  form_manager.ProvisionallySave(
+      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+
+  ASSERT_EQ(2u, uploaded_form_structure->field_count());
+  autofill::ServerFieldTypeSet expected_types = {autofill::PASSWORD};
+  EXPECT_EQ(expected_types,
+            uploaded_form_structure->field(1)->possible_types());
+}
+
+// Checks that there is no upload on saving a password on a password form only
+// with 1 field.
+TEST_F(PasswordFormManagerTest, NoUploadsForSubmittedFormWithOnlyOneField) {
+  autofill::FormFieldData field;
+  field.name = ASCIIToUTF16("Passwd");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  PasswordForm form_to_save(*observed_form());
+  form_to_save.preferred = true;
+  form_to_save.password_value = ASCIIToUTF16("password");
+
+  auto* mock_autofill_manager =
+      client()->mock_driver()->mock_autofill_manager();
+  EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, _)).Times(0);
+  form_manager.ProvisionallySave(
+      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
 }
 
 }  // namespace password_manager

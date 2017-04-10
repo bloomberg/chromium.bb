@@ -5899,4 +5899,48 @@ TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
   }
 }
 
+// Test that a sign-in form submission sends an upload with types matching the
+// fields.
+TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
+  // Set up our form data (it's already filled out with user data).
+  FormData form;
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  std::vector<ServerFieldTypeSet> expected_types;
+  ServerFieldTypeSet types;
+
+  FormFieldData field;
+  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  types.insert(EMAIL_ADDRESS);
+  expected_types.push_back(types);
+
+  test::CreateTestFormField("Password", "pw", "secret", "password", &field);
+  form.fields.push_back(field);
+  types.clear();
+  types.insert(PASSWORD);
+  expected_types.push_back(types);
+
+  // We will expect these types in the upload and no observed submission. (the
+  // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->set_expected_observed_submission(true);
+  autofill_manager_->ResetRunLoop();
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+  form_structure->set_is_signin_upload(true);
+  form_structure->field(1)->set_possible_types({autofill::PASSWORD});
+
+  std::string signature = form_structure->FormSignatureAsStr();
+  autofill_manager_->StartUploadProcess(std::move(form_structure),
+                                        base::TimeTicks::Now(), true);
+
+  // Wait for upload to complete (will check expected types as well).
+  autofill_manager_->WaitForAsyncUploadProcess();
+
+  EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
+}
+
 }  // namespace autofill

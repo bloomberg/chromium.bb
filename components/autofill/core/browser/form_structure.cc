@@ -309,7 +309,8 @@ FormStructure::FormStructure(const FormData& form)
       has_password_field_(false),
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
-      all_fields_are_passwords_(true) {
+      all_fields_are_passwords_(true),
+      is_signin_upload_(false) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -613,7 +614,7 @@ bool FormStructure::ShouldBeParsed() const {
   if (active_field_count() < kRequiredFieldsForPredictionRoutines &&
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
-      !has_author_specified_types_) {
+      !is_signin_upload_ && !has_author_specified_types_) {
     return false;
   }
 

@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 
+using autofill::FormData;
 using autofill::FormStructure;
 
 namespace password_manager {
@@ -439,6 +440,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Send appropriate votes based on what is currently being saved.
   void SendVotesOnSave();
+
+  // Send a vote for sign-in forms with autofill types for a username field.
+  void SendSignInVote(const FormData& form_data);
 
   // Sets |user_action_| and records some metrics.
   void SetUserAction(UserAction user_action);

@@ -197,6 +197,14 @@ void LabelFields(const FieldTypeMap& field_types,
   }
 }
 
+// Check whether |form_data| corresponds to a 2 field form with 1 text field and
+// 1 password field. Such form is likely sign-in form.
+bool IsSignInSubmission(const FormData& form_data) {
+  return form_data.fields.size() == 2 &&
+         form_data.fields[0].form_control_type == "text" &&
+         form_data.fields[1].form_control_type == "password";
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -1290,6 +1298,11 @@ void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;
 
+  if (IsSignInSubmission(pending_credentials_.form_data)) {
+    SendSignInVote(pending_credentials_.form_data);
+    return;
+  }
+
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
   // Credentials that have been previously used (e.g., PSL matches) are checked
@@ -1306,6 +1319,20 @@ void PasswordFormManager::SendVotesOnSave() {
     }
   } else
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
+}
+
+void PasswordFormManager::SendSignInVote(const FormData& form_data) {
+  autofill::AutofillManager* autofill_manager =
+      client_->GetAutofillManagerForMainFrame();
+  if (!autofill_manager)
+    return;
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form_data));
+  form_structure->set_is_signin_upload(true);
+  DCHECK(form_structure->ShouldBeCrowdsourced());
+  DCHECK_EQ(2u, form_structure->field_count());
+  form_structure->field(1)->set_possible_types({autofill::PASSWORD});
+  autofill_manager->StartUploadProcess(std::move(form_structure),
+                                       base::TimeTicks::Now(), true);
 }
 
 void PasswordFormManager::SetUserAction(UserAction user_action) {

@@ -2007,7 +2007,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     AutofillField* field = submitted_form->field(i);
-    ServerFieldTypeSet matching_types;
+    ServerFieldTypeSet matching_types = field->possible_types();
 
     base::string16 value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);

@@ -191,9 +191,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Will send an upload based on the |form_structure| data and the local
   // Autofill profile data. |observed_submission| is specified if the upload
   // follows an observed submission event.
-  void StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
-                          const base::TimeTicks& timestamp,
-                          bool observed_submission);
+  virtual void StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
+                                  const base::TimeTicks& timestamp,
+                                  bool observed_submission);
 
   // Update the pending form with |form|, possibly processing the current
   // pending form for upload.
