@@ -14,6 +14,7 @@
           "autofill::mojom::AutofillAgent",
           "autofill::mojom::PasswordAutofillAgent",
           "autofill::mojom::PasswordGenerationAgent",
+          "blink::mojom::document_metadata::CopylessPaste",
           "chrome::mojom::ImageContextMenuRenderer",
           "chrome::mojom::InsecureContentRenderer",
           "chrome::mojom::ThumbnailCapturer",

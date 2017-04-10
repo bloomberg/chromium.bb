@@ -1248,6 +1248,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             @Override
+            public void onPageLoadFinished(final Tab tab) {
+                AppIndexingUtil.extractCopylessPasteMetadata(tab);
+            }
+
+            @Override
             public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
                     boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
                     boolean isFragmentNavigation, Integer pageTransition, int errorCode,
