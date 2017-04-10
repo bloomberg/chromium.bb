@@ -23,7 +23,7 @@ size_t ComputeCommonPrefixLength(const String& str1, const String& str2) {
   const size_t max_common_prefix_length =
       std::min(str1.length(), str2.length());
   ForwardCodePointStateMachine code_point_state_machine;
-  int result = 0;
+  size_t result = 0;
   for (size_t index = 0; index < max_common_prefix_length; ++index) {
     if (str1[index] != str2[index])
       return result;
