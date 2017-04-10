@@ -29,6 +29,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/manual_constructor.h"
 #include "base/strings/string16.h"
@@ -48,7 +49,7 @@ using BinaryValue = Value;
 // See the file-level comment above for more information.
 class BASE_EXPORT Value {
  public:
-  using DictStorage = std::map<std::string, std::unique_ptr<Value>>;
+  using DictStorage = base::flat_map<std::string, std::unique_ptr<Value>>;
   using ListStorage = std::vector<std::unique_ptr<Value>>;
 
   enum class Type {
@@ -94,6 +95,8 @@ class BASE_EXPORT Value {
 
   explicit Value(const std::vector<char>& in_blob);
   explicit Value(std::vector<char>&& in_blob) noexcept;
+
+  explicit Value(DictStorage&& in_dict) noexcept;
 
   Value& operator=(const Value& that);
   Value& operator=(Value&& that) noexcept;
