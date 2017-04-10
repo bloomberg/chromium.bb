@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "content/shell/test_runner/mock_webrtc_data_channel_handler.h"
 #include "content/shell/test_runner/mock_webrtc_dtmf_sender_handler.h"
 #include "content/shell/test_runner/test_interfaces.h"
@@ -23,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebRTCRtpContributingSource.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpReceiver.h"
 #include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
@@ -237,18 +239,81 @@ class MockWebRTCStatsReport : public blink::WebRTCStatsReport {
   size_t i_;
 };
 
+class MockWebRTCRtpContributingSource
+    : public blink::WebRTCRtpContributingSource {
+ public:
+  MockWebRTCRtpContributingSource(
+      blink::WebRTCRtpContributingSourceType source_type,
+      double timestamp_ms,
+      uint32_t source)
+      : source_type_(source_type),
+        timestamp_ms_(timestamp_ms),
+        source_(source) {}
+  ~MockWebRTCRtpContributingSource() override {}
+
+  blink::WebRTCRtpContributingSourceType SourceType() const override {
+    return source_type_;
+  }
+  double TimestampMs() const override { return timestamp_ms_; }
+  uint32_t Source() const override { return source_; }
+
+ private:
+  blink::WebRTCRtpContributingSourceType source_type_;
+  double timestamp_ms_;
+  uint32_t source_;
+};
+
 class MockWebRTCRtpReceiver : public blink::WebRTCRtpReceiver {
  public:
   MockWebRTCRtpReceiver(uintptr_t id, const blink::WebMediaStreamTrack& track)
-      : id_(id), track_(track) {}
+      : id_(id), track_(track), num_packets_(0) {}
   ~MockWebRTCRtpReceiver() override {}
 
   uintptr_t Id() const override { return id_; }
   const blink::WebMediaStreamTrack& Track() const override { return track_; }
 
+  // Every time called, mocks that a new packet has arrived updating the i-th
+  // CSRC such that the |kNumCSRCsActive| latest updated CSRCs are returned. "i"
+  // is the sequence number modulo number of CSRCs. Also returns an SSRC with
+  // the latest timestamp. For example, if 2 out of 3 CSRCs should be active,
+  // this will return the following "(type, source, timestamp)":
+  // - 1st call: { (CSRC, 0, 0), (SSRC, 0, 0) }
+  // - 2nd call: { (CSRC, 0, 0000), (CSRC, 1, 5000), (SSRC, 0, 5000) }
+  // - 3rd call: { (CSRC, 1, 5000), (CSRC, 2, 10000), (SSRC, 0, 10000) }
+  // - 4th call: { (CSRC, 2, 10000), (CSRC, 0, 15000), (SSRC, 0, 15000) }
+  // RTCPeerConnection-getReceivers.html depends on this behavior.
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
+  GetSources() override {
+    ++num_packets_;
+    size_t num_csrcs = std::min(kNumCSRCsActive, num_packets_);
+    blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
+        contributing_sources(num_csrcs + 1);
+    for (size_t i = 0; i < num_csrcs; ++i) {
+      size_t sequence_number = num_packets_ - num_csrcs + i;
+      contributing_sources[i] =
+          base::MakeUnique<MockWebRTCRtpContributingSource>(
+              blink::WebRTCRtpContributingSourceType::CSRC,
+              // Return value should include timestamps for the last 10 seconds,
+              // we pretend |10000.0 / kNumCSRCsActive| milliseconds have passed
+              // per packet in the sequence, starting from 0. This is not
+              // relative to any real clock.
+              sequence_number * 10000.0 / kNumCSRCsActive,
+              sequence_number % kNumCSRCs);
+    }
+    contributing_sources[num_csrcs] =
+        base::MakeUnique<MockWebRTCRtpContributingSource>(
+            blink::WebRTCRtpContributingSourceType::SSRC,
+            contributing_sources[num_csrcs - 1]->TimestampMs(), 0);
+    return contributing_sources;
+  }
+
  private:
+  const size_t kNumCSRCs = 3;
+  const size_t kNumCSRCsActive = 2;
+
   uintptr_t id_;
   blink::WebMediaStreamTrack track_;
+  size_t num_packets_;
 };
 
 }  // namespace

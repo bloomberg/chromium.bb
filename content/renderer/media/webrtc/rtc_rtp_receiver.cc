@@ -5,6 +5,8 @@
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "content/renderer/media/webrtc/rtc_rtp_contributing_source.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
 
 namespace content {
@@ -41,6 +43,17 @@ uintptr_t RTCRtpReceiver::Id() const {
 const blink::WebMediaStreamTrack& RTCRtpReceiver::Track() const {
   DCHECK(web_track_ == webrtc_track());
   return web_track_;
+}
+
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
+RTCRtpReceiver::GetSources() {
+  auto webrtc_sources = webrtc_rtp_receiver_->GetSources();
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>> sources(
+      webrtc_sources.size());
+  for (size_t i = 0; i < webrtc_sources.size(); ++i) {
+    sources[i] = base::MakeUnique<RTCRtpContributingSource>(webrtc_sources[i]);
+  }
+  return sources;
 }
 
 const webrtc::MediaStreamTrackInterface& RTCRtpReceiver::webrtc_track() const {
