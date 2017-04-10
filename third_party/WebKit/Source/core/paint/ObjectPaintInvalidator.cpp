@@ -382,10 +382,12 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
                                      EnclosingIntRect(dirty_rect));
   }
 
-  if (paint_invalidation_container.View()->UsesCompositing() &&
-      paint_invalidation_container.IsPaintInvalidationContainer()) {
-    SetBackingNeedsPaintInvalidationInRect(paint_invalidation_container,
-                                           dirty_rect, invalidation_reason);
+  auto* view = paint_invalidation_container.View();
+  if (view && view->UsesCompositing()) {
+    if (paint_invalidation_container.IsPaintInvalidationContainer()) {
+      SetBackingNeedsPaintInvalidationInRect(paint_invalidation_container,
+                                             dirty_rect, invalidation_reason);
+    }
   }
 }
 
