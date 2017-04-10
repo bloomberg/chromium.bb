@@ -819,6 +819,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
+        ['linux', 'amd'], bug=709351)
     self.Fail('deqp/functional/gles3/multisample.html',
         ['linux', 'amd'], bug=617290)
     self.Fail('deqp/data/gles3/shaders/conversions.html',
@@ -1044,9 +1046,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
-    self.Fail('conformance2/glsl3/' +
-        'vector-dynamic-indexing-swizzled-lvalue.html',
-        ['linux', ('amd', 0x6613)], bug=709874)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
