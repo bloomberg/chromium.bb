@@ -15,7 +15,7 @@
 @property(nonatomic, copy) NSString* userFullName;
 @property(nonatomic, copy) NSString* userEmail;
 
-+ (User*)parseListFromJSON:(NSMutableData*)data;
++ (UserInfo*)parseListFromJSON:(NSMutableData*)data;
 
 - (NSComparisonResult)compare:(UserInfo*)user;
 
