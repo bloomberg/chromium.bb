@@ -184,7 +184,7 @@ void PaymentRequestDialogView::ShowShippingProfileSheet() {
           &controller_map_),
       /* animate = */ true);
   if (observer_for_testing_)
-    observer_for_testing_->OnShippingSectionOpened();
+    observer_for_testing_->OnShippingAddressSectionOpened();
 }
 
 void PaymentRequestDialogView::ShowShippingOptionSheet() {
@@ -193,6 +193,8 @@ void PaymentRequestDialogView::ShowShippingOptionSheet() {
                            request_->spec(), request_->state(), this),
                        &controller_map_),
                    /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnShippingOptionSectionOpened();
 }
 
 void PaymentRequestDialogView::ShowCvcUnmaskPrompt(

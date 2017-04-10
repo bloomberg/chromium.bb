@@ -43,7 +43,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
     virtual void OnPaymentMethodOpened() = 0;
 
-    virtual void OnShippingSectionOpened() = 0;
+    virtual void OnShippingAddressSectionOpened() = 0;
+
+    virtual void OnShippingOptionSectionOpened() = 0;
 
     virtual void OnCreditCardEditorOpened() = 0;
 

@@ -178,6 +178,10 @@ void PaymentRequestSpec::UpdateSelectedShippingOption() {
       });
   if (selected_shipping_option_it != details().shipping_options.rend()) {
     selected_shipping_option_ = selected_shipping_option_it->get();
+  } else {
+    // It's possible that there is no selected shipping option.
+    // TODO(crbug.com/710004): Show an error in this case.
+    selected_shipping_option_ = nullptr;
   }
 }
 

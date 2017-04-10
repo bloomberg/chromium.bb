@@ -80,7 +80,8 @@ class PaymentRequestBrowserTestBase
   void OnDialogOpened() override;
   void OnOrderSummaryOpened() override;
   void OnPaymentMethodOpened() override;
-  void OnShippingSectionOpened() override;
+  void OnShippingAddressSectionOpened() override;
+  void OnShippingOptionSectionOpened() override;
   void OnCreditCardEditorOpened() override;
   void OnShippingAddressEditorOpened() override;
   void OnBackNavigation() override;
@@ -105,7 +106,8 @@ class PaymentRequestBrowserTestBase
   // associated action to happen.
   void OpenOrderSummaryScreen();
   void OpenPaymentMethodScreen();
-  void OpenShippingSectionScreen();
+  void OpenShippingAddressSectionScreen();
+  void OpenShippingOptionSectionScreen();
   void OpenCreditCardEditorScreen();
   void OpenShippingAddressEditorScreen();
   void ClickOnBackArrow();
@@ -182,7 +184,8 @@ class PaymentRequestBrowserTestBase
     DIALOG_CLOSED,
     ORDER_SUMMARY_OPENED,
     PAYMENT_METHOD_OPENED,
-    SHIPPING_SECTION_OPENED,
+    SHIPPING_ADDRESS_SECTION_OPENED,
+    SHIPPING_OPTION_SECTION_OPENED,
     CREDIT_CARD_EDITOR_OPENED,
     SHIPPING_ADDRESS_EDITOR_OPENED,
     BACK_NAVIGATION,

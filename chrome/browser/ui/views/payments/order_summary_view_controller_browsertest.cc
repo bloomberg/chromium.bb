@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
 
   // Go to the shipping address screen and select the first address (MI state).
   ClickOnBackArrow();
-  OpenShippingSectionScreen();
+  OpenShippingAddressSectionScreen();
   ResetEventObserverForSequence(std::list<DialogEvent>{
       DialogEvent::BACK_NAVIGATION, DialogEvent::SPEC_DONE_UPDATING});
   ClickOnChildInListViewAndWait(
@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
   // Michigan address is selected and has standard shipping.
-  std::vector<base::string16> shipping_address_labels =
-      GetThreeLineLabelValues(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION);
+  std::vector<base::string16> shipping_address_labels = GetThreeLineLabelValues(
+      DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
   EXPECT_EQ(base::ASCIIToUTF16("Jane A. Smith"), shipping_address_labels[0]);
   EXPECT_EQ(
       base::ASCIIToUTF16("ACME, 123 Main Street, Unit 1, Greensdale, MI 48838"),
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
 
   // Go to the shipping address screen and select the second address (CA state).
   ClickOnBackArrow();
-  OpenShippingSectionScreen();
+  OpenShippingAddressSectionScreen();
   ResetEventObserverForSequence(std::list<DialogEvent>{
       DialogEvent::BACK_NAVIGATION, DialogEvent::SPEC_DONE_UPDATING});
   ClickOnChildInListViewAndWait(
@@ -95,8 +95,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
   // California address is selected and has free shipping.
-  shipping_address_labels =
-      GetThreeLineLabelValues(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION);
+  shipping_address_labels = GetThreeLineLabelValues(
+      DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
   EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), shipping_address_labels[0]);
   EXPECT_EQ(base::ASCIIToUTF16(
                 "Underworld, 666 Erebus St., Apt 8, Elysium, CA 91111"),

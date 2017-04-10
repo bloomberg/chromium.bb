@@ -62,8 +62,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
                          DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)));
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)));
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION)));
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
 }
@@ -145,8 +148,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                          DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)));
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION)));
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
 }

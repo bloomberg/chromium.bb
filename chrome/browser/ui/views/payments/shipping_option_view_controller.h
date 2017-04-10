@@ -8,18 +8,23 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_item_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/payments/content/payment_request_spec.h"
 
 namespace payments {
 
-class PaymentRequestSpec;
 class PaymentRequestState;
 
-class ShippingOptionViewController : public PaymentRequestSheetController {
+class ShippingOptionViewController : public PaymentRequestSheetController,
+                                     public PaymentRequestSpec::Observer {
  public:
   ShippingOptionViewController(PaymentRequestSpec* spec,
                                PaymentRequestState* state,
                                PaymentRequestDialogView* dialog);
   ~ShippingOptionViewController() override;
+
+  // PaymentRequestSpec::Observer:
+  void OnInvalidSpecProvided() override {}
+  void OnSpecUpdated() override;
 
  private:
   // PaymentRequestSheetController:

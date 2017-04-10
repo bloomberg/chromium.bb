@@ -111,9 +111,14 @@ void PaymentRequestBrowserTestBase::OnPaymentMethodOpened() {
     event_observer_->Observe(DialogEvent::PAYMENT_METHOD_OPENED);
 }
 
-void PaymentRequestBrowserTestBase::OnShippingSectionOpened() {
+void PaymentRequestBrowserTestBase::OnShippingAddressSectionOpened() {
   if (event_observer_)
-    event_observer_->Observe(DialogEvent::SHIPPING_SECTION_OPENED);
+    event_observer_->Observe(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
+}
+
+void PaymentRequestBrowserTestBase::OnShippingOptionSectionOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnCreditCardEditorOpened() {
@@ -206,12 +211,18 @@ void PaymentRequestBrowserTestBase::OpenPaymentMethodScreen() {
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION);
 }
 
-void PaymentRequestBrowserTestBase::OpenShippingSectionScreen() {
-  ResetEventObserver(DialogEvent::SHIPPING_SECTION_OPENED);
+void PaymentRequestBrowserTestBase::OpenShippingAddressSectionScreen() {
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION);
+  ClickOnDialogViewAndWait(
+      DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
 }
 
+void PaymentRequestBrowserTestBase::OpenShippingOptionSectionScreen() {
+  ResetEventObserver(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION);
+}
 void PaymentRequestBrowserTestBase::OpenCreditCardEditorScreen() {
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
 

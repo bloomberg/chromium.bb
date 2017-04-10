@@ -417,7 +417,7 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
   section->set_tag(
       static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON));
   section->set_id(
-      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION));
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION));
   return section;
 }
 
