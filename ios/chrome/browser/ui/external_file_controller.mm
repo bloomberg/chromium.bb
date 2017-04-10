@@ -7,11 +7,14 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/web/public/web_view_creation_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -30,20 +33,19 @@ const CFTimeInterval kSecondsPerDay = 60 * 60 * 24;
 @end
 
 @implementation ExternalFileController {
-  base::scoped_nsobject<WKWebView> _webView;
+  WKWebView* _webView;
 }
 
 - (instancetype)initWithURL:(const GURL&)URL
                browserState:(web::BrowserState*)browserState {
   self = [super initWithURL:URL];
   if (self) {
-    _webView.reset([web::BuildWKWebView(CGRectZero, browserState) retain]);
+    _webView = web::BuildWKWebView(CGRectZero, browserState);
     [_webView setBackgroundColor:[UIColor whiteColor]];
     [_webView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                    UIViewAutoresizingFlexibleHeight)];
     [_webView setUserInteractionEnabled:YES];
-    base::scoped_nsobject<UIView> view(
-        [[UIView alloc] initWithFrame:CGRectZero]);
+    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
     self.view = view;
     [self.view addSubview:_webView];
     [self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
@@ -116,7 +118,6 @@ const CFTimeInterval kSecondsPerDay = 60 * 60 * 24;
 
 - (void)dealloc {
   [_webView removeFromSuperview];
-  [super dealloc];
 }
 
 @end

@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/open_in_toolbar.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -32,9 +35,9 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 
 @interface OpenInToolbar () {
   // Backing object for |self.openButton|.
-  base::scoped_nsobject<MDCButton> _openButton;
+  MDCButton* _openButton;
   // Backing object for |self.topBorder|.
-  base::scoped_nsobject<UIView> _topBorder;
+  UIView* _topBorder;
 }
 
 // The "Open in..." button that's hooked up with the target and action passed
@@ -72,22 +75,22 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 
 - (MDCButton*)openButton {
   if (!_openButton) {
-    _openButton.reset([[MDCFlatButton alloc] init]);
+    _openButton = [[MDCFlatButton alloc] init];
     [_openButton setCustomTitleColor:[[MDCPalette cr_bluePalette] tint500]];
     [_openButton setTitle:l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN)
                  forState:UIControlStateNormal];
     [_openButton sizeToFit];
   }
-  return _openButton.get();
+  return _openButton;
 }
 
 - (UIView*)topBorder {
   if (!_topBorder) {
-    _topBorder.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _topBorder = [[UIView alloc] initWithFrame:CGRectZero];
     [_topBorder setBackgroundColor:UIColorFromRGB(kTopBorderColor,
                                                   kTopBorderTransparency)];
   }
-  return _topBorder.get();
+  return _topBorder;
 }
 
 #pragma mark Layout

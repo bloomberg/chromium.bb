@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
@@ -19,6 +19,10 @@
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 NSString* const kSetupForTestingWillCloseAllTabsNotification =
     @"kSetupForTestingWillCloseAllTabsNotification";
@@ -67,21 +71,20 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   // full screen.
   uint fullScreenLock_;
   // CRWWebViewProxy object allows web view manipulations.
-  base::scoped_nsprotocol<id<CRWWebViewProxy>> webViewProxy_;
-  base::mac::ObjCPropertyReleaser propertyReleaser_FullScreenController_;
+  id<CRWWebViewProxy> webViewProxy_;
 }
 
 // Access to the UIWebView's UIScrollView.
-@property(nonatomic, readonly) CRWWebViewScrollViewProxy* scrollViewProxy;
+@property(weak, nonatomic, readonly) CRWWebViewScrollViewProxy* scrollViewProxy;
 // The navigation controller of the page.
 @property(nonatomic, readonly, assign) NavigationManager* navigationManager;
 // The gesture recognizer set on the scrollview to detect tap. Must be readwrite
 // for property releaser to work.
-@property(nonatomic, readwrite, retain)
+@property(nonatomic, readwrite, strong)
     UITapGestureRecognizer* userInteractionGestureRecognizer;
 // The delegate responsible for providing the header height and moving the
 // header.
-@property(nonatomic, readonly) id<FullScreenControllerDelegate> delegate;
+@property(weak, nonatomic, readonly) id<FullScreenControllerDelegate> delegate;
 // Current height of the header, in points. This is a pass-through method that
 // fetches the header height from the FullScreenControllerDelegate.
 @property(nonatomic, readonly) CGFloat headerHeight;
@@ -190,15 +193,9 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (id)initWithDelegate:(id<FullScreenControllerDelegate>)delegate
      navigationManager:(NavigationManager*)navigationManager
              sessionID:(NSString*)sessionID {
-  if (!gEnabledForTests) {
-    propertyReleaser_FullScreenController_.Init(self,
-                                                [FullScreenController class]);
-    [self release];
+  if (!gEnabledForTests)
     return nil;
-  }
   if ((self = [super init])) {
-    propertyReleaser_FullScreenController_.Init(self,
-                                                [FullScreenController class]);
     DCHECK(sessionID);
     DCHECK(delegate);
     delegate_ = delegate;
@@ -316,7 +313,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (CRWWebViewScrollViewProxy*)scrollViewProxy {
@@ -700,7 +696,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
              controller:(CRWWebController*)webController {
   DCHECK([webViewProxy scrollViewProxy]);
-  webViewProxy_.reset([webViewProxy retain]);
+  webViewProxy_ = webViewProxy;
   [[webViewProxy scrollViewProxy] addObserver:self];
 }
 

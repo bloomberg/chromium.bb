@@ -8,7 +8,6 @@
 
 #include "base/ios/device_util.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -28,6 +27,10 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/base/page_transition_types.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // ID of the URLFetcher responsible for prefetches.
 const int kPreloadControllerURLFetcherID = 1;
@@ -102,7 +105,7 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   }
 
  private:
-  PreloadController* owner_;  // weak
+  __weak PreloadController* owner_;
 };
 
 @implementation PreloadController {
@@ -156,8 +159,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   // Number of successful prerenders (i.e. the user viewed the prerendered page)
   // during the lifetime of this controller.
   int successfulPrerendersPerSessionCount_;
-
-  id<PreloadControllerDelegate> delegate_;  // weak
 }
 
 @synthesize prerenderedURL = prerenderedURL_;
@@ -205,7 +206,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
                        successfulPrerendersPerSessionCount_);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self cancelPrerender];
-  [super dealloc];
 }
 
 - (void)prerenderURL:(const GURL&)url

@@ -12,7 +12,7 @@
 @interface PageNotAvailableController : NativeContentController
 
 // Property to allow setting a custom description for the content.
-@property(nonatomic, assign) NSString* descriptionText;
+@property(nonatomic, copy) NSString* descriptionText;
 
 // Designated initializer.
 - (instancetype)initWithUrl:(const GURL&)url NS_DESIGNATED_INITIALIZER;

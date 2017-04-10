@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/ui/fade_truncated_label.h"
 
 #include <algorithm>
-#include "base/mac/objc_property_releaser.h"
+
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #import "ui/gfx/ios/uikit_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Animation key used for frame animations.
@@ -16,15 +20,13 @@ NSString* const kFadeTruncatedLabelAnimationKey =
     @"FadeTruncatedLabelAnimationKey";
 }
 
-@interface FadeTruncatedLabel () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_FadeTruncatedLabel;
-}
+@interface FadeTruncatedLabel ()
 
 // Layer used to apply fade truncation to label.
-@property(nonatomic, retain) CAGradientLayer* maskLayer;
+@property(nonatomic, strong) CAGradientLayer* maskLayer;
 
 // Temporary label used during animations.
-@property(nonatomic, retain) UILabel* animationLabel;
+@property(nonatomic, strong) UILabel* animationLabel;
 
 // Returns the percentage of the label's width at which to begin the fade
 // gradient.
@@ -42,9 +44,6 @@ NSString* const kFadeTruncatedLabelAnimationKey =
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    // Initialize property releaser.
-    _propertyReleaser_FadeTruncatedLabel.Init(self, [FadeTruncatedLabel class]);
-
     // Set background color and line break mode.
     self.backgroundColor = [UIColor clearColor];
     self.lineBreakMode = NSLineBreakByClipping;
@@ -101,8 +100,8 @@ NSString* const kFadeTruncatedLabelAnimationKey =
   CGSize animationTextSize =
       CGSizeMake(std::max(beginFrame.size.width, endFrame.size.width),
                  std::max(beginFrame.size.height, endFrame.size.height));
-  self.animationLabel = [[[UILabel alloc]
-      initWithFrame:{CGPointZero, animationTextSize}] autorelease];
+  self.animationLabel =
+      [[UILabel alloc] initWithFrame:{CGPointZero, animationTextSize}];
   self.animationLabel.text = self.text;
   self.animationLabel.textColor = self.textColor;
   self.animationLabel.font = self.font;

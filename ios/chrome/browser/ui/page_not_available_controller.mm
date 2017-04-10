@@ -6,14 +6,17 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Top padding for |self.titleLabel|.
@@ -33,14 +36,13 @@ const CGFloat kDescriptionViewFontSize = 17.0;
 }
 
 @interface PageNotAvailableController () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_PageNotAvailableController;
 }
 
 // The title label displayed centered at the top of the screen.
-@property(nonatomic, retain) UILabel* titleLabel;
+@property(nonatomic, strong) UILabel* titleLabel;
 
 // TextView containing a detailed description of the problem.
-@property(nonatomic, retain) UITextView* descriptionView;
+@property(nonatomic, strong) UITextView* descriptionView;
 
 @end
 
@@ -53,9 +55,6 @@ const CGFloat kDescriptionViewFontSize = 17.0;
 - (instancetype)initWithUrl:(const GURL&)url {
   self = [super initWithNibName:nil url:url];
   if (self) {
-    _propertyReleaser_PageNotAvailableController.Init(
-        self, [PageNotAvailableController class]);
-
     // Use the host as the page title, unless the URL has a custom scheme.
     if (self.url.SchemeIsHTTPOrHTTPS()) {
       self.title = base::SysUTF16ToNSString(
@@ -72,8 +71,7 @@ const CGFloat kDescriptionViewFontSize = 17.0;
 
     // |self.view| setup.
     CGRect windowBounds = [UIApplication sharedApplication].keyWindow.bounds;
-    base::scoped_nsobject<UIView> view(
-        [[UIView alloc] initWithFrame:windowBounds]);
+    UIView* view = [[UIView alloc] initWithFrame:windowBounds];
     [view setBackgroundColor:[UIColor whiteColor]];
     [view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                UIViewAutoresizingFlexibleHeight)];
@@ -123,8 +121,8 @@ const CGFloat kDescriptionViewFontSize = 17.0;
 }
 
 - (void)setDescriptionText:(NSString*)descriptionText {
-  _descriptionText = descriptionText;
-  _descriptionView.text = descriptionText;
+  _descriptionText = [descriptionText copy];
+  _descriptionView.text = _descriptionText;
 }
 
 @end

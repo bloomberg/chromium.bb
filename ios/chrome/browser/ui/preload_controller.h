@@ -51,7 +51,7 @@ extern const int kPreloadControllerURLFetcherID;
 // The URL of the currently prefetched content.  Empty if there is no prefetched
 // content.
 @property(nonatomic, readonly, assign) GURL prefetchedURL;
-@property(nonatomic, assign) id<PreloadControllerDelegate> delegate;
+@property(nonatomic, weak) id<PreloadControllerDelegate> delegate;
 
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;

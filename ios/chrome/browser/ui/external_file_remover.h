@@ -46,7 +46,7 @@ class ExternalFileRemover : public sessions::TabRestoreServiceObserver {
   sessions::TabRestoreService* tabRestoreService_;
   // BrowserViewController used to get the referenced files. Must outlive this
   // object.
-  BrowserViewController* bvc_;
+  __unsafe_unretained BrowserViewController* bvc_;
   // Used to ensure |Remove()| is not run when this object is destroyed.
   base::WeakPtrFactory<ExternalFileRemover> weak_ptr_factory_;
   // Loads the |tabRestoreService_| if necessary. Removes all files received

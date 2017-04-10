@@ -5,11 +5,10 @@
 #import "ios/chrome/browser/ui/open_in_controller.h"
 
 #include "base/files/file_path.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/location.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/mac/objc_property_releaser.h"
+
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -29,6 +28,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The path in the temp directory containing documents that are to be opened in
@@ -64,7 +67,7 @@ const CGFloat kOverlayedViewLabelBottomMargin = 60;
 @interface OpenInController () {
   // AlertCoordinator for showing an alert if no applications were found to open
   // the current document.
-  base::scoped_nsobject<AlertCoordinator> _alertCoordinator;
+  AlertCoordinator* _alertCoordinator;
 }
 
 // URLFetcher delegate method called when |fetcher_| completes a request.
@@ -149,7 +152,7 @@ class OpenInControllerBridge
   ~OpenInControllerBridge() override {}
 
  private:
-  OpenInController* owner_;  // weak
+  __weak OpenInController* owner_;
 };
 
 @implementation OpenInController {
@@ -160,32 +163,32 @@ class OpenInControllerBridge
   GURL documentURL_;
 
   // Controller for opening documents in other applications.
-  base::scoped_nsobject<UIDocumentInteractionController> documentController_;
+  UIDocumentInteractionController* documentController_;
 
   // Toolbar overlay to be displayed on tap.
-  base::scoped_nsobject<OpenInToolbar> openInToolbar_;
+  OpenInToolbar* openInToolbar_;
 
   // Timer used to automatically hide the |openInToolbar_| after a period.
-  base::scoped_nsobject<NSTimer> openInTimer_;
+  NSTimer* openInTimer_;
 
   // Gesture recognizer to catch taps on the document.
-  base::scoped_nsobject<UITapGestureRecognizer> tapRecognizer_;
+  UITapGestureRecognizer* tapRecognizer_;
 
   // Suggested filename for the document.
-  base::scoped_nsobject<NSString> suggestedFilename_;
+  NSString* suggestedFilename_;
 
   // Fetcher used to redownload the document and save it in the sandbox.
   std::unique_ptr<net::URLFetcher> fetcher_;
 
   // CRWWebController used to check if the tap is not on a link and the
   // |openInToolbar_| should be displayed.
-  base::scoped_nsobject<CRWWebController> webController_;
+  CRWWebController* webController_;
 
   // URLRequestContextGetter needed for the URLFetcher.
   scoped_refptr<net::URLRequestContextGetter> requestContext_;
 
   // Spinner view displayed while the file is downloading.
-  base::scoped_nsobject<UIView> overlayedView_;
+  UIView* overlayedView_;
 
   // The location where the "Open in..." menu is anchored.
   CGRect anchorLocation_;
@@ -201,8 +204,6 @@ class OpenInControllerBridge
 
   // Task runner on which file operations should happen.
   scoped_refptr<base::SequencedTaskRunner> sequencedTaskRunner_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_OpenInController_;
 }
 
 - (id)initWithRequestContext:(net::URLRequestContextGetter*)requestContext
@@ -210,16 +211,15 @@ class OpenInControllerBridge
   self = [super init];
   if (self) {
     requestContext_ = requestContext;
-    webController_.reset([webController retain]);
-    tapRecognizer_.reset([[UITapGestureRecognizer alloc]
+    webController_ = webController;
+    tapRecognizer_ = [[UITapGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(handleTapFrom:)]);
+                action:@selector(handleTapFrom:)];
     [tapRecognizer_ setDelegate:self];
     base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
     sequencedTaskRunner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     isOpenInMenuDisplayed_ = NO;
-    propertyReleaser_OpenInController_.Init(self, [OpenInController class]);
   }
   return self;
 }
@@ -227,7 +227,7 @@ class OpenInControllerBridge
 - (void)enableWithDocumentURL:(const GURL&)documentURL
             suggestedFilename:(NSString*)suggestedFilename {
   documentURL_ = GURL(documentURL);
-  suggestedFilename_.reset([suggestedFilename retain]);
+  suggestedFilename_ = suggestedFilename;
   [webController_ addGestureRecognizerToWebView:tapRecognizer_];
   [self openInToolbar].alpha = 0.0f;
   [webController_ addToolbarViewToWebView:[self openInToolbar]];
@@ -245,7 +245,7 @@ class OpenInControllerBridge
   [documentController_ dismissMenuAnimated:NO];
   [documentController_ setDelegate:nil];
   documentURL_ = GURL();
-  suggestedFilename_.reset();
+  suggestedFilename_ = nil;
   fetcher_.reset();
 }
 
@@ -253,12 +253,11 @@ class OpenInControllerBridge
   [self disable];
   // Animation blocks may be keeping this object alive; don't extend the
   // lifetime of CRWWebController.
-  webController_.reset();
+  webController_ = nil;
 }
 
 - (void)dealloc {
   [self disable];
-  [super dealloc];
 }
 
 - (void)handleTapFrom:(UIGestureRecognizer*)gestureRecognizer {
@@ -276,12 +275,12 @@ class OpenInControllerBridge
     [openInTimer_ setFireDate:([NSDate dateWithTimeIntervalSinceNow:
                                            kOpenInToolbarDisplayDuration])];
   } else {
-    openInTimer_.reset(
-        [[NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
-                                          target:self
-                                        selector:@selector(hideOpenInToolbar)
-                                        userInfo:nil
-                                         repeats:NO] retain]);
+    openInTimer_ =
+        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
+                                         target:self
+                                       selector:@selector(hideOpenInToolbar)
+                                       userInfo:nil
+                                        repeats:NO];
     UIView* openInToolbar = [self openInToolbar];
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
@@ -332,7 +331,7 @@ class OpenInControllerBridge
   NSString* tempDirPath = [NSTemporaryDirectory()
       stringByAppendingPathComponent:kDocumentsTempPath];
   NSString* filePath =
-      [tempDirPath stringByAppendingPathComponent:suggestedFilename_.get()];
+      [tempDirPath stringByAppendingPathComponent:suggestedFilename_];
 
   // In iPad the toolbar has to be displayed to anchor the "Open in" menu.
   if (!IsIPadIdiom())
@@ -371,7 +370,7 @@ class OpenInControllerBridge
   if (!overlayedView_)
     return;
 
-  UIView* overlayedView = overlayedView_.get();
+  UIView* overlayedView = overlayedView_;
   [UIView animateWithDuration:kOverlayViewAnimationDuration
       animations:^{
         [overlayedView setAlpha:0.0];
@@ -379,17 +378,17 @@ class OpenInControllerBridge
       completion:^(BOOL finished) {
         [overlayedView removeFromSuperview];
       }];
-  overlayedView_.reset();
+  overlayedView_ = nil;
 }
 
 - (void)showErrorWithMessage:(NSString*)message {
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
-  _alertCoordinator.reset([[AlertCoordinator alloc]
-      initWithBaseViewController:topViewController
-                           title:nil
-                         message:message]);
+  _alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:topViewController
+                                                     title:nil
+                                                   message:message];
 
   [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
                                action:nil
@@ -405,8 +404,8 @@ class OpenInControllerBridge
   if (requestContext_.get()) {
     // |requestContext_| is nil only if this is called from a unit test, in
     // which case the |documentController_| was set already.
-    documentController_.reset([[UIDocumentInteractionController
-        interactionControllerWithURL:fileURL] retain]);
+    documentController_ =
+        [UIDocumentInteractionController interactionControllerWithURL:fileURL];
   }
 
   // TODO(cgrigoruta): The UTI is hardcoded for now, change this when we add
@@ -435,20 +434,19 @@ class OpenInControllerBridge
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
   UIView* topView = topViewController.view;
-  overlayedView_.reset([[UIView alloc] initWithFrame:[topView bounds]]);
+  overlayedView_ = [[UIView alloc] initWithFrame:[topView bounds]];
   [overlayedView_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleHeight)];
-  base::scoped_nsobject<UIView> grayBackgroundView(
-      [[UIView alloc] initWithFrame:[overlayedView_ frame]]);
+  UIView* grayBackgroundView =
+      [[UIView alloc] initWithFrame:[overlayedView_ frame]];
   [grayBackgroundView setBackgroundColor:[UIColor darkGrayColor]];
   [grayBackgroundView setAlpha:kOverlayedViewBackgroundAlpha];
   [grayBackgroundView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                            UIViewAutoresizingFlexibleHeight)];
   [overlayedView_ addSubview:grayBackgroundView];
 
-  base::scoped_nsobject<UIActivityIndicatorView> spinner([
-      [UIActivityIndicatorView alloc]
-      initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge]);
+  UIActivityIndicatorView* spinner = [[UIActivityIndicatorView alloc]
+      initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
   [spinner setFrame:[overlayedView_ frame]];
   [spinner setHidesWhenStopped:YES];
   [spinner setUserInteractionEnabled:NO];
@@ -457,7 +455,7 @@ class OpenInControllerBridge
                                 UIViewAutoresizingFlexibleHeight)];
   [overlayedView_ addSubview:spinner];
 
-  base::scoped_nsobject<UILabel> label([[UILabel alloc] init]);
+  UILabel* label = [[UILabel alloc] init];
   [label setTextColor:[UIColor whiteColor]];
   [label setFont:GetUIFont(FONT_HELVETICA, true, kLabelTextSize)];
   [label setNumberOfLines:0];
@@ -480,16 +478,15 @@ class OpenInControllerBridge
   [label setFrame:CGRectMake(originX, originY, labelWidth, labelHeight)];
   [overlayedView_ addSubview:label];
 
-  base::scoped_nsobject<UITapGestureRecognizer> tapRecognizer(
-      [[UITapGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleTapOnOverlayedView:)]);
+  UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(handleTapOnOverlayedView:)];
   [tapRecognizer setDelegate:self];
   [overlayedView_ addGestureRecognizer:tapRecognizer];
 
   [overlayedView_ setAlpha:0.0];
   [topView addSubview:overlayedView_];
-  UIView* overlayedView = overlayedView_.get();
+  UIView* overlayedView = overlayedView_;
   [UIView animateWithDuration:kOverlayViewAnimationDuration
                    animations:^{
                      [overlayedView setAlpha:1.0];
@@ -498,11 +495,11 @@ class OpenInControllerBridge
 
 - (UIView*)openInToolbar {
   if (!openInToolbar_) {
-    openInToolbar_.reset([[OpenInToolbar alloc]
+    openInToolbar_ = [[OpenInToolbar alloc]
         initWithTarget:self
-                action:@selector(exportFileWithOpenInMenuAnchoredAt:)]);
+                action:@selector(exportFileWithOpenInMenuAnchoredAt:)];
   }
-  return openInToolbar_.get();
+  return openInToolbar_;
 }
 
 #pragma mark -
@@ -582,7 +579,7 @@ class OpenInControllerBridge
     NSURL* fileURL =
         [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
     if (downloadCanceled_) {
-      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlock(^{
+      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlockArc(^{
                                        [self
                                            removeDocumentAtPath:[fileURL path]];
                                      }));
@@ -603,7 +600,7 @@ class OpenInControllerBridge
 
 - (void)documentInteractionController:(UIDocumentInteractionController*)contr
            didEndSendingToApplication:(NSString*)application {
-  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlock(^{
+  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlockArc(^{
                                    [self
                                        removeDocumentAtPath:[[contr URL] path]];
                                  }));
@@ -628,12 +625,12 @@ class OpenInControllerBridge
   // when this method is called after the OpenIn menu is dismissed, we
   // check the BOOL |isOpenInMenuDisplayed|.
   if (isOpenInMenuDisplayed_) {
-    openInTimer_.reset(
-        [[NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
-                                          target:self
-                                        selector:@selector(hideOpenInToolbar)
-                                        userInfo:nil
-                                         repeats:NO] retain]);
+    openInTimer_ =
+        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
+                                         target:self
+                                       selector:@selector(hideOpenInToolbar)
+                                       userInfo:nil
+                                        repeats:NO];
   }
   isOpenInMenuDisplayed_ = NO;
 }
@@ -653,11 +650,11 @@ class OpenInControllerBridge
 
 - (void)setDocumentInteractionController:
     (UIDocumentInteractionController*)controller {
-  documentController_.reset([controller retain]);
+  documentController_ = controller;
 }
 
 - (NSString*)suggestedFilename {
-  return suggestedFilename_.get();
+  return suggestedFilename_;
 }
 
 @end

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -14,22 +13,26 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation KeyCommandsProvider
 
 - (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
                        editingText:(BOOL)editingText {
-  base::WeakNSProtocol<id<KeyCommandsPlumbing>> weakConsumer(consumer);
+  __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
 
   // Block to execute a command from the |tag|.
-  void (^execute)(NSInteger) = [[^(NSInteger tag) {
+  void (^execute)(NSInteger) = ^(NSInteger tag) {
     [weakConsumer
         chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
-  } copy] autorelease];
+  };
 
   // Block to have the tab model open the tab at |index|, if there is one.
-  void (^focusTab)(NSUInteger) = [[^(NSUInteger index) {
+  void (^focusTab)(NSUInteger) = ^(NSUInteger index) {
     [weakConsumer focusTabAtIndex:index];
-  } copy] autorelease];
+  };
 
   const BOOL hasTabs = [consumer tabsCount] > 0;
 
@@ -42,14 +45,14 @@
   const int browseRightDescriptionID = useRTLLayout
                                            ? IDS_IOS_KEYBOARD_HISTORY_BACK
                                            : IDS_IOS_KEYBOARD_HISTORY_FORWARD;
-  BOOL (^canBrowseLeft)() = [[^() {
+  BOOL (^canBrowseLeft)() = ^() {
     return useRTLLayout ? [weakConsumer canGoForward]
                         : [weakConsumer canGoBack];
-  } copy] autorelease];
-  BOOL (^canBrowseRight)() = [[^() {
+  };
+  BOOL (^canBrowseRight)() = ^() {
     return useRTLLayout ? [weakConsumer canGoBack]
                         : [weakConsumer canGoForward];
-  } copy] autorelease];
+  };
 
   // Initialize the array of commands with an estimated capacity.
   NSMutableArray* keyCommands = [NSMutableArray arrayWithCapacity:32];
