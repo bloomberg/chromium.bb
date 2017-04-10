@@ -84,4 +84,9 @@ void WebClient::AllowCertificateError(
   callback.Run(false);
 }
 
+std::unique_ptr<base::TaskScheduler::InitParams>
+WebClient::GetTaskSchedulerInitParams() {
+  return nullptr;
+}
+
 }  // namespace web

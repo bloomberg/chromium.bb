@@ -21,7 +21,6 @@
 #include "base/task_scheduler/initialization_util.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/app/web_main_parts.h"
@@ -38,51 +37,27 @@ namespace web {
 
 namespace {
 
-enum WorkerPoolType : size_t {
-  BACKGROUND = 0,
-  BACKGROUND_BLOCKING,
-  FOREGROUND,
-  FOREGROUND_BLOCKING,
-  WORKER_POOL_COUNT  // Always last.
-};
-
-std::vector<base::SchedulerWorkerPoolParams>
-GetDefaultSchedulerWorkerPoolParams() {
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetDefaultTaskSchedulerInitParams() {
   using StandbyThreadPolicy =
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
-  using ThreadPriority = base::ThreadPriority;
-  std::vector<base::SchedulerWorkerPoolParams> params_vector;
-  params_vector.emplace_back(
-      "Background", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
-      base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
-      base::TimeDelta::FromSeconds(30));
-  params_vector.emplace_back(
-      "BackgroundBlocking", ThreadPriority::BACKGROUND,
-      StandbyThreadPolicy::ONE,
-      base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
-      base::TimeDelta::FromSeconds(30));
-  params_vector.emplace_back(
-      "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
-      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-      base::TimeDelta::FromSeconds(30));
-  params_vector.emplace_back(
-      "ForegroundBlocking", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
-      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-      base::TimeDelta::FromSeconds(30));
-  DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
-  return params_vector;
-}
-
-// Returns the worker pool index for |traits| defaulting to FOREGROUND or
-// FOREGROUND_BLOCKING on any other priorities based off of worker pools defined
-// in GetDefaultSchedulerWorkerPoolParams().
-size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BACKGROUND;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-
-  return is_background ? BACKGROUND : FOREGROUND;
+  return base::MakeUnique<base::TaskScheduler::InitParams>(
+      base::SchedulerWorkerPoolParams(
+          StandbyThreadPolicy::ONE,
+          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+          base::TimeDelta::FromSeconds(30)),
+      base::SchedulerWorkerPoolParams(
+          StandbyThreadPolicy::ONE,
+          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+          base::TimeDelta::FromSeconds(30)),
+      base::SchedulerWorkerPoolParams(
+          StandbyThreadPolicy::ONE,
+          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+          base::TimeDelta::FromSeconds(30)),
+      base::SchedulerWorkerPoolParams(
+          StandbyThreadPolicy::ONE,
+          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+          base::TimeDelta::FromSeconds(30)));
 }
 
 }  // namespace
@@ -170,20 +145,14 @@ int WebMainLoop::PreCreateThreads() {
 }
 
 int WebMainLoop::CreateThreads() {
-  std::vector<base::SchedulerWorkerPoolParams> params_vector;
-  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
-      index_to_traits_callback;
-  GetWebClient()->GetTaskSchedulerInitializationParams(
-      &params_vector, &index_to_traits_callback);
-
-  if (params_vector.empty() || index_to_traits_callback.is_null()) {
-    params_vector = GetDefaultSchedulerWorkerPoolParams();
-    index_to_traits_callback =
-        base::Bind(&DefaultBrowserWorkerPoolIndexForTraits);
-  }
+  auto task_scheduler_init_params =
+      GetWebClient()->GetTaskSchedulerInitParams();
+  if (!task_scheduler_init_params)
+    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
+  DCHECK(task_scheduler_init_params);
 
   base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-      params_vector, index_to_traits_callback);
+      "", *task_scheduler_init_params.get());
 
   GetWebClient()->PerformExperimentalTaskSchedulerRedirections();
 
