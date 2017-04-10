@@ -71,8 +71,6 @@ public class UrlBar extends VerticallyFixedEditText {
     /** The contents of the URL that precede the path/query before formatting. */
     private String mOriginalUrlLocation;
 
-    private boolean mShowKeyboardOnWindowFocus;
-
     private boolean mFirstDrawComplete;
 
     /**
@@ -513,16 +511,11 @@ public class UrlBar extends VerticallyFixedEditText {
     }
 
     @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        super.onWindowVisibilityChanged(visibility);
-        if (visibility == View.GONE && isFocused()) mShowKeyboardOnWindowFocus = true;
-    }
-
-    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
+        if (DEBUG) Log.i(TAG, "onWindowFocusChanged: " + hasWindowFocus);
         if (hasWindowFocus) {
-            if (mShowKeyboardOnWindowFocus && isFocused()) {
+            if (isFocused()) {
                 // Without the call to post(..), the keyboard was not getting shown when the
                 // window regained focus despite this being the final call in the view system
                 // flow.
@@ -533,7 +526,6 @@ public class UrlBar extends VerticallyFixedEditText {
                     }
                 });
             }
-            mShowKeyboardOnWindowFocus = false;
         }
     }
 
