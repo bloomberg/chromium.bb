@@ -693,10 +693,8 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 }
 
 bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                          GLenum texture_target,
                                           GLuint texture,
-                                          GLenum internal_format,
-                                          GLenum dest_type,
-                                          GLint level,
                                           bool premultiply_alpha,
                                           bool flip_y,
                                           const IntPoint& dest_texture_offset,
@@ -709,9 +707,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     gl_->Flush();
   }
 
-  // Assume that the destination target is GL_TEXTURE_2D.
-  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(
-          GL_TEXTURE_2D, internal_format, dest_type, level))
+  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(texture_target))
     return false;
 
   // Contexts may be in a different share group. We must transfer the texture
@@ -750,7 +746,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     unpack_premultiply_alpha_needed = GL_TRUE;
 
   gl->CopySubTextureCHROMIUM(
-      source_texture, 0, GL_TEXTURE_2D, texture, 0, dest_texture_offset.X(),
+      source_texture, 0, texture_target, texture, 0, dest_texture_offset.X(),
       dest_texture_offset.Y(), source_sub_rectangle.X(),
       source_sub_rectangle.Y(), source_sub_rectangle.Width(),
       source_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,

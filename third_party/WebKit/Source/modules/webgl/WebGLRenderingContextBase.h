@@ -1103,16 +1103,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      WebGLTexture*,
                      GLenum target,
                      GLint level,
-                     GLint internalformat,
-                     GLenum type,
                      GLint xoffset,
                      GLint yoffset,
                      GLint zoffset,
                      CanvasImageSource*,
                      const IntRect& source_sub_rectangle);
-  virtual bool CanUseTexImageByGPU(TexImageFunctionID,
-                                   GLint internalformat,
-                                   GLenum type);
+  virtual bool CanUseTexImageByGPU(GLenum type);
 
   virtual WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams();
   virtual WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(
@@ -1650,14 +1646,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 unsigned);
   void TexImageCanvasByGPU(TexImageFunctionID,
                            HTMLCanvasElement*,
+                           GLenum,
                            GLuint,
+                           GLint,
+                           GLint,
+                           const IntRect&);
+  void TexImageBitmapByGPU(ImageBitmap*,
                            GLenum,
-                           GLenum,
+                           GLuint,
+                           bool,
                            GLint,
                            GLint,
-                           GLint,
-                           const IntRect& source_sub_rectangle);
-  void TexImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
+                           const IntRect&);
 
   sk_sp<SkImage> MakeImageSnapshot(SkImageInfo&);
   const unsigned version_;

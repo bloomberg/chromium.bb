@@ -1059,10 +1059,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                              GLintptr source_byte_offset,
                                              long long destination_byte_length);
 
-  bool CanUseTexImageByGPU(TexImageFunctionID,
-                           GLint internalformat,
-                           GLenum type) override;
-
   void RemoveBoundBuffer(WebGLBuffer*) override;
 
   void ResetUnpackParameters() override;

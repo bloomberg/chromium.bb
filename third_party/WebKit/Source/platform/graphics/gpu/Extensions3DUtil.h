@@ -38,10 +38,7 @@ class PLATFORM_EXPORT Extensions3DUtil final {
   bool EnsureExtensionEnabled(const String& name);
   bool IsExtensionEnabled(const String& name);
 
-  static bool CanUseCopyTextureCHROMIUM(GLenum dest_target,
-                                        GLenum dest_format,
-                                        GLenum dest_type,
-                                        GLint level);
+  static bool CanUseCopyTextureCHROMIUM(GLenum dest_target);
 
  private:
   Extensions3DUtil(gpu::gles2::GLES2Interface*);

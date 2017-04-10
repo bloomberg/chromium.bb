@@ -99,7 +99,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
-        bug=570453)
+        bug=625738)
 
     # Temporary suppression; will be removed after bug fix.
     self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
@@ -164,6 +164,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('WebglExtension_WEBGL_draw_buffers',
         ['passthrough'], bug=1523) # angle bug ID
+    self.Skip('conformance/textures/canvas/*',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/textures/video/*',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/textures/image_bitmap_from_canvas/*',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/textures/webgl_canvas/*',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/extensions/oes-texture-float-with-canvas.html',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['passthrough'], bug=1932) # angle bug ID
+    self.Skip('conformance/extensions/oes-texture-float-with-video.html',
+        ['passthrough'], bug=1932) # angle bug ID
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/buffers/buffer-uninitialized.html',
@@ -442,19 +458,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Linux failures
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
-               ['linux'], bug=627525)
+               ['linux', 'no_passthrough'], bug=627525)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-               ['linux'], bug=627525)
+               ['linux', 'no_passthrough'], bug=627525)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-               ['linux'], bug=627525)
+               ['linux', 'no_passthrough'], bug=627525)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_byte.html',
-               ['linux'], bug=627525)
+               ['linux', 'no_passthrough'], bug=627525)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-               ['linux'], bug=627525)
+               ['linux', 'no_passthrough'], bug=627525)
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
         ['linux', 'intel'], bug=680675)
 

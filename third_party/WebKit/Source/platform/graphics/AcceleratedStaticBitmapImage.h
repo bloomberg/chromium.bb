@@ -49,10 +49,11 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
             ImageClampingMode) override;
 
   void CopyToTexture(WebGraphicsContext3DProvider*,
+                     GLenum dest_target,
                      GLuint dest_texture_id,
-                     GLenum dest_internal_format,
-                     GLenum dest_type,
-                     bool flip_y) override;
+                     bool flip_y,
+                     const IntPoint& dest_point,
+                     const IntRect& source_sub_rectangle) override;
 
   bool HasMailbox() final { return texture_holder_->IsMailboxTextureHolder(); }
   // To be called on sender thread before performing a transfer

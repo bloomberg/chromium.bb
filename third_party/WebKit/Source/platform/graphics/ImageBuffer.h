@@ -139,15 +139,10 @@ class PLATFORM_EXPORT ImageBuffer {
 
   // Destroys the TEXTURE_2D binding for the active texture unit of the passed
   // context. Assumes the destination texture has already been allocated.
-  // FIXME: Current implementations of this method only work with textures that
-  // are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
-  // Extensions3D::canUseCopyTextureCHROMIUM().
   bool CopyToPlatformTexture(SnapshotReason,
                              gpu::gles2::GLES2Interface*,
+                             GLenum target,
                              GLuint texture,
-                             GLenum internal_format,
-                             GLenum dest_type,
-                             GLint level,
                              bool premultiply_alpha,
                              bool flip_y,
                              const IntPoint& dest_point,

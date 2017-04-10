@@ -41,10 +41,11 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
   // Methods overrided by AcceleratedStaticBitmapImage only
   virtual void CopyToTexture(WebGraphicsContext3DProvider*,
+                             GLenum,
                              GLuint,
-                             GLenum,
-                             GLenum,
-                             bool) {
+                             bool,
+                             const IntPoint&,
+                             const IntRect&) {
     NOTREACHED();
   }
   virtual void EnsureMailbox() { NOTREACHED(); }

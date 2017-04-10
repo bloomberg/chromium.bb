@@ -219,16 +219,13 @@ WebLayer* ImageBuffer::PlatformLayer() const {
 
 bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
                                         gpu::gles2::GLES2Interface* gl,
+                                        GLenum target,
                                         GLuint texture,
-                                        GLenum internal_format,
-                                        GLenum dest_type,
-                                        GLint level,
                                         bool premultiply_alpha,
                                         bool flip_y,
                                         const IntPoint& dest_point,
                                         const IntRect& source_sub_rectangle) {
-  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(
-          GL_TEXTURE_2D, internal_format, dest_type, level))
+  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(target))
     return false;
 
   if (!IsSurfaceValid())
@@ -280,8 +277,8 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   // It is expected that callers of this method have already allocated
   // the platform texture with the appropriate size.
   gl->CopySubTextureCHROMIUM(
-      source_texture, 0, GL_TEXTURE_2D, texture, 0, dest_point.X(),
-      dest_point.Y(), source_sub_rectangle.X(), source_sub_rectangle.Y(),
+      source_texture, 0, target, texture, 0, dest_point.X(), dest_point.Y(),
+      source_sub_rectangle.X(), source_sub_rectangle.Y(),
       source_sub_rectangle.Width(), source_sub_rectangle.Height(),
       flip_y ? GL_FALSE : GL_TRUE, GL_FALSE,
       premultiply_alpha ? GL_FALSE : GL_TRUE);
@@ -325,7 +322,7 @@ bool ImageBuffer::CopyRenderingResultsFromDrawingBuffer(
   gl->Flush();
 
   return drawing_buffer->CopyToPlatformTexture(
-      gl, texture_id, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, IntPoint(0, 0),
+      gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
       IntRect(IntPoint(0, 0), drawing_buffer->size()), source_buffer);
 }
 

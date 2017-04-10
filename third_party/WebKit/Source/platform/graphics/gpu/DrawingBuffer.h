@@ -202,10 +202,8 @@ class PLATFORM_EXPORT DrawingBuffer
   PassRefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
+                             GLenum target,
                              GLuint texture,
-                             GLenum internal_format,
-                             GLenum dest_type,
-                             GLint level,
                              bool premultiply_alpha,
                              bool flip_y,
                              const IntPoint& dest_texture_offset,

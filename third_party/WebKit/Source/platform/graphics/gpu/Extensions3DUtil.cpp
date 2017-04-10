@@ -74,17 +74,19 @@ bool Extensions3DUtil::IsExtensionEnabled(const String& name) {
   return enabled_extensions_.Contains(name);
 }
 
-bool Extensions3DUtil::CanUseCopyTextureCHROMIUM(GLenum dest_target,
-                                                 GLenum dest_format,
-                                                 GLenum dest_type,
-                                                 GLint level) {
-  // TODO(zmo): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be
-  // lifted when GLES2Interface::CopyTextureCHROMIUM(...) are fully functional.
-  if (dest_target == GL_TEXTURE_2D &&
-      (dest_format == GL_RGB || dest_format == GL_RGBA) &&
-      dest_type == GL_UNSIGNED_BYTE && !level)
-    return true;
-  return false;
+bool Extensions3DUtil::CanUseCopyTextureCHROMIUM(GLenum dest_target) {
+  switch (dest_target) {
+    case GL_TEXTURE_2D:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace blink

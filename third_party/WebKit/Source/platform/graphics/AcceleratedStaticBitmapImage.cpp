@@ -66,10 +66,11 @@ void AcceleratedStaticBitmapImage::UpdateSyncToken(gpu::SyncToken sync_token) {
 
 void AcceleratedStaticBitmapImage::CopyToTexture(
     WebGraphicsContext3DProvider* dest_provider,
+    GLenum dest_target,
     GLuint dest_texture_id,
-    GLenum internal_format,
-    GLenum dest_type,
-    bool flip_y) {
+    bool flip_y,
+    const IntPoint& dest_point,
+    const IntRect& source_sub_rectangle) {
   CheckThread();
   if (!IsValid())
     return;
@@ -82,9 +83,11 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
   dest_gl->WaitSyncTokenCHROMIUM(texture_holder_->GetSyncToken().GetData());
   GLuint source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
       GL_TEXTURE_2D, texture_holder_->GetMailbox().name);
-  dest_gl->CopyTextureCHROMIUM(source_texture_id, 0, GL_TEXTURE_2D,
-                               dest_texture_id, 0, internal_format, dest_type,
-                               flip_y, false, false);
+  dest_gl->CopySubTextureCHROMIUM(
+      source_texture_id, 0, dest_target, dest_texture_id, 0, dest_point.X(),
+      dest_point.Y(), source_sub_rectangle.X(), source_sub_rectangle.Y(),
+      source_sub_rectangle.Width(), source_sub_rectangle.Height(), flip_y,
+      false, false);
   // This drops the |destGL| context's reference on our |m_mailbox|, but it's
   // still held alive by our SkImage.
   dest_gl->DeleteTextures(1, &source_texture_id);
