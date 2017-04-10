@@ -26,10 +26,10 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
   def _InitRepo(self):
     """Initializes a repo in the temp directory."""
     self.git_dir = os.path.join(self.tempdir, '.git')
-    # with osutils.ChdirContext(self.tempdir):
-    self.git_repo = git_metrics._GitRepo(self.git_dir)
-    self.git_repo._check_output(['init'])
-    self.git_repo._check_output(['commit', '--allow-empty', '-m', 'hi'])
+    with osutils.ChdirContext(self.tempdir):
+      self.git_repo = git_metrics._GitRepo(self.git_dir)
+      self.git_repo._check_output(['init'])
+      self.git_repo._check_output(['commit', '--allow-empty', '-m', 'hi'])
 
   def testCollectGitHashTypesAreCorrect(self):
     """Tests that collecting the git hash doesn't have type conflicts."""
