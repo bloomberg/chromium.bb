@@ -399,10 +399,11 @@ static void RunAutofocusTask(ExecutionContext* context) {
 }
 
 static void RecordLoadReasonToHistogram(WouldLoadReason reason) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, unseen_frame_histogram,
-      ("Navigation.DeferredDocumentLoading.StatesV4", kWouldLoadReasonEnd));
-  unseen_frame_histogram.Count(reason);
+  // TODO(dcheng): Make EnumerationHistogram work with scoped enums.
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, unseen_frame_histogram,
+                      ("Navigation.DeferredDocumentLoading.StatesV4",
+                       static_cast<int>(WouldLoadReason::kCount)));
+  unseen_frame_histogram.Count(static_cast<int>(reason));
 }
 
 class Document::NetworkStateObserver final
@@ -533,7 +534,7 @@ Document::Document(const DocumentInit& initializer,
       has_viewport_units_(false),
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
-      would_load_reason_(kInvalid),
+      would_load_reason_(WouldLoadReason::kInvalid),
       password_count_(0),
       engagement_level_(mojom::blink::EngagementLevel::NONE) {
   if (frame_) {
@@ -6613,14 +6614,16 @@ DEFINE_TRACE(Document) {
 }
 
 void Document::RecordDeferredLoadReason(WouldLoadReason reason) {
-  DCHECK(would_load_reason_ == kInvalid || reason != kCreated);
-  DCHECK(reason != kInvalid);
+  DCHECK(would_load_reason_ == WouldLoadReason::kInvalid ||
+         reason != WouldLoadReason::kCreated);
+  DCHECK(reason != WouldLoadReason::kInvalid);
   DCHECK(GetFrame());
   DCHECK(GetFrame()->IsCrossOriginSubframe());
   if (reason <= would_load_reason_ ||
       !GetFrame()->Loader().StateMachine()->CommittedFirstRealDocumentLoad())
     return;
-  for (int i = would_load_reason_ + 1; i <= reason; ++i)
+  for (int i = static_cast<int>(would_load_reason_) + 1;
+       i <= static_cast<int>(reason); ++i)
     RecordLoadReasonToHistogram(static_cast<WouldLoadReason>(i));
   would_load_reason_ = reason;
 }

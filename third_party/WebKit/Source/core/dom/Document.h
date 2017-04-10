@@ -231,19 +231,19 @@ enum CreateElementFlags {
 // We can then see the % of cross-origin documents that never have to load.
 // See https://crbug.com/635105.
 // Logged to UMA, don't re-arrange entries without creating a new histogram.
-enum WouldLoadReason {
+enum class WouldLoadReason {
   kInvalid,
   kCreated,
-  kWouldLoad3ScreensAway,
-  kWouldLoad2ScreensAway,
-  kWouldLoad1ScreenAway,
-  kWouldLoadVisible,
+  k3ScreensAway,
+  k2ScreensAway,
+  k1ScreenAway,
+  kVisible,
   // If outer and inner frames aren't in the same process we can't determine
   // if the inner frame is visible, so just load it.
   // TODO(dgrogan): Revisit after https://crbug.com/650433 is fixed.
-  kWouldLoadNoParent,
+  kNoParent,
 
-  kWouldLoadReasonEnd
+  kCount,
 };
 
 using DocumentClassFlags = unsigned char;

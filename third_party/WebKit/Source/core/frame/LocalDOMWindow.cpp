@@ -366,7 +366,7 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   GetFrame()->Selection().UpdateSecureKeyboardEntryIfActive();
 
   if (GetFrame()->IsCrossOriginSubframe())
-    document_->RecordDeferredLoadReason(kCreated);
+    document_->RecordDeferredLoadReason(WouldLoadReason::kCreated);
 
   return document_;
 }

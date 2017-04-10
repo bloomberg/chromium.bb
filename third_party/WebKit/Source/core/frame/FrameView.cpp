@@ -4980,19 +4980,21 @@ void FrameView::RecordDeferredLoadingStats() {
   if (!parent) {
     HTMLFrameOwnerElement* element = GetFrame().DeprecatedLocalOwner();
     // We would fall into an else block on some teardowns and other weird cases.
-    if (!element || !element->GetLayoutObject())
-      GetFrame().GetDocument()->RecordDeferredLoadReason(kWouldLoadNoParent);
+    if (!element || !element->GetLayoutObject()) {
+      GetFrame().GetDocument()->RecordDeferredLoadReason(
+          WouldLoadReason::kNoParent);
+    }
     return;
   }
   // Small inaccuracy: frames with origins that match the top level might be
   // nested in a cross-origin frame. To keep code simpler, count such frames as
   // WouldLoadVisible, even when their parent is offscreen.
-  WouldLoadReason why_parent_loaded = kWouldLoadVisible;
+  WouldLoadReason why_parent_loaded = WouldLoadReason::kVisible;
   if (parent->ParentFrameView() && parent->GetFrame().IsCrossOriginSubframe())
     why_parent_loaded = parent->GetFrame().GetDocument()->DeferredLoadReason();
 
   // If the parent wasn't loaded, the children won't be either.
-  if (why_parent_loaded == kCreated)
+  if (why_parent_loaded == WouldLoadReason::kCreated)
     return;
   // These frames are never meant to be seen so we will need to load them.
   if (FrameRect().IsEmpty() || FrameRect().MaxY() < 0 ||
@@ -5018,8 +5020,10 @@ void FrameView::RecordDeferredLoadingStats() {
   DCHECK_GE(this_frame_screens_away, 0);
 
   int parent_screens_away = 0;
-  if (why_parent_loaded <= kWouldLoadVisible)
-    parent_screens_away = kWouldLoadVisible - why_parent_loaded;
+  if (why_parent_loaded <= WouldLoadReason::kVisible) {
+    parent_screens_away = static_cast<int>(WouldLoadReason::kVisible) -
+                          static_cast<int>(why_parent_loaded);
+  }
 
   int total_screens_away = this_frame_screens_away + parent_screens_away;
 
@@ -5028,7 +5032,8 @@ void FrameView::RecordDeferredLoadingStats() {
     return;
 
   GetFrame().GetDocument()->RecordDeferredLoadReason(
-      static_cast<WouldLoadReason>(kWouldLoadVisible - total_screens_away));
+      static_cast<WouldLoadReason>(static_cast<int>(WouldLoadReason::kVisible) -
+                                   total_screens_away));
 }
 
 bool FrameView::ShouldThrottleRendering() const {
