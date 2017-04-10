@@ -207,9 +207,6 @@ class FindObjectPropertiesNeedingUpdateScope {
           << " Object: " << object_.DebugName();
     }
 
-    // Instead of checking that the contents properties are unchanged here,
-    // we check them on every access in LayoutObject::contentsProperties.
-
     // Restore original clean bit.
     object_.GetMutableForPainting().ClearNeedsPaintPropertyUpdateForTesting();
   }

@@ -413,11 +413,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   // The complete set of property nodes that should be used as a starting point
-  // to paint contents of this LayoutObject. See: m_contentsProperties comment.
-  const PropertyTreeState* ContentsProperties() const {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-    return rare_paint_data_ ? rare_paint_data_->ContentsProperties() : nullptr;
-  }
+  // to paint contents of this LayoutObject.
+  PropertyTreeState ContentsProperties() const;
 
  private:
   RarePaintData& EnsureRarePaintData();

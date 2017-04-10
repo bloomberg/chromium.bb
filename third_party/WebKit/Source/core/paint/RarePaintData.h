@@ -36,7 +36,12 @@ class CORE_EXPORT RarePaintData {
 
   void ClearLocalBorderBoxProperties();
   void SetLocalBorderBoxProperties(PropertyTreeState&);
-  const PropertyTreeState* ContentsProperties() const;
+
+  // This is the complete set of property nodes that can be used to paint the
+  // contents of this object. It is similar to local_border_box_properties_ but
+  // includes properties (e.g., overflow clip, scroll translation) that apply
+  // to contents.
+  PropertyTreeState ContentsProperties() const;
 
  private:
   // Holds references to the paint property nodes created by this object.
@@ -53,13 +58,6 @@ class CORE_EXPORT RarePaintData {
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
   std::unique_ptr<PropertyTreeState> local_border_box_properties_;
-
-  // This is the complete set of property nodes that can be used to paint the
-  // contents of this object. It is similar to m_localBorderBoxProperties but
-  // includes properties (e.g., overflow clip, scroll translation) that apply
-  // to contents. This cached value is derived from m_localBorderBoxProperties
-  // and m_paintProperties and should be invalidated when these change.
-  mutable std::unique_ptr<PropertyTreeState> contents_properties_;
 };
 
 }  // namespace blink

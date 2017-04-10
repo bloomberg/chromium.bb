@@ -85,8 +85,7 @@ void PaintPropertyTreeBuilderTest::TearDown() {
     if ((sourceObject)->HasLayer() && (ancestorObject)->HasLayer()) {         \
       LayoutRect source((sourceObject)->LocalVisualRect());                   \
       source.MoveBy((sourceObject)->PaintOffset());                           \
-      const auto& contents_properties =                                       \
-          *(ancestorObject)->ContentsProperties();                            \
+      auto contents_properties = (ancestorObject)->ContentsProperties();      \
       FloatClipRect actual_float_rect((FloatRect(source)));                   \
       GeometryMapper::SourceToDestinationVisualRect(                          \
           *(sourceObject)->LocalBorderBoxProperties(), contents_properties,   \
@@ -2401,7 +2400,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
             clipper->LocalBorderBoxProperties()->Transform());
   EXPECT_EQ(FrameContentClip(), clipper->LocalBorderBoxProperties()->Clip());
 
-  const auto& contents_properties = *clipper->ContentsProperties();
+  auto contents_properties = clipper->ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->PaintOffset());
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
@@ -2437,7 +2436,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
             clipper->LocalBorderBoxProperties()->Transform());
   EXPECT_EQ(FrameContentClip(), clipper->LocalBorderBoxProperties()->Clip());
 
-  const auto& contents_properties = *clipper->ContentsProperties();
+  auto contents_properties = clipper->ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->PaintOffset());
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
@@ -2477,7 +2476,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
             clipper->LocalBorderBoxProperties()->Transform());
   EXPECT_EQ(FrameContentClip(), clipper->LocalBorderBoxProperties()->Clip());
 
-  const auto& contents_properties = *clipper->ContentsProperties();
+  auto contents_properties = clipper->ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->PaintOffset());
   EXPECT_EQ(clip_properties->ScrollTranslation(),
             contents_properties.Transform());
@@ -2563,7 +2562,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
   EXPECT_EQ(clip_properties->CssClip(),
             clipper->LocalBorderBoxProperties()->Clip());
 
-  const auto& contents_properties = *clipper->ContentsProperties();
+  auto contents_properties = clipper->ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->PaintOffset());
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
   EXPECT_EQ(clip_properties->CssClip(), contents_properties.Clip());
@@ -2596,7 +2595,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
             svg_with_view_box.LocalBorderBoxProperties()->Transform());
 
   EXPECT_EQ(LayoutPoint(30, 20), svg_with_view_box.PaintOffset());
-  const auto& contents_properties = *svg_with_view_box.ContentsProperties();
+  auto contents_properties = svg_with_view_box.ContentsProperties();
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
 }
 

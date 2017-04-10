@@ -105,13 +105,12 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     if (!is_svg_child)
       rect.MoveBy(Point(object.PaintOffset()));
 
-    const auto* container_contents_properties =
+    auto container_contents_properties =
         context.paint_invalidation_container->ContentsProperties();
-
     if (context.tree_builder_context_->current.transform ==
-            container_contents_properties->Transform() &&
+            container_contents_properties.Transform() &&
         context.tree_builder_context_->current.clip ==
-            container_contents_properties->Clip()) {
+            container_contents_properties.Clip()) {
       result = LayoutRect(rect);
     } else {
       // Use enclosingIntRect to ensure the final visual rect will cover the
@@ -120,7 +119,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
       // enclosingIntRect is applied in the last step of paint invalidation
       // (see CompositedLayerMapping::setContentsNeedDisplayInRect()).
       if (!is_svg_child && context.tree_builder_context_->current.transform !=
-                               container_contents_properties->Transform())
+                               container_contents_properties.Transform())
         rect = Rect(EnclosingIntRect(rect));
 
       PropertyTreeState current_tree_state(
@@ -129,7 +128,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
 
       FloatClipRect float_rect((FloatRect(rect)));
       GeometryMapper::SourceToDestinationVisualRect(
-          current_tree_state, *container_contents_properties, float_rect);
+          current_tree_state, container_contents_properties, float_rect);
       result = LayoutRect(float_rect.Rect());
     }
 
@@ -181,7 +180,7 @@ LayoutPoint PaintInvalidator::ComputeLocationInBacking(
     point.MoveBy(object.PaintOffset());
 
     const auto* container_transform =
-        context.paint_invalidation_container->ContentsProperties()->Transform();
+        context.paint_invalidation_container->ContentsProperties().Transform();
     if (context.tree_builder_context_->current.transform !=
         container_transform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
