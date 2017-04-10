@@ -126,9 +126,8 @@ class CONTENT_EXPORT RenderMessageFilter
   // Message handlers called on the browser IO thread:
   void OnHasGpuProcess(IPC::Message* reply);
   // Helper callbacks for the message handlers.
-  void GetGpuProcessHandlesCallback(
-      std::unique_ptr<IPC::Message> reply,
-      const std::list<base::ProcessHandle>& handles);
+  void GetHasGpuProcessCallback(std::unique_ptr<IPC::Message> reply,
+                                bool has_gpu);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
 #if defined(OS_LINUX)

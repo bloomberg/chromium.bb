@@ -18,9 +18,4 @@ bool GPUSupportImpl::IsPanelFittingDisabled() const {
       gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
 }
 
-void GPUSupportImpl::GetGpuProcessHandles(
-    const GetGpuProcessHandlesCallback& callback) const {
-  content::GpuDataManager::GetInstance()->GetGpuProcessHandles(callback);
-}
-
 }  // namespace ash

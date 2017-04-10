@@ -46,8 +46,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool IsWebGLEnabled() const;
   bool IsDriverBugWorkaroundActive(int feature) const;
   gpu::GPUInfo GetGPUInfo() const;
-  void GetGpuProcessHandles(
-      const GpuDataManager::GetGpuProcessHandlesCallback& callback) const;
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
   bool IsEssentialGpuInfoAvailable() const;

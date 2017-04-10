@@ -392,17 +392,15 @@ void RenderMessageFilter::OnMediaLogEvents(
 
 void RenderMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
   std::unique_ptr<IPC::Message> reply(reply_ptr);
-  GpuProcessHost::GetProcessHandles(
-      base::Bind(&RenderMessageFilter::GetGpuProcessHandlesCallback,
+  GpuProcessHost::GetHasGpuProcess(
+      base::Bind(&RenderMessageFilter::GetHasGpuProcessCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
-void RenderMessageFilter::GetGpuProcessHandlesCallback(
+void RenderMessageFilter::GetHasGpuProcessCallback(
     std::unique_ptr<IPC::Message> reply,
-    const std::list<base::ProcessHandle>& handles) {
-  bool has_gpu_process = handles.size() > 0;
-  ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(),
-                                                      has_gpu_process);
+    bool has_gpu) {
+  ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(), has_gpu);
   Send(reply.release());
 }
 

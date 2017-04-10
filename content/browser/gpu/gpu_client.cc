@@ -56,8 +56,7 @@ void GpuClient::OnCreateGpuMemoryBuffer(
 
 void GpuClient::EstablishGpuChannel(
     const EstablishGpuChannelCallback& callback) {
-  GpuProcessHost* host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
+  GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     OnEstablishGpuChannel(
         callback, IPC::ChannelHandle(), gpu::GPUInfo(),

@@ -386,26 +386,24 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
 }
 
 // static
-void GpuProcessHost::GetProcessHandles(
-    const GpuDataManager::GetGpuProcessHandlesCallback& callback)  {
+void GpuProcessHost::GetHasGpuProcess(
+    const base::Callback<void(bool)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&GpuProcessHost::GetProcessHandles, callback));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&GpuProcessHost::GetHasGpuProcess, callback));
     return;
   }
-  std::list<base::ProcessHandle> handles;
+  bool has_gpu = false;
   for (size_t i = 0; i < arraysize(g_gpu_process_hosts); ++i) {
-    // TODO(rvargas) crbug/417532: don't store ProcessHandles!.
     GpuProcessHost* host = g_gpu_process_hosts[i];
-    if (host && ValidateHost(host))
-      handles.push_back(host->process_->GetProcess().Handle());
+    if (host && ValidateHost(host)) {
+      has_gpu = true;
+      break;
+    }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, handles));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, has_gpu));
 }
 
 // static

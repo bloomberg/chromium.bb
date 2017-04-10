@@ -14,7 +14,4 @@ bool GPUSupportStub::IsPanelFittingDisabled() const {
   return false;
 }
 
-void GPUSupportStub::GetGpuProcessHandles(
-    const GetGpuProcessHandlesCallback& callback) const {}
-
 }  // namespace ash

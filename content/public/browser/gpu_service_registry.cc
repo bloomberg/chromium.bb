@@ -10,8 +10,7 @@ namespace content {
 
 void BindInterfaceInGpuProcess(const std::string& interface_name,
                                mojo::ScopedMessagePipeHandle interface_pipe) {
-  GpuProcessHost* host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
+  GpuProcessHost* host = GpuProcessHost::Get();
   return host->BindInterface(interface_name, std::move(interface_pipe));
 }
 

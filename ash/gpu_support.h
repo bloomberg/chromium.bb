@@ -17,15 +17,9 @@ namespace ash {
 // configurations that permit a dependency on content.
 class ASH_EXPORT GPUSupport {
  public:
-  typedef base::Callback<void(const std::list<base::ProcessHandle>&)>
-      GetGpuProcessHandlesCallback;
-
   virtual ~GPUSupport() {}
 
   virtual bool IsPanelFittingDisabled() const = 0;
-
-  virtual void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const = 0;
 };
 
 }  // namespace ash

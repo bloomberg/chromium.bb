@@ -91,12 +91,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // has returned to the message loop as it can be destroyed. Instead store the
   // associated GPU host ID.  This could return NULL if GPU access is not
   // allowed (blacklisted).
-  CONTENT_EXPORT static GpuProcessHost* Get(GpuProcessKind kind,
-                                            bool force_create = true);
+  CONTENT_EXPORT static GpuProcessHost* Get(
+      GpuProcessKind kind = GPU_PROCESS_KIND_SANDBOXED,
+      bool force_create = true);
 
-  // Retrieves a list of process handles for all gpu processes.
-  static void GetProcessHandles(
-      const GpuDataManager::GetGpuProcessHandlesCallback& callback);
+  // Returns whether there is an active GPU process or not.
+  static void GetHasGpuProcess(const base::Callback<void(bool)>& callback);
 
   // Helper function to run a callback on the IO thread. The callback receives
   // the appropriate GpuProcessHost instance. Note that the callback can be

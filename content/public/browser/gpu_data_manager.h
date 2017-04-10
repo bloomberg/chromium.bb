@@ -25,9 +25,6 @@ class GpuDataManagerObserver;
 // This class is fully thread-safe.
 class GpuDataManager {
  public:
-  typedef base::Callback<void(const std::list<base::ProcessHandle>&)>
-      GetGpuProcessHandlesCallback;
-
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
@@ -39,10 +36,6 @@ class GpuDataManager {
   virtual bool IsWebGLEnabled() const = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() const = 0;
-
-  // Retrieves a list of process handles for all gpu processes.
-  virtual void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const = 0;
 
   // This indicator might change because we could collect more GPU info or
   // because the GPU blacklist could be updated.

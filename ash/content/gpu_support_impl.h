@@ -20,8 +20,6 @@ class ASH_WITH_CONTENT_EXPORT GPUSupportImpl : public GPUSupport {
  private:
   // Overridden from GPUSupport:
   bool IsPanelFittingDisabled() const override;
-  void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GPUSupportImpl);
 };

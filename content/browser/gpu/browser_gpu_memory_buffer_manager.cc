@@ -342,7 +342,7 @@ void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
-    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
+    host = GpuProcessHost::Get();
     if (!host) {
       LOG(ERROR) << "Failed to launch GPU process.";
       callback.Run(gfx::GpuMemoryBufferHandle());

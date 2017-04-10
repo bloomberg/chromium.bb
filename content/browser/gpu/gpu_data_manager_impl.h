@@ -71,8 +71,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   bool IsFeatureEnabled(int feature) const override;
   bool IsWebGLEnabled() const override;
   gpu::GPUInfo GetGPUInfo() const override;
-  void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const override;
   bool GpuAccessAllowed(std::string* reason) const override;
   void RequestCompleteGpuInfoIfNeeded() override;
   bool IsEssentialGpuInfoAvailable() const override;

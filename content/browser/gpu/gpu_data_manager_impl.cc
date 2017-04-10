@@ -91,12 +91,6 @@ gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   return private_->GetGPUInfo();
 }
 
-void GpuDataManagerImpl::GetGpuProcessHandles(
-    const GetGpuProcessHandlesCallback& callback) const {
-  base::AutoLock auto_lock(lock_);
-  private_->GetGpuProcessHandles(callback);
-}
-
 bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) const {
   base::AutoLock auto_lock(lock_);
   return private_->GpuAccessAllowed(reason);

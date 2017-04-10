@@ -98,8 +98,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "477117 "
           "BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO"));
-  GpuProcessHost* host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
+  GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     LOG(ERROR) << "Failed to launch GPU process.";
     FinishOnIO();

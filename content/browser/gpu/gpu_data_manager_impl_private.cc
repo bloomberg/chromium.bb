@@ -343,11 +343,6 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfo() const {
   return gpu_info_;
 }
 
-void GpuDataManagerImplPrivate::GetGpuProcessHandles(
-    const GpuDataManager::GetGpuProcessHandlesCallback& callback) const {
-  GpuProcessHost::GetProcessHandles(callback);
-}
-
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(
     std::string* reason) const {
   if (use_swiftshader_)
