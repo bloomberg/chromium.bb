@@ -3819,30 +3819,58 @@ static void set_frame_size(AV1_COMP *cpi) {
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
+  int scaled_size_set = 0;
+
+  const int one_pass_cbr_dynamic = oxcf->pass == 0 &&
+                                   oxcf->rc_mode == AOM_CBR &&
+                                   oxcf->resize_mode == RESIZE_DYNAMIC;
+
+  // TODO(afergs): Replace with call to av1_resize_pending? Could replace
+  //               scaled_size_set as well.
+  // TODO(afergs): Realistically, if resize_pending is true, then the other
+  //               conditions must already be satisfied.
+  //               Try this first:
+  //                 av1_resize_pending &&
+  //                 (DYNAMIC && (1 Pass CBR || 2 Pass VBR)
+  //                  STATIC  && FIRST_FRAME)
+  //               Really, av1_resize_pending should just reflect the above.
   // TODO(afergs): Allow fixed resizing in AOM_CBR mode?
-
-  if (oxcf->pass == 2 && oxcf->rc_mode == AOM_VBR &&
-      ((oxcf->resize_mode == RESIZE_FIXED && cm->current_video_frame == 0) ||
-       (oxcf->resize_mode == RESIZE_DYNAMIC && av1_resize_pending(cpi)))) {
-    av1_calculate_next_coded_size(cpi, &oxcf->scaled_frame_width,
-                                  &oxcf->scaled_frame_height);
-
-    // There has been a change in frame size.
-    av1_set_size_literal(cpi, oxcf->scaled_frame_width,
-                         oxcf->scaled_frame_height);
+  // 2 Pass VBR: Resize if fixed resize and first frame, or dynamic resize and
+  //             a resize is pending.
+  // 1 Pass CBR: Resize if dynamic resize and resize pending.
+  if ((oxcf->pass == 2 && oxcf->rc_mode == AOM_VBR &&
+       ((oxcf->resize_mode == RESIZE_FIXED && cm->current_video_frame == 0) ||
+        (oxcf->resize_mode == RESIZE_DYNAMIC && av1_resize_pending(cpi)))) ||
+      (one_pass_cbr_dynamic && av1_resize_pending(cpi))) {
+    av1_calculate_next_scaled_size(cpi, &oxcf->scaled_frame_width,
+                                   &oxcf->scaled_frame_height);
+    scaled_size_set = 1;
   }
 
-  if (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
-      oxcf->resize_mode == RESIZE_DYNAMIC && av1_resize_pending(cpi)) {
-    av1_calculate_next_coded_size(cpi, &oxcf->scaled_frame_width,
-                                  &oxcf->scaled_frame_height);
+#if CONFIG_FRAME_SUPERRES
+  // TODO(afergs): Make superres_pending a function like av1_resize_pending.
+  // TODO(afergs): Use av1_resize_pending? It's not a guarantee that a resize
+  //               occurred yet, so wait for the above logic to be simplified.
+  if (scaled_size_set || cpi->superres_pending) {
+    // Recalculate superres resolution if resize or superres scales changed.
+    int encode_width, encode_height;
+    av1_calculate_superres_size(cpi, &encode_width, &encode_height);
 
+    // There has been a change in the encoded frame size
+    av1_set_size_literal(cpi, encode_width, encode_height);
+#else
+  if (scaled_size_set) {
     // There has been a change in frame size.
     av1_set_size_literal(cpi, oxcf->scaled_frame_width,
                          oxcf->scaled_frame_height);
+#endif  // CONFIG_FRAME_SUPERRES
 
     // TODO(agrange) Scale cpi->max_mv_magnitude if frame-size has changed.
-    set_mv_search_params(cpi);
+    // TODO(afergs): Make condition just (pass == 0) or (rc_mode == CBR) -
+    //               UNLESS CBR starts allowing FIXED resizing. Then the resize
+    //               mode will need to get checked too.
+    if (one_pass_cbr_dynamic)
+      set_mv_search_params(cpi);  // TODO(afergs): Needed? Caller calls after...
   }
 
 #if !CONFIG_XIPHRC
@@ -3939,6 +3967,13 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
 
   aom_clear_system_state();
 
+#if CONFIG_FRAME_SUPERRES
+  // TODO(afergs): Figure out when is actually a good time to do superres
+  cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
+  // (uint8_t)(rand() % 9 + SUPERRES_SCALE_NUMERATOR_MIN);
+  cpi->superres_pending = cpi->oxcf.superres_enabled && 0;
+#endif  // CONFIG_FRAME_SUPERRES
+
   set_frame_size(cpi);
 
   av1_resize_step(cpi);
@@ -3995,6 +4030,11 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   // transform / motion compensation build reconstruction frame
   av1_encode_frame(cpi);
 
+#if CONFIG_FRAME_SUPERRES
+  // TODO(afergs): Upscale the frame to show
+  cpi->superres_pending = 0;
+#endif  // CONFIG_FRAME_SUPERRES
+
   // Update some stats from cyclic refresh, and check if we should not update
   // golden reference, for 1 pass CBR.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->frame_type != KEY_FRAME &&
@@ -4031,7 +4071,11 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
     set_frame_size(cpi);
 
+#if CONFIG_FRAME_SUPERRES
+    if (loop_count == 0 || av1_resize_pending(cpi) || cpi->superres_pending) {
+#else
     if (loop_count == 0 || av1_resize_pending(cpi)) {
+#endif  // CONFIG_FRAME_SUPERRES
       set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
 
       // cpi->sf.use_upsampled_references can be different from frame to frame.

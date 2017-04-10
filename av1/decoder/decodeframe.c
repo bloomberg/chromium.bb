@@ -2781,10 +2781,6 @@ static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 static void setup_superres_size(AV1_COMMON *const cm,
                                 struct aom_read_bit_buffer *rb, int *width,
                                 int *height) {
-  // TODO(afergs): Test this behaviour
-  // Frame superres is probably in compatible with this render resolution
-  assert(cm->width == cm->render_width && cm->height == cm->render_height);
-
   cm->superres_width = cm->width;
   cm->superres_height = cm->height;
   if (aom_rb_read_bit(rb)) {
@@ -2797,9 +2793,9 @@ static void setup_superres_size(AV1_COMMON *const cm,
     // by default (ie. when it isn't sent)...
     // resize_context_buffers() will change cm->width to equal cm->render_width,
     // then they'll be the same again
-    *width = cm->render_width =
+    *width =
         cm->width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
-    *height = cm->render_height =
+    *height =
         cm->height * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
   } else {
     // 1:1 scaling - ie. no scaling, scale not provided

@@ -208,6 +208,11 @@ typedef struct AV1EncoderConfig {
   int scaled_frame_width;
   int scaled_frame_height;
 
+#if CONFIG_FRAME_SUPERRES
+  // Frame Super-Resolution size scaling
+  int superres_enabled;
+#endif  // CONFIG_FRAME_SUPERRES
+
   // Enable feature to reduce the frame quantization every x frames.
   int frame_periodic_boost;
 
@@ -623,6 +628,10 @@ typedef struct AV1_COMP {
   int resize_avg_qp;
   int resize_buffer_underflow;
   int resize_count;
+
+#if CONFIG_FRAME_SUPERRES
+  int superres_pending;
+#endif  // CONFIG_FRAME_SUPERRES
 
   // VAR_BASED_PARTITION thresholds
   // 0 - threshold_128x128;

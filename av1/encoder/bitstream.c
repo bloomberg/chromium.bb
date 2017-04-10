@@ -4207,9 +4207,6 @@ static void write_render_size(const AV1_COMMON *cm,
 #if CONFIG_FRAME_SUPERRES
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
-  // This scaling and frame superres are probably incompatible
-  assert(cm->width == cm->render_width && cm->height == cm->render_height);
-
   // First bit is whether to to scale or not
   if (cm->superres_scale_numerator == SUPERRES_SCALE_DENOMINATOR) {
     aom_wb_write_bit(wb, 0);  // no scaling
