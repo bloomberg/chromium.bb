@@ -34,10 +34,10 @@ Cryptographer::Cryptographer(const Cryptographer& other)
       default_nigori_name_(other.default_nigori_name_) {
   for (NigoriMap::const_iterator it = other.nigoris_.begin();
        it != other.nigoris_.end(); ++it) {
-    std::string encryption_key, mac_key;
-    it->second->ExportKeys(&encryption_key, &mac_key);
+    std::string user_key, encryption_key, mac_key;
+    it->second->ExportKeys(&user_key, &encryption_key, &mac_key);
     linked_ptr<Nigori> nigori_copy(new Nigori());
-    nigori_copy->InitByImport(encryption_key, mac_key);
+    nigori_copy->InitByImport(user_key, encryption_key, mac_key);
     nigoris_.insert(std::make_pair(it->first, nigori_copy));
   }
 
@@ -150,7 +150,8 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
     const Nigori& nigori = *it->second;
     sync_pb::NigoriKey* key = bag.add_key();
     key->set_name(it->first);
-    nigori.ExportKeys(key->mutable_encryption_key(), key->mutable_mac_key());
+    nigori.ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
+                      key->mutable_mac_key());
   }
 
   // Encrypt the bag with the default Nigori.
@@ -305,7 +306,8 @@ void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
     // Only use this key if we don't already know about it.
     if (nigoris_.end() == nigoris_.find(key.name())) {
       std::unique_ptr<Nigori> new_nigori(new Nigori);
-      if (!new_nigori->InitByImport(key.encryption_key(), key.mac_key())) {
+      if (!new_nigori->InitByImport(key.user_key(), key.encryption_key(),
+                                    key.mac_key())) {
         NOTREACHED();
         continue;
       }
@@ -346,7 +348,8 @@ std::string Cryptographer::GetDefaultNigoriKeyData() const {
   if (iter == nigoris_.end())
     return std::string();
   sync_pb::NigoriKey key;
-  if (!iter->second->ExportKeys(key.mutable_encryption_key(),
+  if (!iter->second->ExportKeys(key.mutable_user_key(),
+                                key.mutable_encryption_key(),
                                 key.mutable_mac_key()))
     return std::string();
   return key.SerializeAsString();
@@ -361,7 +364,8 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
     return false;
 
   std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByImport(key.encryption_key(), key.mac_key())) {
+  if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
+                            key.mac_key())) {
     NOTREACHED();
     return false;
   }

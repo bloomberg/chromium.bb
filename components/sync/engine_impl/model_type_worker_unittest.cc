@@ -216,7 +216,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
       sync_pb::NigoriKey* key = bag.add_key();
 
       key->set_name(GetNigoriName(nigori));
-      nigori.ExportKeys(key->mutable_encryption_key(), key->mutable_mac_key());
+      nigori.ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
+                        key->mutable_mac_key());
     }
 
     // Re-create the last nigori from that loop.
