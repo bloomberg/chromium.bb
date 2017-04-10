@@ -14,6 +14,7 @@ source_set("user_feedback") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "test_user_feedback_provider.h",
