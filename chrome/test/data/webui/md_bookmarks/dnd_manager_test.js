@@ -386,4 +386,61 @@ suite('drag and drop', function() {
     dispatchDragEvent('dragend', dragTarget);
     assertDragStyle(dragTarget, DRAG_STYLE.NONE);
   });
+
+  test('auto expander', function() {
+    var autoExpander = dndManager.autoExpander_;
+    store.data.closedFolders = new Set(['11']);
+    store.notifyObservers();
+    Polymer.dom.flush();
+
+    var dragElement = getFolderNode('14');
+    var dragTarget = getFolderNode('15');
+    autoExpander.testTimestamp_ = 500;
+
+    dispatchDragEvent('dragstart', dragElement);
+    dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
+
+    // Dragging onto folders without children doesn't update the auto expander.
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(null, autoExpander.lastElement_);
+
+    // Dragging onto open folders doesn't update the auto expander.
+    dragTarget = getFolderNode('1');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(null, autoExpander.lastElement_);
+
+    // Dragging onto a closed folder with children updates the auto expander.
+    dragTarget = getFolderNode('11');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(500, autoExpander.lastTimestamp_);
+    assertEquals(dragTarget, autoExpander.lastElement_);
+
+    // Dragging onto another item resets the auto expander.
+    autoExpander.testTimestamp_ = 700;
+    dragTarget = getFolderNode('1');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(null, autoExpander.lastElement_);
+
+    // Dragging onto the list resets the auto expander.
+    dragTarget = getFolderNode('11');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(700, autoExpander.lastTimestamp_);
+    assertEquals(dragTarget, autoExpander.lastElement_);
+
+    dragTarget = list;
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(null, autoExpander.lastElement_);
+
+    // Auto expands after expand delay.
+    dragTarget = getFolderNode('11');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(700, autoExpander.lastTimestamp_);
+
+    autoExpander.testTimestamp_ += autoExpander.EXPAND_FOLDER_DELAY;
+    dispatchDragEvent('dragover', dragTarget);
+    assertDeepEquals(
+        bookmarks.actions.changeFolderOpen('11', true), store.lastAction);
+    assertEquals(0, autoExpander.lastTimestamp_);
+    assertEquals(null, autoExpander.lastElement_);
+  });
 });

@@ -113,6 +113,61 @@ cr.define('bookmarks', function() {
     },
   };
 
+
+  /**
+   * Manages auto expanding of sidebar folders on hover while dragging.
+   * @constructor
+   */
+  function AutoExpander() {
+    /** @const {number} */
+    this.EXPAND_FOLDER_DELAY = 400;
+
+    /** @private {number} */
+    this.lastTimestamp_ = 0;
+
+    /** @private {BookmarkElement|null} */
+    this.lastElement_ = null;
+
+    /** @private {number} */
+    this.testTimestamp_ = 0;
+  }
+
+  AutoExpander.prototype = {
+    /**
+     * @param {Event} e
+     * @param {?BookmarkElement} overElement
+     */
+    update: function(e, overElement) {
+      var eventTimestamp = this.testTimestamp_ || e.timeStamp;
+      var itemId = overElement ? overElement.itemId : null;
+      var store = bookmarks.Store.getInstance();
+
+      // If hovering over the same folder as last update, open the folder after
+      // the delay has passed.
+      if (overElement && overElement == this.lastElement_) {
+        if (eventTimestamp - this.lastTimestamp_ < this.EXPAND_FOLDER_DELAY)
+          return;
+
+        var action = bookmarks.actions.changeFolderOpen(itemId, true);
+        store.handleAction(action);
+      } else if (
+          overElement && isBookmarkFolderNode(overElement) &&
+          bookmarks.util.hasChildFolders(itemId, store.data.nodes) &&
+          store.data.closedFolders.has(itemId)) {
+        // Since this is a closed folder node that has children, set the auto
+        // expander to this element.
+        this.lastTimestamp_ = eventTimestamp;
+        this.lastElement_ = overElement;
+        return;
+      }
+
+      // If the folder has been expanded or we have moved to a different
+      // element, reset the auto expander.
+      this.lastTimestamp_ = 0;
+      this.lastElement_ = null;
+    },
+  };
+
   /**
    * Encapsulates the behavior of the drag and drop indicator which puts a line
    * between items or highlights folders which are valid drop targets.
@@ -230,6 +285,7 @@ cr.define('bookmarks', function() {
     init: function() {
       this.dragInfo_ = new DragInfo();
       this.dropIndicator_ = new DropIndicator();
+      this.autoExpander_ = new AutoExpander();
 
       this.documentListeners_ = {
         'dragstart': this.onDragStart_.bind(this),
@@ -383,10 +439,10 @@ cr.define('bookmarks', function() {
         return;
 
       var overElement = getBookmarkElement(e.path);
+      this.autoExpander_.update(e, overElement);
       if (!overElement)
         return;
 
-      // TODO(calamity): open folders on hover.
 
       // Now we know that we can drop. Determine if we will drop above, on or
       // below based on mouse position etc.
