@@ -368,6 +368,9 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
   if ignore_404 and response.status == 404:
     return StringIO()
   if response.status != expect_status:
+    if response.status in (401, 403):
+      print('Your Gerrit credentials might be misconfigured. Try: \n'
+            '  git cl creds-check')
     reason = '%s: %s' % (response.reason, contents)
     raise GerritError(response.status, reason)
   return StringIO(contents)
