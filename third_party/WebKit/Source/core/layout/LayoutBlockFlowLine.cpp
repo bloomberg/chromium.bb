@@ -1118,9 +1118,6 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
 
   LineBreaker line_breaker(LineLayoutBlockFlow(this));
 
-  // We avoid inline capacity to save the stack space.
-  WordMeasurements word_measurements;
-  word_measurements.ReserveInitialCapacity(64);
 
   while (!end_of_line.AtEnd()) {
     // The runs from the previous line should have been cleaned up.
@@ -1151,7 +1148,7 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
     FloatingObject* last_float_from_previous_line =
         (ContainsFloats()) ? floating_objects_->Set().back().get() : 0;
 
-    word_measurements.Clear();
+    WordMeasurements word_measurements;
     end_of_line =
         line_breaker.NextLineBreak(resolver, layout_state.GetLineInfo(),
                                    layout_text_info, word_measurements);
