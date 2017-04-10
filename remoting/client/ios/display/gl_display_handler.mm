@@ -6,33 +6,35 @@
 #error "This file requires ARC support."
 #endif
 
-
-#import <Foundation/Foundation.h>
-#import <GLKit/GLKit.h>
+#import "remoting/client/ios/display/gl_display_handler.h"
 
 #import "remoting/client/display/sys_opengl.h"
 #import "remoting/client/ios/display/gl_demo_screen.h"
-#import "remoting/client/ios/display/gl_display_handler.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/chromoting_client.h"
+#include "remoting/client/chromoting_client_runtime.h"
+#include "remoting/client/cursor_shape_stub_proxy.h"
 #include "remoting/client/display/gl_canvas.h"
 #include "remoting/client/display/gl_renderer.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
 #include "remoting/client/dual_buffer_frame_consumer.h"
-#include "remoting/client/ios/app_runtime.h"
 #include "remoting/client/software_video_renderer.h"
 
 namespace remoting {
 namespace GlDisplayHandler {
 
 // The core that lives on the display thread.
-class Core :  public GlRendererDelegate {
+class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
  public:
-  Core(remoting::ios::AppRuntime* runtime);
+  Core();
   ~Core() override;
+
+  // CursorShapeStub interface.
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
   // GlRendererDelegate interface.
   bool CanRenderFrame() override;
@@ -40,13 +42,14 @@ class Core :  public GlRendererDelegate {
   void OnSizeChanged(int width, int height) override;
 
   void Created();
+  void Stop();
   void SurfaceChanged(int width, int height);
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
   // Will be std::move'd when GrabFrameConsumer() is called.
-  remoting::ios::AppRuntime* runtime_;
+  remoting::ChromotingClientRuntime* runtime_;
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
 
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
@@ -61,8 +64,8 @@ class Core :  public GlRendererDelegate {
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-Core::Core(remoting::ios::AppRuntime* runtime)
-    : runtime_(runtime), weak_factory_(this) {
+Core::Core() : weak_factory_(this) {
+  runtime_ = ChromotingClientRuntime::GetInstance();
   weak_ptr_ = weak_factory_.GetWeakPtr();
   renderer_.SetDelegate(weak_ptr_);
   owned_frame_consumer_.reset(new remoting::DualBufferFrameConsumer(
@@ -75,6 +78,11 @@ Core::Core(remoting::ios::AppRuntime* runtime)
 }
 
 Core::~Core() {}
+
+void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnCursorShapeChanged(cursor_shape);
+}
 
 bool Core::CanRenderFrame() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
@@ -99,10 +107,23 @@ void Core::Created() {
   DCHECK(!eagl_context_);
 
   eagl_context_ = [EAGLContext currentContext];
+  if (!eagl_context_) {
+    eagl_context_ =
+        [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+    [EAGLContext setCurrentContext:eagl_context_];
+  }
   renderer_.RequestCanvasSize();
 
   renderer_.OnSurfaceCreated(base::MakeUnique<GlCanvas>(
       static_cast<int>([eagl_context_ API])));
+}
+
+void Core::Stop() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  eagl_context_ = nil;
+  // demo_screen_
+  // renderer_ = nil;
 }
 
 void Core::SurfaceChanged(int width, int height) {
@@ -119,7 +140,7 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 
 @interface GlDisplayHandler ()
 @property(nonatomic) remoting::GlDisplayHandler::Core* core_;
-@property(nonatomic) remoting::ios::AppRuntime* runtime_;
+@property(nonatomic) remoting::ChromotingClientRuntime* runtime_;
 @end
 
 @implementation GlDisplayHandler
@@ -127,22 +148,33 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 @synthesize core_ = _core_;
 @synthesize runtime_ = _runtime_;
 
-- (id)initWithRuntime:(remoting::ios::AppRuntime*)runtime {
+- (id)initWithRuntime:(remoting::ChromotingClientRuntime*)runtime {
   self.runtime_ = runtime;
   return self;
 }
 
 - (void)created {
-  _core_ = new remoting::GlDisplayHandler::Core(self.runtime_);
+  _core_ = new remoting::GlDisplayHandler::Core();
 
   self.runtime_->display_task_runner()->PostTask(
       FROM_HERE, base::Bind(&remoting::GlDisplayHandler::Core::Created,
                             self.core_->GetWeakPtr()));
 }
 
+- (void)stop {
+  self.runtime_->display_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&remoting::GlDisplayHandler::Core::Stop,
+                            self.core_->GetWeakPtr()));
+}
+
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer {
   return base::MakeUnique<remoting::SoftwareVideoRenderer>(
       _core_->GrabFrameConsumer());
+}
+
+- (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub {
+  return base::MakeUnique<remoting::CursorShapeStubProxy>(
+      _core_->GetWeakPtr(), self.runtime_->display_task_runner());
 }
 
 // In general, avoid expensive work in this function to maximize frame rate.
