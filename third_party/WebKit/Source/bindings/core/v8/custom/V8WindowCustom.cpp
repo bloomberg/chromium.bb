@@ -41,7 +41,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -110,9 +109,8 @@ void V8Window::locationAttributeGetterCustom(
   // remote Location objects, we should clean this up to improve
   // maintainability. In the long-term, this will be superseded by wrapper
   // tracing.
-  V8HiddenValue::SetHiddenValue(
-      ScriptState::Current(isolate), holder,
-      V8AtomicString(isolate, "KeepAlive#Window#location"), wrapper);
+  V8PrivateProperty::GetSymbol(isolate, "KeepAlive#Window#location")
+      .Set(holder, wrapper);
 
   V8SetReturnValue(info, wrapper);
 }

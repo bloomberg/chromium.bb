@@ -39,7 +39,6 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCForContextDispose.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8PagePopupControllerBinding.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
