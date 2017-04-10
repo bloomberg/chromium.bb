@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -108,6 +109,10 @@ struct NET_EXPORT AlternativeService {
   std::string host;
   uint16_t port;
 };
+
+NET_EXPORT_PRIVATE std::ostream& operator<<(
+    std::ostream& os,
+    const AlternativeService& alternative_service);
 
 struct NET_EXPORT AlternativeServiceInfo {
   AlternativeServiceInfo() : alternative_service() {}
