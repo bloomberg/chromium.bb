@@ -151,7 +151,7 @@ modules_idl_files =
                     "indexeddb/IDBVersionChangeEvent.idl",
                     "installedapp/RelatedApplication.idl",
                     "media_capabilities/MediaCapabilities.idl",
-                    "media_capabilities/MediaDecodingAbility.idl",
+                    "media_capabilities/MediaCapabilitiesInfo.idl",
                     "mediacapturefromelement/CanvasCaptureMediaStreamTrack.idl",
                     "mediarecorder/BlobEvent.idl",
                     "mediarecorder/MediaRecorder.idl",

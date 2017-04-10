@@ -8,12 +8,12 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "modules/media_capabilities/MediaCapabilitiesInfo.h"
 #include "modules/media_capabilities/MediaConfiguration.h"
-#include "modules/media_capabilities/MediaDecodingAbility.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
+#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
 #include "public/platform/modules/media_capabilities/WebMediaConfiguration.h"
-#include "public/platform/modules/media_capabilities/WebMediaDecodingAbility.h"
 
 namespace blink {
 
@@ -88,15 +88,15 @@ WebMediaConfiguration ToWebMediaConfiguration(
 
 MediaCapabilities::MediaCapabilities() = default;
 
-ScriptPromise MediaCapabilities::query(
+ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaConfiguration& configuration) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  Platform::Current()->MediaCapabilitiesClient()->Query(
+  Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
       ToWebMediaConfiguration(configuration),
-      WTF::MakeUnique<CallbackPromiseAdapter<MediaDecodingAbility, void>>(
+      WTF::MakeUnique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
           resolver));
 
   return promise;

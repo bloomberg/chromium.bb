@@ -8,8 +8,8 @@ blink_modules_sources("media_capabilities") {
   sources = [
     "MediaCapabilities.cpp",
     "MediaCapabilities.h",
-    "MediaDecodingAbility.cpp",
-    "MediaDecodingAbility.h",
+    "MediaCapabilitiesInfo.cpp",
+    "MediaCapabilitiesInfo.h",
     "NavigatorMediaCapabilities.cpp",
     "NavigatorMediaCapabilities.h",
   ]

@@ -22,7 +22,7 @@ class MediaCapabilities final
  public:
   MediaCapabilities();
 
-  ScriptPromise query(ScriptState*, const MediaConfiguration&);
+  ScriptPromise decodingInfo(ScriptState*, const MediaConfiguration&);
 
   DECLARE_VIRTUAL_TRACE();
 };

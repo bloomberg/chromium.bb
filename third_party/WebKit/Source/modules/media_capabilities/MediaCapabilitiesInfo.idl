@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/media-capabilities/#mediadecodingability
+// https://wicg.github.io/media-capabilities/#mediacapabilitiesinfo
 
 [
     Exposed=Window,
     RuntimeEnabled=MediaCapabilities
-] interface MediaDecodingAbility {
+] interface MediaCapabilitiesInfo {
     readonly attribute boolean supported;
     readonly attribute boolean smooth;
     readonly attribute boolean powerEfficient;

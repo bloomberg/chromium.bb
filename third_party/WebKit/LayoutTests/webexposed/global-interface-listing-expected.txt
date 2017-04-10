@@ -3899,8 +3899,8 @@ interface Magnetometer : Sensor
 interface MediaCapabilities
     attribute @@toStringTag
     method constructor
-    method query
-interface MediaDecodingAbility
+    method decodingInfo
+interface MediaCapabilitiesInfo
     attribute @@toStringTag
     getter powerEfficient
     getter smooth
