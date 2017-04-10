@@ -12,13 +12,13 @@
             android:icon="@drawable/btn_close"
             android:title="@string/close"
             chrome:showAsAction="ifRoom" />
-     </group>
-     <group
+    </group>
+    <group
         android:id="@+id/photo_picker_selection_mode_menu_group"
         android:visible="false" >
         <item
             android:id="@+id/selection_mode_done_menu_id"
             android:title="@string/done"
             chrome:showAsAction="always" />
-     </group>
+    </group>
 </menu>

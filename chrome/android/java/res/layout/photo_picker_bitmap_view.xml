@@ -10,8 +10,7 @@
 <view class="org.chromium.chrome.browser.photo_picker.PickerBitmapView"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:background="@color/photo_picker_tile_bg_color">
+    android:layout_height="wrap_content">
 
     <FrameLayout
         android:id="@+id/border"
@@ -24,7 +23,33 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@null" />
+
+        <View
+            android:id="@+id/scrim"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/file_picker_scrim"
+            android:visibility="gone" />
     </FrameLayout>
+
+    <ImageView
+        android:id="@+id/selected"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:contentDescription="@null"
+        android:src="@drawable/verify_checkmark"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/unselected"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/circle_white"
+        android:visibility="gone" />
 
     <!-- Special tiles, that give access to the camera and gallery  -->
     <TextView

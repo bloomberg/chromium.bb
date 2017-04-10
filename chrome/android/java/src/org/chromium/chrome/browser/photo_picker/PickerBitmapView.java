@@ -42,8 +42,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The image view containing the bitmap.
     private ImageView mIconView;
 
-    // The view behind the image, representing the selection border.
-    private View mBorderView;
+    // The little shader in the top left corner (provides backdrop for selection ring on
+    // unfavorable image backgrounds).
+    private View mScrim;
+
+    // The control that signifies the image has been selected.
+    private ImageView mSelectedView;
+
+    // The control that signifies the image has not been selected.
+    private View mUnselectedView;
 
     // The camera/gallery special tile (with icon as drawable).
     private TextView mSpecialTile;
@@ -63,7 +70,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mIconView = (ImageView) findViewById(R.id.bitmap_view);
-        mBorderView = findViewById(R.id.border);
+        mScrim = findViewById(R.id.scrim);
+        mSelectedView = (ImageView) findViewById(R.id.selected);
+        mUnselectedView = findViewById(R.id.unselected);
         mSpecialTile = (TextView) findViewById(R.id.special_tile);
     }
 
@@ -192,6 +201,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * re-used.
      */
     private void resetTile() {
+        mUnselectedView.setVisibility(View.GONE);
+        mSelectedView.setVisibility(View.GONE);
+        mScrim.setVisibility(View.GONE);
         mSpecialTile.setVisibility(View.GONE);
     }
 
@@ -200,6 +212,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      */
     private void updateSelectionState() {
         boolean special = !isPictureTile();
+        boolean checked = super.isChecked();
         boolean anySelection =
                 mSelectionDelegate != null && mSelectionDelegate.isSelectionEnabled();
         int bgColorId;
@@ -216,7 +229,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         }
 
         Resources resources = mContext.getResources();
-        mBorderView.setBackgroundColor(ApiCompatibilityUtils.getColor(resources, bgColorId));
+        setBackgroundColor(ApiCompatibilityUtils.getColor(resources, bgColorId));
         mSpecialTile.setTextColor(ApiCompatibilityUtils.getColor(resources, fgColorId));
         Drawable[] drawables = mSpecialTile.getCompoundDrawables();
         // The textview only has a top compound drawable (2nd element).
@@ -224,6 +237,13 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             int color = ApiCompatibilityUtils.getColor(resources, fgColorId);
             drawables[1].setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
+
+        // The visibility of the unselected image is a little more complex because we don't want
+        // to show it when nothing is selected and also not on a blank canvas.
+        mSelectedView.setVisibility(!special && checked ? View.VISIBLE : View.GONE);
+        mUnselectedView.setVisibility(
+                !special && !checked && anySelection ? View.VISIBLE : View.GONE);
+        mScrim.setVisibility(!special && !checked && anySelection ? View.VISIBLE : View.GONE);
     }
 
     private boolean isGalleryTile() {
@@ -236,6 +256,6 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     }
 
     private boolean isPictureTile() {
-        return mBitmapDetails != null && mBitmapDetails.type() == PickerBitmap.PICTURE;
+        return mBitmapDetails == null || mBitmapDetails.type() == PickerBitmap.PICTURE;
     }
 }
