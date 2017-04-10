@@ -207,6 +207,12 @@ void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
         static_cast<base::HistogramBase::Sample>(status),
         static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
             1);
+
+    SearchGeolocationService* service =
+        SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+    UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PreDisclosureDSESetting",
+                          service->GetDSEGeolocationSetting());
+
     prefs->SetBoolean(prefs::kSearchGeolocationPreDisclosureMetricsRecorded,
                       true);
   }
@@ -226,6 +232,12 @@ void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
         static_cast<base::HistogramBase::Sample>(status),
         static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
             1);
+
+    SearchGeolocationService* service =
+        SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+    UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PostDisclosureDSESetting",
+                          service->GetDSEGeolocationSetting());
+
     prefs->SetBoolean(prefs::kSearchGeolocationPostDisclosureMetricsRecorded,
                       true);
   }
