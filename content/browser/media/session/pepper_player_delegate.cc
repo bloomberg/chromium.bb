@@ -58,7 +58,7 @@ void PepperPlayerDelegate::OnSetVolumeMultiplier(int player_id,
   SetVolume(player_id, volume_multiplier);
 }
 
-RenderFrameHost* PepperPlayerDelegate::GetRenderFrameHost() const {
+RenderFrameHost* PepperPlayerDelegate::render_frame_host() const {
   return render_frame_host_;
 }
 

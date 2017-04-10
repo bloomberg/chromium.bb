@@ -42,7 +42,7 @@ void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
   players_[player_id].volume_multiplier_ = volume_multiplier;
 }
 
-RenderFrameHost* MockMediaSessionPlayerObserver::GetRenderFrameHost() const {
+RenderFrameHost* MockMediaSessionPlayerObserver::render_frame_host() const {
   return render_frame_host_;
 }
 

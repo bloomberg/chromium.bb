@@ -27,7 +27,7 @@ class MediaSessionPlayerObserver {
 
   // Returns the RenderFrameHost this player observer belongs to. Returns
   // nullptr if unavailable.
-  virtual RenderFrameHost* GetRenderFrameHost() const = 0;
+  virtual RenderFrameHost* render_frame_host() const = 0;
 };
 
 }  // namespace content

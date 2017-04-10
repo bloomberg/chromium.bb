@@ -95,7 +95,7 @@ void MediaSessionController::OnSetVolumeMultiplier(int player_id,
           id_.first->GetRoutingID(), id_.second, volume_multiplier));
 }
 
-RenderFrameHost* MediaSessionController::GetRenderFrameHost() const {
+RenderFrameHost* MediaSessionController::render_frame_host() const {
   return id_.first;
 }
 

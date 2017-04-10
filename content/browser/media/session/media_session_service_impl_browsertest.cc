@@ -67,7 +67,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override {
   }
 
-  RenderFrameHost* GetRenderFrameHost() const override {
+  RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
 

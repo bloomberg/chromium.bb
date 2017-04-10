@@ -65,7 +65,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   MOCK_METHOD2(OnSetVolumeMultiplier,
                void(int player_id, double volume_multiplier));
 
-  RenderFrameHost* GetRenderFrameHost() const override {
+  RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
 
@@ -89,10 +89,6 @@ class MediaSessionImplServiceRoutingTest
         MediaSessionImpl::Get(contents())));
     main_frame_ = contents()->GetMainFrame();
     sub_frame_ = main_frame_->AppendChild("sub_frame");
-
-    player_in_main_frame_.reset(
-        new MockMediaSessionPlayerObserver(main_frame_));
-    player_in_sub_frame_.reset(new MockMediaSessionPlayerObserver(sub_frame_));
   }
 
   void TearDown() override {
@@ -153,9 +149,6 @@ class MediaSessionImplServiceRoutingTest
 
   TestRenderFrameHost* main_frame_;
   TestRenderFrameHost* sub_frame_;
-
-  std::unique_ptr<MockMediaSessionPlayerObserver> player_in_main_frame_;
-  std::unique_ptr<MockMediaSessionPlayerObserver> player_in_sub_frame_;
 
   std::unique_ptr<MockMediaSessionObserver> mock_media_session_observer_;
 

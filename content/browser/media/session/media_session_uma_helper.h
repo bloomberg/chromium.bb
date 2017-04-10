@@ -29,8 +29,25 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     Count // Leave at the end.
   };
 
+  // Extended enum to blink::mojom::MediaSessionAction, distinguishing default
+  // action handling.
+  enum class MediaSessionUserAction {
+    Play = 0,
+    PlayDefault = 1,
+    Pause = 2,
+    PauseDefault = 3,
+    StopDefault = 4,
+    PreviousTrack = 5,
+    NextTrack = 6,
+    SeekBackward = 7,
+    SeekForward = 8,
+    Count  // Leave at the end.
+  };
+
   MediaSessionUmaHelper();
   ~MediaSessionUmaHelper();
+
+  static void RecordMediaSessionUserAction(MediaSessionUserAction action);
 
   void RecordSessionSuspended(MediaSessionSuspendedSource source) const;
 

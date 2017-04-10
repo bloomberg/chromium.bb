@@ -50,7 +50,7 @@ class CONTENT_EXPORT MediaSessionController
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
-  RenderFrameHost* GetRenderFrameHost() const override;
+  RenderFrameHost* render_frame_host() const override;
 
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }

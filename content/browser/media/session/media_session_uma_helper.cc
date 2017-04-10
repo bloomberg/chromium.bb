@@ -21,6 +21,14 @@ MediaSessionUmaHelper::MediaSessionUmaHelper()
 MediaSessionUmaHelper::~MediaSessionUmaHelper()
 {}
 
+// static
+void MediaSessionUmaHelper::RecordMediaSessionUserAction(
+    MediaSessionUserAction action) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.Session.UserAction", static_cast<HistogramBase::Sample>(action),
+      static_cast<HistogramBase::Sample>(MediaSessionUserAction::Count));
+}
+
 void MediaSessionUmaHelper::RecordSessionSuspended(
     MediaSessionSuspendedSource source) const {
   UMA_HISTOGRAM_ENUMERATION(
