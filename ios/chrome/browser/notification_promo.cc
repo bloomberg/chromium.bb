@@ -34,7 +34,6 @@ const char kPrefPromoClosed[] = "closed";
 
 NotificationPromo::NotificationPromo(PrefService* local_state)
     : local_state_(local_state),
-      promo_type_(NO_PROMO),
       promo_payload_(new base::DictionaryValue()),
       start_(0.0),
       end_(0.0),
@@ -79,13 +78,10 @@ void NotificationPromo::InitFromVariations() {
   }
   json.Set("payload", payload.DeepCopy());
 
-  InitFromJson(json, MOBILE_NTP_WHATS_NEW_PROMO);
+  InitFromJson(json);
 }
 
-void NotificationPromo::InitFromJson(const base::DictionaryValue& promo,
-                                     PromoType promo_type) {
-  promo_type_ = promo_type;
-
+void NotificationPromo::InitFromJson(const base::DictionaryValue& promo) {
   std::string time_str;
   base::Time time;
   if (promo.GetString("start", &time_str) &&
@@ -155,9 +151,7 @@ void NotificationPromo::WritePrefs(int promo_id,
   DVLOG(1) << "WritePrefs " << promo_dict;
 }
 
-void NotificationPromo::InitFromPrefs(PromoType promo_type) {
-  promo_type_ = promo_type;
-
+void NotificationPromo::InitFromPrefs() {
   // Check if data is stored in the old prefs structure, and migrate it before
   // reading from prefs.
   MigrateOldPrefs();

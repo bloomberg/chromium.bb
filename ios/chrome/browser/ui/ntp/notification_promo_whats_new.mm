@@ -95,8 +95,7 @@ bool NotificationPromoWhatsNew::Init() {
     }
   }
 
-  notification_promo_.InitFromPrefs(
-      ios::NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO);
+  notification_promo_.InitFromPrefs();
   return InitFromNotificationPromo();
 }
 
@@ -105,8 +104,7 @@ bool NotificationPromoWhatsNew::ClearAndInitFromJson(
   // This clears away old promos.
   notification_promo_.MigrateUserPrefs(local_state_);
 
-  notification_promo_.InitFromJson(
-      json, ios::NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO);
+  notification_promo_.InitFromJson(json);
   return InitFromNotificationPromo();
 }
 
@@ -276,7 +274,6 @@ void NotificationPromoWhatsNew::InjectFakePromo(const std::string& promo_id,
       base::JSONReader::Read(promo_json_filled_in));
   base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict)) {
-    notification_promo_.InitFromJson(
-        *dict, ios::NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO);
+    notification_promo_.InitFromJson(*dict);
   }
 }

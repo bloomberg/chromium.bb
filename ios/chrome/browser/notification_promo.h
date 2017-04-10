@@ -27,15 +27,6 @@ namespace ios {
 // or prefs.
 class NotificationPromo {
  public:
-  // TODO(crbug.com/608525): Remove when this code is refactored.
-  enum PromoType {
-    NO_PROMO,
-    NTP_NOTIFICATION_PROMO,
-    NTP_BUBBLE_PROMO,
-    MOBILE_NTP_SYNC_PROMO,
-    MOBILE_NTP_WHATS_NEW_PROMO,
-  };
-
   explicit NotificationPromo(PrefService* local_state);
   ~NotificationPromo();
 
@@ -43,8 +34,8 @@ class NotificationPromo {
   void InitFromVariations();
 
   // Initialize from json/prefs.
-  void InitFromJson(const base::DictionaryValue& json, PromoType promo_type);
-  void InitFromPrefs(PromoType promo_type);
+  void InitFromJson(const base::DictionaryValue& json);
+  void InitFromPrefs();
 
   // Can this promo be shown?
   bool CanShow() const;
@@ -60,7 +51,6 @@ class NotificationPromo {
   void HandleViewed();
 
   const std::string& promo_text() const { return promo_text_; }
-  PromoType promo_type() const { return promo_type_; }
   const base::DictionaryValue* promo_payload() const {
     return promo_payload_.get();
   }
@@ -100,7 +90,6 @@ class NotificationPromo {
 
   PrefService* local_state_;
 
-  PromoType promo_type_;
   std::string promo_text_;
 
   std::unique_ptr<const base::DictionaryValue> promo_payload_;
