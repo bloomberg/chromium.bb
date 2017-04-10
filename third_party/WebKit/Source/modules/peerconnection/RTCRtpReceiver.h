@@ -5,11 +5,8 @@
 #ifndef RTCRtpReceiver_h
 #define RTCRtpReceiver_h
 
-#include <map>
-
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/peerconnection/RTCRtpContributingSource.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/Visitor.h"
@@ -27,31 +24,12 @@ class RTCRtpReceiver final : public GarbageCollectedFinalized<RTCRtpReceiver>,
   RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver>, MediaStreamTrack*);
 
   MediaStreamTrack* track() const;
-  const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
-
-  void UpdateSourcesIfNeeded();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void SetContributingSourcesNeedsUpdating();
-
   std::unique_ptr<WebRTCRtpReceiver> receiver_;
   Member<MediaStreamTrack> track_;
-
-  // All contributing sources that have ever been returned by
-  // |getContributingSources| that are still alive. If |UpdateSourcesIfNeeded|
-  // encounters a source that already has an associate
-  // |RTCRtpContributingSource| it will be kept up-to-date. Garbage collected
-  // sources are automatically removed from the map.
-  HeapHashMap<uint32_t,
-              WeakMember<RTCRtpContributingSource>,
-              typename DefaultHash<uint32_t>::Hash,
-              WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
-      contributing_sources_by_source_id_;
-  // The current contributing sources (|getContributingSources|).
-  HeapVector<Member<RTCRtpContributingSource>> contributing_sources_;
-  bool contributing_sources_needs_updating_ = true;
 };
 
 }  // namespace blink

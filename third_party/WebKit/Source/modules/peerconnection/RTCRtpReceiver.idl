@@ -7,7 +7,6 @@
     RuntimeEnabled=RTCRtpReceiver,
 ] interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
-    sequence<RTCRtpContributingSource> getContributingSources();
 
     // TODO(hbos): Support every member of the spec. https://crbug.com/700916
 };

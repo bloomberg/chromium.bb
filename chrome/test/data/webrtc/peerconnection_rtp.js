@@ -64,8 +64,6 @@ function verifyRtpReceivers(expectedNumTracks = null) {
       throw failTest('receiver is null or undefined.');
     if (receiver.track == null)
       throw failTest('receiver.track is null or undefined.');
-    if (receiver.getContributingSources().length != 0)
-      throw failTest('receiver.getContributingSources() is not empty.');
     receivers.add(receiver);
     receiverTracks.add(receiver.track);
   });

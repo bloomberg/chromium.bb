@@ -550,7 +550,6 @@ component("platform") {
     "exported/WebRTCAnswerOptions.cpp",
     "exported/WebRTCICECandidate.cpp",
     "exported/WebRTCOfferOptions.cpp",
-    "exported/WebRTCRtpContributingSource.cpp",
     "exported/WebRTCRtpReceiver.cpp",
     "exported/WebRTCSessionDescription.cpp",
     "exported/WebRTCSessionDescriptionRequest.cpp",
