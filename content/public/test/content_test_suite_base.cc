@@ -34,6 +34,7 @@
 #include "device/geolocation/android/geolocation_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/capture/video/android/capture_jni_registrar.h"
+#include "mojo/android/system/mojo_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
@@ -79,6 +80,7 @@ void ContentTestSuiteBase::Initialize() {
   gfx::android::RegisterJni(env);
   media::RegisterCaptureJni(env);
   media::RegisterJni(env);
+  mojo::android::RegisterSystemJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
   ui::RegisterUIAndroidJni(env);

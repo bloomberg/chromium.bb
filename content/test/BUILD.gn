@@ -306,6 +306,7 @@ static_library("test_support") {
       "mock_google_streaming_server.cc",
       "mock_google_streaming_server.h",
     ]
+    deps += [ "//mojo/android:libsystem_java" ]
   }
 
   if (enable_plugins) {

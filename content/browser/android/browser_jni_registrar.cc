@@ -32,8 +32,6 @@
 #include "content/browser/memory/memory_monitor_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#include "mojo/android/system/core_impl.h"
-#include "mojo/android/system/watcher_impl.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
@@ -43,7 +41,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentFeatureList", content::android::RegisterContentFeatureListJni},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
-    {"CoreImpl", mojo::android::RegisterCoreImpl},
     {"GpuProcessCallback", content::RegisterGpuProcessCallback},
     {"MemoryMonitorAndroid", content::MemoryMonitorAndroid::Register},
     {"BackgroundSyncNetworkObserverAndroid",
@@ -67,7 +64,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
-    {"WatcherImpl", mojo::android::RegisterWatcherImpl},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserver", content::RegisterWebContentsObserverProxy},
     {"WebViewStatics", content::RegisterWebViewStatics},

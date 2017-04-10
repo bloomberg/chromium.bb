@@ -34,6 +34,7 @@
 #include "media/capture/content/android/screen_capture_jni_registrar.h"
 #include "media/capture/video/android/capture_jni_registrar.h"
 #include "media/midi/midi_jni_registrar.h"
+#include "mojo/android/system/mojo_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
@@ -105,6 +106,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!midi::RegisterJni(env))
+      return false;
+
+    if (!mojo::android::RegisterSystemJni(env))
       return false;
 
     if (!ui::RegisterUIAndroidJni(env))

@@ -104,6 +104,18 @@ template("implement_content_app") {
       "mojo/mojo_init.h",
     ]
 
+    configs += extra_configs
+    deps = content_app_deps + [
+             ":$runner_target_name",
+             "//ipc",
+             "//services/service_manager/embedder",
+           ]
+    forward_variables_from(invoker,
+                           [
+                             "defines",
+                             "visibility",
+                           ])
+
     if (is_android) {
       sources += [
         "android/app_jni_registrar.cc",
@@ -116,21 +128,10 @@ template("implement_content_app") {
         "android/library_loader_hooks.cc",
         "android/library_loader_hooks.h",
       ]
+      deps += [ "//mojo/android:libsystem_java" ]
     } else {
       sources += [ "content_main.cc" ]
     }
-
-    configs += extra_configs
-    deps = content_app_deps + [
-             ":$runner_target_name",
-             "//ipc",
-             "//services/service_manager/embedder",
-           ]
-    forward_variables_from(invoker,
-                           [
-                             "defines",
-                             "visibility",
-                           ])
   }
 }
 

@@ -34,6 +34,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/browser_jni_registrar.h"
+#include "mojo/android/system/mojo_jni_registrar.h"
 #endif
 
 namespace content {
@@ -211,9 +212,11 @@ void ResetSchemesAndOriginsWhitelist() {
 }
 
 #if defined(OS_ANDROID)
-// Registers content/browser JNI bindings necessary for some types of tests.
+// Registers content/browser and mojo JNI bindings necessary for some types of
+// tests.
 bool RegisterJniForTesting(JNIEnv* env) {
-  return content::android::RegisterBrowserJni(env);
+  return mojo::android::RegisterSystemJni(env) &&
+         content::android::RegisterBrowserJni(env);
 }
 #endif
 

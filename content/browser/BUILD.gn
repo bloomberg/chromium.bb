@@ -1855,7 +1855,6 @@ source_set("browser") {
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",
-      "//mojo/android:libsystem_java",
       "//ui/android",
     ]
     defines += [

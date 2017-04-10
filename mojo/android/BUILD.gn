@@ -41,6 +41,8 @@ source_set("libsystem_java") {
     "system/base_run_loop.h",
     "system/core_impl.cc",
     "system/core_impl.h",
+    "system/mojo_jni_registrar.cc",
+    "system/mojo_jni_registrar.h",
     "system/watcher_impl.cc",
     "system/watcher_impl.h",
   ]
