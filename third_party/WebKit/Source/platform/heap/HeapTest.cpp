@@ -87,6 +87,49 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
 static_assert(WTF::IsTraceable<IntWrapper>::value,
               "IsTraceable<> template failed to recognize trace method.");
 
+class KeyWithCopyingMoveConstructor final {
+ public:
+  struct Hash final {
+    STATIC_ONLY(Hash);
+
+   public:
+    static unsigned GetHash(const KeyWithCopyingMoveConstructor& key) {
+      return key.hash_;
+    }
+
+    static bool Equal(const KeyWithCopyingMoveConstructor& x,
+                      const KeyWithCopyingMoveConstructor& y) {
+      return x.hash_ == y.hash_;
+    }
+
+    static constexpr bool safe_to_compare_to_empty_or_deleted = true;
+  };
+
+  KeyWithCopyingMoveConstructor() = default;
+  KeyWithCopyingMoveConstructor(WTF::HashTableDeletedValueType) : hash_(-1) {}
+  ~KeyWithCopyingMoveConstructor() = default;
+  KeyWithCopyingMoveConstructor(unsigned hash, const String& string)
+      : hash_(hash), string_(string) {
+    DCHECK_NE(hash_, 0);
+    DCHECK_NE(hash_, -1);
+  }
+  KeyWithCopyingMoveConstructor(const KeyWithCopyingMoveConstructor&) = default;
+  // The move constructor delegates to the copy constructor intentionally.
+  KeyWithCopyingMoveConstructor(KeyWithCopyingMoveConstructor&& x)
+      : KeyWithCopyingMoveConstructor(x) {}
+  KeyWithCopyingMoveConstructor& operator=(
+      const KeyWithCopyingMoveConstructor&) = default;
+  bool operator==(const KeyWithCopyingMoveConstructor& x) const {
+    return hash_ == x.hash_;
+  }
+
+  bool IsHashTableDeletedValue() const { return hash_ == -1; }
+
+ private:
+  int hash_ = 0;
+  String string_;
+};
+
 struct SameSizeAsPersistent {
   void* pointer_[4];
 };
@@ -271,6 +314,15 @@ template <>
 struct IsTraceable<blink::PairWithWeakHandling> {
   static const bool value = IsTraceable<blink::StrongWeakPair>::value;
 };
+
+template <>
+struct DefaultHash<blink::KeyWithCopyingMoveConstructor> {
+  using Hash = blink::KeyWithCopyingMoveConstructor::Hash;
+};
+
+template <>
+struct HashTraits<blink::KeyWithCopyingMoveConstructor>
+    : public SimpleClassHashTraits<blink::KeyWithCopyingMoveConstructor> {};
 
 }  // namespace WTF
 
@@ -6489,6 +6541,25 @@ TEST(HeapTest, IsGarbageCollected) {
   static_assert(WTF::IsGarbageCollectedType<
                     HeapTerminatedArray<Member<IntWrapper>>>::value,
                 "HeapTerminatedArray");
+}
+
+TEST(HeapTest, HeapHashMapCallsDestructor) {
+  String string = "string";
+  EXPECT_TRUE(string.Impl()->HasOneRef());
+
+  HeapHashMap<KeyWithCopyingMoveConstructor, Member<IntWrapper>> map;
+
+  EXPECT_TRUE(string.Impl()->HasOneRef());
+
+  for (int i = 1; i <= 100; ++i) {
+    KeyWithCopyingMoveConstructor key(i, string);
+    map.insert(key, IntWrapper::Create(i));
+  }
+
+  EXPECT_FALSE(string.Impl()->HasOneRef());
+  map.Clear();
+
+  EXPECT_TRUE(string.Impl()->HasOneRef());
 }
 
 }  // namespace blink

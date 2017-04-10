@@ -1666,6 +1666,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       Mover<ValueType, Allocator,
             Traits::template NeedsToForbidGCOnMove<>::value>::
           Move(std::move(table_[i]), temporary_table[i]);
+      table_[i].~ValueType();
     }
   }
   table_ = temporary_table;
