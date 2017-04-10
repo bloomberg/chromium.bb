@@ -60,7 +60,6 @@ Global=|*
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
-Iterable
 LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LenientThis

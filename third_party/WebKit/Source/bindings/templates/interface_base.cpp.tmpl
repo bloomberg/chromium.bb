@@ -532,6 +532,42 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endfilter %}
   {% endif %}
 
+  {% if interface_name == 'Iterator' %}
+  // The WebIDL spec says when an interface has pair iterators the iterators it
+  // returns must be instances of the "default iterator object" whose
+  // [[Prototype]] points to an "iterator prototype object" whose
+  // [[Prototype]], on its turn, points to %IteratorPrototype%. next() must be
+  // implemented in the "iterator prototype object", while %IteratorPrototype%
+  // provides @@iterator.
+  // References:
+  // https://heycam.github.io/webidl/#es-default-iterator-object
+  // https://heycam.github.io/webidl/#es-iterator-prototype-object
+  //
+  // The iterators we return from interfaces that have pair interators adhere
+  // to the above by:
+  // - Adding the "next()" property to its prototype object.
+  // - Making the prototype object inherit from %IteratorPrototype% with the
+  //   hack below, which creates another function template with no prototype
+  //   and sets the "prototype" property of its function object.
+  //   When |interfaceTemplate|'s function object is created, its
+  //   prototype.__proto__ will point to the value of the "prototype" property
+  //   of |iteratorPrototypeTemplate|, which is exactly what we want.
+  //
+  // Finally, creating a FunctionTemplate here might look expensive since they
+  // have the same lifetime as their context, but:
+  // - |interfaceTemplate| is cached in V8PerIsolateData, so we create only one
+  //   FunctionTemplate per interface.
+  // - There is only one Iterator interface that creates this FunctionTemplate,
+  //   so there is no need to reuse this FunctionTemplate and register it in
+  //   V8PerIsolateData.
+  v8::Local<v8::FunctionTemplate> intrinsicIteratorPrototypeInterfaceTemplate =
+      v8::FunctionTemplate::New(isolate);
+  intrinsicIteratorPrototypeInterfaceTemplate->RemovePrototype();
+  intrinsicIteratorPrototypeInterfaceTemplate->SetIntrinsicDataProperty(
+      V8AtomicString(isolate, "prototype"), v8::kIteratorPrototype);
+  interfaceTemplate->Inherit(intrinsicIteratorPrototypeInterfaceTemplate);
+  {% endif %}
+
   {% if interface_name == 'Location' %}
   // Symbol.toPrimitive
   // Prevent author scripts to inject Symbol.toPrimitive property into location

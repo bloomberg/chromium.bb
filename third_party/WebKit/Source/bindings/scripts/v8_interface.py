@@ -507,7 +507,7 @@ def methods_context(interface):
             argument.extended_attributes.update(extended_attributes)
         return argument
 
-    # [Iterable], iterable<>, maplike<> and setlike<>
+    # iterable<>, maplike<> and setlike<>
     iterator_method = None
 
     # FIXME: support Iterable in partial interfaces. However, we don't
@@ -516,8 +516,7 @@ def methods_context(interface):
     # http://heycam.github.io/webidl/#idl-overloading
     if (not interface.is_partial and (
             interface.iterable or interface.maplike or interface.setlike or
-            interface.has_indexed_elements or
-            'Iterable' in interface.extended_attributes)):
+            interface.has_indexed_elements)):
 
         used_extended_attributes = {}
 

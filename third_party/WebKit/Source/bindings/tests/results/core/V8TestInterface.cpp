@@ -1886,6 +1886,77 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
   (partial2StaticVoidMethodMethodForPartialInterface)(info);
 }
 
+static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "keys");
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+
+  Iterator* result = impl->keysForBinding(scriptState, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+  V8SetReturnValue(info, result);
+}
+
+static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "values");
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+
+  Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+  V8SetReturnValue(info, result);
+}
+
+static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "entries");
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+
+  Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+  V8SetReturnValue(info, result);
+}
+
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "forEach");
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  ScriptValue callback;
+  ScriptValue thisArg;
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
+    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
+
+    return;
+  }
+  callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+
+  thisArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+
+  impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+}
+
 static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "toJSON");
 
@@ -2674,6 +2745,22 @@ void V8TestInterface::partial2StaticVoidMethodMethodCallback(const v8::FunctionC
   TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethod(info);
 }
 
+void V8TestInterface::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationV8Internal::keysMethod(info);
+}
+
+void V8TestInterface::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationV8Internal::valuesMethod(info);
+}
+
+void V8TestInterface::entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationV8Internal::entriesMethod(info);
+}
+
+void V8TestInterface::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationV8Internal::forEachMethod(info);
+}
+
 void V8TestInterface::toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::toJSONMethod(info);
 }
@@ -2799,6 +2886,10 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
     {"staticPromiseMethodPartialOverload", V8TestInterface::staticPromiseMethodPartialOverloadMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"partial2VoidMethod", V8TestInterface::partial2VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"partial2StaticVoidMethod", V8TestInterface::partial2StaticVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"keys", V8TestInterface::keysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"values", V8TestInterface::valuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"entries", V8TestInterface::entriesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"forEach", V8TestInterface::forEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"toJSON", V8TestInterface::toJSONMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"toString", V8TestInterface::toStringMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };

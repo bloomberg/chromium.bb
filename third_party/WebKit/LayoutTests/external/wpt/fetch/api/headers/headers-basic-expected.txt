@@ -13,9 +13,9 @@ PASS Check set method
 PASS Check has method 
 PASS Check delete method 
 PASS Check get method 
-FAIL Check keys method assert_equals: expected object "[object Object]" but got object "[object Object]"
-FAIL Check values method assert_equals: expected object "[object Object]" but got object "[object Object]"
-FAIL Check entries method assert_equals: expected object "[object Object]" but got object "[object Object]"
+PASS Check keys method 
+PASS Check values method 
+PASS Check entries method 
 PASS Check Symbol.iterator method 
 PASS Check forEach method 
 Harness: the test ran to completion.

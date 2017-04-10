@@ -930,49 +930,6 @@ Summary: Does not generate a test for `[NewObject]` in the binding layer.
 
 When specified, does not generate a test for `[NewObject]`. Some implementation creates a new DOM object and its wrapper before passing through the binding layer. In that case, the generated test doesn't make sense. See Text.splitText() for example.
 
-### [Iterable] _(i)_
-
-Summary: Installs a @@iterator method.
-
-*** note
-In most cases, interfaces should use the standard `iterator<valuetype>`, `iterator<keytype,valuetype>`, `setlike<type>`, or `maplike<keytype, valuetype>` IDL declarations instead. `[Iterable]` should only be necessary for the implementation of iterators themselves.
-***
-
-When the attribute is set on an interface, the code generator installs iterator C++ method into [Symbol.iterator] slot.
-
-```webidl
-[ Iterable ] interface IterableInterface { };
-```
-
-C++ implementation:
-
-```c++
-class IterableInterface : public ScriptWrappable {
-...
-public:
-...
-    // This is called when |obj[Symbol.iterator]| is called.
-    Iterator* iterator(ScriptState*, ExceptionState&);
-};
-```
-
-JavaScript usage:
-
-```js
-var obj = ...; // obj is an IterableInterface object.
-var iter = obj[Symbol.iterator](); // IterableInterface::iterator is called.
-for (var value of obj) {
-    // Iterates over |obj|.
-}
-for (var value of iter) {
-    // Same as above.
-}
-```
-
-*** note
-Currently the code generator doesn't take care of the name conflict. Namely, it is not allowed to have "iterator" method in an iterable interface.
-***
-
 ### [Measure] _(i, m, a, c)_
 
 Summary: Measures usage of a specific feature via UseCounter.
