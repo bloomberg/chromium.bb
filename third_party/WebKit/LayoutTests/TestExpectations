@@ -2600,7 +2600,6 @@ crbug.com/684874 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-duri
 
 # ====== Begin of display: contents tests ======
 
-crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-001.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-002.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
