@@ -2510,6 +2510,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
 }
 
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
+#if BUILDFLAG(ENABLE_WEBRTC)
   if (!main_render_frame_)
     return;
 
@@ -2522,6 +2523,7 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
       media_stream_dispatcher->GetNonScreenCaptureDevices();
   RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
       video_array, suspend);
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 #endif  // defined(OS_ANDROID)
 
