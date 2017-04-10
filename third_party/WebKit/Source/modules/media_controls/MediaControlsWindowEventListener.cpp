@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/shadow/MediaControlsWindowEventListener.h"
+#include "modules/media_controls/MediaControlsWindowEventListener.h"
 
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/html/media/MediaControls.h"
 #include "core/html/shadow/MediaControlElements.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 
 namespace blink {
 
@@ -25,14 +25,14 @@ LocalDOMWindow* GetTopLocalDOMWindow(LocalDOMWindow* window) {
 }  // anonymous namespace
 
 MediaControlsWindowEventListener* MediaControlsWindowEventListener::Create(
-    MediaControls* media_controls,
+    MediaControlsImpl* media_controls,
     std::unique_ptr<Callback> callback) {
   return new MediaControlsWindowEventListener(media_controls,
                                               std::move(callback));
 }
 
 MediaControlsWindowEventListener::MediaControlsWindowEventListener(
-    MediaControls* media_controls,
+    MediaControlsImpl* media_controls,
     std::unique_ptr<Callback> callback)
     : EventListener(kCPPEventListenerType),
       media_controls_(media_controls),
@@ -50,7 +50,7 @@ void MediaControlsWindowEventListener::Start() {
   if (is_active_)
     return;
 
-  if (LocalDOMWindow* window = media_controls_->OwnerDocument().domWindow()) {
+  if (LocalDOMWindow* window = media_controls_->GetDocument().domWindow()) {
     window->addEventListener(EventTypeNames::click, this, true);
 
     if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
@@ -60,14 +60,15 @@ void MediaControlsWindowEventListener::Start() {
     }
   }
 
-  media_controls_->PanelElement()->addEventListener(EventTypeNames::click, this,
+  // TODO(mlamouri): use more scalable solution to handle click as this could be
+  // broken when new elements that swallow the click are added to the controls.
+  media_controls_->panel_->addEventListener(EventTypeNames::click, this, false);
+  media_controls_->timeline_->addEventListener(EventTypeNames::click, this,
+                                               false);
+  media_controls_->cast_button_->addEventListener(EventTypeNames::click, this,
+                                                  false);
+  media_controls_->volume_slider_->addEventListener(EventTypeNames::click, this,
                                                     false);
-  media_controls_->TimelineElement()->addEventListener(EventTypeNames::click,
-                                                       this, false);
-  media_controls_->CastButtonElement()->addEventListener(EventTypeNames::click,
-                                                         this, false);
-  media_controls_->VolumeSliderElement()->addEventListener(
-      EventTypeNames::click, this, false);
 
   is_active_ = true;
 }
@@ -76,7 +77,7 @@ void MediaControlsWindowEventListener::Stop() {
   if (!is_active_)
     return;
 
-  if (LocalDOMWindow* window = media_controls_->OwnerDocument().domWindow()) {
+  if (LocalDOMWindow* window = media_controls_->GetDocument().domWindow()) {
     window->removeEventListener(EventTypeNames::click, this, true);
 
     if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
@@ -88,14 +89,14 @@ void MediaControlsWindowEventListener::Stop() {
     is_active_ = false;
   }
 
-  media_controls_->PanelElement()->removeEventListener(EventTypeNames::click,
+  media_controls_->panel_->removeEventListener(EventTypeNames::click, this,
+                                               false);
+  media_controls_->timeline_->removeEventListener(EventTypeNames::click, this,
+                                                  false);
+  media_controls_->cast_button_->removeEventListener(EventTypeNames::click,
+                                                     this, false);
+  media_controls_->volume_slider_->removeEventListener(EventTypeNames::click,
                                                        this, false);
-  media_controls_->TimelineElement()->removeEventListener(EventTypeNames::click,
-                                                          this, false);
-  media_controls_->CastButtonElement()->removeEventListener(
-      EventTypeNames::click, this, false);
-  media_controls_->VolumeSliderElement()->removeEventListener(
-      EventTypeNames::click, this, false);
 
   is_active_ = false;
 }

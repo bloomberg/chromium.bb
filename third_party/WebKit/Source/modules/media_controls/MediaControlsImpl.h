@@ -87,18 +87,11 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Return the internal elements, which is used by registering clicking
   // EventHandlers from MediaControlsWindowEventListener.
   MediaControlPanelElement* PanelElement() override { return panel_; }
-  MediaControlTimelineElement* TimelineElement() override { return timeline_; }
-  MediaControlCastButtonElement* CastButtonElement() override {
-    return cast_button_;
-  }
-  MediaControlVolumeSliderElement* VolumeSliderElement() override {
-    return volume_slider_;
-  }
   void BeginScrubbing() override;
   void EndScrubbing() override;
   void UpdateCurrentTimeDisplay() override;
   void ToggleTextTrackList() override;
-  void ShowTextTrackAtIndex(unsigned index_to_enable) override;
+  void ShowTextTrackAtIndex(unsigned) override;
   void DisableShowingTextTracks() override;
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
   void EnterFullscreen() override;
@@ -132,7 +125,17 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  // MediaControlsMediaEventListener is a component that is listening to events
+  // and calling the appropriate callback on MediaControlsImpl. The object is
+  // split from MedaiControlsImpl to reduce boilerplate and ease reading. In
+  // order to not expose accessors only for this component, a friendship is
+  // declared.
   friend class MediaControlsMediaEventListener;
+  // Same as above but handles the menus hiding when the window is interacted
+  // with, allowing MediaControlsImpl to not have the boilerplate.
+  friend class MediaControlsWindowEventListener;
+
+  // For tests.
   friend class MediaControlsOrientationLockDelegateTest;
   friend class MediaControlsImplTest;
 

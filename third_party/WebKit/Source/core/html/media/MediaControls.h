@@ -14,10 +14,7 @@ namespace blink {
 class Document;
 class HTMLMediaElement;
 class LayoutObject;
-class MediaControlCastButtonElement;
 class MediaControlPanelElement;
-class MediaControlTimelineElement;
-class MediaControlVolumeSliderElement;
 class ShadowRoot;
 
 // MediaControls is an interface to abstract the HTMLMediaElement controls. The
@@ -76,9 +73,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // implementation and could be removed when the full implementation has moved
   // to modules.
   virtual MediaControlPanelElement* PanelElement() = 0;
-  virtual MediaControlTimelineElement* TimelineElement() = 0;
-  virtual MediaControlCastButtonElement* CastButtonElement() = 0;
-  virtual MediaControlVolumeSliderElement* VolumeSliderElement() = 0;
   virtual Document& OwnerDocument() = 0;
   virtual void OnVolumeChange() = 0;
   virtual void OnFocusIn() = 0;
@@ -98,7 +92,7 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual void EndScrubbing() = 0;
   virtual void UpdateCurrentTimeDisplay() = 0;
   virtual void ToggleTextTrackList() = 0;
-  virtual void ShowTextTrackAtIndex(unsigned index_to_enable) = 0;
+  virtual void ShowTextTrackAtIndex(unsigned) = 0;
   virtual void DisableShowingTextTracks() = 0;
   virtual void EnterFullscreen() = 0;
   virtual void ExitFullscreen() = 0;

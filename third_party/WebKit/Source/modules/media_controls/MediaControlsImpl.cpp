@@ -40,12 +40,12 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/shadow/MediaControlsMediaEventListener.h"
-#include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
+#include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {

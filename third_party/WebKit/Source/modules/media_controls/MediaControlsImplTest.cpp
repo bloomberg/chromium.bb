@@ -199,6 +199,12 @@ class MediaControlsImplTest : public ::testing::Test {
   void SimulateLoadedMetadata() { media_controls_->OnLoadedMetadata(); }
 
   MediaControlsImpl& MediaControls() { return *media_controls_; }
+  MediaControlVolumeSliderElement* VolumeSliderElement() const {
+    return media_controls_->volume_slider_;
+  }
+  MediaControlTimelineElement* TimelineElement() const {
+    return media_controls_->timeline_;
+  }
   MockVideoWebMediaPlayer* WebMediaPlayer() {
     return static_cast<MockVideoWebMediaPlayer*>(
         MediaControls().MediaElement().GetWebMediaPlayer());
@@ -542,8 +548,8 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
 TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   EnsureSizing();
 
-  // Tests the case where the real length of the video, |exactDuration|, gets
-  // rounded up slightly to |roundedUpDuration| when setting the timeline's
+  // Tests the case where the real length of the video, |exact_duration|, gets
+  // rounded up slightly to |rounded_up_duration| when setting the timeline's
   // |max| attribute (crbug.com/695065).
   double exact_duration = 596.586667;
   double rounded_up_duration = 596.587;
@@ -552,7 +558,7 @@ TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   // Simulate a click slightly past the end of the track of the timeline's
   // underlying <input type="range">. This would set the |value| to the |max|
   // attribute, which can be slightly rounded relative to the duration.
-  MediaControlTimelineElement* timeline = MediaControls().TimelineElement();
+  MediaControlTimelineElement* timeline = TimelineElement();
   timeline->setValueAsNumber(rounded_up_duration, ASSERT_NO_EXCEPTION);
   ASSERT_EQ(rounded_up_duration, timeline->valueAsNumber());
   EXPECT_EQ(0.0, MediaControls().MediaElement().currentTime());
@@ -573,16 +579,15 @@ TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
 
   // Simulate seeking the underlying range to 50%. Current time display should
   // update synchronously (rather than waiting for media to finish seeking).
-  MediaControls().TimelineElement()->setValueAsNumber(duration / 2,
-                                                      ASSERT_NO_EXCEPTION);
-  MediaControls().TimelineElement()->DispatchInputEvent();
+  TimelineElement()->setValueAsNumber(duration / 2, ASSERT_NO_EXCEPTION);
+  TimelineElement()->DispatchInputEvent();
   EXPECT_EQ(duration / 2, current_time_display->CurrentValue());
 }
 
 TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
   EnsureSizing();
 
-  Element* volume_slider = MediaControls().VolumeSliderElement();
+  Element* volume_slider = VolumeSliderElement();
 
   MockLayoutObject layout_object;
   LayoutObject* prev_layout_object = volume_slider->GetLayoutObject();
@@ -610,7 +615,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
   EnsureSizing();
   testing::RunPendingTasks();
 
-  MediaControlTimelineElement* timeline = MediaControls().TimelineElement();
+  MediaControlTimelineElement* timeline = TimelineElement();
   ASSERT_TRUE(IsElementVisible(*timeline));
   ASSERT_LT(0, timeline->getBoundingClientRect()->width());
 
@@ -640,18 +645,16 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
   EnsureSizing();
   testing::RunPendingTasks();
 
-  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
-  ClientRect* timeline_rect =
-      MediaControls().TimelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timeline_rect->width());
+  ASSERT_TRUE(IsElementVisible(*TimelineElement()));
+  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  WebFloatPoint track_center(
-      timeline_rect->left() + timeline_rect->width() / 2,
-      timeline_rect->top() + timeline_rect->height() / 2);
-  MouseDownAt(track_center);
-  MouseUpAt(track_center);
+  WebFloatPoint trackCenter(timelineRect->left() + timelineRect->width() / 2,
+                            timelineRect->top() + timelineRect->height() / 2);
+  MouseDownAt(trackCenter);
+  MouseUpAt(trackCenter);
   testing::RunPendingTasks();
 
   EXPECT_LE(0.49 * duration, MediaControls().MediaElement().currentTime());
@@ -683,9 +686,8 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
   EnsureSizing();
   testing::RunPendingTasks();
 
-  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
-  ClientRect* timeline_rect =
-      MediaControls().TimelineElement()->getBoundingClientRect();
+  ASSERT_TRUE(IsElementVisible(*TimelineElement()));
+  ClientRect* timeline_rect = TimelineElement()->getBoundingClientRect();
   ASSERT_LT(0, timeline_rect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -727,21 +729,20 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
   EnsureSizing();
   testing::RunPendingTasks();
 
-  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
-  ClientRect* timeline_rect =
-      MediaControls().TimelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timeline_rect->width());
+  ASSERT_TRUE(IsElementVisible(*TimelineElement()));
+  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  float y = timeline_rect->top() + timeline_rect->height() / 2;
-  WebFloatPoint track_one_third(
-      timeline_rect->left() + timeline_rect->width() * 1 / 3, y);
-  WebFloatPoint track_two_thirds(
-      timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
-  MouseDownAt(track_one_third);
-  MouseMoveTo(track_two_thirds);
-  MouseUpAt(track_two_thirds);
+  float y = timelineRect->top() + timelineRect->height() / 2;
+  WebFloatPoint trackOneThird(
+      timelineRect->left() + timelineRect->width() * 1 / 3, y);
+  WebFloatPoint trackTwoThirds(
+      timelineRect->left() + timelineRect->width() * 2 / 3, y);
+  MouseDownAt(trackOneThird);
+  MouseMoveTo(trackTwoThirds);
+  MouseUpAt(trackTwoThirds);
 
   EXPECT_LE(0.66 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
@@ -772,23 +773,22 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
   EnsureSizing();
   testing::RunPendingTasks();
 
-  ASSERT_TRUE(IsElementVisible(*MediaControls().TimelineElement()));
-  ClientRect* timeline_rect =
-      MediaControls().TimelineElement()->getBoundingClientRect();
-  ASSERT_LT(0, timeline_rect->width());
+  ASSERT_TRUE(IsElementVisible(*TimelineElement()));
+  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  float y = timeline_rect->top() + timeline_rect->height() / 2;
-  WebFloatPoint track_two_thirds(
-      timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
-  WebFloatPoint track_end(timeline_rect->left() + timeline_rect->width(), y);
-  WebFloatPoint track_one_third(
-      timeline_rect->left() + timeline_rect->width() * 1 / 3, y);
-  MouseDownAt(track_two_thirds);
-  MouseMoveTo(track_end);
-  MouseMoveTo(track_one_third);
-  MouseUpAt(track_one_third);
+  float y = timelineRect->top() + timelineRect->height() / 2;
+  WebFloatPoint trackTwoThirds(
+      timelineRect->left() + timelineRect->width() * 2 / 3, y);
+  WebFloatPoint trackEnd(timelineRect->left() + timelineRect->width(), y);
+  WebFloatPoint trackOneThird(
+      timelineRect->left() + timelineRect->width() * 1 / 3, y);
+  MouseDownAt(trackTwoThirds);
+  MouseMoveTo(trackEnd);
+  MouseMoveTo(trackOneThird);
+  MouseUpAt(trackOneThird);
 
   EXPECT_LE(0.32 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.34 * duration, MediaControls().MediaElement().currentTime());
