@@ -67,6 +67,7 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -1083,9 +1084,51 @@ class DownloadProtectionService::CheckClientDownloadRequest
              << item_->GetUrlChain().back();
     DVLOG(2) << "Detected " << request.archived_binary().size() << " archived "
              << "binaries";
-    fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
-                                       GetDownloadRequestUrl(),
-                                       net::URLFetcher::POST, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("client_download_request", R"(
+          semantics {
+            sender: "Download Protection Service"
+            description:
+              "Chromium checks whether a given download is likely to be "
+              "dangerous by sending this client download request to Google's "
+              "Safe Browsing servers. Safe Browsing server will respond to "
+              "this request by sending back a verdict, indicating if this "
+              "download is safe or the danger type of this download (e.g. "
+              "dangerous content, uncommon content, potentially harmful, etc)."
+            trigger:
+              "This request is triggered when a download is about to complete, "
+              "the download is not whitelisted, and its file extension is "
+              "supported by download protection service (e.g. executables, "
+              "archives). Please refer to https://cs.chromium.org/chromium/src/"
+              "chrome/browser/resources/safe_browsing/"
+              "download_file_types.asciipb for the complete list of supported "
+              "files."
+            data:
+              "URL of the file to be downloaded, its referrer chain, digest "
+              "and other features extracted from the downloaded file. Refer to "
+              "ClientDownloadRequest message in https://cs.chromium.org/"
+              "chromium/src/components/safe_browsing/csd.proto for all "
+              "submitted features."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: true
+            cookies_store: "Safe Browsing cookies store"
+            setting:
+              "Users can enable or disable the entire Safe Browsing service in "
+              "Chromium's settings by toggling 'Protect you and your device "
+              "from dangerous sites' under Privacy. This feature is enabled by "
+              "default."
+            chrome_policy {
+              SafeBrowsingEnabled {
+                policy_options {mode: MANDATORY}
+                SafeBrowsingEnabled: false
+              }
+            }
+          })");
+    fetcher_ = net::URLFetcher::Create(
+        0 /* ID used for testing */, GetDownloadRequestUrl(),
+        net::URLFetcher::POST, this, traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -1433,8 +1476,48 @@ class DownloadProtectionService::PPAPIDownloadRequest
     service_->ppapi_download_request_callbacks_.Notify(&request);
     DVLOG(2) << "Sending a PPAPI download request for URL: " << request.url();
 
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("ppapi_download_request", R"(
+          semantics {
+            sender: "Download Protection Service"
+            description:
+              "Chromium checks whether a given PPAPI download is likely to be "
+              "dangerous by sending this client download request to Google's "
+              "Safe Browsing servers. Safe Browsing server will respond to "
+              "this request by sending back a verdict, indicating if this "
+              "download is safe or the danger type of this download (e.g. "
+              "dangerous content, uncommon content, potentially harmful, etc)."
+            trigger:
+              "When user triggers a non-whitelisted PPAPI download, and the "
+              "file extension is supported by download protection service. "
+              "Please refer to https://cs.chromium.org/chromium/src/chrome/"
+              "browser/resources/safe_browsing/download_file_types.asciipb for "
+              "the complete list of supported files."
+            data:
+              "Download's URL, its referrer chain, and digest. Please refer to "
+              "ClientDownloadRequest message in https://cs.chromium.org/"
+              "chromium/src/components/safe_browsing/csd.proto for all "
+              "submitted features."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: true
+            cookies_store: "Safe Browsing cookies store"
+            setting:
+              "Users can enable or disable the entire Safe Browsing service in "
+              "Chromium's settings by toggling 'Protect you and your device "
+              "from dangerous sites' under Privacy. This feature is enabled by "
+              "default."
+            chrome_policy {
+              SafeBrowsingEnabled {
+                policy_options {mode: MANDATORY}
+                SafeBrowsingEnabled: false
+              }
+            }
+          })");
     fetcher_ = net::URLFetcher::Create(0, GetDownloadRequestUrl(),
-                                       net::URLFetcher::POST, this);
+                                       net::URLFetcher::POST, this,
+                                       traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
