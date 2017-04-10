@@ -217,6 +217,26 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
     self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
     self.assertEqual('', stderr.getvalue())
 
+  def testNoDefaultIgnores(self):
+    """Tests the --no-default-ignores switch."""
+    # Check out revision D. This has a .git-blame-ignore-revs file, which we
+    # expect to be ignored due to --no-default-ignores.
+    self.repo.git('checkout', '-f', 'tag_D')
+
+    expected_output = [self.blame_line('C', '1) line 1.1'),
+                       self.blame_line('B', '2) line 2.1')]
+    stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
+
+    retval = self.repo.run(
+        self.git_hyper_blame.main,
+        args=['tag_D', 'some/files/file', '--no-default-ignores'],
+        stdout=stdout, stderr=stderr)
+
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual('', stderr.getvalue())
+
 class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
   REPO_SCHEMA = """
   A B D E F G H
