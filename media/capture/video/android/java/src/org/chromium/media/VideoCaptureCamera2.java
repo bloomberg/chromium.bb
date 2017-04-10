@@ -741,9 +741,31 @@ public class VideoCaptureCamera2 extends VideoCapture {
         builder.setMinZoom(1.0).setMaxZoom(mMaxZoom);
         builder.setCurrentZoom(currentZoom).setStepZoom(0.1);
 
-        final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
         // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
+        final int[] jniFocusModes =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+        ArrayList<Integer> focusModes = new ArrayList<Integer>(3);
+        for (int mode : jniFocusModes) {
+            if (mode == CameraMetadata.CONTROL_AF_MODE_OFF) {
+                focusModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+            } else if (mode == CameraMetadata.CONTROL_AF_MODE_AUTO
+                    || mode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
+                // CONTROL_AF_MODE_{AUTO,MACRO} do not imply continuously focusing.
+                if (!focusModes.contains(Integer.valueOf(AndroidMeteringMode.SINGLE_SHOT))) {
+                    focusModes.add(Integer.valueOf(AndroidMeteringMode.SINGLE_SHOT));
+                }
+            } else if (mode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+                    || mode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                    || mode == CameraMetadata.CONTROL_AF_MODE_EDOF) {
+                if (!focusModes.contains(Integer.valueOf(AndroidMeteringMode.CONTINUOUS))) {
+                    focusModes.add(Integer.valueOf(AndroidMeteringMode.CONTINUOUS));
+                }
+            }
+        }
+        builder.setFocusModes(integerArrayListToArray(focusModes));
+
+        final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
         int jniFocusMode = AndroidMeteringMode.NONE;
         if (focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
                 || focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
@@ -757,6 +779,24 @@ public class VideoCaptureCamera2 extends VideoCapture {
             assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
         }
         builder.setFocusMode(jniFocusMode);
+
+        // Auto Exposure is the usual capability and state, unless AE is not available at all, which
+        // is signalled by an empty CONTROL_AE_AVAILABLE_MODES list. Exposure Compensation can also
+        // support or be locked, this is equivalent to AndroidMeteringMode.FIXED.
+        final int[] jniExposureModes =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES);
+        ArrayList<Integer> exposureModes = new ArrayList<Integer>(1);
+        for (int mode : jniExposureModes) {
+            if (mode == CameraMetadata.CONTROL_AE_MODE_ON
+                    || mode == CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH
+                    || mode == CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH
+                    || mode == CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE) {
+                exposureModes.add(Integer.valueOf(AndroidMeteringMode.CONTINUOUS));
+                break;
+            }
+        }
+        // TODO(mcasas): query |cameraCharacteristics| for CONTROL_AE_LOCK_AVAILABLE (API 23)
+        builder.setExposureModes(integerArrayListToArray(exposureModes));
 
         int jniExposureMode = AndroidMeteringMode.CONTINUOUS;
         if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)
@@ -778,6 +818,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
         builder.setMaxExposureCompensation(exposureCompensationRange.getUpper() * step);
         builder.setCurrentExposureCompensation(
                 mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) * step);
+
+        final int[] jniWhiteBalanceMode =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES);
+        ArrayList<Integer> whiteBalanceModes = new ArrayList<Integer>(1);
+        for (int mode : jniWhiteBalanceMode) {
+            if (mode == CameraMetadata.CONTROL_AWB_MODE_AUTO) {
+                whiteBalanceModes.add(Integer.valueOf(AndroidMeteringMode.CONTINUOUS));
+                break;
+            }
+        }
+        // TODO(mcasas): query |cameraCharacteristics| for CONTROL_AWE_LOCK_AVAILABLE (API 23)
+        builder.setWhiteBalanceModes(integerArrayListToArray(whiteBalanceModes));
 
         final int whiteBalanceMode = mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE);
         if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
@@ -820,9 +872,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     modes.add(Integer.valueOf(AndroidFillLightMode.FLASH));
                 }
             }
-            int[] modesAsIntArray = new int[modes.size()];
-            for (int i = 0; i < modes.size(); i++) modesAsIntArray[i] = modes.get(i).intValue();
-            builder.setFillLightModes(modesAsIntArray);
+            builder.setFillLightModes(integerArrayListToArray(modes));
         }
 
         return builder.build();
@@ -870,7 +920,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE) > 0
                 || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB) > 0;
         if (pointsOfInterestSupported && pointsOfInterest2D.length > 0) {
-            assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
+            assert pointsOfInterest2D.length == 2 : "Only 1 point of interest supported";
             assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
             assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
             // Calculate a Rect of 1/8 the |visibleRect| dimensions, and center it w.r.t. |canvas|.

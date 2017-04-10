@@ -486,11 +486,29 @@ public class VideoCaptureCamera
         builder.setMinZoom(minZoom).setMaxZoom(maxZoom);
         builder.setCurrentZoom(currentZoom).setStepZoom(stepZoom);
 
-        Log.d(TAG, "parameters.getFocusMode(): %s", parameters.getFocusMode());
-        final String focusMode = parameters.getFocusMode();
-
-        // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
+        // Classify the Focus capabilities and state. In CONTINUOUS and SINGLE_SHOT, we can call
         // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
+        final List<String> focusModes = parameters.getSupportedFocusModes();
+        assert focusModes != null : "getSupportedFocusModes() should never return null";
+        ArrayList<Integer> jniFocusModes = new ArrayList<Integer>(3);
+        if (focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
+                || focusModes.contains(
+                           android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+                || focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF)) {
+            jniFocusModes.add(Integer.valueOf(AndroidMeteringMode.CONTINUOUS));
+        }
+        // FOCUS_MODE_{AUTO,MACRO} do not imply continuously focusing: need autoFocus() trigger.
+        if (focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO)
+                || focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_MACRO)) {
+            jniFocusModes.add(Integer.valueOf(AndroidMeteringMode.SINGLE_SHOT));
+        }
+        if (focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
+                || focusModes.contains(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)) {
+            jniFocusModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
+        }
+        builder.setFocusModes(integerArrayListToArray(jniFocusModes));
+
+        final String focusMode = parameters.getFocusMode();
         int jniFocusMode = AndroidMeteringMode.NONE;
         if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
                 || focusMode.equals(
@@ -506,11 +524,19 @@ public class VideoCaptureCamera
         }
         builder.setFocusMode(jniFocusMode);
 
-        // Exposure is usually continuously updated except it not available at all, or if the
-        // exposure compensation is locked, in which case we consider it as FIXED.
-        int jniExposureMode = parameters.getMaxNumMeteringAreas() == 0
-                ? AndroidMeteringMode.NONE
-                : AndroidMeteringMode.CONTINUOUS;
+        // Auto Exposure is the usual capability and state, unless AE is not available at all, which
+        // is signalled by the absence of Metering Areas. Exposure Compensation can also support or
+        // be locked, this is equivalent to AndroidMeteringMode.FIXED.
+        ArrayList<Integer> jniExposureModes = new ArrayList<Integer>(2);
+        if (parameters.getMaxNumMeteringAreas() > 0) {
+            jniExposureModes.add(AndroidMeteringMode.CONTINUOUS);
+        }
+        if (parameters.isAutoExposureLockSupported()) {
+            jniExposureModes.add(AndroidMeteringMode.FIXED);
+        }
+        builder.setExposureModes(integerArrayListToArray(jniExposureModes));
+
+        int jniExposureMode = AndroidMeteringMode.CONTINUOUS;
         if (parameters.isAutoExposureLockSupported() && parameters.getAutoExposureLock()) {
             jniExposureMode = AndroidMeteringMode.FIXED;
         }
@@ -522,13 +548,23 @@ public class VideoCaptureCamera
         builder.setMaxExposureCompensation(parameters.getMaxExposureCompensation() * step);
         builder.setCurrentExposureCompensation(parameters.getExposureCompensation() * step);
 
-        int jniWhiteBalanceMode = AndroidMeteringMode.NONE;
-        if (parameters.isAutoWhiteBalanceLockSupported()
-                && parameters.getSupportedWhiteBalance() != null) {
-            jniWhiteBalanceMode = parameters.getWhiteBalance()
-                            == android.hardware.Camera.Parameters.WHITE_BALANCE_AUTO
-                    ? AndroidMeteringMode.CONTINUOUS
-                    : AndroidMeteringMode.FIXED;
+        ArrayList<Integer> jniWhiteBalanceModes = new ArrayList<Integer>(2);
+        List<String> whiteBalanceModes = parameters.getSupportedWhiteBalance();
+        if (whiteBalanceModes != null) {
+            if (!whiteBalanceModes.isEmpty()) {
+                // |whiteBalanceModes| can have WHITE_BALANCE_AUTO and any value in
+                // |COLOR_TEMPERATURES_MAP|; they are all considered CONTINUOUS metering mode.
+                jniWhiteBalanceModes.add(AndroidMeteringMode.CONTINUOUS);
+            }
+            if (parameters.isAutoWhiteBalanceLockSupported()) {
+                jniWhiteBalanceModes.add(AndroidMeteringMode.FIXED);
+            }
+        }
+        builder.setWhiteBalanceModes(integerArrayListToArray(jniWhiteBalanceModes));
+
+        int jniWhiteBalanceMode = AndroidMeteringMode.CONTINUOUS;
+        if (parameters.isAutoWhiteBalanceLockSupported() && parameters.getAutoWhiteBalanceLock()) {
+            jniWhiteBalanceMode = AndroidMeteringMode.FIXED;
         }
         builder.setWhiteBalanceMode(jniWhiteBalanceMode);
 
@@ -561,9 +597,7 @@ public class VideoCaptureCamera
                 modes.add(Integer.valueOf(AndroidFillLightMode.FLASH));
             }
 
-            int[] modesAsIntArray = new int[modes.size()];
-            for (int i = 0; i < modes.size(); i++) modesAsIntArray[i] = modes.get(i).intValue();
-            builder.setFillLightModes(modesAsIntArray);
+            builder.setFillLightModes(integerArrayListToArray(modes));
         }
 
         return builder.build();
@@ -621,7 +655,7 @@ public class VideoCaptureCamera
         final boolean pointsOfInterestSupported =
                 parameters.getMaxNumMeteringAreas() > 0 || parameters.getMaxNumFocusAreas() > 0;
         if (pointsOfInterestSupported && pointsOfInterest2D.length > 0) {
-            assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
+            assert pointsOfInterest2D.length == 2 : "Only 1 point of interest supported";
             assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
             assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
             // Calculate a Rect of 1/8 the canvas, which is fixed to Rect(-1000, -1000, 1000, 1000),

@@ -58,12 +58,15 @@ class PhotoCapabilities {
   double getCurrentZoom() const;
   double getStepZoom() const;
   AndroidMeteringMode getFocusMode() const;
+  std::vector<AndroidMeteringMode> getFocusModes() const;
   AndroidMeteringMode getExposureMode() const;
+  std::vector<AndroidMeteringMode> getExposureModes() const;
   double getMinExposureCompensation() const;
   double getMaxExposureCompensation() const;
   double getCurrentExposureCompensation() const;
   double getStepExposureCompensation() const;
   AndroidMeteringMode getWhiteBalanceMode() const;
+  std::vector<AndroidMeteringMode> getWhiteBalanceModes() const;
   std::vector<AndroidFillLightMode> getFillLightModes() const;
   bool getSupportsTorch() const;
   bool getTorch() const;

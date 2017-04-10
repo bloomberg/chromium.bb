@@ -504,12 +504,27 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
 
-  // TODO(mcasas): Update |supported_{white_balance,exposure,focus}_modes| as
-  // well, https://crbug.com/700607.
+  const auto jni_white_balance_modes = caps.getWhiteBalanceModes();
+  std::vector<mojom::MeteringMode> white_balance_modes;
+  for (const auto& white_balance_mode : jni_white_balance_modes)
+    white_balance_modes.push_back(ToMojomMeteringMode(white_balance_mode));
+  photo_capabilities->supported_white_balance_modes = white_balance_modes;
   photo_capabilities->current_white_balance_mode =
       ToMojomMeteringMode(caps.getWhiteBalanceMode());
+
+  const auto jni_exposure_modes = caps.getExposureModes();
+  std::vector<mojom::MeteringMode> exposure_modes;
+  for (const auto& exposure_mode : jni_exposure_modes)
+    exposure_modes.push_back(ToMojomMeteringMode(exposure_mode));
+  photo_capabilities->supported_exposure_modes = exposure_modes;
   photo_capabilities->current_exposure_mode =
       ToMojomMeteringMode(caps.getExposureMode());
+
+  const auto jni_focus_modes = caps.getFocusModes();
+  std::vector<mojom::MeteringMode> focus_modes;
+  for (const auto& focus_mode : jni_focus_modes)
+    focus_modes.push_back(ToMojomMeteringMode(focus_mode));
+  photo_capabilities->supported_focus_modes = focus_modes;
   photo_capabilities->current_focus_mode =
       ToMojomMeteringMode(caps.getFocusMode());
 
@@ -534,10 +549,10 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->iso->min = caps.getMinIso();
   photo_capabilities->iso->step = caps.getStepIso();
 
-  photo_capabilities->brightness = media::mojom::Range::New();
-  photo_capabilities->contrast = media::mojom::Range::New();
-  photo_capabilities->saturation = media::mojom::Range::New();
-  photo_capabilities->sharpness = media::mojom::Range::New();
+  photo_capabilities->brightness = mojom::Range::New();
+  photo_capabilities->contrast = mojom::Range::New();
+  photo_capabilities->saturation = mojom::Range::New();
+  photo_capabilities->sharpness = mojom::Range::New();
 
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = caps.getCurrentZoom();
@@ -549,8 +564,8 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->torch = caps.getTorch();
 
   photo_capabilities->red_eye_reduction =
-      caps.getRedEyeReduction() ? media::mojom::RedEyeReduction::CONTROLLABLE
-                                : media::mojom::RedEyeReduction::NEVER;
+      caps.getRedEyeReduction() ? mojom::RedEyeReduction::CONTROLLABLE
+                                : mojom::RedEyeReduction::NEVER;
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->height->current = caps.getCurrentHeight();
   photo_capabilities->height->max = caps.getMaxHeight();
@@ -562,7 +577,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->width->min = caps.getMinWidth();
   photo_capabilities->width->step = caps.getStepWidth();
   const auto fill_light_modes = caps.getFillLightModes();
-  std::vector<media::mojom::FillLightMode> modes;
+  std::vector<mojom::FillLightMode> modes;
   for (const auto& fill_light_mode : fill_light_modes)
     modes.push_back(ToMojomFillLightMode(fill_light_mode));
   photo_capabilities->fill_light_mode = modes;

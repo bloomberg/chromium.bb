@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -208,6 +209,14 @@ public abstract class VideoCapture {
                 return diff(range1) - diff(range2);
             }
         });
+    }
+
+    protected static int[] integerArrayListToArray(ArrayList<Integer> intArrayList) {
+        int[] intArray = new int[intArrayList.size()];
+        for (int i = 0; i < intArrayList.size(); i++) {
+            intArray[i] = intArrayList.get(i).intValue();
+        }
+        return intArray;
     }
 
     // Method for VideoCapture implementations to call back native code.
