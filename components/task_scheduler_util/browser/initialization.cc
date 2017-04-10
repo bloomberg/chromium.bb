@@ -20,14 +20,6 @@ namespace {
 
 constexpr char kFieldTrialName[] = "BrowserScheduler";
 
-enum WorkerPoolType : size_t {
-  BACKGROUND = 0,
-  BACKGROUND_BLOCKING,
-  FOREGROUND,
-  FOREGROUND_BLOCKING,
-  WORKER_POOL_COUNT  // Always last.
-};
-
 }  // namespace
 
 std::unique_ptr<base::TaskScheduler::InitParams>
@@ -38,27 +30,6 @@ GetBrowserTaskSchedulerInitParamsFromVariations() {
 
   return GetTaskSchedulerInitParams(
       "", variation_params, base::SchedulerBackwardCompatibility::INIT_COM_STA);
-}
-
-std::vector<base::SchedulerWorkerPoolParams>
-GetBrowserWorkerPoolParamsFromVariations() {
-  const auto init_params = GetBrowserTaskSchedulerInitParamsFromVariations();
-  if (!init_params)
-    return std::vector<base::SchedulerWorkerPoolParams>();
-
-  return std::vector<base::SchedulerWorkerPoolParams>{
-      init_params->background_worker_pool_params,
-      init_params->background_blocking_worker_pool_params,
-      init_params->foreground_worker_pool_params,
-      init_params->foreground_blocking_worker_pool_params};
-}
-
-size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BACKGROUND;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-  return is_background ? BACKGROUND : FOREGROUND;
 }
 
 void MaybePerformBrowserTaskSchedulerRedirection() {
