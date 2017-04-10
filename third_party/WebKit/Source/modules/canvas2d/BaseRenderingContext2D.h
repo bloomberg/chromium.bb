@@ -187,11 +187,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   ImageData* createImageData(ImageData*, ExceptionState&) const;
   ImageData* createImageData(int width, int height, ExceptionState&) const;
-  ImageData* getImageData(int sx,
-                          int sy,
-                          int sw,
-                          int sh,
-                          ExceptionState&) const;
+  ImageData* getImageData(int sx, int sy, int sw, int sh, ExceptionState&);
   void putImageData(ImageData*, int dx, int dy, ExceptionState&);
   void putImageData(ImageData*,
                     int dx,
@@ -341,6 +337,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   float EstimateRenderingCost(
       ExpensiveCanvasHeuristicParameters::RenderingModeCostIndex) const;
+
+  virtual void NeedsFinalizeFrame(){};
 
  private:
   void RealizeSaves();

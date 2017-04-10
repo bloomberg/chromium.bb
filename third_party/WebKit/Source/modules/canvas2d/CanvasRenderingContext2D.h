@@ -200,6 +200,11 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void WillDrawImage(CanvasImageSource*) const final;
 
+ protected:
+  virtual void NeedsFinalizeFrame() {
+    CanvasRenderingContext::NeedsFinalizeFrame();
+  }
+
  private:
   friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 

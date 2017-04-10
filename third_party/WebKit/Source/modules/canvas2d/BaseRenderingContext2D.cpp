@@ -1539,7 +1539,7 @@ ImageData* BaseRenderingContext2D::getImageData(
     int sy,
     int sw,
     int sh,
-    ExceptionState& exception_state) const {
+    ExceptionState& exception_state) {
   if (!WTF::CheckMul(sw, sh).IsValid<int>()) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
@@ -1608,6 +1608,8 @@ ImageData* BaseRenderingContext2D::getImageData(
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
+
+  NeedsFinalizeFrame();
 
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
   return ImageData::Create(image_data_rect.size(),

@@ -98,6 +98,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
       const CanvasContextCreationAttributes& attrs);
   DECLARE_VIRTUAL_TRACE();
 
+  virtual void NeedsFinalizeFrame() {
+    CanvasRenderingContext::NeedsFinalizeFrame();
+  }
+
  private:
   bool needs_matrix_clip_restore_ = false;
   std::unique_ptr<ImageBuffer> image_buffer_;

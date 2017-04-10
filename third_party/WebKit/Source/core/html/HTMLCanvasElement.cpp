@@ -351,6 +351,7 @@ void HTMLCanvasElement::DidDisableAcceleration() {
   // We must force a paint invalidation on the canvas even if it's
   // content did not change because it layer was destroyed.
   DidDraw();
+  SetNeedsCompositingUpdate();
 }
 
 void HTMLCanvasElement::RestoreCanvasMatrixClipStack(
