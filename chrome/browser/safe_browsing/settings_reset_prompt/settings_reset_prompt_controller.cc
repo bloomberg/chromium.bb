@@ -170,8 +170,17 @@ void SettingsResetPromptController::Accept() {
 
 void SettingsResetPromptController::Cancel() {
   DCHECK(!time_dialog_shown_.is_null());
-  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Declined"));
-  UMA_HISTOGRAM_LONG_TIMES_100("SettingsResetPrompt.TimeUntilDeclined",
+  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Canceled"));
+  UMA_HISTOGRAM_LONG_TIMES_100("SettingsResetPrompt.TimeUntilCanceled",
+                               base::Time::Now() - time_dialog_shown_);
+  UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptAccepted", false);
+  OnInteractionDone();
+}
+
+void SettingsResetPromptController::Close() {
+  DCHECK(!time_dialog_shown_.is_null());
+  base::RecordAction(base::UserMetricsAction("SettingsResetPrompt_Dismissed"));
+  UMA_HISTOGRAM_LONG_TIMES_100("SettingsResetPrompt.TimeUntilDismissed",
                                base::Time::Now() - time_dialog_shown_);
   UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptAccepted", false);
   OnInteractionDone();

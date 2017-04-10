@@ -48,9 +48,13 @@ class SettingsResetPromptController {
   // |Accept()| will be called by the dialog when the user clicks the main
   // button, after which the dialog will be closed.
   void Accept();
-  // |Cancel()| will be called by the dialog when the user clicks the dismiss
-  // button on the top right, after which the dialog will be closed.
+  // |Cancel()| will be called by the dialog when the user clicks the cancel
+  // button, after which the dialog will be closed.
   void Cancel();
+  // |Close()| will be called by the dialog when the user dismisses the dialog,
+  // for example by clicking the x in the top right corner or by pressing the
+  // Escape key.
+  void Close();
 
  private:
   ~SettingsResetPromptController();

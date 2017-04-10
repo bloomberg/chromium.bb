@@ -36,7 +36,7 @@ constexpr int kDialogWidth = 448;
 
 SettingsResetPromptDialog::SettingsResetPromptDialog(
     safe_browsing::SettingsResetPromptController* controller)
-    : browser_(nullptr), controller_(controller), interaction_done_(false) {
+    : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
@@ -54,11 +54,14 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
 SettingsResetPromptDialog::~SettingsResetPromptDialog() {
   // Make sure the controller is correctly notified in case the dialog widget is
   // closed by some other means than the dialog buttons.
-  Close();
+  if (controller_)
+    controller_->Close();
 }
 
 void SettingsResetPromptDialog::Show(Browser* browser) {
   DCHECK(browser);
+  DCHECK(controller_);
+
   browser_ = browser;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   constrained_window::CreateBrowserModalDialogViews(
@@ -78,6 +81,7 @@ bool SettingsResetPromptDialog::ShouldShowWindowIcon() const {
 }
 
 base::string16 SettingsResetPromptDialog::GetWindowTitle() const {
+  DCHECK(controller_);
   return controller_->GetWindowTitle();
 }
 
@@ -92,6 +96,7 @@ bool SettingsResetPromptDialog::ShouldDefaultButtonBeBlue() const {
 base::string16 SettingsResetPromptDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
+  DCHECK(controller_);
 
   if (button == ui::DIALOG_BUTTON_OK)
     return controller_->GetButtonLabel();
@@ -99,17 +104,25 @@ base::string16 SettingsResetPromptDialog::GetDialogButtonLabel(
 }
 
 bool SettingsResetPromptDialog::Accept() {
-  if (!interaction_done_) {
-    interaction_done_ = true;
+  if (controller_) {
     controller_->Accept();
+    controller_ = nullptr;
   }
   return true;
 }
 
 bool SettingsResetPromptDialog::Cancel() {
-  if (!interaction_done_) {
-    interaction_done_ = true;
+  if (controller_) {
     controller_->Cancel();
+    controller_ = nullptr;
+  }
+  return true;
+}
+
+bool SettingsResetPromptDialog::Close() {
+  if (controller_) {
+    controller_->Close();
+    controller_ = nullptr;
   }
   return true;
 }

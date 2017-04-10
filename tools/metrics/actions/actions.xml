@@ -14511,9 +14511,28 @@ should be able to be added at any place in this file.
   <description>The user accepted the settings reset prompt.</description>
 </action>
 
+<action name="SettingsResetPrompt_Canceled">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user clicked the cancel button in the settings reset prompt dialog.
+  </description>
+</action>
+
 <action name="SettingsResetPrompt_Declined">
   <owner>alito@chromium.org</owner>
   <description>The user declined the settings reset prompt.</description>
+  <obsolete>
+    Deprecated in M59 in April 2017 and replaced by SettingsResetPrompt_Canceled
+    and SettingsResetPrompt_Dismissed.
+  </obsolete>
+</action>
+
+<action name="SettingsResetPrompt_Dismissed">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user dismissed the settings reset prompt, for example by clicking the x
+    in the top right corner or pressing the Escape key.
+  </description>
 </action>
 
 <action name="SettingsResetPrompt_Shown">
