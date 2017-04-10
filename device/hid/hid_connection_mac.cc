@@ -152,6 +152,12 @@ void HidConnectionMac::InputReportCallback(void* context,
 void HidConnectionMac::ProcessInputReport(
     scoped_refptr<net::IOBufferWithSize> buffer) {
   DCHECK(thread_checker().CalledOnValidThread());
+  DCHECK_GE(buffer->size(), 1);
+
+  uint8_t report_id = buffer->data()[0];
+  if (IsReportIdProtected(report_id))
+    return;
+
   PendingHidReport report;
   report.buffer = buffer;
   report.size = buffer->size();
@@ -161,14 +167,17 @@ void HidConnectionMac::ProcessInputReport(
 
 void HidConnectionMac::ProcessReadQueue() {
   DCHECK(thread_checker().CalledOnValidThread());
+
+  // Hold a reference to |this| to prevent a callback from freeing this object
+  // during the loop.
+  scoped_refptr<HidConnectionMac> self(this);
   while (pending_reads_.size() && pending_reports_.size()) {
     PendingHidRead read = pending_reads_.front();
     PendingHidReport report = pending_reports_.front();
 
+    pending_reads_.pop();
     pending_reports_.pop();
-    if (CompleteRead(report.buffer, report.size, read.callback)) {
-      pending_reads_.pop();
-    }
+    read.callback.Run(true, report.buffer, report.size);
   }
 }
 

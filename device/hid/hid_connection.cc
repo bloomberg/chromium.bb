@@ -170,20 +170,6 @@ void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
   PlatformSendFeatureReport(buffer, size, callback);
 }
 
-bool HidConnection::CompleteRead(scoped_refptr<net::IOBuffer> buffer,
-                                 size_t size,
-                                 const ReadCallback& callback) {
-  DCHECK_GE(size, 1u);
-  uint8_t report_id = buffer->data()[0];
-  if (IsReportIdProtected(report_id)) {
-    HID_LOG(EVENT) << "Filtered a protected input report.";
-    return false;
-  }
-
-  callback.Run(true, buffer, size);
-  return true;
-}
-
 bool HidConnection::IsReportIdProtected(uint8_t report_id) {
   HidCollectionInfo collection_info;
   if (FindCollectionByReportId(device_info_->collections(), report_id,

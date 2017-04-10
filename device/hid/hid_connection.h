@@ -75,18 +75,9 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
                                          size_t size,
                                          const WriteCallback& callback) = 0;
 
-  // PlatformRead implementation must call this method on read
-  // success, rather than directly running the callback.
-  // In case incoming buffer is empty or protected, it is filtered
-  // and this method returns false. Otherwise it runs the callback
-  // and returns true.
-  bool CompleteRead(scoped_refptr<net::IOBuffer> buffer,
-                    size_t size,
-                    const ReadCallback& callback);
-
- private:
   bool IsReportIdProtected(uint8_t report_id);
 
+ private:
   scoped_refptr<HidDeviceInfo> device_info_;
   bool has_protected_collection_;
   base::ThreadChecker thread_checker_;

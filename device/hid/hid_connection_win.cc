@@ -179,13 +179,26 @@ void HidConnectionWin::OnReadComplete(scoped_refptr<net::IOBuffer> buffer,
 
   std::unique_ptr<PendingHidTransfer> transfer = UnlinkTransfer(transfer_raw);
   DWORD bytes_transferred;
-  if (signaled && GetOverlappedResult(file_.Get(), transfer->GetOverlapped(),
-                                      &bytes_transferred, FALSE)) {
-    CompleteRead(buffer, bytes_transferred, callback);
-  } else {
+  if (!signaled || !GetOverlappedResult(file_.Get(), transfer->GetOverlapped(),
+                                        &bytes_transferred, FALSE)) {
     HID_PLOG(EVENT) << "HID read failed";
     callback.Run(false, nullptr, 0);
+    return;
   }
+
+  if (bytes_transferred < 1) {
+    HID_LOG(EVENT) << "HID read too short.";
+    callback.Run(false, nullptr, 0);
+    return;
+  }
+
+  uint8_t report_id = buffer->data()[0];
+  if (IsReportIdProtected(report_id)) {
+    PlatformRead(callback);
+    return;
+  }
+
+  callback.Run(true, buffer, bytes_transferred);
 }
 
 void HidConnectionWin::OnReadFeatureComplete(
