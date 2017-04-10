@@ -15,6 +15,7 @@
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/css_scanning_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/delay_navigation_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
@@ -124,6 +125,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   }
   tracker->AddObserver(
       base::MakeUnique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));
+  tracker->AddObserver(
+      base::MakeUnique<DelayNavigationPageLoadMetricsObserver>());
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering() const {

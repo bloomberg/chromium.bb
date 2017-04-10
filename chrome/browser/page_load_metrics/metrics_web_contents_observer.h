@@ -84,6 +84,13 @@ class MetricsWebContentsObserver
                          int64_t original_content_length,
                          base::TimeTicks creation_time);
 
+  // Invoked on navigations where a navigation delay was added by the
+  // DelayNavigationThrottle. This is a temporary method that will be removed
+  // once the experiment is complete.
+  void OnNavigationDelayComplete(content::NavigationHandle* navigation_handle,
+                                 base::TimeDelta scheduled_delay,
+                                 base::TimeDelta actual_delay);
+
   // Flush any buffered metrics, as part of the metrics subsystem persisting
   // metrics as the application goes into the background. The application may be
   // killed at any time after this method is invoked without further

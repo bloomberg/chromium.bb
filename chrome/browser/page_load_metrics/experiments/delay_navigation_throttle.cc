@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "content/public/browser/navigation_handle.h"
@@ -123,5 +124,14 @@ void DelayNavigationThrottle::OnDelayComplete() {
   base::TimeDelta delay_delta = actual_delay - navigation_delay_;
   UMA_HISTOGRAM_TIMES(kHistogramNavigationDelayActual, actual_delay);
   UMA_HISTOGRAM_TIMES(kHistogramNavigationDelayDelta, delay_delta.magnitude());
+
+  page_load_metrics::MetricsWebContentsObserver* observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          navigation_handle()->GetWebContents());
+  if (observer) {
+    observer->OnNavigationDelayComplete(navigation_handle(), navigation_delay_,
+                                        actual_delay);
+  }
+
   navigation_handle()->Resume();
 }

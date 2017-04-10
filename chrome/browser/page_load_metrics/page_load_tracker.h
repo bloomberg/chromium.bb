@@ -250,6 +250,12 @@ class PageLoadTracker {
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       bool is_in_main_frame);
 
+  // Invoked on navigations where a navigation delay was added by the
+  // DelayNavigationThrottle. This is a temporary method that will be removed
+  // once the experiment is complete.
+  void OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
+                                 base::TimeDelta actual_delay);
+
  private:
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:
