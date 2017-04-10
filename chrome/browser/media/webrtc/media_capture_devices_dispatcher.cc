@@ -37,6 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
+#include "chrome/browser/media/chromeos_login_media_access_handler.h"
 #include "chrome/browser/media/public_session_media_access_handler.h"
 #include "chrome/browser/media/public_session_tab_capture_access_handler.h"
 #endif  // defined(OS_CHROMEOS)
@@ -69,6 +70,14 @@ const content::MediaStreamDevice* FindDeviceWithId(
   return NULL;
 }
 
+content::WebContents* WebContentsFromIds(int render_process_id,
+                                         int render_frame_id) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(
+          content::RenderFrameHost::FromID(render_process_id, render_frame_id));
+  return web_contents;
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 inline CaptureAccessHandlerBase* ToCaptureAccessHandlerBase(
     MediaAccessHandler* handler) {
@@ -88,6 +97,8 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
+  media_access_handlers_.push_back(
+      base::MakeUnique<ChromeOSLoginMediaAccessHandler>());
   // Wrapper around ExtensionMediaAccessHandler used in Public Sessions.
   media_access_handlers_.push_back(
       base::MakeUnique<PublicSessionMediaAccessHandler>());
@@ -165,8 +176,10 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(request.video_type, extension) ||
-        handler->SupportsStreamType(request.audio_type, extension)) {
+    if (handler->SupportsStreamType(web_contents, request.video_type,
+                                    extension) ||
+        handler->SupportsStreamType(web_contents, request.audio_type,
+                                    extension)) {
       handler->HandleRequest(web_contents, request, callback, extension);
       return;
     }
@@ -191,7 +204,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(type, extension)) {
+    if (handler->SupportsStreamType(web_contents, type, extension)) {
       return handler->CheckMediaAccessPermission(web_contents, security_origin,
                                                  type, extension);
     }
@@ -361,8 +374,11 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
     const GURL& security_origin,
     content::MediaStreamType stream_type,
     content::MediaRequestState state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(stream_type, nullptr)) {
+    if (handler->SupportsStreamType(
+            WebContentsFromIds(render_process_id, render_frame_id), stream_type,
+            nullptr)) {
       handler->UpdateMediaRequestState(render_process_id, render_frame_id,
                                        page_request_id, stream_type, state);
       break;
@@ -400,10 +416,12 @@ bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
-                                    nullptr) ||
-        handler->SupportsStreamType(content::MEDIA_TAB_VIDEO_CAPTURE,
-                                    nullptr)) {
+    if (handler->SupportsStreamType(
+            WebContentsFromIds(render_process_id, render_frame_id),
+            content::MEDIA_DESKTOP_VIDEO_CAPTURE, nullptr) ||
+        handler->SupportsStreamType(
+            WebContentsFromIds(render_process_id, render_frame_id),
+            content::MEDIA_TAB_VIDEO_CAPTURE, nullptr)) {
       if (ToCaptureAccessHandlerBase(handler.get())
               ->IsInsecureCapturingInProgress(render_process_id,
                                               render_frame_id))
@@ -455,7 +473,9 @@ void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(stream_type, nullptr)) {
+    if (handler->SupportsStreamType(
+            WebContentsFromIds(render_process_id, render_frame_id), stream_type,
+            nullptr)) {
       ToCaptureAccessHandlerBase(handler.get())
           ->UpdateCapturingLinkSecured(render_process_id, render_frame_id,
                                        page_request_id, is_secure);

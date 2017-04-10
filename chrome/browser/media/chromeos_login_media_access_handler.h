@@ -1,17 +1,18 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_EXTENSION_MEDIA_ACCESS_HANDLER_H_
-#define CHROME_BROWSER_MEDIA_EXTENSION_MEDIA_ACCESS_HANDLER_H_
+#ifndef CHROME_BROWSER_MEDIA_CHROMEOS_LOGIN_MEDIA_ACCESS_HANDLER_H_
+#define CHROME_BROWSER_MEDIA_CHROMEOS_LOGIN_MEDIA_ACCESS_HANDLER_H_
 
 #include "chrome/browser/media/media_access_handler.h"
 
-// MediaAccessHandler for extension capturing requests.
-class ExtensionMediaAccessHandler : public MediaAccessHandler {
+// MediaAccessHandler for media requests coming from SAML login pages on
+// ChromeOS.
+class ChromeOSLoginMediaAccessHandler : public MediaAccessHandler {
  public:
-  ExtensionMediaAccessHandler();
-  ~ExtensionMediaAccessHandler() override;
+  ChromeOSLoginMediaAccessHandler();
+  ~ChromeOSLoginMediaAccessHandler() override;
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
@@ -28,4 +29,4 @@ class ExtensionMediaAccessHandler : public MediaAccessHandler {
                      const extensions::Extension* extension) override;
 };
 
-#endif  // CHROME_BROWSER_MEDIA_EXTENSION_MEDIA_ACCESS_HANDLER_H_
+#endif  // CHROME_BROWSER_MEDIA_CHROMEOS_LOGIN_MEDIA_ACCESS_HANDLER_H_

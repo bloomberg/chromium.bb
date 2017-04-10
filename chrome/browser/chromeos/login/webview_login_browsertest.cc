@@ -9,6 +9,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "media/base/media_switches.h"
 
 namespace chromeos {
 
@@ -19,6 +20,7 @@ class WebviewLoginTest : public OobeBaseTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
+    command_line->AppendSwitch(::switches::kUseFakeDeviceForMediaStream);
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
@@ -129,6 +131,34 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
   JS().ExecuteAsync("Oobe.showSigninUI('user@example.com')");
   WaitForGaiaPageReload();
   EXPECT_EQ(fake_gaia_->prefilled_email(), "user@example.com");
+}
+
+// Tests that requesting webcam access from the login screen works correctly.
+// This is needed for taking profile pictures.
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, RequestCamera) {
+  WaitForGaiaPageLoad();
+
+  // Video devices should be allowed from the login screen.
+  content::WebContents* web_contents = GetLoginUI()->GetWebContents();
+  bool getUserMediaSuccess = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents->GetMainFrame(),
+      "navigator.getUserMedia("
+      "    {video: true},"
+      "    function() { window.domAutomationController.send(true); },"
+      "    function() { window.domAutomationController.send(false); });",
+      &getUserMediaSuccess));
+  EXPECT_TRUE(getUserMediaSuccess);
+
+  // Audio devices should be denied from the login screen.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents->GetMainFrame(),
+      "navigator.getUserMedia("
+      "    {audio: true},"
+      "    function() { window.domAutomationController.send(true); },"
+      "    function() { window.domAutomationController.send(false); });",
+      &getUserMediaSuccess));
+  EXPECT_FALSE(getUserMediaSuccess);
 }
 
 }  // namespace chromeos

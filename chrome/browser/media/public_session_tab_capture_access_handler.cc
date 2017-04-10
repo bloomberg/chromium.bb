@@ -23,9 +23,11 @@ PublicSessionTabCaptureAccessHandler::PublicSessionTabCaptureAccessHandler() {}
 PublicSessionTabCaptureAccessHandler::~PublicSessionTabCaptureAccessHandler() {}
 
 bool PublicSessionTabCaptureAccessHandler::SupportsStreamType(
+    content::WebContents* web_contents,
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
-  return tab_capture_access_handler_.SupportsStreamType(type, extension);
+  return tab_capture_access_handler_.SupportsStreamType(web_contents, type,
+                                                        extension);
 }
 
 bool PublicSessionTabCaptureAccessHandler::CheckMediaAccessPermission(

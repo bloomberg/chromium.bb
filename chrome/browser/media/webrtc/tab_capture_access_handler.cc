@@ -20,6 +20,7 @@ TabCaptureAccessHandler::~TabCaptureAccessHandler() {
 }
 
 bool TabCaptureAccessHandler::SupportsStreamType(
+    content::WebContents* web_contents,
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
   return type == content::MEDIA_TAB_VIDEO_CAPTURE ||

@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -473,8 +472,8 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   // Note: This is needed for taking photos when selecting new user images
   // and SAML logins. Must work for all user types (including supervised).
-  MediaStreamDevicesController::RequestPermissions(web_contents, request,
-                                                   callback);
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, nullptr /* extension */);
 }
 
 bool WebUILoginView::CheckMediaAccessPermission(

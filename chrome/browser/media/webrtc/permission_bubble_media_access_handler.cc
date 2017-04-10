@@ -57,6 +57,7 @@ PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
 PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
 
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
+    content::WebContents* web_contents,
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
 #if defined(OS_ANDROID)

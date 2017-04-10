@@ -21,7 +21,8 @@ class PermissionBubbleMediaAccessHandler
   ~PermissionBubbleMediaAccessHandler() override;
 
   // MediaAccessHandler implementation.
-  bool SupportsStreamType(const content::MediaStreamType type,
+  bool SupportsStreamType(content::WebContents* web_contents,
+                          const content::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::WebContents* web_contents,

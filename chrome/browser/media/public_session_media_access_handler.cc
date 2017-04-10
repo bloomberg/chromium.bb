@@ -24,9 +24,11 @@ PublicSessionMediaAccessHandler::PublicSessionMediaAccessHandler() {}
 PublicSessionMediaAccessHandler::~PublicSessionMediaAccessHandler() {}
 
 bool PublicSessionMediaAccessHandler::SupportsStreamType(
+    content::WebContents* web_contents,
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
-  return extension_media_access_handler_.SupportsStreamType(type, extension);
+  return extension_media_access_handler_.SupportsStreamType(web_contents, type,
+                                                            extension);
 }
 
 bool PublicSessionMediaAccessHandler::CheckMediaAccessPermission(

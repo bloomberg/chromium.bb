@@ -4,25 +4,14 @@
 
 #include "chrome/browser/media/webrtc/media_permission.h"
 
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/settings/cros_settings_names.h"
-#endif
 
 MediaPermission::MediaPermission(ContentSettingsType content_type,
                                  const GURL& requesting_origin,
@@ -50,62 +39,6 @@ ContentSetting MediaPermission::GetPermissionStatus(
     *denial_reason = content::MEDIA_DEVICE_KILL_SWITCH_ON;
     return CONTENT_SETTING_BLOCK;
   }
-
-#if defined(OS_CHROMEOS)
-  // Special permissions if the request is coming from a ChromeOS login page.
-  chromeos::LoginDisplayHost* login_display_host =
-      chromeos::LoginDisplayHost::default_host();
-  chromeos::WebUILoginView* webui_login_view =
-      login_display_host ? login_display_host->GetWebUILoginView() : nullptr;
-  content::WebContents* login_web_contents =
-      webui_login_view ? webui_login_view->GetWebContents() : nullptr;
-  if (web_contents_ == login_web_contents) {
-    if (content_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-      *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-      return CONTENT_SETTING_BLOCK;
-    }
-
-    // When creating new user (including supervised user), we must
-    // be able to use photo for user image.
-    if (requesting_origin_.spec() == chrome::kChromeUIOobeURL) {
-      return CONTENT_SETTING_ALLOW;
-    }
-
-    const chromeos::CrosSettings* const settings =
-        chromeos::CrosSettings::Get();
-    if (!settings) {
-      *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-      return CONTENT_SETTING_BLOCK;
-    }
-
-    const base::Value* const raw_list_value =
-        settings->GetPref(chromeos::kLoginVideoCaptureAllowedUrls);
-    if (!raw_list_value) {
-      *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-      return CONTENT_SETTING_BLOCK;
-    }
-
-    const base::ListValue* list_value;
-    const bool is_list = raw_list_value->GetAsList(&list_value);
-    DCHECK(is_list);
-    for (const auto& base_value : *list_value) {
-      std::string value;
-      if (base_value->GetAsString(&value)) {
-        const ContentSettingsPattern pattern =
-            ContentSettingsPattern::FromString(value);
-        if (pattern == ContentSettingsPattern::Wildcard()) {
-          LOG(WARNING) << "Ignoring wildcard URL pattern: " << value;
-          continue;
-        }
-        if (pattern.IsValid() && pattern.Matches(requesting_origin_))
-          return CONTENT_SETTING_ALLOW;
-      }
-    }
-
-    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-    return CONTENT_SETTING_BLOCK;
-  }
-#endif  // defined(OS_CHROMEOS)
 
   // Check policy and content settings.
   ContentSetting content_setting =

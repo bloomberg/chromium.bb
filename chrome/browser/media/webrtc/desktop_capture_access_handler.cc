@@ -351,6 +351,7 @@ bool DesktopCaptureAccessHandler::IsDefaultApproved(
 }
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(
+    content::WebContents* web_contents,
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
   return type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
