@@ -2110,9 +2110,11 @@ class GetAllNodesRequestHelper
   virtual ~GetAllNodesRequestHelper();
 
   std::unique_ptr<base::ListValue> result_accumulator_;
-
   syncer::ModelTypeSet awaiting_types_;
   base::Callback<void(std::unique_ptr<base::ListValue>)> callback_;
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetAllNodesRequestHelper);
 };
 
 GetAllNodesRequestHelper::GetAllNodesRequestHelper(
@@ -2135,6 +2137,8 @@ GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
 void GetAllNodesRequestHelper::OnReceivedNodesForType(
     const syncer::ModelType type,
     std::unique_ptr<base::ListValue> node_list) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Add these results to our list.
   std::unique_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
   type_dict->SetString("type", ModelTypeToString(type));

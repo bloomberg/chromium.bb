@@ -226,8 +226,8 @@ DataTypeController::State ModelTypeController::state() const {
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  PostBridgeTask(FROM_HERE,
-                 base::Bind(&ModelTypeDebugInfo::GetAllNodes, callback));
+  PostBridgeTask(FROM_HERE, base::Bind(&ModelTypeDebugInfo::GetAllNodes,
+                                       BindToCurrentThread(callback)));
 }
 
 void ModelTypeController::GetStatusCounters(
