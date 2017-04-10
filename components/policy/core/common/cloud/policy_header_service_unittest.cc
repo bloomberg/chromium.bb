@@ -16,6 +16,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,7 +112,8 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
 
   net::TestURLRequestContext context;
   std::unique_ptr<net::URLRequest> request(
-      context.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request->url(), request.get());
   ValidateHeader(request->extra_request_headers(), expected_dmtoken,
                  expected_policy_token);
@@ -121,7 +123,8 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   task_runner_->RunUntilIdle();
 
   std::unique_ptr<net::URLRequest> request2(
-      context.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request2->url(), request2.get());
   ValidateHeader(request2->extra_request_headers(), "", "");
 }

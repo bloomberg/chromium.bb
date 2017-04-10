@@ -27,6 +27,7 @@
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -191,7 +192,8 @@ void SetUpTestContextGetterWithRequest(
   context->set_net_log(net_log);
   context->Init();
 
-  *request = context->CreateRequest(url, net::IDLE, delegate);
+  *request = context->CreateRequest(url, net::IDLE, delegate,
+                                    TRAFFIC_ANNOTATION_FOR_TESTS);
   (*request)->Start();
 
   *context_getter = new net::TestURLRequestContextGetter(

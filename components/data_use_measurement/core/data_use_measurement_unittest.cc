@@ -19,6 +19,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,8 +134,9 @@ class DataUseMeasurementTest : public testing::Test {
                                               0);
     socket_factory_->AddSocketDataProvider(&socket_data);
 
-    std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
-        GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
+    std::unique_ptr<net::URLRequest> request(
+        context_->CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                                &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     if (is_user_request == kUserRequest) {
       TestURLRequestClassifier::MarkAsUserRequest(request.get());
     } else {

@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,7 +146,8 @@ class PreviewsIODataTest : public testing::Test {
 
   std::unique_ptr<net::URLRequest> CreateRequest() const {
     return context_.CreateRequest(GURL("http://example.com"),
-                                  net::DEFAULT_PRIORITY, nullptr);
+                                  net::DEFAULT_PRIORITY, nullptr,
+                                  TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   TestPreviewsIOData* io_data() { return &io_data_; }

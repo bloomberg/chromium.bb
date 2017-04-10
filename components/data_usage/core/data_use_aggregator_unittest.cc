@@ -25,6 +25,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -278,8 +279,8 @@ class DataUseAggregatorTest : public testing::Test {
     mock_socket_factory_->AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
-    std::unique_ptr<net::URLRequest> request =
-        context_->CreateRequest(url, net::IDLE, &delegate);
+    std::unique_ptr<net::URLRequest> request = context_->CreateRequest(
+        url, net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->set_first_party_for_cookies(first_party_for_cookies);
 
     ReportingNetworkDelegate::DataUseContextMap data_use_context_map;

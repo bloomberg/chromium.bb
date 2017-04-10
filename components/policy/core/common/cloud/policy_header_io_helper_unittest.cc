@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,14 +56,16 @@ class PolicyHeaderIOHelperTest : public testing::Test {
 
 TEST_F(PolicyHeaderIOHelperTest, InitialHeader) {
   std::unique_ptr<net::URLRequest> request(
-      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
+      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL,
+                             TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request->url(), request.get());
   ValidateHeader(request->extra_request_headers(), kInitialPolicyHeader);
 }
 
 TEST_F(PolicyHeaderIOHelperTest, NoHeaderOnNonMatchingURL) {
   std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
-      GURL("http://non-matching.com"), net::DEFAULT_PRIORITY, NULL));
+      GURL("http://non-matching.com"), net::DEFAULT_PRIORITY, NULL,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request->url(), request.get());
   EXPECT_TRUE(request->extra_request_headers().IsEmpty());
 }
@@ -72,7 +75,8 @@ TEST_F(PolicyHeaderIOHelperTest, HeaderChange) {
   helper_->UpdateHeader(new_header);
   task_runner_->RunUntilIdle();
   std::unique_ptr<net::URLRequest> request(
-      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
+      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL,
+                             TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request->url(), request.get());
   ValidateHeader(request->extra_request_headers(), new_header);
 }
@@ -81,7 +85,8 @@ TEST_F(PolicyHeaderIOHelperTest, ChangeToNoHeader) {
   helper_->UpdateHeader("");
   task_runner_->RunUntilIdle();
   std::unique_ptr<net::URLRequest> request(
-      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
+      context_.CreateRequest(GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL,
+                             TRAFFIC_ANNOTATION_FOR_TESTS));
   helper_->AddPolicyHeaders(request->url(), request.get());
   EXPECT_TRUE(request->extra_request_headers().IsEmpty());
 }
