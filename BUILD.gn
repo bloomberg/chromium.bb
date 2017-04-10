@@ -746,6 +746,7 @@ if (is_win) {
       "//courgette",
       "//courgette:copy_courgette_binaries",
       "//remoting/webapp",
+      "//tools/metrics:metrics_metadata",
     ]
 
     if (target_cpu == "x86") {
