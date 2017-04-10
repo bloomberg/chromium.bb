@@ -8,12 +8,17 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("facade") {
   sources = [
+    "host_info.cc",
+    "host_info.h",
+    "host_list_fetcher.cc",
+    "host_list_fetcher.h",
     "remoting_service.h",
     "remoting_service.mm",
   ]
 
   deps = [
     "//base",
+    "//remoting/base:authorization",
     "//remoting/client/ios/domain",
   ]
 
