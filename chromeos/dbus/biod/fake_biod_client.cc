@@ -60,7 +60,10 @@ void FakeBiodClient::GetRecordsForUser(const std::string& /* user_id */,
       FROM_HERE, base::Bind(callback, std::vector<dbus::ObjectPath>()));
 }
 
-void FakeBiodClient::DestroyAllRecords() {}
+void FakeBiodClient::DestroyAllRecords(const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+}
 
 void FakeBiodClient::StartAuthSession(const ObjectPathCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -74,15 +77,31 @@ void FakeBiodClient::RequestType(const BiometricTypeCallback& callback) {
 }
 
 void FakeBiodClient::CancelEnrollSession(
-    const dbus::ObjectPath& /* enroll_session_path */) {}
+    const dbus::ObjectPath& /* enroll_session_path */,
+    const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+}
 
 void FakeBiodClient::EndAuthSession(
-    const dbus::ObjectPath& /* auth_session_path */) {}
+    const dbus::ObjectPath& /* auth_session_path */,
+    const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+}
 
 void FakeBiodClient::SetRecordLabel(const dbus::ObjectPath& /* record_path */,
-                                    const std::string& /* label */) {}
+                                    const std::string& /* label */,
+                                    const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+}
 
-void FakeBiodClient::RemoveRecord(const dbus::ObjectPath& /* record_path */) {}
+void FakeBiodClient::RemoveRecord(const dbus::ObjectPath& /* record_path */,
+                                  const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+}
 
 void FakeBiodClient::RequestRecordLabel(
     const dbus::ObjectPath& /* record_path */,

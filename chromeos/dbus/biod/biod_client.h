@@ -95,8 +95,9 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
   virtual void GetRecordsForUser(const std::string& user_id,
                                  const UserRecordsCallback& callback) = 0;
 
-  // Irreversibly destroys all records registered.
-  virtual void DestroyAllRecords() = 0;
+  // Irreversibly destroys all records registered. |callback| is called
+  // asynchronously with the result.
+  virtual void DestroyAllRecords(const VoidDBusMethodCallback& callback) = 0;
 
   // Starts the biometric auth session. |callback| is called with the object
   // path of the auth session after the method succeeds.
@@ -106,20 +107,27 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
   // type after the method succeeds.
   virtual void RequestType(const BiometricTypeCallback& callback) = 0;
 
-  // Cancels the enroll session at |enroll_session_path|.
-  virtual void CancelEnrollSession(
-      const dbus::ObjectPath& enroll_session_path) = 0;
+  // Cancels the enroll session at |enroll_session_path|. |callback| is called
+  // asynchronously with the result.
+  virtual void CancelEnrollSession(const dbus::ObjectPath& enroll_session_path,
+                                   const VoidDBusMethodCallback& callback) = 0;
 
-  // Ends the auth session at |auth_session_path|.
-  virtual void EndAuthSession(const dbus::ObjectPath& auth_session_path) = 0;
+  // Ends the auth session at |auth_session_path|. |callback| is called
+  // asynchronously with the result.
+  virtual void EndAuthSession(const dbus::ObjectPath& auth_session_path,
+                              const VoidDBusMethodCallback& callback) = 0;
 
-  // Changes the label of the record at |record_path| to |label|.
+  // Changes the label of the record at |record_path| to |label|. |callback| is
+  // called asynchronously with the result.
   virtual void SetRecordLabel(const dbus::ObjectPath& record_path,
-                              const std::string& label) = 0;
+                              const std::string& label,
+                              const VoidDBusMethodCallback& callback) = 0;
 
   // Removes the record at |record_path|. This record will no longer be able to
-  // used for authentication.
-  virtual void RemoveRecord(const dbus::ObjectPath& record_path) = 0;
+  // used for authentication. |callback| is called asynchronously with the
+  // result.
+  virtual void RemoveRecord(const dbus::ObjectPath& record_path,
+                            const VoidDBusMethodCallback& callback) = 0;
 
   // Requests the label of the record at |record_path|. |callback| is called
   // with the label of the record.

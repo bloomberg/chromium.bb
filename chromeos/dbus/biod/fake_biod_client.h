@@ -40,15 +40,18 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
                           const ObjectPathCallback& callback) override;
   void GetRecordsForUser(const std::string& user_id,
                          const UserRecordsCallback& callback) override;
-  void DestroyAllRecords() override;
+  void DestroyAllRecords(const VoidDBusMethodCallback& callback) override;
   void StartAuthSession(const ObjectPathCallback& callback) override;
   void RequestType(const BiometricTypeCallback& callback) override;
-  void CancelEnrollSession(
-      const dbus::ObjectPath& enroll_session_path) override;
-  void EndAuthSession(const dbus::ObjectPath& auth_session_path) override;
+  void CancelEnrollSession(const dbus::ObjectPath& enroll_session_path,
+                           const VoidDBusMethodCallback& callback) override;
+  void EndAuthSession(const dbus::ObjectPath& auth_session_path,
+                      const VoidDBusMethodCallback& callback) override;
   void SetRecordLabel(const dbus::ObjectPath& record_path,
-                      const std::string& label) override;
-  void RemoveRecord(const dbus::ObjectPath& record_path) override;
+                      const std::string& label,
+                      const VoidDBusMethodCallback& callback) override;
+  void RemoveRecord(const dbus::ObjectPath& record_path,
+                    const VoidDBusMethodCallback& callback) override;
   void RequestRecordLabel(const dbus::ObjectPath& record_path,
                           const LabelCallback& callback) override;
 

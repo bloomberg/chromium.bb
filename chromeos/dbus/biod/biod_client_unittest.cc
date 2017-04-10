@@ -52,6 +52,18 @@ void CopyString(std::string* dest_str, const std::string& src_str) {
   *dest_str = src_str;
 }
 
+void CopyDBusMethodCallStatus(DBusMethodCallStatus* dest_status,
+                              DBusMethodCallStatus src_status) {
+  CHECK(dest_status);
+  *dest_status = src_status;
+}
+
+void CopyBiometricType(biod::BiometricType* dest_type,
+                       biod::BiometricType src_type) {
+  CHECK(dest_type);
+  *dest_type = src_type;
+}
+
 // Matcher that verifies that a dbus::Message has member |name|.
 MATCHER_P(HasMember, name, "") {
   if (arg->GetMember() != name) {
@@ -135,7 +147,7 @@ class BiodClientTest : public testing::Test {
 
  protected:
   // Add an expectation for method with |method_name| to be called. When the
-  // method is called the response shoudl match |response|.
+  // method is called the response should match |response|.
   void AddMethodExpectation(const std::string& method_name,
                             std::unique_ptr<dbus::Response> response) {
     ASSERT_FALSE(pending_method_calls_.count(method_name));
@@ -258,7 +270,7 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
   EXPECT_EQ(kFakeObjectPath, returned_path);
 
   // Verify that by sending a empty reponse or a improperly formatted one, the
-  // response is an empty object path. Also, logs will get printed.
+  // response is an empty object path.
   AddMethodExpectation(biod::kBiometricsManagerStartEnrollSessionMethod,
                        nullptr);
   returned_path = dbus::ObjectPath(kInvalidTestPath);
@@ -302,7 +314,7 @@ TEST_F(BiodClientTest, TestGetRecordsForUser) {
   EXPECT_EQ(kFakeObjectPaths, returned_object_paths);
 
   // Verify that by sending a empty reponse the response is an empty array of
-  // object paths. Also, logs will get printed.
+  // object paths.
   AddMethodExpectation(biod::kBiometricsManagerGetRecordsForUserMethod,
                        nullptr);
   returned_object_paths = {dbus::ObjectPath(kInvalidTestPath)};
@@ -310,6 +322,29 @@ TEST_F(BiodClientTest, TestGetRecordsForUser) {
       kFakeId, base::Bind(&CopyObjectPathArray, &returned_object_paths));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<dbus::ObjectPath>(), returned_object_paths);
+}
+
+TEST_F(BiodClientTest, TestDestroyAllRecords) {
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+
+  // Create an empty response to simulate success.
+  AddMethodExpectation(biod::kBiometricsManagerDestroyAllRecordsMethod,
+                       std::move(response));
+  DBusMethodCallStatus returned_status = static_cast<DBusMethodCallStatus>(-1);
+  client_->DestroyAllRecords(
+      base::Bind(&CopyDBusMethodCallStatus, &returned_status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, returned_status);
+
+  // Return a null response to simulate failure.
+  AddMethodExpectation(biod::kBiometricsManagerDestroyAllRecordsMethod,
+                       nullptr);
+  returned_status = static_cast<DBusMethodCallStatus>(-1);
+  client_->DestroyAllRecords(
+      base::Bind(&CopyDBusMethodCallStatus, &returned_status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DBUS_METHOD_CALL_FAILURE, returned_status);
 }
 
 TEST_F(BiodClientTest, TestStartAuthentication) {
@@ -329,7 +364,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
   EXPECT_EQ(kFakeObjectPath, returned_path);
 
   // Verify that by sending a empty reponse or a improperly formatted one, the
-  // response is an empty object path. Also, logs will get printed.
+  // response is an empty object path.
   AddMethodExpectation(biod::kBiometricsManagerStartAuthSessionMethod, nullptr);
   returned_path = dbus::ObjectPath(kInvalidTestPath);
   client_->StartAuthSession(base::Bind(&CopyObjectPath, &returned_path));
@@ -345,6 +380,60 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
   client_->StartAuthSession(base::Bind(&CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
+}
+
+TEST_F(BiodClientTest, TestRequestBiometricType) {
+  const biod::BiometricType kFakeBiometricType =
+      biod::BIOMETRIC_TYPE_FINGERPRINT;
+
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendVariantOfUint32(static_cast<uint32_t>(kFakeBiometricType));
+
+  // Create a fake response with biometric type. The get label call should
+  // return this exact biometric type.
+  biod::BiometricType returned_biometric_type = biod::BIOMETRIC_TYPE_MAX;
+  AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
+  client_->RequestType(
+      base::Bind(&CopyBiometricType, &returned_biometric_type));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kFakeBiometricType, returned_biometric_type);
+
+  // Verify that by sending a null reponse, the result is an unknown biometric
+  // type.
+  returned_biometric_type = biod::BIOMETRIC_TYPE_MAX;
+  AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
+  client_->RequestType(
+      base::Bind(&CopyBiometricType, &returned_biometric_type));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN,
+            returned_biometric_type);
+}
+
+TEST_F(BiodClientTest, TestRequestRecordLabel) {
+  const std::string kFakeLabel("fakeLabel");
+  const dbus::ObjectPath kFakeRecordPath(std::string("/fake/record/path"));
+
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(kFakeLabel);
+
+  // Create a fake response with string. The get label call should return this
+  // exact string.
+  std::string returned_label = kInvalidString;
+  AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
+  client_->RequestRecordLabel(kFakeRecordPath,
+                              base::Bind(&CopyString, &returned_label));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kFakeLabel, returned_label);
+
+  // Verify that by sending a null reponse, the result is an empty string.
+  returned_label = kInvalidString;
+  AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
+  client_->RequestRecordLabel(kFakeRecordPath,
+                              base::Bind(&CopyString, &returned_label));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("", returned_label);
 }
 
 // Verify when signals are mocked, an observer will catch the signals as
@@ -377,32 +466,5 @@ TEST_F(BiodClientTest, TestNotifyObservers) {
   EXPECT_EQ(1, observer.num_enroll_scans_received());
   EXPECT_EQ(1, observer.num_auth_scans_received());
   EXPECT_EQ(1, observer.num_failures_received());
-}
-
-TEST_F(BiodClientTest, TestGetRecordLabel) {
-  const std::string kFakeLabel("fakeLabel");
-  const dbus::ObjectPath kFakeRecordPath(std::string("/fake/record/path"));
-
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  writer.AppendString(kFakeLabel);
-
-  // Create a fake response with string. The get label call should return this
-  // exact string.
-  std::string returned_label = kInvalidString;
-  AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
-  client_->RequestRecordLabel(kFakeRecordPath,
-                              base::Bind(&CopyString, &returned_label));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kFakeLabel, returned_label);
-
-  // Verify that by sending a empty reponse the response is an empty string.
-  // Also, logs will get printed.
-  returned_label = kInvalidString;
-  AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
-  client_->RequestRecordLabel(kFakeRecordPath,
-                              base::Bind(&CopyString, &returned_label));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("", returned_label);
 }
 }  // namespace chromeos

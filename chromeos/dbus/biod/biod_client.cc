@@ -16,6 +16,16 @@
 
 namespace chromeos {
 
+namespace {
+
+// D-Bus response handler for methods that use void callbacks.
+void OnVoidResponse(const VoidDBusMethodCallback& callback,
+                    dbus::Response* response) {
+  callback.Run(response ? DBUS_METHOD_CALL_SUCCESS : DBUS_METHOD_CALL_FAILURE);
+}
+
+}  // namespace
+
 // The BiodClient implementation used in production.
 class BiodClientImpl : public BiodClient {
  public:
@@ -66,14 +76,14 @@ class BiodClientImpl : public BiodClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void DestroyAllRecords() override {
+  void DestroyAllRecords(const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerDestroyAllRecordsMethod);
 
     biod_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            dbus::ObjectProxy::EmptyResponseCallback());
+                            base::Bind(&OnVoidResponse, callback));
   }
 
   void StartAuthSession(const ObjectPathCallback& callback) override {
@@ -100,19 +110,20 @@ class BiodClientImpl : public BiodClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void CancelEnrollSession(
-      const dbus::ObjectPath& enroll_session_path) override {
+  void CancelEnrollSession(const dbus::ObjectPath& enroll_session_path,
+                           const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(biod::kEnrollSessionInterface,
                                  biod::kEnrollSessionCancelMethod);
 
     dbus::ObjectProxy* enroll_session_proxy =
         bus_->GetObjectProxy(biod::kBiodServiceName, enroll_session_path);
-    enroll_session_proxy->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    enroll_session_proxy->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::Bind(&OnVoidResponse, callback));
   }
 
-  void EndAuthSession(const dbus::ObjectPath& auth_session_path) override {
+  void EndAuthSession(const dbus::ObjectPath& auth_session_path,
+                      const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(biod::kAuthSessionInterface,
                                  biod::kAuthSessionEndMethod);
 
@@ -120,11 +131,12 @@ class BiodClientImpl : public BiodClient {
         bus_->GetObjectProxy(biod::kBiodServiceName, auth_session_path);
     auth_session_proxy->CallMethod(&method_call,
                                    dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                                   dbus::ObjectProxy::EmptyResponseCallback());
+                                   base::Bind(&OnVoidResponse, callback));
   }
 
   void SetRecordLabel(const dbus::ObjectPath& record_path,
-                      const std::string& label) override {
+                      const std::string& label,
+                      const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(biod::kRecordInterface,
                                  biod::kRecordSetLabelMethod);
     dbus::MessageWriter writer(&method_call);
@@ -134,10 +146,11 @@ class BiodClientImpl : public BiodClient {
         bus_->GetObjectProxy(biod::kBiodServiceName, record_path);
     record_proxy->CallMethod(&method_call,
                              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                             dbus::ObjectProxy::EmptyResponseCallback());
+                             base::Bind(&OnVoidResponse, callback));
   }
 
-  void RemoveRecord(const dbus::ObjectPath& record_path) override {
+  void RemoveRecord(const dbus::ObjectPath& record_path,
+                    const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(biod::kRecordInterface,
                                  biod::kRecordRemoveMethod);
 
@@ -145,7 +158,7 @@ class BiodClientImpl : public BiodClient {
         bus_->GetObjectProxy(biod::kBiodServiceName, record_path);
     record_proxy->CallMethod(&method_call,
                              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                             dbus::ObjectProxy::EmptyResponseCallback());
+                             base::Bind(&OnVoidResponse, callback));
   }
 
   void RequestRecordLabel(const dbus::ObjectPath& record_path,
