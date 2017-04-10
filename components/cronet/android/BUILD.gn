@@ -881,6 +881,7 @@ instrumentation_test_apk(
 
 android_library("cronet_perf_test_apk_java") {
   testonly = true
+  android_manifest = "test/javaperftests/AndroidManifest.xml"
   java_files =
       [ "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java" ]
 
