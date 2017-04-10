@@ -4,7 +4,20 @@ class {{export_attribute}} {{union.name}} {
   using Data_ = internal::{{union.name}}_Data;
   using Tag = Data_::{{union.name}}_Tag;
 
-  static {{union.name}}Ptr New();
+  static {{union.name}}Ptr New() {
+    return {{union.name}}Ptr(base::in_place);
+  }
+
+{%-  for field in union.fields %}
+  // Construct an instance holding |{{field.name}}|.
+  static {{union.name}}Ptr
+  New{{field.name|under_to_camel}}(
+      {{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
+    auto result = {{union.name}}Ptr(base::in_place);
+    result->set_{{field.name}}(std::move({{field.name}}));
+    return result;
+  }
+{%- endfor %}
 
   template <typename U>
   static {{union.name}}Ptr From(const U& u) {
@@ -58,7 +71,6 @@ class {{export_attribute}} {{union.name}} {
 {%- endfor %}
 
  private:
-  friend class mojo::internal::UnionAccessor<{{union.name}}>;
   union Union_ {
     Union_() {}
     ~Union_() {}
@@ -72,8 +84,6 @@ class {{export_attribute}} {{union.name}} {
 {%-   endif %}
 {%- endfor %}
   };
-  void SwitchActive(Tag new_active);
-  void SetActive(Tag new_active);
   void DestroyActive();
   Tag tag_;
   Union_ data_;

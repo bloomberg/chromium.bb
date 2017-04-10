@@ -1,12 +1,11 @@
-// static
-{{union.name}}Ptr {{union.name}}::New() {
-  return {{union.name}}Ptr(base::in_place);
-}
-
-{{union.name}}::{{union.name}}() {
-  // TODO(azani): Implement default values here when/if we support them.
-  // TODO(azani): Set to UNKNOWN when unknown is implemented.
-  SetActive(static_cast<Tag>(0));
+{%- set default_field = union.fields.0 %}
+{{union.name}}::{{union.name}}() : tag_(Tag::{{default_field.name|upper}}) {
+{%- if default_field.kind|is_object_kind or
+         default_field.kind|is_any_handle_or_interface_kind %}
+  data_.{{default_field.name}} = new {{default_field.kind|cpp_wrapper_type}};
+{%- else %}
+  data_.{{default_field.name}} = {{default_field.kind|cpp_wrapper_type}}();
+{%- endif %}
 }
 
 {{union.name}}::~{{union.name}}() {
@@ -14,42 +13,27 @@
 }
 
 {%  for field in union.fields %}
-void {{union.name}}::set_{{field.name}}({{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
-  SwitchActive(Tag::{{field.name|upper}});
-{%    if field.kind|is_string_kind %}
-  *(data_.{{field.name}}) = {{field.name}};
-{%    elif field.kind|is_object_kind or
+void {{union.name}}::set_{{field.name}}(
+    {{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
+{%-   if field.kind|is_object_kind or
            field.kind|is_any_handle_or_interface_kind %}
-  *(data_.{{field.name}}) = std::move({{field.name}});
+  if (tag_ == Tag::{{field.name|upper}}) {
+    *(data_.{{field.name}}) = std::move({{field.name}});
+  } else {
+    DestroyActive();
+    tag_ = Tag::{{field.name|upper}};
+    data_.{{field.name}} = new {{field.kind|cpp_wrapper_type}}(
+        std::move({{field.name}}));
+  }
 {%-   else %}
+  if (tag_ != Tag::{{field.name|upper}}) {
+    DestroyActive();
+    tag_ = Tag::{{field.name|upper}};
+  }
   data_.{{field.name}} = {{field.name}};
 {%-   endif %}
 }
 {%- endfor %}
-
-void {{union.name}}::SwitchActive(Tag new_active) {
-  if (new_active == tag_) {
-    return;
-  }
-
-  DestroyActive();
-  SetActive(new_active);
-}
-
-void {{union.name}}::SetActive(Tag new_active) {
-  switch (new_active) {
-{%  for field in union.fields %}
-    case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind or
-         field.kind|is_any_handle_or_interface_kind %}
-      data_.{{field.name}} = new {{field.kind|cpp_wrapper_type}}();
-{%-   endif %}
-      break;
-{%- endfor %}
-  }
-
-  tag_ = new_active;
-}
 
 void {{union.name}}::DestroyActive() {
   switch (tag_) {
@@ -81,5 +65,4 @@ size_t {{union.name}}::Hash(size_t seed) const {
       return seed;
   }
 }
-
 {%- endif %}

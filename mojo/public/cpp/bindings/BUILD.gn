@@ -107,7 +107,6 @@ component("bindings") {
     "lib/sync_handle_registry.cc",
     "lib/sync_handle_watcher.cc",
     "lib/template_util.h",
-    "lib/union_accessor.h",
     "lib/validate_params.h",
     "lib/validation_context.cc",
     "lib/validation_context.h",
