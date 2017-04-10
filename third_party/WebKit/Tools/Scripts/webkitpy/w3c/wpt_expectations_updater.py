@@ -17,7 +17,7 @@ from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine, TestExpectations
-from webkitpy.w3c.test_parser import TestParser
+from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ class WPTExpectationsUpdater(object):
     def __init__(self, host):
         self.host = host
         self.finder = WebKitFinder(self.host.filesystem)
+        self.port = self.host.port_factory.get()
 
     def run(self, args=None):
         """Downloads text new baselines and adds test expectations lines."""
@@ -49,6 +50,9 @@ class WPTExpectationsUpdater(object):
         if not builds:
             _log.error('No try job information was collected.')
             return 1
+
+        # The manifest may be used below to do check which tests are reference tests.
+        WPTManifest.ensure_manifest(self.host)
 
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
@@ -286,9 +290,9 @@ class WPTExpectationsUpdater(object):
         specifiers = []
         for name in sorted(port_names):
             specifiers.append(self.host.builders.version_specifier_for_port_name(name))
-        port = self.host.port_factory.get()
+
         specifiers.extend(self.skipped_specifiers(test_name))
-        specifiers = self.simplify_specifiers(specifiers, port.configuration_specifier_macros())
+        specifiers = self.simplify_specifiers(specifiers, self.port.configuration_specifier_macros())
         if not specifiers:
             return ''
         return '[ %s ]' % ' '.join(specifiers)
@@ -360,8 +364,7 @@ class WPTExpectationsUpdater(object):
         _log.info('Lines to write to TestExpectations:')
         for line in line_list:
             _log.info('  %s', line)
-        port = self.host.port_factory.get()
-        expectations_file_path = port.path_to_generic_test_expectations_file()
+        expectations_file_path = self.port.path_to_generic_test_expectations_file()
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
         marker_comment_index = file_contents.find(MARKER_COMMENT)
         line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
@@ -437,26 +440,15 @@ class WPTExpectationsUpdater(object):
         return sorted(tests_to_rebaseline), new_test_results
 
     def can_rebaseline(self, test_path, result):
-        return (self.is_js_test(test_path) and
-                result['actual'] not in ('CRASH', 'TIMEOUT'))
-
-    def is_js_test(self, test_path):
-        """Checks whether a given file is a testharness.js test.
-
-        TODO(qyearsley): This may not behave how we want it to for virtual tests.
-        TODO(qyearsley): Avoid using TestParser; maybe this should use
-        Port.test_type, or Port.reference_files to see whether it's not
-        a reference test?
-
-        Args:
-            test_path: A file path relative to the layout tests directory.
-                This might correspond to a deleted file or a non-test.
-        """
-        absolute_path = self.host.filesystem.join(self.finder.layout_tests_dir(), test_path)
-        test_parser = TestParser(absolute_path, self.host)
-        if not test_parser.test_doc:
+        if self.is_reference_test(test_path):
             return False
-        return test_parser.is_jstest()
+        if result['actual'] in ('CRASH', 'TIMEOUT', 'MISSING'):
+            return False
+        return True
+
+    def is_reference_test(self, test_path):
+        """Checks whether a given file is a testharness.js test."""
+        return bool(self.port.reference_files(test_path))
 
     def _get_try_bots(self):
         return self.host.builders.all_try_builder_names()
