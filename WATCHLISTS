@@ -1341,6 +1341,9 @@
     'blink_paint': {
       'filepath': 'third_party/WebKit/Source/core/paint/'
     },
+    'blink_performance_timing': {
+      'filepath': 'third_party/WebKit/Source/core/timing/'
+    },
     'blink_permissions': {
       'filepath': 'third_party/WebKit/Source/modules/permissions/' \
                   '|third_party/WebKit/public/platform/modules/permissions/',
@@ -1761,6 +1764,7 @@
     'blink_owners': ['abarth@chromium.org'],
     'blink_paint' : ['blink-reviews-paint@chromium.org',
                      'dongseong.hwang@intel.com'],
+    'blink_performance_timing': ['panicker+watch@chromium.org'],
     'blink_permissions': ['mlamouri+watch-blink@chromium.org'],
     'blink_platform': ['kinuko+watch@chromium.org'],
     'blink_platform_graphics': ['ajuma+watch@chromium.org',
