@@ -118,6 +118,8 @@ fuzzer_test("template_url_parser_fuzzer") {
     "template_url_parser_fuzzer.cc",
   ]
   deps = [
+    "//base",
+    "//base:i18n",
     "//components/search_engines:search_engines",
   ]
   dict = "dicts/xml.dict"
