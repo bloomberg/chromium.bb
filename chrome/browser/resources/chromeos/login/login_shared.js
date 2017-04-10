@@ -280,6 +280,16 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Some ForTesting APIs directly access to DOM. Because this script is loaded
+   * in header, DOM tree may not be available at beginning.
+   * In DOMContentLoaded, this is marked to true, indicating ForTesting methods
+   * can be called.
+   * External script using ForTesting APIs should wait for this condition.
+   * @type {boolean}
+   */
+  Oobe.readyForTesting = false;
+
+  /**
    * Skip to login screen for telemetry.
    */
   Oobe.skipToLoginForTesting = function() {
@@ -440,6 +450,7 @@ disableTextSelectAndDrag(function(e) {
 
   document.addEventListener('DOMContentLoaded', function() {
     Oobe.initialize();
+    Oobe.readyForTesting = true;
   });
 
   // Install a global error handler so stack traces are included in logs.
@@ -447,4 +458,3 @@ disableTextSelectAndDrag(function(e) {
     console.error(error.stack);
   }
 })();
-
