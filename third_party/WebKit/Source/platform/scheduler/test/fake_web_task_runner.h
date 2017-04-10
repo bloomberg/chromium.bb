@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "platform/WebTaskRunner.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 namespace scheduler {
