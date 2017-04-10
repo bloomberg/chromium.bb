@@ -21,6 +21,7 @@
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -48,8 +49,8 @@ GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   return page_url.ReplaceComponents(replacements);
 }
 
-GURL GetIconUrlForGoogleServerV2(const GURL& page_url,
-                                 int min_source_size_in_pixel) {
+GURL GetRequestUrlForGoogleServerV2(const GURL& page_url,
+                                    int min_source_size_in_pixel) {
   return GURL(base::StringPrintf(
       kGoogleServerV2RequestFormat, kGoogleServerV2DesiredSizeInPixel,
       min_source_size_in_pixel, kGoogleServerV2MaxSizeInPixel,
@@ -220,28 +221,30 @@ void OnFetchIconFromGoogleServerComplete(
     FaviconService* favicon_service,
     const GURL& page_url,
     const base::Callback<void(bool success)>& callback,
-    const std::string& icon_url,
+    const std::string& server_request_url,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   if (image.IsEmpty()) {
-    DLOG(WARNING) << "large icon server fetch empty " << icon_url;
-    favicon_service->UnableToDownloadFavicon(GURL(icon_url));
+    DLOG(WARNING) << "large icon server fetch empty " << server_request_url;
+    favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, false));
     return;
   }
 
-  // TODO(crbug.com/699542): Extract the original icon url from the response
-  // headers if available and use it instead of |icon_url|. Possibly the type
-  // too, because using TOUCH_ICON is a hacky way that allows us to not
-  // interfere with sync.
+  // If given, use the original favicon URL from Content-Location http header.
+  // Otherwise, use the request URL as fallback.
+  std::string original_icon_url = metadata.content_location_header;
+  if (original_icon_url.empty()) {
+    original_icon_url = server_request_url;
+  }
 
   // Write fetched icons to FaviconService's cache, but only if no icon was
   // available (clients are encouraged to do this in advance, but meanwhile
   // something else could've been written). By marking the icons initially
   // expired (out-of-date), they will be refetched when we visit the original
   // page any time in the future.
-  favicon_service->SetLastResortFavicons(page_url, GURL(icon_url),
+  favicon_service->SetLastResortFavicons(page_url, GURL(original_icon_url),
                                          favicon_base::IconType::TOUCH_ICON,
                                          image, callback);
 }
@@ -295,13 +298,13 @@ void LargeIconService::
   DCHECK_LE(0, min_source_size_in_pixel);
 
   const GURL trimmed_page_url = TrimPageUrlForGoogleServer(page_url);
-  const GURL icon_url =
-      GetIconUrlForGoogleServerV2(trimmed_page_url, min_source_size_in_pixel);
+  const GURL server_request_url = GetRequestUrlForGoogleServerV2(
+      trimmed_page_url, min_source_size_in_pixel);
 
   // Do not download if the URL is invalid after trimming, or there is a
-  // previous cache miss recorded for |icon_url|.
+  // previous cache miss recorded for |server_request_url|.
   if (!trimmed_page_url.is_valid() || !image_fetcher_ ||
-      favicon_service_->WasUnableToDownloadFavicon(icon_url)) {
+      favicon_service_->WasUnableToDownloadFavicon(server_request_url)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, false));
     return;
@@ -310,7 +313,7 @@ void LargeIconService::
   image_fetcher_->SetDataUseServiceName(
       data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
   image_fetcher_->StartOrQueueNetworkRequest(
-      icon_url.spec(), icon_url,
+      server_request_url.spec(), server_request_url,
       base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
                  page_url, callback));
 }

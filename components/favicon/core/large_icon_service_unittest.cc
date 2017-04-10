@@ -51,6 +51,11 @@ ACTION_P(PostFetchReply, p0) {
       FROM_HERE, base::Bind(arg2, arg0, p0, image_fetcher::RequestMetadata()));
 }
 
+ACTION_P2(PostFetchReplyWithMetadata, p0, p1) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(arg2, arg0, p0, p1));
+}
+
 ACTION_P(PostBoolReply, p0) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(arg4, p0));
@@ -146,6 +151,35 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
                                     favicon_base::IconType::TOUCH_ICON, _, _))
       .WillOnce(PostBoolReply(true));
 
+  large_icon_service_
+      .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+          GURL(kDummyUrl), /*min_source_size_in_pixel=*/42, callback.Get());
+
+  EXPECT_CALL(callback, Run(true));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
+  const GURL kExpectedServerUrl(
+      "https://t0.gstatic.com/faviconV2?client=chrome&drop_404_icon=true"
+      "&size=64&min_size=42&max_size=128&fallback_opts=TYPE,SIZE,URL"
+      "&url=http://www.example.com/");
+  const GURL kExpectedOriginalUrl("http://www.example.com/favicon.png");
+
+  image_fetcher::RequestMetadata expected_metadata;
+  expected_metadata.content_location_header = kExpectedOriginalUrl.spec();
+  EXPECT_CALL(*mock_image_fetcher_,
+              StartOrQueueNetworkRequest(_, kExpectedServerUrl, _))
+      .WillOnce(PostFetchReplyWithMetadata(
+          gfx::Image::CreateFrom1xBitmap(
+              CreateTestSkBitmap(64, 64, kTestColor)),
+          expected_metadata));
+  EXPECT_CALL(mock_favicon_service_,
+              SetLastResortFavicons(GURL(kDummyUrl), kExpectedOriginalUrl,
+                                    favicon_base::IconType::TOUCH_ICON, _, _))
+      .WillOnce(PostBoolReply(true));
+
+  base::MockCallback<base::Callback<void(bool success)>> callback;
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           GURL(kDummyUrl), /*min_source_size_in_pixel=*/42, callback.Get());
