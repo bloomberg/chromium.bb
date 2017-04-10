@@ -82,6 +82,7 @@ public class SubresourceFilterExperimentalInfoBar
     public void onLinkClicked() {
         mShowExplanation = true;
         replaceView(createView());
+        super.onLinkClicked();
     }
 
     @Override

@@ -34,6 +34,7 @@ class SubresourceFilterInfobarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Cancel() override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   SubresourceFilterInfobarDelegate();

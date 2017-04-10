@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
@@ -82,4 +83,10 @@ bool SubresourceFilterInfobarDelegate::Cancel() {
       web_contents)
       ->OnReloadRequested();
   return true;
+}
+
+bool SubresourceFilterInfobarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
+  return false;
 }

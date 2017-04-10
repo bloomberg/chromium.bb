@@ -27,8 +27,9 @@ enum SubresourceFilterAction {
 
   // On Desktop, this is a bubble. On Android it is an
   // expanded infobar.
-  // TODO(csharrison): Start logging these once the new UI is finished.
   kActionDetailsShown,
+
+  // TODO(csharrison): Log this once the link is in place.
   kActionClickedLearnMore,
 
   // Content settings:
