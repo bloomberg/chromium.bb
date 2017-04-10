@@ -6,13 +6,20 @@ package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -23,7 +30,7 @@ import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
  * Specific {@link LinearLayout} that is displays the data savings of Data Saver in the main menu
  * footer.
  */
-public class DataReductionMainMenuFooter extends LinearLayout implements View.OnClickListener {
+public class DataReductionMainMenuFooter extends FrameLayout implements View.OnClickListener {
     /**
      * Constructs a new {@link DataReductionMainMenuFooter} with the appropriate context.
      */
@@ -35,7 +42,8 @@ public class DataReductionMainMenuFooter extends LinearLayout implements View.On
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        TextView textSummary = (TextView) findViewById(R.id.menu_item_summary);
+        TextView itemText = (TextView) findViewById(R.id.menu_item_text);
+        TextView itemSummary = (TextView) findViewById(R.id.menu_item_summary);
 
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
             String dataSaved = Formatter.formatShortFileSize(getContext(),
@@ -44,14 +52,28 @@ public class DataReductionMainMenuFooter extends LinearLayout implements View.On
             long millisSinceEpoch =
                     DataReductionProxySettings.getInstance().getDataReductionLastUpdateTime()
                     - DateUtils.DAY_IN_MILLIS * ChartDataUsageView.DAYS_IN_CHART;
-            final int flags = DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_NO_YEAR;
+            final int flags = DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_NO_YEAR;
             String date =
                     DateUtils.formatDateTime(getContext(), millisSinceEpoch, flags).toString();
 
-            textSummary.setText(
-                    getContext().getString(R.string.data_reduction_saved_label, dataSaved, date));
+            itemText.setText(
+                    getContext().getString(R.string.data_reduction_saved_label, dataSaved));
+            itemSummary.setText(getContext().getString(R.string.data_reduction_date_label, date));
+
+            int lightActiveColor = ApiCompatibilityUtils.getColor(
+                    getContext().getResources(), R.color.light_active_color);
+            itemText.setTextColor(lightActiveColor);
         } else {
-            textSummary.setText(R.string.text_off);
+            itemText.setText(R.string.data_reduction_title);
+            itemSummary.setText(R.string.text_off);
+
+            // Make the icon grey.
+            ImageView icon = (ImageView) findViewById(R.id.chart_icon);
+            LayerDrawable layers = (LayerDrawable) icon.getDrawable();
+            Drawable chart = layers.findDrawableByLayerId(R.id.main_menu_chart);
+            ColorMatrix matrix = new ColorMatrix();
+            matrix.setSaturation(0);
+            chart.setColorFilter(new ColorMatrixColorFilter(matrix));
         }
 
         setOnClickListener(this);
