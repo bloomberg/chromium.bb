@@ -30,8 +30,8 @@ typedef void (*warp_affine_func)(int32_t *mat, uint8_t *ref, int width,
                                  int height, int stride, uint8_t *pred,
                                  int p_col, int p_row, int p_width,
                                  int p_height, int p_stride, int subsampling_x,
-                                 int subsampling_y, int ref_frm, int32_t alpha,
-                                 int32_t beta, int32_t gamma, int32_t delta);
+                                 int subsampling_y, int ref_frm, int16_t alpha,
+                                 int16_t beta, int16_t gamma, int16_t delta);
 
 typedef std::tr1::tuple<int, int, int> WarpTestParam;
 
@@ -46,8 +46,8 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
 
  protected:
   int32_t random_param(int bits);
-  void generate_model(int32_t *mat, int32_t *alpha, int32_t *beta,
-                      int32_t *gamma, int32_t *delta);
+  void generate_model(int32_t *mat, int16_t *alpha, int16_t *beta,
+                      int16_t *gamma, int16_t *delta);
 
   void RunCheckOutput(warp_affine_func test_impl);
 
@@ -62,7 +62,7 @@ typedef void (*highbd_warp_affine_func)(
     int32_t *mat, uint16_t *ref, int width, int height, int stride,
     uint16_t *pred, int p_col, int p_row, int p_width, int p_height,
     int p_stride, int subsampling_x, int subsampling_y, int bd, int ref_frm,
-    int32_t alpha, int32_t beta, int32_t gamma, int32_t delta);
+    int16_t alpha, int16_t beta, int16_t gamma, int16_t delta);
 
 typedef std::tr1::tuple<int, int, int, int> HighbdWarpTestParam;
 
@@ -78,8 +78,8 @@ class AV1HighbdWarpFilterTest
 
  protected:
   int32_t random_param(int bits);
-  void generate_model(int32_t *mat, int32_t *alpha, int32_t *beta,
-                      int32_t *gamma, int32_t *delta);
+  void generate_model(int32_t *mat, int16_t *alpha, int16_t *beta,
+                      int16_t *gamma, int16_t *delta);
 
   void RunCheckOutput(highbd_warp_affine_func test_impl);
 

@@ -667,8 +667,8 @@ static int is_affine_valid(WarpedMotionParams *wm) {
   return (mat[2] > 0);
 }
 
-static int is_affine_shear_allowed(int32_t alpha, int32_t beta, int32_t gamma,
-                                   int32_t delta) {
+static int is_affine_shear_allowed(int16_t alpha, int16_t beta, int16_t gamma,
+                                   int16_t delta) {
   if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
       (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS)))
     return 0;
@@ -680,16 +680,19 @@ static int is_affine_shear_allowed(int32_t alpha, int32_t beta, int32_t gamma,
 int get_shear_params(WarpedMotionParams *wm) {
   const int32_t *mat = wm->wmmat;
   if (!is_affine_valid(wm)) return 0;
-  wm->alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-  wm->beta = mat[3];
+  wm->alpha =
+      clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
+  wm->beta = clamp(mat[3], INT16_MIN, INT16_MAX);
   int16_t shift;
   int16_t y = resolve_divisor_32(abs(mat[2]), &shift) * (mat[2] < 0 ? -1 : 1);
   int64_t v;
   v = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) * y;
-  wm->gamma = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->gamma =
+      clamp(ROUND_POWER_OF_TWO_SIGNED_64(v, shift), INT16_MIN, INT16_MAX);
   v = ((int64_t)mat[3] * mat[4]) * y;
-  wm->delta = mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
-              (1 << WARPEDMODEL_PREC_BITS);
+  wm->delta = clamp(mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
+                        (1 << WARPEDMODEL_PREC_BITS),
+                    INT16_MIN, INT16_MAX);
   if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
     return 0;
   return 1;
@@ -872,8 +875,8 @@ void av1_highbd_warp_affine_c(int32_t *mat, uint16_t *ref, int width,
                               int p_row, int p_width, int p_height,
                               int p_stride, int subsampling_x,
                               int subsampling_y, int bd, int ref_frm,
-                              int32_t alpha, int32_t beta, int32_t gamma,
-                              int32_t delta) {
+                              int16_t alpha, int16_t beta, int16_t gamma,
+                              int16_t delta) {
 #if HORSHEAR_REDUCE_PREC_BITS >= 5
   int16_t tmp[15 * 8];
 #else
@@ -1001,10 +1004,10 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
   if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
       y_scale == 16) {
     int32_t *mat = wm->wmmat;
-    const int32_t alpha = wm->alpha;
-    const int32_t beta = wm->beta;
-    const int32_t gamma = wm->gamma;
-    const int32_t delta = wm->delta;
+    const int16_t alpha = wm->alpha;
+    const int16_t beta = wm->beta;
+    const int16_t gamma = wm->gamma;
+    const int16_t delta = wm->delta;
 
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
@@ -1121,8 +1124,8 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
                        int stride, uint8_t *pred, int p_col, int p_row,
                        int p_width, int p_height, int p_stride,
                        int subsampling_x, int subsampling_y, int ref_frm,
-                       int32_t alpha, int32_t beta, int32_t gamma,
-                       int32_t delta) {
+                       int16_t alpha, int16_t beta, int16_t gamma,
+                       int16_t delta) {
   int16_t tmp[15 * 8];
   int i, j, k, l, m;
 
@@ -1257,10 +1260,10 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
   if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
       y_scale == 16) {
     int32_t *mat = wm->wmmat;
-    const int32_t alpha = wm->alpha;
-    const int32_t beta = wm->beta;
-    const int32_t gamma = wm->gamma;
-    const int32_t delta = wm->delta;
+    const int16_t alpha = wm->alpha;
+    const int16_t beta = wm->beta;
+    const int16_t gamma = wm->gamma;
+    const int16_t delta = wm->delta;
 
     av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
                     p_width, p_height, p_stride, subsampling_x, subsampling_y,

@@ -47,9 +47,9 @@ int32_t AV1WarpFilterTest::random_param(int bits) {
   return v;
 }
 
-void AV1WarpFilterTest::generate_model(int32_t *mat, int32_t *alpha,
-                                       int32_t *beta, int32_t *gamma,
-                                       int32_t *delta) {
+void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
+                                       int16_t *beta, int16_t *gamma,
+                                       int16_t *delta) {
   while (1) {
     mat[0] = random_param(WARPEDMODEL_PREC_BITS + 6);
     mat[1] = random_param(WARPEDMODEL_PREC_BITS + 6);
@@ -71,11 +71,14 @@ void AV1WarpFilterTest::generate_model(int32_t *mat, int32_t *alpha,
     // for the warp filter.
     assert(mat[2] != 0);
 
-    *alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    *beta = mat[3];
-    *gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    *delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-             (1 << WARPEDMODEL_PREC_BITS);
+    *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
+    *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
+    *gamma = clamp(((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2],
+                   INT16_MIN, INT16_MAX);
+    *delta =
+        clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+                  (1 << WARPEDMODEL_PREC_BITS),
+              INT16_MIN, INT16_MAX);
 
     if ((4 * abs(*alpha) + 7 * abs(*beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(*gamma) + 4 * abs(*delta) > (1 << WARPEDMODEL_PREC_BITS)))
@@ -98,7 +101,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   uint8_t *input = input_ + border;
   uint8_t *output = new uint8_t[out_w * out_h];
   uint8_t *output2 = new uint8_t[out_w * out_h];
-  int32_t mat[8], alpha, beta, gamma, delta;
+  int32_t mat[8];
+  int16_t alpha, beta, gamma, delta;
 
   // Generate an input block and extend its borders horizontally
   for (i = 0; i < h; ++i)
@@ -159,9 +163,9 @@ int32_t AV1HighbdWarpFilterTest::random_param(int bits) {
   return v;
 }
 
-void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int32_t *alpha,
-                                             int32_t *beta, int32_t *gamma,
-                                             int32_t *delta) {
+void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
+                                             int16_t *beta, int16_t *gamma,
+                                             int16_t *delta) {
   while (1) {
     mat[0] = random_param(WARPEDMODEL_PREC_BITS + 6);
     mat[1] = random_param(WARPEDMODEL_PREC_BITS + 6);
@@ -183,11 +187,14 @@ void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int32_t *alpha,
     // for the warp filter.
     assert(mat[2] != 0);
 
-    *alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    *beta = mat[3];
-    *gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    *delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-             (1 << WARPEDMODEL_PREC_BITS);
+    *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
+    *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
+    *gamma = clamp(((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2],
+                   INT16_MIN, INT16_MAX);
+    *delta =
+        clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+                  (1 << WARPEDMODEL_PREC_BITS),
+              INT16_MIN, INT16_MAX);
 
     if ((4 * abs(*alpha) + 7 * abs(*beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(*gamma) + 4 * abs(*delta) > (1 << WARPEDMODEL_PREC_BITS)))
@@ -213,7 +220,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   uint16_t *input = input_ + border;
   uint16_t *output = new uint16_t[out_w * out_h];
   uint16_t *output2 = new uint16_t[out_w * out_h];
-  int32_t mat[8], alpha, beta, gamma, delta;
+  int32_t mat[8];
+  int16_t alpha, beta, gamma, delta;
 
   // Generate an input block and extend its borders horizontally
   for (i = 0; i < h; ++i)
