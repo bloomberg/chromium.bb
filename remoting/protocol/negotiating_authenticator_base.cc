@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/name_value_map.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/name_value_map.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {

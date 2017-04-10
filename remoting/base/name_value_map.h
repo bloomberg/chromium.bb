@@ -1,18 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Helper functions that allow to map enum values to strings.
 
-#ifndef REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
-#define REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
+#ifndef REMOTING_BASE_NAME_VALUE_MAP_H_
+#define REMOTING_BASE_NAME_VALUE_MAP_H_
 
 #include <stddef.h>
 
 #include "base/logging.h"
 
 namespace remoting {
-namespace protocol {
 
 template <typename T>
 struct NameMapElement {
@@ -43,7 +42,6 @@ bool NameToValue(const NameMapElement<T> (&map)[N],
   return false;
 }
 
-}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
+#endif  // REMOTING_BASE_NAME_VALUE_MAP_H_

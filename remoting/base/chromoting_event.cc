@@ -7,8 +7,22 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
+#include "remoting/base/name_value_map.h"
 
 namespace remoting {
+
+namespace {
+
+const NameMapElement<ChromotingEvent::Os> kOsNames[] = {
+    {ChromotingEvent::Os::CHROMOTING_LINUX, "linux"},
+    {ChromotingEvent::Os::CHROMOTING_CHROMEOS, "chromeos"},
+    {ChromotingEvent::Os::CHROMOTING_MAC, "mac"},
+    {ChromotingEvent::Os::CHROMOTING_WINDOWS, "windows"},
+    {ChromotingEvent::Os::CHROMOTING_ANDROID, "android"},
+    {ChromotingEvent::Os::CHROMOTING_IOS, "ios"},
+};
+
+}  // namespace
 
 const char ChromotingEvent::kCaptureLatencyKey[] = "capture_latency";
 const char ChromotingEvent::kConnectionErrorKey[] = "connection_error";
@@ -126,23 +140,12 @@ bool ChromotingEvent::IsEndOfSession(SessionState state) {
 
 // static
 ChromotingEvent::Os ChromotingEvent::ParseOsFromString(const std::string& os) {
-  std::string lower_os = base::ToLowerASCII(os);
-  // TODO(yuweih): Refactor remoting/protocol/name_value_map.h and use it to
-  //     map the value.
-  if (lower_os == "linux") {
-    return Os::CHROMOTING_LINUX;
-  } else if (lower_os == "chromeos") {
-    return Os::CHROMOTING_CHROMEOS;
-  } else if (lower_os == "mac") {
-    return Os::CHROMOTING_MAC;
-  } else if (lower_os == "windows") {
-    return Os::CHROMOTING_WINDOWS;
-  } else if (lower_os == "android") {
-    return Os::CHROMOTING_ANDROID;
-  } else if (lower_os == "ios") {
-    return Os::CHROMOTING_IOS;
+  ChromotingEvent::Os result;
+  if (!NameToValue(kOsNames, base::ToLowerASCII(os), &result)) {
+    return Os::OTHER;
   }
-  return Os::OTHER;
+
+  return result;
 }
 
 }  // namespace remoting

@@ -4,9 +4,7 @@
 
 #include "remoting/host/host_exit_codes.h"
 
-#include "remoting/protocol/name_value_map.h"
-
-using remoting::protocol::NameMapElement;
+#include "remoting/base/name_value_map.h"
 
 namespace remoting {
 

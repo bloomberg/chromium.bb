@@ -104,7 +104,6 @@ static_library("protocol") {
     "monitored_video_stub.h",
     "mouse_input_filter.cc",
     "mouse_input_filter.h",
-    "name_value_map.h",
     "negotiating_authenticator_base.cc",
     "negotiating_authenticator_base.h",
     "negotiating_client_authenticator.cc",

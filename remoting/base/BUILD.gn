@@ -22,6 +22,7 @@ source_set("base") {
     "constants.h",
     "leaky_bucket.cc",
     "leaky_bucket.h",
+    "name_value_map.h",
     "rate_counter.cc",
     "rate_counter.h",
     "remoting_bot.cc",

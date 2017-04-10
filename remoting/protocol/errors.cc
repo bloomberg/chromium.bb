@@ -5,7 +5,7 @@
 #include "remoting/protocol/errors.h"
 
 #include "base/logging.h"
-#include "remoting/protocol/name_value_map.h"
+#include "remoting/base/name_value_map.h"
 
 namespace remoting {
 namespace protocol {
