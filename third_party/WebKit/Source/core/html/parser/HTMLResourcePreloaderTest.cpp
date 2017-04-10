@@ -52,8 +52,9 @@ class HTMLResourcePreloaderTest : public testing::Test {
     auto preload_request = PreloadRequest::CreateIfNeeded(
         String(), TextPosition(), test_case.url,
         KURL(ParsedURLStringTag(), test_case.base_url), Resource::kImage,
-        ReferrerPolicy(), FetchRequest::ResourceWidth(),
-        ClientHintsPreferences(), PreloadRequest::kRequestTypePreconnect);
+        ReferrerPolicy(), PreloadRequest::kDocumentIsReferrer,
+        FetchRequest::ResourceWidth(), ClientHintsPreferences(),
+        PreloadRequest::kRequestTypePreconnect);
     DCHECK(preload_request);
     if (test_case.is_cors)
       preload_request->SetCrossOrigin(kCrossOriginAttributeAnonymous);

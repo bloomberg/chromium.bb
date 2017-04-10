@@ -4,6 +4,7 @@
 
 #include "core/html/parser/HTMLPreloadScanner.h"
 
+#include <memory>
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/frame/Settings.h"
@@ -12,9 +13,12 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -43,6 +47,9 @@ struct ReferrerPolicyTestCase {
   Resource::Type type;
   int resource_width;
   ReferrerPolicy referrer_policy;
+  // Expected referrer header of the preload request, or nullptr if the header
+  // shouldn't be checked (and no network request should be created).
+  const char* expected_referrer;
 };
 
 struct NonceTestCase {
@@ -87,6 +94,19 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
     PreloadRequestVerification(type, url, base_url, width,
                                ClientHintsPreferences());
     EXPECT_EQ(referrer_policy, preload_request_->GetReferrerPolicy());
+  }
+
+  void PreloadRequestVerification(Resource::Type type,
+                                  const char* url,
+                                  const char* base_url,
+                                  int width,
+                                  ReferrerPolicy referrer_policy,
+                                  Document* document,
+                                  const char* expected_referrer) {
+    PreloadRequestVerification(type, url, base_url, width, referrer_policy);
+    Resource* resource = preload_request_->Start(document);
+    ASSERT_TRUE(resource);
+    EXPECT_EQ(expected_referrer, resource->GetResourceRequest().HttpReferrer());
   }
 
   void PreconnectRequestVerification(const String& host,
@@ -155,6 +175,9 @@ class HTMLPreloadScannerTest : public testing::Test {
       ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault) {
     HTMLParserOptions options(&dummy_page_holder_->GetDocument());
     KURL document_url(kParsedURLString, "http://whatever.test/");
+    dummy_page_holder_->GetDocument().SetURL(document_url);
+    dummy_page_holder_->GetDocument().SetSecurityOrigin(
+        SecurityOrigin::Create(document_url));
     dummy_page_holder_->GetDocument().GetSettings()->SetViewportEnabled(
         viewport_state == kViewportEnabled);
     dummy_page_holder_->GetDocument().GetSettings()->SetViewportMetaEnabled(
@@ -200,9 +223,16 @@ class HTMLPreloadScannerTest : public testing::Test {
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
 
-    preloader.PreloadRequestVerification(
-        test_case.type, test_case.preloaded_url, test_case.output_base_url,
-        test_case.resource_width, test_case.referrer_policy);
+    if (test_case.expected_referrer) {
+      preloader.PreloadRequestVerification(
+          test_case.type, test_case.preloaded_url, test_case.output_base_url,
+          test_case.resource_width, test_case.referrer_policy,
+          &dummy_page_holder_->GetDocument(), test_case.expected_referrer);
+    } else {
+      preloader.PreloadRequestVerification(
+          test_case.type, test_case.preloaded_url, test_case.output_base_url,
+          test_case.resource_width, test_case.referrer_policy);
+    }
   }
 
   void Test(NonceTestCase test_case) {
@@ -617,47 +647,54 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "http://example.test/", Resource::kImage, 0, kReferrerPolicyDefault},
       {"http://example.test", "<img referrerpolicy='origin' src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOrigin},
+       kReferrerPolicyOrigin, nullptr},
       {"http://example.test",
        "<meta name='referrer' content='not-a-valid-policy'><img "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyDefault},
+       kReferrerPolicyDefault, nullptr},
       {"http://example.test",
        "<img referrerpolicy='origin' referrerpolicy='origin-when-cross-origin' "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOrigin},
+       kReferrerPolicyOrigin, nullptr},
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
-       "http://example.test/", Resource::kImage, 0, kReferrerPolicyDefault},
-      {"http://example.test",
-       "<meta name='referrer' content='no-referrer'><img "
-       "referrerpolicy='origin' src='bla.gif'/>",
-       "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOrigin},
+       "http://example.test/", Resource::kImage, 0, kReferrerPolicyDefault,
+       nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='origin-when-cross-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOriginWhenCrossOrigin},
+       kReferrerPolicyOriginWhenCrossOrigin, nullptr},
+      {"http://example.test",
+       "<link rel='stylesheet' href='sheet.css' type='text/css'>", "sheet.css",
+       "http://example.test/", Resource::kCSSStyleSheet, 0,
+       kReferrerPolicyDefault, nullptr},
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='origin' "
        "referrerpolicy='origin-when-cross-origin' href='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOrigin},
+       kReferrerPolicyOrigin, nullptr},
+      {"http://example.test",
+       "<meta name='referrer' content='no-referrer'><img "
+       "referrerpolicy='origin' src='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::kImage, 0,
+       kReferrerPolicyOrigin, nullptr},
       // The scanner's state is not reset between test cases, so all subsequent
       // test cases have a document referrer policy of no-referrer.
       {"http://example.test",
        "<link rel=preload as=image referrerpolicy='not-a-valid-policy' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyNever},
+       kReferrerPolicyNever, nullptr},
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
-       "http://example.test/", Resource::kImage, 0, kReferrerPolicyNever},
+       "http://example.test/", Resource::kImage, 0, kReferrerPolicyNever,
+       nullptr},
       {"http://example.test", "<img src='bla.gif'/>", "bla.gif",
-       "http://example.test/", Resource::kImage, 0, kReferrerPolicyNever}};
+       "http://example.test/", Resource::kImage, 0, kReferrerPolicyNever,
+       nullptr}};
 
   for (const auto& test_case : test_cases)
     Test(test_case);
@@ -698,23 +735,24 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
   RunSetUp(kViewportEnabled, kPreloadEnabled, kReferrerPolicyOrigin);
   ReferrerPolicyTestCase test_cases[] = {
       {"http://example.test", "<img src='blah.gif'/>", "blah.gif",
-       "http://example.test/", Resource::kImage, 0, kReferrerPolicyOrigin},
+       "http://example.test/", Resource::kImage, 0, kReferrerPolicyOrigin,
+       nullptr},
       {"http://example.test", "<style>@import url('blah.css');</style>",
        "blah.css", "http://example.test/", Resource::kCSSStyleSheet, 0,
-       kReferrerPolicyOrigin},
+       kReferrerPolicyOrigin, nullptr},
       // Tests that a meta-delivered referrer policy with an unrecognized policy
       // value does not override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='not-a-valid-policy'><img "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyOrigin},
+       kReferrerPolicyOrigin, nullptr},
       // Tests that a meta-delivered referrer policy with a valid policy value
       // does override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='unsafe-url'><img src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyAlways},
+       kReferrerPolicyAlways, nullptr},
   };
 
   for (const auto& test_case : test_cases)
@@ -844,6 +882,25 @@ TEST_F(HTMLPreloadScannerTest, testUppercaseAsValues) {
 
   for (const auto& test_case : test_cases)
     Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
+  RunSetUp(kViewportEnabled, kPreloadEnabled, kReferrerPolicyAlways);
+
+  KURL preload_url(kParsedURLString, "http://example.test/sheet.css");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      preload_url, WrappedResourceResponse(ResourceResponse()), "");
+
+  ReferrerPolicyTestCase test_case = {
+      "http://example.test",
+      "<link rel='stylesheet' href='sheet.css' type='text/css'>",
+      "sheet.css",
+      "http://example.test/",
+      Resource::kCSSStyleSheet,
+      0,
+      kReferrerPolicyAlways,
+      "http://whatever.test/"};
+  Test(test_case);
 }
 
 }  // namespace blink

@@ -247,8 +247,8 @@ class TokenPreloadScanner::StartTagScanner {
                                                      : document_referrer_policy;
     auto request = PreloadRequest::CreateIfNeeded(
         InitiatorFor(tag_impl_), position, url_to_load_, predicted_base_url,
-        type.value(), referrer_policy, resource_width, client_hints_preferences,
-        request_type);
+        type.value(), referrer_policy, PreloadRequest::kDocumentIsReferrer,
+        resource_width, client_hints_preferences, request_type);
     if (!request)
       return nullptr;
 

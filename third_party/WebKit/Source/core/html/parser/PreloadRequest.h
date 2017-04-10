@@ -31,6 +31,8 @@ class CORE_EXPORT PreloadRequest {
     kRequestTypeLinkRelPreload
   };
 
+  enum ReferrerSource { kDocumentIsReferrer, kBaseUrlIsReferrer };
+
   // TODO(csharrison): Move the implementation to the cpp file when core/html
   // gets its own testing source set in html/BUILD.gn.
   static std::unique_ptr<PreloadRequest> CreateIfNeeded(
@@ -40,6 +42,7 @@ class CORE_EXPORT PreloadRequest {
       const KURL& base_url,
       Resource::Type resource_type,
       const ReferrerPolicy referrer_policy,
+      ReferrerSource referrer_source,
       const FetchRequest::ResourceWidth& resource_width =
           FetchRequest::ResourceWidth(),
       const ClientHintsPreferences& client_hints_preferences =
@@ -56,7 +59,7 @@ class CORE_EXPORT PreloadRequest {
     return WTF::WrapUnique(new PreloadRequest(
         initiator_name, initiator_position, resource_url, base_url,
         resource_type, resource_width, client_hints_preferences, request_type,
-        referrer_policy));
+        referrer_policy, referrer_source));
   }
 
   bool IsSafeToSendToAnotherThread() const;
@@ -105,7 +108,8 @@ class CORE_EXPORT PreloadRequest {
                  const FetchRequest::ResourceWidth& resource_width,
                  const ClientHintsPreferences& client_hints_preferences,
                  RequestType request_type,
-                 const ReferrerPolicy referrer_policy)
+                 const ReferrerPolicy referrer_policy,
+                 ReferrerSource referrer_source)
       : initiator_name_(initiator_name),
         initiator_position_(initiator_position),
         resource_url_(resource_url.IsolatedCopy()),
@@ -117,7 +121,8 @@ class CORE_EXPORT PreloadRequest {
         resource_width_(resource_width),
         client_hints_preferences_(client_hints_preferences),
         request_type_(request_type),
-        referrer_policy_(referrer_policy) {}
+        referrer_policy_(referrer_policy),
+        referrer_source_(referrer_source) {}
 
   KURL CompleteURL(Document*);
 
@@ -135,6 +140,7 @@ class CORE_EXPORT PreloadRequest {
   ClientHintsPreferences client_hints_preferences_;
   RequestType request_type_;
   ReferrerPolicy referrer_policy_;
+  ReferrerSource referrer_source_;
   IntegrityMetadataSet integrity_metadata_;
 };
 

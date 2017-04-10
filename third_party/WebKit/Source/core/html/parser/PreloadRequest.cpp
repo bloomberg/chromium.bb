@@ -41,7 +41,7 @@ Resource* PreloadRequest::Start(Document* document) {
   ResourceRequest resource_request(url);
   resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
       referrer_policy_, url,
-      resource_type_ == Resource::kCSSStyleSheet
+      referrer_source_ == kBaseUrlIsReferrer
           ? base_url_.StrippedForUseAsReferrer()
           : document->OutgoingReferrer()));
   resource_request.SetRequestContext(
