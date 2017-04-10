@@ -317,6 +317,7 @@ public class WebappInfo {
      * opposed to an intent from a push notification or other internal source).
      */
     public boolean isLaunchedFromHomescreen() {
-        return source() != ShortcutSource.NOTIFICATION;
+        int source = source();
+        return source != ShortcutSource.NOTIFICATION && source != ShortcutSource.EXTERNAL_INTENT;
     }
 }
