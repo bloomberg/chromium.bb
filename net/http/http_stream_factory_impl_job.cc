@@ -334,17 +334,6 @@ void HttpStreamFactoryImpl::Job::Resume() {
 
 void HttpStreamFactoryImpl::Job::Orphan() {
   net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_ORPHANED);
-
-  if (delegate_->for_websockets()) {
-    // We cancel this job because a WebSocketHandshakeStream can't be created
-    // without a WebSocketHandshakeStreamBase::CreateHelper which is stored in
-    // the Request class and isn't retrievable by this job.
-    if (connection_ && connection_->socket()) {
-      connection_->socket()->Disconnect();
-    }
-    delegate_->OnOrphanedJobComplete(this);
-  }
-  // |this| may be deleted after this call.
 }
 
 void HttpStreamFactoryImpl::Job::SetPriority(RequestPriority priority) {
@@ -732,7 +721,7 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  const NetLogWithSource* net_log = delegate_->GetNetLog(this);
+  const NetLogWithSource* net_log = delegate_->GetNetLog();
 
   if (net_log) {
     net_log_.BeginEvent(

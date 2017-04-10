@@ -136,9 +136,6 @@ class HttpStreamFactoryImpl::JobController
                              const base::WeakPtr<SpdySession>& spdy_session,
                              bool direct) override;
 
-  // Invoked when the orphaned |job| finishes.
-  void OnOrphanedJobComplete(const Job* job) override;
-
   // Invoked when the |job| finishes pre-connecting sockets.
   void OnPreconnectsComplete(Job* job) override;
 
@@ -166,7 +163,7 @@ class HttpStreamFactoryImpl::JobController
   // Remove session from the SpdySessionRequestMap.
   void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) override;
 
-  const NetLogWithSource* GetNetLog(Job* job) const override;
+  const NetLogWithSource* GetNetLog() const override;
 
   void MaybeSetWaitTimeForMainJob(const base::TimeDelta& delay) override;
 
@@ -207,6 +204,9 @@ class HttpStreamFactoryImpl::JobController
   // ignored by JobController. The unbound job can be canceled or continue until
   // completion.
   void OrphanUnboundJob();
+
+  // Invoked when the orphaned |job| finishes.
+  void OnOrphanedJobComplete(const Job* job);
 
   // Called when a Job succeeds.
   void OnJobSucceeded(Job* job);

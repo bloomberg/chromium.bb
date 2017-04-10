@@ -119,9 +119,6 @@ class HttpStreamFactoryImpl::Job {
         const base::WeakPtr<SpdySession>& spdy_session,
         bool direct) = 0;
 
-    // Invoked when the orphaned |job| finishes.
-    virtual void OnOrphanedJobComplete(const Job* job) = 0;
-
     // Invoked when the |job| finishes pre-connecting sockets.
     virtual void OnPreconnectsComplete(Job* job) = 0;
 
@@ -148,7 +145,7 @@ class HttpStreamFactoryImpl::Job {
     // Remove session from the SpdySessionRequestMap.
     virtual void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) = 0;
 
-    virtual const NetLogWithSource* GetNetLog(Job* job) const = 0;
+    virtual const NetLogWithSource* GetNetLog() const = 0;
 
     virtual WebSocketHandshakeStreamBase::CreateHelper*
     websocket_handshake_stream_create_helper() = 0;
