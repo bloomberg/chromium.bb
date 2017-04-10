@@ -335,6 +335,8 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
   // We might revisit this logic later to decide if we want to only delete the
   // cached verdict whose cache expression matches this URL.
   for (const history::URLRow& row : deleted_rows) {
+    if (!row.url().SchemeIsHTTPOrHTTPS())
+      continue;
     GURL url_key = GetHostNameWithHTTPScheme(row.url());
     std::unique_ptr<base::DictionaryValue> verdict_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(

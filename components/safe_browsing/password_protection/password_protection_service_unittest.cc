@@ -447,6 +447,11 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
   // origin "http://bar.com" should be removed,
   history::URLRows deleted_urls;
   deleted_urls.push_back(history::URLRow(GURL("http://bar.com")));
+
+  // Delete an arbitrary data URL, to ensure the service is robust against
+  // filtering only http/s URLs. See crbug.com/709758.
+  deleted_urls.push_back(history::URLRow(GURL("data:text/html, <p>hellow")));
+
   password_protection_service_->RemoveContentSettingsOnURLsDeleted(
       false /* all_history */, deleted_urls);
   EXPECT_EQ(1U, GetStoredVerdictCount());
