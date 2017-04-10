@@ -47,11 +47,13 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
     if (missing_permission_count > 1)
       continue;
 
+    bool has_all_permissions = true;
     for (auto it = permissions.begin() + previous_size; it != permissions.end();
          ++it) {
-      if (window_android->HasPermission(*it))
-        continue;
+      has_all_permissions &= window_android->HasPermission(*it);
+    }
 
+    if (!has_all_permissions) {
       missing_permission_count++;
       if (missing_permission_count > 1) {
         message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
