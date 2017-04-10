@@ -43,7 +43,7 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
 
     # This has the side-effect of checking the types are correct.
-    collector._collect_commit_time_metric()
+    collector._collect_timestamp_metric()
 
   def testCollectGitHashCallsSet(self):
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
@@ -61,11 +61,11 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
   def testCollectGitTimeCallsSet(self):
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
     with mock.patch.object(git_metrics._GitMetricCollector,
-                           '_commit_time_metric',
+                           '_timestamp_metric',
                            autospec=True) as time_metric:
-      collector._collect_commit_time_metric()
+      collector._collect_timestamp_metric()
 
-    commit_time = self.git_repo.get_commit_time()
+    timestamp = self.git_repo.get_commit_time()
     self.assertEqual(time_metric.set.call_args_list, [
-        mock.call(commit_time, {'repo': self.git_dir})
+        mock.call(timestamp, {'repo': self.git_dir})
     ])
