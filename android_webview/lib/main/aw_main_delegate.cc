@@ -206,10 +206,10 @@ void AwMainDelegate::PreSandboxStartup() {
         global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
   }
   if (process_type.empty()) {
-    if (command_line.HasSwitch(switches::kSingleProcess)) {
-      process_type = breakpad::kWebViewSingleProcessType;
-    } else {
+    if (command_line.HasSwitch(switches::kWebViewSandboxedRenderer)) {
       process_type = breakpad::kBrowserProcessType;
+    } else {
+      process_type = breakpad::kWebViewSingleProcessType;
     }
   }
 

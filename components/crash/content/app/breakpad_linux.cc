@@ -1951,7 +1951,14 @@ void InitCrashReporter(const std::string& process_type) {
   if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
     return;
 
-  if (process_type.empty()) {
+  bool is_browser_process =
+#if defined(OS_ANDROID)
+      process_type == kWebViewSingleProcessType ||
+      process_type == kBrowserProcessType ||
+#endif
+      process_type.empty();
+
+  if (is_browser_process) {
     bool enable_breakpad = GetCrashReporterClient()->GetCollectStatsConsent() ||
                            GetCrashReporterClient()->IsRunningUnattended();
     enable_breakpad &=

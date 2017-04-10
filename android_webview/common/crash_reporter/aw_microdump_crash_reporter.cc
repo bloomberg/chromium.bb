@@ -210,7 +210,7 @@ void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
       process_type == breakpad::kWebViewSingleProcessType ||
       process_type == breakpad::kBrowserProcessType;
   if (is_browser_process) {
-    breakpad::InitCrashReporter("", sanitization_info);
+    breakpad::InitCrashReporter(process_type, sanitization_info);
   } else {
     breakpad::InitNonBrowserCrashReporterForAndroid(process_type,
                                                     sanitization_info);

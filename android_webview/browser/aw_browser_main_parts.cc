@@ -132,8 +132,8 @@ int AwBrowserMainParts::PreCreateThreads() {
     }
   }
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebViewSandboxedRenderer)) {
     // Create the renderers crash manager on the UI thread.
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
         base::MakeUnique<AwBrowserTerminator>());
