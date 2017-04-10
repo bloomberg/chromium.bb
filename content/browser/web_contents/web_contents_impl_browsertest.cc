@@ -1019,23 +1019,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(shell()->web_contents()->IsLoading());
 }
 
+namespace {
+void NavigateToDataURLAndExpectBeforeUnload(Shell* shell,
+                                            const std::string& html,
+                                            bool expect_onbeforeunload) {
+  NavigateToURL(shell, GURL("data:text/html," + html));
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
+  EXPECT_EQ(expect_onbeforeunload, rfh->ShouldDispatchBeforeUnload());
+}
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NoOnBeforeUnload) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), url);
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
-      shell()->web_contents()->GetMainFrame());
-  EXPECT_FALSE(rfh->ShouldDispatchBeforeUnload());
+  const std::string NO_BEFORE_UNLOAD_HTML = "<html><body>foo</body></html>";
+  NavigateToDataURLAndExpectBeforeUnload(shell(), NO_BEFORE_UNLOAD_HTML, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OnBeforeUnload) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/page_with_empty_beforeunload.html");
-  NavigateToURL(shell(), url);
-  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
-      shell()->web_contents()->GetMainFrame());
-  EXPECT_TRUE(rfh->ShouldDispatchBeforeUnload());
+  const std::string BEFORE_UNLOAD_HTML =
+      "<html><body><script>window.onbeforeunload=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndExpectBeforeUnload(shell(), BEFORE_UNLOAD_HTML, true);
 }
 
 namespace {

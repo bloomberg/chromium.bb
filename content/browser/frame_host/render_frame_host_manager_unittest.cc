@@ -1264,6 +1264,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   // happen, but we have seen it when going back quickly across many entries
   // (http://crbug.com/93427).
   contents()->GetController().GoBack();
+  contents()->GetMainFrame()->PrepareForCommit();
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();

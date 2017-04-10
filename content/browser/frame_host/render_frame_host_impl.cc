@@ -2746,7 +2746,7 @@ bool RenderFrameHostImpl::ShouldDispatchBeforeUnload() {
   return false;
 }
 
-bool RenderFrameHostImpl::HasUnloadHandler() {
+bool RenderFrameHostImpl::ShouldDispatchUnload() {
   if (!IsRenderFrameLive())
     return false;
 
