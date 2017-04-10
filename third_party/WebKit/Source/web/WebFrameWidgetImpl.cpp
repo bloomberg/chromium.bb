@@ -176,7 +176,7 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
   // scale limit.  It is not clear if this is necessary for frame-level widget
   // resize.
   if (view->NeedsLayout())
-    view->GetLayout();
+    view->Layout();
 
   // FIXME: Investigate whether this is needed; comment from eseidel suggests
   // that this function is flawed.

@@ -672,14 +672,14 @@ void WebViewTest::TestAutoResize(
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   FrameView* frame_view = frame->GetFrame()->View();
-  frame_view->GetLayout();
+  frame_view->Layout();
   EXPECT_FALSE(frame_view->LayoutPending());
   EXPECT_FALSE(frame_view->NeedsLayout());
 
   web_view->EnableAutoResizeMode(min_auto_resize, max_auto_resize);
   EXPECT_TRUE(frame_view->LayoutPending());
   EXPECT_TRUE(frame_view->NeedsLayout());
-  frame_view->GetLayout();
+  frame_view->Layout();
 
   EXPECT_TRUE(frame->GetFrame()->GetDocument()->IsHTMLDocument());
 

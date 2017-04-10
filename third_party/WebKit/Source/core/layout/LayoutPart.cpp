@@ -358,7 +358,7 @@ void LayoutPart::UpdateGeometry() {
   // FrameViewBase size.
   if (frame_view && frame_view->NeedsLayout() &&
       frame_view->GetFrame().GetPage())
-    frame_view->GetLayout();
+    frame_view->Layout();
 
   frame_view_base->GeometryMayHaveChanged();
 }
