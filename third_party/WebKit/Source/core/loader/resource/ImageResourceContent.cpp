@@ -98,7 +98,7 @@ void ImageResourceContent::MarkObserverFinished(
     ImageResourceObserver* observer) {
   ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
-  auto it = observers_.Find(observer);
+  auto it = observers_.find(observer);
   if (it == observers_.end())
     return;
   observers_.erase(it);
@@ -135,11 +135,11 @@ void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
   CHECK(!is_add_remove_observer_prohibited_);
   ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
-  auto it = observers_.Find(observer);
+  auto it = observers_.find(observer);
   if (it != observers_.end()) {
     observers_.erase(it);
   } else {
-    it = finished_observers_.Find(observer);
+    it = finished_observers_.find(observer);
     DCHECK(it != finished_observers_.end());
     finished_observers_.erase(it);
   }

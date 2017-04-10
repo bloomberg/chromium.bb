@@ -29,7 +29,7 @@ class SVGElementProxy::IdObserver : public IdTargetObserver {
   void TransferClients(IdObserver& observer) {
     for (const auto& client : clients_)
       observer.clients_.insert(client.key, client.value);
-    clients_.Clear();
+    clients_.clear();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

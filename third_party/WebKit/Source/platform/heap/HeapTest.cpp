@@ -2569,9 +2569,9 @@ TEST(HeapTest, HeapCollectionTypes) {
       cset2.Swap(*set2);
 
       MemberCountedSet& c_counted_set = container->set3;
-      set3->Swap(c_counted_set);
+      set3->swap(c_counted_set);
       EXPECT_EQ(0u, set3->size());
-      set3->Swap(c_counted_set);
+      set3->swap(c_counted_set);
 
       // Triple swap.
       container->map.Swap(*member_member2);
@@ -2661,7 +2661,7 @@ TEST(HeapTest, HeapCollectionTypes) {
     EXPECT_FALSE(set->Contains(one_b));
     EXPECT_TRUE(set2->Contains(one_b));
     EXPECT_TRUE(set3->Contains(one_b));
-    EXPECT_EQ(2u, set3->Find(one_b)->value);
+    EXPECT_EQ(2u, set3->find(one_b)->value);
     EXPECT_EQ(3, vector->at(0)->Value());
     EXPECT_EQ(4, vector->at(1)->Value());
     EXPECT_EQ(3, deque->begin()->Get()->Value());
@@ -3019,9 +3019,9 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     EXPECT_EQ(2u, weak_weak->size());
     EXPECT_EQ(4u, weak_set->size());
     EXPECT_EQ(4u, weak_counted_set->size());
-    EXPECT_EQ(3u, weak_counted_set->Find(two)->value);
+    EXPECT_EQ(3u, weak_counted_set->find(two)->value);
     weak_counted_set->erase(two);
-    EXPECT_EQ(2u, weak_counted_set->Find(two)->value);
+    EXPECT_EQ(2u, weak_counted_set->find(two)->value);
   }
 
   keep_numbers_alive[0] = nullptr;

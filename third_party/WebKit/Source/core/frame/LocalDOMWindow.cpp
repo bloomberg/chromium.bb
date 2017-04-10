@@ -199,7 +199,7 @@ static void AddUnloadEventListener(LocalDOMWindow* dom_window) {
 
 static void RemoveUnloadEventListener(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithUnloadEventListeners();
-  DOMWindowSet::iterator it = set.Find(dom_window);
+  DOMWindowSet::iterator it = set.find(dom_window);
   if (it == set.end())
     return;
   set.erase(it);
@@ -211,7 +211,7 @@ static void RemoveUnloadEventListener(LocalDOMWindow* dom_window) {
 
 static void RemoveAllUnloadEventListeners(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithUnloadEventListeners();
-  DOMWindowSet::iterator it = set.Find(dom_window);
+  DOMWindowSet::iterator it = set.find(dom_window);
   if (it == set.end())
     return;
   set.RemoveAll(it);
@@ -233,7 +233,7 @@ static void AddBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
 
 static void RemoveBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
-  DOMWindowSet::iterator it = set.Find(dom_window);
+  DOMWindowSet::iterator it = set.find(dom_window);
   if (it == set.end())
     return;
   set.erase(it);
@@ -245,7 +245,7 @@ static void RemoveBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
 
 static void RemoveAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
-  DOMWindowSet::iterator it = set.Find(dom_window);
+  DOMWindowSet::iterator it = set.find(dom_window);
   if (it == set.end())
     return;
   set.RemoveAll(it);
@@ -264,7 +264,7 @@ static bool AllowsBeforeUnloadListeners(LocalDOMWindow* window) {
 }
 
 unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
-  return WindowsWithUnloadEventListeners().Count(
+  return WindowsWithUnloadEventListeners().count(
       const_cast<LocalDOMWindow*>(this));
 }
 

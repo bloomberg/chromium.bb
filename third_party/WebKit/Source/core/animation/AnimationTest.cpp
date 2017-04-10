@@ -705,7 +705,7 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   SimulateFrame(0);
   timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
   EXPECT_EQ(
-      1U, element->GetElementAnimations()->Animations().Find(animation)->value);
+      1U, element->GetElementAnimations()->Animations().find(animation)->value);
 
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());

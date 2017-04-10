@@ -63,10 +63,10 @@ class HashCountedSet {
                   "HeapHashCountedSet<Member<T>> instead.");
   }
 
-  void Swap(HashCountedSet& other) { impl_.Swap(other.impl_); }
+  void swap(HashCountedSet& other) { impl_.Swap(other.impl_); }
 
   unsigned size() const { return impl_.size(); }
-  unsigned Capacity() const { return impl_.Capacity(); }
+  unsigned capacity() const { return impl_.capacity(); }
   bool IsEmpty() const { return impl_.IsEmpty(); }
 
   // Iterators iterate over pairs of values (called key) and counts (called
@@ -76,12 +76,12 @@ class HashCountedSet {
   const_iterator begin() const { return impl_.begin(); }
   const_iterator end() const { return impl_.end(); }
 
-  iterator Find(const ValueType& value) { return impl_.Find(value); }
-  const_iterator Find(const ValueType& value) const {
-    return impl_.Find(value);
+  iterator find(const ValueType& value) { return impl_.Find(value); }
+  const_iterator find(const ValueType& value) const {
+    return impl_.find(value);
   }
   bool Contains(const ValueType& value) const { return impl_.Contains(value); }
-  unsigned Count(const ValueType& value) const { return impl_.at(value); }
+  unsigned count(const ValueType& value) const { return impl_.at(value); }
 
   // Increases the count if an equal value is already present the return value
   // is a pair of an iterator to the new value's location, and a bool that is
@@ -93,15 +93,15 @@ class HashCountedSet {
 
   // Reduces the count of the value, and removes it if count goes down to
   // zero, returns true if the value is removed.
-  bool erase(const ValueType& value) { return erase(Find(value)); }
+  bool erase(const ValueType& value) { return erase(find(value)); }
   bool erase(iterator);
 
   // Removes the value, regardless of its count.
-  void RemoveAll(const ValueType& value) { RemoveAll(Find(value)); }
+  void RemoveAll(const ValueType& value) { RemoveAll(find(value)); }
   void RemoveAll(iterator);
 
   // Clears the whole set.
-  void Clear() { impl_.Clear(); }
+  void clear() { impl_.Clear(); }
 
   Vector<Value> AsVector() const;
 
