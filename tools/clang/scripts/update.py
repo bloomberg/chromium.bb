@@ -283,7 +283,6 @@ def CreateChromeToolsShim():
     f.write('# two arg version to specify where build artifacts go. CMake\n')
     f.write('# disallows reuse of the same binary dir for multiple source\n')
     f.write('# dirs, so the build artifacts need to go into a subdirectory.\n')
-    f.write('# dirs, so the build artifacts need to go into a subdirectory.\n')
     f.write('if (CHROMIUM_TOOLS_SRC)\n')
     f.write('  add_subdirectory(${CHROMIUM_TOOLS_SRC} ' +
               '${CMAKE_CURRENT_BINARY_DIR}/a)\n')
