@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
@@ -259,9 +260,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
 
   ash::ShelfItemDelegate* GetAppItemController(const std::string& id) {
     const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(id);
-    if (!shelf_id)
-      return nullptr;
-    return chrome_controller()->GetShelfItemDelegate(shelf_id);
+    return ash::Shell::Get()->shelf_model()->GetShelfItemDelegate(shelf_id);
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }

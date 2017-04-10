@@ -8,6 +8,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
 #include "ash/shelf/shelf_delegate.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_properties.h"
@@ -659,7 +660,8 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   if (!shelf_id) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    owner()->SetShelfItemDelegate(shelf_id, std::move(controller));
+    ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+    shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
   item_controller->AddTaskId(task_id);

@@ -161,9 +161,6 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
     last_index_ = target_index;
   }
 
-  void OnSetShelfItemDelegate(ash::ShelfID id,
-                              ash::ShelfItemDelegate* item_delegate) override {}
-
   void clear_counts() {
     added_ = 0;
     removed_ = 0;
@@ -716,18 +713,13 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     app_service_->ProcessSyncChanges(FROM_HERE, sync_list);
   }
 
-  // Gets the currently configured app launchers from the controller.
-  void GetAppLaunchers(ChromeLauncherControllerImpl* controller,
-                       std::vector<std::string>* launchers) {
-    launchers->clear();
-    for (ash::ShelfItems::const_iterator iter(model_->items().begin());
-         iter != model_->items().end(); ++iter) {
-      ChromeLauncherControllerImpl::IDToItemControllerMap::const_iterator entry(
-          controller->id_to_item_controller_map_.find(iter->id));
-      if (iter->type == ash::TYPE_PINNED_APP &&
-          entry != controller->id_to_item_controller_map_.end()) {
-        launchers->push_back(entry->second->app_id());
-      }
+  // Gets the IDs of the currently pinned app items.
+  void GetPinnedAppIds(ChromeLauncherControllerImpl* controller,
+                       std::vector<std::string>* app_ids) {
+    app_ids->clear();
+    for (const auto& item : model_->items()) {
+      if (item.type == ash::TYPE_PINNED_APP)
+        app_ids->push_back(item.app_launch_id.app_id());
     }
   }
 
@@ -1874,7 +1866,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
   // We activated arc_app_id1 twice but expect one close for item controller
   // stops launching request.
   ash::ShelfItemDelegate* item_delegate =
-      launcher_controller_->GetShelfItemDelegate(shelf_id_app_1);
+      model_->GetShelfItemDelegate(shelf_id_app_1);
   ASSERT_NE(nullptr, item_delegate);
   item_delegate->Close();
   base::RunLoop().RunUntilIdle();
@@ -1938,7 +1930,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunchForActiveApp) {
 
   // Play Store app is ARC app that might be represented by native Chrome
   // platform app.
-  launcher_controller_->SetShelfItemDelegate(
+  model_->SetShelfItemDelegate(
       shelf_id, base::MakeUnique<ExtensionAppWindowLauncherItemController>(
                     ash::AppLaunchId(app_id)));
   launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
@@ -2416,9 +2408,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
       multi_user_util::GetAccountIdFromProfile(profile());
 
   // Create a browser window with a native window for the current user.
-  Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
+      CreateBrowserWithTestWindowForProfile(profile()));
   BrowserWindow* browser_window = browser->window();
   aura::Window* window = browser_window->GetNativeWindow();
   manager->SetWindowOwner(window, current_user);
@@ -2694,10 +2685,10 @@ TEST_F(ChromeLauncherControllerImplTest, SyncUpdates) {
   InsertAddPinChange(&sync_list, 10, extension_misc::kChromeAppId);
   SendPinChanges(sync_list, true);
 
-  std::vector<std::string> expected_launchers;
-  std::vector<std::string> actual_launchers;
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  std::vector<std::string> expected_pinned_apps;
+  std::vector<std::string> actual_pinned_apps;
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   // Unavailable extensions don't create launcher items.
   sync_list.clear();
@@ -2706,48 +2697,49 @@ TEST_F(ChromeLauncherControllerImplTest, SyncUpdates) {
   InsertAddPinChange(&sync_list, 3, extension4_->id());
   SendPinChanges(sync_list, false);
 
-  expected_launchers.push_back(extension2_->id());
-  expected_launchers.push_back(extension4_->id());
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  expected_pinned_apps.push_back(extension2_->id());
+  expected_pinned_apps.push_back(extension4_->id());
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   sync_list.clear();
   InsertAddPinChange(&sync_list, 2, extension3_->id());
   SendPinChanges(sync_list, false);
-  expected_launchers.insert(expected_launchers.begin() + 1, extension3_->id());
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  expected_pinned_apps.insert(expected_pinned_apps.begin() + 1,
+                              extension3_->id());
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   sync_list.clear();
   InsertUpdatePinChange(&sync_list, 0, extension4_->id());
   InsertUpdatePinChange(&sync_list, 1, extension3_->id());
   InsertUpdatePinChange(&sync_list, 2, extension2_->id());
   SendPinChanges(sync_list, false);
-  std::reverse(expected_launchers.begin(), expected_launchers.end());
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  std::reverse(expected_pinned_apps.begin(), expected_pinned_apps.end());
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   // Sending legacy sync change without pin info should not affect pin model.
   sync_list.clear();
   InsertLegacyPinChange(&sync_list, extension4_->id());
   SendPinChanges(sync_list, false);
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   sync_list.clear();
   InsertRemovePinChange(&sync_list, extension4_->id());
   SendPinChanges(sync_list, false);
-  expected_launchers.erase(expected_launchers.begin());
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  expected_pinned_apps.erase(expected_pinned_apps.begin());
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   sync_list.clear();
   InsertRemovePinChange(&sync_list, extension3_->id());
   InsertRemovePinChange(&sync_list, extension2_->id());
   SendPinChanges(sync_list, false);
-  expected_launchers.clear();
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  expected_pinned_apps.clear();
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 }
 
 TEST_F(ChromeLauncherControllerImplTest, ImportLegacyPin) {
@@ -2809,19 +2801,20 @@ TEST_F(ChromeLauncherControllerImplTest, PendingInsertionOrder) {
   InsertAddPinChange(&sync_list, 2, extension3_->id());
   SendPinChanges(sync_list, true);
 
-  std::vector<std::string> expected_launchers;
-  expected_launchers.push_back(extension1_->id());
-  expected_launchers.push_back(extension3_->id());
-  std::vector<std::string> actual_launchers;
+  std::vector<std::string> expected_pinned_apps;
+  expected_pinned_apps.push_back(extension1_->id());
+  expected_pinned_apps.push_back(extension3_->id());
+  std::vector<std::string> actual_pinned_apps;
 
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 
   // Install |extension2| and verify it shows up between the other two.
   extension_service_->AddExtension(extension2_.get());
-  expected_launchers.insert(expected_launchers.begin() + 1, extension2_->id());
-  GetAppLaunchers(launcher_controller_, &actual_launchers);
-  EXPECT_EQ(expected_launchers, actual_launchers);
+  expected_pinned_apps.insert(expected_pinned_apps.begin() + 1,
+                              extension2_->id());
+  GetPinnedAppIds(launcher_controller_, &actual_pinned_apps);
+  EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 }
 
 // Ensure |controller| creates the expected menu items for the given shelf item.
@@ -3281,7 +3274,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
   base::string16 two_menu_items[] = {title1, title2};
   CheckAppMenu(launcher_controller_, item_gmail, 2, two_menu_items);
   ash::ShelfItemDelegate* item_delegate =
-      launcher_controller_->GetShelfItemDelegate(gmail_id);
+      model_->GetShelfItemDelegate(gmail_id);
   ASSERT_TRUE(item_delegate);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   // Execute the second item in the menu, after the title and two separators,
@@ -3330,7 +3323,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
   CheckAppMenu(launcher_controller_, item_gmail, 2, two_menu_items);
 
   ash::ShelfItemDelegate* item_delegate =
-      launcher_controller_->GetShelfItemDelegate(gmail_id);
+      model_->GetShelfItemDelegate(gmail_id);
   ASSERT_TRUE(item_delegate);
   int tabs = browser()->tab_strip_model()->count();
   // Activate the proper tab through the menu item.
@@ -3715,7 +3708,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ShelfItemWithMultipleWindows) {
   const ash::ShelfID shelf_id =
       launcher_controller_->GetShelfIDForAppID(app_id);
   ash::ShelfItemDelegate* item_delegate =
-      launcher_controller_->GetShelfItemDelegate(shelf_id);
+      model_->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
 
   // Selecting the item will show its application menu. It does not change the
@@ -4061,9 +4054,8 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
       arc::kPlayStoreAppId));
 
   // Simulate click. This should schedule Play Store for deferred launch.
-  ash::ShelfItemDelegate* item_delegate =
-      launcher_controller_->GetShelfItemDelegate(
-          launcher_controller_->GetShelfIDForAppID(arc::kPlayStoreAppId));
+  ash::ShelfItemDelegate* item_delegate = model_->GetShelfItemDelegate(
+      launcher_controller_->GetShelfIDForAppID(arc::kPlayStoreAppId));
   EXPECT_TRUE(item_delegate);
   SelectItem(item_delegate);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));

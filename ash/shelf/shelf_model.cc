@@ -70,10 +70,7 @@ void ShelfModel::RemoveItemAt(int index) {
   DCHECK(index >= 0 && index < item_count());
   ShelfItem old_item(items_[index]);
   items_.erase(items_.begin() + index);
-  RemoveShelfItemDelegate(old_item.id);
-  // TODO(jamescook): Fold this into ShelfItemRemoved in existing observers.
-  for (auto& observer : observers_)
-    observer.OnSetShelfItemDelegate(old_item.id, nullptr);
+  id_to_item_delegate_map_.erase(old_item.id);
   for (auto& observer : observers_)
     observer.ShelfItemRemoved(index, old_item);
 }
@@ -160,14 +157,9 @@ int ShelfModel::FirstPanelIndex() const {
 void ShelfModel::SetShelfItemDelegate(
     ShelfID id,
     std::unique_ptr<ShelfItemDelegate> item_delegate) {
-  // If another ShelfItemDelegate is already registered for |id|, we assume
-  // that this request is replacing ShelfItemDelegate for |id| with
-  // |item_delegate|.
-  RemoveShelfItemDelegate(id);
-
-  for (auto& observer : observers_)
-    observer.OnSetShelfItemDelegate(id, item_delegate.get());
-
+  if (item_delegate)
+    item_delegate->set_shelf_id(id);
+  // This assignment replaces any ShelfItemDelegate already registered for |id|.
   id_to_item_delegate_map_[id] = std::move(item_delegate);
 }
 
@@ -201,11 +193,6 @@ int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
                    static_cast<ShelfItems::difference_type>(index));
 
   return index;
-}
-
-void ShelfModel::RemoveShelfItemDelegate(ShelfID id) {
-  if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
-    id_to_item_delegate_map_.erase(id);
 }
 
 }  // namespace ash

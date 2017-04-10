@@ -92,9 +92,6 @@ class ASH_EXPORT ShelfModel {
   // returns the new value.
   int ValidateInsertionIndex(ShelfItemType type, int index) const;
 
-  // Remove and destroy ShelfItemDelegate for |id|.
-  void RemoveShelfItemDelegate(ShelfID id);
-
   // ID assigned to the next item.
   ShelfID next_id_;
 

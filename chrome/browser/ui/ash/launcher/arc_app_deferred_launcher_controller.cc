@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 
+#include "ash/shelf/shelf_model.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -111,8 +113,9 @@ void ArcAppDeferredLauncherController::Close(const std::string& app_id) {
     return;
 
   const ash::ShelfID shelf_id = owner_->GetShelfIDForAppID(shelf_app_id);
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
   const bool need_close_item =
-      it->second == owner_->GetShelfItemDelegate(shelf_id);
+      it->second == shelf_model->GetShelfItemDelegate(shelf_id);
   app_controller_map_.erase(it);
   if (need_close_item)
     owner_->CloseLauncherItem(shelf_id);
@@ -210,7 +213,8 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   if (shelf_id == 0) {
     owner_->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    owner_->SetShelfItemDelegate(shelf_id, std::move(controller));
+    ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+    shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
     owner_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
 

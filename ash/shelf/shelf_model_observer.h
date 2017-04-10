@@ -11,7 +11,6 @@
 namespace ash {
 
 struct ShelfItem;
-class ShelfItemDelegate;
 
 class ASH_EXPORT ShelfModelObserver {
  public:
@@ -26,16 +25,8 @@ class ASH_EXPORT ShelfModelObserver {
   // of the arguments.
   virtual void ShelfItemMoved(int start_index, int target_index) = 0;
 
-  // Invoked when the state of an item changes. |old_item| is the item
-  // before the change.
+  // Invoked after an item changes. |old_item| is the item before the change.
   virtual void ShelfItemChanged(int index, const ShelfItem& old_item) = 0;
-
-  // Gets called when a ShelfItemDelegate gets changed. Note that
-  // |item_delegate| can be null.
-  // NOTE: This is added a temporary fix for M39 to fix crbug.com/429870.
-  // TODO(skuhne): Find the real reason for this problem and remove this fix.
-  virtual void OnSetShelfItemDelegate(ShelfID id,
-                                      ShelfItemDelegate* item_delegate) = 0;
 
  protected:
   virtual ~ShelfModelObserver() {}
