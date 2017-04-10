@@ -122,13 +122,11 @@ class TestDownloadFileImpl : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
-                         received_slices,
                          net_log,
                          observer) {}
 
@@ -231,7 +229,7 @@ class DownloadFileTest : public testing::Test {
 
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), base::FilePath(),
-        std::unique_ptr<ByteStreamReader>(input_stream_), received_slices,
+        std::unique_ptr<ByteStreamReader>(input_stream_),
         net::NetLogWithSource(), observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
@@ -241,9 +239,11 @@ class DownloadFileTest : public testing::Test {
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
     DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
     base::RunLoop loop_runner;
-    download_file_->Initialize(base::Bind(
-        &DownloadFileTest::SetInterruptReasonCallback,
-        weak_ptr_factory.GetWeakPtr(), loop_runner.QuitClosure(), &result));
+    download_file_->Initialize(
+        base::Bind(&DownloadFileTest::SetInterruptReasonCallback,
+                   weak_ptr_factory.GetWeakPtr(), loop_runner.QuitClosure(),
+                   &result),
+        received_slices);
     loop_runner.Run();
 
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);

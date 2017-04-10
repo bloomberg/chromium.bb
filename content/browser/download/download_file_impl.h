@@ -47,14 +47,14 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream_reader,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
   // DownloadFile functions.
-  void Initialize(const InitializeCallback& callback) override;
+  void Initialize(const InitializeCallback& callback,
+                  const DownloadItem::ReceivedSlices& received_slices) override;
 
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,

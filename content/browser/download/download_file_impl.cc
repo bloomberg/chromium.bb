@@ -95,7 +95,6 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream_reader,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
     : net_log_(
@@ -110,7 +109,6 @@ DownloadFileImpl::DownloadFileImpl(
       record_stream_bandwidth_(true),
       bytes_seen_with_parallel_streams_(0),
       bytes_seen_without_parallel_streams_(0),
-      received_slices_(received_slices),
       observer_(observer),
       weak_factory_(this) {
   source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
@@ -129,11 +127,14 @@ DownloadFileImpl::~DownloadFileImpl() {
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ACTIVE);
 }
 
-void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
+void DownloadFileImpl::Initialize(
+    const InitializeCallback& callback,
+    const DownloadItem::ReceivedSlices& received_slices) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   update_timer_.reset(new base::RepeatingTimer());
   int64_t bytes_so_far = 0;
+  received_slices_ = received_slices;
   if (IsSparseFile()) {
     for (const auto& received_slice : received_slices_) {
       bytes_so_far += received_slice.received_bytes;

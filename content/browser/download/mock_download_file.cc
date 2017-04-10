@@ -11,7 +11,8 @@ using ::testing::Return;
 namespace content {
 namespace {
 
-void SuccessRun(const DownloadFile::InitializeCallback& callback) {
+void SuccessRun(const DownloadFile::InitializeCallback& callback,
+                const DownloadItem::ReceivedSlices& received_slices) {
   callback.Run(DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
@@ -20,8 +21,7 @@ void SuccessRun(const DownloadFile::InitializeCallback& callback) {
 MockDownloadFile::MockDownloadFile() {
   // This is here because |Initialize()| is normally called right after
   // construction.
-  ON_CALL(*this, Initialize(_))
-      .WillByDefault(::testing::Invoke(SuccessRun));
+  ON_CALL(*this, Initialize(_, _)).WillByDefault(::testing::Invoke(SuccessRun));
 }
 
 MockDownloadFile::~MockDownloadFile() {

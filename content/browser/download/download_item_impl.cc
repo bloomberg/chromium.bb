@@ -1026,14 +1026,18 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   // HTTP_PRECONDITION_FAILED), then the download will automatically retried as
   // a full request rather than a partial. Full restarts clobber validators.
   int origin_state = 0;
+  bool is_partial = received_bytes_ > 0;
   if (chain_iter != new_create_info.url_chain.end())
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS;
   if (etag_ != new_create_info.etag ||
-      last_modified_time_ != new_create_info.last_modified)
+      last_modified_time_ != new_create_info.last_modified) {
+    received_slices_.clear();
+    received_bytes_ = 0;
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
+  }
   if (content_disposition_ != new_create_info.content_disposition)
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
-  RecordOriginStateOnResumption(received_bytes_ != 0, origin_state);
+  RecordOriginStateOnResumption(is_partial, origin_state);
 
   url_chain_.insert(
       url_chain_.end(), chain_iter, new_create_info.url_chain.end());
@@ -1290,7 +1294,8 @@ void DownloadItemImpl::StartDownload() {
                  // Safe because we control download file lifetime.
                  base::Unretained(download_file_.get()),
                  base::Bind(&DownloadItemImpl::OnDownloadFileInitialized,
-                            weak_ptr_factory_.GetWeakPtr())));
+                            weak_ptr_factory_.GetWeakPtr()),
+                 received_slices_));
 }
 
 void DownloadItemImpl::OnDownloadFileInitialized(

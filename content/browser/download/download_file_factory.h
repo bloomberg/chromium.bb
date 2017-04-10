@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -35,7 +34,6 @@ class CONTENT_EXPORT DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer);
 };

@@ -135,7 +135,6 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
       base::WeakPtr<DownloadDestinationObserver> observer,
@@ -182,7 +181,6 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -204,7 +202,6 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
@@ -212,7 +209,6 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        std::move(stream),
-                       received_slices,
                        net_log,
                        observer),
       owner_(owner) {}
@@ -266,7 +262,6 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
@@ -277,7 +272,6 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
   return new DownloadFileWithDelay(std::move(save_info),
                                    default_download_directory,
                                    std::move(stream),
-                                   received_slices,
                                    net_log,
                                    std::move(psb),
                                    observer,
@@ -313,14 +307,12 @@ class CountingDownloadFile : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
       base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
-                         received_slices,
                          net_log,
                          observer) {}
 
@@ -329,10 +321,12 @@ class CountingDownloadFile : public DownloadFileImpl {
     active_files_--;
   }
 
-  void Initialize(const InitializeCallback& callback) override {
+  void Initialize(
+      const InitializeCallback& callback,
+      const DownloadItem::ReceivedSlices& received_slices) override {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     active_files_++;
-    return DownloadFileImpl::Initialize(callback);
+    DownloadFileImpl::Initialize(callback, received_slices);
   }
 
   static void GetNumberActiveFiles(int* result) {
@@ -369,7 +363,6 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
@@ -380,7 +373,6 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
                                     std::move(stream),
-                                    received_slices,
                                     net_log,
                                     std::move(psb),
                                     observer);

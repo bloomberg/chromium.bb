@@ -34,7 +34,6 @@ class DownloadFileWithError: public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer,
       const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -43,7 +42,8 @@ class DownloadFileWithError: public DownloadFileImpl {
 
   ~DownloadFileWithError() override;
 
-  void Initialize(const InitializeCallback& callback) override;
+  void Initialize(const InitializeCallback& callback,
+                  const DownloadItem::ReceivedSlices& received_slices) override;
 
   // DownloadFile interface.
   DownloadInterruptReason WriteDataToFile(int64_t offset,
@@ -106,7 +106,6 @@ DownloadFileWithError::DownloadFileWithError(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> byte_stream,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -115,7 +114,6 @@ DownloadFileWithError::DownloadFileWithError(
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        std::move(byte_stream),
-                       received_slices,
                        net_log,
                        observer),
       error_info_(error_info),
@@ -135,7 +133,8 @@ DownloadFileWithError::~DownloadFileWithError() {
 }
 
 void DownloadFileWithError::Initialize(
-    const InitializeCallback& callback) {
+    const InitializeCallback& callback,
+    const DownloadItem::ReceivedSlices& received_slices) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   InitializeCallback callback_to_use = callback;
 
@@ -157,7 +156,7 @@ void DownloadFileWithError::Initialize(
                                  error_to_return);
   }
 
-  DownloadFileImpl::Initialize(callback_to_use);
+  DownloadFileImpl::Initialize(callback_to_use, received_slices);
 }
 
 DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
@@ -264,7 +263,6 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -295,13 +293,11 @@ DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> byte_stream,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileWithError(std::move(save_info),
                                    default_download_directory,
                                    std::move(byte_stream),
-                                   received_slices,
                                    net_log,
                                    observer,
                                    injected_error_,
