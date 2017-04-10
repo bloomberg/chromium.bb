@@ -735,11 +735,11 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoReload) {
   EXPECT_EQ(3, link_doctor_interceptor()->num_requests());
 }
 
-// Test that the reload button on a DNS error page works after a same page
+// Test that the reload button on a DNS error page works after a same document
 // navigation on the error page.  Error pages don't seem to do this, but some
 // traces indicate this may actually happen.  This test may hang on regression.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest,
-                       DNSError_DoReloadAfterSamePageNavigation) {
+                       DNSError_DoReloadAfterSameDocumentNavigation) {
   // The first navigation should fail, and the second one should be the error
   // page.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -1132,10 +1132,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
       IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
 }
 
-// Make sure that a same page navigation does not cause issues with the
+// Make sure that a same document navigation does not cause issues with the
 // auto-reload timer.  Note that this test was added due to this case causing
 // a crash.  On regression, this test may hang due to a crashed renderer.
-IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSamePageNavigation) {
+IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
   GURL test_url("http://error.page.auto.reload");
   InstallInterceptor(test_url, 2);
 

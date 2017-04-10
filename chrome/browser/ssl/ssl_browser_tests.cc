@@ -3887,8 +3887,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SamePageHasSSLState) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), start_url);
 
-  GURL same_page_url(embedded_test_server()->GetURL("/title1.html#foo"));
-  ui_test_utils::NavigateToURL(browser(), same_page_url);
+  GURL fragment_change_url(embedded_test_server()->GetURL("/title1.html#foo"));
+  ui_test_utils::NavigateToURL(browser(), fragment_change_url);
   CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Replace the URL of the current NavigationEntry with one that will cause

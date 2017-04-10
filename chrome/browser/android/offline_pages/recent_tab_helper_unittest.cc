@@ -849,9 +849,9 @@ TEST_F(RecentTabHelperTest, OverlappingDownloadRequestsAreIgnored) {
   EXPECT_EQ(offline_id_3, second_page->offline_id);
 }
 
-// Simulates a same page navigation and checks we snapshot correctly with last_n
-// and downloads.
-TEST_F(RecentTabHelperTest, SaveSamePageNavigationSnapshots) {
+// Simulates a same document navigation and checks we snapshot correctly with
+// last_n and downloads.
+TEST_F(RecentTabHelperTest, SaveSameDocumentNavigationSnapshots) {
   // Navigates and load fully then hide the tab so that a snapshot is created.
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
@@ -864,14 +864,14 @@ TEST_F(RecentTabHelperTest, SaveSamePageNavigationSnapshots) {
 
   // Now navigates same page and check the results of hiding the tab again.
   // Another snapshot should be created to the updated URL.
-  const GURL kTestPageUrlWithSegment(kTestPageUrl.spec() + "#aaa");
-  NavigateAndCommit(kTestPageUrlWithSegment);
+  const GURL kTestPageUrlWithFragment(kTestPageUrl.spec() + "#aaa");
+  NavigateAndCommit(kTestPageUrlWithFragment);
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
-  EXPECT_EQ(kTestPageUrlWithSegment, GetAllPages()[0].url);
+  EXPECT_EQ(kTestPageUrlWithFragment, GetAllPages()[0].url);
 
   // Now create a download request and check the snapshot is properly created.
   const ClientId client_id = NewDownloadClientId();
@@ -882,7 +882,7 @@ TEST_F(RecentTabHelperTest, SaveSamePageNavigationSnapshots) {
   EXPECT_EQ(1U, model_removed_count());
   ASSERT_EQ(2U, GetAllPages().size());
   const OfflinePageItem* downloads_page = FindPageForOfflineId(offline_id);
-  EXPECT_EQ(kTestPageUrlWithSegment, downloads_page->url);
+  EXPECT_EQ(kTestPageUrlWithFragment, downloads_page->url);
   EXPECT_EQ(client_id, downloads_page->client_id);
   EXPECT_EQ(offline_id, downloads_page->offline_id);
 }

@@ -390,8 +390,9 @@ TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
           .find("JS_DISABLED"));
 }
 
-// Checks that same page navigations don't update content settings for the page.
-TEST_F(ChromeRenderViewTest, ContentSettingsSamePageNavigation) {
+// Checks that same document navigations don't update content settings for the
+// page.
+TEST_F(ChromeRenderViewTest, ContentSettingsSameDocumentNavigation) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
   // Load a page which contains a script.
   const char kHtml[] =

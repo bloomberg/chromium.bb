@@ -44,7 +44,8 @@ TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
+TEST_F(CorePageLoadMetricsObserverTest,
+       SameDocumentNoTriggerUntilTrueNavCommit) {
   base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
 
   page_load_metrics::PageLoadTiming timing;
