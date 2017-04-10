@@ -2173,6 +2173,13 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
                    cpi->sf.use_fast_coef_costing);
 }
 
+#if CONFIG_LV_MAP || CONFIG_VAR_TX
+static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
+  int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
+  return num_blk;
+}
+#endif  // CONFIG_LV_MAP || CONFIG_VAR_TX
+
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                         MACROBLOCK *x, RD_STATS *rd_stats,
                                         int64_t ref_best_rd, BLOCK_SIZE bs) {
@@ -2186,6 +2193,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   const TX_SIZE max_tx_size = max_txsize_lookup[bs];
   TX_SIZE best_tx_size = max_tx_size;
   TX_TYPE best_tx_type = DCT_DCT;
+#if CONFIG_LV_MAP
+  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  const int num_blk = bsize_to_num_blk(bs);
+#endif  // !CONFIG_LV_MAP
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_PVQ
@@ -2206,8 +2217,15 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     assert(IMPLIES(evaluate_rect_tx, is_rect_tx_allowed(xd, mbmi)));
   }
   if (evaluate_rect_tx) {
+    TX_TYPE tx_start = DCT_DCT;
+    TX_TYPE tx_end = TX_TYPES;
+#if CONFIG_LV_MAP
+    // The tx_type becomes dummy when lv_map is on. The tx_type search will be
+    // performed in av1_search_txk_type()
+    tx_end = DCT_DCT + 1;
+#endif
     TX_TYPE tx_type;
-    for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+    for (tx_type = tx_start; tx_type < tx_end; ++tx_type) {
 #if CONFIG_REF_MV
       if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) continue;
 #endif  // CONFIG_REF_MV
@@ -2220,6 +2238,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
         rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type,
                       rect_tx_size);
         if (rd < best_rd) {
+#if CONFIG_LV_MAP
+          memcpy(best_txk_type, mbmi->txk_type,
+                 sizeof(best_txk_type[0]) * num_blk);
+#endif
           best_tx_type = tx_type;
           best_tx_size = rect_tx_size;
           best_rd = rd;
@@ -2246,8 +2268,15 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   last_rd = INT64_MAX;
   for (n = start_tx; n >= end_tx; --n) {
+    TX_TYPE tx_start = DCT_DCT;
+    TX_TYPE tx_end = TX_TYPES;
+#if CONFIG_LV_MAP
+    // The tx_type becomes dummy when lv_map is on. The tx_type search will be
+    // performed in av1_search_txk_type()
+    tx_end = DCT_DCT + 1;
+#endif
     TX_TYPE tx_type;
-    for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+    for (tx_type = tx_start; tx_type < tx_end; ++tx_type) {
       RD_STATS this_rd_stats;
       if (skip_txfm_search(cpi, x, bs, tx_type, n)) continue;
       rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, n);
@@ -2263,6 +2292,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
       last_rd = rd;
       if (rd < best_rd) {
+#if CONFIG_LV_MAP
+        memcpy(best_txk_type, mbmi->txk_type,
+               sizeof(best_txk_type[0]) * num_blk);
+#endif
         best_tx_type = tx_type;
         best_tx_size = n;
         best_rd = rd;
@@ -2276,6 +2309,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   }
   mbmi->tx_size = best_tx_size;
   mbmi->tx_type = best_tx_type;
+#if CONFIG_LV_MAP
+  memcpy(mbmi->txk_type, best_txk_type, sizeof(best_txk_type[0]) * num_blk);
+#endif
 
 #if CONFIG_VAR_TX
   mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
@@ -4227,7 +4263,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   TX_SIZE best_tx = max_txsize_lookup[bsize];
   TX_SIZE best_min_tx_size = TX_SIZES_ALL;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-  const int n4 = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
+  const int n4 = bsize_to_num_blk(bsize);
   int idx, idy;
   int prune = 0;
   const int count32 =
