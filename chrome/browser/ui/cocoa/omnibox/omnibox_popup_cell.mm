@@ -148,13 +148,13 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
       break;
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
       answer_style = @{
-        NSForegroundColorAttributeName : ContentTextColor(is_dark_theme),
+        NSForegroundColorAttributeName : DimTextColor(is_dark_theme),
         NSFontAttributeName : FieldFont()
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       answer_style = @{
-        NSForegroundColorAttributeName : ContentTextColor(is_dark_theme),
+        NSForegroundColorAttributeName : DimTextColor(is_dark_theme),
         NSFontAttributeName : LargeFont()
       };
       break;
