@@ -5,8 +5,8 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_MEDIATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_MEDIATOR_H_
 
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
-#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
 
 @protocol TabCollectionConsumer;
 class WebStateList;
