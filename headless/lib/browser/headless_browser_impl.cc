@@ -15,10 +15,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
+#include "net/http/http_util.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -200,11 +202,19 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
 
 void RunChildProcessIfNeeded(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kProcessType))
+  const base::CommandLine& command_line(
+      *base::CommandLine::ForCurrentProcess());
+
+  if (!command_line.HasSwitch(::switches::kProcessType))
     return;
 
   HeadlessBrowser::Options::Builder builder(argc, argv);
+  if (command_line.HasSwitch(switches::kUserAgent)) {
+    std::string ua = command_line.GetSwitchValueASCII(switches::kUserAgent);
+    if (net::HttpUtil::IsValidHeaderValue(ua))
+      builder.SetUserAgent(ua);
+  }
+
   exit(RunContentMain(builder.Build(),
                       base::Callback<void(HeadlessBrowser*)>()));
 }
@@ -221,7 +231,7 @@ int HeadlessBrowserMain(
 
   // Child processes should not end up here.
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kProcessType));
+      ::switches::kProcessType));
 #endif
   return RunContentMain(std::move(options),
                         std::move(on_browser_start_callback));

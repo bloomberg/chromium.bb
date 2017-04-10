@@ -20,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -77,21 +78,21 @@ int GetCrashSignalFD(const base::CommandLine& command_line,
     return -1;
 
   std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
 
-  if (process_type == switches::kRendererProcess) {
+  if (process_type == ::switches::kRendererProcess) {
     static breakpad::CrashHandlerHostLinux* crash_handler =
         CreateCrashHandlerHost(process_type, options);
     return crash_handler->GetDeathSignalSocket();
   }
 
-  if (process_type == switches::kPpapiPluginProcess) {
+  if (process_type == ::switches::kPpapiPluginProcess) {
     static breakpad::CrashHandlerHostLinux* crash_handler =
         CreateCrashHandlerHost(process_type, options);
     return crash_handler->GetDeathSignalSocket();
   }
 
-  if (process_type == switches::kGpuProcess) {
+  if (process_type == ::switches::kGpuProcess) {
     static breakpad::CrashHandlerHostLinux* crash_handler =
         CreateCrashHandlerHost(process_type, options);
     return crash_handler->GetDeathSignalSocket();
@@ -187,11 +188,18 @@ void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  command_line->AppendSwitch(switches::kHeadless);
+  command_line->AppendSwitch(::switches::kHeadless);
+  const base::CommandLine& old_command_line(
+      *base::CommandLine::ForCurrentProcess());
+  if (old_command_line.HasSwitch(switches::kUserAgent)) {
+    command_line->AppendSwitchNative(
+        switches::kUserAgent,
+        old_command_line.GetSwitchValueNative(switches::kUserAgent));
+  }
 #if defined(HEADLESS_USE_BREAKPAD)
   // This flag tells child processes to also turn on crash reporting.
   if (breakpad::IsCrashReporterEnabled())
-    command_line->AppendSwitch(switches::kEnableCrashReporter);
+    command_line->AppendSwitch(::switches::kEnableCrashReporter);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 }
 

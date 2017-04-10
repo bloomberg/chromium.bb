@@ -23,6 +23,7 @@ extern const char kUseGL[];
 extern const char kUserDataDir[];
 extern const char kVirtualTimeBudget[];
 extern const char kWindowSize[];
+extern const char kUserAgent[];
 
 // Switches which are replicated from content.
 using ::switches::kHostResolverRules;

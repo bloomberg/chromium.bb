@@ -25,6 +25,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace headless {
@@ -556,6 +557,12 @@ int HeadlessShellMain(int argc, const char** argv) {
   if (command_line.HasSwitch(switches::kHideScrollbars)) {
     builder.SetOverrideWebPreferencesCallback(base::Bind([](
         WebPreferences* preferences) { preferences->hide_scrollbars = true; }));
+  }
+
+  if (command_line.HasSwitch(switches::kUserAgent)) {
+    std::string ua = command_line.GetSwitchValueASCII(switches::kUserAgent);
+    if (net::HttpUtil::IsValidHeaderValue(ua))
+      builder.SetUserAgent(ua);
   }
 
   return HeadlessBrowserMain(

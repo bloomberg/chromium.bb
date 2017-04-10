@@ -63,5 +63,8 @@ const char kVirtualTimeBudget[] = "virtual-time-budget";
 // Sets the initial window size. Provided as string in the format "800,600".
 const char kWindowSize[] = "window-size";
 
+// A string used to override the default user agent with a custom one.
+const char kUserAgent[] = "user-agent";
+
 }  // namespace switches
 }  // namespace headless

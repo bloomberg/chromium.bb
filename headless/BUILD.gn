@@ -190,6 +190,8 @@ action("gen_devtools_client_api") {
 
 static_library("headless_lib") {
   sources = generated_devtools_api + [
+              "app/headless_shell_switches.cc",
+              "app/headless_shell_switches.h",
               "lib/browser/headless_browser_context_impl.cc",
               "lib/browser/headless_browser_context_impl.h",
               "lib/browser/headless_browser_context_options.cc",
