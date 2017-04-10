@@ -1374,8 +1374,6 @@ void ThreadState::TakeSnapshot(SnapshotType type) {
     }                                                                     \
   }
 
-  /* DO NOT SUBMIT - Conflict resolution helper:
-   * Important to use NormalPage instead of kNormalPage1 below */
   SNAPSHOT_HEAP(NormalPage1);
   SNAPSHOT_HEAP(NormalPage2);
   SNAPSHOT_HEAP(NormalPage3);
@@ -1388,8 +1386,6 @@ void ThreadState::TakeSnapshot(SnapshotType type) {
   SNAPSHOT_HEAP(InlineVector);
   SNAPSHOT_HEAP(HashTable);
   SNAPSHOT_HEAP(LargeObject);
-  /* DO NOT SUBMIT - Conflict resolution helper:
-   * Important to use LargeObject instead of kLargeObject above */
   FOR_EACH_TYPED_ARENA(SNAPSHOT_HEAP);
 
   ASSERT(number_of_heaps_reported == BlinkGC::kNumberOfArenas);

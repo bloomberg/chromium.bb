@@ -48,8 +48,6 @@ using MovingObjectCallback = void (*)(void* callback_data,
 #define FOR_EACH_TYPED_ARENA(H) \
   H(Node)                       \
   H(CSSValue)
-/* DO NOT SUBMIT - Conflict resolution helper:
- * Important to have CSSValue and Node rather than kCSSValue or kNode above */
 
 #define TypedArenaEnumName(Type) k##Type##ArenaIndex,
 
