@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_TABS_TAB_MODEL_OBSERVERS_BRIDGE_H_
 #define IOS_CHROME_BROWSER_TABS_TAB_MODEL_OBSERVERS_BRIDGE_H_
 
-#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 @class TabModel;
 @class TabModelObservers;

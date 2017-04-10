@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
-#import "ios/shared/chrome/browser/tabs/web_state_list.h"
-#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

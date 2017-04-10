@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_ORDER_CONTROLLER_H_
-#define IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_ORDER_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_ORDER_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_ORDER_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "ui/base/page_transition_types.h"
@@ -40,4 +40,4 @@ class WebStateListOrderController {
   DISALLOW_COPY_AND_ASSIGN(WebStateListOrderController);
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_TABS_WEB_STATE_LIST_ORDER_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_ORDER_CONTROLLER_H_

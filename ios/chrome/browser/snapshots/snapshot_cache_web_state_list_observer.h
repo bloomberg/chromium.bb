@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_CACHE_WEB_STATE_LIST_OBSERVER_H_
 
 #include "base/macros.h"
-#import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
 @class SnapshotCache;
 

@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 @class TabModel;
 

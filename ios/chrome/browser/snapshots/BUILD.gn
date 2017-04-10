@@ -37,7 +37,7 @@ source_set("snapshots_arc") {
   deps = [
     "//base",
     "//ios/chrome/browser/tabs",
-    "//ios/shared/chrome/browser/tabs",
+    "//ios/chrome/browser/web_state_list",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
