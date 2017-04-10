@@ -495,13 +495,12 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
   if (!target)
     return E_INVALIDARG;
 
-  if ((nav_dir == NAVDIR_LASTCHILD || nav_dir == NAVDIR_FIRSTCHILD) &&
-      start.lVal != CHILDID_SELF) {
-    // MSAA states that navigating to first/last child can only be from self.
-    return E_INVALIDARG;
+  // Forward all directions but NAVDIR_ to the platform node implementation.
+  if (nav_dir != NAVDIR_DOWN && nav_dir != NAVDIR_UP &&
+      nav_dir != NAVDIR_LEFT && nav_dir != NAVDIR_RIGHT) {
+    return target->GetPlatformNodeWin()->accNavigate(nav_dir, start, end);
   }
 
-  uint32_t child_count = target->PlatformChildCount();
   BrowserAccessibility* result = nullptr;
   switch (nav_dir) {
     case NAVDIR_DOWN:
@@ -517,20 +516,6 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
     case NAVDIR_RIGHT:
       result = target->GetTableCell(GetTableRow(),
                                     GetTableColumn() + GetTableColumnSpan());
-      break;
-    case NAVDIR_FIRSTCHILD:
-      if (child_count > 0)
-        result = target->PlatformGetChild(0);
-      break;
-    case NAVDIR_LASTCHILD:
-      if (child_count > 0)
-        result = target->PlatformGetChild(child_count - 1);
-      break;
-    case NAVDIR_NEXT:
-      result = target->GetNextSibling();
-      break;
-    case NAVDIR_PREVIOUS:
-      result = target->GetPreviousSibling();
       break;
   }
 

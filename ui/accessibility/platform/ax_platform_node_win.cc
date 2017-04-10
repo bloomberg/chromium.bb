@@ -280,6 +280,12 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG(start, end);
   IAccessible* result = nullptr;
 
+  if ((nav_dir == NAVDIR_LASTCHILD || nav_dir == NAVDIR_FIRSTCHILD) &&
+      start.lVal != CHILDID_SELF) {
+    // MSAA states that navigating to first/last child can only be from self.
+    return E_INVALIDARG;
+  }
+
   switch (nav_dir) {
     case NAVDIR_DOWN:
     case NAVDIR_UP:
