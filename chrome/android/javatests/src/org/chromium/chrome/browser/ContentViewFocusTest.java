@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.View.OnFocusChangeListener;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -21,9 +22,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.util.ArrayDeque;
 
@@ -36,6 +39,8 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
     private static final int WAIT_RESPONSE_MS = 2000;
 
     private final ArrayDeque<Boolean> mFocusChanges = new ArrayDeque<Boolean>();
+
+    private String mTitle;
 
     private void addFocusChangedListener(View view) {
         view.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -174,6 +179,50 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
 
         assertTrue("Content view didn't regain focus", blockForFocusChanged());
         assertFalse("Unexpected focus change", haveFocusChanges());
+    }
+
+    /**
+     * Verify ContentView window focus changes propagate to contents.
+     *
+     * @throws Exception
+     */
+    @MediumTest
+    public void testPauseTriggersBlur() throws Exception {
+        final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
+        final WebContentsObserver observer =
+                new WebContentsObserver(getActivity().getActivityTab().getWebContents()) {
+                    @Override
+                    public void titleWasSet(String title) {
+                        mTitle = title;
+                        onTitleUpdatedHelper.notifyCalled();
+                    }
+                };
+        int callCount = onTitleUpdatedHelper.getCallCount();
+        String url = UrlUtils.getIsolatedTestFileUrl(
+                "chrome/test/data/android/content_view_focus/content_view_blur_focus.html");
+        loadUrl(url);
+        final ContentViewCore cvc = getActivity().getActivityTab().getContentViewCore();
+        onTitleUpdatedHelper.waitForCallback(callCount);
+        assertEquals("initial", mTitle);
+        callCount = onTitleUpdatedHelper.getCallCount();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cvc.onPause();
+            }
+        });
+        onTitleUpdatedHelper.waitForCallback(callCount);
+        assertEquals("blurred", mTitle);
+        callCount = onTitleUpdatedHelper.getCallCount();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cvc.onResume();
+            }
+        });
+        onTitleUpdatedHelper.waitForCallback(callCount);
+        assertEquals("focused", mTitle);
+        getActivity().getActivityTab().getWebContents().removeObserver(observer);
     }
 
     @Override

@@ -360,6 +360,8 @@ public class ContentViewCore
     // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
     private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
 
+    private Boolean mHasViewFocus;
+
     // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
     private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers;
 
@@ -1314,6 +1316,24 @@ public class ContentViewCore
     }
 
     /**
+     * When the activity pauses, the content should lose focus.
+     * TODO(mthiesse): See crbug.com/686232 for context. Desktop platforms use keyboard focus to
+     * trigger blur/focus, and the equivalent to this on Android is Window focus. However, we don't
+     * use Window focus because of the complexity around popups stealing Window focus.
+     */
+    public void onPause() {
+        onFocusChanged(false, true);
+    }
+
+    /**
+     * When the activity resumes, the View#onFocusChanged may not be called, so we should restore
+     * the View focus state.
+     */
+    public void onResume() {
+        onFocusChanged(getContainerView().hasFocus(), true);
+    }
+
+    /**
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasWindowFocus) {
@@ -1326,6 +1346,8 @@ public class ContentViewCore
     }
 
     public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
+        if (mHasViewFocus != null && mHasViewFocus == gainFocus) return;
+        mHasViewFocus = gainFocus;
         mImeAdapter.onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
 
         if (mJoystickScrollProvider != null) {

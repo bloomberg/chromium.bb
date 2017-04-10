@@ -842,6 +842,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (getActivityTab() != null) {
             LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
         }
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onResume();
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
@@ -860,9 +862,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onPauseWithNative() {
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
-        if (tab != null) {
-            getTabContentManager().cacheTabThumbnail(tab);
-        }
+        if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onPause();
         VrShellDelegate.maybeUnregisterVREntryHook(this);
         markSessionEnd();
         super.onPauseWithNative();
