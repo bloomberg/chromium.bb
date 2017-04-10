@@ -46,7 +46,7 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   if (!m_scriptState->ContextIsValid())
     return false;
 
-  ExecutionContext* context = m_scriptState->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(m_scriptState.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;

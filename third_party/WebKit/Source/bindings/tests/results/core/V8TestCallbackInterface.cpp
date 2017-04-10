@@ -35,7 +35,8 @@ DEFINE_TRACE(V8TestCallbackInterface) {
 }
 
 void V8TestCallbackInterface::voidMethod() {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -48,7 +49,7 @@ void V8TestCallbackInterface::voidMethod() {
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                0,
                                argv,
@@ -56,7 +57,8 @@ void V8TestCallbackInterface::voidMethod() {
 }
 
 bool V8TestCallbackInterface::booleanMethod() {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return true;
@@ -80,7 +82,8 @@ bool V8TestCallbackInterface::booleanMethod() {
 }
 
 void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -94,7 +97,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -102,7 +105,8 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 }
 
 void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -116,7 +120,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -124,7 +128,8 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
 }
 
 void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -138,7 +143,7 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -146,7 +151,8 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -160,7 +166,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -168,7 +174,8 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -183,7 +190,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                v8::Undefined(isolate),
                                2,
                                argv,
@@ -191,7 +198,8 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 }
 
 void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) {
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     return;
@@ -206,7 +214,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
 
   v8::Isolate* isolate = m_scriptState->GetIsolate();
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                thisHandle,
                                1,
                                argv,

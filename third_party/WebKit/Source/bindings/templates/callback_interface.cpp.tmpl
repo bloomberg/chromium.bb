@@ -24,7 +24,8 @@ DEFINE_TRACE({{v8_class}}) {
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
   {% set return_default = 'return true'
          if method.idl_type == 'boolean' else 'return' %}{# void #}
-  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  ExecutionContext* executionContext =
+      ExecutionContext::From(m_scriptState.Get());
   if (!executionContext || executionContext->IsContextSuspended() ||
       executionContext->IsContextDestroyed())
     {{return_default}};
@@ -61,7 +62,7 @@ DEFINE_TRACE({{v8_class}}) {
   return !exceptionCatcher.HasCaught();
   {% else %}{# void #}
   V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                               m_scriptState->GetExecutionContext(),
+                               ExecutionContext::From(m_scriptState.Get()),
                                {{this_handle_parameter}},
                                {{method.arguments | length}},
                                argv,
