@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 
 namespace ash {
 

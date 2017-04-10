@@ -4,11 +4,11 @@
 
 #include "ash/wm/wm_toplevel_window_event_handler.h"
 
+#include "ash/shell_port.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -138,13 +138,13 @@ void WmToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 // WmToplevelWindowEventHandler
 // --------------------------------------------------
 
-WmToplevelWindowEventHandler::WmToplevelWindowEventHandler(WmShell* shell)
-    : shell_(shell), first_finger_hittest_(HTNOWHERE) {
-  shell_->AddDisplayObserver(this);
+WmToplevelWindowEventHandler::WmToplevelWindowEventHandler()
+    : first_finger_hittest_(HTNOWHERE) {
+  ShellPort::Get()->AddDisplayObserver(this);
 }
 
 WmToplevelWindowEventHandler::~WmToplevelWindowEventHandler() {
-  shell_->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
 }
 
 void WmToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {

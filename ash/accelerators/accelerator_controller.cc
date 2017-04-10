@@ -25,6 +25,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
@@ -45,7 +46,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -206,7 +206,7 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
   // TODO(jamescook): Should this be GetWmRootWindowForNewWindows()?
-  WmShelf* shelf = WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow());
+  WmShelf* shelf = WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow());
   Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
 }
 
@@ -446,7 +446,7 @@ void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
   StatusAreaWidget* status_area_widget =
-      WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow())
+      WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow())
           ->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
@@ -1245,7 +1245,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (WmShell::Get()->IsSystemModalWindowOpen() &&
+  if (ShellPort::Get()->IsSystemModalWindowOpen() &&
       actions_allowed_at_modal_window_.find(action) ==
           actions_allowed_at_modal_window_.end()) {
     // Note we prevent the shortcut from propagating so it will not

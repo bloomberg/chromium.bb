@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -17,7 +18,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -498,7 +498,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
   // TODO: fails because mash doesn't support CursorManager.
   // http://crbug.com/631103.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
@@ -802,7 +802,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
   // http://crbug.com/698043.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("800x600,800x600");

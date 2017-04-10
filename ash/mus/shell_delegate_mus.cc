@@ -14,7 +14,6 @@
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/palette_delegate.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

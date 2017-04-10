@@ -24,7 +24,6 @@ class GestureEvent;
 
 namespace ash {
 
-class WmShell;
 class WmWindow;
 
 namespace wm {
@@ -46,7 +45,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   };
   using EndClosure = base::Callback<void(DragResult)>;
 
-  explicit WmToplevelWindowEventHandler(WmShell* shell);
+  WmToplevelWindowEventHandler();
   ~WmToplevelWindowEventHandler() override;
 
   void OnKeyEvent(ui::KeyEvent* event);
@@ -100,8 +99,6 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
 
   // WmDisplayObserver:
   void OnDisplayConfigurationChanging() override;
-
-  WmShell* shell_;
 
   // The hittest result for the first finger at the time that it initially
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h

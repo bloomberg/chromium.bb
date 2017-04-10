@@ -6,9 +6,9 @@
 
 #include "ash/palette_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
-#include "ash/wm_shell.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -30,14 +30,14 @@ PaletteToolId LaserPointerMode::GetToolId() const {
 void LaserPointerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  WmShell::Get()->SetLaserPointerEnabled(true);
+  ShellPort::Get()->SetLaserPointerEnabled(true);
   delegate()->HidePalette();
 }
 
 void LaserPointerMode::OnDisable() {
   CommonPaletteTool::OnDisable();
 
-  WmShell::Get()->SetLaserPointerEnabled(false);
+  ShellPort::Get()->SetLaserPointerEnabled(false);
 }
 
 const gfx::VectorIcon& LaserPointerMode::GetActiveTrayIcon() const {

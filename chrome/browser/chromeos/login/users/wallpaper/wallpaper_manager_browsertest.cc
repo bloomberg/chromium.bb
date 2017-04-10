@@ -8,7 +8,6 @@
 
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"

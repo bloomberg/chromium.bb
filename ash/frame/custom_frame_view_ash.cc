@@ -12,10 +12,10 @@
 #include "ash/frame/header_view.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -59,7 +59,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
       return;
 
     immersive_fullscreen_controller_ =
-        WmShell::Get()->CreateImmersiveFullscreenController();
+        ShellPort::Get()->CreateImmersiveFullscreenController();
     if (immersive_fullscreen_controller_) {
       custom_frame_view->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());

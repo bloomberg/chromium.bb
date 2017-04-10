@@ -4,10 +4,10 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -469,7 +469,7 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
 
 TEST_F(WindowManagerTest, MouseEventCursors) {
   // TODO: investigate failure in mash. http://crbug.com/698895.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -708,7 +708,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // Touch visually hides the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -731,7 +731,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 // Cursor is hidden on keypress.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -755,7 +755,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
 // Test that pressing an accelerator does not hide the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
   // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -780,7 +780,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
   // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();

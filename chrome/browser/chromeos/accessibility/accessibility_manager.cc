@@ -18,8 +18,8 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -474,7 +474,7 @@ void AccessibilityManager::EnableSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
-  ash::WmShell::Get()->RecordUserMetricsAction(
+  ash::ShellPort::Get()->RecordUserMetricsAction(
       enabled ? ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK
               : ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK);
 

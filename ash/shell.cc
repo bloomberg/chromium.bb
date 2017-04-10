@@ -16,7 +16,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_delegate_impl.h"
 #include "ash/ash_constants.h"
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/devtools/ash_devtools_css_agent.h"
@@ -62,6 +62,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_observer.h"
+#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -116,7 +117,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -222,11 +222,11 @@ bool Shell::initially_hide_cursor_ = false;
 // static
 Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
   CHECK(!instance_);
-  WmShell* wm_shell = init_params.wm_shell;
-  if (!wm_shell)
-    wm_shell = new WmShellAura();
+  ShellPort* shell_port = init_params.shell_port;
+  if (!shell_port)
+    shell_port = new ShellPortClassic();
   instance_ = new Shell(base::WrapUnique<ShellDelegate>(init_params.delegate),
-                        base::WrapUnique<WmShell>(wm_shell));
+                        base::WrapUnique<ShellPort>(shell_port));
   instance_->Init(init_params);
   return instance_;
 }
@@ -257,7 +257,7 @@ RootWindowController* Shell::GetPrimaryRootWindowController() {
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
   RootWindowControllerList root_window_controllers;
-  for (WmWindow* root_window : instance_->wm_shell_->GetAllRootWindows())
+  for (WmWindow* root_window : instance_->shell_port_->GetAllRootWindows())
     root_window_controllers.push_back(root_window->GetRootWindowController());
   return root_window_controllers;
 }
@@ -267,14 +267,14 @@ RootWindowController* Shell::GetRootWindowControllerWithDisplayId(
     int64_t display_id) {
   CHECK(HasInstance());
   WmWindow* root_window =
-      instance_->wm_shell_->GetRootWindowForDisplayId(display_id);
+      instance_->shell_port_->GetRootWindowForDisplayId(display_id);
   return root_window ? root_window->GetRootWindowController() : nullptr;
 }
 
 // static
 aura::Window* Shell::GetPrimaryRootWindow() {
   CHECK(HasInstance());
-  return instance_->wm_shell_->GetPrimaryRootWindow()->aura_window();
+  return instance_->shell_port_->GetPrimaryRootWindow()->aura_window();
 }
 
 // static
@@ -296,7 +296,7 @@ WmWindow* Shell::GetWmRootWindowForNewWindows() {
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
   aura::Window::Windows windows;
-  for (WmWindow* window : instance_->wm_shell_->GetAllRootWindows())
+  for (WmWindow* window : instance_->shell_port_->GetAllRootWindows())
     windows.push_back(window->aura_window());
   return windows;
 }
@@ -314,7 +314,7 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
 
 // static
 Config Shell::GetAshConfig() {
-  return Get()->wm_shell_->GetAshConfig();
+  return Get()->shell_port_->GetAshConfig();
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -325,7 +325,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  wm_shell_->SetDisplayWorkAreaInsets(WmWindow::Get(contains), insets);
+  shell_port_->SetDisplayWorkAreaInsets(WmWindow::Get(contains), insets);
 }
 
 void Shell::OnAppTerminating() {
@@ -350,7 +350,7 @@ void Shell::CreateKeyboard() {
 }
 
 void Shell::DeactivateKeyboard() {
-  // TODO(jamescook): Move keyboard create and hide into WmShell.
+  // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
   if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
@@ -363,7 +363,7 @@ void Shell::DeactivateKeyboard() {
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
-  DCHECK(!wm_shell_->IsRunningInMash());
+  DCHECK(!shell_port_->IsRunningInMash());
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
       resolution_notification_controller_->DoesNotificationTimeout());
@@ -378,7 +378,7 @@ aura::client::ActivationClient* Shell::activation_client() {
 }
 
 void Shell::UpdateShelfVisibility() {
-  for (WmWindow* root : wm_shell_->GetAllRootWindows())
+  for (WmWindow* root : shell_port_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
 }
 
@@ -415,7 +415,7 @@ void Shell::CreateShelfView() {
   DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
   CreateShelfDelegate();
 
-  for (WmWindow* root_window : wm_shell_->GetAllRootWindows())
+  for (WmWindow* root_window : shell_port_->GetAllRootWindows())
     root_window->GetRootWindowController()->CreateShelfView();
 }
 
@@ -472,7 +472,7 @@ bool Shell::GetAppListTargetVisibility() const {
 }
 
 void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
-  for (WmWindow* root_window : wm_shell_->GetAllRootWindows()) {
+  for (WmWindow* root_window : shell_port_->GetAllRootWindows()) {
     root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
         status);
   }
@@ -539,8 +539,8 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
 // Shell, private:
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-             std::unique_ptr<WmShell> wm_shell)
-    : wm_shell_(std::move(wm_shell)),
+             std::unique_ptr<ShellPort> shell_port)
+    : shell_port_(std::move(shell_port)),
       brightness_control_delegate_(
           base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
@@ -569,9 +569,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
-  // state on WmShellAura. http://crbug.com/671246.
+  // state on ShellPortClassic. http://crbug.com/671246.
 
-  if (!wm_shell_->IsRunningInMash()) {
+  if (!shell_port_->IsRunningInMash()) {
     gpu_support_.reset(shell_delegate_->CreateGPUSupport());
     display_manager_.reset(ScreenAsh::CreateDisplayManager());
     window_tree_host_manager_.reset(new WindowTreeHostManager);
@@ -586,7 +586,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  const Config config = wm_shell_->GetAshConfig();
+  const Config config = shell_port_->GetAshConfig();
 
   if (config != Config::MASH)
     user_metrics_recorder_->OnShellShuttingDown();
@@ -646,7 +646,7 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
-  for (WmWindow* root : wm_shell_->GetAllRootWindows())
+  for (WmWindow* root : shell_port_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
   DeleteSystemTrayDelegate();
@@ -732,7 +732,7 @@ Shell::~Shell() {
   // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
 
-  wm_shell_->Shutdown();
+  shell_port_->Shutdown();
 
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
@@ -758,7 +758,7 @@ Shell::~Shell() {
   DCHECK(chromeos::DBusThreadManager::IsInitialized());
 
   // Needs to happen right before |instance_| is reset.
-  wm_shell_.reset();
+  shell_port_.reset();
   session_controller_->RemoveSessionStateObserver(this);
   wallpaper_delegate_.reset();
   pref_service_ = nullptr;
@@ -769,15 +769,15 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
-  const bool is_mash = wm_shell_->IsRunningInMash();
-  const Config config = wm_shell_->GetAshConfig();
+  const bool is_mash = shell_port_->IsRunningInMash();
+  const Config config = shell_port_->GetAshConfig();
 
   blocking_pool_ = init_params.blocking_pool;
 
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Can be null in tests.
-  if (wm_shell_->IsRunningInMash() && shell_delegate_->GetShellConnector()) {
+  if (shell_port_->IsRunningInMash() && shell_delegate_->GetShellConnector()) {
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(),
         make_scoped_refptr(new PrefRegistrySimple()),
@@ -786,8 +786,8 @@ void Shell::Init(const ShellInitParams& init_params) {
         prefs::mojom::kForwarderServiceName);
   }
 
-  // Some delegates access WmShell during their construction. Create them here
-  // instead of the WmShell constructor.
+  // Some delegates access ShellPort during their construction. Create them here
+  // instead of the ShellPort constructor.
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
   toast_manager_ = base::MakeUnique<ToastManager>();
@@ -814,7 +814,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (is_mash)
     app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
 
-  // TODO(sky): move creation to WmShell.
+  // TODO(sky): move creation to ShellPort.
   if (!is_mash)
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
@@ -908,7 +908,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   screen_position_controller_.reset(new ScreenPositionController);
 
-  wm_shell_->CreatePrimaryHost();
+  shell_port_->CreatePrimaryHost();
   root_window_for_new_windows_ = WmWindow::Get(GetPrimaryRootWindow());
 
   if (!is_mash) {
@@ -921,7 +921,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         display::Screen::GetScreen()->GetPrimaryDisplay());
   }
 
-  accelerator_controller_ = wm_shell_->CreateAcceleratorController();
+  accelerator_controller_ = shell_port_->CreateAcceleratorController();
   maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
   if (config == Config::CLASSIC) {
@@ -954,8 +954,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   event_transformation_handler_.reset(new EventTransformationHandler);
   AddPreTargetHandler(event_transformation_handler_.get());
 
-  toplevel_window_event_handler_.reset(
-      new ToplevelWindowEventHandler(wm_shell_.get()));
+  toplevel_window_event_handler_ =
+      base::MakeUnique<ToplevelWindowEventHandler>();
 
   if (!is_mash) {
     system_gesture_filter_.reset(new SystemGestureEventFilter);
@@ -1025,7 +1025,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   session_state_delegate_.reset(shell_delegate_->CreateSessionStateDelegate());
   // Must occur after Shell has installed its early pre-target handlers (for
   // example, WindowModalityController).
-  wm_shell_->CreatePointerWatcherAdapter();
+  shell_port_->CreatePointerWatcherAdapter();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
@@ -1045,9 +1045,9 @@ void Shell::Init(const ShellInitParams& init_params) {
         display_configurator_.get(), display_manager_.get()));
   }
 
-  keyboard_ui_ = wm_shell_->CreateKeyboardUI();
+  keyboard_ui_ = shell_port_->CreateKeyboardUI();
 
-  wm_shell_->InitHosts(init_params);
+  shell_port_->InitHosts(init_params);
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
@@ -1135,7 +1135,7 @@ void Shell::SetSystemTrayDelegate(
   DCHECK(delegate);
   system_tray_delegate_ = std::move(delegate);
   system_tray_delegate_->Initialize();
-  // Accesses WmShell in its constructor.
+  // Accesses ShellPort in its constructor.
   logout_confirmation_controller_.reset(new LogoutConfirmationController(
       base::Bind(&SystemTrayController::SignOut,
                  base::Unretained(system_tray_controller_.get()))));
@@ -1143,13 +1143,13 @@ void Shell::SetSystemTrayDelegate(
 
 void Shell::DeleteSystemTrayDelegate() {
   DCHECK(system_tray_delegate_);
-  // Accesses WmShell in its destructor.
+  // Accesses ShellPort in its destructor.
   logout_confirmation_controller_.reset();
   system_tray_delegate_.reset();
 }
 
 void Shell::CloseAllRootWindowChildWindows() {
-  for (WmWindow* wm_root_window : wm_shell_->GetAllRootWindows()) {
+  for (WmWindow* wm_root_window : shell_port_->GetAllRootWindows()) {
     aura::Window* root_window = wm_root_window->aura_window();
     RootWindowController* controller = GetRootWindowController(root_window);
     if (controller) {
@@ -1220,7 +1220,7 @@ void Shell::SessionStateChanged(session_manager::SessionState state) {
   if (state == session_manager::SessionState::ACTIVE) {
     CreateShelfView();
 
-    if (!wm_shell_->IsRunningInMash()) {
+    if (!shell_port_->IsRunningInMash()) {
       // Recreate the keyboard after initial login and after multiprofile login.
       CreateKeyboard();
     }

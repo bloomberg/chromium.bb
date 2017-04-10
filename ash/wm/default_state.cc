@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_parenting_utils.h"
@@ -16,7 +17,6 @@
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -55,8 +55,8 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   if (!display_area.Intersects(restore_bounds)) {
     const display::Display& display =
         display::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
-    WmShell* shell = window_state->window()->GetShell();
-    WmWindow* new_root = shell->GetRootWindowForDisplayId(display.id());
+    WmWindow* new_root =
+        ShellPort::Get()->GetRootWindowForDisplayId(display.id());
     if (new_root != window_state->window()->GetRootWindow()) {
       WmWindow* new_container = new_root->GetChildByShellWindowId(
           window_state->window()->GetParent()->GetShellWindowId());

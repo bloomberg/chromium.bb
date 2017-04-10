@@ -7,14 +7,14 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 
 namespace ash {
 
 ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
     : shelf_(shelf), stored_alignment_(shelf->GetAlignment()) {
   DCHECK(shelf_);
-  WmShell::Get()->AddLockStateObserver(this);
+  ShellPort::Get()->AddLockStateObserver(this);
   SessionController* controller = Shell::Get()->session_controller();
   session_locked_ =
       controller->GetSessionState() != session_manager::SessionState::ACTIVE;
@@ -24,7 +24,7 @@ ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
-  WmShell::Get()->RemoveLockStateObserver(this);
+  ShellPort::Get()->RemoveLockStateObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }

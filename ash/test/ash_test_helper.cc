@@ -5,14 +5,15 @@
 #include "ash/test/ash_test_helper.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/wm_shell_aura.h"
-#include "ash/mus/bridge/wm_shell_mus.h"
+#include "ash/aura/shell_port_classic.h"
+#include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/shell_port.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -21,7 +22,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -167,13 +167,13 @@ void AshTestHelper::SetUp(bool start_session) {
     // TODO: disabled for mash as AcceleratorControllerDelegateAura isn't
     // created in mash http://crbug.com/632111.
     test_screenshot_delegate_ = new TestScreenshotDelegate();
-    WmShellAura::Get()
+    ShellPortClassic::Get()
         ->accelerator_controller_delegate()
         ->SetScreenshotDelegate(
             std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
   } else if (config_ == Config::MUS) {
     test_screenshot_delegate_ = new TestScreenshotDelegate();
-    mus::WmShellMus::Get()
+    mus::ShellPortMash::Get()
         ->accelerator_controller_delegate_mus()
         ->SetScreenshotDelegate(
             std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
@@ -231,9 +231,9 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
 
 // static
 TestSessionStateDelegate* AshTestHelper::GetTestSessionStateDelegate() {
-  CHECK(WmShell::HasInstance());
+  CHECK(ShellPort::HasInstance());
   return static_cast<TestSessionStateDelegate*>(
-      WmShell::Get()->GetSessionStateDelegate());
+      ShellPort::Get()->GetSessionStateDelegate());
 }
 
 aura::Window* AshTestHelper::CurrentContext() {

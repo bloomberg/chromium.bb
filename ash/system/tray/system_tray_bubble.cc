@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
@@ -305,7 +305,7 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
 
   // If a system modal dialog is present, create the same tray as
   // in locked state.
-  if (WmShell::Get()->IsSystemModalWindowOpen() &&
+  if (ShellPort::Get()->IsSystemModalWindowOpen() &&
       login_status != LoginStatus::NOT_LOGGED_IN) {
     login_status = LoginStatus::LOCKED;
   }

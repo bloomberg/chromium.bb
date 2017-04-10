@@ -8,8 +8,8 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/wm_shell.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,13 +21,13 @@ OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
       overflow_button_(nullptr),
       shelf_view_(nullptr) {
   DCHECK(wm_shelf_);
-  WmShell::Get()->AddPointerWatcher(this,
-                                    views::PointerWatcherEventTypes::BASIC);
+  ShellPort::Get()->AddPointerWatcher(this,
+                                      views::PointerWatcherEventTypes::BASIC);
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
-  WmShell::Get()->RemovePointerWatcher(this);
+  ShellPort::Get()->RemovePointerWatcher(this);
 }
 
 void OverflowBubble::Show(OverflowButton* overflow_button,

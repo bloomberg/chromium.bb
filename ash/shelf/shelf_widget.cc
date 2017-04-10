@@ -20,7 +20,6 @@
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"

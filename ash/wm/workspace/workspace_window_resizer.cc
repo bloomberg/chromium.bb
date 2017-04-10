@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -21,7 +22,6 @@
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -81,7 +81,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer = window->GetShell()->CreateDragWindowResizer(
+  window_resizer = ShellPort::Get()->CreateDragWindowResizer(
       std::move(window_resizer), window_state);
   if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL) {
     window_resizer.reset(
@@ -305,7 +305,7 @@ class WindowSize {
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (did_lock_cursor_)
-    shell_->UnlockCursor();
+    ShellPort::Get()->UnlockCursor();
 
   if (instance == this)
     instance = NULL;
@@ -406,9 +406,9 @@ void WorkspaceWindowResizer::CompleteDrag() {
     const wm::WMEvent event(snap_type_ == SNAP_LEFT ? wm::WM_EVENT_SNAP_LEFT
                                                     : wm::WM_EVENT_SNAP_RIGHT);
     window_state()->OnWMEvent(&event);
-    shell_->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
-                                        ? UMA_DRAG_MAXIMIZE_LEFT
-                                        : UMA_DRAG_MAXIMIZE_RIGHT);
+    ShellPort::Get()->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
+                                                  ? UMA_DRAG_MAXIMIZE_LEFT
+                                                  : UMA_DRAG_MAXIMIZE_RIGHT);
     snapped = true;
   }
 
@@ -473,7 +473,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     const std::vector<WmWindow*>& attached_windows)
     : WindowResizer(window_state),
       attached_windows_(attached_windows),
-      shell_(window_state->window()->GetShell()),
       did_lock_cursor_(false),
       did_move_or_resize_(false),
       initial_bounds_changed_by_user_(window_state_->bounds_changed_by_user()),
@@ -488,7 +487,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   // A mousemove should still show the cursor even if the window is
   // being moved or resized with touch, so do not lock the cursor.
   if (details().source != aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
-    shell_->LockCursor();
+    ShellPort::Get()->LockCursor();
     did_lock_cursor_ = true;
   }
 
@@ -698,7 +697,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize())
     return false;
 
-  for (WmWindow* root_window : shell_->GetAllRootWindows()) {
+  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows()) {
     // Test all children from the desktop in each root window.
     const std::vector<WmWindow*> children =
         root_window->GetChildByShellWindowId(kShellWindowId_DefaultContainer)

@@ -5,12 +5,12 @@
 #include "ash/wm/window_positioner.h"
 
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -237,7 +237,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
 
     if (show_state_in == ui::SHOW_STATE_DEFAULT) {
       const bool maximize_first_window_on_first_run =
-          target->GetShell()->IsForceMaximizeOnFirstRun();
+          ShellPort::Get()->IsForceMaximizeOnFirstRun();
       // We want to always open maximized on "small screens" or when policy
       // tells us to.
       const bool set_maximized =

@@ -7,11 +7,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -48,7 +48,7 @@ class LayerControlView : public views::View {
     // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
     float ui_scale = 1.f;
     display::ManagedDisplayInfo info =
-        WmShell::Get()->GetDisplayInfo(display.id());
+        ShellPort::Get()->GetDisplayInfo(display.id());
     if (info.id() == display.id())
       ui_scale = info.GetEffectiveUIScale();
 
@@ -188,7 +188,7 @@ bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
 void WallpaperView::ShowContextMenuForView(views::View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
-  WmShell::Get()->ShowContextMenu(point, source_type);
+  ShellPort::Get()->ShowContextMenu(point, source_type);
 }
 
 views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {

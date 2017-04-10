@@ -45,7 +45,6 @@ namespace ash {
 class ImmersiveFullscreenController;
 class RootWindowController;
 class WmLayoutManager;
-class WmShell;
 class WmTransientWindowObserver;
 class WmWindowTestApi;
 enum class WmWindowProperty;
@@ -108,9 +107,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   }
   const WmWindow* GetRootWindow() const;
   RootWindowController* GetRootWindowController();
-
-  // TODO(sky): fix constness.
-  WmShell* GetShell() const;
 
   // See shell_window_ids.h for list of known ids.
   void SetShellWindowId(int id);

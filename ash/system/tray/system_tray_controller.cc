@@ -6,10 +6,10 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/update/tray_update.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 
 namespace ash {
@@ -146,7 +146,7 @@ void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {
 
 void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
   ash::SystemTray* tray =
-      WmShell::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+      ShellPort::Get()->GetPrimaryRootWindowController()->GetSystemTray();
   if (!tray)
     return;
 
@@ -165,7 +165,7 @@ void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
 
 void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
   ash::SystemTray* tray =
-      WmShell::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+      ShellPort::Get()->GetPrimaryRootWindowController()->GetSystemTray();
   if (!tray)
     return;
 
@@ -186,7 +186,7 @@ void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                           bool factory_reset_required) {
   // Show the icon on all displays.
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
     ash::SystemTray* tray = root->GetRootWindowController()->GetSystemTray();
     // External monitors might not have a tray yet.
     if (!tray)

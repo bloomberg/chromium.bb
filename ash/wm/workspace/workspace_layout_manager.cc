@@ -23,7 +23,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -41,7 +40,6 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
     : window_(window),
       root_window_(window->GetRootWindow()),
       root_window_controller_(root_window_->GetRootWindowController()),
-      shell_(window_->GetShell()),
       work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr),
       keyboard_observer_(this) {

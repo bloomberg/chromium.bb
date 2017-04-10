@@ -13,10 +13,10 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -636,7 +636,7 @@ void UserMetricsRecorder::OnShellShuttingDown() {
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
-  WmShelf* shelf = WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow());
+  WmShelf* shelf = WmShelf::ForWindow(ShellPort::Get()->GetPrimaryRootWindow());
   // TODO(bruthig): Investigating whether the check for |manager| is necessary
   // and add tests if it is.
   if (shelf) {

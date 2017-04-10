@@ -5,9 +5,9 @@
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
@@ -47,7 +47,7 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
 // caused by using sticky keys with multiple displays.
 TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // TODO: investigate failure in mash, http://crbug.com/696006.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Add a secondary display to the left of the primary one.
@@ -58,7 +58,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   int64_t secondary_display_id = display_ids[1];
   // TODO: disabled as ScreenRotationAnimator does not work in mash,
   // http://crbug.com/696754.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
@@ -67,7 +67,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;
   views::Widget* overlay_widget = overlay.GetWidgetForTesting();
-  EXPECT_EQ(WmShell::Get()
+  EXPECT_EQ(ShellPort::Get()
                 ->GetRootWindowForDisplayId(secondary_display_id)
                 ->aura_window(),
             overlay_widget->GetNativeWindow()->GetRootWindow());
@@ -75,7 +75,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // Removing the second display should move the overlay to the primary root
   // window.
   UpdateDisplay("1280x1024");
-  EXPECT_EQ(WmShell::Get()
+  EXPECT_EQ(ShellPort::Get()
                 ->GetRootWindowForDisplayId(primary_display_id)
                 ->aura_window(),
             overlay_widget->GetNativeWindow()->GetRootWindow());

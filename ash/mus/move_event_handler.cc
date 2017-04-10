@@ -63,8 +63,7 @@ MoveEventHandler::MoveEventHandler(
     aura::WindowManagerClient* window_manager_client,
     aura::Window* window)
     : wm_window_(WmWindow::Get(window)),
-      window_manager_client_(window_manager_client),
-      toplevel_window_event_handler_(wm_window_->GetShell()) {
+      window_manager_client_(window_manager_client) {
   window->AddObserver(this);
   window->AddPreTargetHandler(this);
 

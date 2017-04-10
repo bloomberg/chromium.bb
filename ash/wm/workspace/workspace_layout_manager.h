@@ -28,7 +28,6 @@ class KeyboardController;
 namespace ash {
 
 class RootWindowController;
-class WmShell;
 class WmWindow;
 class WorkspaceLayoutManagerBackdropDelegate;
 
@@ -126,7 +125,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   WmWindow* window_;
   WmWindow* root_window_;
   RootWindowController* root_window_controller_;
-  WmShell* shell_;
 
   // Set of windows we're listening to.
   WindowSet windows_;

@@ -6,9 +6,9 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/sys_info.h"
@@ -61,7 +61,7 @@ bool IsPaletteEnabledOnEveryDisplay() {
 }
 
 bool PaletteContainsPointInScreen(const gfx::Point& point) {
-  for (WmWindow* window : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* window : ShellPort::Get()->GetAllRootWindows()) {
     PaletteTray* palette_tray =
         WmShelf::ForWindow(window)->GetStatusAreaWidget()->palette_tray();
     if (palette_tray && palette_tray->ContainsPointInScreen(point))

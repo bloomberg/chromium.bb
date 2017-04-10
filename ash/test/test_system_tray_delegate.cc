@@ -9,7 +9,6 @@
 #include "ash/login_status.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_shell.h"
 #include "base/time/time.h"
 
 namespace ash {

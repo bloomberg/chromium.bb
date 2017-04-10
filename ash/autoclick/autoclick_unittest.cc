@@ -4,8 +4,8 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm_shell.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -71,7 +71,7 @@ class AutoclickTest : public test::AshTestBase {
 
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
-    if (!WmShell::Get()->IsRunningInMash())
+    if (!ShellPort::Get()->IsRunningInMash())
       Shell::Get()->display_manager()->UpdateDisplays();
     RunAllPendingInMessageLoop();
   }

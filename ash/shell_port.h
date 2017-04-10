@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHELL_H_
-#define ASH_WM_SHELL_H_
+#ifndef ASH_SHELL_PORT_H_
+#define ASH_SHELL_PORT_H_
 
 #include <stdint.h>
 
@@ -59,12 +59,13 @@ class MaximizeModeEventHandler;
 class WindowState;
 }
 
-// Similar to ash::Shell. Eventually the two will be merged.
-class ASH_EXPORT WmShell {
+// Porting layer for Shell. This class contains the part of Shell that are
+// different in classic ash and mus/mash.
+class ASH_EXPORT ShellPort {
  public:
-  virtual ~WmShell();
+  virtual ~ShellPort();
 
-  static WmShell* Get();
+  static ShellPort* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
   virtual void Shutdown();
@@ -207,7 +208,7 @@ class ASH_EXPORT WmShell {
   virtual void CreatePointerWatcherAdapter() = 0;
 
  protected:
-  WmShell();
+  ShellPort();
 
   // Called during startup to create the primary WindowTreeHost and
   // the corresponding RootWindowController.
@@ -222,7 +223,7 @@ class ASH_EXPORT WmShell {
   friend class AcceleratorControllerTest;
   friend class Shell;
 
-  static WmShell* instance_;
+  static ShellPort* instance_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
 
@@ -231,4 +232,4 @@ class ASH_EXPORT WmShell {
 
 }  // namespace ash
 
-#endif  // ASH_WM_SHELL_H_
+#endif  // ASH_SHELL_PORT_H_

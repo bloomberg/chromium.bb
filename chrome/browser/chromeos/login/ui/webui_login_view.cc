@@ -7,7 +7,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"

@@ -13,7 +13,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"

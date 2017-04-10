@@ -13,7 +13,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"

@@ -16,10 +16,10 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -1335,7 +1335,7 @@ void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
   // Because it might be called by some operations, like crbug.com/627040
   // rotating screen.
   ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
+      ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
   if (shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     SetShelfBehaviorsFromPrefs();
 }

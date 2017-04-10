@@ -8,8 +8,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
@@ -125,12 +125,12 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
       bubble_(nullptr),
       weak_factory_(this) {
   shelf_view_->wm_shelf()->AddObserver(this);
-  WmShell::Get()->AddPointerWatcher(this,
-                                    views::PointerWatcherEventTypes::BASIC);
+  ShellPort::Get()->AddPointerWatcher(this,
+                                      views::PointerWatcherEventTypes::BASIC);
 }
 
 ShelfTooltipManager::~ShelfTooltipManager() {
-  WmShell::Get()->RemovePointerWatcher(this);
+  ShellPort::Get()->RemovePointerWatcher(this);
   shelf_view_->wm_shelf()->RemoveObserver(this);
   WmWindow* window = nullptr;
   if (shelf_view_->GetWidget())

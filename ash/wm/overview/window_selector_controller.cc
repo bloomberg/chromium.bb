@@ -8,12 +8,12 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 
@@ -39,7 +39,7 @@ bool WindowSelectorController::CanSelect() {
       Shell::Get()->system_tray_delegate();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsScreenLocked() &&
-         !WmShell::Get()->IsSystemModalWindowOpen() &&
+         !ShellPort::Get()->IsSystemModalWindowOpen() &&
          !Shell::Get()->screen_pinning_controller()->IsPinned() &&
          system_tray_delegate->GetUserLoginStatus() != LoginStatus::KIOSK_APP &&
          system_tray_delegate->GetUserLoginStatus() !=

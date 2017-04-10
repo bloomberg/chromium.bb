@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screenshot_delegate.h"
 #include "base/metrics/user_metrics.h"
@@ -16,7 +16,7 @@ using base::UserMetricsAction;
 void TakeScreenshot() {
   base::RecordAction(UserMetricsAction("Menu_Take_Screenshot"));
   ash::ScreenshotDelegate* screenshot_delegate =
-      ash::WmShellAura::Get()
+      ash::ShellPortClassic::Get()
           ->accelerator_controller_delegate()
           ->screenshot_delegate();
   if (screenshot_delegate &&

@@ -9,6 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -23,7 +24,6 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/tray_accessibility.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.h"
@@ -124,7 +124,8 @@ class IMEDetailedView : public ImeListView {
   }
 
   void ShowSettings() {
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
+    ShellPort::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_IME_SHOW_DETAILED);
     Shell::Get()->system_tray_controller()->ShowIMESettings();
     if (owner()->system_tray())
       owner()->system_tray()->CloseSystemBubble();

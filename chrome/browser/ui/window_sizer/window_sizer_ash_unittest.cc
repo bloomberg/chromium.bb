@@ -4,12 +4,12 @@
 
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -824,7 +824,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   UpdateDisplay("500x500,600x600");
 
   // By default windows are placed on the primary display.
-  ash::WmWindow* first_root = ash::WmShell::Get()->GetAllRootWindows()[0];
+  ash::WmWindow* first_root = ash::ShellPort::Get()->GetAllRootWindows()[0];
   EXPECT_EQ(first_root, ash::Shell::GetWmRootWindowForNewWindows());
   gfx::Rect bounds;
   ui::WindowShowState show_state;
@@ -834,7 +834,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
 
   {
     // When the second display is active new windows are placed there.
-    ash::WmWindow* second_root = ash::WmShell::Get()->GetAllRootWindows()[1];
+    ash::WmWindow* second_root = ash::ShellPort::Get()->GetAllRootWindows()[1];
     ash::ScopedRootWindowForNewWindows tmp(second_root);
     gfx::Rect bounds;
     ui::WindowShowState show_state;

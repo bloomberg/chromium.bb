@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -155,7 +155,7 @@ void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByMouse) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -172,7 +172,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByTouch) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   const ui::TouchEvent touch_event(
@@ -190,7 +190,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::UserActionTester user_action_tester;
@@ -203,7 +203,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_MinimizeTaskIsRecordedWhenWindowIsMinimized) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::UserActionTester user_action_tester;
@@ -216,7 +216,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_SwitchTaskIsRecordedWhenExistingWindowIsActivated) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::UserActionTester user_action_tester;

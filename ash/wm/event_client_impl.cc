@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_shell.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_util.h"
 

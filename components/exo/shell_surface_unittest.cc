@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/shell_surface.h"
+
 #include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
-#include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -456,7 +457,7 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   surface->SetInputRegion(SkRegion());
   surface->Commit();
 
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Creating a surface without input region should not make it modal.
   std::unique_ptr<Display> display(new Display);
@@ -470,26 +471,26 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   surface->SetSubSurfacePosition(child.get(), gfx::Point(10, 10));
   child->Commit();
   surface->Commit();
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Making the surface opaque shouldn't make it modal either.
   child->SetBlendMode(SkBlendMode::kSrc);
   child->Commit();
   surface->Commit();
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Setting input regions won't make it modal either.
   surface->SetInputRegion(
       SkRegion(gfx::RectToSkIRect(gfx::Rect(10, 10, 100, 100))));
   surface->Commit();
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Only SetSystemModal changes modality.
   shell_surface->SetSystemModal(true);
-  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   shell_surface->SetSystemModal(false);
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 }
 
 TEST_F(ShellSurfaceTest, ModalWindowSetSystemModalBeforeCommit) {
@@ -512,12 +513,12 @@ TEST_F(ShellSurfaceTest, ModalWindowSetSystemModalBeforeCommit) {
 
   // It is expected that modal window is shown.
   EXPECT_TRUE(shell_surface->GetWidget());
-  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Now widget is created and setting modal state should be applied
   // immediately.
   shell_surface->SetSystemModal(false);
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 }
 
 TEST_F(ShellSurfaceTest, PopupWindow) {

@@ -8,11 +8,11 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/focus_rules.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
@@ -47,7 +47,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     const CanActivateWindowPredicate& should_include_window_predicate) {
   MruWindowTracker::WindowList windows;
   WmWindow* active_root = Shell::GetWmRootWindowForNewWindows();
-  for (WmWindow* window : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* window : ShellPort::Get()->GetAllRootWindows()) {
     if (window == active_root)
       continue;
     for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)

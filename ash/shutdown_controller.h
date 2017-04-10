@@ -25,7 +25,7 @@ class ASH_EXPORT ShutdownController
 
   // Shuts down or reboots based on the current DeviceRebootOnShutdown policy.
   // Does not trigger the shutdown fade-out animation. For animated shutdown
-  // use WmShell::RequestShutdown(). Virtual for testing.
+  // use ShellPort::RequestShutdown(). Virtual for testing.
   virtual void ShutDownOrReboot();
 
   // Binds the mojom::ShutdownController interface request to this object.

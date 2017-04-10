@@ -15,6 +15,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -26,7 +27,6 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -267,7 +267,7 @@ int UserView::GetHeightForWidth(int width) const {
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
     Shell::Get()->system_tray_controller()->SignOut();
   } else if (sender == user_card_view_ &&
@@ -313,7 +313,7 @@ void UserView::AddUserCard(LoginStatus login) {
   user_card_view_ = new UserCardView(login, -1, user_index_);
   // The entry is clickable when no system modal dialog is open and the multi
   // profile option is active.
-  bool clickable = !WmShell::Get()->IsSystemModalWindowOpen() &&
+  bool clickable = !ShellPort::Get()->IsSystemModalWindowOpen() &&
                    IsMultiProfileSupportedAndUserActive();
   if (clickable) {
     views::View* contents_view = user_card_view_;

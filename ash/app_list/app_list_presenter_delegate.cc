@@ -14,9 +14,9 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
@@ -95,7 +95,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->UpdateAutoHideState();
   view_ = view;
   WmWindow* wm_root_window =
-      WmShell::Get()->GetRootWindowForDisplayId(display_id);
+      ShellPort::Get()->GetRootWindowForDisplayId(display_id);
   aura::Window* root_window = wm_root_window->aura_window();
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
@@ -121,7 +121,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
-  WmWindow* root_window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
+  WmWindow* root_window =
+      ShellPort::Get()->GetRootWindowForDisplayId(display_id);
   AppListButton* app_list_button =
       WmShelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
   if (app_list_button)

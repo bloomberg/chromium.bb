@@ -11,6 +11,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -23,7 +24,6 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
@@ -258,8 +258,8 @@ TEST_F(MaximizeModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
   EXPECT_EQ(rect3.ToString(), w3->bounds().ToString());
 
   // Enable system modal dialog, and make sure both shelves are still hidden.
-  WmShell::Get()->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  ShellPort::Get()->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
@@ -1293,7 +1293,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
 // Test that an edge swipe from the top will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1337,7 +1337,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
 // Test that an edge swipe from the bottom will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1375,7 +1375,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
 // Test that an edge touch press at the top will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1415,7 +1415,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
 // Test that an edge touch press at the bottom will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtBottom) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect rect(10, 10, 200, 50);

@@ -13,7 +13,6 @@
 #include "ash/shell_observer.h"
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"

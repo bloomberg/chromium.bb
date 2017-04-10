@@ -9,9 +9,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -66,7 +66,7 @@ void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     AddModalWindow(window);
   } else {
     if (RemoveModalWindow(window))
-      WmShell::Get()->OnModalWindowRemoved(window);
+      ShellPort::Get()->OnModalWindowRemoved(window);
   }
 }
 
@@ -79,7 +79,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
          child->GetType() == ui::wm::WINDOW_TYPE_POPUP);
   // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
   // need a non-stub version of SessionStateDelegate. crbug.com/648964
-  if (!WmShell::Get()->IsRunningInMash()) {
+  if (!ShellPort::Get()->IsRunningInMash()) {
     DCHECK(container_->GetShellWindowId() !=
                kShellWindowId_LockSystemModalContainer ||
            Shell::Get()->session_controller()->IsUserSessionBlocked());
@@ -130,7 +130,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     AddModalWindow(wm_window);
   } else {
     if (RemoveModalWindow(wm_window))
-      WmShell::Get()->OnModalWindowRemoved(wm_window);
+      ShellPort::Get()->OnModalWindowRemoved(wm_window);
   }
 }
 
@@ -207,7 +207,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(WmWindow* window) {
   DCHECK(!base::ContainsValue(modal_windows_, window));
 
   modal_windows_.push_back(window);
-  WmShell::Get()->CreateModalBackground(window);
+  ShellPort::Get()->CreateModalBackground(window);
   window->GetParent()->StackChildAtTop(window);
 
   gfx::Rect target_bounds = window->GetBounds();

@@ -22,7 +22,6 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"

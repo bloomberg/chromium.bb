@@ -10,10 +10,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -153,7 +153,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-    if (!WmShell::Get()->IsRunningInMash()) {
+    if (!ShellPort::Get()->IsRunningInMash()) {
       Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
           keyboard::KeyboardController::GetInstance());
     }
@@ -161,7 +161,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
   void TearDown() override {
     // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-    if (!WmShell::Get()->IsRunningInMash()) {
+    if (!ShellPort::Get()->IsRunningInMash()) {
       Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
           keyboard::KeyboardController::GetInstance());
     }
@@ -662,7 +662,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedFromKeyboard) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
@@ -702,7 +702,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboard) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
@@ -739,7 +739,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
@@ -775,23 +775,23 @@ TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
       new TestWindow(false), modal_container);
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Setting twice should not cause error.
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
 
   widget->Close();
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
@@ -801,15 +801,15 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
                                              CurrentContext())
           ->GetNativeWindow());
   SystemModalContainerLayoutManager* layout_manager =
-      WmShell::Get()
+      ShellPort::Get()
           ->GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(WmWindow::Get(modal_window.get()));
 
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 
   // Make sure that a child visibility change should not cause
@@ -819,15 +819,15 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
   child->Init(ui::LAYER_TEXTURED);
   modal_window->AddChild(child.get());
   child->Show();
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 
   modal_window->Hide();
-  EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
-  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 }
 
@@ -856,7 +856,7 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
         new TestWindow(true), Shell::GetPrimaryRootWindow(),
         gfx::Rect(200, 200, 100, 100));
     widget->Show();
-    EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+    EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
 
     // Events should be blocked.
     GenerateEvents(window.get());
@@ -868,7 +868,7 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
     Reset();
 
     widget->Close();
-    EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
+    EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
 
     GenerateEvents(window.get());
 

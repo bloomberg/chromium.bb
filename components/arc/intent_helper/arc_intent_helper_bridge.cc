@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm_shell.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"

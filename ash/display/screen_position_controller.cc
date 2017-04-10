@@ -6,10 +6,10 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -104,8 +104,8 @@ void ScreenPositionController::ConvertHostPointToScreen(
   aura::Window* root = root_window->GetRootWindow();
   aura::Window* target_root = nullptr;
   ConvertHostPointToRelativeToRootWindow(
-      root, WmWindow::ToAuraWindows(WmShell::Get()->GetAllRootWindows()), point,
-      &target_root);
+      root, WmWindow::ToAuraWindows(ShellPort::Get()->GetAllRootWindows()),
+      point, &target_root);
   ConvertPointToScreen(target_root, point);
 }
 

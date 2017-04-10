@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
@@ -274,7 +274,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   void Dismiss() override {
-    DCHECK(WmShell::HasInstance());
+    DCHECK(ShellPort::HasInstance());
     Shell::Get()->DismissAppList();
   }
 

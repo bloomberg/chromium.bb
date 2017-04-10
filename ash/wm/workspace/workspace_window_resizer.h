@@ -21,7 +21,6 @@ namespace ash {
 class PhantomWindowController;
 class TwoStepEdgeCycler;
 class WindowSize;
-class WmShell;
 
 namespace wm {
 class WindowState;
@@ -158,8 +157,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   wm::WindowState* window_state() { return window_state_; }
 
   const std::vector<WmWindow*> attached_windows_;
-
-  WmShell* shell_;
 
   // Returns the currently used instance for test.
   static WorkspaceWindowResizer* GetInstanceForTest();

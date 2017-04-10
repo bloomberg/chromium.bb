@@ -12,12 +12,12 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -48,7 +48,7 @@ const int kLockScreenWallpaperId =
 
 // Returns number of child windows in a shell window container.
 int ChildCountForContainer(int container_id) {
-  WmWindow* root = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* root = ShellPort::Get()->GetPrimaryRootWindow();
   WmWindow* container = root->GetChildByShellWindowId(container_id);
   return static_cast<int>(container->GetChildren().size());
 }
@@ -119,7 +119,7 @@ class WallpaperControllerTest : public test::AshTestBase {
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
     RootWindowController* root_window_controller =
-        WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
+        ShellPort::Get()->GetPrimaryRootWindow()->GetRootWindowController();
     root_window_controller->SetWallpaperWidgetController(nullptr);
     root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
     controller_ = Shell::Get()->wallpaper_controller();
@@ -130,7 +130,7 @@ class WallpaperControllerTest : public test::AshTestBase {
 
   WallpaperView* wallpaper_view() {
     WallpaperWidgetController* controller =
-        WmShell::Get()
+        ShellPort::Get()
             ->GetPrimaryRootWindow()
             ->GetRootWindowController()
             ->animating_wallpaper_widget_controller()
@@ -186,7 +186,7 @@ class WallpaperControllerTest : public test::AshTestBase {
   // TODO(bshe): Don't require tests to run animations; it's slow.
   void RunDesktopControllerAnimation() {
     WallpaperWidgetController* controller =
-        WmShell::Get()
+        ShellPort::Get()
             ->GetPrimaryRootWindow()
             ->GetRootWindowController()
             ->animating_wallpaper_widget_controller()
@@ -265,7 +265,7 @@ TEST_F(WallpaperControllerTest, ControllerOwnership) {
 
   // The new wallpaper is ready to animate.
   RootWindowController* root_window_controller =
-      WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
+      ShellPort::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
                   ->GetController(false));
   EXPECT_FALSE(root_window_controller->wallpaper_widget_controller());
@@ -301,7 +301,7 @@ TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
   // In this state we have two wallpaper views stored in different properties.
   // Both are in the lock screen wallpaper container.
   RootWindowController* root_window_controller =
-      WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
+      ShellPort::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
                   ->GetController(false));
   EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
@@ -342,7 +342,7 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
   controller->CreateEmptyWallpaper();
 
   RootWindowController* root_window_controller =
-      WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
+      ShellPort::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   WallpaperWidgetController* animating_controller =
       root_window_controller->animating_wallpaper_widget_controller()
           ->GetController(false);
@@ -404,7 +404,7 @@ TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
             WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // TODO: mash doesn't support rotation yet, http://crbug.com/695556.
-  if (!WmShell::Get()->IsRunningInMash()) {
+  if (!ShellPort::Get()->IsRunningInMash()) {
     // Rotated display should return the rotated size.
     UpdateDisplay("1000x300*2/r");
     EXPECT_EQ("300x1000",

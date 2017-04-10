@@ -2,35 +2,63 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_AURA_WM_SHELL_AURA_H_
-#define ASH_AURA_WM_SHELL_AURA_H_
+#ifndef ASH_MUS_BRIDGE_SHELL_PORT_MASH_H_
+#define ASH_MUS_BRIDGE_SHELL_PORT_MASH_H_
+
+#include <stdint.h>
 
 #include <memory>
+#include <vector>
 
-#include "ash/ash_export.h"
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
+
+namespace aura {
+class WindowTreeClient;
+}
+
+namespace views {
+class PointerWatcherEventRouter;
+}
 
 namespace ash {
 
 class AcceleratorControllerDelegateAura;
 class PointerWatcherAdapter;
+class RootWindowController;
 
-class ASH_EXPORT WmShellAura : public WmShell,
-                               public WindowTreeHostManager::Observer {
+namespace mus {
+
+class AcceleratorControllerDelegateMus;
+class AcceleratorControllerRegistrar;
+class ImmersiveHandlerFactoryMus;
+class WindowManager;
+class ShellPortMashTestApi;
+
+// ShellPort implementation for mash/mus. See ash/README.md for more.
+class ShellPortMash : public ShellPort {
  public:
-  WmShellAura();
-  ~WmShellAura() override;
+  // If |create_session_state_delegate_stub| is true SessionStateDelegateStub is
+  // created. If false, the SessionStateDelegate from Shell is used.
+  ShellPortMash(WmWindow* primary_root_window,
+                WindowManager* window_manager,
+                views::PointerWatcherEventRouter* pointer_watcher_event_router,
+                bool create_session_state_delegate_stub);
+  ~ShellPortMash() override;
 
-  static WmShellAura* Get();
+  static ShellPortMash* Get();
 
-  AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
-    return accelerator_controller_delegate_.get();
+  ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
+
+  AcceleratorControllerDelegateAura* accelerator_controller_delegate_mus() {
+    return mus_state_->accelerator_controller_delegate.get();
   }
 
-  // WmShell:
+  aura::WindowTreeClient* window_tree_client();
+
+  WindowManager* window_manager() { return window_manager_; }
+
+  // ShellPort:
   void Shutdown() override;
   bool IsRunningInMash() const override;
   Config GetAshConfig() const override;
@@ -82,21 +110,44 @@ class ASH_EXPORT WmShellAura : public WmShell,
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
-  // WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanging() override;
-  void OnDisplayConfigurationChanged() override;
+  friend class ShellPortMashTestApi;
 
-  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
+  struct MashSpecificState {
+    MashSpecificState();
+    ~MashSpecificState();
 
-  bool added_display_observer_ = false;
-  base::ObserverList<WmDisplayObserver> display_observers_;
+    views::PointerWatcherEventRouter* pointer_watcher_event_router = nullptr;
+    std::unique_ptr<AcceleratorControllerDelegateMus>
+        accelerator_controller_delegate;
+    std::unique_ptr<AcceleratorControllerRegistrar>
+        accelerator_controller_registrar;
+    std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory;
+  };
 
-  std::unique_ptr<AcceleratorControllerDelegateAura>
-      accelerator_controller_delegate_;
+  struct MusSpecificState {
+    MusSpecificState();
+    ~MusSpecificState();
 
-  DISALLOW_COPY_AND_ASSIGN(WmShellAura);
+    std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter;
+    std::unique_ptr<AcceleratorControllerDelegateAura>
+        accelerator_controller_delegate;
+  };
+
+  WindowManager* window_manager_;
+
+  WmWindow* primary_root_window_;
+
+  // Only one of |mash_state_| or |mus_state_| is created, depending upon
+  // Config.
+  std::unique_ptr<MashSpecificState> mash_state_;
+  std::unique_ptr<MusSpecificState> mus_state_;
+
+  std::unique_ptr<SessionStateDelegate> session_state_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellPortMash);
 };
 
+}  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_AURA_WM_SHELL_AURA_H_
+#endif  // ASH_MUS_BRIDGE_SHELL_PORT_MASH_H_

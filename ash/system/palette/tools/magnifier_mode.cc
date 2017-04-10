@@ -6,9 +6,9 @@
 
 #include "ash/palette_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
-#include "ash/wm_shell.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -32,13 +32,13 @@ const gfx::VectorIcon& MagnifierMode::GetActiveTrayIcon() const {
 
 void MagnifierMode::OnEnable() {
   CommonPaletteTool::OnEnable();
-  WmShell::Get()->SetPartialMagnifierEnabled(true);
+  ShellPort::Get()->SetPartialMagnifierEnabled(true);
   delegate()->HidePalette();
 }
 
 void MagnifierMode::OnDisable() {
   CommonPaletteTool::OnDisable();
-  WmShell::Get()->SetPartialMagnifierEnabled(false);
+  ShellPort::Get()->SetPartialMagnifierEnabled(false);
 }
 
 views::View* MagnifierMode::CreateView() {

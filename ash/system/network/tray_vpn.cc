@@ -7,6 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -18,7 +19,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_item_style.h"
-#include "ash/wm_shell.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -176,7 +176,7 @@ views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
 
-  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_VPN_VIEW);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_VPN_VIEW);
   detailed_ = new tray::NetworkStateListDetailedView(
       this, tray::NetworkStateListDetailedView::LIST_TYPE_VPN, status);
   detailed_->Init();

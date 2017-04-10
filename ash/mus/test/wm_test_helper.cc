@@ -9,7 +9,6 @@
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/config.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"

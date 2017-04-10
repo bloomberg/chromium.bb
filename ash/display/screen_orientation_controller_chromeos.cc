@@ -8,10 +8,10 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -44,7 +44,7 @@ blink::WebScreenOrientationLockType GetDisplayNaturalOrientation() {
     return blink::kWebScreenOrientationLockLandscape;
 
   display::ManagedDisplayInfo info =
-      WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
+      ShellPort::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
   gfx::Size size = info.size_in_pixel();
   switch (info.GetActiveRotation()) {
     case display::Display::ROTATE_0:
@@ -166,7 +166,7 @@ ScreenOrientationController::ScreenOrientationController()
 ScreenOrientationController::~ScreenOrientationController() {
   Shell::Get()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  WmShell::Get()->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto& windows : lock_info_map_)
     windows.first->aura_window()->RemoveObserver(this);
@@ -229,7 +229,7 @@ void ScreenOrientationController::ToggleUserRotationLock() {
     SetLockToOrientation(blink::kWebScreenOrientationLockAny);
   } else {
     display::Display::Rotation current_rotation =
-        WmShell::Get()
+        ShellPort::Get()
             ->GetDisplayInfo(display::Display::InternalDisplayId())
             .GetActiveRotation();
     SetLockToRotation(current_rotation);
@@ -289,7 +289,7 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay())
     return;
   display::Display::Rotation user_rotation =
-      WmShell::Get()
+      ShellPort::Get()
           ->GetDisplayInfo(display::Display::InternalDisplayId())
           .GetActiveRotation();
   if (user_rotation != current_rotation_) {
@@ -310,14 +310,14 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
   // Always start observing.
   if (display::Display::HasInternalDisplay()) {
     current_rotation_ = user_rotation_ =
-        WmShell::Get()
+        ShellPort::Get()
             ->GetDisplayInfo(display::Display::InternalDisplayId())
             .GetActiveRotation();
   }
   if (!rotation_locked_)
     LoadDisplayRotationProperties();
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-  WmShell::Get()->AddDisplayObserver(this);
+  ShellPort::Get()->AddDisplayObserver(this);
 
   if (!display::Display::HasInternalDisplay())
     return;
@@ -328,7 +328,7 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
 
 void ScreenOrientationController::OnMaximizeModeEnded() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  WmShell::Get()->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
   if (!display::Display::HasInternalDisplay())
     return;
   if (current_rotation_ != user_rotation_)
@@ -441,7 +441,7 @@ void ScreenOrientationController::LockToRotationMatchingOrientation(
     return;
 
   display::Display::Rotation rotation =
-      WmShell::Get()
+      ShellPort::Get()
           ->GetDisplayInfo(display::Display::InternalDisplayId())
           .GetActiveRotation();
   if (natural_orientation_ == lock_orientation) {

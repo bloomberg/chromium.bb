@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -25,7 +26,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -160,7 +160,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
   Shell::Get()->AddShellObserver(this);
-  WmShell::Get()->AddLockStateObserver(this);
+  ShellPort::Get()->AddLockStateObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
@@ -173,7 +173,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
   Shell::Get()->RemoveShellObserver(this);
-  WmShell::Get()->RemoveLockStateObserver(this);
+  ShellPort::Get()->RemoveLockStateObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
@@ -448,7 +448,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
     WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-    WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());
+    ShellPort::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());
   }
 }
 
@@ -637,7 +637,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // if keyboard is not shown.
       if (!state_.IsAddingSecondaryUser() || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      WmShell::Get()->SetDisplayWorkAreaInsets(shelf_window, insets);
+      ShellPort::Get()->SetDisplayWorkAreaInsets(shelf_window, insets);
     }
   }
 

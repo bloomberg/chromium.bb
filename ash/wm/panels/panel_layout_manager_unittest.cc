@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -23,7 +24,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -305,7 +305,7 @@ TEST_P(PanelLayoutManagerTextDirectionTest, AddOnePanel) {
 TEST_F(PanelLayoutManagerTest, UndockTest) {
   // TODO: mash doesn't support SetFirstDisplayAsInternalDisplay().
   // http://crbug.com/698091.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   std::vector<display::ManagedDisplayInfo> info_list;
@@ -341,7 +341,7 @@ TEST_F(PanelLayoutManagerTest, UndockTest) {
 TEST_F(PanelLayoutManagerTest, DockUndockTest) {
   // TODO: mash doesn't support SetFirstDisplayAsInternalDisplay().
   // http://crbug.com/698091.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   std::vector<display::ManagedDisplayInfo> info_list;
@@ -507,7 +507,7 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   EXPECT_TRUE(IsPanelCalloutVisible(w3.get()));
 
   // TODO: investigate failure. http://crbug.com/698887.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   wm::ActivateWindow(w1.get());
@@ -542,7 +542,7 @@ TEST_F(PanelLayoutManagerTest, RemoveLeftPanel) {
 
 TEST_F(PanelLayoutManagerTest, RemoveMiddlePanel) {
   // TODO: fails because of ShelfModel. http://crbug.com/698878.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect bounds(0, 0, 201, 201);
@@ -561,7 +561,7 @@ TEST_F(PanelLayoutManagerTest, RemoveMiddlePanel) {
 
 TEST_F(PanelLayoutManagerTest, RemoveRightPanel) {
   // TODO: fails because of ShelfModel. http://crbug.com/698878.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect bounds(0, 0, 201, 201);
@@ -580,7 +580,7 @@ TEST_F(PanelLayoutManagerTest, RemoveRightPanel) {
 
 TEST_F(PanelLayoutManagerTest, RemoveNonActivePanel) {
   // TODO: fails because of ShelfModel. http://crbug.com/698878.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   gfx::Rect bounds(0, 0, 201, 201);
@@ -675,7 +675,7 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
 
 TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
   // TODO: fails because of ShelfModel. http://crbug.com/698878.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Keep the displays wide so that shelves have enough space for launcher

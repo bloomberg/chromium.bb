@@ -32,7 +32,7 @@ class ASH_EXPORT ImmersiveContext {
  public:
   static ImmersiveContext* Get() { return instance_; }
 
-  // Mirrors that of WmShell::InstallResizeHandleWindowTargeter(), see it
+  // Mirrors that of ShellPort::InstallResizeHandleWindowTargeter(), see it
   // for details
   virtual void InstallResizeHandleWindowTargeter(
       ImmersiveFullscreenController* controller) = 0;
@@ -47,7 +47,7 @@ class ASH_EXPORT ImmersiveContext {
   // Returns the bounds of the display the widget is on, in screen coordinates.
   virtual gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) = 0;
 
-  // See WmShell::AddPointerWatcher for details.
+  // See ShellPort::AddPointerWatcher for details.
   virtual void AddPointerWatcher(views::PointerWatcher* watcher,
                                  views::PointerWatcherEventTypes events) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
@@ -55,7 +55,7 @@ class ASH_EXPORT ImmersiveContext {
   // Returns true if any window has capture.
   virtual bool DoesAnyWindowHaveCapture() = 0;
 
-  // See WmShell::IsMouseEventsEnabled() for details.
+  // See ShellPort::IsMouseEventsEnabled() for details.
   virtual bool IsMouseEventsEnabled() = 0;
 
  protected:

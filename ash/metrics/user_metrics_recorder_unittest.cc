@@ -9,11 +9,11 @@
 #include "ash/login_status.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/user_metrics_recorder_test_api.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/test/histogram_tester.h"
 #include "ui/aura/window.h"
@@ -189,7 +189,7 @@ TEST_F(UserMetricsRecorderTest, VerifyStatsRecordedByRecordPeriodicMetrics) {
 // UserMetricsRecorder::RecordPeriodicMetrics() method.
 TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   // TODO: investigate failure in mash, http://crbug.com/695629.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   test::TestShelfDelegate* test_shelf_delegate =

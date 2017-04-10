@@ -8,8 +8,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -109,13 +109,13 @@ void ExitWarningHandler::HandleAccelerator() {
       state_ = WAIT_FOR_DOUBLE_PRESS;
       Show();
       StartTimer();
-      WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
+      ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
       break;
     case WAIT_FOR_DOUBLE_PRESS:
       state_ = EXITING;
       CancelTimer();
       Hide();
-      WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
+      ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
       Shell::Get()->shell_delegate()->Exit();
       break;
     case EXITING:

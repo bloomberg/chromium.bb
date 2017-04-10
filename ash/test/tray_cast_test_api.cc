@@ -6,7 +6,6 @@
 
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "ui/views/view.h"
 
 namespace ash {

@@ -8,12 +8,12 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 
@@ -39,9 +39,8 @@ WindowCycleController::~WindowCycleController() {}
 // static
 bool WindowCycleController::CanCycle() {
   // Prevent window cycling if the screen is locked or a modal dialog is open.
-  WmShell* wm_shell = WmShell::Get();
   return !Shell::Get()->session_controller()->IsScreenLocked() &&
-         !wm_shell->IsSystemModalWindowOpen() &&
+         !ShellPort::Get()->IsSystemModalWindowOpen() &&
          !Shell::Get()->screen_pinning_controller()->IsPinned();
 }
 
@@ -81,9 +80,9 @@ void WindowCycleController::StartCycling() {
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 
   window_cycle_list_.reset(new WindowCycleList(window_list));
-  event_filter_ = WmShell::Get()->CreateWindowCycleEventFilter();
+  event_filter_ = ShellPort::Get()->CreateWindowCycleEventFilter();
   cycle_start_time_ = base::Time::Now();
-  WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.Items",
                            window_list.size());
 }
@@ -120,7 +119,7 @@ void WindowCycleController::StopCycling() {
 
   if (active_window_after_window_cycle != nullptr &&
       active_window_before_window_cycle_ != active_window_after_window_cycle) {
-    WmShell::Get()->RecordTaskSwitchMetric(
+    ShellPort::Get()->RecordTaskSwitchMetric(
         TaskSwitchSource::WINDOW_CYCLE_CONTROLLER);
   }
   active_window_before_window_cycle_ = nullptr;

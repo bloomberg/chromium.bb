@@ -6,6 +6,7 @@
 
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -20,7 +21,6 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"
@@ -263,7 +263,7 @@ views::View* TrayNetwork::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
@@ -299,7 +299,7 @@ void TrayNetwork::RequestToggleWifi() {
   }
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       enabled ? UMA_STATUS_AREA_DISABLE_WIFI : UMA_STATUS_AREA_ENABLE_WIFI);
   handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
                                 chromeos::network_handler::ErrorCallback());

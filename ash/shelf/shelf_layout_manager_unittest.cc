@@ -16,6 +16,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -26,7 +27,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -685,7 +685,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
 // Various assertions around auto-hide.
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::test::EventGenerator& generator(GetEventGenerator());
@@ -748,7 +748,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 // boundary between the primary and the secondary display.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("800x600,800x600");
@@ -959,7 +959,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Show the app list and the shelf stays visible.
@@ -991,7 +991,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Show the app list and the shelf should be temporarily visible.
@@ -1059,7 +1059,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Show the app list; only the shelf on the same display should be shown.
@@ -1099,7 +1099,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Show the app list and the shelf should be temporarily visible.
@@ -1128,9 +1128,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
   wm::ActivateWindow(window);
 
   // Enable system modal dialog, and make sure shelf is still hidden.
-  WmShell* wm_shell = WmShell::Get();
-  wm_shell->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(wm_shell->IsSystemModalWindowOpen());
+  ShellPort::Get()->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window));
   Shell::Get()->UpdateShelfVisibility();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1174,9 +1173,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_TRUE(window_2->IsVisible());
 
   // Enable system modal dialog, and make sure both shelves are still hidden.
-  WmShell* wm_shell = WmShell::Get();
-  wm_shell->SimulateModalWindowOpenForTesting(true);
-  EXPECT_TRUE(wm_shell->IsSystemModalWindowOpen());
+  ShellPort::Get()->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window_1));
   EXPECT_FALSE(wm::CanActivateWindow(window_2));
   Shell::Get()->UpdateShelfVisibility();
@@ -1246,7 +1244,7 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
 // Test for Pinned mode.
 TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   WmShelf* shelf = GetPrimaryShelf();
@@ -1336,7 +1334,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Slop is an implementation detail of gesture recognition, and complicates
@@ -1524,7 +1522,7 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   WmShelf* shelf = GetPrimaryShelf();
@@ -1722,7 +1720,7 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(true);

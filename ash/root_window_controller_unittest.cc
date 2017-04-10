@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
@@ -17,7 +18,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -186,7 +186,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(root_windows[1], panel->GetRootWindow());
   EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 
-  if (WmShell::Get()->IsRunningInMash()) {
+  if (ShellPort::Get()->IsRunningInMash()) {
     // TODO(erg): Ignore this one part of the test when running mash. We would
     // crash because the aura::Window |d2| created in the other block doesn't
     // get deleted, and thus continues to contain a reference to its delegate,
@@ -302,7 +302,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 // Make sure lock related windows moves.
 TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   display_manager()->SetUnifiedDesktopEnabled(true);
@@ -384,8 +384,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
 TEST_F(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
-  WmShell* wm_shell = WmShell::Get();
-  RootWindowController* controller = wm_shell->GetPrimaryRootWindowController();
+  RootWindowController* controller =
+      ShellPort::Get()->GetPrimaryRootWindowController();
   EXPECT_EQ(LoginStatus::USER,
             Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
@@ -431,7 +431,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   EXPECT_FALSE(session_controller->IsActiveUserSessionStarted());
 
   RootWindowController* controller =
-      WmShell::Get()->GetPrimaryRootWindowController();
+      ShellPort::Get()->GetPrimaryRootWindowController();
   EXPECT_EQ(
       GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
       controller->GetSystemModalLayoutManager(NULL));
@@ -466,7 +466,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
 TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
   UpdateDisplay("600x600");
   RootWindowController* controller =
-      WmShell::Get()->GetPrimaryRootWindowController();
+      ShellPort::Get()->GetPrimaryRootWindowController();
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
   for (int block_reason = FIRST_BLOCK_REASON;
@@ -763,7 +763,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardOnTouchableDisplayOnly) {
   // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -815,7 +815,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // virtual keyboard follows the input focus.
 TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
   // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -885,7 +885,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardShowOnSpecifiedDisplay) {
   // TODO: fails in mash. http://crbug.com/695640.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -1082,7 +1082,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        EnsureCaretInWorkAreaWithMultipleDisplays) {
   // TODO: fails in mash. http://crbug.com/695640.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("500x500,600x600");

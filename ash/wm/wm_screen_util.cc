@@ -5,7 +5,7 @@
 #include "ash/wm/wm_screen_util.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -32,9 +32,9 @@ gfx::Rect GetMaximizedWindowBoundsInParent(WmWindow* window) {
 }
 
 gfx::Rect GetDisplayBoundsWithShelf(WmWindow* window) {
-  if (WmShell::Get()->IsInUnifiedMode()) {
+  if (ShellPort::Get()->IsInUnifiedMode()) {
     // In unified desktop mode, there is only one shelf in the first display.
-    gfx::SizeF size(WmShell::Get()->GetFirstDisplay().size());
+    gfx::SizeF size(ShellPort::Get()->GetFirstDisplay().size());
     float scale = window->GetRootWindow()->GetBounds().height() / size.height();
     size.Scale(scale, scale);
     return gfx::Rect(gfx::ToCeiledSize(size));

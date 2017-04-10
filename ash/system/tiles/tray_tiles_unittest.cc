@@ -5,9 +5,9 @@
 #include "ash/system/tiles/tray_tiles.h"
 
 #include "ash/session/session_state_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/system/tiles/tiles_default_view.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm_shell.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 

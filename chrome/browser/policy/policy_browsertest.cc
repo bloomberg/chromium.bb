@@ -199,7 +199,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility_types.h"
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -687,7 +687,7 @@ class PolicyTest : public InProcessBrowserTest {
     // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
     // is tied to the test instead.
     chrome_screenshot_grabber->screenshot_grabber()->AddObserver(&observer_);
-    ash::WmShellAura::Get()
+    ash::ShellPortClassic::Get()
         ->accelerator_controller_delegate()
         ->SetScreenshotDelegate(std::move(chrome_screenshot_grabber));
 
@@ -697,7 +697,7 @@ class PolicyTest : public InProcessBrowserTest {
 
     content::RunMessageLoop();
     static_cast<ChromeScreenshotGrabber*>(
-        ash::WmShellAura::Get()
+        ash::ShellPortClassic::Get()
             ->accelerator_controller_delegate()
             ->screenshot_delegate())
         ->screenshot_grabber()

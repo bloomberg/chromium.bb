@@ -12,7 +12,6 @@
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

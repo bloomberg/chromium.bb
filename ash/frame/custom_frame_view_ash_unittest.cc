@@ -10,10 +10,10 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -110,7 +110,7 @@ class CustomFrameViewAshTest : public test::AshTestBase {
 
   test::TestSessionStateDelegate* GetTestSessionStateDelegate() {
     return static_cast<test::TestSessionStateDelegate*>(
-        WmShell::Get()->GetSessionStateDelegate());
+        ShellPort::Get()->GetSessionStateDelegate());
   }
 
  private:

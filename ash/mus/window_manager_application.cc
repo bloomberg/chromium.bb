@@ -11,7 +11,6 @@
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/system/power/power_status.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"

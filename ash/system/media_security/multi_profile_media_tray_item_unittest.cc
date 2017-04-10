@@ -17,7 +17,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_shell.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {

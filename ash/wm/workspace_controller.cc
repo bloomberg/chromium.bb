@@ -9,13 +9,13 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"
@@ -35,7 +35,7 @@ const int kInitialAnimationDurationMS = 200;
 
 WorkspaceController::WorkspaceController(WmWindow* viewport)
     : viewport_(viewport),
-      event_handler_(WmShell::Get()->CreateWorkspaceEventHandler(viewport)),
+      event_handler_(ShellPort::Get()->CreateWorkspaceEventHandler(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
   viewport_->aura_window()->AddObserver(this);
   viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);

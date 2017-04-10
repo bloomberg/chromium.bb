@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

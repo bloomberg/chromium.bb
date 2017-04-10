@@ -22,11 +22,11 @@ class ContextFactory;
 namespace ash {
 
 class ShellDelegate;
+class ShellPort;
 
 struct ASH_EXPORT ShellInitParams {
-  // Shell takes ownership of |wm_shell|, if null WmShellAura is created.
-  // TODO(sky): temporary, will eventually go away.
-  WmShell* wm_shell = nullptr;
+  // Shell takes ownership of |shell_port|, if null ShellPortClassic is created.
+  ShellPort* shell_port = nullptr;
   // Shell takes ownership of |primary_window_tree_host|. This is only used
   // by mash.
   aura::WindowTreeHostMus* primary_window_tree_host = nullptr;

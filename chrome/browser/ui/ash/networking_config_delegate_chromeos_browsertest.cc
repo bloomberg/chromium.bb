@@ -6,11 +6,11 @@
 
 #include "ash/login_status.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_detailed_view.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
 
   // Open the system tray menu.
   ash::SystemTray* system_tray =
-      ash::WmShell::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+      ash::ShellPort::Get()->GetPrimaryRootWindowController()->GetSystemTray();
   system_tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW);
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(system_tray->HasSystemBubble());

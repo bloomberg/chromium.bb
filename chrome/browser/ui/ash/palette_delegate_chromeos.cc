@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/palette/palette_utils.h"
@@ -133,7 +133,7 @@ bool PaletteDelegateChromeOS::ShouldShowPalette() {
 }
 
 void PaletteDelegateChromeOS::TakeScreenshot() {
-  auto* screenshot_delegate = ash::WmShellAura::Get()
+  auto* screenshot_delegate = ash::ShellPortClassic::Get()
                                   ->accelerator_controller_delegate()
                                   ->screenshot_delegate();
   screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
@@ -141,7 +141,7 @@ void PaletteDelegateChromeOS::TakeScreenshot() {
 
 void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
   auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
-  auto* screenshot_delegate = ash::WmShellAura::Get()
+  auto* screenshot_delegate = ash::ShellPortClassic::Get()
                                   ->accelerator_controller_delegate()
                                   ->screenshot_delegate();
 

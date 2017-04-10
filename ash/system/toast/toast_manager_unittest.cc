@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/system/toast/toast_manager.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/system/toast/toast_manager.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -129,7 +129,7 @@ TEST_F(ToastManagerTest, ShowAndCloseManually) {
 
 TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
   // TODO: gets wedged running animator. http://crbug.com/698016.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
@@ -260,7 +260,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
 
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   // TODO: needs unified mode. http://crbug.com/698024.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   display_manager()->SetUnifiedDesktopEnabled(true);

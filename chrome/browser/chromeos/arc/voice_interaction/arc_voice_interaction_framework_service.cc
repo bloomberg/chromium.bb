@@ -9,7 +9,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

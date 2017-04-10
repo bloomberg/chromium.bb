@@ -12,7 +12,6 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"

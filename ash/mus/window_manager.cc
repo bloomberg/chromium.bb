@@ -11,7 +11,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
-#include "ash/mus/bridge/wm_shell_mus.h"
+#include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
@@ -220,15 +220,15 @@ void WindowManager::CreateShell(
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  WmShellMus* wm_shell = new WmShellMus(
-      WmWindow::Get(window_tree_host->window()),
-      this, pointer_watcher_event_router_.get(),
-      create_session_state_delegate_stub_for_test_);
+  ShellPortMash* shell_port =
+      new ShellPortMash(WmWindow::Get(window_tree_host->window()), this,
+                        pointer_watcher_event_router_.get(),
+                        create_session_state_delegate_stub_for_test_);
   // Shell::CreateInstance() takes ownership of ShellDelegate.
   init_params.delegate = shell_delegate_ ? shell_delegate_.release()
                                          : new ShellDelegateMus(connector_);
   init_params.primary_window_tree_host = window_tree_host.release();
-  init_params.wm_shell = wm_shell;
+  init_params.shell_port = shell_port;
   init_params.blocking_pool = blocking_pool_.get();
   Shell::CreateInstance(init_params);
 }
@@ -292,7 +292,7 @@ void WindowManager::Shutdown() {
 }
 
 RootWindowController* WindowManager::GetPrimaryRootWindowController() {
-  return RootWindowController::ForWindow(WmShell::Get()
+  return RootWindowController::ForWindow(ShellPort::Get()
                                              ->GetPrimaryRootWindowController()
                                              ->GetWindow()
                                              ->aura_window());
@@ -464,7 +464,7 @@ void WindowManager::OnWmNewDisplay(
   // waits for the first WindowTreeHost, then creates the shell. As there are
   // order dependencies we have to create the RootWindowController at a similar
   // time as cash, to do that we inject the WindowTreeHost into ShellInitParams.
-  // Shell calls to WmShell::InitHosts(), which calls back to
+  // Shell calls to ShellPort::InitHosts(), which calls back to
   // CreatePrimaryRootWindowController().
   if (!created_shell_) {
     CreateShell(std::move(window_tree_host));
@@ -501,7 +501,7 @@ void WindowManager::OnWmDisplayModified(const display::Display& display) {
       display, is_primary ? display::DisplayList::Type::PRIMARY
                           : display::DisplayList::Type::NOT_PRIMARY);
   RootWindowController* root_window_controller =
-      WmShellMus::Get()->GetRootWindowControllerWithDisplayId(display.id());
+      ShellPortMash::Get()->GetRootWindowControllerWithDisplayId(display.id());
   DCHECK(root_window_controller);
   root_window_controller->GetRootWindow()->GetHost()->SetBoundsInPixels(
       display.bounds());

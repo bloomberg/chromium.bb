@@ -9,6 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -21,7 +22,6 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -398,7 +398,7 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   } else {
     return;
   }
-  WmShell::Get()->RecordUserMetricsAction(user_action);
+  ShellPort::Get()->RecordUserMetricsAction(user_action);
 }
 
 void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
@@ -509,7 +509,7 @@ views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
     request_popup_view_state_ = A11Y_NONE;
     return detailed_popup_;
   } else {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_DETAILED_ACCESSABILITY);
     detailed_menu_ = CreateDetailedMenu();
     return detailed_menu_;

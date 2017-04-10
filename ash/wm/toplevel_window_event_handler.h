@@ -29,7 +29,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
     : public ui::EventHandler,
       public aura::client::WindowMoveClient {
  public:
-  explicit ToplevelWindowEventHandler(WmShell* shell);
+  ToplevelWindowEventHandler();
   ~ToplevelWindowEventHandler() override;
 
   // Overridden from ui::EventHandler:

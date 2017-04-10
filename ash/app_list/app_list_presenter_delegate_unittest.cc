@@ -6,10 +6,10 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -126,7 +126,7 @@ TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   // Set up a screen with two displays (horizontally adjacent).
   UpdateDisplay("1024x768,1024x768");
 
-  std::vector<WmWindow*> root_windows = WmShell::Get()->GetAllRootWindows();
+  std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
   WmWindow* secondary_root = root_windows[1];
   EXPECT_EQ("1024,0 1024x768", secondary_root->GetBoundsInScreen().ToString());

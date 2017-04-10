@@ -9,13 +9,13 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -231,7 +231,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
       chrome_launcher_controller->ActiveUserChanged(
           new_account_id_.GetUserEmail());
     // Hide the black rectangle on top of each shelf again.
-    for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
+    for (ash::WmWindow* window : ash::ShellPort::Get()->GetAllRootWindows()) {
       ash::ShelfWidget* shelf = ash::WmShelf::ForWindow(window)->shelf_widget();
       shelf->HideShelfBehindBlackBar(false, duration_override);
     }

@@ -24,8 +24,8 @@
 
 namespace ash {
 
-ToplevelWindowEventHandler::ToplevelWindowEventHandler(WmShell* shell)
-    : wm_toplevel_window_event_handler_(shell), weak_factory_(this) {}
+ToplevelWindowEventHandler::ToplevelWindowEventHandler()
+    : weak_factory_(this) {}
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {}
 

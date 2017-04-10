@@ -8,12 +8,12 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_shell.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -51,7 +51,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       Shell::Get()->window_selector_controller();
   // Toggling overview mode will fail if there is no window to show.
   bool performed = controller->ToggleOverview();
-  WmShell::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return performed;
 }
 

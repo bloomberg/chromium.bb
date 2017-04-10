@@ -22,8 +22,8 @@ source_set("lib") {
     "accessibility_delegate_mus.h",
     "bridge/immersive_handler_factory_mus.cc",
     "bridge/immersive_handler_factory_mus.h",
-    "bridge/wm_shell_mus.cc",
-    "bridge/wm_shell_mus.h",
+    "bridge/shell_port_mash.cc",
+    "bridge/shell_port_mash.h",
     "bridge/workspace_event_handler_mus.cc",
     "bridge/workspace_event_handler_mus.h",
     "context_menu_mus.cc",
@@ -187,7 +187,7 @@ source_set("unittests") {
 
   sources = [
     "app_launch_unittest.cc",
-    "bridge/wm_shell_mus_test_api.h",
+    "bridge/shell_port_mash_test_api.h",
     "non_client_frame_controller_unittest.cc",
     "screen_mus_unittest.cc",
     "test/ash_test_impl_mus.cc",

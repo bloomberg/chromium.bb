@@ -9,9 +9,9 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -123,7 +123,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         // TODO(simonhong): Use ShelfItemDelegate::Close().
         controller_->Close(item_.id);
       }
-      ash::WmShell::Get()->RecordUserMetricsAction(
+      ash::ShellPort::Get()->RecordUserMetricsAction(
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;
     case MENU_PIN:

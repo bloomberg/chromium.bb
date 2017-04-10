@@ -12,9 +12,9 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -134,7 +134,8 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
 }
 
 void WindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(new_display.id());
+  WmWindow* root =
+      ShellPort::Get()->GetRootWindowForDisplayId(new_display.id());
   workspace_window_watcher_->RootWindowAdded(root->aura_window());
 }
 

@@ -12,11 +12,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -93,7 +93,7 @@ WallpaperController::WallpaperController(
       prominent_color_(kInvalidColor),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       task_runner_(task_runner) {
-  WmShell::Get()->AddDisplayObserver(this);
+  ShellPort::Get()->AddDisplayObserver(this);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
@@ -103,7 +103,7 @@ WallpaperController::~WallpaperController() {
     current_wallpaper_->RemoveObserver(this);
   if (color_calculator_)
     color_calculator_->RemoveObserver(this);
-  WmShell::Get()->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
@@ -224,8 +224,9 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
   if (!display::Screen::GetScreen())
     return gfx::Size();
 
-  // Note that |shell| is null when this is called from Chrome running in Mash.
-  WmShell* shell = WmShell::Get();
+  // Note that |shell_port| is null when this is called from Chrome running in
+  // Mash.
+  ShellPort* shell_port = ShellPort::Get();
 
   gfx::Size max;
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
@@ -233,8 +234,9 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
     // Display::size.
     // TODO(msw): Avoid using Display::size here; see http://crbug.com/613657.
     gfx::Size size = display.size();
-    if (shell) {
-      display::ManagedDisplayInfo info = shell->GetDisplayInfo(display.id());
+    if (shell_port) {
+      display::ManagedDisplayInfo info =
+          shell_port->GetDisplayInfo(display.id());
       // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
       if (info.id() == display.id())
         size = info.bounds_in_native().size();
@@ -315,14 +317,14 @@ void WallpaperController::InstallDesktopController(WmWindow* root_window) {
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows())
+  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows())
     InstallDesktopController(root);
   current_max_display_size_ = GetMaxDisplaySizeInNative();
 }
 
 bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
-  for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows()) {
     RootWindowController* root_window_controller =
         root_window->GetRootWindowController();
     // In the steady state (no animation playing) the wallpaper widget

@@ -6,11 +6,11 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell_port.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
@@ -44,7 +44,7 @@ TrayAudio::~TrayAudio() {
 // static
 void TrayAudio::ShowPopUpVolumeView() {
   // Show the popup on all monitors with a system tray.
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
     SystemTray* system_tray = root->GetRootWindowController()->GetSystemTray();
     if (!system_tray)
       continue;
@@ -68,7 +68,7 @@ views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
     volume_view_ = new tray::VolumeView(this, false);
     return volume_view_;
   } else {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
     audio_detail_view_ = new tray::AudioDetailedView(this);
     return audio_detail_view_;
@@ -137,7 +137,7 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
   bool swap = false;
   if (display::Display::HasInternalDisplay()) {
     const display::ManagedDisplayInfo& display_info =
-        WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
+        ShellPort::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
     if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
       swap = true;
   }

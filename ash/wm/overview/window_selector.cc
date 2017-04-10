@@ -17,6 +17,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
@@ -26,7 +27,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -131,7 +131,7 @@ class RoundedContainerView : public views::View {
 
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows())
+  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows())
     WmShelf::ForWindow(root)->UpdateVisibilityState();
 }
 
@@ -243,9 +243,9 @@ void WindowSelector::Init(const WindowList& windows) {
   if (restore_focus_window_)
     restore_focus_window_->aura_window()->AddObserver(this);
 
-  WmShell* shell = WmShell::Get();
+  ShellPort* shell_port = ShellPort::Get();
 
-  std::vector<WmWindow*> root_windows = shell->GetAllRootWindows();
+  std::vector<WmWindow*> root_windows = shell_port->GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
             [](const WmWindow* a, const WmWindow* b) {
               // Since we don't know if windows are vertically or horizontally
@@ -298,7 +298,7 @@ void WindowSelector::Init(const WindowList& windows) {
 
     search_image_ = gfx::CreateVectorIcon(ui::kSearchIcon, kTextFilterIconSize,
                                           kTextFilterIconColor);
-    WmWindow* root_window = shell->GetPrimaryRootWindow();
+    WmWindow* root_window = shell_port->GetPrimaryRootWindow();
     text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
                                                &text_filter_bottom_));
   }
@@ -309,7 +309,7 @@ void WindowSelector::Init(const WindowList& windows) {
   Shell::Get()->activation_client()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
-  shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
+  shell_port->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
@@ -337,7 +337,7 @@ void WindowSelector::Shutdown() {
   ResetFocusRestoreWindow(true);
   RemoveAllObservers();
 
-  std::vector<WmWindow*> root_windows = WmShell::Get()->GetAllRootWindows();
+  std::vector<WmWindow*> root_windows = ShellPort::Get()->GetAllRootWindows();
   for (WmWindow* window : root_windows) {
     // Un-hide the callout widgets for panels. It is safe to call this for
     // root_windows that don't contain any panel windows.
@@ -428,7 +428,7 @@ void WindowSelector::SelectWindow(WindowSelectorItem* item) {
     // a window other than the window that was active prior to entering overview
     // mode (i.e., the window at the front of the MRU list).
     if (window_list[0] != window) {
-      WmShell::Get()->RecordUserMetricsAction(
+      ShellPort::Get()->RecordUserMetricsAction(
           UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
     }
     const auto it = std::find(window_list.begin(), window_list.end(), window);
@@ -481,7 +481,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
         // Allow the textfield to handle 'W' key when not used with Ctrl.
         return false;
       }
-      WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_KEY);
+      ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_KEY);
       grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
       break;
     case ui::VKEY_RETURN:
@@ -493,7 +493,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
       UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
                                   (num_key_presses_ * 100) / num_items_, 1, 300,
                                   30);
-      WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
+      ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
       SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
       break;
     default:
@@ -636,7 +636,7 @@ void WindowSelector::PositionWindows(bool animate) {
 }
 
 void WindowSelector::RepositionTextFilterOnDisplayMetricsChange() {
-  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* root_window = ShellPort::Get()->GetPrimaryRootWindow();
   const gfx::Rect rect = GetTextFilterPosition(root_window);
   text_filter_bottom_ = rect.bottom() + kTextFieldBottomMargin;
   text_filter_widget_->SetBounds(rect);

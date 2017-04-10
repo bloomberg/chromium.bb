@@ -14,10 +14,10 @@
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -298,7 +298,7 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
-  WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
   // Shut down or reboot based on device policy.
   shutdown_controller_->ShutDownOrReboot();
 }
@@ -345,7 +345,7 @@ void LockStateController::StartImmediatePreLockAnimation(
   animation_sequence->EndSequence();
 
   DispatchCancelMode();
-  WmShell::Get()->OnLockStateEvent(
+  ShellPort::Get()->OnLockStateEvent(
       LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
 }
 
@@ -374,7 +374,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, animation_sequence);
 
   DispatchCancelMode();
-  WmShell::Get()->OnLockStateEvent(
+  ShellPort::Get()->OnLockStateEvent(
       LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED);
   animation_sequence->EndSequence();
 }
@@ -463,7 +463,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   }
 
   if (request_lock) {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
                              : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
     chromeos::DBusThreadManager::Get()
@@ -493,7 +493,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 void LockStateController::PostLockAnimationFinished() {
   animating_lock_ = false;
   VLOG(1) << "PostLockAnimationFinished";
-  WmShell::Get()->OnLockStateEvent(
+  ShellPort::Get()->OnLockStateEvent(
       LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();

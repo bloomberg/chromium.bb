@@ -6,9 +6,9 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/display/display.h"
@@ -37,7 +37,7 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   // Update the window's immersive mode state for the window manager.
   window_state->set_in_immersive_fullscreen(entering);
 
-  for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows())
+  for (WmWindow* root_window : ShellPort::Get()->GetAllRootWindows())
     WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
@@ -49,11 +49,11 @@ gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
 void ImmersiveContextAsh::AddPointerWatcher(
     views::PointerWatcher* watcher,
     views::PointerWatcherEventTypes events) {
-  WmShell::Get()->AddPointerWatcher(watcher, events);
+  ShellPort::Get()->AddPointerWatcher(watcher, events);
 }
 
 void ImmersiveContextAsh::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  WmShell::Get()->RemovePointerWatcher(watcher);
+  ShellPort::Get()->RemovePointerWatcher(watcher);
 }
 
 bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
@@ -61,7 +61,7 @@ bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
 }
 
 bool ImmersiveContextAsh::IsMouseEventsEnabled() {
-  return WmShell::Get()->IsMouseEventsEnabled();
+  return ShellPort::Get()->IsMouseEventsEnabled();
 }
 
 }  // namespace ash

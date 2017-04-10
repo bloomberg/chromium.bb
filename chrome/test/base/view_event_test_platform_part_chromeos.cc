@@ -11,7 +11,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"

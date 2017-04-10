@@ -5,10 +5,10 @@
 #include "ash/screen_util.h"
 
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -106,7 +106,7 @@ TEST_F(ScreenUtilTest, ConvertRect) {
 
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   display_manager()->SetUnifiedDesktopEnabled(true);

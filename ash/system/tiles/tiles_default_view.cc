@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -18,7 +19,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -109,20 +109,19 @@ void TilesDefaultView::Init() {
 void TilesDefaultView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender);
-  WmShell* shell = WmShell::Get();
   if (sender == settings_button_) {
-    shell->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
     Shell::Get()->system_tray_controller()->ShowSettings();
   } else if (sender == help_button_) {
-    shell->RecordUserMetricsAction(UMA_TRAY_HELP);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_HELP);
     Shell::Get()->system_tray_controller()->ShowHelp();
   } else if (sender == lock_button_) {
-    shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->RequestLockScreen();
   } else if (sender == power_button_) {
-    shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     Shell::Get()->lock_state_controller()->RequestShutdown();
   }
 

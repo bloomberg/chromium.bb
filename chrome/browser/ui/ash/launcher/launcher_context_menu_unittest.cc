@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

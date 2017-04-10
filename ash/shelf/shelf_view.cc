@@ -24,9 +24,9 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
@@ -466,11 +466,11 @@ void ShelfView::ButtonPressed(views::Button* sender,
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
-      WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
+      ShellPort::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
     case TYPE_APP_LIST:
-      WmShell::Get()->RecordUserMetricsAction(
+      ShellPort::Get()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
       break;
 
@@ -1628,7 +1628,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
 
   const ShelfItem* item = ShelfItemForView(source);
   if (!item) {
-    WmShell::Get()->ShowContextMenu(point, source_type);
+    ShellPort::Get()->ShowContextMenu(point, source_type);
     return;
   }
 

@@ -16,6 +16,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
@@ -47,7 +48,6 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/widget_finder.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -332,7 +332,7 @@ std::vector<SystemTrayItem*> SystemTray::GetTrayItems() const {
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
   if (creation_type != BUBBLE_USE_EXISTING)
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
   ShowItems(GetTrayItems(), false, true, creation_type, false);
 }
 
@@ -670,7 +670,7 @@ void SystemTray::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
 }
 
 void SystemTray::CreateKeyEventWatcher() {
-  key_event_watcher_ = WmShell::Get()->CreateKeyEventWatcher();
+  key_event_watcher_ = ShellPort::Get()->CreateKeyEventWatcher();
   // mustash does not yet support KeyEventWatcher. http://crbug.com/649600.
   if (!key_event_watcher_)
     return;

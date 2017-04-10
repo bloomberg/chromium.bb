@@ -7,6 +7,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -15,7 +16,6 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_view.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -79,7 +79,7 @@ views::View* TrayUser::CreateDefaultView(LoginStatus status) {
   // If the screen is locked or a system modal dialog box is shown, show only
   // the currently active user.
   if (user_index_ && (session_controller->IsUserSessionBlocked() ||
-                      WmShell::Get()->IsSystemModalWindowOpen()))
+                      ShellPort::Get()->IsSystemModalWindowOpen()))
     return nullptr;
 
   CHECK(user_ == nullptr);

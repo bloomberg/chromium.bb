@@ -15,6 +15,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
@@ -26,7 +27,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -114,7 +114,7 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
 
   UpdateDisplay("400x300,500x400");
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100), GetSecondaryDisplay());
-  EXPECT_EQ(WmShell::Get()->GetAllRootWindows()[1], window->GetRootWindow());
+  EXPECT_EQ(ShellPort::Get()->GetAllRootWindows()[1], window->GetRootWindow());
   window_state->Minimize();
   // This will not be used for un-minimizing window.
   window_state->SetRestoreBoundsInScreen(gfx::Rect(0, 0, 100, 100));
@@ -126,14 +126,14 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   window_state->Minimize();
   UpdateDisplay("400x300");
   window_state->Restore();
-  EXPECT_EQ(WmShell::Get()->GetPrimaryRootWindow(), window->GetRootWindow());
-  EXPECT_TRUE(WmShell::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
+  EXPECT_EQ(ShellPort::Get()->GetPrimaryRootWindow(), window->GetRootWindow());
+  EXPECT_TRUE(ShellPort::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
       window->GetBounds()));
 }
 
 TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   UpdateDisplay("300x400,400x500");
-  WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
+  WmWindow::Windows root_windows = ShellPort::Get()->GetAllRootWindows();
 
   if (!SetSecondaryDisplayPlacement(display::DisplayPlacement::TOP, 0))
     return;
@@ -173,7 +173,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   window_state->Maximize();
   window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 30, 40));
   window_state->Restore();
-  EXPECT_TRUE(WmShell::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
+  EXPECT_TRUE(ShellPort::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
       window->GetBounds()));
   // Y bounds should not be negative.
   EXPECT_EQ("-5,0 30x40", window->GetBounds().ToString());
@@ -181,11 +181,11 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   // Minimized -> Normal transition.
   window->SetBounds(gfx::Rect(-100, -100, 30, 40));
   window_state->Minimize();
-  EXPECT_FALSE(WmShell::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
+  EXPECT_FALSE(ShellPort::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
       window->GetBounds()));
   EXPECT_EQ("-100,-100 30x40", window->GetBounds().ToString());
   window->Show();
-  EXPECT_TRUE(WmShell::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
+  EXPECT_TRUE(ShellPort::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
       window->GetBounds()));
   // Y bounds should not be negative.
   EXPECT_EQ("-5,0 30x40", window->GetBounds().ToString());
@@ -197,7 +197,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   EXPECT_EQ(window->GetBounds(), window->GetRootWindow()->GetBounds());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 30, 40));
   window_state->Restore();
-  EXPECT_TRUE(WmShell::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
+  EXPECT_TRUE(ShellPort::Get()->GetPrimaryRootWindow()->GetBounds().Intersects(
       window->GetBounds()));
   // Y bounds should not be negative.
   EXPECT_EQ("-5,0 30x40", window->GetBounds().ToString());
@@ -206,7 +206,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   UpdateDisplay("300x400,400x500");
 
-  WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
+  WmWindow::Windows root_windows = ShellPort::Get()->GetAllRootWindows();
 
   std::unique_ptr<WindowOwner> window_owner(
       CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
@@ -265,7 +265,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
   UpdateDisplay("300x400,400x500");
 
-  WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
+  WmWindow::Windows root_windows = ShellPort::Get()->GetAllRootWindows();
 
   std::unique_ptr<WindowOwner> window_owner(
       CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
@@ -384,7 +384,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
   window->Init(ui::LAYER_TEXTURED);
   wm::GetWindowState(window.get())->Maximize();
   WmWindow* default_container =
-      WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
+      ShellPort::Get()->GetPrimaryRootWindowController()->GetWmContainer(
           kShellWindowId_DefaultContainer);
   default_container->aura_window()->AddChild(window.get());
   window->Show();
@@ -397,7 +397,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // Normal window bounds shouldn't be changed.
@@ -408,7 +408,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
 
   // If the window is out of the workspace, it would be moved on screen.
   gfx::Rect root_window_bounds =
-      WmShell::Get()->GetPrimaryRootWindow()->GetBounds();
+      ShellPort::Get()->GetPrimaryRootWindow()->GetBounds();
   window_bounds.Offset(root_window_bounds.width(), root_window_bounds.height());
   ASSERT_FALSE(window_bounds.Intersects(root_window_bounds));
   std::unique_ptr<WindowOwner> out_window_owner(
@@ -482,7 +482,7 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (!WmShell::Get()->IsRunningInMash()) {
+  if (!ShellPort::Get()->IsRunningInMash()) {
     EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
               window->GetBounds().ToString());
   }
@@ -546,7 +546,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   WmWindow* window = window_owner->window();
   wm::WindowState* window_state = window->GetWindowState();
   gfx::Insets insets(0, 0, 50, 0);
-  WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window, insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
@@ -562,10 +562,10 @@ TEST_F(WorkspaceLayoutManagerTest,
   // The following two SetDisplayWorkAreaInsets calls simulate the case of
   // crbug.com/673803 that work area first becomes fullscreen and then returns
   // to the original state.
-  WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets(0, 0, 0, 0));
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets(0, 0, 0, 0));
   ui::LayerAnimator* animator = window->GetLayer()->GetAnimator();
   EXPECT_TRUE(animator->is_animating());
-  WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window, insets);
   animator->StopAnimating();
   EXPECT_FALSE(animator->is_animating());
   EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
@@ -590,8 +590,8 @@ TEST_F(WorkspaceLayoutManagerTest,
   window2->Show();
 
   gfx::Rect expected_bounds = window2->GetBounds();
-  WmShell::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
-                                           gfx::Insets(50, 0, 0, 0));
+  ShellPort::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
+                                             gfx::Insets(50, 0, 0, 0));
   EXPECT_EQ(expected_bounds.ToString(), window2->GetBounds().ToString());
 }
 
@@ -951,7 +951,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTest {
     AshTest::SetUp();
     UpdateDisplay("800x600");
     default_container_ =
-        WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
+        ShellPort::Get()->GetPrimaryRootWindowController()->GetWmContainer(
             kShellWindowId_DefaultContainer);
   }
 
@@ -1134,7 +1134,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTest {
     AshTest::SetUp();
     UpdateDisplay("800x600");
     WmWindow* default_container =
-        WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
+        ShellPort::Get()->GetPrimaryRootWindowController()->GetWmContainer(
             kShellWindowId_DefaultContainer);
     layout_manager_ = GetWorkspaceLayoutManager(default_container);
   }
@@ -1143,14 +1143,14 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTest {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
-    WmShell::Get()->SetDisplayWorkAreaInsets(
-        WmShell::Get()->GetPrimaryRootWindow(),
+    ShellPort::Get()->SetDisplayWorkAreaInsets(
+        ShellPort::Get()->GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    WmShell::Get()->SetDisplayWorkAreaInsets(
-        WmShell::Get()->GetPrimaryRootWindow(), restore_work_area_insets_);
+    ShellPort::Get()->SetDisplayWorkAreaInsets(
+        ShellPort::Get()->GetPrimaryRootWindow(), restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 

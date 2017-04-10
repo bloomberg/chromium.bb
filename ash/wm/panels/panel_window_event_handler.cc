@@ -4,9 +4,9 @@
 
 #include "ash/wm/panels/panel_window_event_handler.h"
 
+#include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -25,7 +25,7 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       event->IsOnlyLeftMouseButton() &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_PANEL_MINIMIZE_CAPTION_CLICK);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_PANEL_MINIMIZE_CAPTION_CLICK);
     wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
     return;
@@ -38,7 +38,8 @@ void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_PANEL_MINIMIZE_CAPTION_GESTURE);
+    ShellPort::Get()->RecordUserMetricsAction(
+        UMA_PANEL_MINIMIZE_CAPTION_GESTURE);
     wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
     return;

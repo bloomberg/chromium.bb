@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -20,7 +21,6 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
-#include "ash/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -129,7 +129,7 @@ CastCastView::~CastCastView() {}
 
 void CastCastView::StopCasting() {
   Shell::Get()->cast_config()->StopCasting(displayed_route_.Clone());
-  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 void CastCastView::UpdateLabel(
@@ -413,7 +413,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   auto it = view_to_sink_map_.find(view);
   if (it != view_to_sink_map_.end()) {
     Shell::Get()->cast_config()->CastToSink(it->second.Clone());
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
   }
 }
@@ -470,7 +470,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
 }
 
 views::View* TrayCast::CreateDetailedView(LoginStatus status) {
-  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_CAST_VIEW);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
   detailed_ = new tray::CastDetailedView(this, sinks_and_routes_);
   return detailed_;

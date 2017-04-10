@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
@@ -25,7 +26,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -482,7 +482,7 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
 // Tests that beginning window selection hides the app list.
 TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // The tested behavior relies on the app list presenter implementation.
@@ -614,7 +614,7 @@ TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
 // Tests that the tab key events are not sent to the window.
 TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
   // TODO: investigate failure in mash. http://crbug.com/698894.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   std::unique_ptr<Window> w0(CreateTestWindowInShellWithId(0));
@@ -638,7 +638,7 @@ TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
 // While the UI is active, mouse events are captured.
 TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   // TODO: investigate failure in mash. http://crbug.com/698894.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // This delegate allows the window to receive mouse events.
@@ -716,7 +716,7 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
 // display it's on. See crbug.com/675718
 TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
   // TODO: investigate failure in mash. http://crbug.com/698894.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();

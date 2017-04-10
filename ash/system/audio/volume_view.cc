@@ -8,13 +8,13 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -248,7 +248,7 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
     int current_volume = CrasAudioHandler::Get()->GetOutputVolumePercent();
     if (new_volume == current_volume)
       return;
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         is_default_view_ ? UMA_STATUS_AREA_CHANGED_VOLUME_MENU
                          : UMA_STATUS_AREA_CHANGED_VOLUME_POPUP);
     if (new_volume > current_volume)

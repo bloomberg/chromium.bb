@@ -7,11 +7,11 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/accessibility_types.h"
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/mus/bridge/wm_shell_mus.h"
+#include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -110,10 +110,10 @@ AshInit::AshInit() {
       nullptr;
   if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
     accelerator_controller_delegate =
-        ash::WmShellAura::Get()->accelerator_controller_delegate();
+        ash::ShellPortClassic::Get()->accelerator_controller_delegate();
   } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
     accelerator_controller_delegate =
-        ash::mus::WmShellMus::Get()->accelerator_controller_delegate_mus();
+        ash::mus::ShellPortMash::Get()->accelerator_controller_delegate_mus();
   }
   if (accelerator_controller_delegate) {
     std::unique_ptr<ChromeScreenshotGrabber> screenshot_delegate =

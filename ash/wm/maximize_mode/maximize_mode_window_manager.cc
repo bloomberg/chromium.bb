@@ -9,6 +9,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
@@ -18,7 +19,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -207,7 +207,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
-  event_handler_ = WmShell::Get()->CreateMaximizeModeEventHandler();
+  event_handler_ = ShellPort::Get()->CreateMaximizeModeEventHandler();
 }
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {
@@ -315,7 +315,7 @@ void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
 
   // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
   // the topmost window of its container.
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
     RootWindowController* controller = root->GetRootWindowController();
     WmWindow* default_container =
         root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);

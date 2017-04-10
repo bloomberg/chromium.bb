@@ -7,11 +7,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_impl.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -33,7 +33,7 @@ AshTest::~AshTest() {}
 
 // static
 WmShelf* AshTest::GetPrimaryShelf() {
-  return WmShell::Get()
+  return ShellPort::Get()
       ->GetPrimaryRootWindow()
       ->GetRootWindowController()
       ->GetShelf();
@@ -91,7 +91,7 @@ std::unique_ptr<views::Widget> AshTest::CreateTestWidget(
   params.delegate = delegate;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = bounds;
-  WmShell::Get()
+  ShellPort::Get()
       ->GetPrimaryRootWindow()
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
@@ -108,7 +108,7 @@ display::Display AshTest::GetSecondaryDisplay() {
 bool AshTest::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
-  if (WmShell::Get()->IsRunningInMash()) {
+  if (ShellPort::Get()->IsRunningInMash()) {
     NOTIMPLEMENTED();
     return false;
   }
@@ -122,7 +122,7 @@ void AshTest::ConfigureWidgetInitParamsForDisplay(
 }
 
 void AshTest::ParentWindowInPrimaryRootWindow(WmWindow* window) {
-  window->SetParentUsingContext(WmShell::Get()->GetPrimaryRootWindow(),
+  window->SetParentUsingContext(ShellPort::Get()->GetPrimaryRootWindow(),
                                 gfx::Rect());
 }
 

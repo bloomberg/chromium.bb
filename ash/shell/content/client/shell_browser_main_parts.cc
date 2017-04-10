@@ -13,7 +13,6 @@
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"

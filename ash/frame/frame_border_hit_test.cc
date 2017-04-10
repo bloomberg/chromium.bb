@@ -6,7 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -21,7 +21,7 @@ int FrameBorderNonClientHitTest(
   gfx::Rect expanded_bounds = view->bounds();
   int outside_bounds = kResizeOutsideBoundsSize;
 
-  if (WmShell::Get()->IsTouchDown())
+  if (ShellPort::Get()->IsTouchDown())
     outside_bounds *= kResizeOutsideBoundsScaleForTouch;
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
 

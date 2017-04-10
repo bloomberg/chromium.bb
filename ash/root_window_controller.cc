@@ -28,6 +28,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_port.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -56,7 +57,6 @@
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -222,7 +222,7 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
       kContainerIdsToMove + arraysize(kContainerIdsToMove));
   // Check the display mode as this is also necessary when trasitioning between
   // mirror and unified mode.
-  if (WmShell::Get()->IsInUnifiedModeIgnoreMirroring()) {
+  if (ShellPort::Get()->IsInUnifiedModeIgnoreMirroring()) {
     for (int id : kExtraContainerIdsToMoveInUnifiedMode)
       container_ids.push_back(id);
   }
@@ -269,7 +269,7 @@ bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) {
   if (!WmWindow::GetAuraWindow(window)->owned_by_parent())
     return false;
 
-  if (!WmShell::Get()->IsRunningInMash())
+  if (!ShellPort::Get()->IsRunningInMash())
     return true;
 
   aura::WindowMus* window_mus =
@@ -312,8 +312,7 @@ void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
 RootWindowController* RootWindowController::ForWindow(
     const aura::Window* window) {
   DCHECK(window);
-  CHECK(WmShell::HasInstance() &&
-        (WmShell::Get()->IsRunningInMash() || Shell::HasInstance()));
+  CHECK(Shell::HasInstance());
   return GetRootWindowController(window->GetRootWindow());
 }
 
@@ -627,7 +626,7 @@ void RootWindowController::UpdateShelfVisibility() {
 }
 
 void RootWindowController::InitTouchHuds() {
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -751,7 +750,7 @@ RootWindowController::RootWindowController(
 
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
-  WmShell* wm_shell = WmShell::Get();
+  ShellPort* shell_port = ShellPort::Get();
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
 
@@ -762,7 +761,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   InitLayoutManagers();
   InitTouchHuds();
 
-  if (wm_shell->GetPrimaryRootWindowController()
+  if (shell_port->GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
           ->has_window_dimmer()) {
     GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
@@ -772,7 +771,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
-    if (!wm_shell->IsRunningInMash())
+    if (!shell_port->IsRunningInMash())
       shell->InitKeyboard();
   } else {
     window_tree_host_->Show();
@@ -789,7 +788,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode) &&
-      !wm_shell->IsRunningInMash()) {
+      !shell_port->IsRunningInMash()) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
 }
@@ -1080,7 +1079,7 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
   if (Shell::GetWmRootWindowForNewWindows() == root) {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
-    WmWindow* primary_root = WmShell::Get()->GetPrimaryRootWindow();
+    WmWindow* primary_root = ShellPort::Get()->GetPrimaryRootWindow();
     Shell::Get()->set_root_window_for_new_windows(
         primary_root == root ? nullptr : primary_root);
   }

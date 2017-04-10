@@ -11,6 +11,7 @@
 #include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -24,7 +25,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -340,14 +340,14 @@ void VPNListView::OnViewClicked(views::View* sender) {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
     const VPNProvider& provider = provider_iter->second;
-    WmShell* shell = WmShell::Get();
     if (provider.third_party) {
-      shell->RecordUserMetricsAction(
+      ShellPort::Get()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
       Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
           provider.extension_id);
     } else {
-      shell->RecordUserMetricsAction(UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
+      ShellPort::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
           shill::kTypeVPN);
     }

@@ -42,7 +42,7 @@ ExampleAppListPresenter::ExampleAppListPresenter()
           base::MakeUnique<AppListPresenterDelegateFactory>(
               base::MakeUnique<ExampleAppListViewDelegateFactory>())) {
   // Note: This example |app_list_presenter_impl_| does not report visibility
-  // changes to the app_list::mojom::AppList implementation owned by WmShell.
+  // changes to the app_list::mojom::AppList implementation owned by ShellPort.
 }
 
 ExampleAppListPresenter::~ExampleAppListPresenter() {}

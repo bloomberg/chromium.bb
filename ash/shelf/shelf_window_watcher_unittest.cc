@@ -11,10 +11,10 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -75,7 +75,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
 
 TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only has an APP_LIST item.
@@ -119,7 +119,7 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
 
 TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only have APP_LIST item.
@@ -157,7 +157,7 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
 
 TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only has an APP_LIST item.
@@ -186,7 +186,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 
 TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only has an APP_LIST item.
@@ -228,7 +228,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
 // TODO(simonhong): Add a test for removing a Window during the dragging.
 TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only has an APP_LIST item.
@@ -260,7 +260,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
 // Ensure shelf items are added and removed as panels are opened and closed.
 TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // ShelfModel only has an APP_LIST item.
@@ -284,7 +284,7 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   views::Widget panel_widget;
   views::Widget::InitParams panel_params(views::Widget::InitParams::TYPE_PANEL);
   panel_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  WmShell::Get()
+  ShellPort::Get()
       ->GetPrimaryRootWindow()
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(

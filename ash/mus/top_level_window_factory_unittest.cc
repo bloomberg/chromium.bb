@@ -13,10 +13,10 @@
 #include "ash/mus/test/wm_test_base.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
@@ -37,7 +37,7 @@ TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
   std::unique_ptr<WindowOwner> window_owner = CreateToplevelTestWindow();
   WmWindow* window = window_owner->window();
   window->SetFullscreen(true);
-  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* root_window = ShellPort::Get()->GetPrimaryRootWindow();
   EXPECT_EQ(root_window->GetBounds(), window->GetBounds());
 }
 

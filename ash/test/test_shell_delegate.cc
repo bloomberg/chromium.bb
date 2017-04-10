@@ -19,7 +19,6 @@
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"

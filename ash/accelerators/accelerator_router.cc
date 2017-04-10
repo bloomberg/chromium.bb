@@ -6,8 +6,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -104,7 +104,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   if (accelerator.IsCmdDown())
     return true;
 
-  if (base::ContainsValue(WmShell::Get()->GetAllRootWindows(), target))
+  if (base::ContainsValue(ShellPort::Get()->GetAllRootWindows(), target))
     return true;
 
   AcceleratorController* accelerator_controller =

@@ -15,6 +15,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
@@ -22,7 +23,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
@@ -55,7 +55,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTest {
     AshTest::SetUp();
     UpdateDisplay("800x600");
     WmWindow* default_container =
-        WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
+        ShellPort::Get()->GetPrimaryRootWindowController()->GetWmContainer(
             kShellWindowId_DefaultContainer);
     layout_manager_ = GetWorkspaceLayoutManager(default_container);
   }
@@ -64,14 +64,14 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTest {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
-    WmShell::Get()->SetDisplayWorkAreaInsets(
-        WmShell::Get()->GetPrimaryRootWindow(),
+    ShellPort::Get()->SetDisplayWorkAreaInsets(
+        ShellPort::Get()->GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    WmShell::Get()->SetDisplayWorkAreaInsets(
-        WmShell::Get()->GetPrimaryRootWindow(), restore_work_area_insets_);
+    ShellPort::Get()->SetDisplayWorkAreaInsets(
+        ShellPort::Get()->GetPrimaryRootWindow(), restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 
@@ -123,7 +123,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChangeWorkAreaInNonStickyMode) {
   kb_controller->ShowKeyboard(false);
   kb_controller->ui()->GetKeyboardWindow()->SetBounds(
       keyboard::FullWidthKeyboardBoundsFromRootBounds(
-          WmShell::Get()->GetPrimaryRootWindow()->GetBounds(), 100));
+          ShellPort::Get()->GetPrimaryRootWindow()->GetBounds(), 100));
 
   int shift =
       work_area.height() - kb_controller->GetContainerWindow()->bounds().y();
@@ -176,7 +176,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
   kb_controller->ShowKeyboard(false);
   kb_controller->ui()->GetKeyboardWindow()->SetBounds(
       keyboard::FullWidthKeyboardBoundsFromRootBounds(
-          WmShell::Get()->GetPrimaryRootWindow()->GetBounds(), 100));
+          ShellPort::Get()->GetPrimaryRootWindow()->GetBounds(), 100));
 
   // Window should not be shifted up.
   EXPECT_EQ(orig_window_bounds, window->GetBounds());

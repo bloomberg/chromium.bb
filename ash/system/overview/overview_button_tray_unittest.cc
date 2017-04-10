@@ -10,13 +10,13 @@
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
@@ -112,7 +112,7 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
 // Tests that tapping on the control will record the user action Tray_Overview.
 TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   // TODO: investigate failure in mash, http://crbug.com/698129.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
@@ -213,7 +213,7 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   // TODO: disabled as ScreenRotationAnimator does not work in mash,
   // http://crbug.com/696754.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
@@ -251,7 +251,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   window->Show();
   ParentWindowInPrimaryRootWindow(window.get());
 
-  ASSERT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  ASSERT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   EXPECT_TRUE(GetTray()->visible());

@@ -23,6 +23,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_observer.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -34,7 +35,6 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -200,11 +200,11 @@ TEST_F(WmShelfObserverIconTest, AddRemove) {
 // shelf on external display as well as one on primary.
 TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   UpdateDisplay("400x400,400x400");
-  WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
+  WmWindow* second_root = ShellPort::Get()->GetAllRootWindows()[1];
   WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
   TestWmShelfObserver second_observer(second_shelf);
 
@@ -704,7 +704,7 @@ class ShelfViewTest : public AshTestBase {
   ShelfView* shelf_view_;
   int browser_index_;
 
-  // Owned by ash::WmShell.
+  // Owned by ash::ShellPort.
   TestShelfDelegateForShelfView* shelf_delegate_;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
@@ -1656,7 +1656,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
   WmShelf* secondary_shelf =
-      WmShelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
+      WmShelf::ForWindow(ShellPort::Get()->GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
 
@@ -1719,9 +1719,9 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
 // Checks the rip an item off from left aligned shelf in secondary monitor.
 TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
-  ASSERT_EQ(2U, WmShell::Get()->GetAllRootWindows().size());
+  ASSERT_EQ(2U, ShellPort::Get()->GetAllRootWindows().size());
 
-  WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
+  WmWindow* second_root = ShellPort::Get()->GetAllRootWindows()[1];
   WmShelf* secondary_shelf = second_root->GetRootWindowController()->GetShelf();
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
@@ -1785,7 +1785,7 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 TEST_F(ShelfViewTest,
        Launcher_ButtonPressedUserActionsRecordedWhenItemSelected) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::UserActionTester user_action_tester;
@@ -1805,7 +1805,7 @@ TEST_F(ShelfViewTest,
 // selected.
 TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   base::UserActionTester user_action_tester;
@@ -2097,7 +2097,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 // ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   InitAppListButtonInkDrop();
@@ -2154,7 +2154,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 // tests that mouse drag and mouse release does not affect the ink drop state.
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   InitAppListButtonInkDrop();
@@ -2221,7 +2221,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 // transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   InitAppListButtonInkDrop();
@@ -2291,7 +2291,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 // and dragging the touch point transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   InitAppListButtonInkDrop();

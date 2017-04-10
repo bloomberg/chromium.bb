@@ -15,12 +15,12 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -351,7 +351,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
-  views::Widget* widget = WmShell::Get()
+  views::Widget* widget = ShellPort::Get()
                               ->GetPrimaryRootWindow()
                               ->GetRootWindowController()
                               ->wallpaper_widget_controller()
@@ -463,7 +463,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
 // pre-target list.
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   // TODO: investigate failure in mash, http://crbug.com/695758.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   Shell* shell = Shell::Get();
@@ -514,7 +514,7 @@ TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
   // applicable to mash as all windows must be destroyed before ash, that isn't
   // the case with classic-ash where embedders can separately create
   // aura::Windows.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   window_.reset(new aura::Window(NULL));

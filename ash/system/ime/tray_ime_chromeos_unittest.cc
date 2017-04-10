@@ -7,10 +7,10 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -161,7 +161,7 @@ TEST_F(TrayIMETest, ShownWithSingleIMEWhenManaged) {
 // enabled.
 TEST_F(TrayIMETest, HidesOnA11yEnabled) {
   // TODO: investigate failure in mash. http://crbug.com/695561.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   SetIMELength(0);
@@ -179,7 +179,7 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
 // to toggle between enabled and disabled.
 TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   // TODO: investigate failure in mash. http://crbug.com/695561.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   SetIMELength(0);

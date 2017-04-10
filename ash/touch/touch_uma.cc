@@ -4,7 +4,7 @@
 
 #include "ash/touch/touch_uma.h"
 
-#include "ash/wm_shell.h"
+#include "ash/shell_port.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
@@ -113,7 +113,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
       kBucketCountForLocation, kBucketCountForLocation + 1);
 
   if (event.type() == ui::ET_TOUCH_PRESSED) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_TOUCHSCREEN_TAP_DOWN);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TOUCHSCREEN_TAP_DOWN);
 
     if (details->last_release_time_.ToInternalValue()) {
       // Measuring the interval between a touch-release and the next

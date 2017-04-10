@@ -13,7 +13,6 @@
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect.h"

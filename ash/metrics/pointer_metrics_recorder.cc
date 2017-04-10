@@ -6,8 +6,8 @@
 
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/event_constants.h"
@@ -88,12 +88,12 @@ void RecordUMA(ui::EventPointerType type, views::Widget* target) {
 }  // namespace
 
 PointerMetricsRecorder::PointerMetricsRecorder() {
-  ash::WmShell::Get()->AddPointerWatcher(
-      this, views::PointerWatcherEventTypes::BASIC);
+  ShellPort::Get()->AddPointerWatcher(this,
+                                      views::PointerWatcherEventTypes::BASIC);
 }
 
 PointerMetricsRecorder::~PointerMetricsRecorder() {
-  ash::WmShell::Get()->RemovePointerWatcher(this);
+  ShellPort::Get()->RemovePointerWatcher(this);
 }
 
 void PointerMetricsRecorder::OnPointerEventObserved(

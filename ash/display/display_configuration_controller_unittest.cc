@@ -4,9 +4,9 @@
 
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_configuration_controller_test_api.h"
-#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "ui/display/manager/display_manager.h"
 
@@ -17,7 +17,7 @@ using DisplayConfigurationControllerTest = test::AshTestBase;
 TEST_F(DisplayConfigurationControllerTest, ErasesAnimatorOnAnimationEnded) {
   // TODO(wutao): needs display_configuration_controller
   // http://crbug.com/686839.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();

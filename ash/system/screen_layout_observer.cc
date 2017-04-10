@@ -12,6 +12,7 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/devicetype_utils.h"
 #include "ash/system/system_notifier.h"
@@ -19,7 +20,6 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -93,10 +93,10 @@ bool OpenSettings() {
 
 // Callback to handle a user selecting the notification view.
 void OpenSettingsFromNotification() {
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SELECTED);
   if (OpenSettings()) {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SHOW_SETTINGS);
   }
 }
@@ -202,12 +202,12 @@ const char ScreenLayoutObserver::kNotificationId[] =
     "chrome://settings/display";
 
 ScreenLayoutObserver::ScreenLayoutObserver() {
-  WmShell::Get()->AddDisplayObserver(this);
+  ShellPort::Get()->AddDisplayObserver(this);
   UpdateDisplayInfo(NULL);
 }
 
 ScreenLayoutObserver::~ScreenLayoutObserver() {
-  WmShell::Get()->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
 }
 
 void ScreenLayoutObserver::UpdateDisplayInfo(
@@ -355,7 +355,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettingsFromNotification))));
 
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));

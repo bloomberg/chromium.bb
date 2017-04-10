@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/shell_port_classic.h"
 
 #include <utility>
 
@@ -48,90 +48,90 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura() {}
+ShellPortClassic::ShellPortClassic() {}
 
-WmShellAura::~WmShellAura() {}
+ShellPortClassic::~ShellPortClassic() {}
 
 // static
-WmShellAura* WmShellAura::Get() {
-  CHECK(!WmShell::Get()->IsRunningInMash());
-  return static_cast<WmShellAura*>(WmShell::Get());
+ShellPortClassic* ShellPortClassic::Get() {
+  CHECK(!ShellPort::Get()->IsRunningInMash());
+  return static_cast<ShellPortClassic*>(ShellPort::Get());
 }
 
-void WmShellAura::Shutdown() {
+void ShellPortClassic::Shutdown() {
   if (added_display_observer_)
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
   pointer_watcher_adapter_.reset();
 
-  WmShell::Shutdown();
+  ShellPort::Shutdown();
 
   Shell::Get()->window_tree_host_manager()->Shutdown();
 }
 
-bool WmShellAura::IsRunningInMash() const {
+bool ShellPortClassic::IsRunningInMash() const {
   return false;
 }
 
-Config WmShellAura::GetAshConfig() const {
+Config ShellPortClassic::GetAshConfig() const {
   return Config::CLASSIC;
 }
 
-WmWindow* WmShellAura::GetPrimaryRootWindow() {
+WmWindow* ShellPortClassic::GetPrimaryRootWindow() {
   return WmWindow::Get(
       Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow());
 }
 
-WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
+WmWindow* ShellPortClassic::GetRootWindowForDisplayId(int64_t display_id) {
   return WmWindow::Get(
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           display_id));
 }
 
-const display::ManagedDisplayInfo& WmShellAura::GetDisplayInfo(
+const display::ManagedDisplayInfo& ShellPortClassic::GetDisplayInfo(
     int64_t display_id) const {
   return Shell::Get()->display_manager()->GetDisplayInfo(display_id);
 }
 
-bool WmShellAura::IsActiveDisplayId(int64_t display_id) const {
+bool ShellPortClassic::IsActiveDisplayId(int64_t display_id) const {
   return Shell::Get()->display_manager()->IsActiveDisplayId(display_id);
 }
 
-display::Display WmShellAura::GetFirstDisplay() const {
+display::Display ShellPortClassic::GetFirstDisplay() const {
   return Shell::Get()->display_manager()->software_mirroring_display_list()[0];
 }
 
-bool WmShellAura::IsInUnifiedMode() const {
+bool ShellPortClassic::IsInUnifiedMode() const {
   return Shell::Get()->display_manager()->IsInUnifiedMode();
 }
 
-bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
+bool ShellPortClassic::IsInUnifiedModeIgnoreMirroring() const {
   return Shell::Get()
              ->display_manager()
              ->current_default_multi_display_mode() ==
          display::DisplayManager::UNIFIED;
 }
 
-void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
-                                           const gfx::Insets& insets) {
+void ShellPortClassic::SetDisplayWorkAreaInsets(WmWindow* window,
+                                                const gfx::Insets& insets) {
   Shell::Get()
       ->window_tree_host_manager()
       ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
 }
 
-void WmShellAura::LockCursor() {
+void ShellPortClassic::LockCursor() {
   Shell::Get()->cursor_manager()->LockCursor();
 }
 
-void WmShellAura::UnlockCursor() {
+void ShellPortClassic::UnlockCursor() {
   Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
-bool WmShellAura::IsMouseEventsEnabled() {
+bool ShellPortClassic::IsMouseEventsEnabled() {
   return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
-std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
+std::vector<WmWindow*> ShellPortClassic::GetAllRootWindows() {
   aura::Window::Windows root_windows =
       Shell::Get()->window_tree_host_manager()->GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());
@@ -140,19 +140,19 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
   return wm_windows;
 }
 
-void WmShellAura::RecordUserMetricsAction(UserMetricsAction action) {
+void ShellPortClassic::RecordUserMetricsAction(UserMetricsAction action) {
   Shell::Get()->metrics()->RecordUserMetricsAction(action);
 }
 
-void WmShellAura::RecordGestureAction(GestureActionType action) {
+void ShellPortClassic::RecordGestureAction(GestureActionType action) {
   TouchUMA::GetInstance()->RecordGestureAction(action);
 }
 
-void WmShellAura::RecordTaskSwitchMetric(TaskSwitchSource source) {
+void ShellPortClassic::RecordTaskSwitchMetric(TaskSwitchSource source) {
   Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(source);
 }
 
-std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
+std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {
   return base::WrapUnique(
@@ -160,22 +160,22 @@ std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
 }
 
 std::unique_ptr<WindowCycleEventFilter>
-WmShellAura::CreateWindowCycleEventFilter() {
+ShellPortClassic::CreateWindowCycleEventFilter() {
   return base::MakeUnique<WindowCycleEventFilterAura>();
 }
 
 std::unique_ptr<wm::MaximizeModeEventHandler>
-WmShellAura::CreateMaximizeModeEventHandler() {
+ShellPortClassic::CreateMaximizeModeEventHandler() {
   return base::WrapUnique(new wm::MaximizeModeEventHandlerAura);
 }
 
-std::unique_ptr<WorkspaceEventHandler> WmShellAura::CreateWorkspaceEventHandler(
-    WmWindow* workspace_window) {
+std::unique_ptr<WorkspaceEventHandler>
+ShellPortClassic::CreateWorkspaceEventHandler(WmWindow* workspace_window) {
   return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 }
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
+ShellPortClassic::CreateScopedDisableInternalMouseAndKeyboard() {
 #if defined(USE_X11)
   return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardX11);
 #elif defined(USE_OZONE)
@@ -185,23 +185,23 @@ WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
-WmShellAura::CreateImmersiveFullscreenController() {
+ShellPortClassic::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
 }
 
-std::unique_ptr<KeyboardUI> WmShellAura::CreateKeyboardUI() {
+std::unique_ptr<KeyboardUI> ShellPortClassic::CreateKeyboardUI() {
   return KeyboardUI::Create();
 }
 
-std::unique_ptr<KeyEventWatcher> WmShellAura::CreateKeyEventWatcher() {
+std::unique_ptr<KeyEventWatcher> ShellPortClassic::CreateKeyEventWatcher() {
   return base::MakeUnique<KeyEventWatcherAura>();
 }
 
-SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
+SessionStateDelegate* ShellPortClassic::GetSessionStateDelegate() {
   return Shell::Get()->session_state_delegate();
 }
 
-void WmShellAura::AddDisplayObserver(WmDisplayObserver* observer) {
+void ShellPortClassic::AddDisplayObserver(WmDisplayObserver* observer) {
   if (!added_display_observer_) {
     added_display_observer_ = true;
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -209,51 +209,52 @@ void WmShellAura::AddDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.AddObserver(observer);
 }
 
-void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
+void ShellPortClassic::RemoveDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.RemoveObserver(observer);
 }
 
-void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher,
-                                    views::PointerWatcherEventTypes events) {
+void ShellPortClassic::AddPointerWatcher(
+    views::PointerWatcher* watcher,
+    views::PointerWatcherEventTypes events) {
   pointer_watcher_adapter_->AddPointerWatcher(watcher, events);
 }
 
-void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
+void ShellPortClassic::RemovePointerWatcher(views::PointerWatcher* watcher) {
   pointer_watcher_adapter_->RemovePointerWatcher(watcher);
 }
 
-bool WmShellAura::IsTouchDown() {
+bool ShellPortClassic::IsTouchDown() {
   return aura::Env::GetInstance()->is_touch_down();
 }
 
-void WmShellAura::ToggleIgnoreExternalKeyboard() {
+void ShellPortClassic::ToggleIgnoreExternalKeyboard() {
   Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
 }
 
-void WmShellAura::SetLaserPointerEnabled(bool enabled) {
+void ShellPortClassic::SetLaserPointerEnabled(bool enabled) {
   Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
 }
 
-void WmShellAura::SetPartialMagnifierEnabled(bool enabled) {
+void ShellPortClassic::SetPartialMagnifierEnabled(bool enabled) {
   Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
 }
 
-void WmShellAura::CreatePointerWatcherAdapter() {
+void ShellPortClassic::CreatePointerWatcherAdapter() {
   pointer_watcher_adapter_ = base::MakeUnique<PointerWatcherAdapter>();
 }
 
-void WmShellAura::CreatePrimaryHost() {
+void ShellPortClassic::CreatePrimaryHost() {
   Shell::Get()->window_tree_host_manager()->Start();
   AshWindowTreeHostInitParams ash_init_params;
   Shell::Get()->window_tree_host_manager()->CreatePrimaryHost(ash_init_params);
 }
 
-void WmShellAura::InitHosts(const ShellInitParams& init_params) {
+void ShellPortClassic::InitHosts(const ShellInitParams& init_params) {
   Shell::Get()->window_tree_host_manager()->InitHosts();
 }
 
 std::unique_ptr<AcceleratorController>
-WmShellAura::CreateAcceleratorController() {
+ShellPortClassic::CreateAcceleratorController() {
   DCHECK(!accelerator_controller_delegate_);
   accelerator_controller_delegate_ =
       base::MakeUnique<AcceleratorControllerDelegateAura>();
@@ -261,12 +262,12 @@ WmShellAura::CreateAcceleratorController() {
       accelerator_controller_delegate_.get(), nullptr);
 }
 
-void WmShellAura::OnDisplayConfigurationChanging() {
+void ShellPortClassic::OnDisplayConfigurationChanging() {
   for (auto& observer : display_observers_)
     observer.OnDisplayConfigurationChanging();
 }
 
-void WmShellAura::OnDisplayConfigurationChanged() {
+void ShellPortClassic::OnDisplayConfigurationChanged() {
   for (auto& observer : display_observers_)
     observer.OnDisplayConfigurationChanged();
 }

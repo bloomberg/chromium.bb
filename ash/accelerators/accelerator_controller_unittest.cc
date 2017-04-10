@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -27,7 +28,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.cc"
@@ -523,7 +523,7 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
 
 TEST_F(AcceleratorControllerTest, RotateScreen) {
   // TODO: needs GetDisplayInfo http://crbug.com/622480.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -663,7 +663,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   // CycleBackward
@@ -1041,7 +1041,7 @@ class PreferredReservedAcceleratorsTest : public test::AshTestBase {
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   // TODO: needs LockStateController ported: http://crbug.com/632189.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
@@ -1092,7 +1092,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   // TODO: needs LockStateController ported: http://crbug.com/632189.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
@@ -1124,7 +1124,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
 
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
 
   std::set<AcceleratorAction> all_actions;
@@ -1151,7 +1151,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::ActivateWindow(window.get());
-  WmShell::Get()->SimulateModalWindowOpenForTesting(true);
+  ShellPort::Get()->SimulateModalWindowOpenForTesting(true);
   for (const auto& action : all_actions) {
     if (actionsAllowedAtModalWindow.find(action) ==
         actionsAllowedAtModalWindow.end()) {
@@ -1315,7 +1315,7 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
   // TODO: disabled because of UnblockUserSession() not working:
   // http://crbug.com/632201.
-  if (WmShell::Get()->IsRunningInMash())
+  if (ShellPort::Get()->IsRunningInMash())
     return;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
     const AcceleratorData& entry = kDeprecatedAccelerators[i];

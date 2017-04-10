@@ -12,6 +12,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -32,7 +33,6 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -303,14 +303,14 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
             : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
     Shell::Get()->system_tray_controller()->ShowNetworkSettings(
         network ? network->guid() : std::string());
   } else {
-    WmShell::Get()->RecordUserMetricsAction(
+    ShellPort::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
@@ -353,7 +353,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
 }
 
 void NetworkStateListDetailedView::ShowSettings() {
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
   Shell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
@@ -543,7 +543,7 @@ void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
 }
 
 void NetworkStateListDetailedView::OnOtherWifiClicked() {
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
   Shell::Get()->system_tray_controller()->ShowNetworkCreate(shill::kTypeWifi);
 }

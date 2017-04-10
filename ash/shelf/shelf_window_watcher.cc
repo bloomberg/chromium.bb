@@ -13,11 +13,11 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -33,7 +33,7 @@ namespace {
 // Returns the shelf item type, with special temporary behavior for Mash:
 // Mash provides a default shelf item type (TYPE_APP) for non-ignored windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (!WmShell::Get()->IsRunningInMash() ||
+  if (!ShellPort::Get()->IsRunningInMash() ||
       window->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
     return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
   }
@@ -238,7 +238,8 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
 }
 
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(new_display.id());
+  WmWindow* root =
+      ShellPort::Get()->GetRootWindowForDisplayId(new_display.id());
   aura::Window* aura_root = WmWindow::GetAuraWindow(root);
 
   // When the primary root window's display is removed, the existing root window

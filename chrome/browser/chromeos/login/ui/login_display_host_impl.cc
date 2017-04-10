@@ -9,10 +9,10 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -559,7 +559,7 @@ void LoginDisplayHostImpl::Finalize() {
   // When adding another user into the session, we defer the wallpaper's
   // animation in order to prevent the flashing of the previous user's windows.
   // See crbug.com/541864.
-  if (ash::WmShell::HasInstance() &&
+  if (ash::ShellPort::HasInstance() &&
       finalize_animation_type_ != ANIMATION_ADD_USER) {
     ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
   }

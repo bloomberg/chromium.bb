@@ -833,7 +833,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     keyboard_event_rewriters_->Init();
   }
 
-  // In classic ash must occur after ash::WmShell is initialized. Triggers a
+  // In classic ash must occur after ash::ShellPort is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
 

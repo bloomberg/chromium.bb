@@ -7,6 +7,7 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/ime_info.h"
@@ -18,7 +19,6 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -287,7 +287,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
   if (ime != ime_map_.end()) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
     delegate->SwitchIME(ime_id);
@@ -310,7 +310,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
 void ImeListView::HandleButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   if (keyboard_status_row_ && sender == keyboard_status_row_->toggle()) {
-    WmShell::Get()->ToggleIgnoreExternalKeyboard();
+    ShellPort::Get()->ToggleIgnoreExternalKeyboard();
     last_selected_item_id_.clear();
     last_item_selected_with_keyboard_ = false;
   }

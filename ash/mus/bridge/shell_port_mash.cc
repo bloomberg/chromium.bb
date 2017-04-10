@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/bridge/wm_shell_mus.h"
+#include "ash/mus/bridge/shell_port_mash.h"
 
 #include <utility>
 
@@ -89,15 +89,15 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
 }  // namespace
 
-WmShellMus::MashSpecificState::MashSpecificState() = default;
+ShellPortMash::MashSpecificState::MashSpecificState() = default;
 
-WmShellMus::MashSpecificState::~MashSpecificState() = default;
+ShellPortMash::MashSpecificState::~MashSpecificState() = default;
 
-WmShellMus::MusSpecificState::MusSpecificState() = default;
+ShellPortMash::MusSpecificState::MusSpecificState() = default;
 
-WmShellMus::MusSpecificState::~MusSpecificState() = default;
+ShellPortMash::MusSpecificState::~MusSpecificState() = default;
 
-WmShellMus::WmShellMus(
+ShellPortMash::ShellPortMash(
     WmWindow* primary_root_window,
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router,
@@ -119,17 +119,16 @@ WmShellMus::WmShellMus(
   }
 }
 
-WmShellMus::~WmShellMus() {
-}
+ShellPortMash::~ShellPortMash() {}
 
 // static
-WmShellMus* WmShellMus::Get() {
-  const ash::Config config = WmShell::Get()->GetAshConfig();
+ShellPortMash* ShellPortMash::Get() {
+  const ash::Config config = ShellPort::Get()->GetAshConfig();
   CHECK(config == Config::MUS || config == Config::MASH);
-  return static_cast<WmShellMus*>(WmShell::Get());
+  return static_cast<ShellPortMash*>(ShellPort::Get());
 }
 
-RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
+RootWindowController* ShellPortMash::GetRootWindowControllerWithDisplayId(
     int64_t id) {
   for (RootWindowController* root_window_controller :
        RootWindowController::root_window_controllers()) {
@@ -142,34 +141,34 @@ RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
-aura::WindowTreeClient* WmShellMus::window_tree_client() {
+aura::WindowTreeClient* ShellPortMash::window_tree_client() {
   return window_manager_->window_tree_client();
 }
 
-void WmShellMus::Shutdown() {
+void ShellPortMash::Shutdown() {
   if (mus_state_)
     mus_state_->pointer_watcher_adapter.reset();
 
-  WmShell::Shutdown();
+  ShellPort::Shutdown();
 
   window_manager_->DeleteAllRootWindowControllers();
 }
 
-bool WmShellMus::IsRunningInMash() const {
+bool ShellPortMash::IsRunningInMash() const {
   return GetAshConfig() == Config::MASH;
 }
 
-Config WmShellMus::GetAshConfig() const {
+Config ShellPortMash::GetAshConfig() const {
   return window_manager_->config();
 }
 
-WmWindow* WmShellMus::GetPrimaryRootWindow() {
+WmWindow* ShellPortMash::GetPrimaryRootWindow() {
   // NOTE: This is called before the RootWindowController has been created, so
   // it can't call through to RootWindowController to get all windows.
   return primary_root_window_;
 }
 
-WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
+WmWindow* ShellPortMash::GetRootWindowForDisplayId(int64_t display_id) {
   RootWindowController* root_window_controller =
       GetRootWindowControllerWithDisplayId(display_id);
   return root_window_controller
@@ -177,7 +176,7 @@ WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
              : nullptr;
 }
 
-const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(
+const display::ManagedDisplayInfo& ShellPortMash::GetDisplayInfo(
     int64_t display_id) const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
@@ -185,52 +184,52 @@ const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(
   return fake_info;
 }
 
-bool WmShellMus::IsActiveDisplayId(int64_t display_id) const {
+bool ShellPortMash::IsActiveDisplayId(int64_t display_id) const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   return true;
 }
 
-display::Display WmShellMus::GetFirstDisplay() const {
+display::Display ShellPortMash::GetFirstDisplay() const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   return display::Screen::GetScreen()->GetPrimaryDisplay();
 }
 
-bool WmShellMus::IsInUnifiedMode() const {
+bool ShellPortMash::IsInUnifiedMode() const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   return false;
 }
 
-bool WmShellMus::IsInUnifiedModeIgnoreMirroring() const {
+bool ShellPortMash::IsInUnifiedModeIgnoreMirroring() const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
   return false;
 }
 
-void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
-                                          const gfx::Insets& insets) {
+void ShellPortMash::SetDisplayWorkAreaInsets(WmWindow* window,
+                                             const gfx::Insets& insets) {
   window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
 }
 
-void WmShellMus::LockCursor() {
+void ShellPortMash::LockCursor() {
   // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::UnlockCursor() {
+void ShellPortMash::UnlockCursor() {
   // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
 }
 
-bool WmShellMus::IsMouseEventsEnabled() {
+bool ShellPortMash::IsMouseEventsEnabled() {
   // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
   return true;
 }
 
-std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
+std::vector<WmWindow*> ShellPortMash::GetAllRootWindows() {
   std::vector<WmWindow*> root_windows;
   for (RootWindowController* root_window_controller :
        RootWindowController::root_window_controllers()) {
@@ -239,7 +238,7 @@ std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   return root_windows;
 }
 
-void WmShellMus::RecordGestureAction(GestureActionType action) {
+void ShellPortMash::RecordGestureAction(GestureActionType action) {
   if (GetAshConfig() == Config::MUS) {
     TouchUMA::GetInstance()->RecordGestureAction(action);
     return;
@@ -248,7 +247,7 @@ void WmShellMus::RecordGestureAction(GestureActionType action) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
+void ShellPortMash::RecordUserMetricsAction(UserMetricsAction action) {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()->metrics()->RecordUserMetricsAction(action);
     return;
@@ -257,7 +256,7 @@ void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
+void ShellPortMash::RecordTaskSwitchMetric(TaskSwitchSource source) {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
         source);
@@ -267,7 +266,7 @@ void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
+std::unique_ptr<WindowResizer> ShellPortMash::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {
   if (GetAshConfig() == Config::MUS) {
@@ -279,7 +278,7 @@ std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
 }
 
 std::unique_ptr<WindowCycleEventFilter>
-WmShellMus::CreateWindowCycleEventFilter() {
+ShellPortMash::CreateWindowCycleEventFilter() {
   if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<WindowCycleEventFilterAura>();
 
@@ -288,7 +287,7 @@ WmShellMus::CreateWindowCycleEventFilter() {
 }
 
 std::unique_ptr<wm::MaximizeModeEventHandler>
-WmShellMus::CreateMaximizeModeEventHandler() {
+ShellPortMash::CreateMaximizeModeEventHandler() {
   if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<wm::MaximizeModeEventHandlerAura>();
 
@@ -299,7 +298,7 @@ WmShellMus::CreateMaximizeModeEventHandler() {
 }
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
+ShellPortMash::CreateScopedDisableInternalMouseAndKeyboard() {
   if (GetAshConfig() == Config::MUS) {
 #if defined(USE_OZONE)
     return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardOzone>();
@@ -316,8 +315,8 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
   return nullptr;
 }
 
-std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
-    WmWindow* workspace_window) {
+std::unique_ptr<WorkspaceEventHandler>
+ShellPortMash::CreateWorkspaceEventHandler(WmWindow* workspace_window) {
   if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 
@@ -326,18 +325,18 @@ std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
-WmShellMus::CreateImmersiveFullscreenController() {
+ShellPortMash::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
 }
 
-std::unique_ptr<KeyboardUI> WmShellMus::CreateKeyboardUI() {
+std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
   if (GetAshConfig() == Config::MUS)
     return KeyboardUI::Create();
 
   return KeyboardUIMus::Create(window_manager_->connector());
 }
 
-std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
+std::unique_ptr<KeyEventWatcher> ShellPortMash::CreateKeyEventWatcher() {
   if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<KeyEventWatcherAura>();
 
@@ -346,23 +345,23 @@ std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
   return std::unique_ptr<KeyEventWatcher>();
 }
 
-SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
+SessionStateDelegate* ShellPortMash::GetSessionStateDelegate() {
   return session_state_delegate_ ? session_state_delegate_.get()
                                  : Shell::Get()->session_state_delegate();
 }
 
-void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {
+void ShellPortMash::AddDisplayObserver(WmDisplayObserver* observer) {
   // TODO: need WmDisplayObserver support for mus. http://crbug.com/705831.
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
+void ShellPortMash::RemoveDisplayObserver(WmDisplayObserver* observer) {
   // TODO: need WmDisplayObserver support for mus. http://crbug.com/705831.
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
-                                   views::PointerWatcherEventTypes events) {
+void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
+                                      views::PointerWatcherEventTypes events) {
   if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter->AddPointerWatcher(watcher, events);
     return;
@@ -374,7 +373,7 @@ void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
       watcher, events == views::PointerWatcherEventTypes::MOVES);
 }
 
-void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
+void ShellPortMash::RemovePointerWatcher(views::PointerWatcher* watcher) {
   if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter->RemovePointerWatcher(watcher);
     return;
@@ -383,7 +382,7 @@ void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
   mash_state_->pointer_watcher_event_router->RemovePointerWatcher(watcher);
 }
 
-bool WmShellMus::IsTouchDown() {
+bool ShellPortMash::IsTouchDown() {
   if (GetAshConfig() == Config::MUS)
     return aura::Env::GetInstance()->is_touch_down();
 
@@ -392,7 +391,7 @@ bool WmShellMus::IsTouchDown() {
   return false;
 }
 
-void WmShellMus::ToggleIgnoreExternalKeyboard() {
+void ShellPortMash::ToggleIgnoreExternalKeyboard() {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
     return;
@@ -401,7 +400,7 @@ void WmShellMus::ToggleIgnoreExternalKeyboard() {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::SetLaserPointerEnabled(bool enabled) {
+void ShellPortMash::SetLaserPointerEnabled(bool enabled) {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
     return;
@@ -410,7 +409,7 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
+void ShellPortMash::SetPartialMagnifierEnabled(bool enabled) {
   if (GetAshConfig() == Config::MUS) {
     Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
     return;
@@ -419,7 +418,7 @@ void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::CreatePointerWatcherAdapter() {
+void ShellPortMash::CreatePointerWatcherAdapter() {
   // In Config::MUS PointerWatcherAdapter must be created when this function is
   // called (it is order dependent), that is not the case with Config::MASH.
   if (GetAshConfig() == Config::MUS) {
@@ -428,15 +427,15 @@ void WmShellMus::CreatePointerWatcherAdapter() {
   }
 }
 
-void WmShellMus::CreatePrimaryHost() {}
+void ShellPortMash::CreatePrimaryHost() {}
 
-void WmShellMus::InitHosts(const ShellInitParams& init_params) {
+void ShellPortMash::InitHosts(const ShellInitParams& init_params) {
   window_manager_->CreatePrimaryRootWindowController(
       base::WrapUnique(init_params.primary_window_tree_host));
 }
 
 std::unique_ptr<AcceleratorController>
-WmShellMus::CreateAcceleratorController() {
+ShellPortMash::CreateAcceleratorController() {
   if (GetAshConfig() == Config::MUS) {
     DCHECK(!mus_state_->accelerator_controller_delegate);
     mus_state_->accelerator_controller_delegate =
@@ -450,7 +449,7 @@ WmShellMus::CreateAcceleratorController() {
   uint16_t accelerator_namespace_id = 0u;
   const bool add_result =
       window_manager_->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);
-  // WmShellMus is created early on, so that GetNextAcceleratorNamespaceId()
+  // ShellPortMash is created early on, so that GetNextAcceleratorNamespaceId()
   // should always succeed.
   DCHECK(add_result);
 

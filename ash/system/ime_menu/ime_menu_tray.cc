@@ -13,6 +13,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -23,7 +24,6 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,7 +57,7 @@ gfx::Range GetImeListViewRange() {
 
 // Shows language and input settings page.
 void ShowIMESettings() {
-  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
+  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
   Shell::Get()->system_tray_controller()->ShowIMESettings();
 }
 

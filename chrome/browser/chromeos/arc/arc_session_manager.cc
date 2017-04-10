@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/shelf/shelf_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"

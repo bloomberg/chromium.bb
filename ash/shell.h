@@ -130,6 +130,7 @@ class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
+class ShellPort;
 class ScopedOverviewAnimationSettingsFactoryAura;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
@@ -169,7 +170,6 @@ class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
 class WindowTreeHostManager;
-class WmShell;
 class WmWindow;
 
 enum class Config;
@@ -598,7 +598,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   friend class shell::WindowWatcher;
 
   Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-        std::unique_ptr<WmShell> wm_shell);
+        std::unique_ptr<ShellPort> shell_port);
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
@@ -651,7 +651,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
 
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
-  std::unique_ptr<WmShell> wm_shell_;
+  std::unique_ptr<ShellPort> shell_port_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;

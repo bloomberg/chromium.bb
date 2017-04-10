@@ -428,7 +428,7 @@ views::Separator* TrayPopupUtils::CreateListSubHeaderSeparator() {
 }
 
 bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
-  // TODO(tdanderson): Consider moving this into WmShell, or introduce a
+  // TODO(tdanderson): Consider moving this into ShellPort, or introduce a
   // CanShowSettings() method in each delegate type that has a
   // ShowSettings() method.
   return status != LoginStatus::NOT_LOGGED_IN &&

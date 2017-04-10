@@ -10,7 +10,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
-#include "ash/wm_shell.h"
 
 namespace ash {
 

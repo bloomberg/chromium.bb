@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/touch.h"
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
-#include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -230,7 +231,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   // Make the window modal.
   modal.shell_surface()->SetSystemModal(true);
 
-  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_CALL(delegate, OnTouchShape(testing::_, testing::_, testing::_))
       .Times(testing::AnyNumber());
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
@@ -270,7 +271,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
 
   // Make the window non-modal.
   modal.shell_surface()->SetSystemModal(false);
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Check if touch events on non-modal window are registered.
   {

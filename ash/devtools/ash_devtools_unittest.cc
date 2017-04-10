@@ -5,9 +5,9 @@
 #include "ash/devtools/ash_devtools_css_agent.h"
 #include "ash/devtools/ash_devtools_dom_agent.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell_port.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm/widget_finder.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -136,7 +136,7 @@ int GetPropertyByName(const std::string& name,
 
 WmWindow* GetHighlightingWindow(int root_window_index) {
   WmWindow::Windows overlay_windows =
-      WmShell::Get()
+      ShellPort::Get()
           ->GetAllRootWindows()[root_window_index]
           ->GetChildByShellWindowId(kShellWindowId_OverlayContainer)
           ->GetChildren();
@@ -188,7 +188,7 @@ class AshDevToolsTest : public AshTest {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-    WmShell::Get()
+    ShellPort::Get()
         ->GetPrimaryRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(
             widget, kShellWindowId_DefaultContainer, &params);
@@ -347,7 +347,7 @@ TEST_F(AshDevToolsTest, WindowAddedChildNodeInserted) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* parent_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* parent_window = ShellPort::Get()->GetPrimaryRootWindow();
   DOM::Node* parent_node = root->getChildren(nullptr)->get(0);
   Array<DOM::Node>* parent_node_children = parent_node->getChildren(nullptr);
   DOM::Node* sibling_node =
@@ -363,7 +363,7 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
   dom_agent()->getDocument(&root);
 
   WmWindow* parent_window =
-      WmShell::Get()->GetPrimaryRootWindow()->GetChildren()[0];
+      ShellPort::Get()->GetPrimaryRootWindow()->GetChildren()[0];
   WmWindow* child_window = parent_window->GetChildren()[0];
   DOM::Node* root_node = root->getChildren(nullptr)->get(0);
   DOM::Node* parent_node = root_node->getChildren(nullptr)->get(0);
@@ -380,7 +380,7 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* root_window = ShellPort::Get()->GetPrimaryRootWindow();
   WmWindow* target_window = root_window->GetChildren()[1];
   WmWindow* child_window = root_window->GetChildren()[0]->GetChildren()[0];
 
@@ -400,7 +400,7 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
 }
 
 TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
-  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* root_window = ShellPort::Get()->GetPrimaryRootWindow();
   WmWindow* target_window = root_window->GetChildren()[1];
   WmWindow* parent_window = root_window->GetChildren()[0];
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
@@ -433,7 +433,7 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* parent_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* parent_window = ShellPort::Get()->GetPrimaryRootWindow();
   WmWindow* child_window = parent_window->GetChildren()[0];
   WmWindow* target_window = parent_window->GetChildren()[1];
 
@@ -623,7 +623,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
 TEST_F(AshDevToolsTest, MultipleDisplayHighlight) {
   UpdateDisplay("300x400,500x500");
 
-  WmWindow::Windows root_windows = WmShell::Get()->GetAllRootWindows();
+  WmWindow::Windows root_windows = ShellPort::Get()->GetAllRootWindows();
   std::unique_ptr<WindowOwner> window_owner(
       CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
   WmWindow* window = window_owner->window();

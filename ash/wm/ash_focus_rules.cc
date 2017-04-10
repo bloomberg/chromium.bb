@@ -6,12 +6,12 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/focus_rules.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 
@@ -65,7 +65,7 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   if (!BaseFocusRules::CanActivateWindow(window))
     return false;
 
-  if (WmShell::Get()->IsSystemModalWindowOpen()) {
+  if (ShellPort::Get()->IsSystemModalWindowOpen()) {
     return BelongsToContainerWithEqualOrGreaterId(
         window, kShellWindowId_SystemModalContainer);
   }

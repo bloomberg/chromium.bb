@@ -8,8 +8,8 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -37,7 +37,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  public:
   DragWindowDetails(const display::Display& display,
                     aura::Window* original_window)
-      : root_window_(WmShell::Get()
+      : root_window_(ShellPort::Get()
                          ->GetRootWindowForDisplayId(display.id())
                          ->aura_window()) {}
 

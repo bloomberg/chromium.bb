@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/pointer.h"
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "components/exo/buffer.h"
-#include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -319,7 +320,7 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
 
   // Make the window modal.
   shell_surface2->SetSystemModal(true);
-  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -408,7 +409,7 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
 
   // Make the window non-modal.
   shell_surface2->SetSystemModal(false);
-  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
 
   // Check if pointer events on non-modal window are registered.
   {

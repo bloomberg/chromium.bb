@@ -5,10 +5,10 @@
 #include "ash/system/tray/tray_event_filter.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell_port.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "ui/views/widget/widget.h"
 
@@ -24,15 +24,15 @@ void TrayEventFilter::AddWrapper(TrayBubbleWrapper* wrapper) {
   bool was_empty = wrappers_.empty();
   wrappers_.insert(wrapper);
   if (was_empty && !wrappers_.empty()) {
-    WmShell::Get()->AddPointerWatcher(this,
-                                      views::PointerWatcherEventTypes::BASIC);
+    ShellPort::Get()->AddPointerWatcher(this,
+                                        views::PointerWatcherEventTypes::BASIC);
   }
 }
 
 void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
   wrappers_.erase(wrapper);
   if (wrappers_.empty())
-    WmShell::Get()->RemovePointerWatcher(this);
+    ShellPort::Get()->RemovePointerWatcher(this);
 }
 
 void TrayEventFilter::OnPointerEventObserved(

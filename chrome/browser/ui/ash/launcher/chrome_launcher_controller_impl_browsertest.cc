@@ -17,12 +17,12 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -286,7 +286,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     SessionControllerClient::FlushForTesting();
 
     shelf_ =
-        ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
+        ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
     model_ = ash::Shell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
     ASSERT_TRUE(controller_);

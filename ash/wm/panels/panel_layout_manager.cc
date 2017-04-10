@@ -15,6 +15,7 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_parenting_utils.h"
@@ -22,7 +23,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -259,7 +259,7 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
       weak_factory_(this) {
   DCHECK(panel_container);
   Shell::Get()->activation_client()->AddObserver(this);
-  WmShell::Get()->AddDisplayObserver(this);
+  ShellPort::Get()->AddDisplayObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
 
@@ -289,9 +289,8 @@ void PanelLayoutManager::Shutdown() {
     delete iter->callout_widget;
   }
   panel_windows_.clear();
-  WmShell* shell = panel_container_->GetShell();
   Shell::Get()->activation_client()->RemoveObserver(this);
-  shell->RemoveDisplayObserver(this);
+  ShellPort::Get()->RemoveDisplayObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 

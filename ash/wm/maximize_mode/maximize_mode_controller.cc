@@ -8,9 +8,9 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -112,14 +112,15 @@ MaximizeModeController::MaximizeModeController()
       lid_is_closed_(false),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
-  WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
+  ShellPort::Get()->RecordUserMetricsAction(
+      UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
   // TODO(jonross): Do not create MaximizeModeController if the flag is
   // unavailable. This will require refactoring
   // IsMaximizeModeWindowManagerEnabled to check for the existance of the
   // controller.
   if (IsEnabled()) {
-    WmShell::Get()->AddDisplayObserver(this);
+    ShellPort::Get()->AddDisplayObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   }
   chromeos::PowerManagerClient* power_manager_client =
@@ -133,7 +134,7 @@ MaximizeModeController::~MaximizeModeController() {
   Shell::Get()->RemoveShellObserver(this);
 
   if (IsEnabled()) {
-    WmShell::Get()->RemoveDisplayObserver(this);
+    ShellPort::Get()->RemoveDisplayObserver(this);
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
@@ -155,13 +156,11 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
   if (should_enable == is_enabled)
     return;
 
-  WmShell* shell = WmShell::Get();
-
   if (should_enable) {
     maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
-    shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     Shell::Get()->NotifyMaximizeModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
@@ -171,7 +170,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
   } else {
     Shell::Get()->NotifyMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
-    shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
+    ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     Shell::Get()->NotifyMaximizeModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
@@ -210,7 +209,7 @@ void MaximizeModeController::OnAccelerometerUpdated(
   if (!display::Display::HasInternalDisplay())
     return;
 
-  if (!WmShell::Get()->IsActiveDisplayId(
+  if (!ShellPort::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     return;
   }
@@ -253,7 +252,7 @@ void MaximizeModeController::TabletModeEventReceived(
   tablet_mode_switch_is_on_ = on;
   // Do not change if docked.
   if (!display::Display::HasInternalDisplay() ||
-      !WmShell::Get()->IsActiveDisplayId(
+      !ShellPort::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     return;
   }
@@ -352,7 +351,7 @@ void MaximizeModeController::EnterMaximizeMode() {
   // Always reset first to avoid creation before destruction of a previous
   // object.
   event_blocker_ =
-      WmShell::Get()->CreateScopedDisableInternalMouseAndKeyboard();
+      ShellPort::Get()->CreateScopedDisableInternalMouseAndKeyboard();
 
   if (IsMaximizeModeWindowManagerEnabled())
     return;
@@ -386,7 +385,7 @@ void MaximizeModeController::OnShellInitialized() {
 
 void MaximizeModeController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay() ||
-      !WmShell::Get()->IsActiveDisplayId(
+      !ShellPort::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     LeaveMaximizeMode();
   } else if (tablet_mode_switch_is_on_ &&

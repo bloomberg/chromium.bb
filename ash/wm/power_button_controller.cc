@@ -15,7 +15,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

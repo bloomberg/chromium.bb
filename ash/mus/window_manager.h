@@ -217,7 +217,7 @@ class WindowManager : public aura::WindowManagerDelegate,
   // ShellDelegateMus is used.
   std::unique_ptr<ShellDelegate> shell_delegate_;
 
-  // See WmShellMus's constructor for details. Tests may set to false.
+  // See ShellPortMash's constructor for details. Tests may set to false.
   bool create_session_state_delegate_stub_for_test_ = true;
 
   // State that is only valid during a drag.

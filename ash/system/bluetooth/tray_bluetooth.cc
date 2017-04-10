@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -21,7 +22,6 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_shell.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -458,7 +458,7 @@ class BluetoothDetailedView : public TrayDetailsView {
                            const ui::Event& event) override {
     if (sender == toggle_) {
       TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
-      WmShell::Get()->RecordUserMetricsAction(
+      ShellPort::Get()->RecordUserMetricsAction(
           helper->GetBluetoothEnabled() ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
                                         : UMA_STATUS_AREA_BLUETOOTH_ENABLED);
       helper->ToggleBluetoothEnabled();
@@ -620,7 +620,7 @@ views::View* TrayBluetooth::CreateDefaultView(LoginStatus status) {
 views::View* TrayBluetooth::CreateDetailedView(LoginStatus status) {
   if (!Shell::Get()->tray_bluetooth_helper()->GetBluetoothAvailable())
     return NULL;
-  WmShell::Get()->RecordUserMetricsAction(
+  ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW);
   CHECK(detailed_ == NULL);
   detailed_ = new tray::BluetoothDetailedView(this, status);
