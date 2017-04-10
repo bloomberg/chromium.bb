@@ -132,7 +132,7 @@ class FileReader::ThrottlingController final
     if (pending_readers_.IsEmpty() &&
         running_readers_.size() < max_running_readers_) {
       reader->ExecutePendingRead();
-      ASSERT(!running_readers_.Contains(reader));
+      DCHECK(!running_readers_.Contains(reader));
       running_readers_.insert(reader);
       return;
     }
@@ -224,7 +224,7 @@ bool FileReader::HasPendingActivity() const {
 
 void FileReader::readAsArrayBuffer(Blob* blob,
                                    ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
   DVLOG(1) << "reading as array buffer: " << Utf8BlobUUID(blob).Data() << " "
            << Utf8FilePath(blob).Data();
 
@@ -233,7 +233,7 @@ void FileReader::readAsArrayBuffer(Blob* blob,
 
 void FileReader::readAsBinaryString(Blob* blob,
                                     ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
   DVLOG(1) << "reading as binary: " << Utf8BlobUUID(blob).Data() << " "
            << Utf8FilePath(blob).Data();
 
@@ -243,7 +243,7 @@ void FileReader::readAsBinaryString(Blob* blob,
 void FileReader::readAsText(Blob* blob,
                             const String& encoding,
                             ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
   DVLOG(1) << "reading as text: " << Utf8BlobUUID(blob).Data() << " "
            << Utf8FilePath(blob).Data();
 
@@ -256,7 +256,7 @@ void FileReader::readAsText(Blob* blob, ExceptionState& exception_state) {
 }
 
 void FileReader::readAsDataURL(Blob* blob, ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
   DVLOG(1) << "reading as data URL: " << Utf8BlobUUID(blob).Data() << " "
            << Utf8FilePath(blob).Data();
 
@@ -306,12 +306,12 @@ void FileReader::ReadInternal(Blob* blob,
   state_ = kLoading;
   loading_state_ = kLoadingStatePending;
   error_ = nullptr;
-  ASSERT(ThrottlingController::From(context));
+  DCHECK(ThrottlingController::From(context));
   ThrottlingController::PushReader(context, this);
 }
 
 void FileReader::ExecutePendingRead() {
-  ASSERT(loading_state_ == kLoadingStatePending);
+  DCHECK_EQ(loading_state_, kLoadingStatePending);
   loading_state_ = kLoadingStateLoading;
 
   loader_ = FileReaderLoader::Create(read_type_, this);
@@ -397,7 +397,7 @@ void FileReader::DidReceiveData() {
 void FileReader::DidFinishLoading() {
   if (loading_state_ == kLoadingStateAborted)
     return;
-  ASSERT(loading_state_ == kLoadingStateLoading);
+  DCHECK_EQ(loading_state_, kLoadingStateLoading);
 
   // TODO(jochen): When we set m_state to DONE below, we still need to fire
   // the load and loadend events. To avoid GC to collect this FileReader, we

@@ -123,7 +123,9 @@ class CORE_EXPORT File final : public Blob {
   }
 
   KURL FileSystemURL() const {
-    ASSERT(HasValidFileSystemURL());
+#if DCHECK_IS_ON()
+    DCHECK(HasValidFileSystemURL());
+#endif
     return file_system_url_;
   }
 
@@ -161,7 +163,9 @@ class CORE_EXPORT File final : public Blob {
   void AppendTo(BlobData&) const override;
 
   const String& GetPath() const {
-    ASSERT(HasValidFilePath());
+#if DCHECK_IS_ON()
+    DCHECK(HasValidFilePath());
+#endif
     return path_;
   }
   const String& name() const { return name_; }

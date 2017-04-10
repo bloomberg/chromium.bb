@@ -43,11 +43,11 @@ class CORE_EXPORT FileReaderLoaderClient {
   virtual void DidStartLoading() = 0;
   // Clients must implement this method if they are using any ReadType except
   // ReadByClient.
-  virtual void DidReceiveData() { ASSERT_NOT_REACHED(); }
+  virtual void DidReceiveData() { NOTREACHED(); }
   // Clients must implement this method if they are using the ReadByClient
   // ReadType.
   virtual void DidReceiveDataForClient(const char* data, unsigned data_length) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   virtual void DidFinishLoading() = 0;
   virtual void DidFail(FileError::ErrorCode) = 0;

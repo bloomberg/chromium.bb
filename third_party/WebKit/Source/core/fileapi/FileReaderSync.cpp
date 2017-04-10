@@ -71,7 +71,7 @@ DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
     ScriptState* script_state,
     Blob* blob,
     ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, nullptr);
@@ -84,7 +84,7 @@ DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
 String FileReaderSync::readAsBinaryString(ScriptState* script_state,
                                           Blob* blob,
                                           ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsBinaryString, nullptr);
@@ -97,7 +97,7 @@ String FileReaderSync::readAsText(ScriptState* script_state,
                                   Blob* blob,
                                   const String& encoding,
                                   ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsText, nullptr);
@@ -110,7 +110,7 @@ String FileReaderSync::readAsText(ScriptState* script_state,
 String FileReaderSync::readAsDataURL(ScriptState* script_state,
                                      Blob* blob,
                                      ExceptionState& exception_state) {
-  ASSERT(blob);
+  DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsDataURL, nullptr);

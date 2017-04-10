@@ -174,7 +174,7 @@ void FileReaderLoader::DidReceiveResponse(
     total_bytes_ = -1;
   }
 
-  ASSERT(!raw_data_);
+  DCHECK(!raw_data_);
 
   if (read_type_ != kReadByClient) {
     // Check that we can cast to unsigned since we have to do
@@ -207,7 +207,7 @@ void FileReaderLoader::DidReceiveResponse(
 }
 
 void FileReaderLoader::DidReceiveData(const char* data, unsigned data_length) {
-  ASSERT(data);
+  DCHECK(data);
 
   // Bail out if we already encountered an error.
   if (error_code_)
@@ -284,7 +284,7 @@ FileError::ErrorCode FileReaderLoader::HttpStatusCodeToErrorCode(
 }
 
 DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
-  ASSERT(read_type_ == kReadAsArrayBuffer);
+  DCHECK_EQ(read_type_, kReadAsArrayBuffer);
 
   // If the loading is not started or an error occurs, return an empty result.
   if (!raw_data_ || error_code_)
@@ -301,7 +301,8 @@ DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
 }
 
 String FileReaderLoader::StringResult() {
-  ASSERT(read_type_ != kReadAsArrayBuffer && read_type_ != kReadByClient);
+  DCHECK_NE(read_type_, kReadAsArrayBuffer);
+  DCHECK_NE(read_type_, kReadByClient);
 
   // If the loading is not started or an error occurs, return an empty result.
   if (!raw_data_ || error_code_)
@@ -328,7 +329,7 @@ String FileReaderLoader::StringResult() {
         ConvertToDataURL();
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   return string_result_;

@@ -101,7 +101,7 @@ ExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
     case kPathExistsErr:
       return kPathExistsError;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return code;
   }
 }
@@ -137,7 +137,7 @@ const char* ErrorCodeToMessage(ErrorCode code) {
     case kPathExistsErr:
       return kPathExistsErrorMessage;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }

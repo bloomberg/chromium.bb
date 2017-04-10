@@ -59,7 +59,7 @@ class BlobURLRegistry final : public URLRegistry {
 void BlobURLRegistry::RegisterURL(SecurityOrigin* origin,
                                   const KURL& public_url,
                                   URLRegistrable* registrable_object) {
-  ASSERT(&registrable_object->Registry() == this);
+  DCHECK_EQ(&registrable_object->Registry(), this);
   Blob* blob = static_cast<Blob*>(registrable_object);
   BlobRegistry::RegisterPublicBlobURL(origin, public_url,
                                       blob->GetBlobDataHandle());
@@ -92,9 +92,9 @@ Blob* Blob::Create(
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blob_parts,
     const BlobPropertyBag& options,
     ExceptionState& exception_state) {
-  ASSERT(options.hasType());
+  DCHECK(options.hasType());
 
-  ASSERT(options.hasEndings());
+  DCHECK(options.hasEndings());
   bool normalize_line_endings_to_native = options.endings() == "native";
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, UseCounter::kFileAPINativeLineEndings);
@@ -112,7 +112,7 @@ Blob* Blob::Create(
 Blob* Blob::Create(const unsigned char* data,
                    size_t bytes,
                    const String& content_type) {
-  ASSERT(data);
+  DCHECK(data);
 
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(content_type);
@@ -148,7 +148,7 @@ void Blob::PopulateBlobData(
 
 // static
 void Blob::ClampSliceOffsets(long long size, long long& start, long long& end) {
-  ASSERT(size != -1);
+  DCHECK_NE(size, -1);
 
   // Convert the negative value that is used to select from the end.
   if (start < 0)

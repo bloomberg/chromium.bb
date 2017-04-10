@@ -50,7 +50,7 @@ static String GetContentTypeFromFileName(const String& name,
       type = MIMETypeRegistry::GetWellKnownMIMETypeForExtension(
           name.Substring(index + 1));
     } else {
-      ASSERT(policy == File::kAllContentTypes);
+      DCHECK_EQ(policy, File::kAllContentTypes);
       type =
           MIMETypeRegistry::GetMIMETypeForExtension(name.Substring(index + 1));
     }
@@ -123,14 +123,14 @@ File* File::Create(
     const String& file_name,
     const FilePropertyBag& options,
     ExceptionState& exception_state) {
-  ASSERT(options.hasType());
+  DCHECK(options.hasType());
 
   double last_modified;
   if (options.hasLastModified())
     last_modified = static_cast<double>(options.lastModified());
   else
     last_modified = CurrentTimeMS();
-  ASSERT(options.hasEndings());
+  DCHECK(options.hasEndings());
   bool normalize_line_endings_to_native = options.endings() == "native";
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, UseCounter::kFileAPINativeLineEndings);
@@ -329,7 +329,7 @@ Blob* File::slice(long long start,
     blob_data->AppendFileSystemURL(file_system_url_, start, length,
                                    modification_time_ms / kMsPerSecond);
   } else {
-    ASSERT(!path_.IsEmpty());
+    DCHECK(!path_.IsEmpty());
     blob_data->AppendFile(path_, start, length,
                           modification_time_ms / kMsPerSecond);
   }
@@ -393,7 +393,7 @@ void File::AppendTo(BlobData& blob_data) const {
                                   modification_time_ms / kMsPerSecond);
     return;
   }
-  ASSERT(!path_.IsEmpty());
+  DCHECK(!path_.IsEmpty());
   blob_data.AppendFile(path_, 0, size, modification_time_ms / kMsPerSecond);
 }
 
