@@ -2828,8 +2828,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               '%s' % (self.GetIssue(), self.GetIssueURL()))
         if not title:
           default_title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
-          title = ask_for_data(
-              'Title for patchset [%s]: ' % default_title) or default_title
+          if options.force:
+            title = default_title
+          else:
+            title = ask_for_data(
+                'Title for patchset [%s]: ' % default_title) or default_title
           if title == default_title:
             automatic_title = True
         change_id = self._GetChangeDetail()['change_id']
