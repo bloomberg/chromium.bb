@@ -47,8 +47,6 @@ class RangeBoundaryPoint {
   unsigned Offset() const;
   Node* ChildBefore() const;
 
-  void Clear();
-
   void Set(Node* container, unsigned offset, Node* child_before);
   void SetOffset(unsigned);
 
@@ -137,13 +135,6 @@ inline const Position RangeBoundaryPoint::ToPosition() const {
 inline unsigned RangeBoundaryPoint::Offset() const {
   EnsureOffsetIsValid();
   return offset_in_container_;
-}
-
-inline void RangeBoundaryPoint::Clear() {
-  container_node_.Clear();
-  offset_in_container_ = 0;
-  child_before_boundary_ = nullptr;
-  dom_tree_version_ = 0;
 }
 
 inline void RangeBoundaryPoint::Set(Node* container,

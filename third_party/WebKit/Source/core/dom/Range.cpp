@@ -568,8 +568,8 @@ DocumentFragment* Range::ProcessContents(ActionType action,
 
   // Since mutation observers can modify the range during the process, the
   // boundary points need to be saved.
-  RangeBoundaryPoint original_start(start_);
-  RangeBoundaryPoint original_end(end_);
+  const RangeBoundaryPoint original_start(start_);
+  const RangeBoundaryPoint original_end(end_);
 
   // what is the highest node that partially selects the start / end of the
   // range?
@@ -649,9 +649,6 @@ DocumentFragment* Range::ProcessContents(ActionType action,
       return nullptr;
     end_ = start_;
   }
-
-  original_start.Clear();
-  original_end.Clear();
 
   // Now add leftContents, stuff in between, and rightContents to the fragment
   // (or just delete the stuff in between)
