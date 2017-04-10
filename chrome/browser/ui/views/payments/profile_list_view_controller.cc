@@ -75,12 +75,13 @@ class ProfileItem : public PaymentRequestItemList::Item {
   }
 
   bool CanBeSelected() const override {
-    // TODO(anthonyvd): Check for profile completedness.
-    return true;
+    // TODO(crbug.com/709454): Check for profile completeness. Currently a giant
+    // hack to test the UI.
+    return !profile_->GetRawInfo(autofill::ADDRESS_HOME_ZIP).empty();
   }
 
   void PerformSelectionFallback() override {
-    // TODO(anthonyvd): Open the editor pre-populated with this profile's data.
+    dialog_->ShowShippingAddressEditor(profile_);
   }
 
   ProfileListViewController* parent_view_;

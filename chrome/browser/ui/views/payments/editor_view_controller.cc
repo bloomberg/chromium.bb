@@ -204,6 +204,7 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
   if (field.control_type == EditorField::ControlType::TEXTFIELD) {
     ValidatingTextfield* text_field =
         new ValidatingTextfield(CreateValidationDelegate(field));
+    text_field->SetText(GetInitialValueForType(field.type));
     text_field->set_controller(this);
     // Using autofill field type as a view ID (for testing).
     text_field->set_id(static_cast<int>(field.type));
@@ -218,6 +219,7 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
   } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
     ValidatingCombobox* combobox = new ValidatingCombobox(
         GetComboboxModelForType(field.type), CreateValidationDelegate(field));
+    combobox->SelectValue(GetInitialValueForType(field.type));
     // Using autofill field type as a view ID (for testing).
     combobox->set_id(static_cast<int>(field.type));
     combobox->set_listener(this);

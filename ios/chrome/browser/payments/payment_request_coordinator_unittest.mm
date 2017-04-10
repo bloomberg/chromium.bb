@@ -158,7 +158,7 @@ TEST_F(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
                    paymentResponse.details.cardholder_name);
          EXPECT_EQ(base::ASCIIToUTF16("11"),
                    paymentResponse.details.expiry_month);
-         EXPECT_EQ(base::ASCIIToUTF16("2017"),
+         EXPECT_EQ(base::ASCIIToUTF16("2022"),
                    paymentResponse.details.expiry_year);
          EXPECT_EQ(base::ASCIIToUTF16("123"),
                    paymentResponse.details.card_security_code);

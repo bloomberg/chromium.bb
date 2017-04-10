@@ -15,6 +15,10 @@
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "ui/base/models/simple_combobox_model.h"
 
+namespace autofill {
+class CreditCard;
+}  // namespace autofill
+
 namespace payments {
 
 class PaymentRequestSpec;
@@ -25,14 +29,20 @@ class PaymentRequestDialogView;
 class CreditCardEditorViewController : public EditorViewController {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
+  // Additionally, |credit_card| could be nullptr if we are adding a card. Else,
+  // it's a valid pointer to a card that needs to be updated, and which will
+  // outlive this controller.
   CreditCardEditorViewController(PaymentRequestSpec* spec,
                                  PaymentRequestState* state,
-                                 PaymentRequestDialogView* dialog);
+                                 PaymentRequestDialogView* dialog,
+                                 autofill::CreditCard* credit_card);
   ~CreditCardEditorViewController() override;
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
   std::vector<EditorField> GetFieldDefinitions() override;
+  base::string16 GetInitialValueForType(
+      autofill::ServerFieldType type) override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
       const EditorField& field) override;
@@ -71,6 +81,10 @@ class CreditCardEditorViewController : public EditorViewController {
 
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };
+
+  // If non-nullptr, a pointer to an object to be edited. Must outlive this
+  // controller.
+  autofill::CreditCard* credit_card_to_edit_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardEditorViewController);
 };

@@ -413,6 +413,14 @@ void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
 }
 
+base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(
+    autofill::ServerFieldType type) {
+  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(textfield);
+  return textfield->text();
+}
+
 void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
     const base::string16& value,
     autofill::ServerFieldType type) {
@@ -422,6 +430,14 @@ void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
   textfield->SetText(value);
   textfield->OnContentsChanged();
   textfield->OnBlur();
+}
+
+base::string16 PaymentRequestBrowserTestBase::GetComboboxValue(
+    autofill::ServerFieldType type) {
+  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(combobox);
+  return combobox->model()->GetItemAt(combobox->selected_index());
 }
 
 void PaymentRequestBrowserTestBase::SetComboboxValue(

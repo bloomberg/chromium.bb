@@ -226,15 +226,15 @@ AutofillProfile GetVerifiedProfile2() {
 
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), "http://www.example.com");
-  SetCreditCardInfo(
-      &credit_card, "Test User", "4111111111111111" /* Visa */, "11", "2017");
+  SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
+                    "11", "2022");
   return credit_card;
 }
 
 CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
-  SetCreditCardInfo(
-      &credit_card, "Someone Else", "378282246310005" /* AmEx */, "07", "2019");
+  SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
+                    "07", "2022");
   return credit_card;
 }
 
@@ -253,7 +253,7 @@ CreditCard GetVerifiedCreditCard2() {
 CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
+                          "2109" /* Mastercard */, "12", "2020");
   credit_card.SetTypeForMaskedCard(kMasterCard);
   return credit_card;
 }

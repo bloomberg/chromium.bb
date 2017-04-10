@@ -82,8 +82,10 @@ std::vector<base::string16> GetExpirationYearItems() {
 CreditCardEditorViewController::CreditCardEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
-    PaymentRequestDialogView* dialog)
-    : EditorViewController(spec, state, dialog) {}
+    PaymentRequestDialogView* dialog,
+    autofill::CreditCard* credit_card)
+    : EditorViewController(spec, state, dialog),
+      credit_card_to_edit_(credit_card) {}
 
 CreditCardEditorViewController::~CreditCardEditorViewController() {}
 
@@ -160,9 +162,21 @@ std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
        EditorField::ControlType::COMBOBOX}};
 }
 
+base::string16 CreditCardEditorViewController::GetInitialValueForType(
+    autofill::ServerFieldType type) {
+  if (!credit_card_to_edit_)
+    return base::string16();
+
+  return credit_card_to_edit_->GetInfo(autofill::AutofillType(type),
+                                       state()->GetApplicationLocale());
+}
+
 bool CreditCardEditorViewController::ValidateModelAndSave() {
+  const std::string& locale = state()->GetApplicationLocale();
+  // Use a temporary object for validation.
   autofill::CreditCard credit_card;
   credit_card.set_origin(autofill::kSettingsOrigin);
+
   for (const auto& field : text_fields()) {
     // ValidatingTextfield* is the key, EditorField is the value.
     DCHECK_EQ(autofill::CREDIT_CARD,
@@ -170,7 +184,8 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
     if (field.first->invalid())
       return false;
 
-    credit_card.SetRawInfo(field.second.type, field.first->text());
+    credit_card.SetInfo(autofill::AutofillType(field.second.type),
+                        field.first->text(), locale);
   }
   for (const auto& field : comboboxes()) {
     // ValidatingCombobox* is the key, EditorField is the value.
@@ -180,16 +195,37 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
     if (combobox->invalid())
       return false;
 
-    credit_card.SetRawInfo(field.second.type,
-                           combobox->GetTextForRow(combobox->selected_index()));
+    credit_card.SetInfo(autofill::AutofillType(field.second.type),
+                        combobox->GetTextForRow(combobox->selected_index()),
+                        locale);
   }
 
   // TODO(mathp): Display global error message.
   if (!credit_card.IsValid())
     return false;
 
-  // Add the card (will not add a duplicate).
-  state()->GetPersonalDataManager()->AddCreditCard(credit_card);
+  if (!credit_card_to_edit_) {
+    // Add the card (will not add a duplicate).
+    state()->GetPersonalDataManager()->AddCreditCard(credit_card);
+  } else {
+    // We were in edit mode. Copy the data from the temporary object to retain
+    // the edited object's other properties (use count, use date, guid, etc.).
+    for (const auto& field : text_fields()) {
+      credit_card_to_edit_->SetInfo(
+          autofill::AutofillType(field.second.type),
+          credit_card.GetInfo(autofill::AutofillType(field.second.type),
+                              locale),
+          locale);
+    }
+    for (const auto& field : comboboxes()) {
+      credit_card_to_edit_->SetInfo(
+          autofill::AutofillType(field.second.type),
+          credit_card.GetInfo(autofill::AutofillType(field.second.type),
+                              locale),
+          locale);
+    }
+    state()->GetPersonalDataManager()->UpdateCreditCard(*credit_card_to_edit_);
+  }
 
   return true;
 }

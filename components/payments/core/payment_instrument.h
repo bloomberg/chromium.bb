@@ -16,6 +16,9 @@ namespace payments {
 // Base class which represents a form of payment in Payment Request.
 class PaymentInstrument {
  public:
+  // The type of this instrument instance.
+  enum class Type { AUTOFILL };
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -33,25 +36,32 @@ class PaymentInstrument {
 
   // Will call into the |delegate| (can't be null) on success or error.
   virtual void InvokePaymentApp(Delegate* delegate) = 0;
-  // Returns true if the card is valid to be used as a payment method.
-  virtual bool IsValid() = 0;
+  // Returns whether the instrument is complete to be used as a payment method
+  // without further editing.
+  virtual bool IsCompleteForPayment() = 0;
+  // Returns whether the instrument is valid for the purposes of responding to
+  // canMakePayment.
+  virtual bool IsValidForCanMakePayment() = 0;
 
   const std::string& method_name() const { return method_name_; }
   const base::string16& label() const { return label_; }
   const base::string16& sublabel() const { return sublabel_; }
   int icon_resource_id() const { return icon_resource_id_; }
+  Type type() { return type_; }
 
  protected:
   PaymentInstrument(const std::string& method_name,
                     const base::string16& label,
                     const base::string16& sublabel,
-                    int icon_resource_id);
+                    int icon_resource_id,
+                    Type type);
 
  private:
   const std::string method_name_;
   const base::string16 label_;
   const base::string16 sublabel_;
   int icon_resource_id_;
+  Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstrument);
 };

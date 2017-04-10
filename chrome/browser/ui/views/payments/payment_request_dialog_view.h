@@ -15,6 +15,11 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace autofill {
+class AutofillProfile;
+class CreditCard;
+}  // namespace autofill
+
 namespace payments {
 
 class PaymentRequest;
@@ -93,8 +98,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowShippingProfileSheet();
   void ShowPaymentMethodSheet();
   void ShowShippingOptionSheet();
-  void ShowCreditCardEditor();
-  void ShowShippingAddressEditor();
+  // |credit_card| is the card to be edited, or nullptr for adding a card.
+  void ShowCreditCardEditor(autofill::CreditCard* credit_card = nullptr);
+  // |profile| is the address to be edited, or nullptr for adding an address.
+  void ShowShippingAddressEditor(autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();
 
   void ShowCvcUnmaskPrompt(

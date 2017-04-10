@@ -106,6 +106,8 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
+  virtual base::string16 GetInitialValueForType(
+      autofill::ServerFieldType type) = 0;
   // Validates the data entered and attempts to save; returns true on success.
   virtual bool ValidateModelAndSave() = 0;
   // Creates a ValidationDelegate which knows how to validate for a given

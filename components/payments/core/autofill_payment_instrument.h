@@ -40,12 +40,15 @@ class AutofillPaymentInstrument
 
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
-  bool IsValid() override;
+  bool IsCompleteForPayment() override;
+  bool IsValidForCanMakePayment() override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
                                   const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
+
+  autofill::CreditCard* credit_card() { return &credit_card_; }
 
  private:
   // A copy of the card is owned by this object.

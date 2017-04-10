@@ -324,7 +324,7 @@ TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_SupportedMethod) {
       "\"cardSecurityCode\":\"123\","
       "\"cardholderName\":\"Test User\","
       "\"expiryMonth\":\"11\","
-      "\"expiryYear\":\"2017\"}",
+      "\"expiryYear\":\"2022\"}",
       response()->stringified_details);
 }
 
@@ -361,7 +361,7 @@ TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_BasicCard) {
       "\"cardSecurityCode\":\"123\","
       "\"cardholderName\":\"Test User\","
       "\"expiryMonth\":\"11\","
-      "\"expiryYear\":\"2017\"}",
+      "\"expiryYear\":\"2022\"}",
       response()->stringified_details);
 }
 

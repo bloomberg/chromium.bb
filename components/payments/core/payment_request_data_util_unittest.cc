@@ -68,7 +68,7 @@ TEST(PaymentRequestDataUtilTest, GetBasicCardResponseFromAutofillCreditCard) {
       "\"cardSecurityCode\":\"123\","
       "\"cardholderName\":\"Test User\","
       "\"expiryMonth\":\"11\","
-      "\"expiryYear\":\"2017\"}",
+      "\"expiryYear\":\"2022\"}",
       json_response);
 }
 

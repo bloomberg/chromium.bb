@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -94,12 +95,20 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   }
 
   bool CanBeSelected() const override {
-    // TODO(anthonyvd): Check for card completedness.
-    return true;
+    // If an instrument can't be selected, PerformSelectionFallback is called,
+    // where the instrument can be made complete.
+    return instrument_->IsCompleteForPayment();
   }
 
   void PerformSelectionFallback() override {
-    // TODO(anthonyvd): Open the editor pre-populated with this card's data.
+    switch (instrument_->type()) {
+      case PaymentInstrument::Type::AUTOFILL:
+        dialog_->ShowCreditCardEditor(
+            static_cast<AutofillPaymentInstrument*>(instrument_)
+                ->credit_card());
+        return;
+    }
+    NOTREACHED();
   }
 
   PaymentInstrument* instrument_;

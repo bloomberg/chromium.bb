@@ -42,7 +42,7 @@ PaymentRequestState::~PaymentRequestState() {}
 bool PaymentRequestState::CanMakePayment() const {
   for (const std::unique_ptr<PaymentInstrument>& instrument :
        available_instruments_) {
-    if (instrument.get()->IsValid() &&
+    if (instrument->IsValidForCanMakePayment() &&
         spec_->supported_card_networks_set().count(
             instrument.get()->method_name())) {
       return true;
@@ -190,9 +190,6 @@ void PaymentRequestState::PopulateProfileCache() {
     if (!supported_card_networks.count(basic_card_network))
       continue;
 
-    // TODO(crbug.com/701952): Should use the method name preferred by the
-    // merchant (either "basic-card" or the basic card network e.g. "visa").
-
     // Copy the credit cards as part of AutofillPaymentInstrument so they are
     // indirectly owned by this object.
     std::unique_ptr<PaymentInstrument> instrument =
@@ -220,7 +217,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   auto first_complete_instrument =
       std::find_if(instruments.begin(), instruments.end(),
                    [](const std::unique_ptr<PaymentInstrument>& instrument) {
-                     return instrument->IsValid();
+                     return instrument->IsCompleteForPayment();
                    });
 
   selected_instrument_ = first_complete_instrument == instruments.end()
@@ -244,8 +241,8 @@ void PaymentRequestState::NotifyOnSelectedInformationChanged() {
 bool PaymentRequestState::ArePaymentDetailsSatisfied() {
   // There is no need to check for supported networks, because only supported
   // instruments are listed/created in the flow.
-  // TODO(crbug.com/702063): A masked card may not satisfy IsValid().
-  return selected_instrument_ != nullptr && selected_instrument_->IsValid();
+  return selected_instrument_ != nullptr &&
+         selected_instrument_->IsCompleteForPayment();
 }
 
 bool PaymentRequestState::ArePaymentOptionsSatisfied() {

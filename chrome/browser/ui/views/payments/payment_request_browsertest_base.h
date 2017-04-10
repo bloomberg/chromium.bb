@@ -151,10 +151,12 @@ class PaymentRequestBrowserTestBase
   void OpenCVCPromptWithCVC(const base::string16& cvc);
   void PayWithCreditCardAndWait(const base::string16& cvc);
 
-  // Setting the |value| in the textfield of a given |type|.
+  // Getting/setting the |value| in the textfield of a given |type|.
+  base::string16 GetEditorTextfieldValue(autofill::ServerFieldType type);
   void SetEditorTextfieldValue(const base::string16& value,
                                autofill::ServerFieldType type);
-  // Setting the |value| in the combobox of a given |type|.
+  // Getting/setting the |value| in the combobox of a given |type|.
+  base::string16 GetComboboxValue(autofill::ServerFieldType type);
   void SetComboboxValue(const base::string16& value,
                         autofill::ServerFieldType type);
 

@@ -47,6 +47,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_normalizer_unittest.cc",
+    "autofill_payment_instrument_unittest.cc",
     "basic_card_response_unittest.cc",
     "currency_formatter_unittest.cc",
     "journey_logger_unittest.cc",

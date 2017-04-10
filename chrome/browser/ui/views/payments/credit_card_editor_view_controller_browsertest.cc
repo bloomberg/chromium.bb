@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -24,6 +25,7 @@ namespace payments {
 
 namespace {
 
+const base::Time kJanuary2017 = base::Time::FromDoubleT(1484505871);
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
 
 }  // namespace
@@ -275,6 +277,64 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_EQ(2026, credit_card->expiration_year());
   EXPECT_EQ(base::ASCIIToUTF16("1111"), credit_card->LastFourDigits());
   EXPECT_EQ(base::ASCIIToUTF16("Bob Jones"),
+            credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
+  // Add expired card.
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_use_count(5U);
+  card.set_use_date(kJanuary2017);
+  card.SetExpirationMonth(1);
+  card.SetExpirationYear(2017);
+  AddCreditCard(card);
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
+
+  EXPECT_EQ(base::ASCIIToUTF16("Test User"),
+            GetEditorTextfieldValue(autofill::CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(base::ASCIIToUTF16("4111111111111111"),
+            GetEditorTextfieldValue(autofill::CREDIT_CARD_NUMBER));
+  EXPECT_EQ(base::ASCIIToUTF16("01"),
+            GetComboboxValue(autofill::CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(base::ASCIIToUTF16("2017"),
+            GetComboboxValue(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Fixing the expiration date.
+  SetComboboxValue(base::ASCIIToUTF16("11"), autofill::CREDIT_CARD_EXP_MONTH);
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventObserver(DialogEvent::BACK_NAVIGATION);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  data_loop.Run();
+
+  EXPECT_EQ(1u, personal_data_manager->GetCreditCards().size());
+  autofill::CreditCard* credit_card =
+      personal_data_manager->GetCreditCards()[0];
+  EXPECT_EQ(11, credit_card->expiration_month());
+  EXPECT_EQ(2017, credit_card->expiration_year());
+  // It retains other properties.
+  EXPECT_EQ(card.guid(), credit_card->guid());
+  EXPECT_EQ(5U, credit_card->use_count());
+  EXPECT_EQ(kJanuary2017, credit_card->use_date());
+  EXPECT_EQ(base::ASCIIToUTF16("4111111111111111"), credit_card->number());
+  EXPECT_EQ(base::ASCIIToUTF16("Test User"),
             credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
 }
 

@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_address_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
@@ -212,20 +214,23 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
     observer_for_testing_->OnCvcPromptShown();
 }
 
-void PaymentRequestDialogView::ShowCreditCardEditor() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<CreditCardEditorViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ true);
+void PaymentRequestDialogView::ShowCreditCardEditor(
+    autofill::CreditCard* credit_card) {
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<CreditCardEditorViewController>(
+              request_->spec(), request_->state(), this, credit_card),
+          &controller_map_),
+      /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnCreditCardEditorOpened();
 }
 
-void PaymentRequestDialogView::ShowShippingAddressEditor() {
+void PaymentRequestDialogView::ShowShippingAddressEditor(
+    autofill::AutofillProfile* profile) {
   view_stack_.Push(CreateViewAndInstallController(
                        base::MakeUnique<ShippingAddressEditorViewController>(
-                           request_->spec(), request_->state(), this),
+                           request_->spec(), request_->state(), this, profile),
                        &controller_map_),
                    /* animate = */ true);
   if (observer_for_testing_)

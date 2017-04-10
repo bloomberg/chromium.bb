@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(
       base::UTF8ToUTF16("\"cardSecurityCode\": \"123\""),
       base::UTF8ToUTF16("\"cardholderName\": \"Test User\""),
       base::UTF8ToUTF16("\"expiryMonth\": \"11\""),
-      base::UTF8ToUTF16("\"expiryYear\": \"2017\"")});
+      base::UTF8ToUTF16("\"expiryYear\": \"2022\"")});
 
   // Test that the billing address was sent to the merchant.
   ExpectBodyContains(std::vector<base::string16>{

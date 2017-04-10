@@ -13,6 +13,10 @@
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 
+namespace autofill {
+class AutofillProfile;
+}  // namespace autofill
+
 namespace payments {
 
 class PaymentRequestSpec;
@@ -25,12 +29,15 @@ class ShippingAddressEditorViewController : public EditorViewController {
   // Does not take ownership of the arguments, which should outlive this object.
   ShippingAddressEditorViewController(PaymentRequestSpec* spec,
                                       PaymentRequestState* state,
-                                      PaymentRequestDialogView* dialog);
+                                      PaymentRequestDialogView* dialog,
+                                      autofill::AutofillProfile* profile);
   ~ShippingAddressEditorViewController() override;
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
   std::vector<EditorField> GetFieldDefinitions() override;
+  base::string16 GetInitialValueForType(
+      autofill::ServerFieldType type) override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
       const EditorField& field) override;
@@ -64,6 +71,10 @@ class ShippingAddressEditorViewController : public EditorViewController {
     DISALLOW_COPY_AND_ASSIGN(ShippingAddressValidationDelegate);
   };
   friend class ShippingAddressValidationDelegate;
+
+  // If non-nullptr, a point to an object to be edited, which should outlive
+  // this controller.
+  autofill::AutofillProfile* profile_to_edit_;
 
   // List of fields, reset everytime the current country changes.
   std::vector<EditorField> editor_fields_;

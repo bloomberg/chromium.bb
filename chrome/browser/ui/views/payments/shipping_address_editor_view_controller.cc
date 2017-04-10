@@ -76,8 +76,9 @@ autofill::ServerFieldType GetFieldTypeFromString(const std::string& type) {
 ShippingAddressEditorViewController::ShippingAddressEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
-    PaymentRequestDialogView* dialog)
-    : EditorViewController(spec, state, dialog) {
+    PaymentRequestDialogView* dialog,
+    autofill::AutofillProfile* profile)
+    : EditorViewController(spec, state, dialog), profile_to_edit_(profile) {
   UpdateEditorFields();
 }
 
@@ -93,9 +94,19 @@ ShippingAddressEditorViewController::GetFieldDefinitions() {
   return editor_fields_;
 }
 
+base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
+    autofill::ServerFieldType type) {
+  if (!profile_to_edit_)
+    return base::string16();
+
+  return profile_to_edit_->GetInfo(autofill::AutofillType(type),
+                                   state()->GetApplicationLocale());
+}
+
 bool ShippingAddressEditorViewController::ValidateModelAndSave() {
+  const std::string& locale = state()->GetApplicationLocale();
+  // To validate the profile first, we use a temporary object.
   autofill::AutofillProfile profile;
-  profile.set_origin(autofill::kSettingsOrigin);
   for (const auto& field : text_fields()) {
     // Force a blur in case the value was left untouched.
     field.first->OnBlur();
@@ -103,7 +114,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     if (field.first->invalid())
       return false;
 
-    profile.SetRawInfo(field.second.type, field.first->text());
+    profile.SetInfo(autofill::AutofillType(field.second.type),
+                    field.first->text(), locale);
   }
   for (const auto& field : comboboxes()) {
     // ValidatingCombobox* is the key, EditorField is the value.
@@ -112,17 +124,41 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
       return false;
 
     if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY) {
-      profile.SetRawInfo(
-          field.second.type,
-          base::UTF8ToUTF16(country_codes_[combobox->selected_index()]));
+      profile.SetInfo(
+          autofill::AutofillType(field.second.type),
+          base::UTF8ToUTF16(country_codes_[combobox->selected_index()]),
+          locale);
     } else {
-      profile.SetRawInfo(field.second.type,
-                         combobox->GetTextForRow(combobox->selected_index()));
+      profile.SetInfo(autofill::AutofillType(field.second.type),
+                      combobox->GetTextForRow(combobox->selected_index()),
+                      locale);
     }
   }
 
-  // Add the profile (will not add a duplicate).
-  state()->GetPersonalDataManager()->AddProfile(profile);
+  if (!profile_to_edit_) {
+    // Add the profile (will not add a duplicate).
+    profile.set_origin(autofill::kSettingsOrigin);
+    state()->GetPersonalDataManager()->AddProfile(profile);
+  } else {
+    // Copy the temporary object's data to the object to be edited. Prefer this
+    // method to copying |profile| into |profile_to_edit_|, because the latter
+    // object needs to retain other properties (use count, use date, guid,
+    // etc.).
+    for (const auto& field : text_fields()) {
+      profile_to_edit_->SetInfo(
+          autofill::AutofillType(field.second.type),
+          profile.GetInfo(autofill::AutofillType(field.second.type), locale),
+          locale);
+    }
+    for (const auto& field : comboboxes()) {
+      profile_to_edit_->SetInfo(
+          autofill::AutofillType(field.second.type),
+          profile.GetInfo(autofill::AutofillType(field.second.type), locale),
+          locale);
+    }
+    profile_to_edit_->set_origin(autofill::kSettingsOrigin);
+    state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+  }
 
   return true;
 }
