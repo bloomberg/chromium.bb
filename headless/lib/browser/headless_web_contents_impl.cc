@@ -31,8 +31,12 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_client_impl.h"
-#include "headless/lib/browser/headless_print_manager.h"
+#include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#include "headless/lib/browser/headless_print_manager.h"
+#endif
 
 namespace headless {
 
@@ -174,7 +178,9 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       browser_context_(browser_context),
       render_process_host_(web_contents->GetRenderProcessHost()) {
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   printing::HeadlessPrintManager::CreateForWebContents(web_contents);
+#endif
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);
 }

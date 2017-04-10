@@ -14,10 +14,14 @@
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
-#include "headless/lib/browser/headless_print_manager.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/target.h"
+#include "printing/features/features.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#include "headless/lib/browser/headless_print_manager.h"
+#endif
 
 namespace headless {
 
@@ -68,6 +72,7 @@ std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 }
 
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PDFCreated(
     const content::DevToolsManagerDelegate::CommandCallback& callback,
     int command_id,
@@ -85,6 +90,7 @@ void PDFCreated(
   }
   callback.Run(std::move(response));
 }
+#endif
 
 }  // namespace
 
@@ -183,11 +189,17 @@ void HeadlessDevToolsManagerDelegate::PrintToPDF(
     int command_id,
     const base::DictionaryValue* params,
     const CommandCallback& callback) {
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   content::WebContents* web_contents = agent_host->GetWebContents();
   content::RenderFrameHost* rfh = web_contents->GetMainFrame();
 
   printing::HeadlessPrintManager::FromWebContents(web_contents)
       ->GetPDFContents(rfh, base::Bind(&PDFCreated, callback, command_id));
+#else
+  DCHECK(callback);
+  callback.Run(CreateErrorResponse(command_id, kErrorServerError,
+                                   "Printing is not enabled"));
+#endif
 }
 
 std::unique_ptr<base::DictionaryValue>

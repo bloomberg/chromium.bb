@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//headless/headless.gni")
 import("//build/util/process_version.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//printing/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -217,8 +218,6 @@ static_library("headless_lib") {
               "lib/browser/headless_permission_manager.h",
               "lib/browser/headless_platform_event_source.cc",
               "lib/browser/headless_platform_event_source.h",
-              "lib/browser/headless_print_manager.cc",
-              "lib/browser/headless_print_manager.h",
               "lib/browser/headless_shell_application_mac.mm",
               "lib/browser/headless_shell_application_mac.h",
               "lib/browser/headless_url_request_context_getter.cc",
@@ -234,8 +233,6 @@ static_library("headless_lib") {
               "lib/headless_content_main_delegate.h",
               "lib/renderer/headless_content_renderer_client.cc",
               "lib/renderer/headless_content_renderer_client.h",
-              "lib/renderer/headless_print_web_view_helper_delegate.cc",
-              "lib/renderer/headless_print_web_view_helper_delegate.h",
               "public/headless_browser.cc",
               "public/headless_browser.h",
               "public/headless_browser_context.h",
@@ -295,13 +292,20 @@ static_library("headless_lib") {
     ]
   }
 
+  if (enable_basic_printing) {
+    sources += [
+      "lib/browser/headless_print_manager.cc",
+      "lib/browser/headless_print_manager.h",
+      "lib/renderer/headless_print_web_view_helper_delegate.cc",
+      "lib/renderer/headless_print_web_view_helper_delegate.h",
+    ]
+  }
+
   deps = [
     ":gen_devtools_client_api",
     ":version_header",
     "//base",
     "//components/crash/content/browser",
-    "//components/printing/browser",
-    "//components/printing/renderer",
     "//components/security_state/content",
     "//components/security_state/core",
     "//content/public/app:both",
@@ -321,6 +325,13 @@ static_library("headless_lib") {
 
   if (!is_mac) {
     deps += [ "//ui/aura" ]
+  }
+
+  if (enable_basic_printing) {
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/renderer",
+    ]
   }
 
   if (headless_use_embedded_resources) {
