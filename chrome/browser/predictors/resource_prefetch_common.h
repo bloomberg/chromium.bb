@@ -26,6 +26,7 @@ extern const char kLearningMode[];
 extern const char kExternalPrefetchingMode[];
 extern const char kPrefetchingMode[];
 extern const char kEnableUrlLearningParamName[];
+extern const char kEnableManifestsParamName[];
 extern const base::Feature kSpeculativeResourcePrefetchingFeature;
 
 struct ResourcePrefetchPredictorConfig;
@@ -126,6 +127,8 @@ struct ResourcePrefetchPredictorConfig {
   size_t max_prefetches_inflight_per_host_per_navigation;
   // True iff the predictor could use a url-based database.
   bool is_url_learning_enabled;
+  // True iff the predictor could use manifests.
+  bool is_manifests_enabled;
 };
 
 }  // namespace predictors

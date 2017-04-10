@@ -1467,7 +1467,8 @@ void ResourcePrefetchPredictor::OnManifestFetched(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  if (host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
+  if (!config_.is_manifests_enabled ||
+      host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
       static_cast<uint32_t>(manifest.ByteSize()) > kMaxManifestByteSize) {
     return;
   }

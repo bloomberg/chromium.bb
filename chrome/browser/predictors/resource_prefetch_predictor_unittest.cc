@@ -236,6 +236,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     config.max_consecutive_misses = 2;
     config.min_resource_confidence_to_trigger_prefetch = 0.5;
     config.is_url_learning_enabled = true;
+    config.is_manifests_enabled = true;
 
     config.mode |= ResourcePrefetchPredictorConfig::LEARNING;
     predictor_.reset(new ResourcePrefetchPredictor(config, profile_.get()));
