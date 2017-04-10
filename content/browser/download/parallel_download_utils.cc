@@ -42,26 +42,6 @@ bool compareReceivedSlices(const DownloadItem::ReceivedSlice& lhs,
 
 }  // namespace
 
-bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
-  // To enable parallel download, following conditions need to be satisfied.
-  // 1. Accept-Ranges, Content-Length and strong validators response headers.
-  // 2. Feature |kParallelDownloading| enabled.
-  // 3. Content-Length is no less than the minimum slice size configuration.
-  // 3. HTTP/1.1 protocol, not QUIC nor HTTP/1.0.
-
-  // Etag and last modified are stored into DownloadCreateInfo in
-  // DownloadRequestCore only if the response header complies to the strong
-  // validator rule.
-  bool has_strong_validator =
-      !create_info.etag.empty() || !create_info.last_modified.empty();
-
-  return has_strong_validator && create_info.accept_range &&
-         create_info.total_bytes >= GetMinSliceSizeConfig() &&
-         create_info.connection_info ==
-             net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1 &&
-         base::FeatureList::IsEnabled(features::kParallelDownloading);
-}
-
 std::vector<DownloadItem::ReceivedSlice> FindSlicesForRemainingContent(
     int64_t current_offset,
     int64_t total_length,

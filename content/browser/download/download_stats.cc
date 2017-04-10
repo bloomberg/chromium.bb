@@ -816,6 +816,11 @@ void RecordParallelDownloadStats(
   }
 }
 
+void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Download.ParallelDownload.CreationEvent", event,
+                            ParallelDownloadCreationEvent::COUNT);
+}
+
 void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,
     DownloadInterruptReason interrupt_reason) {

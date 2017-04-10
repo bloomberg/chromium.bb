@@ -13,10 +13,6 @@
 
 namespace content {
 
-// Return if the download should be a parallel download.
-CONTENT_EXPORT bool ShouldUseParallelDownload(
-    const DownloadCreateInfo& create_info);
-
 // Chunks the content that starts from |current_offset|, into at most
 // std::max(|request_count|, 1) smaller slices.
 // Each slice contains at least |min_slice_size| bytes unless |total_length|

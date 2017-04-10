@@ -145,6 +145,39 @@ enum DownloadDiscardReason {
   DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN
 };
 
+// When parallel download is enabled, the download may fall back to a normal
+// download for various reasons. This enum counts the number of parallel
+// download and fallbacks. Also records the reasons why the download falls back
+// to a normal download. The reasons are not mutually exclusive.
+// Used in histogram "Download.ParallelDownload.CreationEvent" and should be
+// treated as append-only.
+enum class ParallelDownloadCreationEvent {
+  // The total number of downloads started as parallel download.
+  STARTED_PARALLEL_DOWNLOAD = 0,
+
+  // The total number of downloads fell back to normal download when parallel
+  // download is enabled.
+  FELL_BACK_TO_NORMAL_DOWNLOAD,
+
+  // No ETag or Last-Modified response header.
+  FALLBACK_REASON_STRONG_VALIDATORS,
+
+  // No Accept-Range response header.
+  FALLBACK_REASON_ACCEPT_RANGE_HEADER,
+
+  // No Content-Length response header.
+  FALLBACK_REASON_CONTENT_LENGTH_HEADER,
+
+  // File size is not complied to finch configuration.
+  FALLBACK_REASON_FILE_SIZE,
+
+  // The HTTP connection type does not meet the requirement.
+  FALLBACK_REASON_CONNECTION_TYPE,
+
+  // Last entry of the enum.
+  COUNT,
+};
+
 // Increment one of the above counts.
 void RecordDownloadCount(DownloadCountTypes type);
 
@@ -235,6 +268,10 @@ void RecordParallelDownloadStats(
     base::TimeDelta time_with_parallel_streams,
     size_t bytes_downloaded_without_parallel_streams,
     base::TimeDelta time_without_parallel_streams);
+
+// Records the parallel download creation counts and the reasons why the
+// download falls back to non-parallel download.
+void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event);
 
 // Record the result of a download file rename.
 void RecordDownloadFileRenameResultAfterRetry(
