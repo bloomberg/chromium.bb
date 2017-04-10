@@ -565,7 +565,8 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetActiveWidget() {
 
 const TextInputManager::CompositionRangeInfo*
 RenderWidgetHostViewMac::GetCompositionRangeInfo() {
-  return text_input_manager_->GetCompositionRangeInfo();
+  return GetTextInputManager() ? text_input_manager_->GetCompositionRangeInfo()
+                               : nullptr;
 }
 
 const TextInputManager::TextSelection*
