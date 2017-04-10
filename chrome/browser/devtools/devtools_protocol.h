@@ -41,10 +41,6 @@ class DevToolsProtocol {
       int command_id,
       const std::string& param);
 
-  static std::unique_ptr<base::DictionaryValue> CreateErrorResponse(
-      int command_id,
-      const std::string& error_message);
-
  private:
   DevToolsProtocol() {}
   ~DevToolsProtocol() {}
