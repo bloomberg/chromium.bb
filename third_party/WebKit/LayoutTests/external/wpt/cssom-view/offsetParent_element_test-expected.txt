@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Valid the algorithm rule of offsetParent check step 1 assert_equals: expected (object) null but got (undefined) undefined
+PASS Valid the algorithm rule of offsetParent check step 2 
+Harness: the test ran to completion.
+

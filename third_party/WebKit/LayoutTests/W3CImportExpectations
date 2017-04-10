@@ -194,9 +194,7 @@ external/wpt/css/css-variables-1 [ Skip ]
 external/wpt/css/css3-color [ Skip ]
 external/wpt/css/css3-selectors [ Skip ]
 ## Owners: style-dev@chromium.org
-# external/wpt/css/cssom-1 [ Pass ]
-## Owners: style-dev@chromium.org
-# external/wpt/css/cssom-view-1 [ Pass ]
+# external/wpt/css/cssom [ Pass ]
 external/wpt/css/filter-effects-1 [ Skip ]
 external/wpt/css/filters-1 [ Skip ]
 external/wpt/css/geometry-1 [ Skip ]
@@ -387,6 +385,7 @@ external/wpt/websockets [ Skip ]
 # external/wpt/webstorage [ Pass ]
 ## Owners: foolip@chromium.org, maksim.sisov@intel.com
 # external/wpt/webvtt [ Pass ]
+external/wpt/web-nfc [ Skip ]
 ## Owners: nhiroki@chromium.org
 # external/wpt/workers [ Pass ]
 

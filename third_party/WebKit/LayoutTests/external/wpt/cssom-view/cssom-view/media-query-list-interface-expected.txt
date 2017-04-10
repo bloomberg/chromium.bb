@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL window_inherits_matchmedia assert_inherits: property "matchMedia" found on object expected in prototype chain
+FAIL mediaquerylist_inherited_functions assert_inherits: provided value is not an object
+FAIL mediaquerylist_functions Cannot read property 'addListener' of undefined
+FAIL mediaquerylist_properties Cannot read property 'hasOwnProperty' of undefined
+FAIL mediaquerylist_properties_readonly Cannot read property 'media' of undefined
+Harness: the test ran to completion.
+

@@ -12,8 +12,6 @@ crbug.com/706118 external/wpt/css/css-text-3 [ Skip ]
 crbug.com/706118 external/wpt/css/css-text-decor-3 [ Skip ]
 crbug.com/706118 external/wpt/css/css-ui-3 [ Skip ]
 crbug.com/706118 external/wpt/css/css-writing-modes-3 [ Skip ]
-crbug.com/706118 external/wpt/css/cssom-1 [ Skip ]
-crbug.com/706118 external/wpt/css/cssom-view-1 [ Skip ]
 
 # ====== Oilpan-only failures from here ======
 # Most of these actually cause the tests to report success, rather than
@@ -1857,7 +1855,11 @@ crbug.com/626703 external/wpt/mixed-content/blockable/no-opt-in/same-host-http/i
 
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
+crbug.com/710226 [ Win Mac10.9 Mac10.10 Mac10.11 Mac10.12 ] external/wpt/cssom-view/MediaQueryList-001.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Android Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
+crbug.com/626703 external/wpt/cssom-view/matchMedia.xht [ Timeout ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/626703 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
@@ -2267,7 +2269,7 @@ crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-wi
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]
 #crbug.com/626703 external/wpt/css/css-writing-modes-3/wm-propagation-body-008.xht [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Failure Pass ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001a.html [ Failure Pass ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
