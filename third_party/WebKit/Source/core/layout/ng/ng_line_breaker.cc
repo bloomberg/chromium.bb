@@ -25,8 +25,7 @@ void NGLineBreaker::BreakLines(NGInlineLayoutAlgorithm* algorithm,
                                const String& text_content,
                                unsigned current_offset) {
   DCHECK(!text_content.IsEmpty());
-  // TODO(kojii): Give the locale to LazyLineBreakIterator.
-  LazyLineBreakIterator line_break_iterator(text_content);
+  LazyLineBreakIterator line_break_iterator(text_content, locale_);
   const unsigned end_offset = text_content.length();
   while (current_offset < end_offset) {
     // Find the next break opportunity.

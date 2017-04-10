@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -14,10 +15,15 @@ class NGInlineLayoutAlgorithm;
 
 // Represents a line breaker.
 class CORE_EXPORT NGLineBreaker {
+ public:
+  NGLineBreaker(const AtomicString locale) : locale_(locale) {}
+  ~NGLineBreaker() {}
   STACK_ALLOCATED();
 
- public:
   void BreakLines(NGInlineLayoutAlgorithm*, const String&, unsigned);
+
+ private:
+  const AtomicString locale_;
 };
 
 }  // namespace blink

@@ -545,8 +545,12 @@ void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // TODO(koji): The relationship of NGInlineLayoutAlgorithm and NGLineBreaker
   // should be inverted.
-  if (!Node()->Text().IsEmpty())
-    NGLineBreaker().BreakLines(this, Node()->Text(), start_offset_);
+  if (!Node()->Text().IsEmpty()) {
+    // TODO(eae): Does this need the LayoutText::LocaleForLineBreakIterator
+    // logic to switch the locale based on breaking mode?
+    NGLineBreaker line_breaker(Node()->Style().Locale());
+    line_breaker.BreakLines(this, Node()->Text(), start_offset_);
+  }
 
   // TODO(kojii): Check if the line box width should be content or available.
   container_builder_.SetInlineSize(max_inline_size_)
@@ -560,8 +564,10 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 MinMaxContentSize NGInlineLayoutAlgorithm::ComputeMinMaxContentSizeByLayout() {
   DCHECK_EQ(ConstraintSpace().AvailableSize().inline_size, LayoutUnit());
   DCHECK_EQ(ConstraintSpace().AvailableSize().block_size, NGSizeIndefinite);
-  if (!Node()->Text().IsEmpty())
-    NGLineBreaker().BreakLines(this, Node()->Text(), start_offset_);
+  if (!Node()->Text().IsEmpty()) {
+    NGLineBreaker line_breaker(Node()->Style().Locale());
+    line_breaker.BreakLines(this, Node()->Text(), start_offset_);
+  }
   MinMaxContentSize sizes;
   sizes.min_content = MaxInlineSize();
 
