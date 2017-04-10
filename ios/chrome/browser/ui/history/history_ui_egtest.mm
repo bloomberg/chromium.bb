@@ -285,11 +285,6 @@ void MockSignIn() {
 // in, and that tapping on the link in the message opens a new tab with the sync
 // help page.
 - (void)testHistoryEntriesStatusCell {
-// TODO(crbug.com/709135): Evaluate and re-enable this test if necessary.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-
   [self loadTestURLs];
   [self openHistoryPanel];
   // Assert that no message is shown when the user is not signed in.
@@ -310,15 +305,12 @@ void MockSignIn() {
   [[EarlGrey selectElementWithMatcher:grey_text(entriesMessage)]
       assertWithMatcher:grey_notNil()];
 
-  // Tap on "Learn more" link and assert that new tab with the link is opened.
+  // Tap on "Learn more" link.
   [[EarlGrey
       selectElementWithMatcher:grey_kindOfClass([TransparentLinkButton class])]
       performAction:grey_tap()];
+  // Assert that new tab with the link is opened, hence tab count of 2.
   chrome_test_util::AssertMainTabCount(2);
-  id<GREYMatcher> webViewMatcher =
-      WebViewContainingText("Sync and view tabs and history across devices");
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
-      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that searching history displays only entries matching the search term.
