@@ -18,7 +18,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
@@ -217,9 +216,6 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // is the most flexible place to do this bookkeeping.
   void UpdateNudgeTimeRecords(ModelTypeSet types);
 
-  // For certain methods that need to worry about X-thread posting.
-  WeakHandle<SyncSchedulerImpl> weak_handle_this_;
-
   // Used for logging.
   const std::string name_;
 
@@ -266,15 +262,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // A map tracking LOCAL NudgeSource invocations of ScheduleNudge* APIs,
   // organized by datatype. Each datatype that was part of the types requested
   // in the call will have its TimeTicks value updated.
-  using ModelTypeTimeMap = std::map<ModelType, base::TimeTicks>;
-  ModelTypeTimeMap last_local_nudges_by_model_type_;
-
-  // Used as an "anti-reentrancy defensive assertion".
-  // While true, it is illegal for any new scheduling activity to take place.
-  // Ensures that higher layers don't break this law in response to events that
-  // take place during a sync cycle. We call this out because such violations
-  // could result in tight sync loops hitting sync servers.
-  bool no_scheduling_allowed_;
+  std::map<ModelType, base::TimeTicks> last_local_nudges_by_model_type_;
 
   // TryJob might get called for multiple reasons. It should only call
   // DoPollSyncCycleJob after some time since the last attempt.
@@ -296,10 +284,6 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   bool ignore_auth_credentials_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
-
-  // A second factory specially for weak_handle_this_, to allow the handle
-  // to be const and alleviate threading concerns.
-  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_for_weak_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };
