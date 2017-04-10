@@ -120,12 +120,8 @@ void NGInlineLayoutAlgorithm::Initialize(unsigned index, unsigned offset) {
   start_offset_ = end_offset_ = last_break_opportunity_offset_ = offset;
   end_position_ = last_break_opportunity_position_ = LayoutUnit();
 
-  disallow_first_line_rules_ = index || offset ||
-                               !Node()
-                                    ->GetLayoutObject()
-                                    ->GetDocument()
-                                    .GetStyleEngine()
-                                    .UsesFirstLineRules();
+  auto& engine = Node()->GetLayoutObject()->GetDocument().GetStyleEngine();
+  disallow_first_line_rules_ = index || offset || !engine.UsesFirstLineRules();
 
   FindNextLayoutOpportunity();
 }
