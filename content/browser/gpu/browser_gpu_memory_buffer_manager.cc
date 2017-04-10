@@ -30,19 +30,6 @@
 namespace content {
 namespace {
 
-void HostCreateGpuMemoryBuffer(
-    gpu::SurfaceHandle surface_handle,
-    GpuProcessHost* host,
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    int client_id,
-    const BrowserGpuMemoryBufferManager::CreateCallback& callback) {
-  host->CreateGpuMemoryBuffer(id, size, format, usage, client_id,
-                              surface_handle, callback);
-}
-
 void GpuMemoryBufferDeleted(
     scoped_refptr<base::SingleThreadTaskRunner> destruction_task_runner,
     const gpu::GpuMemoryBufferImpl::DestructionCallback& destruction_callback,
@@ -83,8 +70,7 @@ BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
     uint64_t gpu_client_tracing_id)
     : native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations()),
       gpu_client_id_(gpu_client_id),
-      gpu_client_tracing_id_(gpu_client_tracing_id),
-      gpu_host_id_(0) {
+      gpu_client_tracing_id_(gpu_client_tracing_id) {
   DCHECK(!g_gpu_memory_buffer_manager);
   g_gpu_memory_buffer_manager = this;
 }
@@ -118,9 +104,8 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
 
   // Use service side allocation for native configurations.
   if (IsNativeGpuMemoryBufferConfiguration(format, usage)) {
-    CreateGpuMemoryBufferOnIO(
-        base::Bind(&HostCreateGpuMemoryBuffer, gpu::kNullSurfaceHandle), id,
-        size, format, usage, child_client_id, false, callback);
+    CreateGpuMemoryBufferOnIO(id, size, format, usage, gpu::kNullSurfaceHandle,
+                              child_client_id, callback);
     return;
   }
 
@@ -274,9 +259,8 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     // Note: Unretained is safe as this is only used for synchronous allocation
     // from a non-IO thread.
     CreateGpuMemoryBufferOnIO(
-        base::Bind(&HostCreateGpuMemoryBuffer, request->surface_handle), new_id,
-        request->size, request->format, request->usage, request->client_id,
-        false,
+        new_id, request->size, request->format, request->usage,
+        request->surface_handle, request->client_id,
         base::Bind(
             &BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO,
             base::Unretained(this), base::Unretained(request)));
@@ -330,39 +314,14 @@ void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
 }
 
 void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
-    const CreateDelegate& create_delegate,
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle,
     int client_id,
-    bool reused_gpu_process,
     const CreateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host) {
-    host = GpuProcessHost::Get();
-    if (!host) {
-      LOG(ERROR) << "Failed to launch GPU process.";
-      callback.Run(gfx::GpuMemoryBufferHandle());
-      return;
-    }
-    gpu_host_id_ = host->host_id();
-    reused_gpu_process = false;
-  } else {
-    if (reused_gpu_process) {
-      // We come here if we retried to create the buffer because of a failure
-      // in GpuMemoryBufferCreatedOnIO, but we ended up with the same process
-      // ID, meaning the failure was not because of a channel error, but
-      // another reason. So fail now.
-      LOG(ERROR) << "Failed to create GpuMemoryBuffer.";
-      callback.Run(gfx::GpuMemoryBufferHandle());
-      return;
-    }
-    reused_gpu_process = true;
-  }
-
   BufferMap& buffers = clients_[client_id];
 
   // Note: Handling of cases where the client is removed before the allocation
@@ -377,23 +336,24 @@ void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
     return;
   }
 
+  GpuProcessHost* host = GpuProcessHost::Get();
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  create_delegate.Run(
-      host, id, size, format, usage, client_id,
+  host->CreateGpuMemoryBuffer(
+      id, size, format, usage, client_id, surface_handle,
       base::Bind(&BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO,
-                 base::Unretained(this), create_delegate, id, client_id,
-                 gpu_host_id_, reused_gpu_process, callback));
+                 base::Unretained(this), id, surface_handle, client_id,
+                 host->host_id(), callback));
 }
 
 void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
-    const CreateDelegate& create_delegate,
     gfx::GpuMemoryBufferId id,
+    gpu::SurfaceHandle surface_handle,
     int client_id,
     int gpu_host_id,
-    bool reused_gpu_process,
     const CreateCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
+    const gfx::GpuMemoryBufferHandle& handle,
+    GpuProcessHost::BufferCreationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ClientMap::iterator client_it = clients_.find(client_id);
@@ -421,20 +381,17 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
   if (!valid_handle) {
     // If we failed after re-using the GPU process, it may have died in the
     // mean time. Retry to have a chance to create a fresh GPU process.
-    if (handle.is_null() && reused_gpu_process) {
+    if (handle.is_null() &&
+        status == GpuProcessHost::BufferCreationStatus::GPU_HOST_INVALID) {
       DVLOG(1) << "Failed to create buffer through existing GPU process. "
                   "Trying to restart GPU process.";
-      // If the GPU process has already been restarted, retry without failure
-      // when GPU process host ID already exists.
-      if (gpu_host_id != gpu_host_id_)
-        reused_gpu_process = false;
       gfx::Size size = buffer_it->second.size;
       gfx::BufferFormat format = buffer_it->second.format;
       gfx::BufferUsage usage = buffer_it->second.usage;
       // Remove the buffer entry and call CreateGpuMemoryBufferOnIO again.
       buffers.erase(buffer_it);
-      CreateGpuMemoryBufferOnIO(create_delegate, id, size, format, usage,
-                                client_id, reused_gpu_process, callback);
+      CreateGpuMemoryBufferOnIO(id, size, format, usage, surface_handle,
+                                client_id, callback);
     } else {
       // Remove the buffer entry and run the allocation callback with an empty
       // handle to indicate failure.

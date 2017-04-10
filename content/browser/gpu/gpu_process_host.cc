@@ -770,7 +770,7 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
   DCHECK(!create_gpu_memory_buffer_requests_.empty());
   auto callback = create_gpu_memory_buffer_requests_.front();
   create_gpu_memory_buffer_requests_.pop();
-  callback.Run(handle);
+  callback.Run(handle, BufferCreationStatus::SUCCESS);
 }
 
 #if defined(OS_ANDROID)
@@ -1055,7 +1055,8 @@ void GpuProcessHost::SendOutstandingReplies() {
   while (!create_gpu_memory_buffer_requests_.empty()) {
     auto callback = create_gpu_memory_buffer_requests_.front();
     create_gpu_memory_buffer_requests_.pop();
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    callback.Run(gfx::GpuMemoryBufferHandle(),
+                 BufferCreationStatus::GPU_HOST_INVALID);
   }
 
   if (!send_destroying_video_surface_done_cb_.is_null())

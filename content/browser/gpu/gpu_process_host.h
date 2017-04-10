@@ -79,8 +79,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                           const gpu::GPUInfo&,
                           EstablishChannelStatus status)>;
 
-  typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
-      CreateGpuMemoryBufferCallback;
+  enum class BufferCreationStatus {
+    GPU_HOST_INVALID,
+    SUCCESS,
+  };
+  using CreateGpuMemoryBufferCallback =
+      base::Callback<void(const gfx::GpuMemoryBufferHandle& handle,
+                          BufferCreationStatus status)>;
 
   static bool gpu_enabled() { return gpu_enabled_; }
   static int gpu_crash_count() { return gpu_crash_count_; }
