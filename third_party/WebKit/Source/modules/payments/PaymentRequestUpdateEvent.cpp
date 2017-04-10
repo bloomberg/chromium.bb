@@ -155,7 +155,7 @@ PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
     : Event(type, init),
       wait_for_update_(false),
       abort_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, execution_context),
+          TaskRunnerHelper::Get(TaskType::kUserInteraction, execution_context),
           this,
           &PaymentRequestUpdateEvent::OnUpdateEventTimeout) {}
 
