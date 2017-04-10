@@ -522,7 +522,7 @@ bool ResourceResponse::IsAttachment() const {
 
 AtomicString ResourceResponse::HttpContentType() const {
   return ExtractMIMETypeFromMediaType(
-      HttpHeaderField(HTTPNames::Content_Type).Lower());
+      HttpHeaderField(HTTPNames::Content_Type).DeprecatedLower());
 }
 
 bool ResourceResponse::WasCached() const {

@@ -1424,7 +1424,8 @@ String AXNodeObject::AriaAutoComplete() const {
     return String();
 
   const AtomicString& aria_auto_complete =
-      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete).Lower();
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
+          .DeprecatedLower();
 
   if (aria_auto_complete == "inline" || aria_auto_complete == "list" ||
       aria_auto_complete == "both")

@@ -1243,7 +1243,7 @@ void Element::setAttribute(const AtomicString& local_name,
 
   SynchronizeAttribute(local_name);
   const AtomicString& case_adjusted_local_name =
-      ShouldIgnoreAttributeCase() ? local_name.Lower() : local_name;
+      ShouldIgnoreAttributeCase() ? local_name.DeprecatedLower() : local_name;
 
   if (!GetElementData()) {
     SetAttributeInternal(
@@ -2629,7 +2629,8 @@ void Element::removeAttribute(const AtomicString& name) {
   if (!GetElementData())
     return;
 
-  AtomicString local_name = ShouldIgnoreAttributeCase() ? name.Lower() : name;
+  AtomicString local_name =
+      ShouldIgnoreAttributeCase() ? name.DeprecatedLower() : name;
   size_t index = GetElementData()->Attributes().FindIndex(local_name, false);
   if (index == kNotFound) {
     if (UNLIKELY(local_name == styleAttr) &&
@@ -2674,7 +2675,8 @@ bool Element::hasAttribute(const AtomicString& local_name) const {
     return false;
   SynchronizeAttribute(local_name);
   return GetElementData()->Attributes().FindIndex(
-             ShouldIgnoreAttributeCase() ? local_name.Lower() : local_name,
+             ShouldIgnoreAttributeCase() ? local_name.DeprecatedLower()
+                                         : local_name,
              false) != kNotFound;
 }
 

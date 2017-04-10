@@ -1183,7 +1183,7 @@ inline void Element::SetTagNameForCreateElementNS(
 inline AtomicString Element::LocalNameForSelectorMatching() const {
   if (IsHTMLElement() || !GetDocument().IsHTMLDocument())
     return localName();
-  return localName().Lower();
+  return localName().DeprecatedLower();
 }
 
 inline bool IsShadowHost(const Node* node) {

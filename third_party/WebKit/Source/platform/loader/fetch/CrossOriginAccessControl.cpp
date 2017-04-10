@@ -68,7 +68,7 @@ static AtomicString CreateAccessControlRequestHeadersHeader(
       // Access-Control-Request-Headers header.
       continue;
     }
-    filtered_headers.push_back(header.key.Lower());
+    filtered_headers.push_back(header.key.DeprecatedLower());
   }
   if (!filtered_headers.size())
     return g_null_atom;

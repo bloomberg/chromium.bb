@@ -371,7 +371,8 @@ Blob* XMLHttpRequest::ResponseBlob() {
       if (binary_response_builder_ && binary_response_builder_->size()) {
         size = binary_response_builder_->size();
         blob_data->AppendBytes(binary_response_builder_->Data(), size);
-        blob_data->SetContentType(FinalResponseMIMETypeWithFallback().Lower());
+        blob_data->SetContentType(
+            FinalResponseMIMETypeWithFallback().DeprecatedLower());
         binary_response_builder_.Clear();
       }
       response_blob_ =
@@ -1617,7 +1618,8 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
     // FIXME: finalResponseMIMETypeWithFallback() defaults to
     // text/xml which may be incorrect. Replace it with
     // finalResponseMIMEType() after compatibility investigation.
-    blob_data->SetContentType(FinalResponseMIMETypeWithFallback().Lower());
+    blob_data->SetContentType(
+        FinalResponseMIMETypeWithFallback().DeprecatedLower());
   }
   return BlobDataHandle::Create(std::move(blob_data),
                                 length_downloaded_to_file_);

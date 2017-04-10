@@ -282,7 +282,7 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
     selector = CSSParserSelector::Create();
     if (!pseudo.IsNull()) {
       selector->SetMatch(CSSSelector::kPagePseudoClass);
-      selector->UpdatePseudoType(pseudo.Lower());
+      selector->UpdatePseudoType(pseudo.DeprecatedLower());
       if (selector->GetPseudoType() == CSSSelector::kPseudoUnknown)
         return CSSSelectorList();
     }

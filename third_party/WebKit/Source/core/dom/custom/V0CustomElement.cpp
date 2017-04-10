@@ -57,7 +57,7 @@ Vector<AtomicString>& V0CustomElement::EmbedderCustomElementNames() {
 }
 
 void V0CustomElement::AddEmbedderCustomElementName(const AtomicString& name) {
-  AtomicString lower = name.Lower();
+  AtomicString lower = name.DeprecatedLower();
   if (IsValidName(lower, kEmbedderNames))
     return;
   EmbedderCustomElementNames().push_back(lower);

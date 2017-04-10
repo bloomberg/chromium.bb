@@ -165,9 +165,12 @@ class WTF_EXPORT AtomicString {
 
   // Returns a lowercase version of the string. This function might
   // convert non-ASCII characters to ASCII characters. For example,
-  // lower() for U+212A is 'k'.
+  // DeprecatedLower() for U+212A is 'k'.
   // This function is rarely used to implement web platform features.
-  AtomicString Lower() const;
+  // See crbug.com/627682.
+  // This function is deprecated. We should use LowerASCII(), or introduce
+  // LowerUnicode().
+  AtomicString DeprecatedLower() const;
 
   // Returns a lowercase/uppercase version of the string.
   // These functions convert ASCII characters only.

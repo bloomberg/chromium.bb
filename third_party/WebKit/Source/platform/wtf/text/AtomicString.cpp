@@ -66,7 +66,7 @@ AtomicString AtomicString::FromUTF8(const char* chars) {
   return AtomicString(AtomicStringTable::Instance().AddUTF8(chars, nullptr));
 }
 
-AtomicString AtomicString::Lower() const {
+AtomicString AtomicString::DeprecatedLower() const {
   // Note: This is a hot function in the Dromaeo benchmark.
   StringImpl* impl = this->Impl();
   if (UNLIKELY(!impl))

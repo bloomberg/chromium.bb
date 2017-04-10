@@ -95,7 +95,7 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == typeAttr) {
-    service_type_ = params.new_value.Lower();
+    service_type_ = params.new_value.DeprecatedLower();
     size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
       service_type_ = service_type_.Left(pos);

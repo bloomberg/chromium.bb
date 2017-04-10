@@ -91,7 +91,7 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == sizesAttr) {
     sizes_->setValue(value);
   } else if (name == mediaAttr) {
-    media_ = value.Lower();
+    media_ = value.DeprecatedLower();
     Process();
   } else if (name == scopeAttr) {
     scope_ = value;

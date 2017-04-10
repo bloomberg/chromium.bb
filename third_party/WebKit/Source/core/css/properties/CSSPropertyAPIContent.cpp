@@ -30,7 +30,7 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
 
   // TODO(esprehn): This should be lowerASCII().
   if (context->IsHTMLDocument())
-    attr_name = attr_name.Lower();
+    attr_name = attr_name.DeprecatedLower();
 
   CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueAttr);
   attr_value->Append(*CSSCustomIdentValue::Create(attr_name));

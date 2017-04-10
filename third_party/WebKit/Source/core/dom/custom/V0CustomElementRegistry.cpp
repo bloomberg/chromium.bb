@@ -48,7 +48,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     const AtomicString& user_supplied_name,
     V0CustomElement::NameSet valid_names,
     ExceptionState& exception_state) {
-  AtomicString type = user_supplied_name.Lower();
+  AtomicString type = user_supplied_name.DeprecatedLower();
 
   if (!constructor_builder->IsFeatureAllowed()) {
     V0CustomElementException::ThrowException(
