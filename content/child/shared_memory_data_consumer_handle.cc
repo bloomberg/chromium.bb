@@ -108,8 +108,9 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void AcquireReaderLock(Client* client) {
     lock_.AssertAcquired();
-    DCHECK(!notification_task_runner_);
-    DCHECK(!client_);
+    // TODO(yhirano): Turn these CHECKs to DCHECKs once the crash is fixed.
+    CHECK(!notification_task_runner_);
+    CHECK(!client_);
     notification_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     client_ = client;
     if (client && !(IsEmpty() && result() == kOk)) {
@@ -121,7 +122,9 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void ReleaseReaderLock() {
     lock_.AssertAcquired();
-    DCHECK(notification_task_runner_);
+    // TODO(yhirano): Turn these CHECKs to DCHECKs once the crash is fixed.
+    CHECK(notification_task_runner_);
+    CHECK(notification_task_runner_->BelongsToCurrentThread());
     notification_task_runner_ = nullptr;
     client_ = nullptr;
   }
@@ -223,7 +226,8 @@ class SharedMemoryDataConsumerHandle::Context final
   void Clear() {
     lock_.AssertAcquired();
     ClearQueue();
-    client_ = nullptr;
+    // Turn this CHECK to DCHECK.
+    CHECK(!client_);
     ResetOnReaderDetached();
   }
   // Must be called with |lock_| not aquired.
