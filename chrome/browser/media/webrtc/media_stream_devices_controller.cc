@@ -746,14 +746,8 @@ ContentSetting MediaStreamDevicesController::GetNewSetting(
   DCHECK(user_decision == CONTENT_SETTING_ALLOW ||
          user_decision == CONTENT_SETTING_BLOCK);
   ContentSetting result = old_setting;
-  if (old_setting == CONTENT_SETTING_ASK) {
-    if (user_decision == CONTENT_SETTING_ALLOW &&
-        IsUserAcceptAllowed(content_type)) {
-      result = CONTENT_SETTING_ALLOW;
-    } else if (user_decision == CONTENT_SETTING_BLOCK) {
-      result = CONTENT_SETTING_BLOCK;
-    }
-  }
+  if (old_setting == CONTENT_SETTING_ASK)
+    result = user_decision;
   return result;
 }
 
