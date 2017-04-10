@@ -3465,8 +3465,6 @@ split_static_library("browser") {
       "repost_form_warning_controller.h",
       "search/local_ntp_source.cc",
       "search/local_ntp_source.h",
-      "search/search_terms_tracker.cc",
-      "search/search_terms_tracker.h",
       "signin/signin_promo.cc",
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
