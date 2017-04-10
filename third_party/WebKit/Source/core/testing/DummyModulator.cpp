@@ -4,6 +4,8 @@
 
 #include "core/testing/DummyModulator.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+
 namespace blink {
 
 DummyModulator::DummyModulator() {}
@@ -34,6 +36,11 @@ WebTaskRunner* DummyModulator::TaskRunner() {
   return nullptr;
 };
 
+ModuleScript* DummyModulator::GetFetchedModuleScript(const KURL&) {
+  NOTREACHED();
+  return nullptr;
+}
+
 void DummyModulator::FetchNewSingleModule(const ModuleScriptFetchRequest&,
                                           ModuleGraphLevel,
                                           ModuleScriptLoaderClient*) {
@@ -45,6 +52,20 @@ ScriptModule DummyModulator::CompileModule(const String& script,
                                            AccessControlStatus) {
   NOTREACHED();
   return ScriptModule();
+}
+
+ScriptValue DummyModulator::InstantiateModule(ScriptModule) {
+  NOTREACHED();
+  return ScriptValue();
+}
+
+Vector<String> DummyModulator::ModuleRequestsFromScriptModule(ScriptModule) {
+  NOTREACHED();
+  return Vector<String>();
+}
+
+void DummyModulator::ExecuteModule(ScriptModule) {
+  NOTREACHED();
 }
 
 }  // namespace blink

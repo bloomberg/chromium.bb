@@ -268,6 +268,8 @@ blink_core_sources("dom") {
     "ScriptLoader.cpp",
     "ScriptLoader.h",
     "ScriptModuleResolver.h",
+    "ScriptModuleResolverImpl.cpp",
+    "ScriptModuleResolverImpl.h",
     "ScriptRunner.cpp",
     "ScriptRunner.h",
     "ScriptableDocumentParser.cpp",

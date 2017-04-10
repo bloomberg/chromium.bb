@@ -6,6 +6,7 @@
 #define ScriptModuleResolver_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -21,7 +22,7 @@ class ModuleScript;
 // the specifier, and the module identified by 'x' is the descendant.
 // ScriptModuleResolver, given a referrer and specifier, can look up the
 // descendant.
-class ScriptModuleResolver
+class CORE_EXPORT ScriptModuleResolver
     : public GarbageCollectedFinalized<ScriptModuleResolver> {
  public:
   virtual ~ScriptModuleResolver() {}

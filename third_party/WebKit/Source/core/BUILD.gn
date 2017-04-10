@@ -1183,6 +1183,7 @@ source_set("unit_tests") {
     "dom/NodeTest.cpp",
     "dom/NthIndexCacheTest.cpp",
     "dom/RangeTest.cpp",
+    "dom/ScriptModuleResolverImplTest.cpp",
     "dom/ScriptRunnerTest.cpp",
     "dom/ScriptedAnimationControllerTest.cpp",
     "dom/SelectorQueryTest.cpp",

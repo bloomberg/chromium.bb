@@ -5,6 +5,7 @@
 #ifndef Modulator_h
 #define Modulator_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -21,6 +22,7 @@ class ModuleScriptLoaderClient;
 class ScriptModule;
 class ScriptModuleResolver;
 class ScriptState;
+class ScriptValue;
 class SecurityOrigin;
 class WebTaskRunner;
 
@@ -42,7 +44,8 @@ enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
 class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
-                              public V8PerContextData::Data {
+                              public V8PerContextData::Data,
+                              public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(Modulator);
 
  public:
@@ -59,6 +62,10 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ReferrerPolicy GetReferrerPolicy() = 0;
   virtual SecurityOrigin* GetSecurityOrigin() = 0;
 
+  // Synchronously retrieves a single module script from existing module map
+  // entry.
+  virtual ModuleScript* GetFetchedModuleScript(const KURL&) = 0;
+
   // https://html.spec.whatwg.org/#resolve-a-module-specifier
   static KURL ResolveModuleSpecifier(const String& module_request,
                                      const KURL& base_url);
@@ -66,6 +73,12 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptModule CompileModule(const String& script,
                                      const String& url_str,
                                      AccessControlStatus) = 0;
+
+  virtual ScriptValue InstantiateModule(ScriptModule) = 0;
+
+  virtual Vector<String> ModuleRequestsFromScriptModule(ScriptModule) = 0;
+
+  virtual void ExecuteModule(ScriptModule) = 0;
 
  private:
   friend class ModuleMap;

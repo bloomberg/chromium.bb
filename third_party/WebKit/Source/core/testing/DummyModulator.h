@@ -36,12 +36,16 @@ class DummyModulator : public Modulator {
   ReferrerPolicy GetReferrerPolicy() override;
   SecurityOrigin* GetSecurityOrigin() override;
 
+  ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus) override;
+  ScriptValue InstantiateModule(ScriptModule) override;
+  Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
+  void ExecuteModule(ScriptModule) override;
 };
 
 }  // namespace blink
