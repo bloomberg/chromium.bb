@@ -52,7 +52,7 @@ class SyncUIModelWorkerTest : public testing::Test {
     sync_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&UIModelWorker::DoWorkAndWaitUntilDone),
-                   worker_, ClosureToWorkCallback(work)));
+                   worker_, base::Passed(ClosureToWorkCallback(work))));
   }
 
  protected:
