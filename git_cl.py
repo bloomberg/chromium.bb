@@ -4344,9 +4344,7 @@ def CMDcomments(parser, args):
       parser.error('--gerrit or --rietveld is required if --issue is specified')
 
   cl = Changelist(issue=issue,
-                  # TODO(tandrii): remove 'rietveld' default.
-                  codereview=options.forced_codereview or (
-                      'rietveld' if issue else None),
+                  codereview=options.forced_codereview,
                   auth_config=auth_config)
 
   if options.comment:
