@@ -134,6 +134,32 @@ static String SelectMisspellingAsync(LocalFrame* selected_frame,
   return marker_range->GetText();
 }
 
+// static
+int ContextMenuClientImpl::ComputeEditFlags(Document& selected_document,
+                                            Editor& editor) {
+  int edit_flags = WebContextMenuData::kCanDoNone;
+  if (!selected_document.IsHTMLDocument() &&
+      !selected_document.IsXHTMLDocument())
+    return edit_flags;
+
+  edit_flags |= WebContextMenuData::kCanTranslate;
+  if (editor.CanUndo())
+    edit_flags |= WebContextMenuData::kCanUndo;
+  if (editor.CanRedo())
+    edit_flags |= WebContextMenuData::kCanRedo;
+  if (editor.CanCut())
+    edit_flags |= WebContextMenuData::kCanCut;
+  if (editor.CanCopy())
+    edit_flags |= WebContextMenuData::kCanCopy;
+  if (editor.CanPaste())
+    edit_flags |= WebContextMenuData::kCanPaste;
+  if (editor.CanDelete())
+    edit_flags |= WebContextMenuData::kCanDelete;
+  if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
+    edit_flags |= WebContextMenuData::kCanSelectAll;
+  return edit_flags;
+}
+
 bool ContextMenuClientImpl::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
   return web_view_->GetPage()
@@ -168,27 +194,9 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
   data.mouse_position = selected_frame->View()->ContentsToViewport(
       r.RoundedPointInInnerNodeFrame());
 
-  // Compute edit flags.
-  data.edit_flags = WebContextMenuData::kCanDoNone;
-  if (selected_frame->GetDocument()->IsHTMLDocument() ||
-      selected_frame->GetDocument()->IsXHTMLDocument()) {
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanUndo())
-      data.edit_flags |= WebContextMenuData::kCanUndo;
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanRedo())
-      data.edit_flags |= WebContextMenuData::kCanRedo;
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanCut())
-      data.edit_flags |= WebContextMenuData::kCanCut;
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanCopy())
-      data.edit_flags |= WebContextMenuData::kCanCopy;
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanPaste())
-      data.edit_flags |= WebContextMenuData::kCanPaste;
-    if (ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor().CanDelete())
-      data.edit_flags |= WebContextMenuData::kCanDelete;
-    if (selected_frame->GetDocument()->queryCommandEnabled("selectAll",
-                                                           ASSERT_NO_EXCEPTION))
-      data.edit_flags |= WebContextMenuData::kCanSelectAll;
-    data.edit_flags |= WebContextMenuData::kCanTranslate;
-  }
+  data.edit_flags = ComputeEditFlags(
+      *selected_frame->GetDocument(),
+      ToLocalFrame(web_view_->FocusedCoreFrame())->GetEditor());
 
   // Links, Images, Media tags, and Image/Media-Links take preference over
   // all else.

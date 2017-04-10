@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class Document;
+class Editor;
 class WebViewImpl;
 struct WebContextMenuData;
 
@@ -47,6 +49,7 @@ class ContextMenuClientImpl final : public ContextMenuClient {
 
  private:
   void PopulateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
+  static int ComputeEditFlags(Document&, Editor&);
   bool ShouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
   WebViewImpl* web_view_;
 };
