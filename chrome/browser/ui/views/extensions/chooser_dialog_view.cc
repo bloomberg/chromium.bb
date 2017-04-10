@@ -75,14 +75,6 @@ views::ClientView* ChooserDialogView::CreateClientView(views::Widget* widget) {
   views::DialogClientView* client =
       new views::DialogClientView(widget, GetContentsView());
 
-  constexpr int kMinWidth = 402;
-  constexpr int kMinHeight = 320;
-  int min_width = LayoutDelegate::Get()->GetDialogPreferredWidth(
-      LayoutDelegate::DialogWidth::MEDIUM);
-  if (!min_width)
-    min_width = kMinWidth;
-  client->set_minimum_size(gfx::Size(min_width, kMinHeight));
-
   LayoutDelegate* delegate = LayoutDelegate::Get();
   client->set_button_row_insets(gfx::Insets(
       delegate->GetMetric(
