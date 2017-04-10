@@ -103,6 +103,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
         ['win', 'nvidia', 'opengl'], bug=693090)
+    self.Fail('conformance2/glsl3/' +
+        'vector-dynamic-indexing-swizzled-lvalue.html',
+        ['win', 'nvidia', 'opengl'], bug=709874)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -806,6 +809,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_00.html',
         ['linux', 'intel'], bug=680720)
+    self.Fail('conformance2/glsl3/' +
+        'vector-dynamic-indexing-swizzled-lvalue.html',
+        ['linux', 'intel'], bug=709874)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -1036,6 +1042,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/glsl3/' +
+        'vector-dynamic-indexing-swizzled-lvalue.html',
+        ['linux', ('amd', 0x6613)], bug=709874)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
