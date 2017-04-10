@@ -21,48 +21,6 @@ class VersionInfo(object):
     self.revision = revision
 
 
-def FetchSVNRevision(directory, svn_url_regex):
-  """
-  Fetch the Subversion branch and revision for a given directory.
-
-  Errors are swallowed.
-
-  Returns:
-    A VersionInfo object or None on error.
-  """
-  try:
-    proc = subprocess.Popen(['svn', 'info'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            cwd=directory,
-                            shell=(sys.platform=='win32'))
-  except OSError:
-    # command is apparently either not installed or not executable.
-    return None
-  if not proc:
-    return None
-
-  attrs = {}
-  for line in proc.stdout:
-    line = line.strip()
-    if not line:
-      continue
-    key, val = line.split(': ', 1)
-    attrs[key] = val
-
-  try:
-    match = svn_url_regex.search(attrs['URL'])
-    if match:
-      url = match.group(2)
-    else:
-      url = ''
-    revision = attrs['Revision']
-  except KeyError:
-    return None
-
-  return VersionInfo(url, revision)
-
-
 def RunGitCommand(directory, command):
   """
   Launches git subcommand.
@@ -124,49 +82,6 @@ def FetchGitRevision(directory, hash_only):
   return VersionInfo('git', '%s-%s' % (hsh, pos))
 
 
-def FetchGitSVNURLAndRevision(directory, svn_url_regex, go_deeper):
-  """
-  Fetch the Subversion URL and revision through Git.
-
-  Errors are swallowed.
-
-  Returns:
-    A tuple containing the Subversion URL and revision.
-  """
-  git_args = ['log', '-1', '--format=%b']
-  if go_deeper:
-    git_args.append('--grep=git-svn-id')
-  proc = RunGitCommand(directory, git_args)
-  if proc:
-    output = proc.communicate()[0].strip()
-    if proc.returncode == 0 and output:
-      # Extract the latest SVN revision and the SVN URL.
-      # The target line is the last "git-svn-id: ..." line like this:
-      # git-svn-id: svn://svn.chromium.org/chrome/trunk/src@85528 0039d316....
-      match = _GIT_SVN_ID_REGEX.search(output)
-      if match:
-        revision = match.group(2)
-        url_match = svn_url_regex.search(match.group(1))
-        if url_match:
-          url = url_match.group(2)
-        else:
-          url = ''
-        return url, revision
-  return None, None
-
-
-def FetchGitSVNRevision(directory, svn_url_regex, go_deeper):
-  """
-  Fetch the Git-SVN identifier for the local tree.
-
-  Errors are swallowed.
-  """
-  url, revision = FetchGitSVNURLAndRevision(directory, svn_url_regex, go_deeper)
-  if url and revision:
-    return VersionInfo(url, revision)
-  return None
-
-
 def FetchVersionInfo(default_lastchange, directory=None,
                      directory_regex_prior_to_src_url='chrome|blink|svn',
                      go_deeper=False, hash_only=False):
@@ -177,9 +92,7 @@ def FetchVersionInfo(default_lastchange, directory=None,
   svn_url_regex = re.compile(
       r'.*/(' + directory_regex_prior_to_src_url + r')(/.*)')
 
-  version_info = (FetchSVNRevision(directory, svn_url_regex) or
-                  FetchGitSVNRevision(directory, svn_url_regex, go_deeper) or
-                  FetchGitRevision(directory, hash_only))
+  version_info = FetchGitRevision(directory, hash_only)
   if not version_info:
     if default_lastchange and os.path.exists(default_lastchange):
       revision = open(default_lastchange, 'r').read().strip()
@@ -187,6 +100,7 @@ def FetchVersionInfo(default_lastchange, directory=None,
     else:
       version_info = VersionInfo(None, None)
   return version_info
+
 
 def GetHeaderGuard(path):
   """
@@ -202,6 +116,7 @@ def GetHeaderGuard(path):
     guard = path
   guard = guard.upper()
   return guard.replace('/', '_').replace('.', '_').replace('\\', '_') + '_'
+
 
 def GetHeaderContents(path, define, version):
   """
@@ -224,6 +139,7 @@ def GetHeaderContents(path, define, version):
                                         'define': define,
                                         'version': version }
   return header_contents
+
 
 def WriteIfChanged(file_name, contents):
   """
