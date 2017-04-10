@@ -23,8 +23,8 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.common.ContentSwitches;
@@ -57,7 +57,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
+    @ChildProcessAllocatorSettings(sandboxedServiceCount = 4)
     public void testServiceFailedToBind() {
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
@@ -251,9 +251,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4",
-            ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
-            + DEFAULT_SANDBOXED_PROCESS_SERVICE})
+    @ChildProcessAllocatorSettings(
+            sandboxedServiceCount = 4, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testServiceNumberAllocation() {
         Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
@@ -286,9 +285,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=1",
-            ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
-            + DEFAULT_SANDBOXED_PROCESS_SERVICE})
+    @ChildProcessAllocatorSettings(
+            sandboxedServiceCount = 1, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testExceedMaximumConnectionNumber() {
         Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(

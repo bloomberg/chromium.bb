@@ -11,7 +11,6 @@ import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -29,6 +28,7 @@ import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -507,7 +507,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
      * Verifies that BindingManager.releaseAllModerateBindings() is called once all the sandboxed
      * services are allocated.
      */
-    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
+    @ChildProcessAllocatorSettings(sandboxedServiceCount = 4)
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testReleaseAllModerateBindings() throws InterruptedException {

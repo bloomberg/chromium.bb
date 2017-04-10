@@ -13,7 +13,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.vr_shell.VrClassesWrapper;
 import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 import org.chromium.chrome.test.util.ChromeDisableIf;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.content.browser.test.ContentInstrumentationTestRunner;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -36,8 +36,7 @@ import java.util.concurrent.FutureTask;
  *  An Instrumentation test runner that optionally spawns a test HTTP server.
  *  The server's root directory is the device's external storage directory.
  */
-public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentationTestRunner {
-
+public class ChromeInstrumentationTestRunner extends ContentInstrumentationTestRunner {
     private static final String TAG = "ChromeInstrumentationTestRunner";
 
     @Override

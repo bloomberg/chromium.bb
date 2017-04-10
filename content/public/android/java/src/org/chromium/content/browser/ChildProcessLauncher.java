@@ -13,7 +13,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -227,27 +226,21 @@ public class ChildProcessLauncher {
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
     private static final String SANDBOXED_SERVICES_NAME_KEY =
             "org.chromium.content.browser.SANDBOXED_SERVICES_NAME";
-    // Overrides the number of available sandboxed services.
+
+    // Used by tests to override the default sandboxed service settings.
+    private static int sSandboxedServicesCountForTesting = -1;
+    private static String sSandboxedServicesNameForTesting;
+
     @VisibleForTesting
-    public static final String SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING = "num-sandboxed-services";
-    public static final String SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING =
-            "sandboxed-services-name";
+    public static void setSanboxServicesSettingsForTesting(int serviceCount, String serviceName) {
+        sSandboxedServicesCountForTesting = serviceCount;
+        sSandboxedServicesNameForTesting = serviceName;
+    }
 
     static int getNumberOfServices(Context context, boolean inSandbox, String packageName) {
         int numServices = -1;
-        if (inSandbox
-                && CommandLine.getInstance().hasSwitch(
-                           SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING)) {
-            String value = CommandLine.getInstance().getSwitchValue(
-                    SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING);
-            if (!TextUtils.isEmpty(value)) {
-                try {
-                    numServices = Integer.parseInt(value);
-                } catch (NumberFormatException e) {
-                    Log.w(TAG, "The value of --num-sandboxed-services is formatted wrongly: "
-                                    + value);
-                }
-            }
+        if (inSandbox && sSandboxedServicesCountForTesting != -1) {
+            numServices = sSandboxedServicesCountForTesting;
         } else {
             try {
                 PackageManager packageManager = context.getPackageManager();
@@ -272,9 +265,9 @@ public class ChildProcessLauncher {
         if (!inSandbox) {
             return PrivilegedProcessService.class.getName();
         }
-        if (CommandLine.getInstance().hasSwitch(SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING)) {
-            return CommandLine.getInstance().getSwitchValue(
-                    SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING);
+
+        if (!TextUtils.isEmpty(sSandboxedServicesNameForTesting)) {
+            return sSandboxedServicesNameForTesting;
         }
 
         String serviceName = null;
