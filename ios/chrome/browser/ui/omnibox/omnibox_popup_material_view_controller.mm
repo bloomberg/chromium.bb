@@ -498,11 +498,13 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:20],
+        foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:24],
+        foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
