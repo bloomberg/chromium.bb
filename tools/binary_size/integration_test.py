@@ -85,14 +85,14 @@ class IntegrationTest(unittest.TestCase):
 
   @_CompareWithGolden
   def test_ActualDiff(self):
-    map1 = self._CloneSizeInfo()
-    map2 = self._CloneSizeInfo()
-    map1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
-    map2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
-    map1.symbols -= map1.symbols[0]
-    map2.symbols -= map2.symbols[-1]
-    map1.symbols[1].size -= 10
-    diff = models.Diff(map1, map2)
+    size_info1 = self._CloneSizeInfo()
+    size_info2 = self._CloneSizeInfo()
+    size_info1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
+    size_info2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
+    size_info1.symbols -= size_info1.symbols[:2]
+    size_info2.symbols -= size_info2.symbols[-3:]
+    size_info1.symbols[1].size -= 10
+    diff = models.Diff(size_info1, size_info2)
     return describe.GenerateLines(diff, verbose=True)
 
   @_CompareWithGolden

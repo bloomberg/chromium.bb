@@ -100,6 +100,9 @@ class Describer(object):
         _PrettySize(code_size), _PrettySize(ro_size),
         _PrettySize(total_size - code_size - ro_size),
         _PrettySize(total_size))
+    unique_paths = set(s.object_path for s in group)
+    yield 'Number of object files: {}'.format(len(unique_paths))
+    yield ''
     yield 'First columns are: running total, type, size'
 
     running_total = 0
@@ -119,12 +122,33 @@ class Describer(object):
           yield '{}{:8} {}'.format(prefix, running_total, l)
 
   def _DescribeSymbolDiff(self, diff):
-    template = ('{} symbols added (+), {} changed (~), {} removed (-), '
-                '{} unchanged ({})')
+    header_template = ('{} symbols added (+), {} changed (~), {} removed (-), '
+                       '{} unchanged ({})')
     unchanged_msg = '=' if self.verbose else 'not shown'
-    header_str = (template.format(
-            diff.added_count, diff.changed_count, diff.removed_count,
-            diff.unchanged_count, unchanged_msg))
+    symbol_delta_desc = [header_template.format(
+        diff.added_count, diff.changed_count, diff.removed_count,
+        diff.unchanged_count, unchanged_msg)]
+
+    similar_paths = set()
+    added_paths = set()
+    removed_paths = set()
+    for s in diff:
+      if diff.IsAdded(s):
+        added_paths.add(s.object_path)
+      elif diff.IsRemoved(s):
+        removed_paths.add(s.object_path)
+      else:
+        similar_paths.add(s.object_path)
+    added_paths.difference_update(similar_paths)
+    removed_paths.difference_update(similar_paths)
+    path_delta_desc = ['{} object files added, {} removed'.format(
+        len(added_paths), len(removed_paths))]
+    if self.verbose and len(added_paths):
+      path_delta_desc.append('Added files:')
+      path_delta_desc.extend('  ' + p for p in sorted(added_paths))
+    if self.verbose and len(removed_paths):
+      path_delta_desc.append('Removed files:')
+      path_delta_desc.extend('  ' + p for p in sorted(removed_paths))
 
     def prefix_func(sym):
       if diff.IsAdded(sym):
@@ -137,7 +161,8 @@ class Describer(object):
 
     diff = diff if self.verbose else diff.WhereNotUnchanged()
     group_desc = self._DescribeSymbolGroup(diff, prefix_func=prefix_func)
-    return itertools.chain((header_str,), group_desc)
+    return itertools.chain(symbol_delta_desc, path_delta_desc, ('',),
+                           group_desc)
 
   def _DescribeSizeInfoDiff(self, diff):
     common_metadata = {k: v for k, v in diff.old_metadata.iteritems()
@@ -162,8 +187,13 @@ class Describer(object):
         ('Metadata:',),
         ('    %s' % line for line in DescribeMetadata(size_info.metadata)))
     section_desc = self._DescribeSectionSizes(size_info.section_sizes)
+    coverage_desc = ()
+    if self.verbose:
+      coverage_desc = itertools.chain(
+          ('',), DescribeSizeInfoCoverage(size_info))
     group_desc = self.GenerateLines(size_info.symbols)
-    return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
+    return itertools.chain(metadata_desc, section_desc, coverage_desc, ('',),
+                           group_desc)
 
   def GenerateLines(self, obj):
     if isinstance(obj, models.SizeInfoDiff):

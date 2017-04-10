@@ -1,6 +1,8 @@
 GroupByNamespace()
 Showing 10 symbols with total size: 2652506 bytes
 .text=0 bytes    .rodata=0 bytes    other=2.53mb     total=2.53mb
+Number of object files: 1
+
 First columns are: running total, type, size
  2652236 * 2652236  {global} (count=27)
  2652330 * 94       blink::PaintChunker (count=1)
@@ -15,6 +17,8 @@ First columns are: running total, type, size
 GroupByNamespace(depth=1)
 Showing 7 symbols with total size: 2652506 bytes
 .text=0 bytes    .rodata=0 bytes    other=2.53mb     total=2.53mb
+Number of object files: 1
+
 First columns are: running total, type, size
  2652236 * 2652236  {global} (count=27)
  2652390 * 154      blink (count=4)
@@ -26,6 +30,8 @@ First columns are: running total, type, size
 GroupByNamespace(depth=1, fallback=None)
 Showing 7 symbols with total size: 2652506 bytes
 .text=0 bytes    .rodata=0 bytes    other=2.53mb     total=2.53mb
+Number of object files: 1
+
 First columns are: running total, type, size
  2652236 * 2652236   (count=27)
  2652390 * 154      blink (count=4)
@@ -37,6 +43,8 @@ First columns are: running total, type, size
 GroupByNamespace(depth=1, min_count=2)
 Showing 7 symbols with total size: 2652506 bytes
 .text=0 bytes    .rodata=0 bytes    other=2.53mb     total=2.53mb
+Number of object files: 4
+
 First columns are: running total, type, size
  2652236 * 2652236  {global} (count=27)
  2652390 * 154      blink (count=4)

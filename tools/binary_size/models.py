@@ -236,10 +236,7 @@ class SymbolGroup(BaseSymbol):
     return self._symbols[key]
 
   def __sub__(self, other):
-    if other.IsGroup():
-      other_ids = set(id(s) for s in other)
-    else:
-      other_ids = set((id(other),))
+    other_ids = set(id(s) for s in other)
     new_symbols = [s for s in self if id(s) not in other_ids]
     return self._CreateTransformed(new_symbols, section_name=self.section_name)
 
@@ -260,6 +257,10 @@ class SymbolGroup(BaseSymbol):
   @property
   def is_anonymous(self):
     return False
+
+  @property
+  def object_path(self):
+    return None
 
   @property
   def source_path(self):

@@ -99,7 +99,7 @@ def _LoadSizeInfoFromFile(file_obj):
   json_str = file_obj.read(json_len)
   headers = json.loads(json_str)
   section_sizes = headers['section_sizes']
-  metadata = headers['metadata']
+  metadata = headers.get('metadata')
   lines = iter(file_obj)
   next(lines)  # newline after closing } of json.
 
