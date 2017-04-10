@@ -65,3 +65,14 @@ class TestGitMetricsWithTempdir(cros_test_lib.TempDirTestCase):
     self.assertEqual(time_metric.set.call_args_list, [
         mock.call(timestamp, {'repo': self.git_dir})
     ])
+
+
+class TestMetricCollector(cros_test_lib.TestCase):
+  """Tests for _GitMetricCollector."""
+
+  def test__gitdir_expand_user(self):
+    """Test that _gitdir is expanded for user."""
+    with mock.patch.dict(os.environ, HOME='/home/arciel'):
+      collector = git_metrics._GitMetricCollector('~/solciel', 'dummy')
+    self.assertEqual(collector._gitdir, '~/solciel')
+    self.assertEqual(collector._gitrepo._gitdir, '/home/arciel/solciel')

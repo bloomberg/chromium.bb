@@ -41,7 +41,13 @@ class _GitRepo(object):
 
 
 class _GitMetricCollector(object):
-  """Class for collecting metrics about a git repository."""
+  """Class for collecting metrics about a git repository.
+
+  The constructor takes the arguments: `gitdir`, `metric_path`.
+  `gitdir` is the path to the Git directory to collect metrics for and
+  may start with a tilde (expanded to a user's home directory).
+  `metric_path` is the Monarch metric path to report to.
+  """
 
   _commit_hash_metric = ts_mon.StringMetric(
       'git/hash',
@@ -53,7 +59,7 @@ class _GitMetricCollector(object):
 
   def __init__(self, gitdir, metric_path):
     self._gitdir = gitdir
-    self._gitrepo = _GitRepo(gitdir)
+    self._gitrepo = _GitRepo(os.path.expanduser(gitdir))
     self._fields = {'repo': gitdir}
     self._metric_path = metric_path
 
@@ -78,7 +84,7 @@ class _GitMetricCollector(object):
     self._timestamp_metric.set(commit_time, self._fields)
 
 
-_CHROMIUMOS_DIR = os.path.expanduser('~chromeos-test/chromiumos/')
+_CHROMIUMOS_DIR = '~chromeos-test/chromiumos/'
 
 _repo_collectors = (
     # TODO(ayatane): We cannot access chromeos-admin because we are
