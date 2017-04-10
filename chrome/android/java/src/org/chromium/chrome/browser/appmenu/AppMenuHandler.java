@@ -136,8 +136,13 @@ public class AppMenuHandler {
         }
         Point pt = new Point();
         mActivity.getWindowManager().getDefaultDisplay().getSize(pt);
-        mAppMenu.show(wrapper, anchorView, isByPermanentButton,
-                rotation, appRect, pt.y, mDelegate.getFooterResourceId());
+
+        int footerResourceId = 0;
+        if (mDelegate.shouldShowFooter(appRect.height())) {
+            footerResourceId = mDelegate.getFooterResourceId();
+        }
+        mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
+                footerResourceId);
         mAppMenuDragHelper.onShow(startDragging);
         RecordUserAction.record("MobileMenuShow");
         return true;

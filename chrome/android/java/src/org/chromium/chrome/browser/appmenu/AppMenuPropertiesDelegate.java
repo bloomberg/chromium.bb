@@ -307,6 +307,15 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
+     * Determines whether the header should be shown based on the maximum available menu height.
+     * @param maxMenuHeight The maximum available height for the menu to draw.
+     * @return Whether the footer, as specified in {@link #getFooterResourceId()}, should be shown.
+     */
+    public boolean shouldShowFooter(int maxMenuHeight) {
+        return true;
+    }
+
+    /**
      * Updates the bookmarks bridge.
      *
      * @param bookmarkBridge The bookmarks bridge.

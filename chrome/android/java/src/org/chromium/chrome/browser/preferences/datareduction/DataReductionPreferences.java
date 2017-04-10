@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -50,7 +51,7 @@ public class DataReductionPreferences extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.data_reduction_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
         getActivity().setTitle(R.string.data_reduction_title);
         boolean isEnabled =
                 DataReductionProxySettings.getInstance().isDataReductionProxyEnabled();
