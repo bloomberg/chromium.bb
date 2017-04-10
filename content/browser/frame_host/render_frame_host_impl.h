@@ -609,8 +609,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // no longer on the stack when we attempt to swap it out.
   void SuppressFurtherDialogs();
 
-  void SetHasReceivedUserGesture();
-
   void ClearFocusedElement();
 
   // Returns whether the given URL is allowed to commit in the current process.

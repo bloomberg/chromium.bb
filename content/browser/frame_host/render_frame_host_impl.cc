@@ -3088,10 +3088,6 @@ void RenderFrameHostImpl::SuppressFurtherDialogs() {
   Send(new FrameMsg_SuppressFurtherDialogs(GetRoutingID()));
 }
 
-void RenderFrameHostImpl::SetHasReceivedUserGesture() {
-  Send(new FrameMsg_SetHasReceivedUserGesture(GetRoutingID()));
-}
-
 void RenderFrameHostImpl::ClearFocusedElement() {
   has_focused_editable_element_ = false;
   Send(new FrameMsg_ClearFocusedElement(GetRoutingID()));
