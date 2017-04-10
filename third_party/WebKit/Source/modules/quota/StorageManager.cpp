@@ -72,7 +72,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
     return promise;
   }
 
-  ASSERT(execution_context->IsDocument());
+  DCHECK(execution_context->IsDocument());
   PermissionService* permission_service =
       GetPermissionService(script_state->GetExecutionContext());
   if (!permission_service) {

@@ -56,7 +56,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
     StorageUsageCallback* success_callback,
     StorageErrorCallback* error_callback) {
   ExecutionContext* execution_context = script_state->GetExecutionContext();
-  ASSERT(execution_context);
+  DCHECK(execution_context);
 
   WebStorageQuotaType storage_type = static_cast<WebStorageQuotaType>(type_);
   if (storage_type != kWebStorageQuotaTypeTemporary &&
@@ -90,7 +90,7 @@ void DeprecatedStorageQuota::requestQuota(
     StorageQuotaCallback* success_callback,
     StorageErrorCallback* error_callback) {
   ExecutionContext* execution_context = script_state->GetExecutionContext();
-  ASSERT(execution_context);
+  DCHECK(execution_context);
 
   WebStorageQuotaType storage_type = static_cast<WebStorageQuotaType>(type_);
   if (storage_type != kWebStorageQuotaTypeTemporary &&
