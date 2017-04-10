@@ -19,6 +19,8 @@ TEST(RequestMetadataTest, Equality) {
   lhs.http_response_code = 1;
   rhs.from_http_cache = true;
   lhs.from_http_cache = true;
+  lhs.content_location_header = "http://test-location.com/image.png";
+  rhs.content_location_header = "http://test-location.com/image.png";
 
   EXPECT_EQ(rhs, lhs);
 }
@@ -32,6 +34,8 @@ TEST(RequestMetadataTest, NoEquality) {
   lhs.http_response_code = 1;
   rhs.from_http_cache = true;
   lhs.from_http_cache = true;
+  lhs.content_location_header = "http://test-location.com/image.png";
+  rhs.content_location_header = "http://test-location.com/image.png";
 
   lhs.mime_type = "testOtherMimeType";
   EXPECT_NE(rhs, lhs);
@@ -44,6 +48,10 @@ TEST(RequestMetadataTest, NoEquality) {
   lhs.from_http_cache = false;
   EXPECT_NE(rhs, lhs);
   lhs.from_http_cache = true;
+
+  lhs.content_location_header = "http://other.test-location.com/image.png";
+  EXPECT_NE(rhs, lhs);
+  lhs.content_location_header = "http://test-location.com/image.png";
 }
 
 }  // namespace image_fetcher

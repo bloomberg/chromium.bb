@@ -16,6 +16,12 @@
 
 using data_use_measurement::DataUseUserData;
 
+namespace {
+
+const char kContentLocationHeader[] = "Content-Location";
+
+}  // namespace
+
 namespace image_fetcher {
 
 // An active image URL fetcher request. The struct contains the related requests
@@ -89,9 +95,12 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   RequestMetadata metadata;
   if (success && source->GetResponseHeaders()) {
-    metadata.http_response_headers = source->GetResponseHeaders();
     source->GetResponseHeaders()->GetMimeType(&metadata.mime_type);
     metadata.http_response_code = source->GetResponseHeaders()->response_code();
+    // Just read the first value-pair for this header (not caring about |iter|).
+    source->GetResponseHeaders()->EnumerateHeader(
+        /*iter=*/nullptr, kContentLocationHeader,
+        &metadata.content_location_header);
     success &= (metadata.http_response_code == net::HTTP_OK);
   }
   metadata.from_http_cache = source->WasCached();

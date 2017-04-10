@@ -24,12 +24,7 @@ struct RequestMetadata {
   std::string mime_type;
   int http_response_code;
   bool from_http_cache;
-
-  // Is guaranteed to be a valid pointer only when the callback is called. The
-  // headers may get deleted right after the callback finishes.
-  // TODO(jkrcal): Remove |mime_type| and |http_response_code| as it all can be
-  // read from HttpResponseHeaders.
-  net::HttpResponseHeaders* http_response_headers;
+  std::string content_location_header;
 };
 
 bool operator==(const RequestMetadata& lhs, const RequestMetadata& rhs);
