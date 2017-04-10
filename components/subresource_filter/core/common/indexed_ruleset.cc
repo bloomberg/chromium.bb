@@ -325,15 +325,15 @@ using FlatNGramIndex =
 // this function will always return false for such |domains| lists.
 //
 // TODO(pkalinnikov): Make it fast.
-bool DoesInitiatorMatchDomainList(
-    const url::Origin& initiator,
-    const flatbuffers::Vector<FlatStringOffset>& domains,
+bool DoesOriginMatchDomainList(
+    const url::Origin& origin,
+    const flatbuffers::Vector<FlatStringOffset>* domains,
     bool disable_generic_rules) {
-  if (!domains.size())
+  if (!domains || !domains->size())
     return !disable_generic_rules;
-  // Unique |initiator| matches lists of exception domains only.
-  if (initiator.unique()) {
-    for (const flatbuffers::String* domain_filter : domains) {
+  // Unique |origin| matches lists of exception domains only.
+  if (origin.unique()) {
+    for (const flatbuffers::String* domain_filter : *domains) {
       DCHECK_GT(domain_filter->size(), 0u);
       if (domain_filter->Get(0) != '~')
         return false;
@@ -345,8 +345,8 @@ bool DoesInitiatorMatchDomainList(
   bool is_positive = true;
   bool negatives_only = true;
 
-  for (flatbuffers::uoffset_t i = 0, size = domains.size(); i != size; ++i) {
-    const flatbuffers::String* domain_filter = domains.Get(i);
+  for (flatbuffers::uoffset_t i = 0, size = domains->size(); i != size; ++i) {
+    const flatbuffers::String* domain_filter = domains->Get(i);
     if (domain_filter->Length() <= max_domain_length)
       continue;
 
@@ -361,7 +361,7 @@ bool DoesInitiatorMatchDomainList(
       negatives_only = false;
     }
 
-    if (!initiator.DomainIs(filter_piece))
+    if (!origin.DomainIs(filter_piece))
       continue;
     max_domain_length = filter_piece.length();
     is_positive = !is_negative;
@@ -371,15 +371,18 @@ bool DoesInitiatorMatchDomainList(
                            : negatives_only && !disable_generic_rules;
 }
 
-// Returns true iff the request to |url| of type |element_type| requested by
-// |initiator| matches the |rule|'s metadata: resource type, first/third party,
-// domain list.
-bool DoesRuleMetadataMatch(const flat::UrlRule& rule,
-                           const url::Origin& initiator,
-                           proto::ElementType element_type,
-                           proto::ActivationType activation_type,
-                           bool is_third_party,
-                           bool disable_generic_rules) {
+// Returns whether the request matches flags of the specified URL |rule|. Takes
+// into account:
+//  - |element_type| of the requested resource, if not *_UNSPECIFIED.
+//  - |activation_type| for a subdocument request, if not *_UNSPECIFIED.
+//  - Whether the resource |is_third_party| w.r.t. its embedding document.
+bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
+                        proto::ElementType element_type,
+                        proto::ActivationType activation_type,
+                        bool is_third_party) {
+  DCHECK(element_type == proto::ELEMENT_TYPE_UNSPECIFIED ||
+         activation_type == proto::ACTIVATION_TYPE_UNSPECIFIED);
+
   if (element_type != proto::ELEMENT_TYPE_UNSPECIFIED &&
       !(rule.element_types() & element_type)) {
     return false;
@@ -398,14 +401,12 @@ bool DoesRuleMetadataMatch(const flat::UrlRule& rule,
     return false;
   }
 
-  return rule.domains() ? DoesInitiatorMatchDomainList(
-                              initiator, *rule.domains(), disable_generic_rules)
-                        : !disable_generic_rules;
+  return true;
 }
 
 bool MatchesAny(const FlatUrlRuleList* rules,
                 const GURL& url,
-                const url::Origin& initiator,
+                const url::Origin& document_origin,
                 proto::ElementType element_type,
                 proto::ActivationType activation_type,
                 bool is_third_party,
@@ -415,13 +416,15 @@ bool MatchesAny(const FlatUrlRuleList* rules,
   for (const flat::UrlRule* rule : *rules) {
     DCHECK_NE(rule, nullptr);
     DCHECK_NE(rule->url_pattern_type(), flat::UrlPatternType_REGEXP);
+    if (!DoesRuleFlagsMatch(*rule, element_type, activation_type,
+                            is_third_party)) {
+      continue;
+    }
     if (!UrlPattern(*rule).MatchesUrl(url))
       continue;
 
-    // TODO(pkalinnikov): Match the medatada before the URL pattern, but maybe
-    // excluding the domain list.
-    if (DoesRuleMetadataMatch(*rule, initiator, element_type, activation_type,
-                              is_third_party, disable_generic_rules)) {
+    if (DoesOriginMatchDomainList(document_origin, rule->domains(),
+                                  disable_generic_rules)) {
       return true;
     }
   }
@@ -430,10 +433,11 @@ bool MatchesAny(const FlatUrlRuleList* rules,
 }
 
 // Returns whether the network request matches a particular part of the index.
-// |is_third_party| should reflect the relation between |url| and |initiator|.
+// |is_third_party| should reflect the relation between |url| and
+// |document_origin|.
 bool IsMatch(const flat::UrlPatternIndex* index,
              const GURL& url,
-             const url::Origin& initiator,
+             const url::Origin& document_origin,
              proto::ElementType element_type,
              proto::ActivationType activation_type,
              bool is_third_party,
@@ -461,14 +465,14 @@ bool IsMatch(const flat::UrlPatternIndex* index,
     const flat::NGramToRules* entry = hash_table->Get(slot_index);
     if (entry == empty_slot)
       continue;
-    if (MatchesAny(entry->rule_list(), url, initiator, element_type,
+    if (MatchesAny(entry->rule_list(), url, document_origin, element_type,
                    activation_type, is_third_party, disable_generic_rules)) {
       return true;
     }
   }
 
   const FlatUrlRuleList* rules = index->fallback_rules();
-  return MatchesAny(rules, url, initiator, element_type, activation_type,
+  return MatchesAny(rules, url, document_origin, element_type, activation_type,
                     is_third_party, disable_generic_rules);
 }
 

@@ -93,29 +93,29 @@ class SubresourceFilterIndexedRulesetTest : public testing::Test {
 
  protected:
   bool ShouldAllow(const char* url,
-                   const char* initiator = nullptr,
+                   const char* document_origin = nullptr,
                    proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER,
                    bool disable_generic_rules = false) const {
     DCHECK_NE(matcher_.get(), nullptr);
-    url::Origin origin = GetOrigin(initiator);
+    url::Origin origin = GetOrigin(document_origin);
     FirstPartyOrigin first_party(origin);
     return !matcher_->ShouldDisallowResourceLoad(
         GURL(url), first_party, element_type, disable_generic_rules);
   }
 
   bool ShouldAllow(const char* url,
-                   const char* initiator,
+                   const char* document_origin,
                    bool disable_generic_rules) const {
-    return ShouldAllow(url, initiator, proto::ELEMENT_TYPE_OTHER,
+    return ShouldAllow(url, document_origin, proto::ELEMENT_TYPE_OTHER,
                        disable_generic_rules);
   }
 
   bool ShouldDeactivate(const char* document_url,
-                        const char* initiator = nullptr,
+                        const char* parent_document_origin = nullptr,
                         proto::ActivationType activation_type =
                             proto::ACTIVATION_TYPE_UNSPECIFIED) const {
     DCHECK(matcher_);
-    url::Origin origin = GetOrigin(initiator);
+    url::Origin origin = GetOrigin(parent_document_origin);
     return matcher_->ShouldDisableFilteringForDocument(GURL(document_url),
                                                        origin, activation_type);
   }
@@ -312,7 +312,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithThirdParty) {
     proto::SourceType source_type;
 
     const char* url;
-    const char* initiator;
+    const char* document_origin;
     bool expect_allowed;
   } kTestCases[] = {
       {"example.com", kThirdParty, "http://example.com", "http://exmpl.org",
@@ -352,14 +352,14 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithThirdParty) {
     SCOPED_TRACE(testing::Message()
                  << "Rule: " << test_case.url_pattern << "; source: "
                  << (int)test_case.source_type << "; URL: " << test_case.url
-                 << "; Initiator: " << test_case.initiator);
+                 << "; document: " << test_case.document_origin);
 
     AddBlacklistRule(UrlPattern(test_case.url_pattern, kSubstring),
                      test_case.source_type);
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
-              ShouldAllow(test_case.url, test_case.initiator));
+              ShouldAllow(test_case.url, test_case.document_origin));
     Reset();
   }
 }
@@ -370,7 +370,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
     std::vector<std::string> domains;
 
     const char* url;
-    const char* initiator;
+    const char* document_origin;
     bool expect_allowed;
   } kTestCases[] = {
       {"example.com",
@@ -447,9 +447,10 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
-                                    << "; URL: " << test_case.url
-                                    << "; Initiator: " << test_case.initiator);
+    SCOPED_TRACE(testing::Message()
+                 << "Rule: " << test_case.url_pattern
+                 << "; URL: " << test_case.url
+                 << "; document: " << test_case.document_origin);
 
     UrlRuleBuilder builder(UrlPattern(test_case.url_pattern, kSubstring));
     builder.AddDomains(test_case.domains);
@@ -457,7 +458,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
-              ShouldAllow(test_case.url, test_case.initiator));
+              ShouldAllow(test_case.url, test_case.document_origin));
     Reset();
   }
 }
@@ -512,7 +513,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithElementTypes) {
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
-              ShouldAllow(test_case.url, nullptr /* initiator */,
+              ShouldAllow(test_case.url, nullptr /* document_origin */,
                           test_case.element_type));
     Reset();
   }
@@ -554,7 +555,8 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithActivationTypes) {
     Finish();
 
     EXPECT_EQ(test_case.expect_disabled,
-              ShouldDeactivate(test_case.document_url, nullptr /* initiator */,
+              ShouldDeactivate(test_case.document_url,
+                               nullptr /* parent_document_origin */,
                                test_case.activation_type));
     EXPECT_EQ(test_case.expect_disabled,
               ShouldDeactivate(test_case.document_url, "http://example.com/",
@@ -576,10 +578,11 @@ TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithElementAndActivationTypes) {
 
   EXPECT_FALSE(ShouldAllow("http://ex.com"));
   EXPECT_TRUE(ShouldAllow("http://allow.ex.com"));
-  EXPECT_FALSE(ShouldDeactivate("http://allow.ex.com", nullptr /* initiator */,
+  EXPECT_FALSE(ShouldDeactivate("http://allow.ex.com",
+                                nullptr /* parent_document_origin */,
                                 kGenericBlock));
-  EXPECT_TRUE(ShouldDeactivate("http://allow.ex.com", nullptr /* initiator */,
-                               kDocument));
+  EXPECT_TRUE(ShouldDeactivate(
+      "http://allow.ex.com", nullptr /* parent_document_origin */, kDocument));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
@@ -614,7 +617,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
 
   const struct {
     const char* url_pattern;
-    const char* initiator;
+    const char* document_origin;
     bool should_allow_with_disable_generic_rules;
     bool should_allow_with_enable_all_rules;
   } kTestCases[] = {
@@ -637,14 +640,15 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
   constexpr bool kDisableGenericRules = true;
   constexpr bool kEnableAllRules = false;
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "Url: " << test_case.url_pattern
-                                    << "; Initiator: " << test_case.initiator);
+    SCOPED_TRACE(testing::Message()
+                 << "Url: " << test_case.url_pattern
+                 << "; document: " << test_case.document_origin);
 
     EXPECT_EQ(test_case.should_allow_with_disable_generic_rules,
-              ShouldAllow(test_case.url_pattern, test_case.initiator,
+              ShouldAllow(test_case.url_pattern, test_case.document_origin,
                           kDisableGenericRules));
     EXPECT_EQ(test_case.should_allow_with_enable_all_rules,
-              ShouldAllow(test_case.url_pattern, test_case.initiator,
+              ShouldAllow(test_case.url_pattern, test_case.document_origin,
                           kEnableAllRules));
   }
 }
