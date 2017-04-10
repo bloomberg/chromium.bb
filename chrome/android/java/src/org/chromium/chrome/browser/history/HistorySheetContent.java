@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
@@ -22,9 +23,10 @@ public class HistorySheetContent implements BottomSheetContent {
 
     /**
      * @param activity The activity displaying the history manager UI.
+     * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    public HistorySheetContent(ChromeActivity activity) {
-        mHistoryManager = new HistoryManager(activity, false);
+    public HistorySheetContent(ChromeActivity activity, SnackbarManager snackbarManager) {
+        mHistoryManager = new HistoryManager(activity, false, snackbarManager);
         mContentView = mHistoryManager.getView();
         mToolbarView = mHistoryManager.detachToolbarView();
         ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())

@@ -310,7 +310,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        mSnackbarManager = new SnackbarManager(this);
+        mSnackbarManager = new SnackbarManager(this, null);
         mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
         mAssistStatusHandler = createAssistStatusHandler();
@@ -379,7 +379,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             int controlContainerHeight =
                     ((ControlContainer) findViewById(R.id.control_container)).getView().getHeight();
             mBottomSheetContentController.init(
-                    mBottomSheet, controlContainerHeight, mTabModelSelector);
+                    mBottomSheet, controlContainerHeight, mTabModelSelector, this);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }

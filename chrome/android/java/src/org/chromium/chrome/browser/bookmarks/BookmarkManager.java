@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -121,8 +121,9 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
      * bookmark models and jni bridges.
      * @param activity The activity context to use.
      * @param isDialogUi Whether the main bookmarks UI will be shown in a dialog, not a NativePage.
+     * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    public BookmarkManager(Activity activity, boolean isDialogUi) {
+    public BookmarkManager(Activity activity, boolean isDialogUi, SnackbarManager snackbarManager) {
         mActivity = activity;
         mIsDialogUi = isDialogUi;
 
@@ -159,8 +160,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
         mToolbar.initializeSearchView(
                 this, R.string.bookmark_action_bar_search, R.id.search_menu_id);
 
-        mUndoController = new BookmarkUndoController(activity, mBookmarkModel,
-                ((SnackbarManageable) activity).getSnackbarManager());
+        mUndoController = new BookmarkUndoController(activity, mBookmarkModel, snackbarManager);
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         initializeToLoadingState();
         mBookmarkModel.runAfterBookmarkModelLoaded(mModelLoadedRunnable);

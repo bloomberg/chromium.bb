@@ -14,6 +14,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
@@ -30,12 +31,14 @@ public class DownloadSheetContent implements BottomSheetContent {
     /**
      * @param activity The activity displaying the download manager UI.
      * @param isIncognito Whether the activity is currently displaying an incognito tab.
+     * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    public DownloadSheetContent(ChromeActivity activity, final boolean isIncognito) {
+    public DownloadSheetContent(
+            ChromeActivity activity, final boolean isIncognito, SnackbarManager snackbarManager) {
         ThreadUtils.assertOnUiThread();
 
-        mDownloadManager =
-                new DownloadManagerUi(activity, isIncognito, activity.getComponentName(), false);
+        mDownloadManager = new DownloadManagerUi(
+                activity, isIncognito, activity.getComponentName(), false, snackbarManager);
         mContentView = mDownloadManager.getView();
         mToolbarView = mDownloadManager.detachToolbarView();
         ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())

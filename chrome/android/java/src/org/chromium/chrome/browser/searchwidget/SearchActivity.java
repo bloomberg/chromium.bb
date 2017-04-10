@@ -115,7 +115,7 @@ public class SearchActivity extends AsyncInitializationActivity
         initializeDimensions();
 
         mWindowAndroid = new ActivityWindowAndroid(this);
-        mSnackbarManager = new SnackbarManager(this);
+        mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
         mContentView = createContentView(mSearchBox);

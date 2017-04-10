@@ -45,9 +45,10 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private SnackbarController mTileRemovedSnackbarController;
 
     public TileGroupDelegateImpl(ChromeActivity activity, Profile profile,
-            TabModelSelector tabModelSelector, SuggestionsNavigationDelegate navigationDelegate) {
+            TabModelSelector tabModelSelector, SuggestionsNavigationDelegate navigationDelegate,
+            SnackbarManager snackbarManager) {
         mContext = activity;
-        mSnackbarManager = activity.getSnackbarManager();
+        mSnackbarManager = snackbarManager;
         mTabModelSelector = tabModelSelector;
         mNavigationDelegate = navigationDelegate;
         mMostVisitedSites = buildMostVisitedSites(profile);

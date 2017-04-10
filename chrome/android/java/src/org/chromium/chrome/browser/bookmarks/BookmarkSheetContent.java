@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
@@ -22,9 +23,10 @@ public class BookmarkSheetContent implements BottomSheetContent {
 
     /**
      * @param activity The activity displaying the bookmark manager UI.
+     * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    public BookmarkSheetContent(ChromeActivity activity) {
-        mBookmarkManager = new BookmarkManager(activity, false);
+    public BookmarkSheetContent(ChromeActivity activity, SnackbarManager snackbarManager) {
+        mBookmarkManager = new BookmarkManager(activity, false, snackbarManager);
         mBookmarkManager.updateForUrl(BookmarkUtils.getLastUsedUrl(activity));
         mContentView = mBookmarkManager.getView();
         mToolbarView = mBookmarkManager.detachToolbarView();

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
@@ -48,12 +49,12 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final TileGroup.Delegate mTileGroupDelegate;
 
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
         Profile profile = Profile.getLastUsedProfile();
         SuggestionsNavigationDelegate navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, sheet, tabModelSelector);
-        mTileGroupDelegate =
-                new TileGroupDelegateImpl(activity, profile, tabModelSelector, navigationDelegate);
+        mTileGroupDelegate = new TileGroupDelegateImpl(
+                activity, profile, tabModelSelector, navigationDelegate, snackbarManager);
         mSuggestionsManager = createSuggestionsDelegate(profile, navigationDelegate, sheet);
 
         mView = LayoutInflater.from(activity).inflate(

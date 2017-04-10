@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.IntDef;
@@ -14,12 +15,17 @@ import android.support.design.widget.BottomNavigationView.OnNavigationItemSelect
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
 import org.chromium.chrome.browser.history.HistorySheetContent;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -57,6 +63,8 @@ public class BottomSheetContentController extends BottomNavigationView
                     + mDistanceBelowToolbarPx;
             setTranslationY((int) Math.max(offsetY, 0f));
             setVisibility(MathUtils.areFloatsEqual(heightFraction, 0f) ? View.GONE : View.VISIBLE);
+
+            mSnackbarManager.dismissAllSnackbars();
         }
 
         @Override
@@ -88,6 +96,7 @@ public class BottomSheetContentController extends BottomNavigationView
 
     private BottomSheet mBottomSheet;
     private TabModelSelector mTabModelSelector;
+    private SnackbarManager mSnackbarManager;
     private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
     private boolean mDefaultContentInitialized;
@@ -101,9 +110,10 @@ public class BottomSheetContentController extends BottomNavigationView
      * @param bottomSheet The {@link BottomSheet} associated with this bottom nav.
      * @param controlContainerHeight The height of the control container in px.
      * @param tabModelSelector The {@link TabModelSelector} for the application.
+     * @param activity The {@link Activity} that owns the BottomSheet.
      */
     public void init(BottomSheet bottomSheet, int controlContainerHeight,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, Activity activity) {
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(mBottomSheetObserver);
         mTabModelSelector = tabModelSelector;
@@ -114,6 +124,18 @@ public class BottomSheetContentController extends BottomNavigationView
 
         setOnNavigationItemSelectedListener(this);
         disableShiftingMode();
+
+        mSnackbarManager = new SnackbarManager(
+                activity, (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container));
+        mSnackbarManager.onStart();
+
+        ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                if (newState == ActivityState.STARTED) mSnackbarManager.onStart();
+                if (newState == ActivityState.STOPPED) mSnackbarManager.onStop();
+            }
+        }, activity);
     }
 
     /**
@@ -129,6 +151,7 @@ public class BottomSheetContentController extends BottomNavigationView
     public boolean onNavigationItemSelected(MenuItem item) {
         if (mSelectedItemId == item.getItemId()) return false;
 
+        mSnackbarManager.dismissAllSnackbars();
         showBottomSheetContent(item.getItemId());
         return true;
     }
@@ -161,14 +184,16 @@ public class BottomSheetContentController extends BottomNavigationView
         if (navItemId == R.id.action_home) {
             content = new SuggestionsBottomSheetContent(
                     mTabModelSelector.getCurrentTab().getActivity(), mBottomSheet,
-                    mTabModelSelector);
+                    mTabModelSelector, mSnackbarManager);
         } else if (navItemId == R.id.action_downloads) {
             content = new DownloadSheetContent(mTabModelSelector.getCurrentTab().getActivity(),
-                    mTabModelSelector.getCurrentModel().isIncognito());
+                    mTabModelSelector.getCurrentModel().isIncognito(), mSnackbarManager);
         } else if (navItemId == R.id.action_bookmarks) {
-            content = new BookmarkSheetContent(mTabModelSelector.getCurrentTab().getActivity());
+            content = new BookmarkSheetContent(
+                    mTabModelSelector.getCurrentTab().getActivity(), mSnackbarManager);
         } else if (navItemId == R.id.action_history) {
-            content = new HistorySheetContent(mTabModelSelector.getCurrentTab().getActivity());
+            content = new HistorySheetContent(
+                    mTabModelSelector.getCurrentTab().getActivity(), mSnackbarManager);
         }
         mBottomSheetContents.put(navItemId, content);
         return content;

@@ -37,8 +37,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -71,6 +71,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final HistoryManagerToolbar mToolbar;
     private final TextView mEmptyView;
     private final RecyclerView mRecyclerView;
+    private final SnackbarManager mSnackbarManager;
     private LargeIconBridge mLargeIconBridge;
 
     private boolean mIsSearching;
@@ -80,11 +81,14 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @param activity The Activity associated with the HistoryManager.
      * @param isSeparateActivity Whether the history UI will be shown in a separate activity than
      *                           the main Chrome activity.
+     * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public HistoryManager(Activity activity, boolean isSeparateActivity) {
+    public HistoryManager(
+            Activity activity, boolean isSeparateActivity, SnackbarManager snackbarManager) {
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
+        mSnackbarManager = snackbarManager;
 
         mSelectionDelegate = new SelectionDelegate<>();
         mSelectionDelegate.addObserver(this);
@@ -186,7 +190,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mSelectionDelegate.clearSelection();
             Snackbar snackbar = Snackbar.make(mActivity.getString(R.string.copied), this,
                     Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_HISTORY_LINK_COPIED);
-            ((SnackbarManageable) mActivity).getSnackbarManager().showSnackbar(snackbar);
+            mSnackbarManager.showSnackbar(snackbar);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_incognito) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), true);

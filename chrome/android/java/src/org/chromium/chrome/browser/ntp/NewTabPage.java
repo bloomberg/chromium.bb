@@ -255,7 +255,8 @@ public class NewTabPage
         private NewTabPageTileGroupDelegate(ChromeActivity activity, Profile profile,
                 TabModelSelector tabModelSelector,
                 SuggestionsNavigationDelegate navigationDelegate) {
-            super(activity, profile, tabModelSelector, navigationDelegate);
+            super(activity, profile, tabModelSelector, navigationDelegate,
+                    activity.getSnackbarManager());
         }
 
         @Override
