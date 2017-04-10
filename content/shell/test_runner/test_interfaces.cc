@@ -79,6 +79,10 @@ void TestInterfaces::ResetAll() {
   test_runner_->Reset();
 }
 
+bool TestInterfaces::TestIsRunning() {
+  return test_runner_->TestIsRunning();
+}
+
 void TestInterfaces::SetTestIsRunning(bool running) {
   test_runner_->SetTestIsRunning(running);
 }

@@ -37,6 +37,7 @@ class TestInterfaces {
   void BindTo(blink::WebFrame* frame);
   void ResetTestHelperControllers();
   void ResetAll();
+  bool TestIsRunning();
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);

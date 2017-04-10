@@ -602,8 +602,11 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_values) {
   // Ignore changes that happen before we got the initial, accumulated
-  // layout flag changes in ShellViewMsg_ReplicateTestConfiguration.
-  if (!is_main_window_)
+  // layout flag changes in either OnReplicateTestConfiguration or
+  // OnSetTestConfiguration.
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+  if (!interfaces->TestIsRunning())
     return;
 
   RenderThread::Get()->Send(
@@ -611,14 +614,16 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
 }
 
 void BlinkTestRunner::TestFinished() {
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+  interfaces->SetTestIsRunning(false);
+
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
     RenderThread::Get()->Send(
         new LayoutTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  interfaces->SetTestIsRunning(false);
+
   if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
     RenderView::ForEach(&visitor);

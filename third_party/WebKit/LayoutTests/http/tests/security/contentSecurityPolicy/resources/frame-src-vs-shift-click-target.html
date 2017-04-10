@@ -1,10 +1,8 @@
 <p>frame-src-vs-shift-click-TARGET.html</p>
 <script>
-mainTestWindow = window.open("", "mainTestWindow")
-var data = {
-    'history.length': history.length,
-    'window.self == window.parent': window.self == window.parent,
-    'window.location.href': window.location.href
-};
-mainTestWindow.postMessage(data, '*');
+testRunner.setCustomTextOutput(
+  'history.length: ' + history.length + '\n' +
+  'window.self == window.parent: ' + (window.self == window.parent) + '\n' +
+  'window.location.href: ' + window.location.href + '\n');
+testRunner.notifyDone();
 </script>

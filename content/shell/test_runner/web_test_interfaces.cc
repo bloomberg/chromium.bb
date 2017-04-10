@@ -39,6 +39,10 @@ void WebTestInterfaces::ResetAll() {
   interfaces_->ResetAll();
 }
 
+bool WebTestInterfaces::TestIsRunning() {
+  return interfaces_->TestIsRunning();
+}
+
 void WebTestInterfaces::SetTestIsRunning(bool running) {
   interfaces_->SetTestIsRunning(running);
 }

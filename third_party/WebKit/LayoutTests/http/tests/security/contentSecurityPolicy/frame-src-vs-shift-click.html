@@ -6,8 +6,6 @@
 <p>This is a regression test for https://crbug.com/658701</p>
 </div>
 <div id="log"></div>
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
 <iframe id="iframe"
         srcdoc="
 &lt;p&gt;frame-src-vs-shift-click-FRAME.html:
@@ -17,41 +15,11 @@
 &lt;/p&gt;
         "></iframe>
 <script>
-var test = async_test("Testing frame-src vs shift-click");
-
-function concludeTest(data)
-{
-    test.step(function() {
-        assert_equals(
-            data["window.location.href"],
-            'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/frame-src-vs-shift-click-target.html',
-            "Test should be finished from frame-src-vs-shift-click-target.html");
-        assert_equals(
-            data["history.length"],
-            1,
-            "frame-src-vs-shift-click-target.html should be in a fresh window");
-        assert_true(
-            data["window.self == window.parent"],
-            "frame-src-vs-shift-click-target.html should be the main frame");
-    });
-
-    document.getElementById('container').outerHTML = '';
-    test.done();
-}
-
 if (window.testRunner) {
+    testRunner.dumpAsText();
     testRunner.setCanOpenWindows(true);
     testRunner.setCloseRemainingWindowsWhenComplete(true);
-
-    // Shift-clicking doesn't set window.opener, so we allow the new window
-    // to find the opener using the name being set below.
-    // TODO(lukasza): After fixing https://crbug.com/658386, the test will
-    // need to use another mechanism for communicating verification results
-    // (most likely OOPIF-replicated testRunner.setCustomTextOutput).
-    window.name = "mainTestWindow";
-    window.addEventListener('message', function(e) {
-        concludeTest(e.data);
-    });
+    testRunner.waitUntilDone();
 
     window.onload = function() {
         var iframe = document.getElementById("iframe");

@@ -6,23 +6,12 @@
 </form>
 </div>
 <div id="console"></div>
-<script src="/js-test-resources/js-test.js"></script>
 <script>
-var results;
-function concludeTest(data)
-{
-    results = data;
-    shouldBeEqualToString('results["method"]', 'POST');
-    shouldBeEqualToString('results["formValue"]', 'b');
-
-    document.getElementById('container').outerHTML = '';
-    finishJSTest();
-}
-
 if (window.testRunner) {
-    window.jsTestIsAsync = true;
+    testRunner.dumpAsText();
     testRunner.setCanOpenWindows(true);
     testRunner.setCloseRemainingWindowsWhenComplete(true);
+    testRunner.waitUntilDone();
 
     window.onload = function() {
         var submit = document.querySelector('input[type="submit"]');
@@ -31,15 +20,5 @@ if (window.testRunner) {
         eventSender.mouseDown(0);
         eventSender.mouseUp(0, ['shiftKey']);
     };
-
-    // Shift-clicking doesn't set window.opener, so we allow the new window
-    // to find the opener using the name being set below.
-    // TODO(lukasza): After fixing https://crbug.com/658386, the test will
-    // need to use another mechanism for communicating verification results
-    // (most likely OOPIF-replicated testRunner.setCustomTextOutput).
-    window.name = "mainTestWindow";
-    window.addEventListener('message', function(e) {
-        concludeTest(e.data);
-    });
 }
 </script>

@@ -1,8 +1,6 @@
 <script>
-mainTestWindow = window.open("", "mainTestWindow")
-var data = {
-    'method': '<?=$_SERVER['REQUEST_METHOD'] ?>',
-    'formValue': '<?= $_POST['a'] ?>',
-};
-mainTestWindow.postMessage(data, '*');
+testRunner.setCustomTextOutput(
+  'method: "<?=$_SERVER['REQUEST_METHOD'] ?>"\n' +
+  'formValue: "<?= $_POST['a'] ?>"');
+testRunner.notifyDone();
 </script>

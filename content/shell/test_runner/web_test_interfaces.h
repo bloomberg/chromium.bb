@@ -45,6 +45,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   void SetMainView(blink::WebView* web_view);
   void SetDelegate(WebTestDelegate* delegate);
   void ResetAll();
+  bool TestIsRunning();
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);
