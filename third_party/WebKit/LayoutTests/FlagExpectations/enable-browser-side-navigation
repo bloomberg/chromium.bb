@@ -16,7 +16,5 @@ Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-
 
 # These tests are correct with PlzNavigate.
 # Without PlzNavigate, the line number of the console message is missing.
-Bug(none) http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Failure ]
 Bug(none) http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]
