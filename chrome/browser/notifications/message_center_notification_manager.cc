@@ -18,6 +18,7 @@
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -329,18 +330,19 @@ void MessageCenterNotificationManager::RemoveProfileNotification(
   if (it == profile_notifications_.end())
     return;
 
-  // Delay destruction of the ProfileNotification until after all the work
-  // removing it from |profile_notifications_| is complete. This must be done
-  // because this ProfileNotification might have the one ScopedKeepAlive object
-  // that was keeping the browser alive, and destroying it would result in a re-
-  // entrant call to this class. Because every method in this class touches
-  // |profile_notifications_|, |profile_notifications_| must always be in a
-  // self-consistent state in moments where re-entrance might happen.
-  // https://crbug.com/649971
-  std::unique_ptr<ProfileNotification> notification = std::move(it->second);
+  // Delay destruction of the ProfileNotification until current task is
+  // completed. This must be done because this ProfileNotification might have
+  // the one ScopedKeepAlive object that was keeping the browser alive, and
+  // destroying it would result in:
+  // a) A reentrant call to this class. Because every method in this class
+  //   touches |profile_notifications_|, |profile_notifications_| must always
+  //   be in a self-consistent state in moments where re-entrance might happen.
+  // b) A crash like https://crbug.com/649971 because it can trigger
+  //    shutdown process while we're still inside the call stack from UI
+  //    framework.
+  content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                     it->second.release());
   profile_notifications_.erase(it);
-  // Now that the map modifications are complete, going out of scope will
-  // destroy the notification.
 }
 
 ProfileNotification* MessageCenterNotificationManager::FindProfileNotification(

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -139,6 +140,11 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
         base::UTF8ToUTF16("chrome-test://testing/"),
         GURL("chrome-test://testing/"), "REPLACE-ME", data, new_delegate);
   }
+
+  void RunLoopUntilIdle() {
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
@@ -201,19 +207,23 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
 
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("a", &delegate), profile());
+  RunLoopUntilIdle();
   EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
 
   TestDelegate* delegate2;
   manager()->Add(CreateRichTestNotification("b", &delegate2), profile());
+  RunLoopUntilIdle();
   EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
 
   manager()->CancelById("a", NotificationUIManager::GetProfileID(profile()));
+  RunLoopUntilIdle();
   EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
 
   manager()->CancelById("b", NotificationUIManager::GetProfileID(profile()));
+  RunLoopUntilIdle();
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
 
