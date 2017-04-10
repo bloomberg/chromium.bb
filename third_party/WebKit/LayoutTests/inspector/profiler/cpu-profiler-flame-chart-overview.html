@@ -933,7 +933,9 @@ function test()
     profile.endTime *= 1000;
     var samplingInterval = (profile.endTime - profile.startTime) / (profile.samples.length - 1);
     profile.timeDeltas = [0, ...new Array(profile.samples.length - 1).fill(samplingInterval)];
-    profileAndExpectations.target = () => {};
+    profileAndExpectations._cpuProfilerModel = null;
+    profileAndExpectations._debuggerModel = null;
+    profileAndExpectations.debuggerModel = () => null;
     profileAndExpectations.weakTarget = () => new WeakReference(null);
     var cpuProfileView = new Profiler.CPUProfileView(profileAndExpectations);
     cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
