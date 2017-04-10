@@ -401,7 +401,7 @@ AppBannerSettingsHelper::GetHomescreenLanguageOption() {
   if (param.empty() || !base::StringToUint(param, &language_option) ||
       language_option < LANGUAGE_OPTION_MIN ||
       language_option > LANGUAGE_OPTION_MAX) {
-    return LANGUAGE_OPTION_DEFAULT;
+    return LANGUAGE_OPTION_ADD;
   }
 
   return static_cast<LanguageOption>(language_option);
