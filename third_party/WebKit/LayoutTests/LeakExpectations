@@ -124,12 +124,6 @@ crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-centr
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-002.xhtml [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Pass Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Pass Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Leak ]
 
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
