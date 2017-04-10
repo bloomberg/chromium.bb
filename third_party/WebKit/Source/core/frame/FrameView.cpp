@@ -106,6 +106,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Histogram.h"
 #include "platform/HostWindow.h"
+#include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/WebFrameScheduler.h"
@@ -145,11 +146,17 @@
     }                               \
   } while (false)
 
-namespace blink {
+namespace {
 
-// A4 Portrait dimensions in pixels
-const int kA4PortraitPageWidth = 595;
-const int kA4PortraitPageHeight = 842;
+// Page dimensions in pixels at 72 DPI.
+constexpr int kA4PortraitPageWidth = 595;
+constexpr int kA4PortraitPageHeight = 842;
+constexpr int kLetterPortraitPageWidth = 612;
+constexpr int kLetterPortraitPageHeight = 792;
+
+}  // namespace
+
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2992,10 +2999,13 @@ void FrameView::SetupPrintContext() {
     print_context_ = new PrintContext(frame_);
   if (frame_->GetSettings())
     frame_->GetSettings()->SetShouldPrintBackgrounds(true);
-  FloatRect page_rect(0, 0, kA4PortraitPageWidth, kA4PortraitPageHeight);
+  bool is_us = DefaultLanguage() == "en-US";
+  int width = is_us ? kLetterPortraitPageWidth : kA4PortraitPageWidth;
+  int height = is_us ? kLetterPortraitPageHeight : kA4PortraitPageHeight;
+  FloatRect page_rect(0, 0, width, height);
   print_context_->begin(page_rect.Width(), page_rect.Height());
-  float height;
-  print_context_->ComputePageRects(page_rect, 0, 0, 1.0, height);
+  float dummy_height;
+  print_context_->ComputePageRects(page_rect, 0, 0, 1.0, dummy_height);
   DispatchEventsForPrintingOnAllFrames();
 }
 
