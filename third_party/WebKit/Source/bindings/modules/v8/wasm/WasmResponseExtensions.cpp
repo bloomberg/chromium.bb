@@ -207,21 +207,16 @@ bool WasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Local<v8::Function> compile_callback =
       v8::Function::New(isolate, CompileFromResponseCallback);
 
-  ScriptPromiseResolver* script_promise_resolver =
-      ScriptPromiseResolver::Create(script_state);
   // treat either case of parameter as
   // Promise.resolve(parameter)
   // as per https://www.w3.org/2001/tag/doc/promises-guide#resolve-arguments
 
   // Ending with:
   //    return Promise.resolve(parameter).then(compileCallback);
-  ScriptPromise parameter_as_promise = script_promise_resolver->Promise();
   V8SetReturnValue(args, ScriptPromise::Cast(script_state, args[0])
                              .Then(compile_callback)
                              .V8Value());
 
-  // resolve the first parameter promise.
-  script_promise_resolver->Resolve(ScriptValue::From(script_state, args[0]));
   return true;
 }
 
