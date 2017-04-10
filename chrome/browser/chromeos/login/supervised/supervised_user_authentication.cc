@@ -178,11 +178,11 @@ void SupervisedUserAuthentication::StorePasswordData(
   owner_->GetPasswordInformation(user_id, &holder);
   const base::Value* value;
   if (password_data.GetWithoutPathExpansion(kSchemaVersion, &value))
-      holder.SetWithoutPathExpansion(kSchemaVersion, value->DeepCopy());
+    holder.SetWithoutPathExpansion(kSchemaVersion, value->CreateDeepCopy());
   if (password_data.GetWithoutPathExpansion(kSalt, &value))
-      holder.SetWithoutPathExpansion(kSalt, value->DeepCopy());
+    holder.SetWithoutPathExpansion(kSalt, value->CreateDeepCopy());
   if (password_data.GetWithoutPathExpansion(kPasswordRevision, &value))
-      holder.SetWithoutPathExpansion(kPasswordRevision, value->DeepCopy());
+    holder.SetWithoutPathExpansion(kPasswordRevision, value->CreateDeepCopy());
   owner_->SetPasswordInformation(user_id, &holder);
 }
 

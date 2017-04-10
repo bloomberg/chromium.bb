@@ -449,8 +449,8 @@ TEST_F(PrefProviderTest, Deadlock) {
   {
     DictionaryPrefUpdate update(&prefs, info->pref_name());
     base::DictionaryValue* mutable_settings = update.Get();
-    mutable_settings->SetWithoutPathExpansion("www.example.com,*",
-                                              new base::DictionaryValue());
+    mutable_settings->SetWithoutPathExpansion(
+        "www.example.com,*", base::MakeUnique<base::DictionaryValue>());
   }
   EXPECT_TRUE(observer.notification_received());
 

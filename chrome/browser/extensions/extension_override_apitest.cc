@@ -4,6 +4,10 @@
 
 #include <stddef.h>
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -274,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   // a preferences file without corresponding UnloadExtension() calls. This is
   // the same as the above test, except for that it is testing the case where
   // the file already contains dupes when an extension is loaded.
-  base::ListValue* list = new base::ListValue();
+  auto list = base::MakeUnique<base::ListValue>();
   for (size_t i = 0; i < 3; ++i) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("entry", "http://www.google.com/");
@@ -285,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   {
     DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
                                 ExtensionWebUI::kExtensionURLOverrides);
-    update.Get()->Set("history", list);
+    update.Get()->Set("history", std::move(list));
   }
 
   ASSERT_FALSE(CheckHistoryOverridesContainsNoDupes());

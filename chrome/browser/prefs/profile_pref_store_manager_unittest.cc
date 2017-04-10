@@ -465,8 +465,9 @@ TEST_P(ProfilePrefStoreManagerTest, ProtectValues) {
 
 TEST_P(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
   auto master_prefs = base::MakeUnique<base::DictionaryValue>();
-  master_prefs->Set(kTrackedAtomic, new base::Value(kFoobar));
-  master_prefs->Set(kProtectedAtomic, new base::Value(kHelloWorld));
+  master_prefs->Set(kTrackedAtomic, base::MakeUnique<base::Value>(kFoobar));
+  master_prefs->Set(kProtectedAtomic,
+                    base::MakeUnique<base::Value>(kHelloWorld));
   EXPECT_TRUE(manager_->InitializePrefsFromMasterPrefs(
       prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
       std::move(master_prefs)));
@@ -622,7 +623,7 @@ TEST_P(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   // Trigger the logic that migrates it back to the unprotected preferences
   // file.
   pref_store_->SetValue(kProtectedAtomic,
-                        base::WrapUnique(new base::Value(kGoodbyeWorld)),
+                        base::MakeUnique<base::Value>(kGoodbyeWorld),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);

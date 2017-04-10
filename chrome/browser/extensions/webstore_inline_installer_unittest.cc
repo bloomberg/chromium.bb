@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -95,13 +97,13 @@ bool WebstoreInlineInstallerTest::TestSingleVerifiedSite(
 bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
     const std::string& requestor_url,
     const std::vector<std::string>& verified_sites) {
-  base::ListValue* sites = new base::ListValue();
+  auto sites = base::MakeUnique<base::ListValue>();
   for (std::vector<std::string>::const_iterator it = verified_sites.begin();
        it != verified_sites.end(); ++it) {
     sites->AppendString(*it);
   }
   base::DictionaryValue webstore_data;
-  webstore_data.Set("verified_sites", sites);
+  webstore_data.Set("verified_sites", std::move(sites));
 
   scoped_refptr<TestWebstoreInlineInstaller> installer =
     new TestWebstoreInlineInstaller(web_contents_.get(), requestor_url);

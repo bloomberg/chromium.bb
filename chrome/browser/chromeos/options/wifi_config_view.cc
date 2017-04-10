@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
@@ -889,12 +892,12 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties,
     properties->SetStringWithoutPathExpansion(
         shill::kEapPasswordProperty, GetPassphrase());
   }
-  base::ListValue* pem_list = new base::ListValue;
+  auto pem_list = base::MakeUnique<base::ListValue>();
   std::string ca_cert_pem = GetEapServerCaCertPEM();
   if (!ca_cert_pem.empty())
     pem_list->AppendString(ca_cert_pem);
-  properties->SetWithoutPathExpansion(
-      shill::kEapCaCertPemProperty, pem_list);
+  properties->SetWithoutPathExpansion(shill::kEapCaCertPemProperty,
+                                      std::move(pem_list));
 }
 
 void WifiConfigView::Cancel() {

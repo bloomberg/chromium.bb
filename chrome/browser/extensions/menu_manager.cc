@@ -209,14 +209,13 @@ std::unique_ptr<base::DictionaryValue> MenuItem::ToValue() const {
   if (type_ == CHECKBOX || type_ == RADIO)
     value->SetBoolean(kCheckedKey, checked_);
   value->SetBoolean(kEnabledKey, enabled_);
-  value->Set(kContextsKey, contexts_.ToValue().release());
+  value->Set(kContextsKey, contexts_.ToValue());
   if (parent_id_) {
     DCHECK_EQ(0, parent_id_->uid);
     value->SetString(kParentUIDKey, parent_id_->string_uid);
   }
-  value->Set(kDocumentURLPatternsKey,
-             document_url_patterns_.ToValue().release());
-  value->Set(kTargetURLPatternsKey, target_url_patterns_.ToValue().release());
+  value->Set(kDocumentURLPatternsKey, document_url_patterns_.ToValue());
+  value->Set(kTargetURLPatternsKey, target_url_patterns_.ToValue());
   return value;
 }
 

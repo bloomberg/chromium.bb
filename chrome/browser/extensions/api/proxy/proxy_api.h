@@ -32,10 +32,12 @@ class ProxyPrefTransformer : public PrefTransformerInterface {
   ~ProxyPrefTransformer() override;
 
   // Implementation of PrefTransformerInterface.
-  base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                      std::string* error,
-                                      bool* bad_message) override;
-  base::Value* BrowserToExtensionPref(const base::Value* browser_pref) override;
+  std::unique_ptr<base::Value> ExtensionToBrowserPref(
+      const base::Value* extension_pref,
+      std::string* error,
+      bool* bad_message) override;
+  std::unique_ptr<base::Value> BrowserToExtensionPref(
+      const base::Value* browser_pref) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyPrefTransformer);

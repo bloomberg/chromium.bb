@@ -4,7 +4,10 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -109,10 +112,10 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kName, "Protected");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/protected/start");
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendString("http://explicit/protected");
     list->AppendString("*://*.wildcards/protected");
-    manifest.Set(keys::kWebURLs, list);
+    manifest.Set(keys::kWebURLs, std::move(list));
     std::string error;
     scoped_refptr<Extension> protected_app = Extension::Create(
         path, Manifest::INVALID_LOCATION, manifest,
@@ -131,13 +134,13 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kName, "Unlimited");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/unlimited/start");
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendString("unlimitedStorage");
-    manifest.Set(keys::kPermissions, list);
-    list = new base::ListValue();
+    manifest.Set(keys::kPermissions, std::move(list));
+    list = base::MakeUnique<base::ListValue>();
     list->AppendString("http://explicit/unlimited");
     list->AppendString("*://*.wildcards/unlimited");
-    manifest.Set(keys::kWebURLs, list);
+    manifest.Set(keys::kWebURLs, std::move(list));
     std::string error;
     scoped_refptr<Extension> unlimited_app = Extension::Create(
         path, Manifest::INVALID_LOCATION, manifest,

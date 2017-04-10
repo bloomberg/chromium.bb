@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -48,7 +50,7 @@ Registry::~Registry() {
 void Registry::RememberFileSystem(
     const ProvidedFileSystemInfo& file_system_info,
     const Watchers& watchers) {
-  base::DictionaryValue* const file_system = new base::DictionaryValue();
+  auto file_system = base::MakeUnique<base::DictionaryValue>();
   file_system->SetStringWithoutPathExpansion(kPrefKeyFileSystemId,
                                              file_system_info.file_system_id());
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName,
@@ -60,29 +62,30 @@ void Registry::RememberFileSystem(
   file_system->SetIntegerWithoutPathExpansion(
       kPrefKeyOpenedFilesLimit, file_system_info.opened_files_limit());
 
-  base::DictionaryValue* const watchers_value = new base::DictionaryValue();
-  file_system->SetWithoutPathExpansion(kPrefKeyWatchers, watchers_value);
+  auto watchers_value = base::MakeUnique<base::DictionaryValue>();
 
   for (const auto& it : watchers) {
-    base::DictionaryValue* const watcher = new base::DictionaryValue();
-    watchers_value->SetWithoutPathExpansion(it.second.entry_path.value(),
-                                            watcher);
+    auto watcher = base::MakeUnique<base::DictionaryValue>();
     watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
                                            it.second.entry_path.value());
     watcher->SetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
                                             it.second.recursive);
     watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
                                            it.second.last_tag);
-    base::ListValue* const persistent_origins_value = new base::ListValue();
-    watcher->SetWithoutPathExpansion(kPrefKeyWatcherPersistentOrigins,
-                                     persistent_origins_value);
+    auto persistent_origins_value = base::MakeUnique<base::ListValue>();
     for (const auto& subscriber_it : it.second.subscribers) {
       // Only persistent subscribers should be stored in persistent storage.
       // Other ones should not be restired after a restart.
       if (subscriber_it.second.persistent)
         persistent_origins_value->AppendString(subscriber_it.first.spec());
     }
+    watcher->SetWithoutPathExpansion(kPrefKeyWatcherPersistentOrigins,
+                                     std::move(persistent_origins_value));
+    watchers_value->SetWithoutPathExpansion(it.second.entry_path.value(),
+                                            std::move(watcher));
   }
+  file_system->SetWithoutPathExpansion(kPrefKeyWatchers,
+                                       std::move(watchers_value));
 
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -90,16 +93,17 @@ void Registry::RememberFileSystem(
   DictionaryPrefUpdate dict_update(pref_service,
                                    prefs::kFileSystemProviderMounted);
 
-  base::DictionaryValue* file_systems_per_extension = NULL;
+  base::DictionaryValue* file_systems_per_extension_weak = NULL;
   if (!dict_update->GetDictionaryWithoutPathExpansion(
-          file_system_info.extension_id(), &file_systems_per_extension)) {
-    file_systems_per_extension = new base::DictionaryValue();
+          file_system_info.extension_id(), &file_systems_per_extension_weak)) {
+    auto file_systems_per_extension = base::MakeUnique<base::DictionaryValue>();
+    file_systems_per_extension_weak = file_systems_per_extension.get();
     dict_update->SetWithoutPathExpansion(file_system_info.extension_id(),
-                                         file_systems_per_extension);
+                                         std::move(file_systems_per_extension));
   }
 
-  file_systems_per_extension->SetWithoutPathExpansion(
-      file_system_info.file_system_id(), file_system);
+  file_systems_per_extension_weak->SetWithoutPathExpansion(
+      file_system_info.file_system_id(), std::move(file_system));
 }
 
 void Registry::ForgetFileSystem(const std::string& extension_id,

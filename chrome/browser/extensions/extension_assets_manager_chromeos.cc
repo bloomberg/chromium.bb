@@ -7,14 +7,17 @@
 #include <stddef.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -397,19 +400,18 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
-  base::DictionaryValue* extension_info = NULL;
-  if (!shared_extensions->GetDictionary(id, &extension_info)) {
-    extension_info = new base::DictionaryValue;
-    shared_extensions->Set(id, extension_info);
+  base::DictionaryValue* extension_info_weak = NULL;
+  if (!shared_extensions->GetDictionary(id, &extension_info_weak)) {
+    auto extension_info = base::MakeUnique<base::DictionaryValue>();
+    extension_info_weak = extension_info.get();
+    shared_extensions->Set(id, std::move(extension_info));
   }
 
   CHECK(!shared_extensions->HasKey(version));
-  base::DictionaryValue* version_info = new base::DictionaryValue;
-  extension_info->SetWithoutPathExpansion(version, version_info);
+  auto version_info = base::MakeUnique<base::DictionaryValue>();
   version_info->SetString(kSharedExtensionPath, shared_version_dir.value());
 
-  base::ListValue* users = new base::ListValue;
-  version_info->Set(kSharedExtensionUsers, users);
+  auto users = base::MakeUnique<base::ListValue>();
   for (size_t i = 0; i < pending_installs.size(); i++) {
     ExtensionAssetsManagerHelper::PendingInstallInfo& info =
         pending_installs[i];
@@ -419,6 +421,9 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
         FROM_HERE,
         base::Bind(info.callback, shared_version_dir));
   }
+  version_info->Set(kSharedExtensionUsers, std::move(users));
+  extension_info_weak->SetWithoutPathExpansion(version,
+                                               std::move(version_info));
 }
 
 // static

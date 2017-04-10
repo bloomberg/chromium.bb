@@ -1824,9 +1824,9 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
       if (!data->json().HasKey(iter.key()) ||
           (data->json().Get(iter.key(), &old_value) &&
            !iter.value().Equals(old_value))) {
-        delta->Set(iter.key() + ".current", iter.value().DeepCopy());
+        delta->Set(iter.key() + ".current", iter.value().CreateDeepCopy());
         if (old_value)
-          delta->Set(iter.key() + ".previous", old_value->DeepCopy());
+          delta->Set(iter.key() + ".previous", old_value->CreateDeepCopy());
         changed = true;
       }
     }
@@ -1839,7 +1839,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
     if ((new_fields.find(iter.key()) == new_fields.end()) &&
         IsDownloadDeltaField(iter.key())) {
       // estimatedEndTime disappears after completion, but bytesReceived stays.
-      delta->Set(iter.key() + ".previous", iter.value().DeepCopy());
+      delta->Set(iter.key() + ".previous", iter.value().CreateDeepCopy());
       changed = true;
     }
   }

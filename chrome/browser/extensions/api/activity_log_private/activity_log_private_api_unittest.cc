@@ -8,7 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,8 +30,8 @@ typedef testing::Test ActivityLogApiUnitTest;
 
 TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::Value("hello"));
-  args->Set(1, new base::Value("world"));
+  args->Set(0, base::MakeUnique<base::Value>("hello"));
+  args->Set(1, base::MakeUnique<base::Value>("world"));
   scoped_refptr<Action> action(new Action(kExtensionId,
                                           base::Time::Now(),
                                           Action::ACTION_API_CALL,
@@ -46,8 +48,8 @@ TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
 
 TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::Value("hello"));
-  args->Set(1, new base::Value("world"));
+  args->Set(0, base::MakeUnique<base::Value>("hello"));
+  args->Set(1, base::MakeUnique<base::Value>("world"));
   scoped_refptr<Action> action(new Action(kExtensionId,
                                base::Time::Now(),
                                Action::ACTION_DOM_ACCESS,

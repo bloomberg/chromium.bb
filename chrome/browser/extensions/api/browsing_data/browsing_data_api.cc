@@ -153,7 +153,7 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
 
   std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue);
   options->Set(extension_browsing_data_api_constants::kOriginTypesKey,
-               origin_types.release());
+               std::move(origin_types));
   options->SetDouble(extension_browsing_data_api_constants::kSinceKey, since);
 
   // Fill dataToRemove and dataRemovalPermitted.
@@ -215,11 +215,11 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(extension_browsing_data_api_constants::kOptionsKey,
-              options.release());
+              std::move(options));
   result->Set(extension_browsing_data_api_constants::kDataToRemoveKey,
-              selected.release());
+              std::move(selected));
   result->Set(extension_browsing_data_api_constants::kDataRemovalPermittedKey,
-              permitted.release());
+              std::move(permitted));
   return RespondNow(OneArgument(std::move(result)));
 }
 

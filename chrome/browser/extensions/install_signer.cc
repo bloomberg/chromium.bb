@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
@@ -125,10 +126,10 @@ bool ValidateExpireDateFormat(const std::string& input) {
 void SetExtensionIdSet(base::DictionaryValue* dictionary,
                        const char* key,
                        const ExtensionIdSet& ids) {
-  base::ListValue* id_list = new base::ListValue();
+  auto id_list = base::MakeUnique<base::ListValue>();
   for (ExtensionIdSet::const_iterator i = ids.begin(); i != ids.end(); ++i)
     id_list->AppendString(*i);
-  dictionary->Set(key, id_list);
+  dictionary->Set(key, std::move(id_list));
 }
 
 // Tries to fetch a list of strings from |dictionay| for |key|, and inserts
@@ -390,7 +391,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   for (ExtensionIdSet::const_iterator i = ids_.begin(); i != ids_.end(); ++i) {
     id_list->AppendString(*i);
   }
-  dictionary.Set(kIdsKey, id_list.release());
+  dictionary.Set(kIdsKey, std::move(id_list));
   std::string json;
   base::JSONWriter::Write(dictionary, &json);
   if (json.empty()) {

@@ -211,14 +211,15 @@ const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
   prefs_new_users_update->Insert(0,
                                  base::MakeUnique<base::Value>(local_user_id));
 
-  sync_id_update->SetWithoutPathExpansion(local_user_id,
-                                          new base::Value(sync_user_id));
+  sync_id_update->SetWithoutPathExpansion(
+      local_user_id, base::MakeUnique<base::Value>(sync_user_id));
   manager_update->SetWithoutPathExpansion(
-      local_user_id, new base::Value(manager->GetAccountId().GetUserEmail()));
+      local_user_id,
+      base::MakeUnique<base::Value>(manager->GetAccountId().GetUserEmail()));
   manager_name_update->SetWithoutPathExpansion(
-      local_user_id, new base::Value(manager->GetDisplayName()));
+      local_user_id, base::MakeUnique<base::Value>(manager->GetDisplayName()));
   manager_email_update->SetWithoutPathExpansion(
-      local_user_id, new base::Value(manager->display_email()));
+      local_user_id, base::MakeUnique<base::Value>(manager->display_email()));
 
   owner_->SaveUserDisplayName(AccountId::FromUserEmail(local_user_id),
                               display_name);
@@ -499,7 +500,7 @@ void SupervisedUserManagerImpl::UpdateManagerName(const std::string& manager_id,
     DCHECK(has_manager_id);
     if (user_id == manager_id) {
       manager_name_update->SetWithoutPathExpansion(
-          it.key(), new base::Value(new_display_name));
+          it.key(), base::MakeUnique<base::Value>(new_display_name));
     }
   }
 }

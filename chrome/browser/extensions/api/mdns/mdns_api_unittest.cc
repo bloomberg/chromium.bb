@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -245,7 +246,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
       // Setting app.background.page = "background.html" is sufficient to make
       // the extension type TYPE_PLATFORM_APP.
       manifest.Set(extensions::manifest_keys::kPlatformAppBackgroundPage,
-                   new base::Value("background.html"));
+                   base::MakeUnique<base::Value>("background.html"));
     }
 
     std::string error;

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -124,7 +125,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL))
     transition_type_string = "start_page";
   dict->SetString(keys::kTransitionTypeKey, transition_type_string);
-  base::ListValue* qualifiers = new base::ListValue();
+  auto qualifiers = base::MakeUnique<base::ListValue>();
   if (transition_type & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->AppendString("client_redirect");
   if (transition_type & ui::PAGE_TRANSITION_SERVER_REDIRECT)
@@ -133,7 +134,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
     qualifiers->AppendString("forward_back");
   if (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     qualifiers->AppendString("from_address_bar");
-  dict->Set(keys::kTransitionQualifiersKey, qualifiers);
+  dict->Set(keys::kTransitionQualifiersKey, std::move(qualifiers));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(std::move(dict));
 
