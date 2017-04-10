@@ -55,8 +55,9 @@ enum InternalErrorLoadEvent {
   // A timing IPC was sent from the renderer that did not line up with previous
   // data we've received (i.e. navigation start is different or the timing
   // struct is somehow invalid). This error can only occur once the IPC is
-  // vetted in other ways (see other errors).
-  ERR_BAD_TIMING_IPC,
+  // vetted in other ways (see other errors). This error is deprecated as it has
+  // been replaced by the more detailed ERR_BAD_TIMING_IPC_* error codes.
+  DEPRECATED_ERR_BAD_TIMING_IPC,
 
   // The following IPCs are not mutually exclusive.
   //
@@ -111,6 +112,19 @@ enum InternalErrorLoadEvent {
   // Received a timing update from a subframe.
   ERR_TIMING_IPC_FROM_SUBFRAME,
 
+  // A timing IPC was sent from the renderer that contained timing data which
+  // was inconsistent with our timing data for the currently committed load.
+  ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT,
+
+  // A timing IPC was sent from the renderer that contained loading behavior
+  // data which was inconsistent with our loading behavior data for the
+  // currently committed load.
+  ERR_BAD_TIMING_IPC_INVALID_BEHAVIOR_DESCENDENT,
+
+  // A timing IPC was sent from the renderer that contained invalid timing data
+  // (e.g. out of order timings, or other issues).
+  ERR_BAD_TIMING_IPC_INVALID_TIMING,
+
   // Add values before this final count.
   ERR_LAST_ENTRY,
 };
@@ -160,8 +174,7 @@ class PageLoadTracker {
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
-  // Returns true if the timing was successfully updated.
-  bool UpdateTiming(const PageLoadTiming& timing,
+  void UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
 
   // Update metadata for child frames. Updates for child frames arrive

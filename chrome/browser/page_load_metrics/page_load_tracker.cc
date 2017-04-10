@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -56,6 +57,9 @@ const char kClientRedirectWithoutPaint[] =
     "PageLoad.Internal.ClientRedirect.NavigationWithoutPaint";
 const char kPageLoadCompletedAfterAppBackground[] =
     "PageLoad.Internal.PageLoadCompleted.AfterAppBackground";
+const char kPageLoadStartedInForeground[] =
+    "PageLoad.Internal.NavigationStartedInForeground";
+const char kPageLoadPrerender[] = "PageLoad.Internal.Prerender";
 
 }  // namespace internal
 
@@ -135,10 +139,8 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   // Verify proper ordering between the various timings.
 
   if (!EventsInOrder(timing.response_start, timing.parse_start)) {
-    // We sometimes get a zero response_start with a non-zero parse start. See
-    // crbug.com/590212.
-    DLOG(ERROR) << "Invalid response_start " << timing.response_start
-                << " for parse_start " << timing.parse_start;
+    NOTREACHED() << "Invalid response_start " << timing.response_start
+                 << " for parse_start " << timing.parse_start;
     return false;
   }
 
@@ -311,6 +313,14 @@ PageLoadTracker::PageLoadTracker(
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
                              currently_committed_url, started_in_foreground_);
+
+  UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadStartedInForeground,
+                        started_in_foreground_);
+  const bool is_prerender = prerender::PrerenderContents::FromWebContents(
+                                navigation_handle->GetWebContents()) != nullptr;
+  if (is_prerender) {
+    UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadPrerender, true);
+  }
 }
 
 PageLoadTracker::~PageLoadTracker() {
@@ -527,42 +537,51 @@ void PageLoadTracker::UpdateChildFrameMetadata(
   }
 }
 
-bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
+void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
                                    const PageLoadMetadata& new_metadata) {
   // Throw away IPCs that are not relevant to the current navigation.
   // Two timing structures cannot refer to the same navigation if they indicate
   // that a navigation started at different times, so a new timing struct with a
   // different start time from an earlier struct is considered invalid.
-  bool valid_timing_descendent =
+  const bool valid_timing_descendent =
       timing_.navigation_start.is_null() ||
       timing_.navigation_start == new_timing.navigation_start;
+  if (!valid_timing_descendent) {
+    RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT);
+    return;
+  }
+
   // Ensure flags sent previously are still present in the new metadata fields.
-  bool valid_behavior_descendent =
+  const bool valid_behavior_descendent =
       (main_frame_metadata_.behavior_flags & new_metadata.behavior_flags) ==
       main_frame_metadata_.behavior_flags;
-  if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
-      valid_behavior_descendent) {
-    DCHECK(did_commit_);  // OnCommit() must be called first.
-    // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
-    // must be called before DispatchObserverTimingCallbacks, but its
-    // implementation depends on the state of main_frame_metadata_, so we need
-    // to update main_frame_metadata_ before calling GetPageLoadMetricsInfo.
-    // Thus, we make a copy of timing here, update timing_ and
-    // main_frame_metadata_, and then proceed to dispatch the observer timing
-    // callbacks.
-    const PageLoadTiming last_timing = timing_;
-    timing_ = new_timing;
-
-    const PageLoadMetadata last_metadata = main_frame_metadata_;
-    main_frame_metadata_ = new_metadata;
-    const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-    for (const auto& observer : observers_) {
-      DispatchObserverTimingCallbacks(observer.get(), last_timing, new_timing,
-                                      last_metadata, info);
-    }
-    return true;
+  if (!valid_behavior_descendent) {
+    RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_BEHAVIOR_DESCENDENT);
+    return;
   }
-  return false;
+  if (!IsValidPageLoadTiming(new_timing)) {
+    RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING);
+    return;
+  }
+
+  DCHECK(did_commit_);  // OnCommit() must be called first.
+  // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
+  // must be called before DispatchObserverTimingCallbacks, but its
+  // implementation depends on the state of main_frame_metadata_, so we need
+  // to update main_frame_metadata_ before calling GetPageLoadMetricsInfo.
+  // Thus, we make a copy of timing here, update timing_ and
+  // main_frame_metadata_, and then proceed to dispatch the observer timing
+  // callbacks.
+  const PageLoadTiming last_timing = timing_;
+  timing_ = new_timing;
+
+  const PageLoadMetadata last_metadata = main_frame_metadata_;
+  main_frame_metadata_ = new_metadata;
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
+  for (const auto& observer : observers_) {
+    DispatchObserverTimingCallbacks(observer.get(), last_timing, new_timing,
+                                    last_metadata, info);
+  }
 }
 
 void PageLoadTracker::OnLoadedResource(

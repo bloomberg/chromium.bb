@@ -39,6 +39,16 @@ namespace page_load_metrics {
 
 namespace {
 
+content::RenderFrameHost* GetMainFrame(content::RenderFrameHost* rfh) {
+  // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
+  // RenderViewHost is being deprecated and because in OOPIF,
+  // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
+  // different process from the main frame.
+  while (rfh->GetParent() != nullptr)
+    rfh = rfh->GetParent();
+  return rfh;
+}
+
 UserInitiatedInfo CreateUserInitiatedInfo(
     content::NavigationHandle* navigation_handle,
     PageLoadTracker* committed_load) {
@@ -107,9 +117,7 @@ void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::WebContentsObserver::MediaPlayerId& id) {
   content::RenderFrameHost* render_frame_host = id.first;
-  if (!render_frame_host->GetRenderViewHost() ||
-      render_frame_host->GetRenderViewHost()->GetMainFrame() !=
-          web_contents()->GetMainFrame()) {
+  if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
     // Ignore media that starts playing in a document that was navigated away
     // from.
     return;
@@ -527,9 +535,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     const PageLoadMetadata& metadata) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
-  if (!render_frame_host->GetRenderViewHost() ||
-      render_frame_host->GetRenderViewHost()->GetMainFrame() !=
-          web_contents()->GetMainFrame()) {
+  if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
     RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
     return;
   }
@@ -561,12 +567,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     return;
   }
 
-  if (!committed_load_->UpdateTiming(timing, metadata)) {
-    // If the page load tracker cannot update its timing, something is wrong
-    // with the IPC (it's from another load, or it's invalid in some other way).
-    // We expect this to be a rare occurrence.
-    RecordInternalError(ERR_BAD_TIMING_IPC);
-  }
+  committed_load_->UpdateTiming(timing, metadata);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(

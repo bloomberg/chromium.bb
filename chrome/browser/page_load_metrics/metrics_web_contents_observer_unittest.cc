@@ -389,7 +389,7 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
   SimulateTimingUpdate(timing2);
   ASSERT_EQ(1, CountUpdatedTimingReported());
 
-  CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT, 1);
   CheckTotalErrorEvents();
 }
 

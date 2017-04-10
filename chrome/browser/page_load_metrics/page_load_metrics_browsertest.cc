@@ -167,7 +167,14 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   }
 
   bool NoPageLoadMetricsRecorded() {
-    return histogram_tester_.GetTotalCountsForPrefix("PageLoad.").empty();
+    // Determine whether any 'public' page load metrics are recorded. We exclude
+    // 'internal' metrics as these may be recorded for debugging purposes.
+    size_t total_pageload_histograms =
+        histogram_tester_.GetTotalCountsForPrefix("PageLoad.").size();
+    size_t total_internal_histograms =
+        histogram_tester_.GetTotalCountsForPrefix("PageLoad.Internal.").size();
+    DCHECK_GE(total_pageload_histograms, total_internal_histograms);
+    return total_pageload_histograms - total_internal_histograms == 0;
   }
 
   scoped_refptr<TimingUpdatedObserver> CreateTimingUpdatedObserver() {
@@ -491,8 +498,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, BadXhtml) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
-  histogram_tester_.ExpectBucketCount(page_load_metrics::internal::kErrorEvents,
-                                      page_load_metrics::ERR_BAD_TIMING_IPC, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kErrorEvents,
+      page_load_metrics::ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
 }
 
 // Test code that aborts provisional navigations.
