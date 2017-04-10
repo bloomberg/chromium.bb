@@ -11,6 +11,7 @@
 
 #include "av1/common/scan.h"
 #include "av1/common/blockd.h"
+#include "av1/common/idct.h"
 #include "av1/common/pred_common.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
@@ -748,5 +749,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
   if (plane == 0) mbmi->txk_type[block] = best_tx_type;
   x->plane[plane].eobs[block] = best_eob;
+  av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+                                     best_eob);
   return best_rd;
 }

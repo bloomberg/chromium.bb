@@ -1549,7 +1549,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const AV1_COMMON *cm = &args->cpi->common;
+  const AV1_COMP *cpi = args->cpi;
   int64_t rd1, rd2, rd;
   int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
                                            *(args->t_left + blk_row));
@@ -1566,7 +1566,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
 
+#if !CONFIG_LV_MAP
   // full forward transform and quantization
+  const AV1_COMMON *cm = &cpi->common;
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
   if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
@@ -1584,6 +1586,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                    tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
   }
+#else   // !CONFIG_LV_MAP
+  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, coeff_ctx, &this_rd_stats);
+#endif  // !CONFIG_LV_MAP
 
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
   if (args->this_rd + rd > args->best_rd) {
