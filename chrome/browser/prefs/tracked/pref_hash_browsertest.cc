@@ -417,9 +417,9 @@ class PrefHashBrowserTestBase
 // builds.
 #if defined(OFFICIAL_BUILD)
 
-#if defined(OS_WIN)
-    // The strongest mode is enforced on Windows in the absence of a field
-    // trial.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    // The strongest mode is enforced on Windows and MacOS in the absence of a
+    // field trial.
     return PROTECTION_ENABLED_ALL;
 #else
     return PROTECTION_DISABLED_FOR_GROUP;
