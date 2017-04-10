@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="111910763555783249">通知设置</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 天前}other{# 天前}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="1190609913194133056">通知中心</translation>
 <translation id="1243314992276662751">上传</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">点按此处</translation>
 <translation id="5076340679995252485">粘贴(&amp;P)</translation>
 <translation id="5120799197269191491">搜索键 + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">PIN 码解锁功能</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">删除(&amp;D)</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">向左滚动</translation>
 <translation id="6394627529324717982">逗号</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6528179044667508675">请勿打扰</translation>
 <translation id="6612467943526193239">要退出校准模式，请按 Esc 键。</translation>
 <translation id="6620110761915583480">保存文件</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">复制(&amp;C)</translation>
 <translation id="7850320739366109486">请勿打扰</translation>
 <translation id="7907591526440419938">打开文件</translation>
+<translation id="8054029954190364711">指纹解锁功能</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小时前}other{# 小时前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="815598010540052116">向下滚动</translation>

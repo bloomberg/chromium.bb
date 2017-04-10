@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromiumi automaattäite seaded ...</translation>
 <translation id="1374468813861204354">soovitused</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
+<translation id="1377321085342047638">Kaardinr</translation>
 <translation id="139305205187523129">Host <ph name="HOST_NAME" /> ei saatnud andmeid.</translation>
 <translation id="1407135791313364759">Ava kõik</translation>
 <translation id="1413809658975081374">Privaatsuse viga</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">Host <ph name="HOST_NAME" /> saatis sobimatu vastuse.</translation>
 <translation id="2552545117464357659">Uuemad</translation>
 <translation id="2556876185419854533">&amp;Võta muudatus tagasi</translation>
+<translation id="2587730715158995865">Avaldajalt <ph name="ARTICLE_PUBLISHER" />. Lugege seda ja <ph name="OTHER_ARTICLE_COUNT" /> teist lugu.</translation>
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
 <translation id="2597378329261239068">Dokument on parooliga kaitstud. Sisestage parool.</translation>
 <translation id="2609632851001447353">Variatsioonid</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{vähemalt 1 üksus sünkroonitud seadmetes}=1{1 üksus (ja rohkem sünkroonitud seadmetes)}other{# üksust (ja rohkem sünkroonitud seadmetes)}}</translation>
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
 <translation id="3063697135517575841">Chrome ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
+<translation id="3064966200440839136">Väljute inkognito režiimist, et välise rakenduse kaudu maksta. Kas soovite jätkata?</translation>
 <translation id="3093245981617870298">Olete võrguühenduseta.</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
 <translation id="3109728660330352905">Teil pole volitust selle lehe vaatamiseks.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Saidi külastamise taotlust ei õnnestunud saata kontaktile <ph name="NAME" />. Proovige uuesti.</translation>
 <translation id="3355823806454867987">Muuda puhverserveri seadeid ...</translation>
 <translation id="3369192424181595722">Kella viga</translation>
+<translation id="337311366426640088">Veel <ph name="ITEM_COUNT" /> üksust …</translation>
 <translation id="337363190475750230">Eraldatud</translation>
 <translation id="3377188786107721145">Viga reegli sõelumisel</translation>
 <translation id="3380365263193509176">Tundmatu viga</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hankimise intervall:</translation>
 <translation id="3462200631372590220">Peida täpsemad üksikasjad</translation>
+<translation id="3478058380795961209">Aegumiskuu</translation>
 <translation id="3479539252931486093">Kas see oli ootamatu? <ph name="BEGIN_LINK" />Andke meile sellest teada<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="348000606199325318">Krahhi ID <ph name="CRASH_LOCAL_ID" /> (serveri ID: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5308689395849655368">Krahhide aruandlus on keelatud.</translation>
 <translation id="5317780077021120954">Salvesta</translation>
-<translation id="5326702247179446998">Saaja on kohustuslik</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5337705430875057403">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete avaldamine (nt paroolid, telefoninumbrid või krediitkaardid).</translation>
 <translation id="53553865750799677">Toetamata kättesaamise aadress. Valige muu aadress.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Mida need tähendavad?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{veel 1 soovitus}other{veel # soovitust}}</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
+<translation id="6389470377220713856">Nimi kaardil</translation>
 <translation id="6389758589412724634">Chromiumil pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
 <translation id="6404511346730675251">Muuda järjehoidjat</translation>
 <translation id="6410264514553301377">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Vanem ei ole seda veel kinnitanud</translation>
 <translation id="6810899417690483278">Kohandamise ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Piirkondade andmete laadimine ebaõnnestus</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
 <translation id="6839929833149231406">Piirkond</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
 <translation id="6989763994942163495">Kuva täpsemad seaded ...</translation>
 <translation id="7000990526846637657">Ajalookirjeid ei leitud</translation>
-<translation id="7001663382399377034">Saaja lisamine</translation>
 <translation id="7009986207543992532">Püüdsite jõuda domeenile <ph name="DOMAIN" />, ent server esitas sertifikaadi, mille kehtivusperiood on liiga pikk, et olla usaldusväärne. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">Hiina UnionPay</translation>
 <translation id="7012372675181957985">Aadressil <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu</translation>
@@ -772,6 +777,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8349305172487531364">Järjehoidjariba</translation>
 <translation id="8363502534493474904">Lülitage lennukirežiim välja</translation>
 <translation id="8364627913115013041">Määramata.</translation>
+<translation id="8368476060205742148">Google Play teenused</translation>
 <translation id="8380941800586852976">Ohtlik</translation>
 <translation id="8382348898565613901">Teie hiljuti külastatud järjehoidjad kuvatakse siin</translation>
 <translation id="8398259832188219207">Krahhiaruanne laaditi üles ajal <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8492969205326575646">Toetamata kaarditüüp</translation>
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
 <translation id="852346902619691059">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Teie seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Aegumisaasta</translation>
 <translation id="8543181531796978784">Võite <ph name="BEGIN_ERROR_LINK" />teavitada tuvastusprobleemist<ph name="END_ERROR_LINK" />. Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="8559762987265718583">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>

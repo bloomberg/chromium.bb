@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Innstillinger for autofyll i Chromium</translation>
 <translation id="1374468813861204354">forslagene</translation>
 <translation id="1375198122581997741">Om versjon</translation>
+<translation id="1377321085342047638">Kortnummer</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> sendte ingen data.</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1413809658975081374">Personvernfeil</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendte et ugyldig svar.</translation>
 <translation id="2552545117464357659">Nyere</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
+<translation id="2587730715158995865">Fra <ph name="ARTICLE_PUBLISHER" />. Les denne og <ph name="OTHER_ARTICLE_COUNT" /> andre nyhetssaker.</translation>
 <translation id="2587841377698384444">ID for katalog-API:</translation>
 <translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
 <translation id="2609632851001447353">Varianter</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{minst 1 element på synkroniserte enheter}=1{1 element (og flere på synkroniserte enheter)}other{# elementer (og flere på synkroniserte enheter)}}</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
 <translation id="3063697135517575841">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
+<translation id="3064966200440839136">Går ut av inkognitomodus for å betale via en ekstern app. Vil du fortsette?</translation>
 <translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Forespørselen om tilgang til dette nettstedet kunne ikke sendes til <ph name="NAME" />. Prøv igjen.</translation>
 <translation id="3355823806454867987">Endre innstillinger for mellomtjener</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> varer til …</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
 <translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Hentingsintervall:</translation>
 <translation id="3462200631372590220">Skjul detaljer</translation>
+<translation id="3478058380795961209">Utløpsmåned</translation>
 <translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Si fra til oss<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348000606199325318">Kræsj-ID <ph name="CRASH_LOCAL_ID" /> (Tjener-ID: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5308689395849655368">Rapportering av programstopp er deaktivert.</translation>
 <translation id="5317780077021120954">Lagre</translation>
-<translation id="5326702247179446998">Du må angi en mottaker</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5337705430875057403">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> prøver kanskje å lure deg til å gjøre farlige ting som å installere programvare eller avsløre personopplysningene dine (for eksempel passord, telefonnumre eller kredittkortinformasjon).</translation>
 <translation id="53553865750799677">Henteadressen støttes ikke. Velg en annen adresse.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Hva innebærer dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
 <translation id="6387478394221739770">Interessert i nye kule Chrome-funksjoner? Prøv betakanalen vår på chrome.com/beta</translation>
+<translation id="6389470377220713856">Navn som er oppført på kortet</translation>
 <translation id="6389758589412724634">Chromium gikk tom for minne under forsøket på å vise denne nettsiden.</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6410264514553301377">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Forelderen din har ikke godkjent det ennå</translation>
 <translation id="6810899417690483278">Tilpasnings-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Kunne ikke laste inn områdedataene</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
 <translation id="7000990526846637657">Fant ingen loggoppføringer</translation>
-<translation id="7001663382399377034">Legg til mottaker</translation>
 <translation id="7009986207543992532">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat hvor gyldighetsperioden er oppgitt som for lang til å være pålitelig. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8349305172487531364">Bokmerkerad</translation>
 <translation id="8363502534493474904">Slå av flymodus</translation>
 <translation id="8364627913115013041">Ikke angitt.</translation>
+<translation id="8368476060205742148">Google Play Tjenester</translation>
 <translation id="8380941800586852976">Farlig</translation>
 <translation id="8382348898565613901">Bokmerkene du nylig har besøkt, vises her</translation>
 <translation id="8398259832188219207">Programstopprapport lastet opp <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8492969205326575646">Korttypen støttes ikke</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> brukte for lang tid på å svare.</translation>
 <translation id="852346902619691059">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom sikkerhetssertifikatet ikke er regnet som pålitelig av operativsystemet på enheten din. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen din. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Utløpsår</translation>
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et påvisningsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår sikkerhetsrisikoen, <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">En privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kunne ikke etableres fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) er feil på enheten.</translation>

@@ -5,6 +5,7 @@
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
 <translation id="1115445892567829615">„Chromium“ negali sinchronizuoti jūsų duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
+<translation id="113122355610423240">„Chromium“ yra numatytoji naršyklė</translation>
 <translation id="1170115874949214249">Įdiekite „Chromium“ telefone. Išsiųsime SMS pranešimą paskyros atkūrimo telefono numeriu.</translation>
 <translation id="1174473354587728743">Bendrinate kompiuterį? Dabar galite nustatyti „Chromium“ kaip tik norite.</translation>
 <translation id="1185134272377778587">Apie „Chromium“</translation>
@@ -30,6 +31,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1869480248812203386">Galite padėti sustiprinti „Chromium“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
 <translation id="1881322772814446296">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chromium“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
+<translation id="1966382378801805537">„Chromium“ nepavyko aptikti arba nustatyti numatytosios naršyklės</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="2008474315282236005">Atlikus šį veiksmą iš šio įrenginio bus ištrintas 1 elementas. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti mažiausiai $1 elementai iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elemento iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elementų iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.}}</translation>
@@ -85,12 +87,14 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
 <translation id="3645040538872234961">Atlikus šį veiksmą bus visam laikui ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip $2.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
+<translation id="3762167353400286894">„Chromium“ OS pateikiama šia kalba</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
 <translation id="3849925841547750267">Apgailestaujame, bet „Mozilla Firefox“ nustatymai nepasiekiami, kol paleista ši naršyklė. Jei norite importuoti šiuos nustatymus į „Chromium“, išsaugokite darbą ir uždarykite visus „Firefox“ langus. Tada spustelėkite „Tęsti“.</translation>
 <translation id="3852700440713538496">„Chromium“ prisegimas prie užduočių juostos</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390894725198123737">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chromium“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
+<translation id="4036079820698952681">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie <ph name="BEGIN_LINK" />dabartinius nustatymus<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="407254336480250557">Pasirinkite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Uždarykite visus „Chromium“ langus ir iš naujo paleiskite „Chromium“, kad šis pakeitimas pradėtų galioti.</translation>
@@ -229,6 +233,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>
 <translation id="8033665941300843262">„Chromium“ reikia pasiekti leidimus, kad galėtų bendrinti juos su šia svetaine.</translation>
 <translation id="8134284582177628525">Jei bendrinate šį kompiuterį su <ph name="PROFILE_NAME" />, pridėkite save prie „Chromium“, kad galėtumėte atskirai naršyti. Arba atjunkite to asmens „Google“ paskyrą.</translation>
+<translation id="8157153840442649507">„Chromium“ pateikiama šia kalba</translation>
 <translation id="81770708095080097">Šis failas pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="8222496066431494154">Įdiekite „Chromium“ telefone. Išsiųsime SMS pranešimą paskyros atkūrimo telefono numeriu: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Padėkite tobulinti „Chromium“</translation>

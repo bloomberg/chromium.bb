@@ -57,26 +57,6 @@
 <translation id="1152117524387175066">Saadab teavet seadme arendaja lüliti oleku kohta käivitamisel.
 
       Kui määrate reegli olekule Väär, siis ei saadeta teavet arendaja lüliti oleku kohta.</translation>
-<translation id="1156080716265314451">Seadistab printerite loendi.
-
-      See reegel võimaldab administraatoritel pakkuda kasutajatele
-      printeriseadistusi.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida
-      saab kohandada, et hõlbustada printeri valimist. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> peavad
-vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
-      <ph name="PRINTER_URI" /> peab olema aadress, mida saab
-      klientarvutist (sh <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />) külastada. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul
-      aitab see seadistus <ph name="ZEROCONF_DISCOVERY" /> printerite duplikaate eemaldada.
-
-      Printeri seadistamine viiakse lõpule printeri esimesel kasutamisel. PPD-d
-      laaditakse alla siis, kui printerit kasutatakse. Pärast seda salvestatakse
-      sageli kasutatavad PPD-d vahemällu.
-
-      Reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes
-      printereid seadistada. See on mõeldud individuaalsete kasutajate printerite
-      seadistusi täiendama.</translation>
 <translation id="1160939557934457296">Keela turvalise sirvimise hoiatuslehest edasiliikumine</translation>
 <translation id="1198465924256827162">Seadme oleku üleslaadimiste saatmise sagedus millisekundites.
 
@@ -1541,11 +1521,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui see reegel jäetakse määramata, kasutab teenus <ph name="PRODUCT_OS_NAME" /> vaikeväärtust 3 tundi.
 
       Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
-<translation id="5535957389335373033">Jälgitavate võrgupakettide saatmise sagedus (millisekundites).
-
-      Kui see reegel on määramata, on vaikesageduseks kolm minutit. Minimaalne
-      sagedus on 30 sekundit ja maksimaalne sagedus on 24 tundi – väärtused,
-      mis jäävad sellest vahemikust väljapoole, surutakse sellesse vahemikku.</translation>
 <translation id="5535973522252703021">Kerberose volitusserveri lubatud nimekiri</translation>
 <translation id="5559079916187891399">See reegel ei mõjuta Androidi rakendusi.</translation>
 <translation id="5560039246134246593">Lisage parameeter variatsioonide lähteväärtuse toomisele teenuses <ph name="PRODUCT_NAME" />.

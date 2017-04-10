@@ -3,6 +3,7 @@
 <translationbundle lang="hr">
 <translation id="111910763555783249">Postavke obavijesti</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Prije 1 dan}one{Prije # dan}few{Prije # dana}other{Prije # dana}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{Prije 1 minute}one{prije # minute}few{prije # minute}other{prije # minuta}}</translation>
 <translation id="1190609913194133056">Centar za obavijesti</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Dodirnite ovdje</translation>
 <translation id="5076340679995252485">&amp;Zalijepi</translation>
 <translation id="5120799197269191491">Pretraživanje + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Značajka otključavanja PIN-om</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Obriši</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Pomakni se lijevo</translation>
 <translation id="6394627529324717982">Zarez</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prije 1 s}one{Prije # s}few{Prije # s}other{Prije # s}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{Prije 1 sekunde}one{Prije # sekunde}few{Prije # sekunde}other{Prije # sekundi}}</translation>
 <translation id="6528179044667508675">Ne ometaj</translation>
 <translation id="6612467943526193239">Za izlaz iz kalibracije pritisnite Esc.</translation>
 <translation id="6620110761915583480">Spremi datoteku</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
 <translation id="7850320739366109486">Ne ometaj</translation>
 <translation id="7907591526440419938">Otvori datoteku</translation>
+<translation id="8054029954190364711">Značajka otključavanja otiskom prsta</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prije 1 sat}one{Prije # sat}few{Prije # sata}other{Prije # sati}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Još 1 s}one{Još # s}few{Još # s}other{Još # s}}</translation>
 <translation id="815598010540052116">Pomakni se dolje</translation>

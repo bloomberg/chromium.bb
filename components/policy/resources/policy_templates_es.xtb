@@ -57,26 +57,7 @@
 <translation id="1152117524387175066">Permite informar sobre el estado del conector de modo de desarrollador del dispositivo cuando este se inicia.
 
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
-<translation id="1156080716265314451">Configura una lista de impresoras.
-
-      Esta política permite a los administradores proporcionar opciones de configuración de impresoras a
-      sus usuarios.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son cadenas de formato libre que
-      se pueden personalizar para que la selección de impresoras sea sencilla. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> deben coincidir con una de las impresoras <ph name="PRODUCT_NAME" />
-      compatibles.  <ph name="PRINTER_URI" /> debería ser una dirección que esté disponible
-      desde un ordenador local (incluidos <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />).  <ph name="PRINTER_UUID" /> es opcional.  Si se especifica, se utiliza para
-      anular el duplicado de impresoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      La configuración de la impresora se completa la primera vez que se utiliza.  Los archivos PPD no
-      se descargan hasta que la impresora se usa.  Después de ese momento, los archivos PPD que se utilizan
-      con frecuencia se almacenan en caché.
-
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en
-      determinados dispositivos.  La política se ha diseñado con el objetivo de ser complementaria a la
-      configuración de impresoras por parte de los usuarios.</translation>
-<translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre navegación segura</translation>
+<translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre Navegación Segura</translation>
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
@@ -623,11 +604,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
-<translation id="2785954641789149745">Habilita la función de navegación segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
+<translation id="2785954641789149745">Habilita la función de Navegación Segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
 
-      Si habilitas esta opción, la navegación segura siempre estará activa.
+      Si habilitas esta opción, la Navegación Segura siempre estará activa.
 
-      Si inhabilitas esta opción, la navegación segura nunca estará activa.
+      Si inhabilitas esta opción, la Navegación Segura nunca estará activa.
 
       Si habilitas o inhabilitas esta opción, los usuarios no podrán modificar o anular la opción Habilitar protección contra phishing y software malicioso en <ph name="PRODUCT_NAME" />.
 
@@ -644,7 +625,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se inhabilita esta opción y el cortafuegos filtra las conexiones UDP salientes, este ordenador solo permitirá conexiones de ordenadores cliente que se encuentren en la red local.
 
       Si no se establece esta política, se habilitará la opción.</translation>
-<translation id="2811293057593285123">El servicio de navegación segura muestra una página de advertencia cuando los usuarios acceden a sitios marcados como potencialmente maliciosos. Habilitar esta opción evita que los usuarios sigan navegando de todos modos desde la página de advertencia hasta el sitio malicioso.
+<translation id="2811293057593285123">El servicio de Navegación Segura muestra una página de advertencia cuando los usuarios acceden a sitios marcados como potencialmente maliciosos. Habilitar esta opción evita que los usuarios sigan navegando de todos modos desde la página de advertencia hasta el sitio malicioso.
 
 Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si quieren acceder al sitio marcado después de haber visto la advertencia.</translation>
 <translation id="2812021780168085286">Te permite especificar las URL que pueden instalar extensiones, aplicaciones y temas.
@@ -1225,7 +1206,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir que todos los sitios muestren todas las imágenes</translation>
 <translation id="4389091865841123886">Permite configurar la confirmación remota con el mecanismo de TPM.</translation>
-<translation id="4397469093966511008">Si se asigna el valor false a esta política, los usuarios no podrán elegir la opción de enviar información del sistema y contenido de las páginas a los servidores de Google. Si se asigna el valor true o no se configura, los usuarios podrán enviar información del sistema y contenido de las páginas a la navegación segura para que esta pueda detectar aplicaciones y sitios web peligrosos.</translation>
+<translation id="4397469093966511008">Si se asigna el valor false a esta política, los usuarios no podrán elegir la opción de enviar información del sistema y contenido de las páginas a los servidores de Google. Si se asigna el valor true o no se configura, los usuarios podrán enviar información del sistema y contenido de las páginas a la Navegación Segura para que esta pueda detectar aplicaciones y sitios web peligrosos.</translation>
 <translation id="4423597592074154136">Especificar configuración de proxy manualmente</translation>
 <translation id="4429220551923452215">Habilita o inhabilita el acceso directo de aplicaciones en la barra de marcadores.
 
@@ -1380,7 +1361,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parámetro que controla la ubicación de los términos de búsqueda para el proveedor de búsquedas predeterminado</translation>
-<translation id="4899708173828500852">Habilitar la navegación segura</translation>
+<translation id="4899708173828500852">Habilitar la Navegación Segura</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de Device Policy</translation>
 <translation id="4928632305180102854">Permite controlar la creación de nuevas cuentas de usuario en <ph name="PRODUCT_OS_NAME" />. Si el valor correspondiente a esta política se establece en "false", los usuarios que no dispongan de una cuenta previamente no podrán iniciar sesión.
 
@@ -1554,9 +1535,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de tres horas.
 
       Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
-<translation id="5535957389335373033">Frecuencia con la que se envían paquetes de red de supervisión (en milisegundos).
-
-      Si esta política no se configura, la frecuencia predeterminada es de tres minutos. La frecuencia mínima es de 30 segundos y la máxima de 24 horas (los valores que no se encuentren en este intervalo se redondearán a este).</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="5559079916187891399">Esta política no influye en las aplicaciones para Android.</translation>
 <translation id="5560039246134246593">Permite añadir un parámetro para la obtención de la base de las variaciones en <ph name="PRODUCT_NAME" />.
@@ -2183,7 +2161,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
 <translation id="7207095846245296855">Forzar Google Búsqueda Segura</translation>
-<translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
+<translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de Navegación Segura</translation>
 <translation id="7227967227357489766">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Si no se configura esta política, no se establecerán restricciones sobre los usuarios que pueden iniciar sesión. Ten en cuenta que, para crear nuevos usuarios, sigue siendo necesario configurar adecuadamente la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" />.</translation>

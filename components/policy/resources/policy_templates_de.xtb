@@ -57,25 +57,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1152117524387175066">Meldet den Status des Entwicklerschalters des Geräts beim Start
 
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
-<translation id="1156080716265314451">Eine Liste der Drucker wird konfiguriert.
-
-      Mithilfe dieser Richtlinie können Administratoren den Nutzern
-      Druckerkonfigurationen bereitstellen.
-
-      Bei <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> handelt es sich um Freiform-Strings,
-      die für eine nutzerfreundliche Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> müssen mit einem der unterstützten <ph name="PRODUCT_NAME" />-Drucker
-      übereinstimmen. <ph name="PRINTER_URI" /> muss eine Adresse sein, die
-      von einem Client-Computer erreichbar ist, einschließlich <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> ist optional. Wird diese angegeben, wird sie
-      zur Entfernung von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
-
-      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen.
-      PPDs werden erst dann heruntergeladen, wenn der Drucker genutzt wird.
-      Anschließend werden häufig verwendete PPDs im Cache gespeichert.
-
-      Diese Richtlinie hat keine Auswirkung darauf, ob Nutzer Drucker auf
-      ihren individuellen Geräten konfigurieren können. Sie ist als Ergänzung zu
-      den Druckerkonfigurationen der einzelnen Nutzer gedacht.</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
 <translation id="1198465924256827162">Mithilfe dieser Richtlinie wird in Millisekunden angegeben, wie oft Uploads mit dem Gerätestatus vorgenommen werden.
 
@@ -1437,12 +1418,6 @@ Wird diese Einstellung deaktiviert oder kein Wert festgelegt, wird der eingeschr
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_OS_NAME" /> der Standardwert von 3 Stunden.
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
-<translation id="5535957389335373033">Durch diese Richtlinie wird festgelegt, wie oft Kontrollnetzwerkpakete gesendet werden (in Millisekunden).
-
-      Wenn die Richtlinie nicht konfiguriert ist, beträgt die standardmäßige
-      Häufigkeit 3 Minuten. Der Mindestwert beträgt 30 Sekunden und der
-      höchstmögliche Wert 24 Stunden. Werte, die außerhalb dieses Bereichs
-      liegen, werden auf den jeweiligen Mindest- oder Maximalwert angepasst.</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="5559079916187891399">Diese Richtlinie hat keine Auswirkung auf Android-Apps.</translation>
 <translation id="5560039246134246593">Hiermit fügen Sie beim Abrufen des Varianten-Seeds in <ph name="PRODUCT_NAME" /> einen Parameter hinzu.

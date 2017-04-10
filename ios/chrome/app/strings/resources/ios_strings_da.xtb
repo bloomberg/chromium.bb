@@ -128,10 +128,12 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Opdelt visning</translation>
+<translation id="3474624961160222204">Fortsæt som <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formularerne er udfyldt.</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3482959374254649722">Synkroniserer dine faner...</translation>
 <translation id="3489372701259491571">Slet gemt adgangskode</translation>
+<translation id="3494788280727468875">Bekræft rydning af browserdata</translation>
 <translation id="3519193562722059437">Åbn en fane for at søge på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3551320343578183772">Luk fanen</translation>
@@ -143,6 +145,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke på søgefeltet.</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3608436266458100337">Læser-tilstand</translation>
+<translation id="3628119975092896051">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
@@ -303,6 +306,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7131892264600713844">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Fulde navn</translation>
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
+<translation id="7159472599653637159">Anmod om mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
@@ -312,6 +316,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7419187830569376338">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>
+<translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/amt</translation>
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7464701184726199289">Dette rydder synkroniserede data fra alle enheder. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>

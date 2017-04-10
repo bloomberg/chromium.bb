@@ -57,26 +57,6 @@
 <translation id="1152117524387175066">Informa sobre el estado del conmutador de dispositivo cuando este se inicia.
 
       Si esta política se establece en "False", no se informará sobre el estado del conmutador de dispositivo.</translation>
-<translation id="1156080716265314451">Configura una lista de impresoras.
-
-      Esta política permite que los administradores proporcionen opciones 
-      de configuración de impresoras para los usuarios.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings de formularios gratuitos que
-      pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> deben coincidir con una de las impresoras compatibles
-      de <ph name="PRODUCT_NAME" />. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar
-      desde la computadora de un cliente, que incluya <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional. Si se proporciona, se usa para
-      ayudar a deduplicar las impresoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      La configuración de la impresora se completa cuando se usa por primera
-       vez. Los PPD no se descargan hasta que se usa la impresora. Luego,
-       Los PPD que se usan con mayor frecuencia se almacenan en caché.
-
-      Esta política no tiene efecto en la decisión si los usuarios pueden
-      configurar las impresoras en dispositivos individuales. El objetivo
-      es que complemente la configuración de las impresoras que realicen
-      usuarios individuales.</translation>
 <translation id="1160939557934457296">Inhabilita continuar desde la página de advertencia de Navegación segura.</translation>
 <translation id="1198465924256827162">Frecuencia de envío de cargas de estado del dispositivo, en milisegundos.
 
@@ -1447,11 +1427,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si no estableces esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de 3 horas.
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
-<translation id="5535957389335373033">La frecuencia de envío de paquetes de red de control, en milisegundos.
-
-      Si esta política no se configura, la frecuencia predeterminada es 3 minutos.
-      La frecuencia mínima es 30 segundos y la máxima es 24 horas;
-      los valores fuera de estos límites se establecerán dentro del rango.</translation>
 <translation id="5535973522252703021">Lista blanca de servidores de delegación de Kerberos</translation>
 <translation id="5559079916187891399">Esta política no tiene efecto en las apps de Android.</translation>
 <translation id="5560039246134246593">Agrega un parámetro a la obtención del valor de inicialización de las variaciones en <ph name="PRODUCT_NAME" />.

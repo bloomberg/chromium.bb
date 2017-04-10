@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Моля, въведете валидна стойност. Най-близката такава е <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2674318244760992338">долен колонтитул</translation>
+<translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2723001399770238859">звук</translation>
 <translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME" /> или по-късно.</translation>
 <translation id="2759744352195237655">бутон с изскачащ прозорец</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">директория</translation>
 <translation id="6934078000481955284">блоков цитат</translation>
 <translation id="6941933287844615239">изтегляне на мултимедията</translation>
+<translation id="6989848892321993519">Моля, удължете този текст до поне <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате 1 знак).</translation>
 <translation id="7057186640035488495">време от филма</translation>
 <translation id="709897737746224366">Моля, спазвайте изисквания формат.</translation>
 <translation id="7223624360433298498">изминало време</translation>

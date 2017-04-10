@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Разделен изглед</translation>
+<translation id="3474624961160222204">Продължаване като <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Формулярите са попълнени.</translation>
 <translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3482959374254649722">Разделите ви се синхронизират...</translation>
 <translation id="3489372701259491571">Изтриване на запазената парола</translation>
+<translation id="3494788280727468875">Потвърждаване на изчистването на данните за сърфирането</translation>
 <translation id="3519193562722059437">Отворете раздел, за да сърфирате в мрежата.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3551320343578183772">Затваряне на раздела</translation>
@@ -143,6 +145,7 @@
 За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="3607167657931203000">Автоматично попълване на данни</translation>
 <translation id="3608436266458100337">Режим за четене</translation>
+<translation id="3628119975092896051">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и фамилия</translation>
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
+<translation id="7159472599653637159">Мобилен сайт</translation>
 <translation id="7167621057293532233">Типове данни</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7203585745079012652">Изговаряне на отговорите</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="7419187830569376338">Търсене на изобр. със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Промените в отметките, историята, паролите и другите ви настройки вече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него.</translation>
+<translation id="744343212394640790">Не съм <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Щат/държава</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7464701184726199289">Синхронизираните данни ще се изчистят от всички устройства. Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>

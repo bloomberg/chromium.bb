@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="111910763555783249">Instellingen voor meldingen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 dag geleden}other{# dagen geleden}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{1 minuut geleden}other{# minuten geleden}}</translation>
 <translation id="1190609913194133056">Meldingscentrum</translation>
 <translation id="1243314992276662751">Uploaden</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Tik hier</translation>
 <translation id="5076340679995252485">&amp;Plakken</translation>
 <translation id="5120799197269191491">Zoeken+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Functie voor ontgrendelen via pincode</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Naar links bladeren</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec. geleden}other{# sec. geleden}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{1 seconde geleden}other{# seconden geleden}}</translation>
 <translation id="6528179044667508675">Niet storen</translation>
 <translation id="6612467943526193239">Druk op Esc om de kalibratie af te sluiten.</translation>
 <translation id="6620110761915583480">Bestand opslaan</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Kopiëren</translation>
 <translation id="7850320739366109486">Niet storen</translation>
 <translation id="7907591526440419938">Bestand openen</translation>
+<translation id="8054029954190364711">Functie voor ontgrendelen via vingerafdruk</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 uur geleden}other{# uur geleden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec. resterend}other{# sec. resterend}}</translation>
 <translation id="815598010540052116">Omlaag bladeren</translation>

@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Az eszköz fejlesztői kapcsolójának állapotjelentése a rendszer indításakor.
 
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>
-<translation id="1156080716265314451">Konfigurálja a nyomtatók listáját.
-
-      Ez a házirend lehetővé teszi a rendszergazdák számára, hogy nyomtatóbeállításokat biztosítsanak
-      felhasználóiknak.
-
-      A(z) <ph name="PRINTER_DISPLAY_NAME" /> és <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek
-      személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A(z) <ph name="PRINTER_MANUFACTURER" /> és <ph name="PRINTER_MODEL" /> beállításnak meg kell felelnie a(z) <ph name="PRODUCT_NAME" /> által támogatott nyomtatók
-      egyikének. A(z) <ph name="PRINTER_URI" /> beállításnak olyan címnek kell lennie, amelyhez hozzáfér
-      az ügyfél számítógépe, beleértve a(z) <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> és <ph name="URI_QUEUE" /> értékét. A(z) <ph name="PRINTER_UUID" /> nem kötelező. Ha meg van adva, segít 
-      elkerülni a(z) <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
-
-      A nyomtató beállítása a nyomtató első használatakor történik. A PPD-k csak a
-      nyomtató használatát követően töltődnek le. Ezután a gyakran használt
-      PPD-k a gyorsítótárba kerülnek.
-
-      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e a böngészőket
-      saját eszközeiken. A házirend célja, hogy kiegészítse
-      az egyéni felhasználók általi nyomtatóbeállítást.</translation>
 <translation id="1160939557934457296">Biztonságos Böngészés figyelmeztetőoldal</translation>
 <translation id="1198465924256827162">Milyen gyakran küld állapotfrissítéseket az eszköz (ezredmásodpercben).
 
@@ -1453,11 +1434,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be a házirendet, akkor a <ph name="PRODUCT_OS_NAME" /> az alapértelmezett 3 órás értéket fogja használni.
 
       Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
-<translation id="5535957389335373033">A böngésző által küldött ellenőrző hálózati csomagok gyakorisága (ezredmásodpercben).
-
-      Ha nem állítja be az irányelvet, az alapértelmezett gyakoriság három perc.
-      A minimális érték 30 másodperc, a maximális 24 óra. A
-      tartományon kívüli értékek ebbe a tartományba lesznek beszorítva.</translation>
 <translation id="5535973522252703021">Kerberos felhatalmazási szerver kivétellistája</translation>
 <translation id="5559079916187891399">A házirend nem vonatkozik az Android-alkalmazásokra.</translation>
 <translation id="5560039246134246593">Paraméter hozzáadása a Variations seed lekéréséhez a(z) <ph name="PRODUCT_NAME" /> termékben.

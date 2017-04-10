@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">没有其他任何元素。</translation>
 <translation id="2800780099804980316">不存在上一个1级标题。</translation>
 <translation id="280499067616661124">ChromeVox 在网页中查找</translation>
+<translation id="2808001342598757276">取消调暗屏幕</translation>
 <translation id="2811019999044652585">要跳转到屏幕上的其他部分（例如工具栏或系统任务栏），请按 Ctrl + 前进键。在 Chromebook 上，前进键位于数字键 2 的正上方。</translation>
 <translation id="2811204574343810641">行</translation>
 <translation id="2816654101880605877">不存在下一个滑块。</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">表单</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{1个反斜线符号}other{#个反斜线符号}}</translation>
 <translation id="6037602951055904232">向前平移</translation>
+<translation id="6044160928851315051">调暗屏幕</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">单元格结束。</translation>

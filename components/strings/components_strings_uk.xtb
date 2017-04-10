@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Налаштування автозаповнення Chromium…</translation>
 <translation id="1374468813861204354">пропозиції</translation>
 <translation id="1375198122581997741">Про версію</translation>
+<translation id="1377321085342047638">Номер картки</translation>
 <translation id="139305205187523129">Хост <ph name="HOST_NAME" /> не надіслав дані.</translation>
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1413809658975081374">Помилка через порушення конфіденційності</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> надіслав недійсну відповідь.</translation>
 <translation id="2552545117464357659">Новіша</translation>
 <translation id="2556876185419854533">&amp;Відмінити редагування</translation>
+<translation id="2587730715158995865">Видавець: <ph name="ARTICLE_PUBLISHER" />. Читайте цю та ще <ph name="OTHER_ARTICLE_COUNT" /> статей.</translation>
 <translation id="2587841377698384444">Ідентифікатор API каталогу:</translation>
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="2609632851001447353">Різновиди</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{щонайменше 1 запис на синхронізованих пристроях}=1{1 запис (і більше на синхронізованих пристроях)}one{# запис (і більше на синхронізованих пристроях)}few{# записи (і більше на синхронізованих пристроях)}many{# записів (і більше на синхронізованих пристроях)}other{# запису (і більше на синхронізованих пристроях)}}</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3063697135517575841">Chrome не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
+<translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
 <translation id="3093245981617870298">Ви в режимі офлайн</translation>
 <translation id="3105172416063519923">Ідентифікатор об’єкта:</translation>
 <translation id="3109728660330352905">У вас немає дозволу переглядати цю сторінку.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Не вдалося надіслати запит на доступ до цього сайту користувачеві <ph name="NAME" />. Повторіть спробу.</translation>
 <translation id="3355823806454867987">Змінити налаштування проксі...</translation>
 <translation id="3369192424181595722">Помилка годинника</translation>
+<translation id="337311366426640088">Ще <ph name="ITEM_COUNT" />…</translation>
 <translation id="337363190475750230">Деініціалізовано</translation>
 <translation id="3377188786107721145">Помилка аналізу правила</translation>
 <translation id="3380365263193509176">Невідома помилка</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Інтервал отримання:</translation>
 <translation id="3462200631372590220">Сховати додаткову інформацію</translation>
+<translation id="3478058380795961209">Місяць закінчення терміну дії</translation>
 <translation id="3479539252931486093">Не очікували? <ph name="BEGIN_LINK" />Повідомте нас<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="348000606199325318">Ідентифікатор аварійного завершення роботи <ph name="CRASH_LOCAL_ID" /> (ідентифікатор сервера: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5308689395849655368">Повідомлення про аварійне завершення роботи вимкнено.</translation>
 <translation id="5317780077021120954">Зберегти</translation>
-<translation id="5326702247179446998">Потрібно вказати отримувача</translation>
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5337705430875057403">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть обманом змусити вас виконати небезпечну дію, як-от установити шкідливе програмне забезпечення або повідомити особисту інформацію (наприклад, паролі, номери телефонів або кредитних карток).</translation>
 <translation id="53553865750799677">Адреса отримання не підтримується. Укажіть іншу адресу.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Що це означає?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{і ще 1 пропозиція}one{і ще # пропозиція}few{і ще # пропозиції}many{і ще # пропозицій}other{і ще # пропозиції}}</translation>
 <translation id="6387478394221739770">Хочете спробувати нові цікаві функції Chrome? Завантажте бета-версію зі сторінки chrome.com/beta.</translation>
+<translation id="6389470377220713856">Ім’я на картці</translation>
 <translation id="6389758589412724634">Недостатньо пам’яті Chromium, щоб показати цю веб-сторінку.</translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6410264514553301377">Введіть дату закінчення терміну дії та код CVC картки <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Батьки ще не схвалили його</translation>
 <translation id="6810899417690483278">Ідентифікатор налаштування</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Не вдалося завантажити дані регіонів</translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6839929833149231406">Регіон або територія</translation>
 <translation id="6874604403660855544">&amp;Повторити додавання</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
 <translation id="7000990526846637657">Немає записів в історії</translation>
-<translation id="7001663382399377034">Додати одержувача</translation>
 <translation id="7009986207543992532">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Історія веб-перегляду також може зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">Панель закладок</translation>
 <translation id="8363502534493474904">вимкнути режим польоту</translation>
 <translation id="8364627913115013041">Не встановлено.</translation>
+<translation id="8368476060205742148">Сервіси Google Play</translation>
 <translation id="8380941800586852976">Небезпечна</translation>
 <translation id="8382348898565613901">Тут відображатимуться нещодавно відкриті закладки</translation>
 <translation id="8398259832188219207">Дата завантаження звіту про аварійне завершення роботи: <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">Непідтримуваний тип картки</translation>
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>
 <translation id="852346902619691059">Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Операційна система вашого пристрою вважає його сертифікат безпеки ненадійним. Імовірні причини: сервер налаштовано неправильно або хтось намагається перехопити ваше з’єднання. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Рік закінчення терміну дії</translation>
 <translation id="8543181531796978784">Ви можете <ph name="BEGIN_ERROR_LINK" />повідомити про проблему з пошуком<ph name="END_ERROR_LINK" /> або <ph name="BEGIN_LINK" />перейти на цей незахищений сайт<ph name="END_LINK" /> (якщо розумієте, наскільки це небезпечно).</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>

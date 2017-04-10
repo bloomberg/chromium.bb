@@ -57,25 +57,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1152117524387175066">Rapportér tilstanden for enhedens udviklerkontakt ved opstart.
 
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>
-<translation id="1156080716265314451">Konfigurerer en liste over printere.
-
-      Denne politik giver administratorer mulighed for at angive printerkonfigurationer for
-      deres brugere.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er fri for strenge, der
-      kan tilpasses, så valg af printer bliver lettere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> skal stemme overens med én af de understøttede <ph name="PRODUCT_NAME" /> 
-      printere.  <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig
-      fra en klientcomputer, inklusive <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> er valgfri.  Hvis den medfølger, bruges den som en
-      hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" /> printere.
-
-      Printerkonfigurationen udføres i forbindelse med den første brug af printeren.  PPD'er downloades
-      ikke, før printeren bruges.  Derefter gemmes ofte anvendte
-      PPD'er i cachen.
-
-      Denne politik påvirker ikke, om brugerne kan konfigurere printere på
-      individuelle enheder.  Den er beregnet til at fungere som supplement til
-      den enkelte brugers konfiguration af printere.</translation>
 <translation id="1160939557934457296">Deaktiver fortsættelse fra advarselssiden for Beskyttet browsing</translation>
 <translation id="1198465924256827162">Hvor ofte der sendes enhedsstatusuploads (i millisekunder).
 
@@ -1473,9 +1454,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis denne politik ikke angives, bruger <ph name="PRODUCT_OS_NAME" /> standardværdien på tre timer.
 
       Bemærk! Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer (der ses bort fra alle standardindstillingerne og værdierne for denne politik), da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres. Dermed er hyppige opdateringer ikke nødvendige.</translation>
-<translation id="5535957389335373033">Hvor ofte netværkspakker til overvågning sendes (angivet i millisekunder).
-
-Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. Alle værdier uden for dette interval justeres automatisk, så de ligger inden for dette interval.</translation>
 <translation id="5535973522252703021">Hvidliste for Kerberos-delegeringsserver</translation>
 <translation id="5559079916187891399">Denne politik påvirker ikke Android-apps.</translation>
 <translation id="5560039246134246593">Tilføj en parameter til hentning af variationbasistal i <ph name="PRODUCT_NAME" />.

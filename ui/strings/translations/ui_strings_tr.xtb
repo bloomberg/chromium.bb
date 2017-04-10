@@ -3,6 +3,7 @@
 <translationbundle lang="tr">
 <translation id="111910763555783249">Bildirim ayarları</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 gün önce}other{# gün önce}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{1 dakika önce}other{# dakika önce}}</translation>
 <translation id="1190609913194133056">Bildirim Merkezi</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Buraya dokunun</translation>
 <translation id="5076340679995252485">&amp;Yapıştır</translation>
 <translation id="5120799197269191491">Arama tuşu+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">PIN ile Kilit Açma Özelliği</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Sil</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Sola Kaydır</translation>
 <translation id="6394627529324717982">Virgül</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sn. önce}other{# sn. önce}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{1 saniye önce}other{# saniye önce}}</translation>
 <translation id="6528179044667508675">Rahatsız etmeyin</translation>
 <translation id="6612467943526193239">Kalibrasyondan çıkmak için Esc tuşuna basın.</translation>
 <translation id="6620110761915583480">Dosyayı Kaydet</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">K&amp;opyala</translation>
 <translation id="7850320739366109486">Rahatsız Etmeyin</translation>
 <translation id="7907591526440419938">Dosya Aç</translation>
+<translation id="8054029954190364711">Parmak İziyle Kilit Açma Özelliği</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 saat önce}other{# saat önce}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sn. kaldı}other{# sn. kaldı}}</translation>
 <translation id="815598010540052116">Aşağı Kaydır</translation>

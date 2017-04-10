@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium Otomatik Doldurma ayarları...</translation>
 <translation id="1374468813861204354">öneriler</translation>
 <translation id="1375198122581997741">Sürüm Hakkında</translation>
+<translation id="1377321085342047638">Kart Numarası</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> hiç veri göndermedi.</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
 <translation id="1413809658975081374">Gizlilik hatası</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> geçersiz bir yanıt gönderdi.</translation>
 <translation id="2552545117464357659">Daha yeni</translation>
 <translation id="2556876185419854533">Düzenlemeyi &amp;Geri Al</translation>
+<translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> adlı yayıncıdan. Bunu ve diğer <ph name="OTHER_ARTICLE_COUNT" /> haberi okuyun.</translation>
 <translation id="2587841377698384444">Dizin API'sı Kimliği:</translation>
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="2609632851001447353">Varyasyonlar</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{senkronize edilmiş cihazlarda en az 1 öğe}=1{1 öğe (ve senkronize edilmiş cihazlarda daha fazlası)}other{# öğe (ve senkronize edilmiş cihazlarda daha fazlası)}}</translation>
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
 <translation id="3063697135517575841">Chrome şu anda kartınızı onaylayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
+<translation id="3064966200440839136">Harici bir uygulama üzerinden ödeme gerçekleştirmek için gizli moddan çıkılacak. Devam edilsin mi?</translation>
 <translation id="3093245981617870298">Çevrimdışısınız.</translation>
 <translation id="3105172416063519923">Öğe Kimliği:</translation>
 <translation id="3109728660330352905">Bu sayfayı görüntüleme yetkiniz yok.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Bu siteye erişim isteğiniz <ph name="NAME" /> adlı kullanıcıya gönderilemedi. Lütfen tekrar deneyin.</translation>
 <translation id="3355823806454867987">Proxy ayarlarını değiştir...</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> öğe daha...</translation>
 <translation id="337363190475750230">Temel hazırlık iptal edildi</translation>
 <translation id="3377188786107721145">Politika ayrıştırma hatası</translation>
 <translation id="3380365263193509176">Bilinmeyen hata</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Getirme aralığı:</translation>
 <translation id="3462200631372590220">Gelişmiş bilgileri gizle</translation>
+<translation id="3478058380795961209">Son Kullanım Ayı</translation>
 <translation id="3479539252931486093">Bu beklenmedik bir durum mu? <ph name="BEGIN_LINK" />Bize bildirin<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="348000606199325318">Kilitlenme Kimliği: <ph name="CRASH_LOCAL_ID" /> (Sunucu Kimliği: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5308689395849655368">Kilitlenme bildirme devre dışı.</translation>
 <translation id="5317780077021120954">Kaydet</translation>
-<translation id="5326702247179446998">Alıcı gerekli</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar, yazılım yükleme veya kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları veya kredi kartları) ortaya çıkarma gibi tehlikeli şeyler yapmak için sizi kandırabilir.</translation>
 <translation id="53553865750799677">Alma adresi desteklenmiyor. Farklı bir adres seçin.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
 <translation id="6387478394221739770">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/beta adresinden beta kanalımızı deneyin.</translation>
+<translation id="6389470377220713856">Karttaki Ad</translation>
 <translation id="6389758589412724634">Bu web sayfası görüntülenmeye çalışılırken Chromium'da bellek kalmadı.</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> numaralı kartın son kullanma tarihini ve CVC kodunu girin</translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Ebeveyniniz henüz onaylamadı</translation>
 <translation id="6810899417690483278">Özelleştirme Kimliği</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Bölge verileri yüklenemedi</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6839929833149231406">Bölge</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
 <translation id="6989763994942163495">Gelişmiş ayarları göster...</translation>
 <translation id="7000990526846637657">Geçmiş girişi bulunamadı</translation>
-<translation id="7001663382399377034">Alıcı ekleyin</translation>
 <translation id="7009986207543992532"><ph name="DOMAIN" /> alan adına erişmeyi denediniz ancak sunucu, geçerlilik dönemi güvenilir olmayacak kadar uzun olan bir sertifika sundu. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde Google Hesabınıza ilişkin başka biçimlerde tarama geçmişi olabilir.</translation>
@@ -772,6 +777,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8349305172487531364">Yer işaretleri çubuğu</translation>
 <translation id="8363502534493474904">Uçak modunu kapatma</translation>
 <translation id="8364627913115013041">Henüz ayarlanmadı.</translation>
+<translation id="8368476060205742148">Google Play hizmetleri</translation>
 <translation id="8380941800586852976">Tehlikeli</translation>
 <translation id="8382348898565613901">Son ziyaret ettiğiniz yer işaretleri burada görünür</translation>
 <translation id="8398259832188219207">Kilitlenme raporunun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8492969205326575646">Desteklenmeyen kart türü</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ana makinesinin yanıt vermesi çok uzun sürdü.</translation>
 <translation id="852346902619691059">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Son Kullanım Yılı</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Bir tespit sorununu bildirebilir<ph name="END_ERROR_LINK" /> veya güvenliğiniz açısından riskleri anlıyorsanız <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Sayfanın dili belirlenemediğinden çeviri başarısız oldu.</translation>
 <translation id="8559762987265718583">Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>

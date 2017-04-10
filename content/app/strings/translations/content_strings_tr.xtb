@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Lütfen geçerli bir değer girin. En yakın geçerli değer şudur: <ph name="VALID_VALUE" /></translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2674318244760992338">altbilgi</translation>
+<translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="2723001399770238859">ses</translation>
 <translation id="2746543609216772311">Değer <ph name="MINIMUM_DATE_OR_TIME" /> veya daha ileri olmalıdır.</translation>
 <translation id="2759744352195237655">pop-up düğmesi</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">dizin</translation>
 <translation id="6934078000481955284">blok alıntı</translation>
 <translation id="6941933287844615239">medyayı indir</translation>
+<translation id="6989848892321993519">Lütfen bu metni <ph name="MIN_CHARACTERS" /> karakter veya daha fazla olacak şekilde uzatın (şu anda 1 karakter kullanıyorsunuz).</translation>
 <translation id="7057186640035488495">filmin süresi</translation>
 <translation id="709897737746224366">Lütfen istenen biçimi eşleştirin.</translation>
 <translation id="7223624360433298498">geçen süre</translation>

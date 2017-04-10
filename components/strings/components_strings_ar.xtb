@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">‏إعدادات الملء التلقائي في Chromium...</translation>
 <translation id="1374468813861204354">اقتراحات</translation>
 <translation id="1375198122581997741">معلومات عن الإصدار</translation>
+<translation id="1377321085342047638">رقم البطاقة</translation>
 <translation id="139305205187523129">لم يرسل <ph name="HOST_NAME" /> أي بيانات.</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1413809658975081374">خطأ في الخصوصية</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">أرسل <ph name="HOST_NAME" /> استجابة غير صالحة.</translation>
 <translation id="2552545117464357659">أحدث</translation>
 <translation id="2556876185419854533">تراجع عن ا&amp;لتحرير</translation>
+<translation id="2587730715158995865">من <ph name="ARTICLE_PUBLISHER" />. يمكنك قراءة هذه المقالة و<ph name="OTHER_ARTICLE_COUNT" /> قصص أخرى.</translation>
 <translation id="2587841377698384444">رقم تعريف واجهة برمجة التطبيقات الدليل:</translation>
 <translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  الرجاء إدخال كلمة مرور.</translation>
 <translation id="2609632851001447353">الاختلافات</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
+<translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="3093245981617870298">أنت غير متصل.</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">تعذر إرسال طلبك للوصول إلى هذا الموقع إلى <ph name="NAME" />. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="3355823806454867987">تغيير إعدادات الخادم الوكيل...</translation>
 <translation id="3369192424181595722">خطأ في الساعة</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> من العناصر الأخرى...</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
 <translation id="3377188786107721145">خطأ في تحليل السياسة</translation>
 <translation id="3380365263193509176">خطأ غير معروف</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">الفاصل الزمني للجلب:</translation>
 <translation id="3462200631372590220">الإخفاء (خيار متقدم)</translation>
+<translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3479539252931486093">ألم تتوقَّع هذا؟ <ph name="BEGIN_LINK" />أطلِعنا على الأمر<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348000606199325318">معرّف التعطُّل <ph name="CRASH_LOCAL_ID" /> (معرّف الخادم: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5308689395849655368">ميزة الإبلاغ عن الأعطال معطلة.</translation>
 <translation id="5317780077021120954">حفظ</translation>
-<translation id="5326702247179446998">يلزم وجود مستلم</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5337705430875057403">قد يخدعك المخترقون الموجودون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> بفعل شيء خطير كتثبيت البرامج أو الكشف عن معلوماتك الشخصية (على سبيل المثال، كلمات المرور، أرقام الهواتف، أو بطاقات الائتمان).</translation>
 <translation id="53553865750799677">عنوان الاستلام غير مدعوم. حدّد عنوانًا آخر.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
 <translation id="6387478394221739770">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة القناة التجريبية على chrome.com/beta.</translation>
+<translation id="6389470377220713856">الاسم كما في البطاقة</translation>
 <translation id="6389758589412724634">‏نفدت ذاكرة Chromium أثناء محاولة عرض صفحة الويب هذه.</translation>
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
 <translation id="6410264514553301377">‏أدخِل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">لم يوافق عليه والداك حتى الآن</translation>
 <translation id="6810899417690483278">رقم تعريف التخصيص</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">تعذَّر تحميل بيانات المناطق</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6839929833149231406">المنطقة</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>
 <translation id="7000990526846637657">لم يتم العثور على أي إدخالات في السجلّ</translation>
-<translation id="7001663382399377034">إضافة مستلم</translation>
 <translation id="7009986207543992532">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدّم شهادة مدة صلاحيتها طويلة جدًا مما يجعلها غير جديرة بالثقة. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">‏قد يتضمن حسابك في Google نماذج أخرى من سجلّ التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">شريط الإشارات</translation>
 <translation id="8363502534493474904">إيقاف تشغيل وضع الطائرة</translation>
 <translation id="8364627913115013041">لم يتم تعيينها.</translation>
+<translation id="8368476060205742148">‏خدمات Google Play</translation>
 <translation id="8380941800586852976">ضارة</translation>
 <translation id="8382348898565613901">تظهر الإشارات المرجعية التي زرتها مؤخرًا هنا</translation>
 <translation id="8398259832188219207">تم تحميل تقرير الأعطال في <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">نوع البطاقة غير متوافق</translation>
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>
 <translation id="852346902619691059">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إن شهادة أمانه غير موثوقة من قِبل نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأً في التهيئة أو مهاجمًا يعترض اتصالك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>

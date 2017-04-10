@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Настройки автозаполнения в Chromium...</translation>
 <translation id="1374468813861204354">подсказки</translation>
 <translation id="1375198122581997741">Сведения о версии</translation>
+<translation id="1377321085342047638">Номер карты</translation>
 <translation id="139305205187523129">Сайт <ph name="HOST_NAME" /> не отправил данных.</translation>
 <translation id="1407135791313364759">Открыть все</translation>
 <translation id="1413809658975081374">Ошибка нарушения конфиденциальности</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">Сайт <ph name="HOST_NAME" /> отправил недействительный ответ.</translation>
 <translation id="2552545117464357659">Позже</translation>
 <translation id="2556876185419854533">&amp;Отменить изменения</translation>
+<translation id="2587730715158995865">Источник: <ph name="ARTICLE_PUBLISHER" />. Доступно ещё несколько статей (<ph name="OTHER_ARTICLE_COUNT" />).</translation>
 <translation id="2587841377698384444">Идентификатор Directory API:</translation>
 <translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
 <translation id="2609632851001447353">Варианты</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{по меньшей мере 1 запись на синхронизируемых устройствах}=1{1 запись (не считая данных на синхронизируемых устройствах)}one{# запись (не считая данных на синхронизируемых устройствах)}few{# записи (не считая данных на синхронизируемых устройствах)}many{# записей (не считая данных на синхронизируемых устройствах)}other{# записей (не считая данных на синхронизируемых устройствах)}}</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
 <translation id="3063697135517575841">Не удалось подтвердить данные карты. Повторите попытку позже.</translation>
+<translation id="3064966200440839136">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>
 <translation id="3093245981617870298">Нет подключения к сети</translation>
 <translation id="3105172416063519923">Идентификатор объекта:</translation>
 <translation id="3109728660330352905">У вас нет прав для просмотра этой страницы.</translation>
@@ -262,6 +265,7 @@
 <translation id="3345135638360864351">Не удалось отправить пользователю <ph name="NAME" /> запрос на доступ к этому сайту. Повторите попытку.</translation>
 <translation id="3355823806454867987">Изменить настройки прокси-сервера...</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
+<translation id="337311366426640088">Ещё <ph name="ITEM_COUNT" /></translation>
 <translation id="337363190475750230">Отключен</translation>
 <translation id="3377188786107721145">Не удалось выполнить анализ политики</translation>
 <translation id="3380365263193509176">Неизвестная ошибка</translation>
@@ -277,6 +281,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Выберите интервал:</translation>
 <translation id="3462200631372590220">Скрыть подробности</translation>
+<translation id="3478058380795961209">Месяц</translation>
 <translation id="3479539252931486093">Этот сайт не должен быть заблокирован? <ph name="BEGIN_LINK" />Сообщите нам об этом<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348000606199325318">Идентификатор сбоя: <ph name="CRASH_LOCAL_ID" /> (идентификатор сервера: <ph name="CRASH_ID" />)</translation>
@@ -459,7 +464,6 @@
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5308689395849655368">Отчеты о сбоях отключены.</translation>
 <translation id="5317780077021120954">Сохранить</translation>
-<translation id="5326702247179446998">Необходимо указать получателя</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5337705430875057403">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к установке вредоносного ПО или хищению вашей личной информации (например, паролей, телефонных номеров и данных кредитных карт).</translation>
 <translation id="53553865750799677">Адрес выдачи не поддерживается. Выберите другой вариант.</translation>
@@ -562,6 +566,7 @@
 <translation id="6358450015545214790">Что это значит?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
 <translation id="6387478394221739770">Хотите быть в курсе новинок Chrome? Выберите бета-канал на странице "chrome.com/beta".</translation>
+<translation id="6389470377220713856">Владелец карты</translation>
 <translation id="6389758589412724634">Chromium не хватает памяти для показа этой страницы.</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6410264514553301377">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" /></translation>
@@ -611,6 +616,7 @@
 <translation id="6778737459546443941">Ещё не одобрено родителем</translation>
 <translation id="6810899417690483278">Идентификатор персонализации</translation>
 <translation id="6820686453637990663">Код CVC</translation>
+<translation id="6824266427216888781">Не удалось загрузить данные регионов</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6839929833149231406">Административный район</translation>
 <translation id="6874604403660855544">&amp;Повторить добавление</translation>
@@ -625,7 +631,6 @@
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
 <translation id="6989763994942163495">Показать дополнительные настройки</translation>
 <translation id="7000990526846637657">Данные из истории не найдены</translation>
-<translation id="7001663382399377034">Добавьте получателя</translation>
 <translation id="7009986207543992532">Вы пытаетесь обратиться к серверу в домене <ph name="DOMAIN" />, но он предоставил сертификат с подозрительно долгим сроком действия. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -771,6 +776,7 @@
 <translation id="8349305172487531364">Панель закладок</translation>
 <translation id="8363502534493474904">Отключите режим полета.</translation>
 <translation id="8364627913115013041">Не задано</translation>
+<translation id="8368476060205742148">Сервисы Google Play</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8382348898565613901">Здесь появятся закладки, которые вы недавно открывали.</translation>
 <translation id="8398259832188219207"><ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
@@ -786,6 +792,7 @@
 <translation id="8492969205326575646">Неподдерживаемый тип карты</translation>
 <translation id="8498891568109133222">Превышено время ожидания ответа от сайта <ph name="HOST_NAME" />.</translation>
 <translation id="852346902619691059">Сервер не может подтвердить связь с доменом <ph name="DOMAIN" />. Его сертификат безопасности не принимается операционной системой вашего устройства. Возможно, проблема связана с настройками сервера или действиями злоумышленников, которые пытаются перехватить соединение. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">Год</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Сообщите о зараженном сайте<ph name="END_ERROR_LINK" />. Если вы готовы подвергнуть риску личные данные, то можете <ph name="BEGIN_LINK" />перейти на страницу<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Перевод не удался, так как не удается определить язык страницы.</translation>
 <translation id="8559762987265718583">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>

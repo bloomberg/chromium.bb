@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Nastavení Automatického vyplňování v prohlížeči Chromium...</translation>
 <translation id="1374468813861204354">návrhy</translation>
 <translation id="1375198122581997741">O verzi aplikace</translation>
+<translation id="1377321085342047638">Číslo karty</translation>
 <translation id="139305205187523129">Web <ph name="HOST_NAME" /> neodeslal žádná data.</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
 <translation id="1413809658975081374">Chyba ochrany soukromí</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">Web <ph name="HOST_NAME" /> vrátil neplatnou odpověď.</translation>
 <translation id="2552545117464357659">Novější</translation>
 <translation id="2556876185419854533">&amp;Vrátit úpravy zpět</translation>
+<translation id="2587730715158995865">Vydavatel: <ph name="ARTICLE_PUBLISHER" />. Přečtěte si tento článek a další (<ph name="OTHER_ARTICLE_COUNT" />).</translation>
 <translation id="2587841377698384444">ID rozhraní Directory API:</translation>
 <translation id="2597378329261239068">Tento dokument je chráněn heslem. Zadejte prosím heslo.</translation>
 <translation id="2609632851001447353">Varianty</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{alespoň jedna položka v synchronizovaných zařízeních}=1{1 položka (a další v synchronizovaných zařízeních)}few{# položky (a další v synchronizovaných zařízeních)}many{# položky (a další v synchronizovaných zařízeních)}other{# položek (a další v synchronizovaných zařízeních)}}</translation>
 <translation id="3041612393474885105">Informace o certifikátu</translation>
 <translation id="3063697135517575841">Chrome vaši kartu aktuálně nemohl ověřit. Zkuste to prosím znovu později.</translation>
+<translation id="3064966200440839136">Chystáte se opustit anonymní režim, abyste mohli zaplatit v externí aplikaci. Chcete pokračovat?</translation>
 <translation id="3093245981617870298">Nejste připojeni k síti.</translation>
 <translation id="3105172416063519923">ID díla:</translation>
 <translation id="3109728660330352905">K zobrazení této stránky nemáte oprávnění.</translation>
@@ -260,6 +263,7 @@
 <translation id="3345135638360864351">Odeslání žádosti o přístup k tomuto webu uživateli <ph name="NAME" /> se nezdařilo. Zkuste to prosím znovu.</translation>
 <translation id="3355823806454867987">Změna nastavení proxy...</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
+<translation id="337311366426640088">Další položky: <ph name="ITEM_COUNT" /></translation>
 <translation id="337363190475750230">Vyřazeno</translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="3380365263193509176">Neznámá chyba</translation>
@@ -275,6 +279,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval načtení:</translation>
 <translation id="3462200631372590220">Skrýt rozšířené</translation>
+<translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3479539252931486093">Nebylo toto očekáváno? <ph name="BEGIN_LINK" />Informujte nás<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Nyní ne</translation>
 <translation id="348000606199325318">ID selhání <ph name="CRASH_LOCAL_ID" /> (ID serveru: <ph name="CRASH_ID" />)</translation>
@@ -456,7 +461,6 @@
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5308689395849655368">Zprávy o selhání jsou zakázány.</translation>
 <translation id="5317780077021120954">Uložit</translation>
-<translation id="5326702247179446998">Je vyžadován příjemce</translation>
 <translation id="5327248766486351172">Název</translation>
 <translation id="5337705430875057403">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet).</translation>
 <translation id="53553865750799677">Nepodporovaná adresa vyzvednutí. Vyberte jinou adresu.</translation>
@@ -558,6 +562,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387478394221739770">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál beta na adrese chrome.com/beta.</translation>
+<translation id="6389470377220713856">Jméno na kartě</translation>
 <translation id="6389758589412724634">Prohlížeč Chromium k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6410264514553301377">Zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />.</translation>
@@ -607,6 +612,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6778737459546443941">Rodič ti přístup na web dosud neschválil.</translation>
 <translation id="6810899417690483278">ID přizpůsobení</translation>
 <translation id="6820686453637990663">Bezpečnostní kód platební karty (CVC)</translation>
+<translation id="6824266427216888781">Údaje o oblastech se nepodařilo načíst</translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="6839929833149231406">Region</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
@@ -621,7 +627,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
 <translation id="6989763994942163495">Zobrazit rozšířená nastavení...</translation>
 <translation id="7000990526846637657">Nebyly nalezeny žádné historické záznamy</translation>
-<translation id="7001663382399377034">Přidání příjemce</translation>
 <translation id="7009986207543992532">Pokusili jste se připojit k doméně <ph name="DOMAIN" />, ale server předložil certifikát, který má příliš dlouhé období platnosti, a je proto nedůvěryhodný. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další formy historie prohlížení zaznamenané ve vašem účtu Google</translation>
@@ -767,6 +772,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8349305172487531364">Lišta záložek</translation>
 <translation id="8363502534493474904">Vypnout režim Letadlo</translation>
 <translation id="8364627913115013041">Nenastaveno.</translation>
+<translation id="8368476060205742148">Služby Google Play</translation>
 <translation id="8380941800586852976">Nebezpečné</translation>
 <translation id="8382348898565613901">Zde se zobrazí nedávno navštívené záložky</translation>
 <translation id="8398259832188219207">Zpráva o selhání nahraná <ph name="UPLOAD_TIME" /></translation>
@@ -782,6 +788,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8492969205326575646">Nepodporovaný typ karty</translation>
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>
 <translation id="852346902619691059">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">Rok vypršení platnosti</translation>
 <translation id="8543181531796978784">Můžete <ph name="BEGIN_ERROR_LINK" />nahlásit problém se zjištěným webem<ph name="END_ERROR_LINK" />. Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento nespolehlivý web navštívit<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>
 <translation id="8559762987265718583">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>

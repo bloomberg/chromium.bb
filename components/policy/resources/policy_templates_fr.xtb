@@ -57,26 +57,6 @@
 <translation id="1152117524387175066">Indiquer l'état de l'interrupteur du mode développeur au moment du démarrage.
 
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
-<translation id="1156080716265314451">Configure une liste d'imprimantes.
-
-      Cette règle autorise les administrateurs à fournir des configurations
-      d'imprimante pour leurs utilisateurs.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des champs de formulaire libres que vous pouvez
-      personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> doivent correspondre à l'une des imprimantes <ph name="PRODUCT_NAME" />
-      compatibles. <ph name="PRINTER_URI" /> doit être une adresse accessible
-      à partir d'un ordinateur client, et contenir le <ph name="URI_SCHEME" />,
-      le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour
-      supprimer les imprimantes <ph name="ZEROCONF_DISCOVERY" /> en double.
-
-      La première utilisation d'une imprimante met fin à sa configuration. Les
-      fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été
-      utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en
-      cache.
-
-      Cette règle n'a aucun effet sur la capacité des utilisateurs à configurer des
-      imprimantes sur différents appareils. Elle vise à compléter la configuration
-      des imprimantes effectuée par les différents utilisateurs.</translation>
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
 <translation id="1198465924256827162">Fréquence d'envoi des informations sur l'état de l'appareil, en millisecondes.
 
@@ -1573,11 +1553,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas définie, la valeur par défaut de 3 heures est appliquée dans <ph name="PRODUCT_OS_NAME" />.
 
       Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
-<translation id="5535957389335373033">Indiquer la fréquence d'envoi de paquets réseau de contrôle, en millisecondes
-
-      Si cette règle n'est pas définie, le délai par défaut entre deux paquets est de 3 minutes.
-      Le délai minimal entre deux paquets est de 30 secondes, et le délai maximal est de 24 heures. Les valeurs
-      situées en dehors de cette plage seront remplacées par la valeur limite la plus proche.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="5559079916187891399">Cette règle n'a aucun effet sur les applications Android.</translation>
 <translation id="5560039246134246593">Permet d'ajouter un paramètre à la récupération de la valeur de départ des variantes dans <ph name="PRODUCT_NAME" />.

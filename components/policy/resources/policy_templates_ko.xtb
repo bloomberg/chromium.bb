@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">부팅 시 기기의 개발자 스위치 상태를 보고합니다.
 
       이 정책을 false로 설정하면 기기 개발자 스위치 상태가 보고되지 않습니다.</translation>
-<translation id="1156080716265314451">프린터 목록을 설정하세요.
-
-      이 정책은 관리자가 사용자에게 프린터 설정을 제공하도록
-      허용합니다.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> 및 <ph name="PRINTER_DESCRIPTION" />은(는) 무료 양식 문자열이며 프린터를 간편하게
-      선택할 수 있도록 맞춤설정될 수 있습니다. <ph name="PRINTER_MANUFACTURER" /> 및 <ph name="PRINTER_MODEL" />은(는)
-      <ph name="PRODUCT_NAME" /> 지원 프린터 중 하나와 일치해야 합니다. <ph name="PRINTER_URI" />은(는)
-      <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" />을(를) 포함하는 클라이언트 컴퓨터에서 연결될 수 있는
-      주소여야 합니다. <ph name="PRINTER_UUID" />은(는) 선택사항입니다. 제공되는 경우 <ph name="ZEROCONF_DISCOVERY" /> 프린터
-      중복 삭제를 돕는 데 사용될 수 있습니다.
-
-      프린터 설정은 프린터를 처음 사용할 때 완료됩니다. 프린터가 사용될 때까지
-      PPD가 다운로드되지 않습니다. 첫 사용 이후 자주 사용하는
-      PPD가 캐시됩니다.
-
-      이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지에 영향을
-      미치지 않습니다. 이 정책은 개별 사용자의 프린터 설정을
-      보완하기 위해 마련되었습니다.</translation>
 <translation id="1160939557934457296">세이프 브라우징 경고 페이지 사용 중지</translation>
 <translation id="1198465924256827162">기기 상태 업로드가 전송되는 빈도를 밀리초로 나타냅니다.
 
@@ -1549,11 +1530,6 @@
       이 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 기본값 3시간을 사용합니다.
 
       플랫폼에서 정책 알림을 지원하면 정책이 변경될 때마다 정책 알림이 자동으로 강제 새로고침되어 잦은 새로고침이 불필요하므로 새로고침 지연이 24시간으로 설정됩니다(모든 기본값 및 이 정책의 값 무시).</translation>
-<translation id="5535957389335373033">네트워크 패킷 모니터링이 전송되는 빈도를 밀리초로 나타냅니다.
-
-      이 정책이 설정되지 않으면 기본 주기는 3분입니다.
-      최소 주기는 30초이며 최대 주기는 24시간입니다.
-      이 범위를 벗어나는 값은 범위에 맞게 잘립니다.</translation>
 <translation id="5535973522252703021">Kerberos 위임 서버 허용목록</translation>
 <translation id="5559079916187891399">이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
 <translation id="5560039246134246593"><ph name="PRODUCT_NAME" />에서 버전 시드 가져오기에 대한 매개변수를 추가합니다.

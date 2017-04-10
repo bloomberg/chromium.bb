@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">De status van de schakelaar voor de ontwikkelaarsmodus van het apparaat bij opstarten melden.
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
-<translation id="1156080716265314451">Hiermee configureer je een lijst met printers.
-
-      Met dit beleid kunnen beheerders hun gebruikers voorzien van
-      printerconfiguraties.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die
-      kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> moeten overeenkomen met een van de printers die door <ph name="PRODUCT_NAME" /> worden
-      ondersteund. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is
-      vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> is optioneel. Als de UUID is opgegeven, wordt deze gebruikt
-      om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
-
-      De configuratie van de printer wordt voltooid wanneer de printer voor het eerst wordt gebruikt. PPD's worden pas
-      gedownload wanneer de printer wordt gebruikt. Daarna worden veelgebruikte
-      PPD's opgeslagen in het cachegeheugen.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten
-      te configureren. Het is bedoeld als aanvulling op de
-      configuratie van printers door individuele gebruikers.</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
@@ -1544,9 +1525,6 @@
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardwaarde van 3 uur.
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
-<translation id="5535957389335373033">Hoe vaak netwerkpakketten voor bijhouden worden verzonden, in milliseconden.
-
-      Als dit beleid niet is ingesteld, is de standaardfrequentie 3 minuten. De minimumfrequentie is 30 seconden en de maximumfrequentie is 24 uur. Waarden die buiten dit bereik vallen, worden afgerond tot dit bereik.</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
 <translation id="5560039246134246593">Een parameter toevoegen aan het ophalen van de seed voor varianten in <ph name="PRODUCT_NAME" />.

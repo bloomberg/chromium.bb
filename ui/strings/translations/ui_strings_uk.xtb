@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="111910763555783249">Налаштування сповіщень</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{1 хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}</translation>
 <translation id="1190609913194133056">Центр сповіщень</translation>
 <translation id="1243314992276662751">Завантажити</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Торкніться тут</translation>
 <translation id="5076340679995252485">&amp;Вставити</translation>
 <translation id="5120799197269191491">Клавіша пошуку+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Функція розблокування PIN-кодом</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Видалити</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Прокрутка вліво</translation>
 <translation id="6394627529324717982">Кома</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 с тому}one{# с тому}few{# с тому}many{# с тому}other{# с тому}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{1 секунду тому}one{# секунду тому}few{# секунди тому}many{# секунд тому}other{# секунди тому}}</translation>
 <translation id="6528179044667508675">Не турбувати</translation>
 <translation id="6612467943526193239">Натисніть клавішу Esc, щоб вийти з режиму калібрування.</translation>
 <translation id="6620110761915583480">Зберегти файл</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Копіювати</translation>
 <translation id="7850320739366109486">Не турбувати</translation>
 <translation id="7907591526440419938">Відкрити файл</translation>
+<translation id="8054029954190364711">Функція розблокування відбитком пальця</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

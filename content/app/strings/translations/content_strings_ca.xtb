@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2674318244760992338">peu</translation>
+<translation id="2709516037105925701">Emplenament autom.</translation>
 <translation id="2723001399770238859">àudio</translation>
 <translation id="2746543609216772311">El valor ha de ser <ph name="MINIMUM_DATE_OR_TIME" /> o posterior.</translation>
 <translation id="2759744352195237655">botó emergent</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">directori</translation>
 <translation id="6934078000481955284">cita en bloc</translation>
 <translation id="6941933287844615239">baixa els fitxers multimèdia</translation>
+<translation id="6989848892321993519">Allarga aquest text fins a <ph name="MIN_CHARACTERS" /> caràcters o més (ara n'utilitzes 1).</translation>
 <translation id="7057186640035488495">moment de la pel·lícula</translation>
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="7223624360433298498">temps transcorregut</translation>

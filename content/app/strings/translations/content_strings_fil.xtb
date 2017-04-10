@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Mangyaring maglagay ng isang wastong value. Ang pinakamalapit na wastong value ay <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2674318244760992338">footer</translation>
+<translation id="2709516037105925701">AutoFill</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Dapat <ph name="MINIMUM_DATE_OR_TIME" /> o mas bago ang value.</translation>
 <translation id="2759744352195237655">pop up na button</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">direktoryo</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">i-download ang media</translation>
+<translation id="6989848892321993519">Pakidagdagan ang text na ito nang hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng 1 character).</translation>
 <translation id="7057186640035488495">oras ng pelikula</translation>
 <translation id="709897737746224366">Pakitugma ang hiniling na format.</translation>
 <translation id="7223624360433298498">lumipas na oras</translation>

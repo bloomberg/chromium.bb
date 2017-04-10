@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
 <translation id="1374468813861204354">forslag</translation>
 <translation id="1375198122581997741">Om version</translation>
+<translation id="1377321085342047638">Kortnummer</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> har ikke sendt nogen data.</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
 <translation id="1413809658975081374">Fejl i forbindelse med beskyttelse af personlige oplysninger</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendte et ugyldigt svar.</translation>
 <translation id="2552545117464357659">Nyere</translation>
 <translation id="2556876185419854533">&amp;Fortryd redigering</translation>
+<translation id="2587730715158995865">Fra <ph name="ARTICLE_PUBLISHER" />. Læs denne og <ph name="OTHER_ARTICLE_COUNT" /> andre historier.</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="2609632851001447353">Varianter</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
 <translation id="3041612393474885105">Certifikatoplysninger</translation>
 <translation id="3063697135517575841">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
+<translation id="3064966200440839136">Du forlader inkognitotilstand for at betale via en ekstern applikation. Vil du fortsætte?</translation>
 <translation id="3093245981617870298">Du er offline.</translation>
 <translation id="3105172416063519923">Aktiv-id:</translation>
 <translation id="3109728660330352905">Du har ikke tilladelse til at se denne side.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Din anmodning om at få adgang til dette website kunne ikke sendes til <ph name="NAME" />. Prøv igen.</translation>
 <translation id="3355823806454867987">Skift indstillinger for proxy...</translation>
 <translation id="3369192424181595722">Urfejl</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> elementer mere...</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="3380365263193509176">Ukendt fejl</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hent interval:</translation>
 <translation id="3462200631372590220">Skjul avanceret</translation>
+<translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Giv os gerne feedback<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="348000606199325318">Nedbruds-id <ph name="CRASH_LOCAL_ID" /> (server-id: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
 <translation id="5317780077021120954">Gem</translation>
-<translation id="5326702247179446998">Modtager skal udfyldes</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5337705430875057403">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan narre dig til at gøre noget farligt, såsom at installere software eller afsløre dine personlige oplysninger (f.eks. adgangskoder, telefonnumre eller kreditkort).</translation>
 <translation id="53553865750799677">Afhentningsadressen understøttes ikke. Vælg en anden adresse.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
+<translation id="6389470377220713856">Navn på kort</translation>
 <translation id="6389758589412724634">Chromium løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6410264514553301377">Indtast udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
 <translation id="6810899417690483278">Tilpasnings-id</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Områdedata kunne ikke indlæses</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
 <translation id="6989763994942163495">Vis avancerede indstillinger...</translation>
 <translation id="7000990526846637657">Der blev ikke fundet nogen poster i historikken</translation>
-<translation id="7001663382399377034">Tilføj modtager</translation>
 <translation id="7009986207543992532">Du forsøgte at få forbindelse til <ph name="DOMAIN" />, men serveren præsenterede et certifikat, hvis gyldighedsperiode er for lang til at være pålidelig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -772,6 +777,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8349305172487531364">Bogmærkelinje</translation>
 <translation id="8363502534493474904">Deaktivere flytilstand</translation>
 <translation id="8364627913115013041">Ikke angivet.</translation>
+<translation id="8368476060205742148">Google Play-tjenester</translation>
 <translation id="8380941800586852976">Farlig</translation>
 <translation id="8382348898565613901">De bogmærker, du har besøgt for nylig, vises her</translation>
 <translation id="8398259832188219207">Nedbrudsrapporten blev uploadet <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8492969205326575646">Ikke-understøttet korttype</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>
 <translation id="852346902619691059">Denne server kunne ikke bevise, at den tilhører <ph name="DOMAIN" />, da din enheds operativsystem ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Udløbsår</translation>
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et registreringsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår den sikkerhedsrisiko, du udsætter dig for, <ph name="BEGIN_LINK" />kan du gå til dette usikre website<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da tid og dato (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>

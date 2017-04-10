@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="1374468813861204354">建议</translation>
 <translation id="1375198122581997741">关于版本</translation>
+<translation id="1377321085342047638">卡号</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未发送任何数据。</translation>
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1413809658975081374">隐私设置错误</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 发送的响应无效。</translation>
 <translation id="2552545117464357659">往后</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
+<translation id="2587730715158995865">来自<ph name="ARTICLE_PUBLISHER" />。阅读这篇报道以及其他 <ph name="OTHER_ARTICLE_COUNT" /> 篇报道。</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
 <translation id="3041612393474885105">证书信息</translation>
 <translation id="3063697135517575841">Chrome 目前无法确认您的信用卡，请稍后重试。</translation>
+<translation id="3064966200440839136">将要退出隐身模式，以便通过外部应用付款。是否继续？</translation>
 <translation id="3093245981617870298">您处于离线状态。</translation>
 <translation id="3105172416063519923">资产 ID：</translation>
 <translation id="3109728660330352905">您未获授权，无法查看此网页。</translation>
@@ -261,6 +264,7 @@
 <translation id="3345135638360864351">无法将您访问此网站的请求发送给<ph name="NAME" />，请重试。</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
 <translation id="3369192424181595722">时钟错误</translation>
+<translation id="337311366426640088">另外还有 <ph name="ITEM_COUNT" /> 项…</translation>
 <translation id="337363190475750230">已取消配置</translation>
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="3380365263193509176">未知错误</translation>
@@ -276,6 +280,7 @@
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">抓取时间间隔：</translation>
 <translation id="3462200631372590220">隐藏详情</translation>
+<translation id="3478058380795961209">到期月份</translation>
 <translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="348000606199325318">崩溃 ID：<ph name="CRASH_LOCAL_ID" />（服务器 ID：<ph name="CRASH_ID" />）</translation>
@@ -457,7 +462,6 @@
 <translation id="5300589172476337783">显示</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="5326702247179446998">收件人是必填项</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会诱骗您做一些危险的事情，如安装软件或泄露您的个人信息（如密码、电话号码或信用卡信息）。</translation>
 <translation id="53553865750799677">不支持此取货地址。请选择一个不同的地址。</translation>
@@ -559,6 +563,7 @@
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
+<translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6389758589412724634">Chromium 在尝试显示此网页时内存不足。</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>
@@ -608,6 +613,7 @@
 <translation id="6778737459546443941">您的父亲/母亲尚未批准此网站</translation>
 <translation id="6810899417690483278">自定义 ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">未能加载区域数据</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6839929833149231406">地域</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
@@ -622,7 +628,6 @@
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
 <translation id="7000990526846637657">未找到任何记录条目</translation>
-<translation id="7001663382399377034">添加收件人</translation>
 <translation id="7009986207543992532">您尝试连接到 <ph name="DOMAIN" />，但服务器提供的证书有效期过长，因此难以信任。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7012372675181957985">您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
@@ -768,6 +773,7 @@
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8363502534493474904">关闭飞行模式</translation>
 <translation id="8364627913115013041">未设置。</translation>
+<translation id="8368476060205742148">Google Play 服务</translation>
 <translation id="8380941800586852976">危险</translation>
 <translation id="8382348898565613901">您最近访问过的书签会显示在此处</translation>
 <translation id="8398259832188219207">崩溃报告的上传时间：<ph name="UPLOAD_TIME" /></translation>
@@ -783,6 +789,7 @@
 <translation id="8492969205326575646">该信用卡类型不受支持</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
 <translation id="852346902619691059">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；您设备的操作系统不信任服务器的安全证书。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
+<translation id="8532105204136943229">到期年份</translation>
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>

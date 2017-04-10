@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">சரியான மதிப்பை உள்ளிடவும்.  <ph name="VALID_VALUE" /> என்பது நெருக்கமாக உள்ள சரியான மதிப்பாகும்.</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
 <translation id="2674318244760992338">அடிக்குறிப்பு</translation>
+<translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="2723001399770238859">ஆடியோ</translation>
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME" /> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
 <translation id="2759744352195237655">பாப்-அப் பொத்தான்</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">கோப்பகம்</translation>
 <translation id="6934078000481955284">பிளாக்கோட்</translation>
 <translation id="6941933287844615239">மீடியாவைப் பதிவிறக்கு</translation>
+<translation id="6989848892321993519">இந்த உரையில் <ph name="MIN_CHARACTERS" /> அல்லது அதற்கு மேற்பட்ட எழுத்துக்குறிகளைப் பயன்படுத்தவும் (தற்போது 1 எழுத்துக்குறியைப் பயன்படுத்துகிறீர்கள்).</translation>
 <translation id="7057186640035488495">மூவி நேரம்</translation>
 <translation id="709897737746224366">கோரிய வடிவமைப்பில் தருக.</translation>
 <translation id="7223624360433298498">முடிவடைந்த நேரம்</translation>

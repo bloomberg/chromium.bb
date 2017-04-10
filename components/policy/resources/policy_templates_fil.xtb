@@ -57,24 +57,6 @@
 <translation id="1152117524387175066">Iulat ang katayuan ng dev switch ng device sa pag-boot.
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
-<translation id="1156080716265314451">Nagko-configure ng listahan ng mga printer.
-
-      Pinapayagan ng patakarang ito ang mga administrator na magbigay ng mga configuration ng printer para sa
-      kanilang mga user.
-
-      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga string na may malayang anyo na
-      maaaring i-customize upang madaling makapili ng printer. Ang <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ay dapat tumugma sa isa sa mga sinusuportahang printer ng <ph name="PRODUCT_NAME" />.  Dapat ay isang address ang <ph name="PRINTER_URI" /> na madaling mapuntahan
-      mula sa computer ng isang client kasama na ang <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />.  Opsyonal ang <ph name="PRINTER_UUID" />.  Kung may ganito, gagamitin ito upang
-      makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
-
-      Nakukumpleto ang pag-set up ng printer sa unang beses ng paggamit ng printer.  Hindi nada-download ang mga PPD
-      hanggang sa gamitin ang printer.  Pagkatapos ng panahong iyon, naka-cache ang madadalas gamiting
-      PPD.
-
-      Walang epekto ang patakarang ito sa kung mako-configure o hindi ng mga user ang mga printer sa
-      mga indibidwal na device.  Nilalayon itong maging pansuporta sa
-      pag-configure ng mga printer ng mga indibidwal na user.</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
@@ -1543,11 +1525,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag hindi itinakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na value na 3 oras.
 
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
-<translation id="5535957389335373033">Gaano kadalas ipinapadala ang mga sinusubaybayang network packet, sa mga millisecond.
-
-      Kung hindi nakatakda ang patakarang ito, ang default na dalas ay 3 minuto. Ang minimum
-      na dalas ay 30 segundo at 24 na oras ang maximum na dalas - ang mga value
-      sa labas ng saklaw na ito ay maka-clamp sa saklaw na ito.</translation>
 <translation id="5535973522252703021">Whitelist ng server ng paglalaan ng Kerberos</translation>
 <translation id="5559079916187891399">Walang epekto ang patakarang ito sa mga Android app.</translation>
 <translation id="5560039246134246593">Magdagdag ng parameter sa pagkuha ng seed ng Mga Variation sa <ph name="PRODUCT_NAME" />.

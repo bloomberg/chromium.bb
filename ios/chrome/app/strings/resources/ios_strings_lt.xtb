@@ -128,10 +128,12 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3414292259312108062">„Chrome“ išsaugos šį slaptažodį <ph name="BEGIN_LINK" />„Google“ išsaugotuose slaptažodžiuose<ph name="END_LINK" /> ir jis bus automatiškai įvestas už jus, kad jums nereikėtų jo įsiminti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Padalytas rodinys</translation>
+<translation id="3474624961160222204">Tęsti kaip <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formos užpildytos.</translation>
 <translation id="3478058380795961209">Gal. pab. mėnuo</translation>
 <translation id="3482959374254649722">Sinchronizuojami skirtukai...</translation>
 <translation id="3489372701259491571">Ištr. išsaugotą slaptaž.</translation>
+<translation id="3494788280727468875">Patvirtinti naršymo duomenų išvalymą</translation>
 <translation id="3519193562722059437">Norėdami naršyti žiniatinklį, atidarykite skirtuką.</translation>
 <translation id="3527085408025491307">Aplankas</translation>
 <translation id="3551320343578183772">Uždaryti skirtuką</translation>
@@ -143,6 +145,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasirinktumėte. Kad patikslintumėte paiešką, slinkite skydeliu į viršų ir palieskite paieškos laukelį.</translation>
 <translation id="3607167657931203000">Autom. pild. duom.</translation>
 <translation id="3608436266458100337">Skait. režimas</translation>
+<translation id="3628119975092896051">Skaitymo sąrašas pasiekiamas neprisijungus. Kad pridėtumėte puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
@@ -303,6 +306,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7131892264600713844">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Vardas ir pav.</translation>
 <translation id="7136892417564438900">Fotoaparatas nepasiekiamas</translation>
+<translation id="7159472599653637159">Užkl. dėl svet. v. mobil.</translation>
 <translation id="7167621057293532233">Duomenų tipai</translation>
 <translation id="7189598951263744875">Bendrinti...</translation>
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
@@ -312,6 +316,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7400418766976504921">URL adresas</translation>
 <translation id="7419187830569376338">Ieškoti „<ph name="SEARCH_ENGINE" />“ šio vaizdo</translation>
 <translation id="7425346204213733349">Žymių, istorijos, slaptažodžių ir kitų nustatymų pakeitimai nebebus sinchronizuojami su „Google“ paskyra. Tačiau esami duomenys ir toliau bus saugomi „Google“ paskyroje.</translation>
+<translation id="744343212394640790">Ne <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Valst. / apyg.</translation>
 <translation id="7456847797759667638">Atidaryti vietą...</translation>
 <translation id="7464701184726199289">Taip sinchronizuoti duomenys bus išvalyti iš visų įrenginių. Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>

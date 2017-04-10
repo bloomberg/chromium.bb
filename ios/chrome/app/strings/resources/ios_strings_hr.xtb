@@ -128,10 +128,12 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3414292259312108062">Chrome će to pohraniti u vašim <ph name="BEGIN_LINK" />Googleovim spremljenim zaporkama<ph name="END_LINK" /> i automatski popuniti umjesto vas kako ne biste morali pamtiti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Podijeljeni prikaz</translation>
+<translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Obrasci su ispunjeni.</translation>
 <translation id="3478058380795961209">Mjesec isteka</translation>
 <translation id="3482959374254649722">Sinkronizacija kartica...</translation>
 <translation id="3489372701259491571">Izbriši spremljenu zaporku</translation>
+<translation id="3494788280727468875">Potvrdi brisanje podataka o pregledavanju</translation>
 <translation id="3519193562722059437">Otvorite karticu da biste pregledavali web.</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3551320343578183772">Zatvori karticu</translation>
@@ -143,6 +145,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da biste precizirali pretraživanje, kliznite ploču prema gore do vrha i dodirnite okvir za pretraživanje.</translation>
 <translation id="3607167657931203000">Podaci automatskog popunjavanja</translation>
 <translation id="3608436266458100337">Način čitača</translation>
+<translation id="3628119975092896051">Vaš popis za čitanje dostupan je offline. Da biste dodali stranicu na popis za čitanje, dodirnite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
@@ -303,6 +306,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7131892264600713844">Prikazuje se povijest s ovog uređaja. <ph name="BEGIN_LINK" />Saznajte više.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Ime i prezime</translation>
 <translation id="7136892417564438900">Fotoaparat nije dostupan</translation>
+<translation id="7159472599653637159">Prikaži mob. str.</translation>
 <translation id="7167621057293532233">Vrste podataka</translation>
 <translation id="7189598951263744875">Dijeli...</translation>
 <translation id="7203585745079012652">Izgovaranje odgovora</translation>
@@ -312,6 +316,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>
+<translation id="744343212394640790">Nisam <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Županija</translation>
 <translation id="7456847797759667638">Otvori lokaciju...</translation>
 <translation id="7464701184726199289">Sinkronizirani podaci izbrisat će se sa svih uređaja. Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>

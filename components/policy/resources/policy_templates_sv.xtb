@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Rapportera vilket läge enhetens utvecklarväxel har vid uppstart.
 
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
-<translation id="1156080716265314451">Konfigurerar en lista över skrivare.
-
-      Med hjälp av den här principen kan administratören tillhandahålla
-      skrivarkonfigurationer åt användarna.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> och <ph name="PRINTER_DESCRIPTION" /> är strängar i fri form som kan
-      anpassas så att det blir enkelt att välja skrivare. <ph name="PRINTER_MANUFACTURER" /> och <ph name="PRINTER_MODEL" /> ska matcha en av de skrivare från <ph name="PRODUCT_NAME" /> som
-      stöds. <ph name="PRINTER_URI" /> ska vara en adress som går att nå
-      från en klientdator, inklusive <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> och <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> är valfritt. Om det anges används det för att
-      deduplicera <ph name="ZEROCONF_DISCOVERY" />-skrivare.
-
-      Skivarkonfigureringen slutförs första gången en skrivare används. Inga
-      PPD-filer laddas ned förrän skrivaren används. Därefter cachelagras
-      PPD-filer som används ofta.
-
-      Principen påverkar inte om användarna kan konfigurera skrivare på
-      enskilda enheter eller inte. Den är tänkt att vara ett supplement till de
-      enskilda användarnas skrivarkonfiguration.</translation>
 <translation id="1160939557934457296">Inaktivera möjligheten att fortsätta från varningssidan Säker webbsökning</translation>
 <translation id="1198465924256827162">Hur ofta information om enhetsstatus laddas upp, uttryckt i millisekunder.
 
@@ -1563,11 +1544,6 @@
       Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
-<translation id="5535957389335373033">Hur ofta nätverkspaket för övervakning skickas, i millisekunder.
-
-      Om policyn inte har angetts är standardfrekvensen 3 minuter. Den lägsta
-      frekvensen är 30 sekunder och den högsta 24 timmar. Värden
-      utanför detta intervall ändras till närmaste värde inom intervallet.</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="5559079916187891399">Den här principen gäller inte Android-appar.</translation>
 <translation id="5560039246134246593">Lägg till en parameter vid hämtningen av startvärdet för Variations i <ph name="PRODUCT_NAME" />.

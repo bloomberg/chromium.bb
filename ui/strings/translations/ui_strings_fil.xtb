@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="111910763555783249">Mga setting ng notification</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="1190609913194133056">Notification Center</translation>
 <translation id="1243314992276662751">I-upload</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Mag-tap dito</translation>
 <translation id="5076340679995252485">&amp;Ilagay</translation>
 <translation id="5120799197269191491">Search+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Feature na Pag-unlock gamit ang PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> (na) PB</translation>
 <translation id="528468243742722775">Wakas na</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Mag-scroll Pakaliwa</translation>
 <translation id="6394627529324717982">Kuwit</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="6528179044667508675">Huwag istorbohin</translation>
 <translation id="6612467943526193239">Upang lumabas sa pag-calibrate pindutin ang Esc.</translation>
 <translation id="6620110761915583480">I-save ang File</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Kopyahin</translation>
 <translation id="7850320739366109486">Huwag Istorbohin</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
+<translation id="8054029954190364711">Feature na Pag-unlock gamit ang Fingerprint</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 oras ang nakalipas}one{# oras ang nakalipas}other{# na oras ang nakalipas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
 <translation id="815598010540052116">Mag-scroll Pababa</translation>

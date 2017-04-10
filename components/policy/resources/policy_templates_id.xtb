@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Laporkan status pengalih dev perangkat ketika boot.
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
-<translation id="1156080716265314451">Mengonfigurasi daftar printer.
-
-      Kebijakan ini memungkinkan administrator memberikan konfigurasi printer
-      untuk pengguna.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> adalah string formulir kosong yang
-      dapat disesuaikan untuk mempermudah pemilihan printer. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> harus cocok dengan salah satu printer
-      yang didukung <ph name="PRODUCT_NAME" />.  <ph name="PRINTER_URI" /> harus berupa alamat yang dapat dijangkau
-      dari komputer klien, termasuk <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" />, dan <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> bersifat opsional.  Jika diberikan akan digunakan untuk
-      membantu menghapus duplikat printer <ph name="ZEROCONF_DISCOVERY" />.
-
-      Penyiapan printer diselesaikan saat penggunaan printer untuk pertama kalinya.  PPD tidak
-      didownload sampai printer digunakan.  Setelah itu, PPD yang sering
-      digunakan akan disimpan dalam cache.
-
-      Kebijakan ini tidak memengaruhi apakah pengguna dapat mengonfigurasi printer di
-      perangkat individual.  Kebijakan ini ditujukan sebagai tambahan terhadap
-      konfigurasi printer yang diberikan oleh pengguna individu.</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari laman peringatan Penjelajahan Aman</translation>
 <translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
@@ -300,7 +281,7 @@
 
           Jika kebijakan ini dibiarkan tidak disetel, keempat skema akan digunakan seluruhnya.</translation>
 <translation id="2067011586099792101">Memblokir akses ke situs di luar paket konten</translation>
-<translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
+<translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2077273864382355561">Penundaan mematikan layar saat menggunakan daya baterai</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait kerusakan</translation>
@@ -1460,11 +1441,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Membiarkan kebijakan ini tidak disetel akan membuat <ph name="PRODUCT_OS_NAME" /> menggunakan nilai default 3 jam.
 
       Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
-<translation id="5535957389335373033">Frekuensi paket jaringan pemantauan dikirim, dalam milidetik. 
-
-      Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 menit.
-      Frekuensi minimum adalah 30 detik dan maksimum 24 jam - nilai
-      di luar rentang ini akan dimasukkan ke rentang ini.</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="5559079916187891399">Kebijakan ini tidak memengaruhi aplikasi Android.</translation>
 <translation id="5560039246134246593">Menambahkan parameter ke pengambilan bibit Variasi di <ph name="PRODUCT_NAME" />.

@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Introduceți o valoare validă. Cea mai apropiată valoare validă este <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2674318244760992338">notă de subsol</translation>
+<translation id="2709516037105925701">Completare automată</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Valoarea pentru dată/oră trebuie să fie <ph name="MINIMUM_DATE_OR_TIME" /> sau una ulterioară.</translation>
 <translation id="2759744352195237655">buton pop-up</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">director</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">descarcă conținut media</translation>
+<translation id="6989848892321993519">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești 1 caracter).</translation>
 <translation id="7057186640035488495">durată film</translation>
 <translation id="709897737746224366">Respectă formatul solicitat.</translation>
 <translation id="7223624360433298498">timp scurs</translation>

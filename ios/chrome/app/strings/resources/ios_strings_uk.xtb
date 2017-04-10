@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Режим розділеного екрана</translation>
+<translation id="3474624961160222204">Продовжити як <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Форми заповнено.</translation>
 <translation id="3478058380795961209">Місяць закінчення терміну дії</translation>
 <translation id="3482959374254649722">Синхронізація вкладок…</translation>
 <translation id="3489372701259491571">Видалити збережений пароль</translation>
+<translation id="3494788280727468875">Підтвердити очищення даних веб-перегляду</translation>
 <translation id="3519193562722059437">Щоб переглядати веб-сторінки, відкрийте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3551320343578183772">Закрити вкладку</translation>
@@ -143,6 +145,7 @@
 Щоб змінити пошуковий термін, натисніть і утримуйте його. Щоб уточнити пошуковий запит, пересуньте панель угору та торкніться вікна пошуку.</translation>
 <translation id="3607167657931203000">Дані автозаповнення</translation>
 <translation id="3608436266458100337">Режим читання</translation>
+<translation id="3628119975092896051">Ваш список читання доступний офлайн. Щоб додати до нього сторінку, торкніться опції <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Повне ім’я</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
+<translation id="7159472599653637159">Мобільний сайт</translation>
 <translation id="7167621057293532233">Типи даних</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7203585745079012652">Озвучувати відповіді</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7419187830569376338">Шукати це зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Однак наявні дані залишаться у вашому обліковому записі.</translation>
+<translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Область</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7464701184726199289">Синхронізовані дані буде видалено з усіх пристроїв. Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>

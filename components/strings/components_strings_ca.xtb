@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Configuració d'Emplenament automàtic de Chromium...</translation>
 <translation id="1374468813861204354">suggeriments</translation>
 <translation id="1375198122581997741">Quan a la versió</translation>
+<translation id="1377321085342047638">Número de targeta</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> no ha enviat dades.</translation>
 <translation id="1407135791313364759">Obre-les totes</translation>
 <translation id="1413809658975081374">Error de privadesa</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha enviat una resposta que no és vàlida.</translation>
 <translation id="2552545117464357659">Més nova</translation>
 <translation id="2556876185419854533">&amp;Desfés la modificació</translation>
+<translation id="2587730715158995865">Publicat per <ph name="ARTICLE_PUBLISHER" />. Llegeix aquesta història i <ph name="OTHER_ARTICLE_COUNT" /> més.</translation>
 <translation id="2587841377698384444">Identificador de l'API de directoris:</translation>
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="2609632851001447353">Variacions</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{almenys 1 element als dispositius sincronitzats}=1{1 element (i altres elements als dispositius sincronitzats)}other{# elements (i altres elements als dispositius sincronitzats)}}</translation>
 <translation id="3041612393474885105">Informació del certificat</translation>
 <translation id="3063697135517575841">Chrome no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
+<translation id="3064966200440839136">Per pagar amb una aplicació externa sortiràs del mode d'incògnit. Vols continuar?</translation>
 <translation id="3093245981617870298">Esteu fora de línia.</translation>
 <translation id="3105172416063519923">Identificador de l'element:</translation>
 <translation id="3109728660330352905">No teniu permís per veure aquesta pàgina.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">La sol·licitud per accedir al lloc no s'ha pogut enviar a <ph name="NAME" />. Torneu-ho a provar.</translation>
 <translation id="3355823806454867987">Canvia la configuració del servidor intermediari...</translation>
 <translation id="3369192424181595722">Error de rellotge</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> elements més...</translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Obtén l'interval:</translation>
 <translation id="3462200631372590220">Amaga la informació avançada</translation>
+<translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3479539252931486093">Heu trobat el lloc bloquejat de manera inesperada? <ph name="BEGIN_LINK" />Informeu-nos-en<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="348000606199325318">Identificador d'error <ph name="CRASH_LOCAL_ID" /> (identificador de servidor: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5317780077021120954">Desa</translation>
-<translation id="5326702247179446998">Cal indicar un destinatari</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5337705430875057403">Els atacants de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> us poden enganyar perquè feu alguna acció perillosa, com ara instal·lar programari o revelar informació personal (per exemple, contrasenyes, números de telèfon o targetes de crèdit).</translation>
 <translation id="53553865750799677">L'adreça de recollida no s'admet. Selecciona'n una altra.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
 <translation id="6387478394221739770">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal beta a la pàgina chrome.com/beta.</translation>
+<translation id="6389470377220713856">Titular de la targeta</translation>
 <translation id="6389758589412724634">Chromium s'ha quedat sense memòria en provar de mostrar aquesta pàgina web.</translation>
 <translation id="6404511346730675251">Edita l'adreça d'interès</translation>
 <translation id="6410264514553301377">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">El teu pare o la teva mare encara no ho han aprovat</translation>
 <translation id="6810899417690483278">Identificador de personalització</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">No s'han pogut carregar les dades de la regió</translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="6839929833149231406">Àrea</translation>
 <translation id="6874604403660855544">&amp;Refés l'addició</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
 <translation id="6989763994942163495">Mostra la configuració avançada...</translation>
 <translation id="7000990526846637657">No s'ha trobat cap entrada a l'historial</translation>
-<translation id="7001663382399377034">Afegeix un destinatari</translation>
 <translation id="7009986207543992532">Has provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa llarg per poder confiar-hi. <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">És possible que el teu compte de Google tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8349305172487531364">Barra d'adreces d'interès</translation>
 <translation id="8363502534493474904">Desactiveu el mode d'avió</translation>
 <translation id="8364627913115013041">No s'ha definit.</translation>
+<translation id="8368476060205742148">Serveis de Google Play</translation>
 <translation id="8380941800586852976">Perillosa</translation>
 <translation id="8382348898565613901">Les adreces d'interès que has visitat fa poc es mostren aquí</translation>
 <translation id="8398259832188219207">Informe d'error penjat el <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8492969205326575646">Tipus de targeta no compatible</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardat massa a respondre.</translation>
 <translation id="852346902619691059">Aquest servidor no ha pogut demostrar que és <ph name="DOMAIN" />. El sistema operatiu del teu dispositiu no confia en el certificat de seguretat presentat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que ha interceptat la teva connexió. <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Any de caducitat</translation>
 <translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, <ph name="BEGIN_LINK" />visiteu aquest lloc no segur<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">S'ha produït un error en fer la traducció perquè no s'ha pogut determinar l'idioma de la pàgina.</translation>
 <translation id="8559762987265718583">No es pot establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) del dispositiu són incorrectes.</translation>

@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Prebacujete sinkronizirane račune s korisnika <ph name="USER_EMAIL1" /> na korisnika <ph name="USER_EMAIL2" />. Vašim postojećim podacima na Chromiumu upravlja <ph name="DOMAIN" />. Ovime će se izbrisati vaši podaci s vašeg uređaja, no oni će ostati na računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Upotrebom ove aplikacije prihvaćate Chromiumove <ph name="BEGIN_LINK" />Uvjete pružanja usluge<ph name="END_LINK" />.</translation>
 <translation id="8175055321229419309">Savjet: <ph name="BEGIN_LINK" />premjestite Chromium na priključnu stanicu<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Da biste imali svoje postavke na svim svojim uređajima, prijavite se na Chromium.</translation>
 <translation id="8252885722420466166">Doživite Google na bolji način u Chromiumu na temelju svoje lokacije.</translation>
 <translation id="8353224596138547809">Želite li da Chromium spremi vašu zaporku za ovu web-lokaciju?</translation>
 <translation id="8586442755830160949">Autorska prava <ph name="YEAR" />. Autori Chromiuma. Sva prava pridržana.</translation>

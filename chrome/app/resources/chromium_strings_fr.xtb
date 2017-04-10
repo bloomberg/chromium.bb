@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Impossible de lire vos préférences.
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="1115445892567829615">Impossible de synchroniser vos données dans Chromium. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
+<translation id="113122355610423240">Chromium est votre navigateur par défaut</translation>
 <translation id="1170115874949214249">Installez Chromium sur votre téléphone. Vous recevrez un SMS au numéro que vous avez indiqué pour la récupération de compte.</translation>
 <translation id="1174473354587728743">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chromium selon vos besoins.</translation>
 <translation id="1185134272377778587">À propos de Chromium</translation>
@@ -29,6 +30,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1869480248812203386">Vous pouvez nous aider à rendre Chromium plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
 <translation id="1881322772814446296">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Chromium à son administrateur. Vos données Chromium, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chromium séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
+<translation id="1966382378801805537">Impossible d'identifier ou de définir le navigateur par défaut avec Chromium</translation>
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="2008474315282236005">Cette action aura pour effet de supprimer 1 élément de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}one{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}other{Cette action aura pour effet de supprimer définitivement au moins $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}}</translation>
@@ -60,7 +62,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="2898082584336937987">Installez Chromium sur votre téléphone. Vous recevrez un SMS au numéro suivant : <ph name="PHONE_NUMBER" />.</translation>
 <translation id="2910007522516064972">À propos de &amp;Chromium</translation>
-<translation id="2977470724722393594">Chromium est à jour.</translation>
+<translation id="2977470724722393594">Chromium est à jour</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
 <translation id="3046695367536568084">Vous devez être connecté à Chromium pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chromium sur tous vos appareils.</translation>
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
@@ -84,12 +86,14 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3645040538872234961">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
+<translation id="3762167353400286894">Chromium OS est affiché dans cette langue</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Malheureusement, les paramètres de votre navigateur Mozilla Firefox ne sont pas disponibles lorsque ce navigateur est en cours d'exécution. Pour importer ces paramètres dans Chromium, enregistrez votre travail et fermez toutes les fenêtres Firefox, puis cliquez sur "Continuer".</translation>
 <translation id="3852700440713538496">Épingler Chromium à votre barre des tâches</translation>
 <translation id="3889543394854987837">Cliquez sur votre nom pour ouvrir Chromium et commencer à naviguer.</translation>
 <translation id="390894725198123737">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chromium partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
+<translation id="4036079820698952681">Aidez-nous à améliorer Chromium en nous signalant vos <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="407254336480250557">Sélectionnez <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="4077262827416206768">Pour que cette modification soit prise en compte, veuillez fermer toutes les fenêtres de Chromium, puis relancer le logiciel.</translation>
@@ -228,6 +232,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8033665941300843262">Chromium doit accéder aux autorisations pour les partager avec ce site.</translation>
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME" />, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
+<translation id="8157153840442649507">Chromium est affiché dans cette langue</translation>
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8222496066431494154">Installez Chromium sur votre téléphone. Vous recevrez un SMS au numéro que vous avez indiqué pour la récupération de compte (<ph name="PHONE_NUMBER" />).</translation>
 <translation id="8269379391216269538">Aidez-nous à améliorer Chromium</translation>

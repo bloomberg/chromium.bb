@@ -128,10 +128,12 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="3414292259312108062">Chrome archivierà questa password nelle <ph name="BEGIN_LINK" />password Google salvate<ph name="END_LINK" /> per inserirla automaticamente, in modo da non doverla imparare a memoria.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualizzazione divisa</translation>
+<translation id="3474624961160222204">Continua come <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Moduli compilati.</translation>
 <translation id="3478058380795961209">Mese di scadenza</translation>
 <translation id="3482959374254649722">Sincronizzazione delle schede...</translation>
 <translation id="3489372701259491571">Elimina password salvata</translation>
+<translation id="3494788280727468875">Conferma cancellazione dati di navigazione</translation>
 <translation id="3519193562722059437">Apri una scheda per navigare sul Web.</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
@@ -143,6 +145,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfezionare la ricerca, fai scorrere completamente il riquadro verso l'alto e tocca la casella di ricerca.</translation>
 <translation id="3607167657931203000">Dati della Compilazione automatica</translation>
 <translation id="3608436266458100337">Modalità Reader</translation>
+<translation id="3628119975092896051">Il tuo elenco di lettura è disponibile offline. Per aggiungere una pagina all'elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
@@ -303,6 +306,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7131892264600713844">È visualizzata la cronologia di questo dispositivo. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nome e cognome</translation>
 <translation id="7136892417564438900">La videocamera non è disponibile</translation>
+<translation id="7159472599653637159">Richiedi sito per dispositivi mobili</translation>
 <translation id="7167621057293532233">Tipi di dati</translation>
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
@@ -312,6 +316,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
+<translation id="744343212394640790">Non sono <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stato/contea</translation>
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="7464701184726199289">Questa operazione comporta la cancellazione dei dati sincronizzati da tutti i dispositivi. Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>

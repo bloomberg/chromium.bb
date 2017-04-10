@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">يُرجى إدخال قيمة صالحة. علمًا بأن أقرب قيمة صالحة هي <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2674318244760992338">تذييل</translation>
+<translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2723001399770238859">الصوت</translation>
 <translation id="2746543609216772311">يجب أن تكون القيمة <ph name="MINIMUM_DATE_OR_TIME" /> أو بعد ذلك.</translation>
 <translation id="2759744352195237655">زر بقائمة منبثقة</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">الدليل</translation>
 <translation id="6934078000481955284">علامة اقتباس فقرة</translation>
 <translation id="6941933287844615239">تنزيل وسائط</translation>
+<translation id="6989848892321993519">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت الآن تستخدم حرفًا واحدًا).</translation>
 <translation id="7057186640035488495">وقت الفيلم</translation>
 <translation id="709897737746224366">الرجاء مطابقة التنسيق المطلوب.</translation>
 <translation id="7223624360433298498">المدة المنقضية</translation>

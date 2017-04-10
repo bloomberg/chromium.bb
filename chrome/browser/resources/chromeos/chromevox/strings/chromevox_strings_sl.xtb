@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Ni več različnih elementov.</translation>
 <translation id="2800780099804980316">Ni prejšnjega naslova na ravni 1.</translation>
 <translation id="280499067616661124">Iskanje na strani s ChromeVoxom</translation>
+<translation id="2808001342598757276">Preklic zatemnitve zaslona</translation>
 <translation id="2811019999044652585">Če želite preklopiti na druge dele zaslona, kot so orodne vrstice ali sistemska vrstica, pritisnite tipki Control in Forward. Pri Chromebookih je tipka Forward tipka nad tipko za številko 2.</translation>
 <translation id="2811204574343810641">Vrstica</translation>
 <translation id="2816654101880605877">Ni naslednjega drsnika.</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">Obrazec</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{poševnica nazaj}one{# poševnica nazaj}two{# poševnici nazaj}few{# poševnice nazaj}other{# poševnic nazaj}}</translation>
 <translation id="6037602951055904232">Panoramsko premikanje naprej</translation>
+<translation id="6044160928851315051">Zatemnitev zaslona</translation>
 <translation id="6082768461603900813">Osnovno pomikanje</translation>
 <translation id="611827076493383239">obs</translation>
 <translation id="6119955456199054975">Konec celice.</translation>

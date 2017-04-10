@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Nincs több eltérő elem.</translation>
 <translation id="2800780099804980316">Nincs előző 1-es szintű címsor.</translation>
 <translation id="280499067616661124">ChromeVox-keresés az oldalon</translation>
+<translation id="2808001342598757276">Képernyő sötétítésének visszavonása</translation>
 <translation id="2811019999044652585">A képernyő más részeihez, például az eszköztárakhoz vagy a tálcához való ugráshoz nyomja le a Control + „előre” billentyűkombinációt. A Chromebookokon az „előre” billentyű közvetlenül a 2-es gomb felett található.</translation>
 <translation id="2811204574343810641">Sor</translation>
 <translation id="2816654101880605877">Nincs következő dia.</translation>
@@ -565,6 +566,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="6006050241733874051">Űrlap</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{fordított törtvonal}other{# fordított törtvonal}}</translation>
 <translation id="6037602951055904232">Pászt előre</translation>
+<translation id="6044160928851315051">Képernyő sötétítése</translation>
 <translation id="6082768461603900813">Alapvető navigáció</translation>
 <translation id="611827076493383239">felkeresett</translation>
 <translation id="6119955456199054975">Cella vége.</translation>

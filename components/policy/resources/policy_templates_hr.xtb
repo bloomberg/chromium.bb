@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Generira izvješće o stanju prekidača za razvojne programere na uređaju prilikom pokretanja.
 
       Ako se pravilo ne postavi ili se postavi na neistinito, izvješće o stanju prekidača za razvojne programere neće se generirati.</translation>
-<translation id="1156080716265314451">Konfigurira popis pisača.
-
-      To pravilo omogućuje administratorima da korisnicima pruže konfiguracije
-      pisača.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> ne sadrže nizove koji se
-      mogu prilagoditi za lakši odabir pisača. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> trebaju se podudarati s jednim od pisača koje <ph name="PRODUCT_NAME" />
-      podržava. <ph name="PRINTER_URI" /> treba biti adresa koju je moguće dosegnuti
-      s klijentskog računala, uključujući <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> nije obavezan. Ako se navede, upotrebljava se za lakše
-      uklanjanje duplikata <ph name="ZEROCONF_DISCOVERY" /> pisača.
-
-      Postavljanje pisača dovršeno je nakon njegove prve upotrebe. PPD-ovi
-      se ne preuzimaju dok se pisač ne upotrijebi. Nakon toga često korišteni
-      PPD-ovi predmemoriraju se.
-
-      To pravilo ne utječe na mogućnost da korisnici konfiguriraju pisače na
-      pojedinačnim uređajima. Trebalo bi biti dodatno pravilo za
-      konfiguraciju pisača koju vrše pojedinačni korisnici.</translation>
 <translation id="1160939557934457296">Onemogući nastavljanje sa stranice upozorenja Sigurno pregledavanje</translation>
 <translation id="1198465924256827162">Učestalost slanja prijenosa statusa uređaja u milisekundama.
 
@@ -1460,11 +1441,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako ne postavite to pravilo, <ph name="PRODUCT_OS_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.
 
       Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila zanemarit će se) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
-<translation id="5535957389335373033">Učestalost slanja mrežnih paketa za praćenje u milisekundama.
-
-      Ako se to pravilo ne postavi, zadana učestalost iznosi 3 minute. Minimalna
-      je učestalost 30 sekundi, a maksimalna 24 sata, a vrijednosti izvan tih
-      svest će se na taj raspon.</translation>
 <translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
 <translation id="5559079916187891399">To pravilo nema utjecaja na Android aplikacije.</translation>
 <translation id="5560039246134246593">Dodavanje parametra dohvaćanju vrijednosti varijacija u proizvodu <ph name="PRODUCT_NAME" />.

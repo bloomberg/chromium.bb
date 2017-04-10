@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Nie ma więcej różnych elementów.</translation>
 <translation id="2800780099804980316">Brak poprzedniego nagłówka poziomu 1.</translation>
 <translation id="280499067616661124">ChromeVox – znajdź na stronie</translation>
+<translation id="2808001342598757276">Włącz ekran</translation>
 <translation id="2811019999044652585">Aby przejść do innego elementu ekranu, np. paska narzędzi lub obszaru powiadomień, naciśnij Ctrl + Dalej. W Chromebooku klawisz Dalej znajduje się tuż nad cyfrą 2.</translation>
 <translation id="2811204574343810641">Wiersz</translation>
 <translation id="2816654101880605877">Brak następnego suwaka.</translation>
@@ -565,6 +566,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6006050241733874051">Formularz</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ukośnik wsteczny}few{# ukośniki wsteczne}many{# ukośników wstecznych}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Przesuń do przodu</translation>
+<translation id="6044160928851315051">Wygaś ekran</translation>
 <translation id="6082768461603900813">Podstawowa nawigacja</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Koniec komórki.</translation>

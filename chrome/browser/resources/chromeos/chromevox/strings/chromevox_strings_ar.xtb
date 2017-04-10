@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">ليس هناك المزيد من العناصر المختلفة.</translation>
 <translation id="2800780099804980316">ليس هناك عنوان سابق من المستوى الأول.</translation>
 <translation id="280499067616661124">‏البحث في صفحة ChromeVox</translation>
+<translation id="2808001342598757276">إلغاء تعتيم الشاشة</translation>
 <translation id="2811019999044652585">‏للانتقال السريع إلى أجزاء أخرى من الشاشة، مثل أشرطة الأدوات أو لوحة النظام، اضغط على Control+Forward، على جهاز Chromebook، يوجد مفتاح Forward أعلى مفتاح رقم 2 مباشرةً.</translation>
 <translation id="2811204574343810641">صف</translation>
 <translation id="2816654101880605877">ليس هناك شريط تمرير تالٍ.</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">نموذج</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{شرطة واحدة مائلة للخلف}zero{# backslashes}two{شرطتان مائلتان للخلف (#)}few{# شرطات مائلة للخلف}many{# شرطة مائلة للخلف}other{# من الشرطات المائلة للخلف}}</translation>
 <translation id="6037602951055904232">تحريك للأمام</translation>
+<translation id="6044160928851315051">تعتيم الشاشة</translation>
 <translation id="6082768461603900813">التنقل الأساسي</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">نهاية الخلية.</translation>

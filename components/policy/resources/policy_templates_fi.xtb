@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Ilmoita laitteen kehittäjätila uudelleenkäynnistyksen yhteydessä.
 
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
-<translation id="1156080716265314451">Määrittää tulostinluettelon.
-
-      Tämä käytäntö sallii järjestelmänvalvojien antaa tulostinkokoonpanon tiedot
-      käyttäjille.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan
-      muokata tulostimen valinnan helpottamiseksi. Arvojen <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> pitäisi vastata jotakin tuetuista <ph name="PRODUCT_NAME" />-tulostimista
-      <ph name="PRINTER_URI" /> pitäisi olla osoite, jota voidaan käyttää
-      asiakkaan tietokoneelta, mukaan lukien <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on vapaaehtoinen. Jos tämä tieto on annettu, sen avulla
-      voidaan poistaa <ph name="ZEROCONF_DISCOVERY" />-tulostimien kaksoiskappaleita.
-
-      Tulostimen määritys on valmis, kun sitä käytetään ensimmäisen kerran. PPD:itä
-      ei ladata, ennen kuin tulostinta on käytetty. Sen jälkeen usein käytetyt
-      PPD:t tallennetaan välimuistiin.
-
-      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia
-      yksittäisille laitteille. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien 
-      tulostinmääritysten lisäksi.</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
 <translation id="1198465924256827162">Laitteen tilatietojen lähetystiheys millisekunteina.
 
@@ -1455,11 +1436,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_OS_NAME" /> käyttää 3 tunnin oletusarvoa.
 
       Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
-<translation id="5535957389335373033">Valvontapakettien lähetystiheys millisekunteina.
-
-      Jos tätä käytäntöä ei ole määritetty, käytetään oletustiheyttä 3 minuuttia. Pienin sallittu
-      arvo on 30 sekuntia ja suurin sallittu arvo on 24 tuntia.
-      Tämän välin ulkopuolella olevat arvot pyöristetään lähimpään sallittuun arvoon.</translation>
 <translation id="5535973522252703021">Sallitut Kerberos-delegaatiopalvelimet</translation>
 <translation id="5559079916187891399">Tällä käytännöllä ei ole vaikutusta Android-sovelluksiin.</translation>
 <translation id="5560039246134246593">Lisää tuotteelle <ph name="PRODUCT_NAME" /> parametri Variations-siemenarvon hakemiselle.

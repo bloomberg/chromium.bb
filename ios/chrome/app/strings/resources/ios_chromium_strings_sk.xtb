@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Účet na synchronizáciu <ph name="USER_EMAIL1" /> prepínate na <ph name="USER_EMAIL2" />. Vaše existujúce údaje prehliadača Chromium spravuje doména <ph name="DOMAIN" />. Touto akciou odstránite údaje z vášho zariadenia, avšak zostanú naďalej v účte <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK" />zmluvnými podmienkami<ph name="END_LINK" /> prehliadača Chromium.</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Presuňte Chromium do doku<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Ak chcete mať nastavenia na všetkých zariadeniach, prihláste sa do prehliadača Chromium.</translation>
 <translation id="8252885722420466166">Získajte lepšie prostredie Google v prehliadači Chromium na základe svojej polohy.</translation>
 <translation id="8353224596138547809">Chcete, aby aplikácia Chromium uložila heslo pre tieto stránky?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autori Chromium. Všetky práva vyhradené.</translation>

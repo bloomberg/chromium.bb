@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
 <translation id="1374468813861204354">ieteikumus</translation>
 <translation id="1375198122581997741">Par versiju</translation>
+<translation id="1377321085342047638">Kartes numurs</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nenosūtīja nekādus datus.</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
 <translation id="1413809658975081374">Konfidencialitātes kļūda</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> nosūtīja nederīgu atbildi.</translation>
 <translation id="2552545117464357659">Jaunāka</translation>
 <translation id="2556876185419854533">&amp;Labojuma atsaukšana</translation>
+<translation id="2587730715158995865">No: <ph name="ARTICLE_PUBLISHER" />. Lasiet šo un vēl <ph name="OTHER_ARTICLE_COUNT" /> rakstus.</translation>
 <translation id="2587841377698384444">Direktorija API ID:</translation>
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="2609632851001447353">Varianti</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{vismaz 1 vienums sinhronizētās ierīcēs}=1{1 vienums (un vēl citi sinhronizētās ierīcēs)}zero{# vienumi (un vēl citi sinhronizētās ierīcēs)}one{# vienums (un vēl citi sinhronizētās ierīcēs)}other{# vienumi (un vēl citi sinhronizētās ierīcēs)}}</translation>
 <translation id="3041612393474885105">Sertifikāta informācija</translation>
 <translation id="3063697135517575841">Pārlūkā Chrome pašlaik nevar apstiprināt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
+<translation id="3064966200440839136">Ja maksāšanai tiks izmantota ārēja lietojumprogramma, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
 <translation id="3093245981617870298">Esat bezsaistē</translation>
 <translation id="3105172416063519923">Līdzekļa ID:</translation>
 <translation id="3109728660330352905">Jums nav pilnvaru, lai skatītu šo lapu.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Lietotājam <ph name="NAME" /> nevarēja nosūtīt jūsu pieprasījumu piekļūt šai vietnei. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="3355823806454867987">Mainīt starpniekservera iestatījumus...</translation>
 <translation id="3369192424181595722">Pulksteņa kļūda</translation>
+<translation id="337311366426640088">Vēl <ph name="ITEM_COUNT" /> vienumi...</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
 <translation id="3380365263193509176">Nezināma kļūda</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Pirmsielādes intervāls:</translation>
 <translation id="3462200631372590220">Slēpt papildu informāciju</translation>
+<translation id="3478058380795961209">Der. term. mēn.</translation>
 <translation id="3479539252931486093">Vai tas bija negaidīti? <ph name="BEGIN_LINK" />Informējiet mūs<ph name="END_LINK" />!</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
 <translation id="348000606199325318">Avārijas ID <ph name="CRASH_LOCAL_ID" /> (servera ID: <ph name="CRASH_ID" />)</translation>
@@ -459,7 +464,6 @@
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5308689395849655368">Avāriju pārskatu izveide ir atspējota.</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
-<translation id="5326702247179446998">Jānorāda adresāts</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
 <translation id="5337705430875057403">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var pamudināt jūs veikt bīstamas darbības, piemēram, instalēt programmatūru vai atklāt savu personas informāciju (t.i., paroles, tālruņa numurus vai informāciju par kredītkartēm).</translation>
 <translation id="53553865750799677">Neatbalstīta saņemšanas adrese. Atlasiet citu adresi.</translation>
@@ -562,6 +566,7 @@
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
 <translation id="6387478394221739770">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet mūsu Beta versiju, kas pieejama vietnē chrome.com/beta.</translation>
+<translation id="6389470377220713856">Vārds un uzvārds uz kartes</translation>
 <translation id="6389758589412724634">Mēģinot parādīt šo tīmekļa lapu, pārlūka Chromium atmiņā nepietika vietas.</translation>
 <translation id="6404511346730675251">Rediģēt grāmatzīmi</translation>
 <translation id="6410264514553301377">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC.</translation>
@@ -611,6 +616,7 @@
 <translation id="6778737459546443941">Neviens no jūsu vecākiem vēl nav to apstiprinājis</translation>
 <translation id="6810899417690483278">Pielāgošanas ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Neizdevās ielādēt reģionu datus</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6839929833149231406">Apgabals</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
@@ -625,7 +631,6 @@
 <translation id="6973656660372572881">Ir norādīti gan fiksēti starpniekserveri, gan .pac skripta URL.</translation>
 <translation id="6989763994942163495">Rādīt papildu iestatījumus...</translation>
 <translation id="7000990526846637657">Netika atrasts neviens vēstures ieraksts.</translation>
-<translation id="7001663382399377034">Adresāta pievienošana</translation>
 <translation id="7009986207543992532">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, taču serveris uzrādīja sertifikātu, kura derīguma periods ir pārāk ilgs, lai būtu uzticams. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -771,6 +776,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
 <translation id="8363502534493474904">Izslēdziet lidojuma režīmu.</translation>
 <translation id="8364627913115013041">Nav iestatīta.</translation>
+<translation id="8368476060205742148">Google Play pakalpojumi</translation>
 <translation id="8380941800586852976">Bīstama</translation>
 <translation id="8382348898565613901">Nesen izmantotās grāmatzīmes tiek parādītas šeit</translation>
 <translation id="8398259832188219207">Avāriju pārskats augšupielādēts: <ph name="UPLOAD_TIME" /></translation>
@@ -786,6 +792,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8492969205326575646">Neatbalstīts kartes veids</translation>
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
 <translation id="852346902619691059">Šis serveris nevarēja pierādīt, ka tas ir domēns <ph name="DOMAIN" />; tā drošības sertifikāts nav uzticams jūsu ierīces operētājsistēmā. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Der. term. gads</translation>
 <translation id="8543181531796978784">Jūs varat <ph name="BEGIN_ERROR_LINK" />ziņot par noteikšanas problēmu<ph name="END_ERROR_LINK" /> vai, ja apzināties drošības riskus, <ph name="BEGIN_LINK" />apmeklēt šo nedrošo vietni<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>
 <translation id="8559762987265718583">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>

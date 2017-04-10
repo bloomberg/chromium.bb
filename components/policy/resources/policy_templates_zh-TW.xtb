@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">回報裝置的開發人員模式切換設定在開機時的狀態。
 
       如果這項政策設為 False，則不會回報開發人員模式切換設定的狀態。</translation>
-<translation id="1156080716265314451">設定印表機清單。
-
-      這項政策可讓管理員為每位使用者提供
-      印表機設定。
-
-      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」是形式不拘的字串，
-      可加以自訂方便選擇印表機，「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」則必須符合 <ph name="PRODUCT_NAME" />支援的其中一種
-      印表機。「<ph name="PRINTER_URI" />」必須是可透過用戶端電腦
-      連上的網址 (包括「<ph name="URI_SCHEME" />」、
-      「<ph name="URI_PORT" />」和「<ph name="URI_QUEUE" />」)。「<ph name="PRINTER_UUID" />」可用。如有提供，則會用於
-      協助複製「<ph name="ZEROCONF_DISCOVERY" />」印表機。
-
-      首次使用印表機時，會完成印表機設定程序。PPD 則會
-      在使用該印表機時才下載，隨後系統會快取
-      常用的 PPD。
-
-      這項政策旨在補足個別使用者的印表機設定，
-      對使用者能否在個別裝置上設定印表機
-      沒有影響。</translation>
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="1198465924256827162">裝置狀態上傳的傳送頻率 (以毫秒數為單位)。
 
@@ -1454,11 +1435,6 @@
       如未設定這項政策，<ph name="PRODUCT_OS_NAME" /> 會使用預設值 (3 小時)。
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
-<translation id="5535957389335373033">監控網路封包的傳送頻率 (以毫秒為單位)。
-
-      如果未設定這項政策，預設頻率為 3 分鐘。
-      最低頻率為 30 秒，最高頻率為 24 小時。
-      超過範圍的頻率值會被限制在範圍內。</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
 <translation id="5559079916187891399">這項政策對 Android 應用程式沒有影響。</translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME" /> 中擷取變異版本種子時新增參數。

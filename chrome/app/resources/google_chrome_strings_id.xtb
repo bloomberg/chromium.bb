@@ -36,9 +36,10 @@
 <translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
-<translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
+<translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2084710999043359739">Tambahkan ke Chrome</translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
+<translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="216054706567564023">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
@@ -138,6 +139,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5028489144783860647">Google Chrome tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
 <translation id="5132929315877954718">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Google Chrome.</translation>
+<translation id="5166975452760862670">Google Chrome ditampilkan dalam bahasa ini</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
 <translation id="5193136243808726294">Google Chrome OS tidak dapat membuka laman ini.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
@@ -158,6 +160,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
+<translation id="5774845247549698882">Chrome OS ditampilkan dalam bahasa ini</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}other{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}}</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
@@ -168,6 +171,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
 <translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk berbagi dengan situs ini.</translation>
 <translation id="6014844626092547096">Sekarang Anda telah masuk ke Chrome! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
+<translation id="6070348360322141662">Untuk keamanan tambahan, Google Chrome akan mengenkripsi data Anda</translation>
 <translation id="6113794647360055231">Chrome menjadi lebih baik</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Pembaruan OS &amp;Chrome</translation>
@@ -256,6 +260,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
+<translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8796108026289707191">Mulai ulang Google Chrome sekarang.</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="884296878221830158">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>
@@ -268,4 +273,5 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="919706545465235479">Perbarui Chrome untuk memulai sinkronisasi</translation>
 <translation id="924447568950697217">Menjadikan Chrome sebagai browser default</translation>
+<translation id="989369509083708165">Google Chrome adalah browser default Anda</translation>
 </translationbundle>

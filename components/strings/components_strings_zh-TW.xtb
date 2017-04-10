@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
 <translation id="1374468813861204354">建議</translation>
 <translation id="1375198122581997741">關於版本</translation>
+<translation id="1377321085342047638">卡號</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未傳送任何資料。</translation>
 <translation id="1407135791313364759">全部開啟</translation>
 <translation id="1413809658975081374">隱私權設定發生錯誤</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 傳送的回應無效。</translation>
 <translation id="2552545117464357659">較新紀錄</translation>
 <translation id="2556876185419854533">復原編輯(&amp;U)</translation>
+<translation id="2587730715158995865">出自「<ph name="ARTICLE_PUBLISHER" />」。閱讀這篇報導和另外 <ph name="OTHER_ARTICLE_COUNT" /> 篇報導。</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
 <translation id="2609632851001447353">變化版本</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{在已同步的裝置上至少有 1 個項目}=1{1 個項目 (在已同步的裝置上還有更多項目)}other{# 個項目 (在已同步的裝置上還有更多項目)}}</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
 <translation id="3063697135517575841">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
+<translation id="3064966200440839136">即將離開無痕模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="3093245981617870298">您處於離線狀態。</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="3109728660330352905">您未獲得授權，無法瀏覽這個網頁。</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">無法將您的網站存取要求傳送給<ph name="NAME" />，請再試一次。</translation>
 <translation id="3355823806454867987">變更 Proxy 設定...</translation>
 <translation id="3369192424181595722">時鐘錯誤</translation>
+<translation id="337311366426640088">還有 <ph name="ITEM_COUNT" /> 個項目...</translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="3380365263193509176">未知的錯誤</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">擷取間隔：</translation>
 <translation id="3462200631372590220">隱藏詳細資料</translation>
+<translation id="3478058380795961209">到期月份</translation>
 <translation id="3479539252931486093">這是未預期的情況嗎？<ph name="BEGIN_LINK" />通知我們<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="348000606199325318">當機 ID：<ph name="CRASH_LOCAL_ID" /> (伺服器 ID：<ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5317780077021120954">儲存</translation>
-<translation id="5326702247179446998">請提供收件者</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5337705430875057403">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 誘使您做一些危險的事，例如安裝軟體或提供個人資訊 (包括密碼、電話號碼或信用卡資料)。</translation>
 <translation id="53553865750799677">目前選取的是不支援的取件地址，請改用其他地址。</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
+<translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6389758589412724634">Chromium 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">你的家長尚未核准這個網站</translation>
 <translation id="6810899417690483278">自訂 ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">無法載入地區資料</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6839929833149231406">區</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="7000990526846637657">找不到任何紀錄項目</translation>
-<translation id="7001663382399377034">新增收件者</translation>
 <translation id="7009986207543992532">你嘗試連上 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7012372675181957985">你仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄</translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">書籤列</translation>
 <translation id="8363502534493474904">關閉飛航模式</translation>
 <translation id="8364627913115013041">未設定。</translation>
+<translation id="8368476060205742148">Google Play 服務</translation>
 <translation id="8380941800586852976">不安全</translation>
 <translation id="8382348898565613901">這裡會顯示你最近造訪過的書籤</translation>
 <translation id="8398259832188219207">當機報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">不支援的信用卡類型</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>
 <translation id="852346902619691059">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；裝置的作業系統不信任伺服器的安全性憑證。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">到期年份</translation>
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />回報偵測問題<ph name="END_ERROR_LINK" />。或者在您瞭解安全性風險後，仍然可以<ph name="BEGIN_LINK" />前往這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
 <translation id="8559762987265718583">您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>

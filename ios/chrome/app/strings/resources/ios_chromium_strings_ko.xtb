@@ -44,6 +44,7 @@
 <translation id="786327964234957808">동기화 계정을 <ph name="USER_EMAIL1" />에서 <ph name="USER_EMAIL2" />(으)로 전환합니다. 기존 Chromium 데이터는 <ph name="DOMAIN" />에서 관리됩니다. 이 기기에서는 데이터가 삭제되지만 <ph name="USER_EMAIL1" />에 계속해서 데이터가 보관됩니다.</translation>
 <translation id="8111736072665034317">이 애플리케이션을 사용하면 Chromium의 <ph name="BEGIN_LINK" />서비스 약관<ph name="END_LINK" />에 동의하게 됩니다.</translation>
 <translation id="8175055321229419309">도움말: <ph name="BEGIN_LINK" />Chromium을 내 Dock에 추가하세요.<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">어느 기기에서나 내 설정을 사용하려면 Chromium에 로그인하세요.</translation>
 <translation id="8252885722420466166">위치 정보를 기반으로 Chromium에서 더 좋은 Google 서비스를 제공할 수 있습니다.</translation>
 <translation id="8353224596138547809">Chromium이 이 사이트에서 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>

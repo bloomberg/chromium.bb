@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Não há mais elementos diferentes.</translation>
 <translation id="2800780099804980316">Nenhum cabeçalho anterior de nível 1.</translation>
 <translation id="280499067616661124">Encontrar na página do ChromeVox</translation>
+<translation id="2808001342598757276">Desfaz o escurecimento da tela</translation>
 <translation id="2811019999044652585">Para ir para outras partes da tela, como barras de ferramentas ou a bandeja do sistema, pressione Control+Avançar. Em um Chromebook, a tecla Avançar fica imediatamente acima da tecla número 2.</translation>
 <translation id="2811204574343810641">Linha</translation>
 <translation id="2816654101880605877">Nenhum controle deslizante a seguir.</translation>
@@ -565,6 +566,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="6006050241733874051">Formulário</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra invertida}one{# barras invertidas}other{# barras invertidas}}</translation>
 <translation id="6037602951055904232">Mover para a frente</translation>
+<translation id="6044160928851315051">Escurece a tela</translation>
 <translation id="6082768461603900813">Navegação básica</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Final da célula.</translation>

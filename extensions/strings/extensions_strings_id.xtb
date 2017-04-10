@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">Kamera belakang</translation>
 <translation id="1256619696651732561">Pengurai Manifes Ekstensi</translation>
 <translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME" />. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1468038450257740950">WebGL tidak didukung.</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON" />'.</translation>
 <translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE" />'.</translation>
 <translation id="2159915644201199628">Tidak dapat mendekode gambar: '<ph name="IMAGE_NAME" />'</translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">Tidak dapat memasang paket karena proses utilitas mogok. Mulai ulang Chrome dan coba lagi.</translation>
 <translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">Jendela berbentuk tidak didukung.</translation>
 <translation id="5456409301717116725">Ekstensi ini termasuk file kunci '<ph name="KEY_PATH" />'. Anda mungkin tidak ingin melakukannya.</translation>
 <translation id="5627523580512561598">ekstensi <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">Tidak dapat membuka paket ekstensi. Untuk membuka paket ekstensi dengan aman, harus tersedia jalur ke direktori profil Anda yang tidak berisi tautan simbolik. Tidak ada jalur yang seperti itu untuk profil Anda.</translation>
 <translation id="641087317769093025">Tidak dapat mengekstrak ekstensi</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses ke satu atau beberapa perangkat Anda:</translation>
+<translation id="6566142449942033617">Tidak dapat memuat '<ph name="PLUGIN_PATH" />' untuk plugin.</translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">Ekstensi ini terlalu sering memuat ulang sendiri.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> tak dikenal dari <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME" /> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
+<translation id="7581279002575751816">Plugin NPAPI tidak didukung.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID ekstensi "<ph name="EXTENSION_ID" />") dicekal oleh administrator.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Kamera depan</translation>

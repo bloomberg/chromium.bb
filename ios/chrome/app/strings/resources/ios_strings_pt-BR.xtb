@@ -129,10 +129,12 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3414292259312108062">O Chrome armazenará esta senha nas suas <ph name="BEGIN_LINK" />senhas salvas do Google<ph name="END_LINK" /> e a preencherá automaticamente para você, para que não precise se lembrar dela.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
 <translation id="3448016392200048164">Visualização dividida</translation>
+<translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulários preenchidos.</translation>
 <translation id="3478058380795961209">Mês de vencimento</translation>
 <translation id="3482959374254649722">Sincronizando suas guias...</translation>
 <translation id="3489372701259491571">Excluir senha salva</translation>
+<translation id="3494788280727468875">Confirmar limpeza de dados de navegação</translation>
 <translation id="3519193562722059437">Abra uma guia para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3551320343578183772">Fechar guia</translation>
@@ -143,6 +145,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pressionado. Para refinar a pesquisa, acesse a caixa de pesquisa deslizando o dedo da parte de cima da tela até embaixo.﻿</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
 <translation id="3608436266458100337">Modo leitor</translation>
+<translation id="3628119975092896051">Sua lista de leitura está disponível off-line. Para adicionar uma página à lista, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pré-carregar páginas da web</translation>
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -303,6 +306,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7131892264600713844">Exibindo o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
+<translation id="7159472599653637159">Solicitar um site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
@@ -312,6 +316,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
+<translation id="744343212394640790">Não sou <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado/Prov.</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7464701184726199289">Isso limpa os dados sincronizados de todos os dispositivos. As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>

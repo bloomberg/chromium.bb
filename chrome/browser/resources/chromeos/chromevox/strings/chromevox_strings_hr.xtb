@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Nema više različitih elemenata.</translation>
 <translation id="2800780099804980316">Nema prethodnog naslova razine 1.</translation>
 <translation id="280499067616661124">Traženje na stranici uz ChromeVox</translation>
+<translation id="2808001342598757276">Poništi zatamnjenje zaslona</translation>
 <translation id="2811019999044652585">Za prelazak na ostale dijelove zaslona, primjerice alatne trake ili traku sustava, pritisnite tipke Control i naprijed. Tipka  za naprijed na Chromebooku nalazi se neposredno iznad tipke broja 2.</translation>
 <translation id="2811204574343810641">Redak</translation>
 <translation id="2816654101880605877">Nema sljedećeg klizača.</translation>
@@ -565,6 +566,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="6006050241733874051">Obrazac</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kosa crta ulijevo}one{# kosa crta ulijevo}few{# kose crte ulijevo}other{# kosih crta ulijevo}}</translation>
 <translation id="6037602951055904232">Pomiči se prema naprijed</translation>
+<translation id="6044160928851315051">Zatamni zaslon</translation>
 <translation id="6082768461603900813">Osnovno kretanje</translation>
 <translation id="611827076493383239">psjćn</translation>
 <translation id="6119955456199054975">Kraj ćelije.</translation>

@@ -128,10 +128,12 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="3414292259312108062">Chrome o va stoca în <ph name="BEGIN_LINK" />parolele Google salvate<ph name="END_LINK" /> și o va completa automat ca să nu mai fie nevoie să o ții minte.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
+<translation id="3474624961160222204">Continuă ca <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulare completate.</translation>
 <translation id="3478058380795961209">Lună expirare</translation>
 <translation id="3482959374254649722">Se sincronizează filele...</translation>
 <translation id="3489372701259491571">Șterge parola salvată</translation>
+<translation id="3494788280727468875">Confirmă ștergerea datelor de navigare</translation>
 <translation id="3519193562722059437">Deschide o filă pentru a naviga pe web.</translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3551320343578183772">Închide fila</translation>
@@ -143,6 +145,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafina căutarea, glisează panoul până în partea de sus și atinge caseta de căutare.</translation>
 <translation id="3607167657931203000">Datele de completare automată</translation>
 <translation id="3608436266458100337">Modul Cititor</translation>
+<translation id="3628119975092896051">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
@@ -303,6 +306,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7131892264600713844">Se afișează istoricul de pe acest dispozitiv. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Numele complet</translation>
 <translation id="7136892417564438900">Camera foto nu este disponibilă</translation>
+<translation id="7159472599653637159">Site mobil</translation>
 <translation id="7167621057293532233">Tipuri de date</translation>
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7203585745079012652">Primești răspunsuri vocale</translation>
@@ -312,6 +316,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="7419187830569376338">Caută imaginea cu <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
+<translation id="744343212394640790">Nu ca <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stat/Județ</translation>
 <translation id="7456847797759667638">Deschide o locație...</translation>
 <translation id="7464701184726199289">Astfel, datele sincronizate vor fi șterse de pe toate dispozitivele. Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>

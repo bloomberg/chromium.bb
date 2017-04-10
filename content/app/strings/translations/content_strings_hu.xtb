@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Kérjük, érvényes értéket adjon meg. A legközelebbi érvényes érték <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2674318244760992338">lábléc</translation>
+<translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Az érték <ph name="MINIMUM_DATE_OR_TIME" /> vagy azt követő kell, hogy legyen.</translation>
 <translation id="2759744352195237655">előugró gomb</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">címtár</translation>
 <translation id="6934078000481955284">bekezdésszintű idézet</translation>
 <translation id="6941933287844615239">médiafájlok letöltése</translation>
+<translation id="6989848892321993519">Legalább <ph name="MIN_CHARACTERS" /> karakter hosszú szöveget adjon meg (jelenleg 1 karaktert használ).</translation>
 <translation id="7057186640035488495">film ideje</translation>
 <translation id="709897737746224366">Kérjük, tartsa magát a kívánt formátumhoz.</translation>
 <translation id="7223624360433298498">eltelt idő</translation>

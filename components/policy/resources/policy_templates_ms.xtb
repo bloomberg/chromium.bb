@@ -58,25 +58,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="1152117524387175066">Laporkan keadaan perubahan pembangun peranti semasa but.
 
       Jika dasar tidak ditetapkan atau ditetapkan kepada tidak benar, keadaan suis pembangun tidak akan dilaporkan.</translation>
-<translation id="1156080716265314451">Mengkonfigurasikan senarai pencetak.
-
-      Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk
-      pengguna mereka.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang
-      boleh disesuaikan untuk memudahkann pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> harus sepadan dengan satu daripada <ph name="PRODUCT_NAME" /> pencetak yang
-      disokong.  <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai
-      daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> adalah pilihan.  Jika disediakan, pencetak ini digunakan untuk
-      membantu menyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
-
-      Persediaan pencetak selesai pada penggunaan pertama pencetak.  PPD tidak boleh
-      dimuat turun sehinggalah pencetak digunakan.  Selepas waktu itu,
-      PPD yang kerap digunakan akan dicache.
-
-      Dasar ini tiada kesan terhadap sama ada pengguna boleh mengkonfigurasikan pencetak pada
-      peranti individu atau tidak.  Dasar ini bertujuan menjadi pelengkap kepada
-      pengkonfigurasian pencetak oleh pengguna individu.</translation>
 <translation id="1160939557934457296">Lumpuhkan tindakan dari halaman amaran Penyemakan Imbas Selamat</translation>
 <translation id="1198465924256827162">Kekerapan muat naik status peranti dihantar, dalam milisaat.
 
@@ -1556,11 +1537,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan menggunakan nilai lalai 3 jam.
 
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
-<translation id="5535957389335373033">Kekerapan pemantauan bingkisan rangkaian dihantar, dalam milisaat.
-
-      Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 minit. Kekerapan minimum
-      ialah 30 saat dan kekerapan maksimum ialah 24 jam - nilai
-      di luar julat ini akan diapit menurut julat ini.</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
 <translation id="5560039246134246593">Tambahkan parameter kepada pengambilan benih Variasi dalam <ph name="PRODUCT_NAME" />.

@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Stai cambiando account di sincronizzazione, passando dall'account <ph name="USER_EMAIL1" /> all'account <ph name="USER_EMAIL2" />. I dati di Chromium esistenti sono gestiti da <ph name="DOMAIN" />. I dati verranno cancellati dal dispositivo, ma rimarranno memorizzati nell'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK" />Termini di servizio<ph name="END_LINK" /> di Chromium.</translation>
 <translation id="8175055321229419309">Suggerimento. <ph name="BEGIN_LINK" />Sposta Chromium nel dock<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Accedi a Chromium per trovare le tue impostazioni su tutti i dispositivi.</translation>
 <translation id="8252885722420466166">Fornisci i dati sulla tua posizione per migliorare ancora di più la tua esperienza d'uso di Chromium.</translation>
 <translation id="8353224596138547809">Vuoi che Chromium salvi la password per questo sito?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>

@@ -128,10 +128,12 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3414292259312108062">Chrome vill spara lösenordet i <ph name="BEGIN_LINK" />lösenord som Google sparat<ph name="END_LINK" /> och fylla i det automatiskt så att du slipper komma ihåg det.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delad vy</translation>
+<translation id="3474624961160222204">Fortsätt som <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulären har fyllts i.</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3482959374254649722">Flikarna synkroniseras ...</translation>
 <translation id="3489372701259491571">Radera sparat lösenord</translation>
+<translation id="3494788280727468875">Bekräfta rensning av webbinformation</translation>
 <translation id="3519193562722059437">Öppna en flik om du vill surfa på webben.</translation>
 <translation id="3527085408025491307">Mapp</translation>
 <translation id="3551320343578183772">Stäng flik</translation>
@@ -143,6 +145,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 Om du vill ändra söktermen trycker du länge för att välja. Om du vill förfina sökningen drar du panelen ända upp och trycker på sökrutan.</translation>
 <translation id="3607167657931203000">Autofyll uppgifter</translation>
 <translation id="3608436266458100337">Läsläge</translation>
+<translation id="3628119975092896051">Läslistan är tillgänglig offline. Om du vill lägga till en sida i läslistan trycker du på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
@@ -303,6 +306,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7131892264600713844">Historik från den här enheten visas. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Fullständigt namn</translation>
 <translation id="7136892417564438900">Kameran är inte tillgänglig</translation>
+<translation id="7159472599653637159">Använd mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
@@ -312,6 +316,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7419187830569376338">Sök på <ph name="SEARCH_ENGINE" /> efter den här bilden</translation>
 <translation id="7425346204213733349">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
+<translation id="744343212394640790">Inte <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/county</translation>
 <translation id="7456847797759667638">Öppna plats...</translation>
 <translation id="7464701184726199289">Inställningarna rensar synkroniserad data från alla enheter. Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>

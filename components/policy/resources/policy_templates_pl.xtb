@@ -55,25 +55,6 @@
 <translation id="1152117524387175066">Zgłasza stan przełącznika trybu programisty podczas uruchomienia urządzenia.
 
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu programisty nie jest zgłaszany.</translation>
-<translation id="1156080716265314451">Konfiguruje listę drukarek.
-
-      Ta zasada umożliwia administratorom przekazanie konfiguracji drukarek
-      użytkownikom.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolny tekst,
-      który ma ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> powinny odpowiadać
-      jednej z obsługiwanych drukarek <ph name="PRODUCT_NAME" />. <ph name="PRINTER_URI" /> to dostępny z komputera
-      klienckiego adres z tymi składnikami: <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> jest opcjonalny. Jeśli jest podany, umożliwia
-      deduplikację drukarek <ph name="ZEROCONF_DISCOVERY" />.
-
-      Konfiguracja drukarki jest wykonywana przy jej pierwszym użyciu. Pliki PPD nie są
-      pobierane przed użyciem drukarki. Później często używane pliki
-      PPD są przechowywane w pamięci podręcznej.
-
-      Ta zasada nie wpływa na to, czy użytkownicy mogą konfigurować drukarki
-      na poszczególnych urządzeniach. Jest ona uzupełnieniem konfiguracji
-      drukarek, którą tworzą poszczególni użytkownicy.</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
@@ -1452,11 +1433,6 @@ Jeśli je wyłączysz lub nie podasz wartości, stosowanie trybu ograniczonego d
       Pozostawienie tej zasady nieskonfigurowanej powoduje, że <ph name="PRODUCT_OS_NAME" /> używa wartości domyślnej, która wynosi 3 godziny.
 
       Uwaga: jeśli platforma obsługuje powiadomienia o zasadach, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
-<translation id="5535957389335373033">Częstotliwość wysyłania pakietów sieciowych monitorowania (w milisekundach).
-
-      Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy minuty.
-      Minimalna częstotliwość to 30 s, a maksymalna – 24 godz.
-      Wartości spoza tego zakresu zostaną zmienione na wartości graniczne.</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
 <translation id="5559079916187891399">Ta zasada nie ma żadnego wpływu na aplikacje na Androida.</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME" />.

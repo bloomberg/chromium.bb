@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Nastavitve samodejnega izpolnjevanja v Chromiumu …</translation>
 <translation id="1374468813861204354">predlogi</translation>
 <translation id="1375198122581997741">O različici</translation>
+<translation id="1377321085342047638">Card Number</translation>
 <translation id="139305205187523129">Spletno mesto <ph name="HOST_NAME" /> ni poslalo nobenih podatkov.</translation>
 <translation id="1407135791313364759">Odpri vse</translation>
 <translation id="1413809658975081374">Napaka zasebnosti</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027">Spletno mesto <ph name="HOST_NAME" /> je poslalo neveljaven odgovor.</translation>
 <translation id="2552545117464357659">Novejša</translation>
 <translation id="2556876185419854533">&amp;Razveljavi urejanje</translation>
+<translation id="2587730715158995865">Izdajatelj: <ph name="ARTICLE_PUBLISHER" />. Preberite to in še toliko drugih člankov: <ph name="OTHER_ARTICLE_COUNT" />.</translation>
 <translation id="2587841377698384444">ID API-ja imenika:</translation>
 <translation id="2597378329261239068">Dokument je zaščiten z geslom. Vnesite geslo.</translation>
 <translation id="2609632851001447353">Različice</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{vsaj en element v sinhroniziranih napravah}=1{1 element (in več v sinhroniziranih napravah)}one{# element (in več v sinhroniziranih napravah)}two{# elementa (in več v sinhroniziranih napravah)}few{# elementi (in več v sinhroniziranih napravah)}other{# elementov (in več v sinhroniziranih napravah)}}</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
 <translation id="3063697135517575841">Chrome trenutno ni mogel potrditi vaše kartice. Poskusite znova pozneje.</translation>
+<translation id="3064966200440839136">Zaradi plačila v zunanji aplikaciji boste zapustili način brez beleženja zgodovine. Želite nadaljevati?</translation>
 <translation id="3093245981617870298">Povezava ni vzpostavljena.</translation>
 <translation id="3105172416063519923">ID sredstva:</translation>
 <translation id="3109728660330352905">Nimate dovoljenja za ogled te strani.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Zahteve za dostop do tega spletnega mesta ni bilo mogoče poslati osebi <ph name="NAME" />. Poskusite znova.</translation>
 <translation id="3355823806454867987">Spremeni nastavitve proxyja ...</translation>
 <translation id="3369192424181595722">Napaka ure</translation>
+<translation id="337311366426640088">Še toliko elementov: <ph name="ITEM_COUNT" /> ...</translation>
 <translation id="337363190475750230">Nepripravljen</translation>
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="3380365263193509176">Neznana napaka</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Interval prejemanja:</translation>
 <translation id="3462200631372590220">Skrij podrobnosti</translation>
+<translation id="3478058380795961209">Expiration Month</translation>
 <translation id="3479539252931486093">Ali tega niste pričakovali? <ph name="BEGIN_LINK" />Sporočite nam<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ne zdaj</translation>
 <translation id="348000606199325318">ID zrušitve <ph name="CRASH_LOCAL_ID" /> (ID strežnika: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5308689395849655368">Poročanje o zrušitvah je onemogočeno.</translation>
 <translation id="5317780077021120954">Shrani</translation>
-<translation id="5326702247179446998">Vnos prejemnika je obvezen</translation>
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5337705430875057403">Napadalci na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vas lahko z zavajanjem pripravijo do tega, da storite kaj nevarnega – denimo, da namestite programsko opremo ali razkrijete osebne podatke (na primer gesla, telefonske številke ali podatke kreditnih kartic).</translation>
 <translation id="53553865750799677">Nepodprt naslov za dostavo. Izberite drug naslov.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Več o teh nastavitvah</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{in še 1 predlog}one{in še # predlog}two{in še # predloga}few{in še # predlogi}other{in še # predlogov}}</translation>
 <translation id="6387478394221739770">Vas zanimajo super nove funkcije Chroma? Preskusite naš kanal za različice beta na chrome.com/beta.</translation>
+<translation id="6389470377220713856">Name on Card</translation>
 <translation id="6389758589412724634">Chromiumu je med poskusom prikazovanja te spletne strani zmanjkalo pomnilnika.</translation>
 <translation id="6404511346730675251">Uredi zaznamek</translation>
 <translation id="6410264514553301377">Vnesite datum poteka veljavnosti in kodo CVC za kartico <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Starši še niso odobrili</translation>
 <translation id="6810899417690483278">ID za prilagajanje</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Podatkov o območjih ni bilo mogoče naložiti</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Območje</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
 <translation id="6989763994942163495">Prikaži dodatne nastavitve ...</translation>
 <translation id="7000990526846637657">Ni vnosov v zgodovino</translation>
-<translation id="7001663382399377034">Dodajanje prejemnika</translation>
 <translation id="7009986207543992532">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik uporabil potrdilo, ki ima predolgo obdobje veljavnosti, da bi bilo verodostojno. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>
 <translation id="8363502534493474904">izklopiti način za letalo</translation>
 <translation id="8364627913115013041">Ni nastavljen.</translation>
+<translation id="8368476060205742148">Storitve Google Play</translation>
 <translation id="8380941800586852976">Nevarno</translation>
 <translation id="8382348898565613901">Tu so prikazani nedavno obiskani zaznamki</translation>
 <translation id="8398259832188219207">Poročilo o zrušitvi je bilo naloženo takrat: <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8492969205326575646">Nepodprta vrsta kartice</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
 <translation id="852346902619691059">Temu strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Expiration Year</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Prijavite lahko težavo z zaznavanjem<ph name="END_ERROR_LINK" />, če razumete varnostna tveganja, pa lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto, ki ni varno<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Prevod ni uspel, ker ni mogoče določiti jezika strani.</translation>
 <translation id="8559762987265718583">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.</translation>

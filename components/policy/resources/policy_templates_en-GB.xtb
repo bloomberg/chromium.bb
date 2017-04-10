@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Report the state of the device's dev switch at boot.
 
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
-<translation id="1156080716265314451">Configures a list of printers.
-
-      This policy allows administrators to provide printer configurations for
-      their users.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free form strings that
-      can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> should match one of the <ph name="PRODUCT_NAME" /> supported
-      printers.  <ph name="PRINTER_URI" /> should be an address reachable
-      from a client computer including the <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" />, and <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> is optional.  If provided, it is used to
-      help deduplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
-
-      Printer setup is completed upon the first use of a printer.  PPDs are not
-      downloaded until the printer is used.  After that time, frequently used
-      PPDs are cached.
-
-      This policy has no effect on whether users can configure printers on
-      individual devices.  It is intended to be supplementary to the
-      configuration of printers by individual users.</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
 <translation id="1198465924256827162">How frequently device status uploads are sent, in milliseconds.
 
@@ -1560,11 +1541,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Leaving this policy not set will make <ph name="PRODUCT_OS_NAME" /> use the default value of 3 hours.
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
-<translation id="5535957389335373033">How frequently monitoring network packets are sent, in milliseconds.
-
-      If this policy is unset, the default frequency is 3 minutes. The minimum
-      frequency is 30 seconds and the maximum frequency is 24 hours – values
-      outside of this range will be clamped to this range.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME" />.

@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Ei muita erilaisia elementtejä.</translation>
 <translation id="2800780099804980316">Ei edellisiä tason 1 otsikoita.</translation>
 <translation id="280499067616661124">ChromeVox-sivulta haku</translation>
+<translation id="2808001342598757276">Poista näytön tummennus</translation>
 <translation id="2811019999044652585">Siirry näytön kohteisiin, esim. työkalupalkkeihin tai ilmaisinalueelle, painamalla Control + eteenpäin. Eteenpäin-näppäin on Chromebookin näppäimistöllä heti numeron kaksi yläpuolella.</translation>
 <translation id="2811204574343810641">Rivi</translation>
 <translation id="2816654101880605877">Ei seuraavia liukusäätimiä.</translation>
@@ -565,6 +566,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="6006050241733874051">Lomake</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kenoviiva}other{# kenoviivaa}}</translation>
 <translation id="6037602951055904232">Panoroi eteenpäin</translation>
+<translation id="6044160928851315051">Tummenna näyttö</translation>
 <translation id="6082768461603900813">Siirtymisen perustoiminnot</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Solu päättyi.</translation>

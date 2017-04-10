@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Подељени приказ</translation>
+<translation id="3474624961160222204">Настави као <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Обрасци су попуњени.</translation>
 <translation id="3478058380795961209">Месец истека</translation>
 <translation id="3482959374254649722">Синхронизација картица је у току...</translation>
 <translation id="3489372701259491571">Избриши сачувану лозинку</translation>
+<translation id="3494788280727468875">Потврди брисање података прегледања</translation>
 <translation id="3519193562722059437">Отворите картицу да бисте прегледали веб.</translation>
 <translation id="3527085408025491307">Директоријум</translation>
 <translation id="3551320343578183772">Затвори картицу</translation>
@@ -143,6 +145,7 @@
 Да бисте прилагодили термин за претрагу, притисните и задржите да бисте га изабрали. Да бисте прецизирали претрагу, превуците таблу нагоре до краја и додирните оквир за претрагу.</translation>
 <translation id="3607167657931203000">Подаци аутоматског попуњавања</translation>
 <translation id="3608436266458100337">Режим читаоца</translation>
+<translation id="3628119975092896051">Листа за читање је доступна офлајн. Да бисте додали страницу на листу за читање, додирните <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Унап. учитај веб-странице</translation>
 <translation id="3691593122358196899">Обележивач је додат у <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Додирни за претрагу</translation>
@@ -303,6 +306,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7131892264600713844">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и презиме</translation>
 <translation id="7136892417564438900">Камера је недоступна</translation>
+<translation id="7159472599653637159">Захтевај мобилни сајт</translation>
 <translation id="7167621057293532233">Типови података</translation>
 <translation id="7189598951263744875">Дели...</translation>
 <translation id="7203585745079012652">Изговарај одговоре</translation>
@@ -312,6 +316,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7400418766976504921">URL адреса</translation>
 <translation id="7419187830569376338">Потражи ову слику на <ph name="SEARCH_ENGINE" />-у</translation>
 <translation id="7425346204213733349">Промене обележивача, историје, лозинки и других подешавања се више неће синхронизовати са Google налогом. Међутим, постојећи подаци ће остати сачувани на Google налогу.</translation>
+<translation id="744343212394640790">Нисам <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Држава/земља</translation>
 <translation id="7456847797759667638">Отвори локацију...</translation>
 <translation id="7464701184726199289">Ово ће обрисати синхронизоване податке са свих уређаја. Нећемо избрисати сачувана подешавања сајтова и она могу да одражавају ваше навике при прегледању. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>

@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
+<translation id="3474624961160222204">המשך כ-<ph name="NAME" /></translation>
 <translation id="3474649192738347024">טפסים מולאו.</translation>
 <translation id="3478058380795961209">חודש פקיעת התוקף</translation>
 <translation id="3482959374254649722">מסנכרן את הכרטיסיות שלך...</translation>
 <translation id="3489372701259491571">מחק סיסמה שמורה</translation>
+<translation id="3494788280727468875">אישור הניקוי של נתוני הגלישה</translation>
 <translation id="3519193562722059437">פתח כרטיסייה כדי לגלוש באינטרנט.</translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3551320343578183772">סגור כרטיסייה</translation>
@@ -143,6 +145,7 @@
 כדי לשנות את מונח החיפוש, גע נגיעה ארוכה במונח כדי לבחור בו. כדי לצמצם את החיפוש, הסט את החלונית עד למעלה וגע בתיבת החיפוש.</translation>
 <translation id="3607167657931203000">נתוני מילוי אוטומטי</translation>
 <translation id="3608436266458100337">מצב קורא</translation>
+<translation id="3628119975092896051">אפשר לגשת לרשימת הקריאה במצב לא מקוון. כדי להוסיף דף לרשימת הקריאה, הקש על <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3691593122358196899">התווסף לסימניות ב-<ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">שם מלא</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
+<translation id="7159472599653637159">בקש אתר שמותאם לנייד</translation>
 <translation id="7167621057293532233">סוגי נתונים</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7419187830569376338">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
+<translation id="744343212394640790">אני לא <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">מדינה / ארץ</translation>
 <translation id="7456847797759667638">פתח מיקום...</translation>
 <translation id="7464701184726199289">פעולה זו מוחקת נתונים מסונכרנים מכל המכשירים. הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>

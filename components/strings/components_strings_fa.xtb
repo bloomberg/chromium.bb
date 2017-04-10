@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="1374468813861204354">پیشنهادات</translation>
 <translation id="1375198122581997741">درباره نسخه</translation>
+<translation id="1377321085342047638">شماره کارت</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> داده‌ای ارسال نکرد.</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1413809658975081374">خطای حریم خصوصی</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> پاسخی نامعتبر ارسال کرد.</translation>
 <translation id="2552545117464357659">جدیدتر</translation>
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
+<translation id="2587730715158995865">از <ph name="ARTICLE_PUBLISHER" />. این داستان و <ph name="OTHER_ARTICLE_COUNT" /> داستان دیگر را بخوانید.</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
 <translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
 <translation id="2609632851001447353">انواع مختلف</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{حداقل ۱ مورد در دستگاه‌های همگام‌سازی‌شده}=1{۱ مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}one{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}other{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}}</translation>
 <translation id="3041612393474885105">اطلاعات گواهی</translation>
 <translation id="3063697135517575841">‏Chrome درحال حاضر نمی‌تواند کارت شما را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
+<translation id="3064966200440839136">درحال خروج از حالت ناشناس، برای پرداخت ازطریق یک برنامه خارجی. ادامه می‌دهید؟</translation>
 <translation id="3093245981617870298">شما آفلاین هستید.</translation>
 <translation id="3105172416063519923">شناسه دارایی:</translation>
 <translation id="3109728660330352905">شما اجازه مشاهده این صفحه را ندارید.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">درخواست شما برای دسترسی به این سایت به <ph name="NAME" /> ارسال نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3355823806454867987">تغییر تنظیمات پروکسی...</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> مورد دیگر...</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
 <translation id="3380365263193509176">خطای ناشناس</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
 <translation id="3462200631372590220">پنهان کردن پیشرفته</translation>
+<translation id="3478058380795961209">ماه انقضا</translation>
 <translation id="3479539252931486093">غیرمنتظره بود؟ <ph name="BEGIN_LINK" />به ما اطلاع دهید<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="348000606199325318">شناسه خرابی <ph name="CRASH_LOCAL_ID" /> (شناسه سرور: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5317780077021120954">ذخیره</translation>
-<translation id="5326702247179446998">گیرنده لازم است.</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5337705430875057403">مهاجمان <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ممکن است شما را فریب دهند و به انجام کارهای خطرناکی مثل نصب نرم‌افزار یا ارائه اطلاعات شخصی‌تان (مثلاً گذرواژه، شماره تلفن یا کارت‌های اعتباری) ترغیب کنند.</translation>
 <translation id="53553865750799677">نشانی ارسال کالا پشتیبانی نمی‌شود. نشانی دیگری را انتخاب کنید.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">معنی این‌ها چیست؟</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
 <translation id="6387478394221739770">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال بتای ما را در chrome.com/beta امتحان کنید.</translation>
+<translation id="6389470377220713856">نام روی کارت</translation>
 <translation id="6389758589412724634">‏Chromium هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6410264514553301377">‏CVC‏ و تاریخ انقضای <ph name="CREDIT_CARD" /> را وارد کنید</translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
 <translation id="6810899417690483278">شناسه سفارشی‌سازی</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">داده‌های منطقه‌ها بارگیری نشد</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6839929833149231406">منطقه حکومتی</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
 <translation id="6989763994942163495">نمایش تنظیمات پیشرفته ...</translation>
 <translation id="7000990526846637657">هیچ ورودی سابقه‌ای پیدا نشد</translation>
-<translation id="7001663382399377034">افزودن گیرنده</translation>
 <translation id="7009986207543992532">سعی کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور گواهینامه‌ای ارائه کرد که دوره اعتبار بیش از اندازه طولانی آن قابل‌اعتماد نیست. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">‏ممکن است «حساب Google» شما سابقه مروری به شکل دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد</translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
+<translation id="8368476060205742148">‏خدمات Google Play</translation>
 <translation id="8380941800586852976">خطرناک</translation>
 <translation id="8382348898565613901">نشانک‌هایی که به‌تازگی از آن‌ها دیدن کرده‌اید، در اینجا نشان داده می‌شوند</translation>
 <translation id="8398259832188219207">گزارش خرابی در <ph name="UPLOAD_TIME" /> بارگذاری شد</translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">نوع کارت پشتیبانی‌نشده</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
 <translation id="852346902619691059">این سرور نتوانست ثابت کند <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن مورداعتماد سیستم‌عامل دستگاه شما نیست. ممکن است پیکربندی اشتباهی علت آن باشد یا مهاجمی اتصالتان را قطع کرده باشد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">سال انقضا</translation>
 <translation id="8543181531796978784">می‌توانید <ph name="BEGIN_ERROR_LINK" />یک مشکل شناسایی‌شده را گزارش کنید<ph name="END_ERROR_LINK" /> یا اگر از خطراتی که امنیت شما را تهدید می‌کنند مطلع شدید، <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
 <translation id="8559762987265718583">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> انجام نمی‌شود، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>

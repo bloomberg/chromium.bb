@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Žádné další odlišné prvky.</translation>
 <translation id="2800780099804980316">Žádný předchozí nadpis 1. úrovně.</translation>
 <translation id="280499067616661124">Vyhledávání ChromeVox na stránce</translation>
+<translation id="2808001342598757276">Zrušit ztmavení obrazovky</translation>
 <translation id="2811019999044652585">Na jiné části obrazovky, jako jsou lišty nebo hlavní panel systému, přejdete stisknutím kláves Control + Vpřed. Klávesa Vpřed se na Chromebooku nachází ihned nad klávesou číslice 2.</translation>
 <translation id="2811204574343810641">Řádek</translation>
 <translation id="2816654101880605877">Žádný další posuvník</translation>
@@ -565,6 +566,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="6006050241733874051">Formulář</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{zpětné lomítko}few{# zpětná lomítka}many{# backslashes}other{# zpětných lomítek}}</translation>
 <translation id="6037602951055904232">Posunout dopředu</translation>
+<translation id="6044160928851315051">Ztmavit obrazovku</translation>
 <translation id="6082768461603900813">Základní navigace</translation>
 <translation id="611827076493383239">navštív</translation>
 <translation id="6119955456199054975">Konec buňky.</translation>

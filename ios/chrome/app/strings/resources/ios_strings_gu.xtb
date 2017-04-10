@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome આને તમારા <ph name="BEGIN_LINK" />Google સાચવેલા પાસવર્ડ્સ<ph name="END_LINK" />માં સંગ્રહિત કરશે અને તમારા માટે સ્વતઃભરણ કરશે તેથી તમારે તેને જાતે યાદ રાખવાનું હોતું નથી.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
+<translation id="3474624961160222204"><ph name="NAME" /> તરીકે ચાલુ રાખો</translation>
 <translation id="3474649192738347024">ફોર્મ્સ ભર્યા.</translation>
 <translation id="3478058380795961209">સમય સમાપ્તિ મહિનો</translation>
 <translation id="3482959374254649722">તમારા ટેબ્સને સમન્વયિત કરી રહ્યું છે...</translation>
 <translation id="3489372701259491571">સાચવેલ પાસવર્ડ કાઢી નાખો</translation>
+<translation id="3494788280727468875">બ્રાઉઝિંગ ડેટા સાફ કરવાની પુષ્ટિ કરો</translation>
 <translation id="3519193562722059437">વેબ બ્રાઉઝ કરવા ટેબ ખોલો.</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
 <translation id="3551320343578183772">ટૅબ બંધ કરો</translation>
@@ -143,6 +145,7 @@
 તમારા શોધ શબ્દને બંધબેસતો કરવા, પસંદ કરવા માટે વધુ વખત દબાવી રાખો. તમારી શોધને રીફાઇન કરવા માટે, પેનલને આખી ઉપર સ્લાઇડ કરો અને શોધ બોક્સને ટચ કરો.</translation>
 <translation id="3607167657931203000">સ્વતઃભરણ ડેટા</translation>
 <translation id="3608436266458100337">રીડર મોડ</translation>
+<translation id="3628119975092896051">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે. તમારી વાંચન સૂચિમાં પૃષ્ઠ ઉમેરવા માટે, <ph name="SHARE_OPENING_ICON" /> ટૅપ કરો.</translation>
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
 <translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">આ ઉપકરણમાંથી ઇતિહાસ બતાવી રહ્યાં છે. <ph name="BEGIN_LINK" />વધુ જાણો.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">આખું નામ</translation>
 <translation id="7136892417564438900">કૅમેરો અનુપલબ્ધ છે</translation>
+<translation id="7159472599653637159">મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="7167621057293532233">ડેટા પ્રકાર</translation>
 <translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7203585745079012652">જવાબો પાછા બોલો</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">આ છબી માટે <ph name="SEARCH_ENGINE" /> માં શોધો</translation>
 <translation id="7425346204213733349">તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સમાં ફેરફારને હવે તમારા Google એકાઉન્ટ પર સમન્વયિત કરવામાં આવશે નહીં. જો કે, તમારો અસ્તિત્વમાંનો ડેટા તમારા Google એકાઉન્ટમાં સંગ્રહિત રહેશે.</translation>
+<translation id="744343212394640790"><ph name="EMAIL" /> નથી</translation>
 <translation id="7454057999980797137">રાજ્ય / કાઉન્ટી</translation>
 <translation id="7456847797759667638">સ્થાન ખોલો...</translation>
 <translation id="7464701184726199289">આનાથી તમામ ઉપકરણોમાંથી સમન્વયિત ડેટા સાફ થાય છે. સાચવેલ સાઇટ સેટિંગ્સ કાઢી નાખવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>

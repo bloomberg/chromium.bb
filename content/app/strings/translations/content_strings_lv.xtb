@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Lūdzu, ievadiet derīgu vērtību. Tuvākā derīgā vērtība ir <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2674318244760992338">kājene</translation>
+<translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Vērtībai ir jābūt “<ph name="MINIMUM_DATE_OR_TIME" />” vai vēlākam datumam vai laikam.</translation>
 <translation id="2759744352195237655">uznirstoša poga</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">katalogs</translation>
 <translation id="6934078000481955284">citāta bloks</translation>
 <translation id="6941933287844615239">lejupielādēt multivides failus</translation>
+<translation id="6989848892321993519">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver 1 rakstzīmi).</translation>
 <translation id="7057186640035488495">filmas laiks</translation>
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="7223624360433298498">pagājušais laiks</translation>

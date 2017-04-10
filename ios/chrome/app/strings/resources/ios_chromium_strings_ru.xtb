@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Вы переходите из аккаунта <ph name="USER_EMAIL1" /> в <ph name="USER_EMAIL2" />. Данными Chromium управляет администратор домена <ph name="DOMAIN" />. Обратите внимание, что данные будут удалены с устройства, но сохранятся в аккаунте <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Работая с приложением, вы принимаете <ph name="BEGIN_LINK" />Условия использования Chromium<ph name="END_LINK" />.</translation>
 <translation id="8175055321229419309">Совет. <ph name="BEGIN_LINK" />Добавьте Chromium в Dock<ph name="END_LINK" />.</translation>
+<translation id="8200548749940012969">Чтобы получить доступ к настройкам на всех своих устройствах, войдите в Chromium.</translation>
 <translation id="8252885722420466166">Используйте дополнительные возможности Google в Chrome, сообщив свое местоположение.</translation>
 <translation id="8353224596138547809">Сохранить пароль для этого сайта в Chromium?</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>

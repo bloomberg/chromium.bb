@@ -128,10 +128,12 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
+<translation id="3474624961160222204">Tiếp tục với tên <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Đã điền biểu mẫu.</translation>
 <translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3482959374254649722">Đang đồng bộ hóa tab của bạn...</translation>
 <translation id="3489372701259491571">Xóa mật khẩu đã lưu</translation>
+<translation id="3494788280727468875">Xác nhận xóa dữ liệu duyệt web</translation>
 <translation id="3519193562722059437">Mở tab để duyệt web.</translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3551320343578183772">Đóng Tab</translation>
@@ -143,6 +145,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 Để điều chỉnh cụm từ tìm kiếm của bạn, nhấn và giữ để chọn. Để tinh chỉnh tìm kiếm của bạn, trượt bảng điều khiển theo mọi hướng lên trên rồi chạm vào hộp tìm kiếm.</translation>
 <translation id="3607167657931203000">Tự động điền dữ liệu</translation>
 <translation id="3608436266458100337">Chế độ đọc</translation>
+<translation id="3628119975092896051">Danh sách đọc của bạn khả dụng khi ngoại tuyến. Để thêm một trang vào danh sách đọc, nhấn <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
@@ -303,6 +306,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7131892264600713844">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Tên đầy đủ</translation>
 <translation id="7136892417564438900">Máy ảnh không khả dụng</translation>
+<translation id="7159472599653637159">Yêu cầu trang web cho di động</translation>
 <translation id="7167621057293532233">Loại dữ liệu</translation>
 <translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
@@ -312,6 +316,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Tìm kiếm hình ảnh này trong <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
+<translation id="744343212394640790">Không phải là <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Tiểu bang/quận</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7464701184726199289">Thao tác này sẽ xóa dữ liệu được đồng bộ hóa khỏi tất cả thiết bị. Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>

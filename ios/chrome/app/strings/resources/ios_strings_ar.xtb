@@ -104,7 +104,7 @@
 <translation id="2921219216347069551">تتعذر مشاركة الصفحة</translation>
 <translation id="292639812446257861">وضع علامة كغير مقروءة</translation>
 <translation id="2933759065870693102">الكشاف</translation>
-<translation id="2969979262385602596">تعذّر تسجيل الدخول. الرجاء إعادة المحاولة لاحقًا.</translation>
+<translation id="2969979262385602596">تعذّر تسجيل الدخول. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="2989805286512600854">فتح في علامة تبويب جديدة</translation>
 <translation id="3024255823539804759">اليوم الماضي</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
+<translation id="3474624961160222204">المتابعة باسم <ph name="NAME" /></translation>
 <translation id="3474649192738347024">تم ملء النماذج.</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3482959374254649722">جارٍ مزامنة علامات التبويب الخاصة بك ...</translation>
 <translation id="3489372701259491571">حذف كلمة المرور التي تم حفظها</translation>
+<translation id="3494788280727468875">تأكيد محو بيانات التصفّح</translation>
 <translation id="3519193562722059437">افتح علامة تبويب لتصفح الويب.</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3551320343578183772">إغلاق علامة التبويب</translation>
@@ -143,6 +145,7 @@
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="3607167657931203000">ملء البيانات تلقائيًا</translation>
 <translation id="3608436266458100337">وضع القارئ</translation>
+<translation id="3628119975092896051">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">المس للبحث</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">عرض السجل من هذا الجهاز. <ph name="BEGIN_LINK" />مزيد من المعلومات.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
+<translation id="7159472599653637159">طلب موقع ويب متوافق مع الجوّال</translation>
 <translation id="7167621057293532233">أنواع البيانات</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7203585745079012652">النطق بالإجابات</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7419187830569376338">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
 <translation id="7425346204213733349">‏لن تتم بعد ذلك مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات إلى حسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
+<translation id="744343212394640790">ليس <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">الولاية/المقاطعة</translation>
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7464701184726199289">يمحو هذا الخيار البيانات المتزامنة من كافة الأجهزة. لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>

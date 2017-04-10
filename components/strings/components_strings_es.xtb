@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Configuración de la función Autocompletar de Chromium...</translation>
 <translation id="1374468813861204354">sugerencias</translation>
 <translation id="1375198122581997741">Información de la versión</translation>
+<translation id="1377321085342047638">Número de tarjeta</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> no ha enviado ningún dato.</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1413809658975081374">Error de privacidad</translation>
@@ -89,7 +90,7 @@
 <translation id="1787142507584202372">Las pestañas abiertas aparecen aquí</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
-<translation id="1803678881841855883">La función de navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. Este contenido procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de este tipo de software. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1803678881841855883">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. Este contenido procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de este tipo de software. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1806541873155184440">Añadida el <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
 <translation id="1826516787628120939">Comprobando</translation>
@@ -157,7 +158,7 @@
 <translation id="2386255080630008482">Se ha revocado el certificado de servidor.</translation>
 <translation id="2392959068659972793">Mostrar políticas sin valores establecidos</translation>
 <translation id="2396249848217231973">&amp;Deshacer eliminación</translation>
-<translation id="2460160116472764928">La función de navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2460160116472764928">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2463739503403862330">Rellenar</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">La URL de búsqueda no es válida.</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha enviado una respuesta no válida.</translation>
 <translation id="2552545117464357659">Más recientes</translation>
 <translation id="2556876185419854533">&amp;Deshacer edición</translation>
+<translation id="2587730715158995865">De <ph name="ARTICLE_PUBLISHER" />. Lee este y <ph name="OTHER_ARTICLE_COUNT" /> artículos más.</translation>
 <translation id="2587841377698384444">ID de la API del directorio:</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Introduce una contraseña.</translation>
 <translation id="2609632851001447353">Variaciones</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{al menos un elemento en dispositivos sincronizados}=1{un elemento (y otros elementos más en dispositivos sincronizados)}other{# elementos (y otros elementos más en dispositivos sincronizados)}}</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
 <translation id="3063697135517575841">Chrome no ha podido confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
+<translation id="3064966200440839136">Saldrás del modo incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="3093245981617870298">No tienes conexión.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">No se ha podido enviar la solicitud de acceso a este sitio a <ph name="NAME" />. Vuelve a intentarlo.</translation>
 <translation id="3355823806454867987">Cambiar la configuración de proxy...</translation>
 <translation id="3369192424181595722">Error del reloj</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> elementos más...</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="3377188786107721145">Error al analizar la política</translation>
 <translation id="3380365263193509176">Error desconocido</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Intervalo de comprobación:</translation>
 <translation id="3462200631372590220">Ocultar opciones avanzadas</translation>
+<translation id="3478058380795961209">Mes de caducidad</translation>
 <translation id="3479539252931486093">¿No te lo esperabas? <ph name="BEGIN_LINK" />Notifícanoslo<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="348000606199325318">ID de bloqueo <ph name="CRASH_LOCAL_ID" /> (ID de servidor: <ph name="CRASH_ID" />)</translation>
@@ -368,7 +373,7 @@
 <translation id="4269787794583293679">(Ningún nombre de usuario)</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4280429058323657511">Vcto. <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4295944351946828969">La función de navegación segura de Google <ph name="BEGIN_LINK" />encontró programas dañinos<ph name="END_LINK" /> recientemente en <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4295944351946828969">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />encontró programas dañinos<ph name="END_LINK" /> recientemente en <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4300246636397505754">Sugerencias de padres</translation>
 <translation id="4304224509867189079">Iniciar sesión</translation>
 <translation id="432290197980158659">El servidor ha mostrado un certificado que no coincide con lo que se esperaba. Algunos sitios web tienen un alto nivel de seguridad para garantizar tu protección y esperan ciertas características de los certificados. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308689395849655368">Notificación de fallos inhabilitada</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="5326702247179446998">Es obligatorio indicar el destinatario</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5337705430875057403">Los atacantes del <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían engañarte para que hagas algo peligroso, como instalar software o revelar tu información personal (por ejemplo, contraseñas, números de teléfono o datos de tarjetas de crédito).</translation>
 <translation id="53553865750799677">Dirección de recogida no admitida. Selecciona otra dirección.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">¿Necesitas ayuda?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, prueba nuestro canal beta en la página chrome.com/beta.</translation>
+<translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6389758589412724634">Chromium se ha quedado sin memoria al intentar mostrar esta página web.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6410264514553301377">Introduce la fecha de vencimiento y el código CVC de la tarjeta <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">No se han podido cargar los datos de las regiones</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Rehacer acción de añadir</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Se especifican tanto servidores proxy fijos como una URL de secuencia de comandos .pac.</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
 <translation id="7000990526846637657">No se han encontrado entradas del historial</translation>
-<translation id="7001663382399377034">Añadir destinatario</translation>
 <translation id="7009986207543992532">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado cuyo período de validez es demasiado largo para que se considere de confianza. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Es posible que en tu cuenta de Google haya otros datos de navegación registrados, que puedes consultar en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -741,7 +746,7 @@
 <translation id="800218591365569300">Prueba a cerrar otros programas o pestañas para liberar memoria.</translation>
 <translation id="8012647001091218357">No hemos podido contactar con tus padres. Vuelve a intentarlo.</translation>
 <translation id="8025119109950072390">Es posible que los atacantes que se encuentren en este sitio web intenten engañarte para que realices una acción peligrosa, como instalar software o revelar tu información personal (por ejemplo, contraseñas, números de teléfono o tarjetas de crédito).</translation>
-<translation id="803030522067524905">La función de navegación segura de Google detectó phishing recientemente en <ph name="SITE" />. Los sitios web de phishing imitan el aspecto de otros sitios web para engañarte. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="803030522067524905">La función de Navegación Segura de Google detectó phishing recientemente en <ph name="SITE" />. Los sitios web de phishing imitan el aspecto de otros sitios web para engañarte. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8034522405403831421">Esta página está escrita en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8041089156583427627">Enviar</translation>
 <translation id="8088680233425245692">Se ha producido un error al ver el artículo.</translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8363502534493474904">Desactivar el modo avión</translation>
 <translation id="8364627913115013041">No establecida</translation>
+<translation id="8368476060205742148">Servicios de Google Play</translation>
 <translation id="8380941800586852976">Peligroso</translation>
 <translation id="8382348898565613901">Los marcadores a los que hayas accedido recientemente aparecen aquí</translation>
 <translation id="8398259832188219207">Informe sobre fallos subido el <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">Tipo de tarjeta no admitido</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardado demasiado tiempo en responder.</translation>
 <translation id="852346902619691059">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">Año de caducidad</translation>
 <translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar de un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos que conlleva esta acción para tu seguridad, <ph name="BEGIN_LINK" />accede a este sitio web no seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">La traducción no se ha realizado correctamente porque no se ha podido determinar el idioma de la página.</translation>
 <translation id="8559762987265718583">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas.</translation>

@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Está a mudar a sincronização de contas de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chromium existentes são geridos por <ph name="DOMAIN" />. Esta ação eliminará os dados deste dispositivo, mas os dados permanecerão em <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK" />Termos de Utilização<ph name="END_LINK" /> do Chromium.</translation>
 <translation id="8175055321229419309">Sugestão: <ph name="BEGIN_LINK" />mova o Chromium para a Dock<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Para obter as suas definições em todos os dispositivos, inicie sessão no Chromium.</translation>
 <translation id="8252885722420466166">Obter uma melhor experiência no Chromium com base na sua localização.</translation>
 <translation id="8353224596138547809">Pretende que o Chromium guarde a sua palavra-passe para este Website?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Os autores do Chromium. Todos os direitos reservados.</translation>

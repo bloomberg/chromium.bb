@@ -128,10 +128,12 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3414292259312108062">Chrome stocke ce mot de passe dans les <ph name="BEGIN_LINK" />mots de passe Google enregistrés<ph name="END_LINK" />. Il sera renseigné automatiquement afin que vous n'ayez pas à le retenir.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
+<translation id="3474624961160222204">Continuer en tant que <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expiration</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
 <translation id="3489372701259491571">Supp. mot de passe enreg.</translation>
+<translation id="3494788280727468875">Confirmer la suppression des données de navigation</translation>
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
@@ -143,6 +145,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
 <translation id="3608436266458100337">Mode Lecteur</translation>
+<translation id="3628119975092896051">Votre liste de lecture est disponible hors connexion. Pour ajouter une page à cette liste, appuyez sur <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
@@ -303,6 +306,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7131892264600713844">Affichage de l'historique de cet appareil. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
+<translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
@@ -312,6 +316,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Rechercher l'image sur <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données seront cependant maintenues sur votre compte Google.</translation>
+<translation id="744343212394640790">Autre que <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">État/Comté</translation>
 <translation id="7456847797759667638">Ouvrir une adresse</translation>
 <translation id="7464701184726199289">Les données synchronisées seront effacées de tous les appareils. Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>

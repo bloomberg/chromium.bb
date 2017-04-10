@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Przełączasz synchronizację kont z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Twoimi istniejącymi danymi Chromium zarządza <ph name="DOMAIN" />. Dane zostaną usunięte z tego urządzenia, ale pozostaną na koncie <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK" />Warunki korzystania z Chromium<ph name="END_LINK" />.</translation>
 <translation id="8175055321229419309">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chromium do Docka<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Aby korzystać ze swoich ustawień na wszystkich urządzeniach, zaloguj się w Chromium.</translation>
 <translation id="8252885722420466166">Włączenie udostępniania lokalizacji w Chromium pozwala w pełni korzystać z usług Google.</translation>
 <translation id="8353224596138547809">Czy Chromium ma zapisać hasło do tej strony?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>

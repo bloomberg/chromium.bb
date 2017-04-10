@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
+<translation id="3474624961160222204"><ph name="NAME" /> म्हणून सुरु ठेवा</translation>
 <translation id="3474649192738347024">फॉर्म भरले.</translation>
 <translation id="3478058380795961209">कालबाह्यता महिना:</translation>
 <translation id="3482959374254649722">आपले टॅब संकालित करीत आहे...</translation>
 <translation id="3489372701259491571">जतन केलेला संकेतशब्द हटवा</translation>
+<translation id="3494788280727468875">ब्राउझिंग डेटा साफ करता याची पुष्टी करा</translation>
 <translation id="3519193562722059437">वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3551320343578183772">टॅब बंद करा</translation>
@@ -143,6 +145,7 @@
 आपली शोध संज्ञा समायोजित करण्यासाठी, निवडण्यासाठी जास्त वेळ दाबा. आपला शोध परिष्कृत करण्यासाठी, पॅनल सर्व मार्गाने वर स्लाइड करा आणि शोध बॉक्सला स्पर्श करा.</translation>
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
 <translation id="3608436266458100337">वाचक मोड</translation>
+<translation id="3628119975092896051">आपली वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
@@ -304,6 +307,7 @@
 <translation id="7131892264600713844">या डिव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
+<translation id="7159472599653637159">मोबाइल साइटची विनंती करा</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
@@ -313,6 +317,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">या प्रतिमेसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
 <translation id="7425346204213733349">आपले बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज मधील बदल यापुढे आपल्या Google खात्यावर संकालित केले जाणार नाहीत. तथापि, आपला विद्यमान डेटा आपल्या Google खात्यामध्ये संचयित केलेला असेल.</translation>
+<translation id="744343212394640790"><ph name="EMAIL" /> नाही</translation>
 <translation id="7454057999980797137">राज्य / विभाग</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
 <translation id="7464701184726199289">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल. जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="1115445892567829615">‏Chromium לא הצליח לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
+<translation id="113122355610423240">‏Chromium מוגדר כדפדפן ברירת המחדל</translation>
 <translation id="1170115874949214249">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון.</translation>
 <translation id="1174473354587728743">‏משתף את המחשב? עכשיו תוכל להגדיר את Chromium בדיוק כמו שאתה אוהב.</translation>
 <translation id="1185134272377778587">‏על Chromium</translation>
@@ -28,6 +29,7 @@
 <translation id="1869480248812203386">‏אתה יכול לעזור לשפר את הבטיחות של Chromium ולהקל את השימוש בו על ידי דיווח ל-Google על פרטים של בעיות אבטחה אפשריות.</translation>
 <translation id="1881322772814446296">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. לחלופין, תוכל ליצור פרופיל חדש כדי לשמור את הנתונים הקיימים שלך ב-Chromium בנפרד.<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
+<translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
@@ -81,12 +83,14 @@
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
 <translation id="3645040538872234961">‏הפעולה תמחק לצמיתות את נתוני הגלישה מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
+<translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">‏למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בזמן שהדפדפן פועל. כדי לייבא הגדרות אלו ל-Chromium, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן לחץ על המשך.</translation>
 <translation id="3852700440713538496">‏הצמד את Chromium לשורת המשימות</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="390894725198123737">‏אם אתה משתמש ב-Mac, ייתכן שסיסמאות יישמרו ב-Keychain שלך, ומשתמשי Chromium אחרים החולקים את חשבון OS X הזה יוכלו לגשת אליהן או לסנכרן אותן.</translation>
+<translation id="4036079820698952681">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chromium</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="407254336480250557">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">‏סגור את כל החלונות של Chromium והפעל אותו מחדש כדי שהשינוי ייכנס לתוקף.</translation>
@@ -225,6 +229,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">‏Chromium זקוק להרשאות גישה כדי לשתף תכונות מסוימות עם האתר הזה.</translation>
 <translation id="8134284582177628525">‏אם אתם משתף את המחשב הזה עם <ph name="PROFILE_NAME" />, הוסף את עצמך ל-Chromium כדי לגלוש בנפרד. אחרת, נתק את חשבון Google שלו.</translation>
+<translation id="8157153840442649507">‏Chromium מוצג בשפה זו</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8222496066431494154">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>

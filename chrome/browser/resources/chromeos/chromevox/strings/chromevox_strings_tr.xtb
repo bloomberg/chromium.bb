@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Başka farklı öğe yok.</translation>
 <translation id="2800780099804980316">Önceki 1. düzey başlık yok.</translation>
 <translation id="280499067616661124">ChromeVox sayfada bul</translation>
+<translation id="2808001342598757276">Ekranı aç</translation>
 <translation id="2811019999044652585">Araç çubukları veya sistem tepsisi gibi ekranın diğer bölümlerine atlamak için Control+İleri tuşlarına basın. Chromebook'larda İleri tuşu, 2 sayı tuşunun hemen üzerinde yer alır.</translation>
 <translation id="2811204574343810641">Satır</translation>
 <translation id="2816654101880605877">Sonraki kaydırma çubuğu yok.</translation>
@@ -565,6 +566,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ters eğik çizgi}other{# ters eğik çizgi}}</translation>
 <translation id="6037602951055904232">İleri kaydır</translation>
+<translation id="6044160928851315051">Ekranı kapat</translation>
 <translation id="6082768461603900813">Temel Gezinme</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Hücrenin sonu.</translation>

@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> dk.</translation>
 <translation id="3448016392200048164">Bölünmüş Görünüm</translation>
+<translation id="3474624961160222204"><ph name="NAME" /> olarak devam et</translation>
 <translation id="3474649192738347024">Form dolduruldu.</translation>
 <translation id="3478058380795961209">Son Kullanım Ayı</translation>
 <translation id="3482959374254649722">Sekmeleriniz senkronize ediliyor...</translation>
 <translation id="3489372701259491571">Kayıtlı Şifreyi Sil</translation>
+<translation id="3494788280727468875">Tarama Verilerini Temizlemeyi Onayla</translation>
 <translation id="3519193562722059437">Web'e göz atmak için bir sekme açın.</translation>
 <translation id="3527085408025491307">Klasör</translation>
 <translation id="3551320343578183772">Sekmeyi Kapat</translation>
@@ -143,6 +145,7 @@
 Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrıntılı hale getirmek için paneli tümüyle yukarı kaydırın ve arama kutusuna dokunun.</translation>
 <translation id="3607167657931203000">Verileri Otomatik Doldur</translation>
 <translation id="3608436266458100337">Okuyucu modu</translation>
+<translation id="3628119975092896051">Okuma listeniz çevrimdışı olarak kullanılabilir. Okuma listenize sayfa eklemek için <ph name="SHARE_OPENING_ICON" /> simgesine dokunun.</translation>
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
 <translation id="3691593122358196899">Yer işareti <ph name="FOLDER_TITLE" /> klasörüne eklendi</translation>
 <translation id="3738139272394829648">Dokun ve Ara</translation>
@@ -303,6 +306,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7131892264600713844">Bu cihazdaki geçmiş bilgileri gösteriliyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Tam Ad</translation>
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
+<translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7167621057293532233">Veri Tipleri</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
@@ -312,6 +316,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Bu Resmi <ph name="SEARCH_ENGINE" /> Üzerinde Ara</translation>
 <translation id="7425346204213733349">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google Hesabınızda saklanmaya devam edecek.</translation>
+<translation id="744343212394640790"><ph name="EMAIL" /> değilim</translation>
 <translation id="7454057999980797137">Eyalet / İlçe</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7464701184726199289">Bu işlem, senkronize edilen verileri tüm cihazlardan siler. Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>

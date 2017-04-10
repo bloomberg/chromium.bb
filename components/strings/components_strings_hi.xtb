@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">क्रोमियम ऑटोमैटिक भरने वाली सेटिंग...</translation>
 <translation id="1374468813861204354">सुझाव</translation>
 <translation id="1375198122581997741">वर्शन के बारे में</translation>
+<translation id="1377321085342047638">कार्ड नंबर</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> ने कोई डेटा नहीं भेजा.</translation>
 <translation id="1407135791313364759">सभी खोलें</translation>
 <translation id="1413809658975081374">निजता गड़बड़ी</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ने एक अमान्य प्रतिसाद भेजा है.</translation>
 <translation id="2552545117464357659">इससे नए</translation>
 <translation id="2556876185419854533">&amp;संपादन वापस लाएं</translation>
+<translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> की ओर से. यह और <ph name="OTHER_ARTICLE_COUNT" /> दूसरे समाचार पढ़ें.</translation>
 <translation id="2587841377698384444">निर्देशिका API आईडी:</translation>
 <translation id="2597378329261239068">यह दस्तावेज़ पासवर्ड सुरक्षित है.  कृपया पासवर्ड डालें.</translation>
 <translation id="2609632851001447353">विविधताएं</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{समन्वयित डिवाइस पर कम से कम 1 आइटम}=1{1 आइटम (समन्वयित डिवाइस पर और भी)}one{# आइटम (समन्वयित डिवाइस पर और भी)}other{# आइटम (समन्वयित डिवाइस पर और भी)}}</translation>
 <translation id="3041612393474885105">प्रमाणपत्र जानकारी</translation>
 <translation id="3063697135517575841">Chrome इस समय आपके कार्ड की पुष्टि नहीं कर सका. कृपया बाद में पुन: प्रयास करें.</translation>
+<translation id="3064966200440839136">किसी बाहरी ऐप्लिकेशन के ज़रिए भुगतान करने के लिए गुप्त मोड छोड़ रहे हैं. जारी रखना चाहते हैं?</translation>
 <translation id="3093245981617870298">आप ऑफ़लाइन हैं.</translation>
 <translation id="3105172416063519923">एसेट आईडी:</translation>
 <translation id="3109728660330352905">आपके पास इस पेज को देखने के लिए प्राधिकरण नहीं है.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">इस साइट को ऐक्‍सेस करने का आपका अनुरोध <ph name="NAME" /> को नहीं भेजा जा सका. कृपया पुन: प्रयास करें.</translation>
 <translation id="3355823806454867987">प्रॉक्सी सेटिंग बदलें...</translation>
 <translation id="3369192424181595722">घड़ी गड़बड़ी</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> और आइटम...</translation>
 <translation id="337363190475750230">प्रावधान रद्द</translation>
 <translation id="3377188786107721145">नीति पार्स गड़बड़ी</translation>
 <translation id="3380365263193509176">अज्ञात गड़बड़ी</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">प्राप्ति अंतराल:</translation>
 <translation id="3462200631372590220">उन्नत को छिपाएं</translation>
+<translation id="3478058380795961209">समाप्ति माह</translation>
 <translation id="3479539252931486093">क्या यह अनपेक्षित था? <ph name="BEGIN_LINK" />हमें बताएं<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="348000606199325318">क्रैश आईडी <ph name="CRASH_LOCAL_ID" /> (सर्वर आईडी: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">दिखाएं</translation>
 <translation id="5308689395849655368">क्रैश की रिपोर्ट करना अक्षम कर दिया गया है.</translation>
 <translation id="5317780077021120954">सहेजें</translation>
-<translation id="5326702247179446998">प्राप्तकर्ता आवश्यक है</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर आपको धोखा देकर आपसे कुछ जोखिम वाला काम करा सकते हैं, जैसे सॉफ़्टवेयर इंस्टॉल करना या आपकी व्यक्तिगत जानकारी (उदाहरण के लिए, पासवर्ड, फ़ोन नंबर या क्रेडिट कार्ड) प्रकट करना.</translation>
 <translation id="53553865750799677">असमर्थित पिकअप पता. कोई दूसरा पता चुनें.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">इनका क्‍या अर्थ है?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्‍य सुझाव}one{# अन्‍य सुझाव}other{# अन्‍य सुझाव}}</translation>
 <translation id="6387478394221739770">बेहतरीन नई Chrome सुविधाओं में रूचि है? chrome.com/beta पर हमारा बीटा चैनल आज़माएं.</translation>
+<translation id="6389470377220713856">कार्ड पर नाम</translation>
 <translation id="6389758589412724634">यह वेबपेज दिखाते समय क्रोमियम में जगह नहीं बची.</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करें</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> का समाप्ति दिनांक और CVC डालें</translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">आपके अभिभावक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="6810899417690483278">कस्टमाइज़ेशन आईडी</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">क्षेत्र डेटा लोड नहीं हो सका</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="6874604403660855544">&amp;जोड़ना फिर से करें</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही निर्दिष्ट हैं.</translation>
 <translation id="6989763994942163495">अतिरिक्त सेटिंग दिखाएं...</translation>
 <translation id="7000990526846637657">कोई इतिहास प्रविष्टि नहीं मिली</translation>
-<translation id="7001663382399377034">प्राप्तकर्ता जोड़ें</translation>
 <translation id="7009986207543992532">आपने <ph name="DOMAIN" /> पर पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्तुत किया जिसकी सत्यापन अवधि इतनी लंबी है कि वह विश्वसनीय नहीं लगती है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर ब्राउज़िंग इतिहास के अन्य रूप उपलब्ध हो सकते हैं</translation>
@@ -770,6 +775,7 @@
 <translation id="8349305172487531364">बुकमार्क बार</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
+<translation id="8368476060205742148">Google Play सेवाएं</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
 <translation id="8382348898565613901">हाल ही में विज़िट किए गए आपके बुकमार्क यहां दिखाई देते हैं</translation>
 <translation id="8398259832188219207">ख़राबी रिपोर्ट <ph name="UPLOAD_TIME" /> पर अपलोड की गई</translation>
@@ -785,6 +791,7 @@
 <translation id="8492969205326575646">असमर्थित कार्ड प्रकार</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ने प्रतिसाद देने में अत्यधिक समय लिया.</translation>
 <translation id="852346902619691059">यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी हमलावर द्वारा आपके कनेक्शन में बाधा डालने के कारण हो सकता है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">समाप्‍ति वर्ष</translation>
 <translation id="8543181531796978784">आप <ph name="BEGIN_ERROR_LINK" />पहचान संबंधी समस्‍या की रिपोर्ट<ph name="END_ERROR_LINK" /> कर सकते हैं या यदि आप अपनी सुरक्षा से जुड़े जोखिमों को समझते हैं, तो <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>

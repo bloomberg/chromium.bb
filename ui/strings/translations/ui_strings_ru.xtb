@@ -3,6 +3,7 @@
 <translationbundle lang="ru">
 <translation id="111910763555783249">Настройки оповещений</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="1190609913194133056">Центр оповещений</translation>
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Нажмите здесь</translation>
 <translation id="5076340679995252485">&amp;Вставить</translation>
 <translation id="5120799197269191491">Поиск + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Разблокировка по PIN-коду</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="528468243742722775">Завершить</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Прокрутка влево</translation>
 <translation id="6394627529324717982">Запятая</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 сек. назад}one{# сек. назад}few{# сек. назад}many{# сек. назад}other{# сек. назад}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{только что}one{# секунду назад}few{# секунды назад}many{# секунд назад}other{# секунды назад}}</translation>
 <translation id="6528179044667508675">Не беспокоить</translation>
 <translation id="6612467943526193239">Чтобы выйти из режима калибровки, нажмите ESC</translation>
 <translation id="6620110761915583480">Сохранить файл</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="7850320739366109486">Не беспокоить</translation>
 <translation id="7907591526440419938">Открытие файла</translation>
+<translation id="8054029954190364711">Разблокировка по отпечатку пальца</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Осталась 1 сек.}one{Осталась # сек.}few{Осталось # сек.}many{Осталось # сек.}other{Осталось # сек.}}</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

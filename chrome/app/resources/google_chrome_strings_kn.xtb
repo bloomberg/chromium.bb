@@ -41,6 +41,7 @@
 <translation id="2077129598763517140">ಲಭ್ಯವಿರುವಾಗ ಹಾರ್ಡ್‌ವೇರ್ ಆಕ್ಸಲರೇಶನ್ ಬಳಸು</translation>
 <translation id="2084710999043359739">Chrome ಗೆ ಸೇರಿಸಿ</translation>
 <translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
+<translation id="2123055963409958220"><ph name="BEGIN_LINK" />ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="2147651015520127414">ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಪ್ರಮಾಣಪತ್ರವನ್ನು <ph name="ISSUER" /> ನೀಡಿದೆ ಎಂಬುದಾಗಿ Chrome ಪರಿಶೀಲಿಸಿದೆ.</translation>
 <translation id="216054706567564023">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ.</translation>
 <translation id="2246246234298806438">ಬಿಲ್ಟ್ ಇನ್ PDF ವೀಕ್ಷಣೆಯು ಕಾಣೆಯಾಗಿರುವಾಗ Google Chrome ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ತೋರಿಸುವುದಿಲ್ಲ.</translation>
@@ -140,6 +141,7 @@
 <translation id="5028489144783860647">Google Chrome ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="5037239767309817516">ಈ ಬದಲಾವಣೆಯು ಕಾರ್ಯಗತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಎಲ್ಲ Google Chrome ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಅದನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="5132929315877954718">Google Chrome ಸಲುವಾಗಿ ಉತ್ಕೃಷ್ಟಮಟ್ಟದ ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳು, ಆಟಗಳು, ವಿಸ್ತರಣೆಗಳು ಹಾಗೂ ಥೀಮ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ</translation>
+<translation id="5166975452760862670">ಈ ಭಾಷೆಯಲ್ಲಿ Google Chrome ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="5170938038195470297">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯಿಂದ ಆಗಿರುವ ಕಾರಣ ಅದನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆಯ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="5193136243808726294">Google Chrome OS ಗೆ ಈ ಪುಟ ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />ಸೇವಾ ನಿಯಮಗಳು<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -160,6 +162,7 @@
 <translation id="568643307450491754">Chrome ಮೆನು ಅಥವಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಯಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಕಂಡುಕೊಳ್ಳಿ.</translation>
 <translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
 <translation id="5749068826913805084">ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು Chrome ಗೆ ಸಂಗ್ರಹಣೆ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ.</translation>
+<translation id="5774845247549698882">ಈ ಭಾಷೆಯಲ್ಲಿ Chrome OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂ ಅನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}one{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂಗಳನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}other{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂಗಳನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}}</translation>
 <translation id="5855036575689098185">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿರುವ ಸಾಫ್ಟ್‌ವೇರ್ Google Chrome ನೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5877064549588274448">ಚಾನಲ್ ಬದಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಅನ್ವಯಿಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
@@ -170,6 +173,7 @@
 <translation id="5941830788786076944">Google Chrome ಅನ್ನು ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸು</translation>
 <translation id="6012342843556706400">ಈ ಸೈಟ್‌ ಜೊತೆಗೆ ಅದನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ಸ್ಥಳ ಪ್ರವೇಶದ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6014844626092547096">ಇದೀಗ ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
+<translation id="6070348360322141662">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Google Chrome ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ</translation>
 <translation id="6113794647360055231">Chrome ಇದೀಗ ಉತ್ತಮಗೊಂಡಿದೆ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS ನವೀಕರಿಸಿ</translation>
@@ -227,7 +231,7 @@
 <translation id="7788788617745289808">ಈ ಸೈಟ್‌ ಜೊತೆಗೆ ಅದನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ಕ್ಯಾಮರಾ ಪ್ರವೇಶದ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="7808348361785373670">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
 <translation id="7825851276765848807">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
-<translation id="7855730255114109580">Google Chrome ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ</translation>
+<translation id="7855730255114109580">Google Chrome ಅನ್ನು ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
 <translation id="7888186132678118370">ನಿಮ್ಮ ಕಾರ್ಯಪಟ್ಟಿಗೆ Chrome ಅನ್ನು ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="7890208801193284374">ನೀವು ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಂಡರೆ, ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬದವರು ಪ್ರತ್ಯೇಕವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಬಹುದು ಮತ್ತು Chrome ಅನ್ನು ಅವರ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಹೊಂದಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="7896673875602241923">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ದಯವಿಟ್ಟು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.</translation>
@@ -259,6 +263,7 @@
 <translation id="8669527147644353129">Google Chrome ಸಹಾಯಕ</translation>
 <translation id="8679801911857917785">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="870251953148363156">&amp;Google Chrome ನವೀಕರಿಸಿ</translation>
+<translation id="873133009373065397">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ಧರಿಸಲು ಅಥವಾ ಹೊಂದಿಸಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8796108026289707191">ನೀವು ಇದೀಗ Google Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು.</translation>
 <translation id="8823341990149967727">Chrome ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="884296878221830158">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಮುಖಪುಟ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
@@ -271,4 +276,5 @@
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="919706545465235479">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="924447568950697217">Chrome ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸಿ</translation>
+<translation id="989369509083708165">Google Chrome ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿದೆ.</translation>
 </translationbundle>

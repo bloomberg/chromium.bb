@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Nessun altro elemento diverso.</translation>
 <translation id="2800780099804980316">Nessuna intestazione livello 1 precedente.</translation>
 <translation id="280499067616661124">Funzione Trova nella pagina di ChromeVox</translation>
+<translation id="2808001342598757276">Riattiva accessibilità schermo</translation>
 <translation id="2811019999044652585">Per passare ad altre parti dello schermo, ad esempio alle barre degli strumenti o alla barra delle applicazioni, premi CTRL + Avanti. Sul Chromebook il tasto Avanti si trova subito sopra il tasto con il numero 2.</translation>
 <translation id="2811204574343810641">Riga</translation>
 <translation id="2816654101880605877">Nessun dispositivo di scorrimento successivo.</translation>
@@ -565,6 +566,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6006050241733874051">Modulo</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra rovesciata}other{# barre rovesciate}}</translation>
 <translation id="6037602951055904232">Panoramica avanti</translation>
+<translation id="6044160928851315051">Disattiva accessibilità schermo</translation>
 <translation id="6082768461603900813">Navigazione di base</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Fine della cella.</translation>

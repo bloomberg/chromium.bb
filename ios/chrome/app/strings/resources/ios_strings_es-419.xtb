@@ -128,10 +128,12 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3414292259312108062">Chrome almacenará esto en tus <ph name="BEGIN_LINK" />contraseñas de Google guardadas<ph name="END_LINK" /> y las autocompletará para que no tengas que recordarlas.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
+<translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formularios completos</translation>
 <translation id="3478058380795961209">Mes vencimiento</translation>
 <translation id="3482959374254649722">Sincronizando las pestañas...</translation>
 <translation id="3489372701259491571">Borrar contr. guardada</translation>
+<translation id="3494788280727468875">Confirmar el borrado de los datos de navegación</translation>
 <translation id="3519193562722059437">Abre una pestaña para navegar por la Web.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
@@ -143,6 +145,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
 <translation id="3607167657931203000">Autocompletar datos</translation>
 <translation id="3608436266458100337">Modo de lectura</translation>
+<translation id="3628119975092896051">Tu lista de lectura está disponible sin conexión. Para agregar una página, presiona <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precargar pág. web</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
@@ -303,6 +306,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7131892264600713844">Se muestra el historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
+<translation id="7159472599653637159">Solicitar sitio móvil</translation>
 <translation id="7167621057293532233">Tipos de datos</translation>
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
@@ -312,6 +316,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Los cambios de tus favoritos, historial, contraseñas y otras opciones de configuración ya no se sincronizarán con tu cuenta de Google. Sin embargo, los datos existentes permanecerán almacenados en tu cuenta de Google.</translation>
+<translation id="744343212394640790">No soy <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado/condado</translation>
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7464701184726199289">Esta opción borra los datos sincronizados en todos los dispositivos. Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>

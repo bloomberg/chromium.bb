@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Sila masukkan nilai yang sah. Nilai sah yang terdekat ialah <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2674318244760992338">pembawah</translation>
+<translation id="2709516037105925701">Autoisi</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Nilai mestilah <ph name="MINIMUM_DATE_OR_TIME" /> atau kemudian.</translation>
 <translation id="2759744352195237655">butang timbul</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">direktori</translation>
 <translation id="6934078000481955284">petikan blok</translation>
 <translation id="6941933287844615239">muat turun media</translation>
+<translation id="6989848892321993519">Sila panjangkan teks ini kepada <ph name="MIN_CHARACTERS" /> aksara atau lebih (anda sedang menggunakan 1 aksara).</translation>
 <translation id="7057186640035488495">masa filem</translation>
 <translation id="709897737746224366">Sila padankan dengan format yang diminta.</translation>
 <translation id="7223624360433298498">masa berlalu</translation>

@@ -128,10 +128,12 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="3414292259312108062">Chrome umieści to hasło w <ph name="BEGIN_LINK" />zapisanych hasłach Google<ph name="END_LINK" /> i będzie je automatycznie wstawiać, więc nie musisz go zapamiętywać.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
+<translation id="3474624961160222204">Nadal używaj konta użytkownika <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formularze wypełnione.</translation>
 <translation id="3478058380795961209">Miesiąc utraty ważności</translation>
 <translation id="3482959374254649722">Synchronizuję karty...</translation>
 <translation id="3489372701259491571">Usuń zapisane hasło</translation>
+<translation id="3494788280727468875">Potwierdź czyszczenie danych przeglądania</translation>
 <translation id="3519193562722059437">Otwórz kartę, by przeglądać strony.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Zamknij kartę</translation>
@@ -143,6 +145,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć. Aby doprecyzować wyszukiwanie, przesuń panel do samej góry i kliknij pole wyszukiwania.</translation>
 <translation id="3607167657931203000">Autouzupełnianie</translation>
 <translation id="3608436266458100337">Tryb czytnika</translation>
+<translation id="3628119975092896051">Twoja lista Do przeczytania jest dostępna offline. Aby dodać do niej stronę, kliknij <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3691593122358196899">Utworzono zakładkę w folderze <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
@@ -303,6 +306,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7131892264600713844">Wyświetlam historię z tego urządzenia. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Imię i nazwisko</translation>
 <translation id="7136892417564438900">Aparat jest niedostępny</translation>
+<translation id="7159472599653637159">Żądaj strony mobilnej</translation>
 <translation id="7167621057293532233">Typy danych</translation>
 <translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7203585745079012652">Odczytuj odpowiedzi</translation>
@@ -312,6 +316,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7419187830569376338">Szukaj tego obrazu w <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
+<translation id="744343212394640790">Konto <ph name="EMAIL" /> nie jest moje</translation>
 <translation id="7454057999980797137">Stan/region</translation>
 <translation id="7456847797759667638">Otwórz lokalizację...</translation>
 <translation id="7464701184726199289">Spowoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń. Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>

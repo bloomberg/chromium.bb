@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Configuración de la función Autocompletar de Chromium…</translation>
 <translation id="1374468813861204354">sugerencias</translation>
 <translation id="1375198122581997741">Acerca de la versión</translation>
+<translation id="1377321085342047638">N. tarjeta</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> no envió ningún dato.</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1413809658975081374">Error de privacidad</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> envió una respuesta no válida.</translation>
 <translation id="2552545117464357659">Reciente</translation>
 <translation id="2556876185419854533">&amp;Deshacer Editar</translation>
+<translation id="2587730715158995865">De <ph name="ARTICLE_PUBLISHER" />. Lee este artículo y <ph name="OTHER_ARTICLE_COUNT" /> más.</translation>
 <translation id="2587841377698384444">ID de API de directorio:</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Ingresa una contraseña.</translation>
 <translation id="2609632851001447353">Variaciones</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{al menos 1 elemento en dispositivos sincronizados}=1{1 elemento (y más en dispositivos sincronizados)}other{# elementos (y más en dispositivos sincronizados)}}</translation>
 <translation id="3041612393474885105">Información sobre el certificado</translation>
 <translation id="3063697135517575841">Chrome no pudo confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
+<translation id="3064966200440839136">Saldrás del modo de navegación incógnito para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>
 <translation id="3093245981617870298">No estás conectado.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
@@ -264,6 +267,7 @@
 <translation id="3345135638360864351">No se pudo enviar la solicitud de acceso al sitio a <ph name="NAME" />. Vuelve a intentarlo.</translation>
 <translation id="3355823806454867987">Cambiar la configuración del proxy...</translation>
 <translation id="3369192424181595722">Error de reloj</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> artículos más…</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="3377188786107721145">Error al analizar la política</translation>
 <translation id="3380365263193509176">Error desconocido</translation>
@@ -279,6 +283,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Obtener intervalo:</translation>
 <translation id="3462200631372590220">Ocultar detalles avanzados</translation>
+<translation id="3478058380795961209">Mes vencimiento</translation>
 <translation id="3479539252931486093">¿Ocurrió algo inesperado? <ph name="BEGIN_LINK" />Cuéntanos<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="348000606199325318">ID de fallo <ph name="CRASH_LOCAL_ID" /> (ID de servidor: <ph name="CRASH_ID" />)</translation>
@@ -461,7 +466,6 @@
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308689395849655368">Notificación de fallas desactivada.</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="5326702247179446998">Se requiere un destinatario</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5337705430875057403">Los atacantes de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían engañarte para que hagas algo peligroso, como instalar software o divulgar información personal (por ejemplo, contraseñas, números de teléfono o tarjetas de crédito).</translation>
 <translation id="53553865750799677">La dirección de retiro no es compatible. Selecciona otra dirección.</translation>
@@ -564,6 +568,7 @@
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, visita nuestro canal beta en chrome.com/beta.</translation>
+<translation id="6389470377220713856">Nombre en tarj.</translation>
 <translation id="6389758589412724634">Chromium se quedó sin memoria cuando intentaba mostrar esta página web.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6410264514553301377">Ingresar la fecha de vencimiento y el CVC para <ph name="CREDIT_CARD" /></translation>
@@ -613,6 +618,7 @@
 <translation id="6778737459546443941">Uno de tus padres aún no lo aprobó</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">No se pudo cargar los datos de las regiones</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Rehacer Agregar</translation>
@@ -627,7 +633,6 @@
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
 <translation id="7000990526846637657">No se encontraron entradas en el historial</translation>
-<translation id="7001663382399377034">Agregar un destinatario</translation>
 <translation id="7009986207543992532">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -773,6 +778,7 @@
 <translation id="8349305172487531364">Barra de favoritos</translation>
 <translation id="8363502534493474904">Desactivar el modo de avión.</translation>
 <translation id="8364627913115013041">Sin establecer</translation>
+<translation id="8368476060205742148">Servicios de Google Play</translation>
 <translation id="8380941800586852976">Peligrosa</translation>
 <translation id="8382348898565613901">Los favoritos que visitaste recientemente aparecen aquí</translation>
 <translation id="8398259832188219207">El informe de fallos se cargó el <ph name="UPLOAD_TIME" /></translation>
@@ -788,6 +794,7 @@
 <translation id="8492969205326575646">Este tipo de tarjeta no es compatible</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tardó demasiado en responder.</translation>
 <translation id="852346902619691059">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo de tu dispositivo no confía en el certificado de seguridad. Es posible que se deba a una configuración incorrecta o a que un atacante haya interceptado tu conexión. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">Año vencimiento</translation>
 <translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar el sitio no seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Falló la traducción debido a que no se pudo determinar el idioma de la página.</translation>
 <translation id="8559762987265718583">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>

@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Інших несхожих елементів немає.</translation>
 <translation id="2800780099804980316">Немає попереднього заголовка рівня 1.</translation>
 <translation id="280499067616661124">Пошук ChromeVox на сторінці</translation>
+<translation id="2808001342598757276">Активувати екран</translation>
 <translation id="2811019999044652585">Щоб переходити між частинами екрана, наприклад перейти на панель інструментів чи системну область, натисніть Control+Forward. На Chromebook клавіша Forward розташована прямо над клавішею цифри 2.</translation>
 <translation id="2811204574343810641">Рядок</translation>
 <translation id="2816654101880605877">Немає наступного повзунка.</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{зворотна коса риска}one{# зворотна коса риска}few{# зворотні косі риски}many{# зворотних косих рисок}other{# backslashes}}</translation>
 <translation id="6037602951055904232">На задній план</translation>
+<translation id="6044160928851315051">Дезактивувати екран</translation>
 <translation id="6082768461603900813">Основна навігація</translation>
 <translation id="611827076493383239">натиснуто</translation>
 <translation id="6119955456199054975">Кінець клітинки.</translation>

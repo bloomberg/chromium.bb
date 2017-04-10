@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Você está trocando a conta de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os dados do Chromium são gerenciados por <ph name="DOMAIN" />. Eles serão excluídos deste dispositivo, mas permanecerão no <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Ao usar este app, você concorda com os <ph name="BEGIN_LINK" />Termos de Serviço<ph name="END_LINK" /> do Chromium.</translation>
 <translation id="8175055321229419309">Dica: <ph name="BEGIN_LINK" />mova o Chromium para a dock<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Para ter suas configurações em todos os seus dispositivos, faça login no Chromium.</translation>
 <translation id="8252885722420466166">Melhore sua experiência do Google no Chromium de acordo com seu local.</translation>
 <translation id="8353224596138547809">Deseja que o Chromium salve sua senha para este site?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>

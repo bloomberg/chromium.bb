@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">‏הגדרות מילוי אוטומטי של Chromium...</translation>
 <translation id="1374468813861204354">הצעות</translation>
 <translation id="1375198122581997741">מידע על הגרסה</translation>
+<translation id="1377321085342047638">מספר כרטיס</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> לא שלח נתונים.</translation>
 <translation id="1407135791313364759">פתח הכל</translation>
 <translation id="1413809658975081374">שגיאת פרטיות</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> שלח תגובה לא חוקית.</translation>
 <translation id="2552545117464357659">חדש יותר</translation>
 <translation id="2556876185419854533">&amp;ביטול עריכה</translation>
+<translation id="2587730715158995865">מ-<ph name="ARTICLE_PUBLISHER" />. לקריאת כתבה זו ו-<ph name="OTHER_ARTICLE_COUNT" /> כתבות נוספות.</translation>
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
 <translation id="2609632851001447353">וריאציות</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
 <translation id="3063697135517575841">‏Chrome לא הצליח לאשר את הכרטיס שלך הפעם. נסה שוב מאוחר יותר.</translation>
+<translation id="3064966200440839136">בחרת לצאת ממצב גלישה בסתר כדי לשלם באמצעות יישום חיצוני. להמשיך?</translation>
 <translation id="3093245981617870298">אתה במצב לא מקוון.</translation>
 <translation id="3105172416063519923">מזהה נכס:</translation>
 <translation id="3109728660330352905">אין לך הרשאה להציג את הדף הזה.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">לא ניתן היה לשלוח אל <ph name="NAME" /> את הבקשה שלך לגשת לאתר הזה. נסה שוב.</translation>
 <translation id="3355823806454867987">‏שנה הגדרות שרת Proxy...</translation>
 <translation id="3369192424181595722">שגיאת שעון</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> פריטים נוספים...</translation>
 <translation id="337363190475750230">ניהול התצורה בוטל</translation>
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">מרווח אחזור:</translation>
 <translation id="3462200631372590220">הסתר פרטים מתקדמים</translation>
+<translation id="3478058380795961209">חודש פקיעת התוקף</translation>
 <translation id="3479539252931486093">האם זה קרה באופן בלתי צפוי? <ph name="BEGIN_LINK" />ספר לנו על כך<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348000606199325318">מזהה קריסה <ph name="CRASH_LOCAL_ID" /> (מזהה שרת: <ph name="CRASH_ID" />)</translation>
@@ -464,7 +469,6 @@ Del</translation>
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
 <translation id="5317780077021120954">שמור</translation>
-<translation id="5326702247179446998">יש לציין נמען</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5337705430875057403">תוקפים ב-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עשויים לגרום לך לבצע פעולות מסוכנות, כמו התקנת תוכנה או חשיפה של מידע אישי (למשל: סיסמאות, מספרי טלפון או כרטיסי אשראי).</translation>
 <translation id="53553865750799677">כתובת איסוף לא נתמכת. בחר כתובת אחרת.</translation>
@@ -568,6 +572,7 @@ Del</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
+<translation id="6389470377220713856">שם על הכרטיס</translation>
 <translation id="6389758589412724634">‏אזל הזיכרון הזמין ל-Chromium בניסיון להציג את דף האינטרנט הזה.</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6410264514553301377">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /></translation>
@@ -617,6 +622,7 @@ Del</translation>
 <translation id="6778737459546443941">ההורה ששאלת עדיין לא אישר זאת</translation>
 <translation id="6810899417690483278">מזהה של התאמה אישית</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">נכשלה הטעינה של נתוני האזורים</translation>
 <translation id="6831043979455480757">תרגם</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="6874604403660855544">&amp;ביצוע מחדש של הוספה</translation>
@@ -631,7 +637,6 @@ Del</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6989763994942163495">הצג הגדרות מתקדמות...</translation>
 <translation id="7000990526846637657">לא נמצאו רשומות היסטוריה</translation>
-<translation id="7001663382399377034">הוספה של נמען</translation>
 <translation id="7009986207543992532">ניסית להגיע אל <ph name="DOMAIN" />, אבל השרת הציג אישור עם תקופת תוקף ארוכה באופן מחשיד. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">‏ייתכן שלחשבון Google שלך יש סוגים אחרים של היסטוריית גלישה שזמינים בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -777,6 +782,7 @@ Del</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
 <translation id="8363502534493474904">לכבות את מצב הטיסה</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
+<translation id="8368476060205742148">‏שירותי Google Play</translation>
 <translation id="8380941800586852976">מסוכן</translation>
 <translation id="8382348898565613901">הסימניות שאליהן נכנסת לאחרונה מופיעות כאן</translation>
 <translation id="8398259832188219207">דוח קריסה הועלה ב-<ph name="UPLOAD_TIME" /></translation>
@@ -792,6 +798,7 @@ Del</translation>
 <translation id="8492969205326575646">סוג כרטיס לא נתמך</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>
 <translation id="852346902619691059">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; מערכת ההפעלה של המכשיר לא סומכת על אישור האבטחה שלו. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">שנת פקיעת התוקף</translation>
 <translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>

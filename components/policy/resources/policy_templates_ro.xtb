@@ -57,24 +57,6 @@
 <translation id="1152117524387175066">Raportează starea comutatorului modului pentru dezvoltatori al dispozitivului la pornire.
 
       Dacă politica este dezactivată, starea comutatorului modului pentru dezvoltatori nu va fi raportată.</translation>
-<translation id="1156080716265314451">Configurează o listă de imprimante.
-
-      Această politică permite administratorilor să ofere utilizatorilor configurații ale imprimantelor.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri fără formă care
-      pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> trebuie să corespundă uneia dintre imprimantele <ph name="PRODUCT_NAME" />
-      acceptate.  <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată
-      de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> este opțional.  Dacă este specificat, acesta este folosit pentru
-      a elimina imprimantele dublură <ph name="ZEROCONF_DISCOVERY" />.
-
-      Configurarea imprimantei este finalizată odată cu prima folosire a unei imprimante.  PPD-urile nu
-      sunt descărcate înainte de folosirea imprimantei.  După aceea, PPD-urile folosite des
-      sunt stocate în memoria cache.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe
-      dispozitive individuale.  Este menită să fie suplimentară pentru
-      configurarea imprimantelor de către utilizatori individuali.</translation>
 <translation id="1160939557934457296">Dezactivați continuarea navigării de pe pagina de avertisment Navigare sigură</translation>
 <translation id="1198465924256827162">Frecvența de trimitere a informațiilor privind starea dispozitivului, în milisecunde.
 
@@ -1474,11 +1456,6 @@
       Dacă politica nu este setată, <ph name="PRODUCT_OS_NAME" /> va folosi valoarea prestabilită de 3 ore.
 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
-<translation id="5535957389335373033">Frecvența de trimitere a pachetelor de monitorizare din rețea, în milisecunde.
-
-      Dacă această politică nu este configurată, frecvența prestabilită este de 3 minute. Frecvența minimă
-      este de 30 de secunde, iar cea maximă este de 24 de ore. Valorile
-      care nu se află în acest interval vor fi fixate în acesta.</translation>
 <translation id="5535973522252703021">Lista albă a serverelor pentru delegare în protocolul Kerberos</translation>
 <translation id="5559079916187891399">Această politică nu afectează aplicațiile Android.</translation>
 <translation id="5560039246134246593">Adaugă un parametru la preluarea valorii de bază pentru variante în <ph name="PRODUCT_NAME" />.

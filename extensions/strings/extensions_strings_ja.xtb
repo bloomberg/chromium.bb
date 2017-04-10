@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">外向き</translation>
 <translation id="1256619696651732561">拡張機能マニフェストのパーサー</translation>
 <translation id="1445572445564823378">この拡張機能によって <ph name="PRODUCT_NAME" /> の速度が低下しています。<ph name="PRODUCT_NAME" /> のパフォーマンスを回復するには、この拡張機能を無効にしてください。</translation>
+<translation id="1468038450257740950">WebGL はサポートされていません。</translation>
 <translation id="149347756975725155">拡張機能アイコン「<ph name="ICON" />」を読み込むことができませんでした。</translation>
 <translation id="1803557475693955505">背景ページ「<ph name="BACKGROUND_PAGE" />」を読み込むことができませんでした。</translation>
 <translation id="2159915644201199628">画像をデコードできませんでした: <ph name="IMAGE_NAME" /></translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">ユーティリティ プロセスで問題が発生したため、パッケージをインストールできませんでした。Chrome を再起動してもう一度お試しください。</translation>
 <translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">アプリビュー: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">形状指定ウィンドウはサポートされていません。</translation>
 <translation id="5456409301717116725">この拡張機能には、鍵ファイル「<ph name="KEY_PATH" />」が含まれていますが、おそらくその必要性はありません。</translation>
 <translation id="5627523580512561598">拡張機能 <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">拡張機能を解凍できません。拡張機能を安全に解凍するには、シンボリック リンクが含まれていないプロフィール ディレクトリへのパスが必要です。このようなパスがプロフィール内に存在しません。</translation>
 <translation id="641087317769093025">拡張機能を解凍できませんでした</translation>
 <translation id="6542618148162044354">「<ph name="APP_NAME" />」が次のデバイスへのアクセスをリクエストしています:</translation>
+<translation id="6566142449942033617">プラグインの「<ph name="PLUGIN_PATH" />」を読み込むことができませんでした。</translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT" />」を読み込めませんでした。</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />、提供元 <ph name="VENDOR_NAME" />（シリアル番号 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">解凍用のディレクトリを作成できませんでした: <ph name="DIRECTORY_PATH" /></translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">この拡張機能は、自身により頻繁に再読み込みされています。</translation>
 <translation id="7003844668372540529">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_NAME" />）</translation>
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME" /> がインストールされている必要があります。削除や修正はできません。</translation>
+<translation id="7581279002575751816">NPAPI プラグインはサポートされていません。</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は管理者によってブロックされています。</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ユーザー向き</translation>

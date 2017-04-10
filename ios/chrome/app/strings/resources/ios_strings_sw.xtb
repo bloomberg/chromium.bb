@@ -128,10 +128,12 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="3414292259312108062">Chrome itahifadhi hili katika <ph name="BEGIN_LINK" />manenosiri yako yaliyohifadhiwa na Google<ph name="END_LINK" /> na kukujazia kiotomatiki ili usihitaji kulikumbuka.</translation>
 <translation id="3445288400492335833">Dakika <ph name="MINUTES" /></translation>
 <translation id="3448016392200048164">Mwonekano wa Madirisha Mawili</translation>
+<translation id="3474624961160222204">Endelea ukitumia <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Fomu zimejazwa.</translation>
 <translation id="3478058380795961209">Mwezi wa Muda wa Matumizi Kuisha</translation>
 <translation id="3482959374254649722">Inasawazisha vichupo vyako...</translation>
 <translation id="3489372701259491571">Futa Nenosiri Lililohifadhiwa</translation>
+<translation id="3494788280727468875">Thibitisha Kufuta Data ya Kuvinjari</translation>
 <translation id="3519193562722059437">Fungua kichupo ili uvinjari wavuti.</translation>
 <translation id="3527085408025491307">Folda</translation>
 <translation id="3551320343578183772">Funga Kichupo</translation>
@@ -143,6 +145,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili kuchuja utafutaji wako, telezesha paneli hadi juu na uguse kisanduku cha utafutaji.</translation>
 <translation id="3607167657931203000">Jaza Data Kiotomatiki</translation>
 <translation id="3608436266458100337">Hali ya msomaji</translation>
+<translation id="3628119975092896051">Orodha yako ya kusoma inapatikana nje ya mtandao. Ili kuongeza ukurasa kwenye orodha yako ya kusoma, gonga <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pakia Kurasa za wavuti Mapema</translation>
 <translation id="3691593122358196899">Imetiwa alamisho kwenye <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Gusa ili Utafute</translation>
@@ -303,6 +306,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7131892264600713844">Inaonyesha historia kutoka kwenye kifaa hiki. <ph name="BEGIN_LINK" />Pata maelezo zaidi.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Jina Kamili</translation>
 <translation id="7136892417564438900">Kamera haipatikani</translation>
+<translation id="7159472599653637159">Omba Tovuti ya Kifaa cha Mkononi</translation>
 <translation id="7167621057293532233">Aina za Data</translation>
 <translation id="7189598951263744875">Shiriki...</translation>
 <translation id="7203585745079012652">Itamke Majibu</translation>
@@ -312,6 +316,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Tafuta Picha Hii Kwenye <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Mabadiliko kwenye alamisho, historia, manenosiri na mipangilio yako mingine haitasawazishwa tena kwenye Akaunti yako ya Google. Hata hivyo, data yako iliyopo itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
+<translation id="744343212394640790">Wewe si <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Jimbo / Mkoa</translation>
 <translation id="7456847797759667638">Fungua Mahali...</translation>
 <translation id="7464701184726199289">Hatua hii itafuta data iliyosawazishwa kwenye vifaa vyote. Mipangilio ya tovuti iliyohifadhiwa haitafutwa na inaweza kuonyesha mtindo wako wa kuvinjari. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>

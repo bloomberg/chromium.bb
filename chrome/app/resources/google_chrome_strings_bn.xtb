@@ -41,6 +41,7 @@
 <translation id="2077129598763517140">যখনই উপলব্ধ তখন হার্ডওয়্যার অ্যাক্সিলারেশন ব্যবহার করুন</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
 <translation id="2120620239521071941">এটি এই ডিভাইস থেকে <ph name="ITEMS_COUNT" />টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
+<translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংসের<ph name="END_LINK" /> প্রতিবেদন করে Chrome কে আরো ভাল করে তুলতে সাহায্য করুন</translation>
 <translation id="2147651015520127414"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chrome তা যাচাই করেছে।</translation>
 <translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট পুনরুদ্ধারের ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
 <translation id="2246246234298806438">বিল্ট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome মুদ্রণের পূর্বরুপ দেখাতে পারে না৷</translation>
@@ -140,6 +141,7 @@
 <translation id="5028489144783860647">Google Chrome আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="5037239767309817516">দয়া করে সব Google Chrome উইন্ডো বন্ধ করুন এবং এই পরিবর্তনকে প্রভাবশালী করতে এটিকে পুনঃলঞ্চ  করুন৷ </translation>
 <translation id="5132929315877954718">Google Chrome এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
+<translation id="5166975452760862670">Google Chrome এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5170938038195470297">আপনার প্রোফাইল ব্যবহার করা যাবে কারণ এটি Google Chrome-এর একটি নতুন সংস্করণে গঠিত৷ 
 
 কিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল নির্দেশিকা সুনির্দিষ্টভাবে উল্লেখ করুন অথবা Chrome এর নতুন সংস্করণ ব্যবহার করুন৷</translation>
@@ -162,6 +164,7 @@
 <translation id="568643307450491754">Chrome মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
+<translation id="5774845247549698882">Chrome OS এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{এটা স্থায়ীভাবে এই ডিভাইস থেকে $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}one{এটা স্থায়ীভাবে এই ডিভাইস থেকে $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}other{এটা স্থায়ীভাবে এই ডিভাইস থেকে $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}}</translation>
 <translation id="5855036575689098185">আপনার কম্পিউটারে যে সফটওয়্যারটি চলছে  সেটি Google Chrome এর সঙ্গে সঙ্গতিপূর্ণ নয়৷</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস আবার শুরু করুন৷</translation>
@@ -172,6 +175,7 @@
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="6012342843556706400">এই সাইটের সাথে এটি শেয়ার করতে Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
+<translation id="6070348360322141662">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে</translation>
 <translation id="6113794647360055231">Chrome আরো ভাল হয়ে উঠেছে</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
@@ -260,6 +264,7 @@
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
 <translation id="8679801911857917785">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
+<translation id="873133009373065397">Google Chrome ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="8796108026289707191">আপনার এখনই Google Chrome আবার চালু করা উচিত হবে।</translation>
 <translation id="8823341990149967727">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="884296878221830158">আপনি Chrome শুরু করলে বা হোম বোতামটি ক্লিক করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
@@ -272,4 +277,5 @@
 <translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>
 <translation id="919706545465235479">সিঙ্ক শুরু করতে Chrome আপডেট করুন</translation>
 <translation id="924447568950697217">Chrome কে আপনার ডিফল্ট ব্রাউজার করুন</translation>
+<translation id="989369509083708165">Google Chrome আপনার ডিফল্ট ব্রাউজার</translation>
 </translationbundle>

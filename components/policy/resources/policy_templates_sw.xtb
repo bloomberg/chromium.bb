@@ -57,24 +57,6 @@
 <translation id="1152117524387175066">Ripoti hali ya ubadilishaji wa kifaa cha dev wakati wa kuwasha.
 
       Ikiwa sera hii itawekwa kuwa uongo, hali ya ubadilishaji wa dev haitaripotiwa.</translation>
-<translation id="1156080716265314451">Weka mipangilio ya orodha ya printa.
-
-      Sera hii huruhusu wasimamizi kutoa mipangilio ya printa kwa watumiaji wake.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ziko katika mifuatano wazi ambayo inaweza kubadilishwa ikufae ili 
-      kurahisisha kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> lazima ifanane na <ph name="PRODUCT_NAME" /> ya printa 
-      zinazotumika.  <ph name="PRINTER_URI" /> inapaswa kuwa mahali ambapo panafikika
-      kutoka kwenye kompyuta ya seva teja ikiwa ni pamoja na <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" />, na <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> ni ya hiari.  Ikiwa inapatikana, inatumiwa kusaidia
-      kuondoa kurudufu printa <ph name="ZEROCONF_DISCOVERY" />.
-
-      Kuweka mipangilio ya printa hukamilika baada ya kutumia printa mara ya 
-      kwanza.  PPD  hazipakuliwi mpaka printa itumike.  Baada ya hapo, PDD 
-      zinazotumiwa sana huakibishwa.
-
-      Sera hii haiathiri iwapo watumiaji wanaweza kuweka mipangilio kwenye vifaa 
-      vya kibinafsi.  Inalenga kuchukua nafasi ya kuweka mipangilio ya printa
-      na watumiaji binafsi.</translation>
 <translation id="1160939557934457296">Lemaza kuendelea kutoka kwenye ukurasa wa ilani ya Kuvinjari Salama</translation>
 <translation id="1198465924256827162">Ni mara ngapi vipakiwa vya hali ya kifaa hutumwa, katika milisekunde.
 
@@ -1534,10 +1516,6 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
       Kuacha sera hii bila kuiweka kutafanya <ph name="PRODUCT_OS_NAME" /> itumie thamani chaguo-msingi ya saa 3.
 
       Kumbuka kwamba ikiwa mfumo unatumia arifa za sera, ucheleweshwaji wa kuonyesha upya utawekwa kuwa saa 24 (ukipuuza chaguo-msingi zote na thamani ya sera hii) kwa sababu inatarajiwa kwamba arifa za sera zitalazimisha kuonyesha upya kiotomatiki wakati wowote ambao sera itabadilika, hivyo kuondoa haja ya kuonyesha upya mara kwa mara.</translation>
-<translation id="5535957389335373033">Mara ambazo vifurushi vya mtandao vya ufuatiliaji hutumwa, katika milisekunde.
-
-     Sera hii isipowekwa, idadi chaguo-msingi ni dakika 3. Idadi ya chini
-      ni sekunde 30 na idadi ya juu ni saa 24 - thamani nje ya mfululizo huu itaunganishwa kwenye masafa haya.</translation>
 <translation id="5535973522252703021">Orodha iliyoidhinishwa ya ukaumu wa seva ya Kerberos</translation>
 <translation id="5559079916187891399">Sera hii haiathiri programu za Android.</translation>
 <translation id="5560039246134246593">Ongeza kigezo kwa uletaji wa mbegu Tofauti katika <ph name="PRODUCT_NAME" />.

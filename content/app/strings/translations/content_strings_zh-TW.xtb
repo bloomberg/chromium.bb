@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">請輸入有效值。最接近的有效值是 <ph name="VALID_VALUE" />。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2674318244760992338">頁尾</translation>
+<translation id="2709516037105925701">自動填入</translation>
 <translation id="2723001399770238859">音訊</translation>
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
 <translation id="2759744352195237655">彈出式按鈕</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">目錄</translation>
 <translation id="6934078000481955284">引用標記</translation>
 <translation id="6941933287844615239">下載媒體</translation>
+<translation id="6989848892321993519">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前已有 1 個字元)。</translation>
 <translation id="7057186640035488495">電影時間</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7223624360433298498">已播放時間</translation>

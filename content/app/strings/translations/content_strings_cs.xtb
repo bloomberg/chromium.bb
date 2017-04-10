@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Zadejte platnou hodnotu. Nejbližší platná hodnota je <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2674318244760992338">zápatí</translation>
+<translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2723001399770238859">zvuk</translation>
 <translation id="2746543609216772311">Datum musí být <ph name="MINIMUM_DATE_OR_TIME" /> nebo později.</translation>
 <translation id="2759744352195237655">tlačítko s vyskakovacím oknem</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">adresář</translation>
 <translation id="6934078000481955284">bloková citace</translation>
 <translation id="6941933287844615239">stáhnout média</translation>
+<translation id="6989848892321993519">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má 1 znak.)</translation>
 <translation id="7057186640035488495">čas filmu</translation>
 <translation id="709897737746224366">Zadejte hodnotu, která odpovídá požadovanému formátu.</translation>
 <translation id="7223624360433298498">přehraný čas</translation>

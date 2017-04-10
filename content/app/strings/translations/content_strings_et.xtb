@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Sisestage kehtiv väärtus. Lähim kehtiv väärtus on <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2674318244760992338">jalus</translation>
+<translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2723001399770238859">heli</translation>
 <translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME" /> või hilisem.</translation>
 <translation id="2759744352195237655">hüpikunupp</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">kataloog</translation>
 <translation id="6934078000481955284">plokktsitaat</translation>
 <translation id="6941933287844615239">laadi meedia alla</translation>
+<translation id="6989848892321993519">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu ühte tähemärki).</translation>
 <translation id="7057186640035488495">video aeg</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
 <translation id="7223624360433298498">möödunud aeg</translation>

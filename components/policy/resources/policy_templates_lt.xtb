@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Pateikti įrenginio „Dev“ perjungimo būseną paleidžiant.
 
       Jei ši politika nustatyta kaip „False“, „Dev“ perjungimo būsena nebus pateikta.</translation>
-<translation id="1156080716265314451">Konfigūruojamas spausdintuvų sąrašas.
-
-      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
-      naudotojams.
-
-      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias
-      galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ turėtų atitikti vieną iš „<ph name="PRODUCT_NAME" />“ palaikomų
-      spausdintuvų. „<ph name="PRINTER_URI" />“ turėtų būti adresas, pasiekiamas
-      iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“,
-      „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ pasirenkama. Jei pateikta, tai naudojama, kad būtų
-      lengviau panaikinti „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvų pasikartojimus.
-
-      Spausdintuvo sąranka užbaigiama pirmą kartą naudojant spausdintuvą. PPD neatsisiunčiami,
-      kol spausdintuvas naudojamas. Po to dažnai naudojami
-      PPD saugomi talpykloje.
-
-      Ši politika neturi įtakos nustatant, ar naudotojai gali konfigūruoti spausdintuvus
-      atskiruose įrenginiuose. Ji taikoma kaip papildoma
-      atskirų naudotojų spausdintuvų konfigūracijos politika.</translation>
 <translation id="1160939557934457296">Neleisti tęsti veiksmų iš Saugaus naršymo įspėjimo puslapio</translation>
 <translation id="1198465924256827162">Įrenginio būsenos įkėlimo nustatymo dažnis milisekundėmis.
 
@@ -1558,11 +1539,6 @@
       Jei ši politika nebus nustatyta, „<ph name="PRODUCT_OS_NAME" />“ naudos numatytąją vertę – 3 val.
 
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
-<translation id="5535957389335373033">Stebėjimo tinklo paketų siuntimo dažnis milisekundėmis.
-
-      Jei ši politika nenustatyta, numatytasis dažnis bus 3 minutės. Minimalus
-      dažnis yra 30 sekundžių, o maksimalus – 24 valandos. Vertės
-      už šio diapazono ribų bus nustatytos į šio diapazono vertę.</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
 <translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.

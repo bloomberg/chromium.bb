@@ -57,15 +57,6 @@ Na straně serveru tato funkce v současné době není k dispozici.</translat
 <translation id="1152117524387175066">Hlásí stav přepínače režimu pro vývojáře při spuštění zařízení.
 
       Pokud je tato zásada nastavena na hodnotu false, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>
-<translation id="1156080716265314451">Konfiguruje seznam tiskáren.
-      
-Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
-
-      Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> by měly odpovídat jedné z tiskáren podporovaných prohlížečem <ph name="PRODUCT_NAME" />. Hodnota <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
-
-      Nastavení tiskárny se dokončí při prvním použití. Soubory PPD se stáhnou až při použití tiskárny. Často používané soubory PPD budou následně uloženy do mezipaměti.
-
-      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.</translation>
 <translation id="1160939557934457296">Zakázat pokračování ze stránky s upozorněním Bezpečného prohlížení</translation>
 <translation id="1198465924256827162">Frekvence odesílání informací o stavu zařízení (v milisekundách).
 
@@ -1490,9 +1481,6 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
       Pokud tato zásada nebude nastavena, použije systém <ph name="PRODUCT_OS_NAME" /> výchozí hodnotu, což jsou 3 hodiny.
 
       Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
-<translation id="5535957389335373033">Frekvence odesílání sledovacích síťových paketů (v ms).
-
-      Je-li tato zásada ponechána nenastavená, výchozí frekvence je tři minuty. Minimální frekvence je 30 sekund a maximální 24 hodin – hodnoty mimo tento rozsah budou přizpůsobeny příslušné hranici.</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="5559079916187891399">Tato zásada nemá vliv na aplikace Android.</translation>
 <translation id="5560039246134246593">Přidá parametr k načítání počáteční hodnoty variace v prohlížeči <ph name="PRODUCT_NAME" />.

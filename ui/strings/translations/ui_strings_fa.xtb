@@ -3,6 +3,7 @@
 <translationbundle lang="fa">
 <translation id="111910763555783249">تنظیمات اعلان</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="1190609913194133056">مرکز اعلان</translation>
 <translation id="1243314992276662751">بارگذاری</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">در اینجا ضربه بزنید</translation>
 <translation id="5076340679995252485">&amp;جاگذاری</translation>
 <translation id="5120799197269191491">جستجو+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">قابلیت باز کردن قفل پین</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="528468243742722775">پایان</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">پیمایش به چپ</translation>
 <translation id="6394627529324717982">کاما</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
 <translation id="6528179044667508675">مزاحم نشوید</translation>
 <translation id="6612467943526193239">‏برای خروج از کالیبراسیون، کلید Esc را فشار دهید.</translation>
 <translation id="6620110761915583480">ذخیره کردن فایل</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;کپی</translation>
 <translation id="7850320739366109486">مزاحم نشوید</translation>
 <translation id="7907591526440419938">باز کردن فایل</translation>
+<translation id="8054029954190364711">قابلیت باز کردن قفل اثر انگشت</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
 <translation id="815598010540052116">پیمایش به پایین</translation>

@@ -128,10 +128,12 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3414292259312108062">Chrome toto heslo uloží ve vašich <ph name="BEGIN_LINK" />uložených heslech Google<ph name="END_LINK" /> a automaticky vám jej vyplní, abyste si jej nemuseli pamatovat.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Režim Split View</translation>
+<translation id="3474624961160222204">Pokrač. jako <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formuláře byly vyplněny.</translation>
 <translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3482959374254649722">Probíhá synchronizace karet…</translation>
 <translation id="3489372701259491571">Smazat uložené heslo</translation>
+<translation id="3494788280727468875">Potvrdit vymazání údajů o prohlížení</translation>
 <translation id="3519193562722059437">Chcete-li prohlížet internet, otevřete novou kartu.</translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3551320343578183772">Zavřít kartu</translation>
@@ -143,6 +145,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. Chcete-li upřesnit vyhledávací dotaz, přejeďte po panelu až nahoru a klepněte na vyhledávací pole.</translation>
 <translation id="3607167657931203000">Data automatického vyplňování</translation>
 <translation id="3608436266458100337">Režim čtečky</translation>
+<translation id="3628119975092896051">Seznam obsahu k přečtení je k dispozici offline. Chcete-li na něj přidat stránku, klepněte na <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
@@ -303,6 +306,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7131892264600713844">Zobrazuje se historie z tohoto zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Celé jméno</translation>
 <translation id="7136892417564438900">Kamera je nedostupná</translation>
+<translation id="7159472599653637159">Vyžádat web pro mobily</translation>
 <translation id="7167621057293532233">Typy dat</translation>
 <translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
@@ -312,6 +316,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="7419187830569376338">Vyhledat tento obrázek ve službě <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
+<translation id="744343212394640790">Nejsem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stát / země</translation>
 <translation id="7456847797759667638">Otevřít umístění...</translation>
 <translation id="7464701184726199289">Tímto vymažete synchronizovaná data ze všech zařízení. Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>

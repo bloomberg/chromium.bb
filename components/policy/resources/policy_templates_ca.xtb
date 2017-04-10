@@ -57,15 +57,6 @@
 <translation id="1152117524387175066">Informa de l'estat del botó per a desenvolupadors en iniciar.
 
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
-<translation id="1156080716265314451">Configura una llista d'impressores.
-
-      Aquesta política permet als administradors proporcionar configuracions d'impressora als usuaris.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció d'impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> han de coincidir amb una de les impressores compatibles amb <ph name="PRODUCT_NAME" />. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si es proporciona, s'utilitza per suprimir duplicats d'impressores <ph name="ZEROCONF_DISCOVERY" />.
-
-      La configuració d'una impressora es completa quan s'utilitza per primera vegada.  Els fitxers PPD no es baixen fins que s'utilitza la impressora. Després, els que s'utilitzen sovint es desen a la memòria cau.
-
-      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets. S'ha creat per complementar la configuració d'impressores per part dels usuaris.</translation>
 <translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de Navegació segura</translation>
 <translation id="1198465924256827162">La freqüència, en mil·lisegons, amb què s'envien càrregues per informar sobre l'estat del dispositiu.
 
@@ -1438,9 +1429,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si aquesta política no s'estableix, <ph name="PRODUCT_OS_NAME" /> utilitzarà el valor predeterminat de tres hores.
 
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
-<translation id="5535957389335373033">La freqüència, en mil·lisegons, amb què s'envien paquets de xarxa de supervisió.
-
-      Si aquesta política no s'estableix, s'envien cada 3 minuts de manera predeterminada. La freqüència màxima és de 30 segons i la mínima de 24 hores. Tots els valors que no es trobin dins d'aquest interval es restringiran igualment al límit de l'interval.</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.

@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Ziņot par ierīces izstrādes slēdža statusu sāknēšanas brīdī.
 
       Ja šai politikai ir norādīta vērtība “False”, netiks ziņots par izstrādes slēdža stāvokli.</translation>
-<translation id="1156080716265314451">Konfigurē printeru sarakstu.
-
-      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
-      lietotājiem.
-
-      “<ph name="PRINTER_DISPLAY_NAME" />” un “<ph name="PRINTER_DESCRIPTION" />” ir brīvas formas virknes,
-      ko var pielāgot ērtai printera atlasei. Laukiem “<ph name="PRINTER_MANUFACTURER" />” un “<ph name="PRINTER_MODEL" />” ir jāatbilst vienam no <ph name="PRODUCT_NAME" /> atbalstītajiem
-      printeriem. Laukā “<ph name="PRINTER_URI" />” ir jābūt adresei, ko var sasniegt
-      no klienta datora, tostarp “<ph name="URI_SCHEME" />”,
-      “<ph name="URI_PORT" />” un “<ph name="URI_QUEUE" />”. Lauks “<ph name="PRINTER_UUID" />” nav jāaizpilda obligāti. Ja tas ir aizpildīts, to izmanto, lai
-      palīdzētu noņemt dublētus <ph name="ZEROCONF_DISCOVERY" /> printerus.
-
-      Printera iestatīšana ir pabeigta līdz ar printera pirmo lietošanas reizi. PPD faili netiek
-      lejupielādēti, kamēr netiek izmantots printeris. Pēc tam bieži izmantoti
-      PPD faili tiek saglabāti kešatmiņā.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus
-      atsevišķās ierīcēs. Tā ir paredzēta kā papildu politika printeru
-      konfigurācijai, ko veic atsevišķi lietotāji.</translation>
 <translation id="1160939557934457296">Aizliegums turpināt pārlūkošanu no Drošas pārlūkošanas brīdinājuma lapas</translation>
 <translation id="1198465924256827162">Ierīces statusa augšupielāžu sūtīšanas biežums milisekundēs.
 
@@ -1545,11 +1526,6 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, pārlūkā 
       Ja šī politika nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek izmantota noklusējuma vērtība (3 stundas).
 
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
-<translation id="5535957389335373033">Pārraudzības tīkla pakešu sūtīšanas biežums (milisekundēs).
-
-      Ja šī politika netiek iestatīta, noklusējuma biežums ir 3 minūtes.
-      Minimālais biežums ir 30 sekundes, maksimālais — 24 stundas.
-      Vērtības ārpus šī diapazona tiks pieskaņotas diapazonam.</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
 <translation id="5559079916187891399">Šī politika neietekmē Android lietotnes.</translation>
 <translation id="5560039246134246593">Pievienot parametru attiecībā uz variantu sākotnējās vērtības iegūšanu pārlūkā <ph name="PRODUCT_NAME" />.

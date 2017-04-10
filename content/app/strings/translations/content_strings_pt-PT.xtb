@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Introduza um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2674318244760992338">rodapé</translation>
+<translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2723001399770238859">áudio</translation>
 <translation id="2746543609216772311">O valor tem de ser <ph name="MINIMUM_DATE_OR_TIME" /> ou posterior.</translation>
 <translation id="2759744352195237655">botão pop-up</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">diretório</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">transferir multimédia</translation>
+<translation id="6989848892321993519">Aumente este texto para <ph name="MIN_CHARACTERS" /> ou mais carateres (atualmente, está a utilizar 1 caráter).</translation>
 <translation id="7057186640035488495">tempo do filme</translation>
 <translation id="709897737746224366">Faça corresponder o formato pedido.</translation>
 <translation id="7223624360433298498">tempo decorrido</translation>

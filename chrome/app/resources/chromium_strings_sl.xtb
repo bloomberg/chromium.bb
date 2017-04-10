@@ -5,6 +5,7 @@
 
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
 <translation id="1115445892567829615">Chromium ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
+<translation id="113122355610423240">Chromium je privzeti brskalnik</translation>
 <translation id="1170115874949214249">Namestite Chromium v telefonu. Na telefonsko številko za obnovitev računa bomo poslali SMS.</translation>
 <translation id="1174473354587728743">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chromium po svojih željah.</translation>
 <translation id="1185134272377778587">O Chromiumu</translation>
@@ -30,6 +31,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1869480248812203386">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chromium varnejši in preprostejši za uporabo.</translation>
 <translation id="1881322772814446296">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromiumu ostali ločeni. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
+<translation id="1966382378801805537">Chromium ne more določiti ali nastaviti privzetega brskalnika</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="2008474315282236005">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{S tem bo iz te naprave trajno izbrisan vsaj $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}one{S tem bo iz te naprave trajno izbrisan vsaj $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}two{S tem bosta iz te naprave trajno izbrisana vsaj $1 elementa. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}few{S tem bodo iz te naprave trajno izbrisani vsaj $1 elementi. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}other{S tem bo iz te naprave trajno izbrisanih vsaj $1 elementov. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}}</translation>
@@ -86,12 +88,14 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="358997566136285270">Logotip Chromiuma</translation>
 <translation id="3645040538872234961">S tem bodo iz te naprave trajno izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
+<translation id="3762167353400286894">OS Chromium je v tem jeziku</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Chromium, shranite delo in zaprite vsa okna Firefoxa. Nato kliknite »Naprej«.</translation>
 <translation id="3852700440713538496">Pripenjanje Chromiuma v opravilno vrstico</translation>
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="390894725198123737">V računalnikih Mac so gesla morda shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chromiuma, s katerimi si delite ta račun v sistemu OS X.</translation>
+<translation id="4036079820698952681">Pomagajte izboljšati Chromium s poročanjem o <ph name="BEGIN_LINK" />trenutnih nastavitvah<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="407254336480250557">Izberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
@@ -230,6 +234,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8033665941300843262">Chromium potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
+<translation id="8157153840442649507">Chromium je v tem jeziku</translation>
 <translation id="81770708095080097">Ta datoteka je nevarna, zato jo je Chromium blokiral.</translation>
 <translation id="8222496066431494154">Namestite Chromium v telefonu. Na telefonsko številko za obnovitev računa bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Pomagajte izboljšati Chromium</translation>

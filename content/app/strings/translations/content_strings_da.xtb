@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Angiv en gyldig værdi. Den nærmeste gyldige værdi er <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2674318244760992338">sidefod</translation>
+<translation id="2709516037105925701">AutoFyld</translation>
 <translation id="2723001399770238859">lyd</translation>
 <translation id="2746543609216772311">Værdien må ikke være tidligere end <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2759744352195237655">pop op-knap</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">indeks</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">download medier</translation>
+<translation id="6989848892321993519">Forlæng denne tekst til <ph name="MIN_CHARACTERS" /> eller flere tegn (du bruger i øjeblikket ét tegn).</translation>
 <translation id="7057186640035488495">filmtid</translation>
 <translation id="709897737746224366">Find et match til det anmodede format.</translation>
 <translation id="7223624360433298498">forløbet tid</translation>

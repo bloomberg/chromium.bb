@@ -5,6 +5,7 @@
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
 <translation id="1115445892567829615">Chromium could not sync your data. Please update your Sync passphrase.</translation>
+<translation id="113122355610423240">Chromium is your default browser</translation>
 <translation id="1170115874949214249">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number.</translation>
 <translation id="1174473354587728743">Share a computer? Now you can set up Chromium just the way you like it.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
@@ -30,6 +31,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1869480248812203386">You can help make Chromium safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
+<translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
@@ -85,12 +87,14 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3645040538872234961">This will permanently delete your browsing data from this device. To retrieve your data later, sign in to Chromium as $2.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
+<translation id="3762167353400286894">Chromium OS is displayed in this language</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Unfortunately, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="3852700440713538496">Pin Chromium to your taskbar</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="390894725198123737">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chromium users sharing this OS X account.</translation>
+<translation id="4036079820698952681">Help make Chromium better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="407254336480250557">Select <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Please close all Chromium windows and relaunch Chromium for this change to take effect.</translation>
@@ -229,6 +233,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
 <translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
+<translation id="8157153840442649507">Chromium is displayed in this language</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>

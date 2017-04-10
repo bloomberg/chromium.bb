@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Отличающихся элементов больше нет.</translation>
 <translation id="2800780099804980316">Предыдущего заголовка первого уровня нет.</translation>
 <translation id="280499067616661124">Поиск на странице (ChromeVox)</translation>
+<translation id="2808001342598757276">Включить экран</translation>
 <translation id="2811019999044652585">Чтобы перемещаться между разными частями экрана, например панелью инструментов и областью уведомлений, нажимайте CTRL + ВПЕРЕД. Клавиша ВПЕРЕД на Chromebook расположена над клавишей 2.</translation>
 <translation id="2811204574343810641">Строка.</translation>
 <translation id="2816654101880605877">Следующего ползунка нет.</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратная косая черта}one{# обратная косая черта}few{# обратные косые черты}many{# обратных косых черт}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Перейти вперед</translation>
+<translation id="6044160928851315051">Затемнить экран</translation>
 <translation id="6082768461603900813">Навигация</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Конец ячейки.</translation>

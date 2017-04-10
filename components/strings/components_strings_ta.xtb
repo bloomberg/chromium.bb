@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium தன்னிரப்பி அமைப்புகள்...</translation>
 <translation id="1374468813861204354">பரிந்துரைகள்</translation>
 <translation id="1375198122581997741">பதிப்பைப் பற்றி</translation>
+<translation id="1377321085342047638">கார்டு எண்</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> எந்தத் தரவையும் அனுப்பவில்லை.</translation>
 <translation id="1407135791313364759">எல்லாவற்றையும் திற</translation>
 <translation id="1413809658975081374">தனியுரிமைப் பிழை</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> தவறான பதிலை அனுப்பியது.</translation>
 <translation id="2552545117464357659">புதியது</translation>
 <translation id="2556876185419854533">&amp;திருத்தலைச் செயல்தவிர்</translation>
+<translation id="2587730715158995865">வெளியீட்டாளர்: <ph name="ARTICLE_PUBLISHER" />. இதையும் பிற வெளியீட்டாளர்கள் வழங்கும் <ph name="OTHER_ARTICLE_COUNT" /> கட்டுரைகளையும் படிக்கவும்.</translation>
 <translation id="2587841377698384444">கோப்பக API ஐடி:</translation>
 <translation id="2597378329261239068">இந்த ஆவணம் கடவுச்சொல் பாதுகாக்கப்பட்ட ஒன்று. தயவுசெய்து ஒரு கடவுச்சொல்லை உள்ளிடுக.</translation>
 <translation id="2609632851001447353">வேறுபாடுகள்</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{ஒத்திசைத்த சாதனங்களில் குறைந்தது 1 உருப்படி உள்ளது}=1{1 உருப்படி (ஒத்திசைத்த சாதனங்களில் இதற்கு மேல் உள்ளன)}other{# உருப்படிகள் (ஒத்திசைத்த சாதனங்களில் இதற்கு மேல் உள்ளன)}}</translation>
 <translation id="3041612393474885105">சான்றிதழ் தகவல்</translation>
 <translation id="3063697135517575841">இப்போது உங்கள் கார்டை உறுதிசெய்ய முடியவில்லை. பிறகு முயலவும்.</translation>
+<translation id="3064966200440839136">வெளிப்புறப் பயன்பாட்டின் மூலம் பணத்தை செலுத்த, மறைநிலையிலிருந்து வெளியேறுகிறீர்கள். தொடரவா?</translation>
 <translation id="3093245981617870298">ஆஃப்லைனில் உள்ளீர்கள்.</translation>
 <translation id="3105172416063519923">பண்பு ஐடி:</translation>
 <translation id="3109728660330352905">இந்தப் பக்கத்தைக் காண உங்களுக்கு அங்கீகாரம் அளிக்கப்படவில்லை.</translation>
@@ -260,6 +263,7 @@
 <translation id="3345135638360864351">இந்தத் தளத்தை அணுகுவதற்கான கோரிக்கையை <ph name="NAME" />க்கு அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="3355823806454867987">ப்ராக்ஸி அமைப்புகளை மாற்றுக...</translation>
 <translation id="3369192424181595722">கடிகாரப் பிழை</translation>
+<translation id="337311366426640088">மேலும் <ph name="ITEM_COUNT" /> உருப்படிகள்...</translation>
 <translation id="337363190475750230">விடுவித்தது</translation>
 <translation id="3377188786107721145">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="3380365263193509176">அறியப்படாத பிழை</translation>
@@ -275,6 +279,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">எடுப்பதற்கான இடைவேளை:</translation>
 <translation id="3462200631372590220">மேம்பட்டவையை மறை</translation>
+<translation id="3478058380795961209">காலாவதியாகும் மாதம்</translation>
 <translation id="3479539252931486093">இதை எதிர்பார்க்கவில்லையா? <ph name="BEGIN_LINK" />எங்களுக்குத் தெரியப்படுத்தவும்<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">இப்பொழுது இல்லை</translation>
 <translation id="348000606199325318">சிதைவு ஐடி <ph name="CRASH_LOCAL_ID" /> (சேவையக ஐடி: <ph name="CRASH_ID" />)</translation>
@@ -457,7 +462,6 @@
 <translation id="5300589172476337783">காண்பி</translation>
 <translation id="5308689395849655368">செயலிழப்பு புகாரளித்தல் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="5317780077021120954">சேமி</translation>
-<translation id="5326702247179446998">பெறுநர் தேவை</translation>
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> இல் உள்ள தாக்குபவர்கள், மென்பொருளை நிறுவுதல் அல்லது உங்கள் தனிப்பட்ட தகவலை (எடுத்துக்காட்டாக, கடவுச்சொற்கள், ஃபோன் எண்கள் அல்லது கிரெடிட் கார்டுகள்) வெளியிடச் செய்தல் போன்ற ஆபத்தான செயல்களைச் செய்யும்படி ஏமாற்ற முயற்சிக்கலாம்.</translation>
 <translation id="53553865750799677">ஆதரிக்கப்படாத பிக்கப் முகவரி. வேறு முகவரியைத் தேர்ந்தெடுக்கவும்.</translation>
@@ -559,6 +563,7 @@
 <translation id="6358450015545214790">இவற்றின் பொருள் என்ன?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{மேலும் 1 பரிந்துரை}other{மேலும் # பரிந்துரைகள்}}</translation>
 <translation id="6387478394221739770">புதிய Chrome அம்சங்களில் ஆர்வம் உள்ளதா? chrome.com/beta இல் எங்களுடைய பீட்டா அலைவரிசையை முயற்சிக்கவும்.</translation>
+<translation id="6389470377220713856">அட்டையிலுள்ள பெயர்</translation>
 <translation id="6389758589412724634">நினைவகப் பற்றாக்குறையினால், Chromium இந்த இணையப்பக்கத்தைக் காட்டவில்லை.</translation>
 <translation id="6404511346730675251">புக்மார்க்குகளைத் திருத்து</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" />க்கான காலாவதித் தேதியையும் CVC எண்ணையும் உள்ளிடவும்</translation>
@@ -608,6 +613,7 @@
 <translation id="6778737459546443941">இன்னும் உங்கள் பெற்றோர் அனுமதிக்கவில்லை</translation>
 <translation id="6810899417690483278">தனிப்பயனாக்கல் ஐடி</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">மண்டலங்களின் தரவை ஏற்ற முடியவில்லை</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
 <translation id="6839929833149231406">பகுதி</translation>
 <translation id="6874604403660855544">&amp;சேர்த்தலை மீண்டும் செய்</translation>
@@ -622,7 +628,6 @@
 <translation id="6973656660372572881">நிலையான ப்ராக்ஸி சேவையகங்களும் .pac ஸ்கிரிப்ட் URL ஆகிய இரண்டும் குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="6989763994942163495">மேம்பட்ட அமைப்புகளைக் காண்பி...</translation>
 <translation id="7000990526846637657">வரலாறு உள்ளீடுகள் எதுவுமில்லை</translation>
-<translation id="7001663382399377034">பெறுநரைச் சேர்க்கவும்</translation>
 <translation id="7009986207543992532"><ph name="DOMAIN" />க்குச் செல்ல முயன்றீர்கள், ஆனால் நீண்ட செல்லுபடிக் காலத்தைக் கொண்ட சான்றிதழை சேவையகம் வழங்கியுள்ளது, இதுபோன்ற சான்றிதழ்கள் நம்பத்தக்கவையல்ல. <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">சீனா UnionPay</translation>
 <translation id="7012372675181957985">உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> என்ற தளத்தில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்</translation>
@@ -768,6 +773,7 @@
 <translation id="8349305172487531364">புக்மார்க் பட்டி</translation>
 <translation id="8363502534493474904">விமானப் பயன்முறையை முடக்குதல்</translation>
 <translation id="8364627913115013041">அமைக்கப்படவில்லை.</translation>
+<translation id="8368476060205742148">Google Play சேவைகள்</translation>
 <translation id="8380941800586852976">ஆபத்தானது</translation>
 <translation id="8382348898565613901">நீங்கள் சமீபத்தில் பார்வையிட்ட புத்தகக்குறிகள் இங்கே தோன்றும்</translation>
 <translation id="8398259832188219207">சிதைவு அறிக்கை பதிவேற்றப்பட்ட தேதி: <ph name="UPLOAD_TIME" /></translation>
@@ -783,6 +789,7 @@
 <translation id="8492969205326575646">ஆதரிக்கப்படாத கார்டு வகை</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> பதிலளிக்க நீண்ட நேரம் எடுத்துக்கொண்டது.</translation>
 <translation id="852346902619691059"><ph name="DOMAIN" /> என இந்தச் சேவையகத்தால் நிரூபிக்க முடியவில்லை. இதன் பாதுகாப்புச் சான்றிதழை உங்கள் சாதனத்தின் இயக்க முறைமை நம்பவில்லை. இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது உங்கள் இணைப்பில் தீங்கிழைப்பவர் குறுக்கிட்டிருக்கலாம். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">காலாவதியாகும் ஆண்டு</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />கண்டறிவதில் சிக்கல் இருப்பதைப் புகாரளிக்கலாம்<ph name="END_ERROR_LINK" /> அல்லது உங்கள் பாதுகாப்பிற்கு ஏற்படக்கூடிய ஆபத்துகளைப் புரிந்துகொண்டிருந்தால், <ph name="BEGIN_LINK" />இந்தப் பாதுகாப்பற்ற தளத்திற்குச் செல்லலாம்<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">பக்கத்தின் மொழியைத் தீர்மானிக்க முடியாததால் மொழிபெயர்ப்பு தோல்வியடைந்தது.</translation>
 <translation id="8559762987265718583">உங்கள் சாதனத்தின் தேதி மற்றும் நேரம் (<ph name="DATE_AND_TIME" />) தவறாக உள்ளதால் <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> க்கான தனிப்பட்ட இணைப்பை ஏற்படுத்த முடியவில்லை.</translation>

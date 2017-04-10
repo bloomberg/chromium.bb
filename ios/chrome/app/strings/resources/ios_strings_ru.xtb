@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Этот пароль будет добавлен в <ph name="BEGIN_LINK" />список сохраненных паролей<ph name="END_LINK" />, чтобы Chrome мог автоматически вводить его в соответствующие поля.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
+<translation id="3474624961160222204">Продолжить как <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Формы заполнены</translation>
 <translation id="3478058380795961209">Месяц</translation>
 <translation id="3482959374254649722">Синхронизация вкладок...</translation>
 <translation id="3489372701259491571">Удалить сохран. пароль</translation>
+<translation id="3494788280727468875">Подтвердить удаление данных о работе в браузере</translation>
 <translation id="3519193562722059437">Чтобы просматривать веб-страницы, откройте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3551320343578183772">Закрыть вкладку</translation>
@@ -143,6 +145,7 @@
 Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
 <translation id="3607167657931203000">Данные автозаполнен.</translation>
 <translation id="3608436266458100337">Режим чтения</translation>
+<translation id="3628119975092896051">Ваш список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">Показана история только с этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Полное имя</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
+<translation id="7159472599653637159">Требуется моб. версия</translation>
 <translation id="7167621057293532233">Типы данных</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это не повлияет на данные, сохраненные в аккаунте ранее.</translation>
+<translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Регион</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7464701184726199289">Синхронизированные данные будут удалены со всех устройств. Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>

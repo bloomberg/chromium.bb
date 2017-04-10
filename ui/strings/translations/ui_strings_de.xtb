@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
+<translation id="1156623771253174079">{SECONDS,plural, =1{Vor 1 Minute}other{Vor # Minuten}}</translation>
 <translation id="1190609913194133056">Benachrichtigungscenter</translation>
 <translation id="1243314992276662751">Hochladen</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -62,6 +63,7 @@
 <translation id="5046499563572181734">Hier tippen</translation>
 <translation id="5076340679995252485">&amp;Einfügen</translation>
 <translation id="5120799197269191491">Suche+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5153297660536091054">Funktion zur Entsperrung mit PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">Ende</translation>
 <translation id="5329858601952122676">&amp;Löschen</translation>
@@ -85,6 +87,7 @@
 <translation id="6364916375976753737">Nach links blättern</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 Sek. her}other{# Sek. her}}</translation>
+<translation id="6483402905448010557">{SECONDS,plural, =1{Vor 1 Sekunde}other{Vor # Sekunden}}</translation>
 <translation id="6528179044667508675">Nicht stören</translation>
 <translation id="6612467943526193239">Zum Abbrechen der Kalibrierung ESC drücken.</translation>
 <translation id="6620110761915583480">Datei speichern</translation>
@@ -113,6 +116,7 @@
 <translation id="7814458197256864873">&amp;Kopieren</translation>
 <translation id="7850320739366109486">Nicht stören</translation>
 <translation id="7907591526440419938">Datei öffnen</translation>
+<translation id="8054029954190364711">Funktion zur Entsperrung per Fingerabdruck</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 Stunde her}other{# Stunden her}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 Sek. übrig}other{# Sek. übrig}}</translation>
 <translation id="815598010540052116">Nach unten blättern</translation>

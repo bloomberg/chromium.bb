@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Chromium ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="1374468813861204354">ಸಲಹೆಗಳು</translation>
 <translation id="1375198122581997741">ಆವೃತ್ತಿಯ ಕುರಿತು</translation>
+<translation id="1377321085342047638">ಕಾರ್ಡ್ ಸಂಖ್ಯೆ</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> ಯಾವುದೇ ಡೇಟಾ ಕಳುಹಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="1407135791313364759">ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="1413809658975081374">ಗೌಪ್ಯತೆ ದೋಷ</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ಅಮಾನ್ಯ ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿದೆ.</translation>
 <translation id="2552545117464357659">ನವೀನ</translation>
 <translation id="2556876185419854533">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
+<translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> ಅವರಿಂದ. ಇದನ್ನು ಮತ್ತು ಇತರ <ph name="OTHER_ARTICLE_COUNT" /> ಸುದ್ದಿಗಳನ್ನು ಓದಿ.</translation>
 <translation id="2587841377698384444">ಡೈರೆಕ್ಟರಿ API ID:</translation>
 <translation id="2597378329261239068">ಈ ಡಾಕ್ಯುಮೆಂಟ್‌ ಅನ್ನು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ರಕ್ಷಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="2609632851001447353">ಪರಿವರ್ತನೆಗಳು</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಕನಿಷ್ಟ 1 ಐಟಂ}=1{1 ಐಟಂ (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}one{# ಐಟಂಗಳು (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}other{# ಐಟಂಗಳು (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}}</translation>
 <translation id="3041612393474885105">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
 <translation id="3063697135517575841">ಈ ಸಮಯದಲ್ಲಿ Chrome ಗೆ ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಖಚಿತಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="3064966200440839136">ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್‌‌ ಮೂಲಕರ ಪಾವತಿಸಲು ಅದೃಶ್ಯ ಮೋಡ್‌‌ ತೊರೆಯಲಾಗುತ್ತಿದೆ. ಮುಂದುವರಿಸುವುದೇ?</translation>
 <translation id="3093245981617870298">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ.</translation>
 <translation id="3105172416063519923">ಸ್ವತ್ತು ID:</translation>
 <translation id="3109728660330352905">ಈ ಪುಟ ವೀಕ್ಷಿಸುವ ಅಧಿಕಾರ ನಿಮಗಿಲ್ಲ</translation>
@@ -261,6 +264,7 @@
 <translation id="3345135638360864351">ಈ ಸೈಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಲು ನೀವು ಸಲ್ಲಿಸಿದ ವಿನಂತಿಯನ್ನು <ph name="NAME" /> ಗೆ ಕಳುಹಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3355823806454867987">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸಿ...</translation>
 <translation id="3369192424181595722">ಗಡಿಯಾರ ದೋಷ</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> ಇನ್ನಷ್ಟು ಐಟಂಗಳು...</translation>
 <translation id="337363190475750230">ಅನುಮತಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="3377188786107721145">ನೀತಿಯ ಪಾರ್ಸ್ ದೋಷ</translation>
 <translation id="3380365263193509176">ಅಪರಿಚಿತ ದೋಷ</translation>
@@ -276,6 +280,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">ವಿರಾಮವನ್ನು ಪಡೆಯಿರಿ:</translation>
 <translation id="3462200631372590220">ಸುಧಾರಿತ ಆಯ್ಕೆಮಾಡಿ</translation>
+<translation id="3478058380795961209">ಮುಕ್ತಾಯದ ತಿಂಗಳು</translation>
 <translation id="3479539252931486093">ಇದು ಅನಿರೀಕ್ಷಿತವೇ? <ph name="BEGIN_LINK" />ನಮಗೆ ತಿಳಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="348000606199325318">ಕ್ರ್ಯಾಶ್ ಐಡಿ <ph name="CRASH_LOCAL_ID" /> (ಸರ್ವರ್ ಐಡಿ: <ph name="CRASH_ID" />)</translation>
@@ -457,7 +462,6 @@
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="5308689395849655368">ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
-<translation id="5326702247179446998">ಸ್ವೀಕರಿಸುವವರ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="5327248766486351172">ಹೆಸರು</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನಲ್ಲಿನ ಆಕ್ರಮಣಕಾರರು ಸಾಫ್ಟ್‌ವೇರ್ ಸ್ಥಾಪಿಸುವಿಕೆ ಅಥವಾ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ಬಹಿರಂಗ ಪಡಿಸುವಂತಹ ಅಪಾಯಕಾರಿಯಾಗಿ ಏನಾದರೂ ಮಾಡುವಂತಹ ಮೋಸವನ್ನು ಮಾಡಬಹುದು (ಉದಾಹರಣೆಗೆ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಫೋನ್‌ ಸಂಖ್ಯೆಗಳು, ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು).</translation>
 <translation id="53553865750799677">ಬೆಂಬಲಿತವಲ್ಲದ ಪಿಕಪ್ ವಿಳಾಸ. ವಿಭಿನ್ನ ವಿಳಾಸವನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
@@ -559,6 +563,7 @@
 <translation id="6358450015545214790">ಇವುಗಳ ಅರ್ಥವೇನು?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ಇತರ ಸಲಹೆ}one{# ಇತರ ಸಲಹೆಗಳು}other{# ಇತರ ಸಲಹೆಗಳು}}</translation>
 <translation id="6387478394221739770">ಉತ್ತಮವಾದ ಹೊಸ Chrome ವೈಶಿಷ್ಟ್ಯಗಳಲ್ಲಿ ಆಸಕ್ತಿ ಇದೆಯೇ? chrome.com/beta ನಲ್ಲಿ ನಮ್ಮ ಬೀಟಾ ಚಾನಲ್ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="6389470377220713856">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರು</translation>
 <translation id="6389758589412724634">ಈ ವೆಬ್‌ಪುಟ ಪ್ರದರ್ಶಿಸಲು ಪ್ರಯತ್ನಿಸುವಾಗ Chromium ಮೆಮೊರಿ ಖಾಲಿಯಾಗಿದೆ.</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> ಗೆ ಮುಕ್ತಾಯ ದಿನಾಂಕ ಮತ್ತು ಸಿವಿಸಿ ಅನ್ನು ನಮೂದಿಸಿ</translation>
@@ -608,6 +613,7 @@
 <translation id="6778737459546443941">ನಿಮ್ಮ ಪೋಷಕರು ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
 <translation id="6810899417690483278">ಕಸ್ಟಮೈಸೇಶನ್ ಐಡಿ</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">ಪ್ರದೇಶಗಳ ಡೇಟಾವನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
 <translation id="6839929833149231406">ಪ್ರದೇಶ</translation>
 <translation id="6874604403660855544">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -622,7 +628,6 @@
 <translation id="6973656660372572881">ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳು ಮತ್ತು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಎರಡನ್ನೂ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
 <translation id="6989763994942163495">ಸುಧಾರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸು...</translation>
 <translation id="7000990526846637657">ಯಾವುದೇ ಇತಿಹಾಸ ದಾಖಲೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
-<translation id="7001663382399377034">ಸ್ವೀಕರಿಸುವವರನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="7009986207543992532">ನೀವು <ph name="DOMAIN" /> ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ವಾಯಿದೆ ಅವಧಿ ದೀರ್ಘವಾಗಿರುವ ವಿಶ್ವಾಸಾರ್ಹವಾದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸರ್ವರ್ ಪ್ರಸ್ತುತಪಡಿಸಿದೆ. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದ ಇತರ ಪ್ರಕಾರಗಳನ್ನು ಹೊಂದಿರಬಹುದು</translation>
@@ -768,6 +773,7 @@
 <translation id="8349305172487531364">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಬಾರ್</translation>
 <translation id="8363502534493474904">ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್ ಆಫ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8364627913115013041">ಹೊಂದಿಸಿಲ್ಲ.</translation>
+<translation id="8368476060205742148">Google Play ಸೇವೆಗಳು</translation>
 <translation id="8380941800586852976">ಅಪಾಯಕಾರಿ</translation>
 <translation id="8382348898565613901">ನೀವು ಇತ್ತೀಚಿಗೆ ಭೇಟಿ ನೀಡಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -783,6 +789,7 @@
 <translation id="8492969205326575646">ಬೆಂಬಲವಿಲ್ಲದ ಕಾರ್ಡ್ ಪ್ರಕಾರ</translation>
 <translation id="8498891568109133222">ಪ್ರತಿಕ್ರಿಯಿಸಲು <ph name="HOST_NAME" /> ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಂಡಿದೆ.</translation>
 <translation id="852346902619691059">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂನಿಂದ ವಿಶ್ವಾಸಹೊಂದಿಲ್ಲ. ಇದು ತಪ್ಪಾದ ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">ಮುಕ್ತಾಯದ ವರ್ಷ</translation>
 <translation id="8543181531796978784">ನೀವು <ph name="BEGIN_ERROR_LINK" />ಪತ್ತೆ ಹಚ್ಚುವಿಕೆ ಸಮಸ್ಯೆಯನ್ನು ವರದಿ ಮಾಡಬಹುದು<ph name="END_ERROR_LINK" /> ಅಥವಾ ನಿಮ್ಮ ಭದ್ರತೆಯ ಅಪಾಯಗಳ ಕುರಿತು ನಿಮಗೆ ಅರ್ಥವಾಗಿದ್ದರೆ, <ph name="BEGIN_LINK" />ಈ ಅಸುರಕ್ಷಿತ ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">ಪುಟದ ಭಾಷೆಯನ್ನು ಗುರುತಿಸಲು ಅಸಾಧ್ಯವಾದ ಕಾರಣ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಗೆ ಖಾಸಗಿ ಸಂಪರ್ಕವನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ ಏಕೆಂದರೆ ನಿಮ್ಮ ಸಾಧನದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯ (<ph name="DATE_AND_TIME" />) ತಪ್ಪಾಗಿದೆ.</translation>

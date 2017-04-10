@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Cài đặt tự động điền trong Chromium...</translation>
 <translation id="1374468813861204354">đề xuất</translation>
 <translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
+<translation id="1377321085342047638">Số thẻ</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> không gửi bất kỳ dữ liệu nào.</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
 <translation id="1413809658975081374">Lỗi bảo mật</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> đã gửi phản hồi không hợp lệ.</translation>
 <translation id="2552545117464357659">Mới hơn</translation>
 <translation id="2556876185419854533">&amp;Hoàn tác chỉnh sửa</translation>
+<translation id="2587730715158995865">Từ <ph name="ARTICLE_PUBLISHER" />. Đọc tin bài này và <ph name="OTHER_ARTICLE_COUNT" /> tin bài khác.</translation>
 <translation id="2587841377698384444">ID API thư mục:</translation>
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
 <translation id="2609632851001447353">Các biến thể</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
 <translation id="3063697135517575841">Chrome không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
+<translation id="3064966200440839136">Rời khỏi chế độ ẩn danh để thanh toán qua một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="3093245981617870298">Bạn đang ngoại tuyến.</translation>
 <translation id="3105172416063519923">ID phần tử:</translation>
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Không thể gửi yêu cầu truy cập trang web này của bạn tới <ph name="NAME" />. Vui lòng thử lại.</translation>
 <translation id="3355823806454867987">Thay đổi cài đặt proxy...</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> mục khác...</translation>
 <translation id="337363190475750230">Đã hủy cấp phép</translation>
 <translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="3380365263193509176">Lỗi không xác định</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Khoảng thời gian tìm nạp:</translation>
 <translation id="3462200631372590220">Ẩn chi tiết</translation>
+<translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3479539252931486093">Trang web này có như bạn mong đợi không? Hãy <ph name="BEGIN_LINK" />cho chúng tôi biết<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="348000606199325318">ID sự cố <ph name="CRASH_LOCAL_ID" /> (ID máy chủ: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
 <translation id="5317780077021120954">Lưu</translation>
-<translation id="5326702247179446998">Cần có người nhận</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5337705430875057403">Kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn làm một việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân của bạn (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng).</translation>
 <translation id="53553865750799677">Địa chỉ nhận hàng không được hỗ trợ. Hãy chọn một địa chỉ khác.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387478394221739770">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh thử nghiệm beta của chúng tôi tại chrome.com/beta.</translation>
+<translation id="6389470377220713856">Tên trên thẻ</translation>
 <translation id="6389758589412724634">Chromium đã hết bộ nhớ khi cố gắng hiển thị trang web này.</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6410264514553301377">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Không tải được dữ liệu khu vực</translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6839929833149231406">Khu vực</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
 <translation id="7000990526846637657">Không tìm thấy mục nhập lịch sử nào</translation>
-<translation id="7001663382399377034">Thêm người nhận</translation>
 <translation id="7009986207543992532">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã xuất trình chứng chỉ có thời gian có hiệu lực quá dài để có thể tin cậy. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Tài khoản Google của bạn có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8349305172487531364">Thanh dấu trang</translation>
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
 <translation id="8364627913115013041">Chưa được đặt.</translation>
+<translation id="8368476060205742148">Dịch vụ của Google Play</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>
 <translation id="8382348898565613901">Dấu trang bạn truy cập gần đây sẽ xuất hiện ở đây</translation>
 <translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8492969205326575646">Loại thẻ không được hỗ trợ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
 <translation id="852346902619691059">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành của thiết bị tin tưởng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Năm hết hạn</translation>
 <translation id="8543181531796978784">Bạn có thể <ph name="BEGIN_ERROR_LINK" />báo cáo sự cố đã phát hiện<ph name="END_ERROR_LINK" /> hoặc nếu bạn hiểu rủi ro với bảo mật của mình, hãy <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
 <translation id="8559762987265718583">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không đúng.</translation>

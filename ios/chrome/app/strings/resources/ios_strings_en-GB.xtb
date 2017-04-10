@@ -128,10 +128,12 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3414292259312108062">Chrome will store this in your <ph name="BEGIN_LINK" />Google saved passwords<ph name="END_LINK" /> and autofill it for you so that you don't have to remember it yourself.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
+<translation id="3474624961160222204">Continue as <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
 <translation id="3489372701259491571">Delete Saved Password</translation>
+<translation id="3494788280727468875">Confirm Clear Browsing Data</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Close Tab</translation>
@@ -143,6 +145,7 @@ For example, some websites may respond to this request by showing you ads that a
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
 <translation id="3608436266458100337">Reader mode</translation>
+<translation id="3628119975092896051">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Touch to Search</translation>
@@ -303,6 +306,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7131892264600713844">Showing history from this device. <ph name="BEGIN_LINK" />Find out more.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Full Name</translation>
 <translation id="7136892417564438900">Camera is unavailable</translation>
+<translation id="7159472599653637159">Request Mobile Site</translation>
 <translation id="7167621057293532233">Data Types</translation>
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7203585745079012652">Speak Answers Back</translation>
@@ -312,6 +316,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Search <ph name="SEARCH_ENGINE" /> For This Image</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>
+<translation id="744343212394640790">Not <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">State / County</translation>
 <translation id="7456847797759667638">Open Location...</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>

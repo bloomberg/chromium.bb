@@ -128,10 +128,12 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="3414292259312108062">Iiimbak ito ng Chrome sa iyong <ph name="BEGIN_LINK" />mga naka-save na password sa Google<ph name="END_LINK" /> at io-autofill ito para sa iyo nang sa gayon ay hindi mo na ito kailangang tandaan.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
 <translation id="3448016392200048164">Split View</translation>
+<translation id="3474624961160222204">Magpatuloy bilang si <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Nasagutan na ang mga form.</translation>
 <translation id="3478058380795961209">Buwan ng Pag-expire</translation>
 <translation id="3482959374254649722">Sini-sync ang iyong mga tab...</translation>
 <translation id="3489372701259491571">I-delete Saved Password</translation>
+<translation id="3494788280727468875">Kumpirmahin ang Pag-clear ng Data mula sa Pag-browse</translation>
 <translation id="3519193562722059437">Magbukas ng tab upang i-browse ang web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Isara ang Tab</translation>
@@ -143,6 +145,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal upang mapili ito. Upang pinuhin ang iyong paghahanap, i-slide ang panel hanggang sa pinakaitaas at pindutin ang box para sa paghahanap.</translation>
 <translation id="3607167657931203000">Mag-autofill ng Data</translation>
 <translation id="3608436266458100337">Reader mode</translation>
+<translation id="3628119975092896051">Available offline ang iyong listahan ng babasahin. Upang magdagdag ng page sa listahan ng babasahin mo, i-tap ang <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Mag-preload ng Mga Webpage</translation>
 <translation id="3691593122358196899">Na-bookmark sa <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Pindutin upang Hanapin</translation>
@@ -303,6 +306,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7131892264600713844">Ipinapakita ang history mula sa device na ito. <ph name="BEGIN_LINK" />Matuto nang higit pa.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Buong Pangalan</translation>
 <translation id="7136892417564438900">Hindi available ang camera</translation>
+<translation id="7159472599653637159">Hilingin ang Pang-mobile na Site</translation>
 <translation id="7167621057293532233">Mga Uri ng Data</translation>
 <translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
@@ -312,6 +316,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Hanapin Sa <ph name="SEARCH_ENGINE" /> Ang Larawang Ito</translation>
 <translation id="7425346204213733349">Hindi na masi-sync sa iyong Google Account ang mga pagbabago sa iyong mga bookmark, history, password at iba pang setting. Gayunpaman, mananatiling nakaimbak sa iyong Google account ang iyong kasalukuyang data.</translation>
+<translation id="744343212394640790">Hindi <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado / County</translation>
 <translation id="7456847797759667638">Buksan ang Lokasyon...</translation>
 <translation id="7464701184726199289">Maki-clear nito ang mga naka-sync na data mula sa lahat ng device. Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>

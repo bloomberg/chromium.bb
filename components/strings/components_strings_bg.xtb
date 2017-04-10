@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Настройки за Автоматично попълване в Chromium...</translation>
 <translation id="1374468813861204354">предложения</translation>
 <translation id="1375198122581997741">Всичко за версията</translation>
+<translation id="1377321085342047638">№ на картата</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> не изпрати данни.</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1413809658975081374">Грешка, свързана в поверителността</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> изпрати невалиден отговор.</translation>
 <translation id="2552545117464357659">По-нова</translation>
 <translation id="2556876185419854533">&amp;Отмяна на редактирането</translation>
+<translation id="2587730715158995865">От <ph name="ARTICLE_PUBLISHER" />. Прочетете тази и още <ph name="OTHER_ARTICLE_COUNT" /> статии.</translation>
 <translation id="2587841377698384444">ID на API за директории:</translation>
 <translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
 <translation id="2609632851001447353">Вариации</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{поне 1 елемент на синхронизирани устройства}=1{1 елемент (и други на синхронизирани устройства)}other{# елемента (и други на синхронизирани устройства)}}</translation>
 <translation id="3041612393474885105">Информация за сертификата</translation>
 <translation id="3063697135517575841">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
+<translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
 <translation id="3093245981617870298">Понастоящем сте офлайн.</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Заявката ви за достъп до този сайт не можа да се изпрати до <ph name="NAME" />. Моля, опитайте отново.</translation>
 <translation id="3355823806454867987">Промяна на настройките на прокси сървъра...</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
+<translation id="337311366426640088">Още <ph name="ITEM_COUNT" /> елемента...</translation>
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
 <translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
 <translation id="3380365263193509176">Неизвестна грешка</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Интервал на извличане:</translation>
 <translation id="3462200631372590220">Скриване на подробностите</translation>
+<translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3479539252931486093">Това неочаквано ли беше? <ph name="BEGIN_LINK" />Уведомете ни<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="348000606199325318">Идентификатор на срива: <ph name="CRASH_LOCAL_ID" /> (Идентификатор на сървъра: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5308689395849655368">Изпращането на сигнали за сривове е деактивирано.</translation>
 <translation id="5317780077021120954">Запазване</translation>
-<translation id="5326702247179446998">Трябва да въведете получател</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5337705430875057403">Извършителите на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> може да ви подведат да направите нещо опасно, като например да инсталирате софтуер или да разкриете лична информация (например пароли, телефонни номера или номера на кредитни карти).</translation>
 <translation id="53553865750799677">Адресът за вземане не се поддържа. Изберете друг.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
 <translation id="6387478394221739770">Търсите интересни нови функции на Chrome? Изпробвайте бета канала на адрес chrome.com/beta.</translation>
+<translation id="6389470377220713856">Име върху картата</translation>
 <translation id="6389758589412724634">Паметта на Chromium се изчерпа, докато браузърът опитваше да покаже тази уеб страница.</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6410264514553301377">Въвеждане на датата на валидност и кода за проверка за <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Родителят ви все още не е одобрил заявката</translation>
 <translation id="6810899417690483278">Идент. № на персонализирането</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
+<translation id="6824266427216888781">Зареждането на данните за регионите не бе успешно</translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="6839929833149231406">Район</translation>
 <translation id="6874604403660855544">&amp;Възстановяване на добавянето</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
 <translation id="6989763994942163495">Показване на разширените настройки...</translation>
 <translation id="7000990526846637657">Няма намерени записи в историята</translation>
-<translation id="7001663382399377034">Добавяне на получател</translation>
 <translation id="7009986207543992532">Опитахте да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, чийто период на валидност е твърде дълъг, за да е надежден. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">Лента на отметките</translation>
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
 <translation id="8364627913115013041">Не е зададено.</translation>
+<translation id="8368476060205742148">Услуги за Google Play</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8382348898565613901">Наскоро посетените от вас отметки ще се показват тук</translation>
 <translation id="8398259832188219207">Сигналът за срив е качен в/ъв <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">Неподдържан тип карта</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
 <translation id="852346902619691059">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност не се счита за надежден от операционната система на устройството ви. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8543181531796978784">Можете да <ph name="BEGIN_ERROR_LINK" />подадете сигнал за проблем при откриването<ph name="END_ERROR_LINK" /> или, ако разбирате рисковете за сигурността си, да <ph name="BEGIN_LINK" />посетите този небезопасен сайт<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
 <translation id="8559762987265718583">Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, тъй като датата и часът на устройството ви (<ph name="DATE_AND_TIME" />) са неправилни.</translation>

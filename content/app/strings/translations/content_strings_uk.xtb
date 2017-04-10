@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Введіть дійсне значення. Найближче дійсне значення: <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2674318244760992338">нижній колонтитул</translation>
+<translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2723001399770238859">аудіо</translation>
 <translation id="2746543609216772311">Має бути <ph name="MINIMUM_DATE_OR_TIME" /> або пізніша дата.</translation>
 <translation id="2759744352195237655">кнопка спливаючої підказки</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">каталог</translation>
 <translation id="6934078000481955284">цитата</translation>
 <translation id="6941933287844615239">завантажити медіафайл</translation>
+<translation id="6989848892321993519">У тексті має бути не менше стількох символів: <ph name="MIN_CHARACTERS" />. Наразі ви ввели 1 символ.</translation>
 <translation id="7057186640035488495">тривалість фільму</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
 <translation id="7223624360433298498">минуло часу</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
+<translation id="113122355610423240">既定のブラウザは Chromium です</translation>
 <translation id="1170115874949214249">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号に、Google より SMS をお送りします。</translation>
 <translation id="1174473354587728743">共有パソコンにするなど、Chromium をお好みの方法で設定できるようになりました。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
@@ -28,6 +29,7 @@
 <translation id="1869480248812203386">セキュリティに関する事象についての詳細を Google に自動送信して、Chromium の安全性と利便性の向上にご協力ください。</translation>
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
+<translation id="1966382378801805537">Chromium では既定のブラウザを判定または設定できません</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2008474315282236005">この端末から 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
@@ -83,12 +85,14 @@
 <translation id="358997566136285270">Chromium ロゴ</translation>
 <translation id="3645040538872234961">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
+<translation id="3762167353400286894">Chromium OS はこの言語で表示されています</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox の設定は現在ブラウザが実行されているため使用できません。設定をインポートするには、作業内容を保存し、Firefox のウィンドウをすべて閉じてから、[続行] をクリックしてください。</translation>
 <translation id="3852700440713538496">Chromium をタスクバーにピン留めする</translation>
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="390894725198123737">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
+<translation id="4036079820698952681"><ph name="BEGIN_LINK" />現在の設定<ph name="END_LINK" />を送信して Chromium の品質向上にご協力ください</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> を選択します</translation>
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
@@ -227,6 +231,7 @@
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8033665941300843262">このサイトと制限付き機能を共有するには、Chromium に制限付き機能へのアクセスを許可する必要があります。</translation>
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
+<translation id="8157153840442649507">Chromium はこの言語で表示されています</translation>
 <translation id="81770708095080097">このファイルは危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="8222496066431494154">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>

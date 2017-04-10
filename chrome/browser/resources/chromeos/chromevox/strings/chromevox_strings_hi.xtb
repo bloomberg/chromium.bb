@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">कोई और भिन्‍न तत्‍व नहीं.</translation>
 <translation id="2800780099804980316">कोई पिछला स्‍तर 1 शीर्षक नहीं.</translation>
 <translation id="280499067616661124">पेज में ChromeVox ढूंढें</translation>
+<translation id="2808001342598757276">स्क्रीन का गहरापन हटाएं</translation>
 <translation id="2811019999044652585">स्क्रीन के टूलबार या सिस्टम ट्रे जैसे अन्य भागों पर सीधे जाने के लिए, Control+Forward दबाएं. Chromebook पर Forward कुंजी, संख्या 2 कुंजी के ठीक ऊपर होती है.</translation>
 <translation id="2811204574343810641">पंक्ति</translation>
 <translation id="2816654101880605877">कोई अगला स्लाइडर नहीं.</translation>
@@ -565,6 +566,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6006050241733874051">फ़ॉर्म</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{बैकस्लैश}one{# बैकस्लैश}other{# बैकस्लैश}}</translation>
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
+<translation id="6044160928851315051">स्क्रीन गहरी करें</translation>
 <translation id="6082768461603900813">मूलभूत नेविगेशन</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">सेल के अंत में.</translation>

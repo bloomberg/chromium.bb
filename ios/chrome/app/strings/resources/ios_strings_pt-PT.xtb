@@ -128,10 +128,12 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="3414292259312108062">O Chrome armazena esta informação nas suas <ph name="BEGIN_LINK" />palavras-passe guardadas do Google<ph name="END_LINK" /> e preenche-a automaticamente por si para que não a tenha de memorizar.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
+<translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulários preenchidos.</translation>
 <translation id="3478058380795961209">Mês de validade</translation>
 <translation id="3482959374254649722">A sincronizar os seus separadores...</translation>
 <translation id="3489372701259491571">El. palavra-passe guard.</translation>
+<translation id="3494788280727468875">Confirmar limpeza dos dados de navegação</translation>
 <translation id="3519193562722059437">Abra um separador para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
@@ -143,6 +145,7 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
 <translation id="3608436266458100337">Modo de leitor</translation>
+<translation id="3628119975092896051">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -303,6 +306,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7131892264600713844">A mostrar o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmara não está disponível</translation>
+<translation id="7159472599653637159">Pedir site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
@@ -312,6 +316,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
+<translation id="744343212394640790">Não é <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Distrito/concelho</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>

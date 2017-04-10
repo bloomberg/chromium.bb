@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Báo cáo trạng thái của bộ chuyển đổi dành cho nhà phát triển của thiết bị lúc khởi động.
 
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
-<translation id="1156080716265314451">Định cấu hình danh sách máy in.
-
-      Chính sách này cho phép các quản trị viên cung cấp cấu hình máy in cho
-      người dùng của họ.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi biểu mẫu miễn phí
-      có thể được tùy chỉnh để dễ chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> phải khớp với một trong các máy in <ph name="PRODUCT_NAME" /> được hỗ trợ.
-      <ph name="PRINTER_URI" /> phải là địa chỉ có thể truy cập
-      từ một máy khách bao gồm <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />.  <ph name="PRINTER_UUID" /> là tùy chọn.  Nếu được cung cấp, tùy chọn này sẽ được sử dụng để
-      giúp loại bỏ trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
-
-      Thiết lập máy in được hoàn tất trong lần đầu tiên sử dụng máy in.  PPD không được
-      tải xuống cho đến khi máy in được sử dụng.  Sau thời gian đó, PPD
-      thường xuyên được sử dụng sẽ được lưu vào bộ nhớ cache.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên
-      các thiết bị cá nhân hay không.  Chính sách này nhằm bổ sung cho
-      việc người dùng cá nhân định cấu hình máy in.</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
 <translation id="1198465924256827162">Tần suất tải lên trạng thái thiết bị, bằng mili giây.
 
@@ -1545,11 +1526,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng giá trị mặc định là 3 giờ.
 
       Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ bắt buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
-<translation id="5535957389335373033">Tần suất gửi thông tin theo dõi gói mạng, bằng mili giây.
-
-      Nếu chính sách này không được đặt thì tần suất mặc định là 3 phút. Tần suất
-      nhỏ nhất là 30 giây và tần suất lớn nhất là 24 giờ - các giá trị
-      nằm ngoài phạm vi này sẽ được giới hạn trong phạm vi này.</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
 <translation id="5559079916187891399">Chính sách này không ảnh hưởng đến các ứng dụng Android.</translation>
 <translation id="5560039246134246593">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_NAME" />.

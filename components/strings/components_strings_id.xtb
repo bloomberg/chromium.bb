@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Setelan IsiOtomatis Chromium...</translation>
 <translation id="1374468813861204354">saran</translation>
 <translation id="1375198122581997741">Tentang Versi</translation>
+<translation id="1377321085342047638">Nomor Kartu</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> tidak mengirimkan data apa pun.</translation>
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1413809658975081374">Kesalahan privasi</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> mengirimkan tanggapan yang tidak valid.</translation>
 <translation id="2552545117464357659">Anyar</translation>
 <translation id="2556876185419854533">&amp;Urungkan Pengeditan</translation>
+<translation id="2587730715158995865">Dari <ph name="ARTICLE_PUBLISHER" />. Baca artikel ini dan <ph name="OTHER_ARTICLE_COUNT" /> artikel lainnya.</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
 <translation id="2609632851001447353">Variasi</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{minimal 1 item pada perangkat yang disinkronkan}=1{1 item (dan beberapa di perangkat yang disinkronkan)}other{# item (dan beberapa di perangkat yang disinkronkan)}}</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="3063697135517575841">Saat ini Chrome tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
+<translation id="3064966200440839136">Keluar dari mode penyamaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3093245981617870298">Anda sedang offline.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat laman ini.</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">Permintaan Anda untuk mengakses situs ini tidak dapat dikirimkan ke <ph name="NAME" />. Coba lagi.</translation>
 <translation id="3355823806454867987">Ubah setelan proxy...</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
+<translation id="337311366426640088"><ph name="ITEM_COUNT" /> item lainnya...</translation>
 <translation id="337363190475750230">Tidak ditetapkan</translation>
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="3380365263193509176">Kesalahan tidak dikenal</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval pengambilan:</translation>
 <translation id="3462200631372590220">Sembunyikan lanjutan</translation>
+<translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
 <translation id="3479539252931486093">Apakah hal ini tidak diharapkan? <ph name="BEGIN_LINK" />Beri tahu kami<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="348000606199325318">ID Kerusakan <ph name="CRASH_LOCAL_ID" /> (ID Server: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5308689395849655368">Pelaporan kondisi ngadat dinonaktifkan.</translation>
 <translation id="5317780077021120954">Simpan</translation>
-<translation id="5326702247179446998">Perlu penerima</translation>
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5337705430875057403">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> dapat mengelabui Anda agar melakukan hal berbahaya seperti memasang perangkat lunak atau mengungkap informasi pribadi Anda (misalnya, sandi, nomor telepon, atau kartu kredit).</translation>
 <translation id="53553865750799677">Alamat pengambilan tidak didukung. Pilih alamat lain.</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">Apakah maksud ini?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 saran lain}other{# saran lain}}</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
+<translation id="6389470377220713856">Nama di Kartu</translation>
 <translation id="6389758589412724634">Chromium kehabisan memori saat mencoba menampilkan laman web ini.</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6410264514553301377">Masukkan tanggal kedaluwarsa dan CVC <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">Orang tuamu belum menyetujuinya</translation>
 <translation id="6810899417690483278">ID Penyesuaian</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Gagal memuat data region</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
 <translation id="6989763994942163495">Tampilkan setelan lanjutan...</translation>
 <translation id="7000990526846637657">Entri riwayat tidak ditemukan</translation>
-<translation id="7001663382399377034">Tambahkan penerima</translation>
 <translation id="7009986207543992532">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menunjukkan sertifikat yang masa berlakunya terlalu lama untuk dapat dipercaya. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lainnya di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8349305172487531364">Bilah bookmark</translation>
 <translation id="8363502534493474904">Nonaktifkan mode pesawat</translation>
 <translation id="8364627913115013041">Tidak disetel.</translation>
+<translation id="8368476060205742148">Layanan Google Play</translation>
 <translation id="8380941800586852976">Berbahaya</translation>
 <translation id="8382348898565613901">Bookmark yang baru-baru ini dikunjungi ditampilkan di sini</translation>
 <translation id="8398259832188219207">Laporan kerusakan diupload pada <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8492969205326575646">Jenis kartu tidak didukung</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>
 <translation id="852346902619691059">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mencegat sambungan Anda. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Tahun Masa Berlaku Habis</translation>
 <translation id="8543181531796978784">Anda dapat <ph name="BEGIN_ERROR_LINK" />melaporkan masalah pendeteksian<ph name="END_ERROR_LINK" /> atau, jika memahami risiko bagi keamanan, Anda dapat <ph name="BEGIN_LINK" />mengunjungi situs yang tidak aman<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa laman tidak dapat ditentukan.</translation>
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>

@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Inga flera olika element.</translation>
 <translation id="2800780099804980316">Det finns ingen föregående rubrik på nivå 1.</translation>
 <translation id="280499067616661124">Hitta på sidan med ChromeVox</translation>
+<translation id="2808001342598757276">Tänd skärmen</translation>
 <translation id="2811019999044652585">Hoppa till andra delar av skärmen, t.ex. verktygsfält eller systemfältet, genom att trycka på Ctrl + framåt. På en Chromebook sitter framåttangenten precis ovanför tangenten 2.</translation>
 <translation id="2811204574343810641">Rad</translation>
 <translation id="2816654101880605877">Det finns inga fler skjutreglage.</translation>
@@ -565,6 +566,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6006050241733874051">Formulär</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{bakstreck}other{# bakstreck}}</translation>
 <translation id="6037602951055904232">Panorera framåt</translation>
+<translation id="6044160928851315051">Släck skärmen</translation>
 <translation id="6082768461603900813">Grundläggande navigering</translation>
 <translation id="611827076493383239">besökt</translation>
 <translation id="6119955456199054975">Slutet av cellen.</translation>

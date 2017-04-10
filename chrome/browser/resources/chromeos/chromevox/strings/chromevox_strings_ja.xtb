@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">この他に異なる要素はありません。</translation>
 <translation id="2800780099804980316">前のレベル 1 見出しはありません。</translation>
 <translation id="280499067616661124">ChromeVox でページ内を検索します</translation>
+<translation id="2808001342598757276">画面表示をオンにする</translation>
 <translation id="2811019999044652585">ツールバーやシステムトレイなど画面の他の部分に移動するには、Ctrl+Forward キーを押します。Chromebook では、Forward キーは数字キー 2 のすぐ上にあります。</translation>
 <translation id="2811204574343810641">行</translation>
 <translation id="2816654101880605877">次のスライダはありません。</translation>
@@ -565,6 +566,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="6006050241733874051">フォーム</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{バックスラッシュ}other{# 個のバックスラッシュ}}</translation>
 <translation id="6037602951055904232">前方にパンします</translation>
+<translation id="6044160928851315051">画面表示をオフにする</translation>
 <translation id="6082768461603900813">基本的な操作</translation>
 <translation id="611827076493383239">アクセス済み</translation>
 <translation id="6119955456199054975">ここでセルは終わりです。</translation>

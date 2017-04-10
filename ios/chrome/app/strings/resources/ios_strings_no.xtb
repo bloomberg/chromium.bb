@@ -128,10 +128,12 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
+<translation id="3474624961160222204">Fortsett som <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Skjemaene er fylt ut.</translation>
 <translation id="3478058380795961209">Utløpsmåned</translation>
 <translation id="3482959374254649722">Fanene dine synkroniseres …</translation>
 <translation id="3489372701259491571">Slett det lagrede passordet</translation>
+<translation id="3494788280727468875">Bekreft at du vil slette nettleserdataene</translation>
 <translation id="3519193562722059437">Åpne en fane for å surfe på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3551320343578183772">Lukk fanen</translation>
@@ -143,6 +145,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. Hvis du vil finstemme søket, kan du dra panelet helt opp til toppen og trykke på søkefeltet.</translation>
 <translation id="3607167657931203000">Autofylldata</translation>
 <translation id="3608436266458100337">Lesermodus</translation>
+<translation id="3628119975092896051">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
@@ -303,6 +306,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7131892264600713844">Viser loggen fra denne enheten. <ph name="BEGIN_LINK" />Finn ut mer.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Fullt navn</translation>
 <translation id="7136892417564438900">Kameraet er utilgjengelig</translation>
+<translation id="7159472599653637159">Be om mobilversjonen av nettstedet</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Del</translation>
 <translation id="7203585745079012652">Svar med tale</translation>
@@ -312,6 +316,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7419187830569376338">Søk i <ph name="SEARCH_ENGINE" /> etter dette bildet</translation>
 <translation id="7425346204213733349">Endringer i bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
+<translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Fylke/kommune</translation>
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7464701184726199289">Dette sletter synkroniserte data fra alle enheter. Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>

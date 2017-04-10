@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">Bakkamera</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">Denne utvidelsen gjør <ph name="PRODUCT_NAME" /> tregere. Du bør deaktivere den for å gjenopprette ytelsen til <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1468038450257740950">WebGL støttes ikke.</translation>
 <translation id="149347756975725155">Kan ikke laste inn utvidelsesikonet «<ph name="ICON" />».</translation>
 <translation id="1803557475693955505">Kan ikke laste inn bakgrunnssiden <ph name="BACKGROUND_PAGE" />.</translation>
 <translation id="2159915644201199628">Kunne ikke dekode bilde: «<ph name="IMAGE_NAME" />»</translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">Kunne ikke installere pakken fordi en verktøyprosess krasjet. Prøv å starte Chrome på nytt og prøv igjen.</translation>
 <translation id="5026754133087629784">Nettvisning: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appvisning: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">Formede vinduer støttes ikke.</translation>
 <translation id="5456409301717116725">Denne utvidelsen inneholder nøkkelfilen «<ph name="KEY_PATH" />». Du ønsker sannsynligvis ikke å gjøre dette.</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME" />-utvidelse</translation>
 <translation id="5960890139610307736">Utvidelsesvisning (ExtensionView): <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">Kan ikke pakke ut utvidelse. For å kunne pakke ut en utvidelse på en sikker måte, må det finnes en bane til profilkatalogen din som ikke inneholder en symlink. Det finnes ingen slik bane for profilen din.</translation>
 <translation id="641087317769093025">Kunne ikke pakke ut utvidelsen</translation>
 <translation id="6542618148162044354">«<ph name="APP_NAME" />» ber om tilgang til én eller flere av enhetene dine:</translation>
+<translation id="6566142449942033617">Kan ikke laste inn «<ph name="PLUGIN_PATH" />» for programtillegg.</translation>
 <translation id="657064425229075395">Kunne ikke laste inn bakgrunnsskriptet «<ph name="BACKGROUND_SCRIPT" />».</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Kunne ikke opprette katalog for utpakking: «<ph name="DIRECTORY_PATH" />»</translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">Denne utvidelsen lastet seg inn på nytt for ofte.</translation>
 <translation id="7003844668372540529">Ukjent produkt, <ph name="PRODUCT_ID" />, fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME" /> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
+<translation id="7581279002575751816">NPAPI-programtillegg støttes ikke.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (utvidelses-ID «<ph name="EXTENSION_ID" />») er blokkert av administratoren.</translation>
 <translation id="7972881773422714442">Alternativer: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>

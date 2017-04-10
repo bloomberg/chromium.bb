@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">Vänd mot omgivningen</translation>
 <translation id="1256619696651732561">Textanalysator för tilläggsmanifest</translation>
 <translation id="1445572445564823378">Detta tillägg gör <ph name="PRODUCT_NAME" /> långsammare. Om du vill utnyttja den fulla prestandan i <ph name="PRODUCT_NAME" /> bör du inaktivera tillägget.</translation>
+<translation id="1468038450257740950">WebGL stöds inte.</translation>
 <translation id="149347756975725155">Det gick inte att läsa in tilläggsikonen <ph name="ICON" />.</translation>
 <translation id="1803557475693955505">Det gick inte att läsa in bakgrundssidan <ph name="BACKGROUND_PAGE" />.</translation>
 <translation id="2159915644201199628">Det gick inte att avkoda bilden: <ph name="IMAGE_NAME" /></translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">Det gick inte att installera paketet eftersom en hjälpprocess kraschade. Testa att starta om Chrome och försöka igen.</translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appvy: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">Formade fönster stöds inte.</translation>
 <translation id="5456409301717116725">Detta tillägg omfattar nyckelfilen <ph name="KEY_PATH" />. Du vill antagligen inte göra detta.</translation>
 <translation id="5627523580512561598">tillägget <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">Tilläggsvy: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">Det går inte att packa upp tillägget. Ett tillägg kan bara packas upp säkert om det finns en sökväg till din profilkatalog som inte innehåller en symbollänk. Det finns ingen sådan sökväg för din profil.</translation>
 <translation id="641087317769093025">Det gick inte att packa upp tillägget</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> begär åtkomst till en eller flera av dina enheter:</translation>
+<translation id="6566142449942033617">Det gick inte att läsa in <ph name="PLUGIN_PATH" /> för pluginprogrammet.</translation>
 <translation id="657064425229075395">Det gick inte att läsa in bakgrundsskriptet <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> från <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Det gick inte att skapa en katalog för uppackning: <ph name="DIRECTORY_PATH" /></translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">Det här tillägget lästes in på nytt för ofta.</translation>
 <translation id="7003844668372540529">Okänd produkt (<ph name="PRODUCT_ID" />) från <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME" /> ska installeras. Det kan inte tas bort eller ändras.</translation>
+<translation id="7581279002575751816">NPAPI-plugin-program stöds inte.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (tilläggs-ID <ph name="EXTENSION_ID" />) har blockerats av administratören.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Vänd mot användaren</translation>

@@ -57,15 +57,6 @@
 <translation id="1152117524387175066">报告设备启动时的dev开关状态。
 
       如果此政策设为False，则不报告dev开关的状态。</translation>
-<translation id="1156080716265314451">配置打印机列表。
-
-      通过此政策，管理员可以为他们的用户提供打印机配置。
-
-      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”是自由格式字符串，您可以自定义这些字符串以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”应与“<ph name="PRODUCT_NAME" />”支持的某款打印机相匹配。“<ph name="PRINTER_URI" />”应为可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供该项，则其可用于删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
-
-      打印机设置在首次使用打印机时已完成。在打印机使用之前，系统不会下载 PPD。打印机开始使用后，系统则会缓存经常使用的 PPD。
-
-      此政策对用户是否可在各个设备上配置打印机没有任何影响。它只用于为个人用户的打印机配置提供补充。</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
 <translation id="1198465924256827162">发送设备状态上传内容的频率（以毫秒为单位）。
 
@@ -1396,9 +1387,6 @@
       如果此政策未设置，<ph name="PRODUCT_OS_NAME" /> 将使用默认值（3 小时）。
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
-<translation id="5535957389335373033">发送监控网络数据包的频率（以毫秒为单位）。
-
-      如果此政策未设置，频率的默认间隔为 3 分钟。允许的最短间隔为 30 秒，最长间隔为 24 小时（低于 30 秒的值将被视为 30 秒，高于 24 小时的值将被视为 24 小时）。</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。

@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">Nasmerovaný na okolie</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">Toto rozšírenie spomaľuje prehliadač <ph name="PRODUCT_NAME" />. Ak chcete obnoviť výkonnosť prehliadača <ph name="PRODUCT_NAME" />, zakážte ho.</translation>
+<translation id="1468038450257740950">Rozhranie WebGL nie je podporované.</translation>
 <translation id="149347756975725155">Nepodarilo sa načítať ikonu rozšírenia „<ph name="ICON" />“.</translation>
 <translation id="1803557475693955505">Nepodarilo sa načítať stránku na pozadí „<ph name="BACKGROUND_PAGE" />“.</translation>
 <translation id="2159915644201199628">Nepodarilo sa dekódovať obrázok: <ph name="IMAGE_NAME" /></translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">Balík sa nepodarilo nainštalovať z dôvodu zlyhania procesu nástroja. Reštartujte prehliadač Chrome a skúste to znova.</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Značka appview: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">Tvarované okná nie sú podporované.</translation>
 <translation id="5456409301717116725">Toto rozšírenie obsahuje súbor kľúča <ph name="KEY_PATH" />. Pravdepodobne to nechcete urobiť.</translation>
 <translation id="5627523580512561598">rozšírenie <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">Zobrazenie rozšírenia: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá neobsahuje žiadny odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
 <translation id="641087317769093025">Rozšírenie sa nepodarilo rozbaliť</translation>
 <translation id="6542618148162044354">Aplikácia <ph name="APP_NAME" /> žiada o prístup k jednému alebo viacerým vašim zariadeniam:</translation>
+<translation id="6566142449942033617">Cestu „<ph name="PLUGIN_PATH" />“ sa pre doplnok nepodarilo načítať.</translation>
 <translation id="657064425229075395">Nepodarilo sa načítať skript na pozadí „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> od dodávateľa <ph name="VENDOR_NAME" /> (sériové číslo <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nepodarilo sa vytvoriť adresár na rozbalenie: <ph name="DIRECTORY_PATH" /></translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">Toto rozšírenie sa obnovovalo príliš často.</translation>
 <translation id="7003844668372540529">Neznámy produkt <ph name="PRODUCT_ID" /> od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME" />. Nemôže byť odstránené alebo upravené.</translation>
+<translation id="7581279002575751816">Doplnky NPAPI nie sú podporované.</translation>
 <translation id="7809034755304591547">Rozšírenie <ph name="EXTENSION_NAME" /> (ID rozšírenia „<ph name="EXTENSION_ID" />“) bolo správcom zablokované.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nasmerovaný na používateľa</translation>

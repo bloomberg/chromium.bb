@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">Environment-facing</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">This extension is slowing down <ph name="PRODUCT_NAME" />. You should disable it to restore <ph name="PRODUCT_NAME" />'s performance.</translation>
+<translation id="1468038450257740950">WebGL is not supported.</translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON" />'.</translation>
 <translation id="1803557475693955505">Could not load background page '<ph name="BACKGROUND_PAGE" />'.</translation>
 <translation id="2159915644201199628">Could not decode image: '<ph name="IMAGE_NAME" />'</translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">Could not install package because a utility process crashed. Try restarting Chrome and trying again.</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">Shaped windows are not supported.</translation>
 <translation id="5456409301717116725">This extension includes the key file '<ph name="KEY_PATH" />'. You probably don't want to do that.</translation>
 <translation id="5627523580512561598">extension <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">Cannot unpack extension.  To unpack an extension safely, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.</translation>
 <translation id="641087317769093025">Could not unzip extension</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" is requesting access to one or more of your devices:</translation>
+<translation id="6566142449942033617">Could not load '<ph name="PLUGIN_PATH" />' for plug-in.</translation>
 <translation id="657064425229075395">Could not load background script '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> from <ph name="VENDOR_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Could not create directory for unzipping: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">This extension reloaded itself too frequently.</translation>
 <translation id="7003844668372540529">Unknown product <ph name="PRODUCT_ID" /> from <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME" /> to be installed. It cannot be removed or modified.</translation>
+<translation id="7581279002575751816">NPAPI plugins are not supported.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is blocked by the administrator.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">User-facing</translation>

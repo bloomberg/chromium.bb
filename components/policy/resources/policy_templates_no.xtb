@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Rapportér tilstanden til enhetens utviklerbryter ved oppstart.
 
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
-<translation id="1156080716265314451">Konfigurerer en liste over skrivere.
-
-      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner
-      til brukerne sine.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som
-      kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> bør samsvare med en av <ph name="PRODUCT_NAME" />-skriverne som
-      støttes.  <ph name="PRINTER_URI" /> bør være en adresse som kan nås
-      fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den oppgis, brukes den til å
-      deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
-
-      Skriverkonfigureringen er fullført når en skriver brukes for første gang. PPD-er
-      lastets ikke ned før skriveren brukes. Etter det blir PPD-er som brukes
-      ofte, bufret.
-
-      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på
-      individuelle enheter. Den er ment å være et supplement til
-      konfigureringen av skrivere som er gjort av individuelle brukere.</translation>
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
 
@@ -1515,11 +1496,6 @@
       Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_OS_NAME" /> standardverdien på 3 timer.
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
-<translation id="5535957389335373033">Hvor ofte (i millisekunder) nettverkspakker for overvåking sendes.
-
-      Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 minutter.
-      Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer.
-      Verdier utenfor dette området blir begrenset til dette området.</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME" />.

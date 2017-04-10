@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">الكاميرا الخلفية المواجهة للبيئة</translation>
 <translation id="1256619696651732561">محلل بيان الإضافة اللغوي</translation>
 <translation id="1445572445564823378">تتسبب هذه الإضافة في بطء <ph name="PRODUCT_NAME" />. يجب تعطيلها لاستعادة أداء <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1468038450257740950">‏WebGL غير متوافق.</translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON" />'.</translation>
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE" />'.</translation>
 <translation id="2159915644201199628">تعذر فك تشفير الصورة: '<ph name="IMAGE_NAME" />'</translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">‏تعذر تثبيت الحزمة بسبب تعطل معالجة الأداة المساعدة. جرّب إعادة تشغيل Chrome وحاول مرة أخرى.</translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">عرض التطبيق: <ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">النوافذ ذات الأشكال غير متوافقة.</translation>
 <translation id="5456409301717116725">تتضمن هذه الإضافة ملف المفتاح '<ph name="KEY_PATH" />'. ربما لا تريد إجراء ذلك.</translation>
 <translation id="5627523580512561598">الإضافة <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">لا يمكن فك ضغط الإضافة.  لفك ضغط الإضافة بشكل آمن، يجب أن يكون هناك مسار إلى دليل ملفك الشخصي، ولا يحتوي على رابط رمزي.  ليس هناك مثل هذا المسار لملفك الشخصي.</translation>
 <translation id="641087317769093025">تعذر فك ضغط الإضافة</translation>
 <translation id="6542618148162044354">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز أو أكثر من أجهزتك:</translation>
+<translation id="6566142449942033617">تعذر تحميل '<ph name="PLUGIN_PATH" />' للمكوّن الإضافي.</translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> من <ph name="VENDOR_NAME" /> (الرقم التسلسلي <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">تعيد هذه الإضافة تحميل نفسها باستمرار.</translation>
 <translation id="7003844668372540529">المنتج غير معروف <ph name="PRODUCT_ID" /> من <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">يطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME" />. لا يمكن إزالتها أو تعديلها.</translation>
+<translation id="7581279002575751816">‏المكونات الإضافية لـ NPAPI غير متوافقة.</translation>
 <translation id="7809034755304591547">تم حظر <ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") من قِبل المشرف.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">الكاميرا الأمامية للمستخدم</translation>

@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">การตั้งค่าป้อนข้อความอัตโนมัติของ Chromium...</translation>
 <translation id="1374468813861204354">คำแนะนำ</translation>
 <translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
+<translation id="1377321085342047638">หมายเลขบัตร</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> ไม่ส่งข้อมูลใดๆ</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
 <translation id="1413809658975081374">ข้อผิดพลาดเกี่ยวกับความเป็นส่วนตัว</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ส่งการตอบกลับที่ไม่ถูกต้อง</translation>
 <translation id="2552545117464357659">ใหม่กว่า</translation>
 <translation id="2556876185419854533">&amp;เลิกทำการแก้ไข</translation>
+<translation id="2587730715158995865">จาก <ph name="ARTICLE_PUBLISHER" /> อ่านเรื่องราวนี้และอื่นๆ อีก <ph name="OTHER_ARTICLE_COUNT" /> เรื่อง</translation>
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
 <translation id="2609632851001447353">รูปแบบต่างๆ</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{อย่างน้อย 1 รายการบนอุปกรณ์ที่ซิงค์}=1{1 รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}other{# รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}}</translation>
 <translation id="3041612393474885105">ข้อมูลในใบรับรอง</translation>
 <translation id="3063697135517575841">Chrome ไม่สามารถยืนยันบัตรของคุณได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
+<translation id="3064966200440839136">ออกจากโหมดไม่ระบุตัวตนเพื่อชำระเงินผ่านแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="3093245981617870298">คุณออฟไลน์อยู่</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
@@ -263,6 +266,7 @@
 <translation id="3345135638360864351">ไม่สามารถส่งคำขอเข้าถึงไซต์นี้ไปยัง <ph name="NAME" /> ได้ โปรดลองอีกครั้ง</translation>
 <translation id="3355823806454867987">เปลี่ยนการตั้งค่าพร็อกซี...</translation>
 <translation id="3369192424181595722">ข้อผิดพลาดของนาฬิกา</translation>
+<translation id="337311366426640088">และอีก <ph name="ITEM_COUNT" /> รายการ...</translation>
 <translation id="337363190475750230">ยกเลิกการจัดเตรียมแล้ว</translation>
 <translation id="3377188786107721145">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="3380365263193509176">ข้อผิดพลาดที่ไม่รู้จัก</translation>
@@ -278,6 +282,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">ช่วงการดึงข้อมูล:</translation>
 <translation id="3462200631372590220">ซ่อนข้อมูลขั้นสูง</translation>
+<translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3479539252931486093">หากเหตุการณ์นี้ผิดปกติ <ph name="BEGIN_LINK" />โปรดแจ้งให้เราทราบ<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="348000606199325318">รหัสข้อขัดข้อง <ph name="CRASH_LOCAL_ID" /> (รหัสเซิร์ฟเวอร์: <ph name="CRASH_ID" />)</translation>
@@ -460,7 +465,6 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5317780077021120954">บันทึก</translation>
-<translation id="5326702247179446998">ต้องระบุผู้รับ</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
 <translation id="5337705430875057403">ผู้บุกรุกที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจหลอกล่อคุณเพื่อทำบางสิ่งที่อันตราย เช่น การติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล (ตัวอย่างเช่น รหัสผ่าน หมายเลขโทรศัพท์ หรือบัตรเครดิต)</translation>
 <translation id="53553865750799677">ที่อยู่ในการรับใช้ไม่ได้ โปรดเลือกที่อยู่อื่น</translation>
@@ -563,6 +567,7 @@
 <translation id="6358450015545214790">นี่หมายถึงอะไร</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{อีก 1 คำแนะนำ}other{อีก # คำแนะนำ}}</translation>
 <translation id="6387478394221739770">หากสนใจในคุณลักษณะสุดเจ๋งของ Chrome ใหม่ ลองใช้เวอร์ชันเบต้าของเราที่ chrome.com/beta</translation>
+<translation id="6389470377220713856">ชื่อบนบัตร</translation>
 <translation id="6389758589412724634">Chromium หน่วยความจำเต็มเมื่อพยายามแสดงหน้าเว็บนี้</translation>
 <translation id="6404511346730675251">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="6410264514553301377">ป้อนวันหมดอายุและ CVC ของ <ph name="CREDIT_CARD" /></translation>
@@ -612,6 +617,7 @@
 <translation id="6778737459546443941">ผู้ปกครองยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
 <translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">ไม่สามารถโหลดข้อมูลภูมิภาค</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6839929833149231406">พื้นที่</translation>
 <translation id="6874604403660855544">&amp;ทำซ้ำการเพิ่ม</translation>
@@ -626,7 +632,6 @@
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
 <translation id="6989763994942163495">แสดงการตั้งค่าขั้นสูง...</translation>
 <translation id="7000990526846637657">ไม่พบข้อมูลประวัติการเข้าชม</translation>
-<translation id="7001663382399377034">เพิ่มผู้รับ</translation>
 <translation id="7009986207543992532">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่มีระยะเวลาการใช้งานได้นานเกินกว่าจะเชื่อถือได้ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -772,6 +777,7 @@
 <translation id="8349305172487531364">แถบบุ๊กมาร์ก</translation>
 <translation id="8363502534493474904">ปิดโหมดบนเครื่องบิน</translation>
 <translation id="8364627913115013041">ไม่ได้ตั้งค่า</translation>
+<translation id="8368476060205742148">บริการ Google Play</translation>
 <translation id="8380941800586852976">อันตราย</translation>
 <translation id="8382348898565613901">บุ๊กมาร์กที่คุณเข้าชมล่าสุดจะปรากฏที่นี่</translation>
 <translation id="8398259832188219207">อัปโหลดรายงานข้อขัดข้องเมื่อ <ph name="UPLOAD_TIME" /></translation>
@@ -787,6 +793,7 @@
 <translation id="8492969205326575646">ประเภทบัตรที่ไม่รองรับธุรกรรมนี้</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>
 <translation id="852346902619691059">เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ไม่เชื่อถือใบรับรองความปลอดภัยของเซิร์ฟเวอร์นี้ สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="8532105204136943229">ปีที่หมดอายุ</translation>
 <translation id="8543181531796978784">คุณสามารถ<ph name="BEGIN_ERROR_LINK" />รายงานปัญหาในการตรวจหา<ph name="END_ERROR_LINK" />ได้ หรือหากคุณเข้าใจถึงความเสี่ยงต่อความปลอดภัยของคุณ คุณสามารถ<ph name="BEGIN_LINK" />เข้าชมเว็บไซต์ที่ไม่ปลอดภัย<ph name="END_LINK" />ได้</translation>
 <translation id="8553075262323480129">การแปลล้มเหลวเนื่องจากไม่สามารถระบุภาษาของหน้าเว็บนี้ได้</translation>
 <translation id="8559762987265718583">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>

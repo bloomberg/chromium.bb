@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Syötä kelvollinen arvo. Lähin kelvollinen arvo on <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2674318244760992338">alaviite</translation>
+<translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2723001399770238859">ääni</translation>
 <translation id="2746543609216772311">Arvon on oltava <ph name="MINIMUM_DATE_OR_TIME" /> tai myöhempi.</translation>
 <translation id="2759744352195237655">ponnahduspainike</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">hakemisto</translation>
 <translation id="6934078000481955284">muotoiltu lainaus</translation>
 <translation id="6941933287844615239">lataa media</translation>
+<translation id="6989848892321993519">Pidennä tämä teksti vähintään <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä 1 merkki).</translation>
 <translation id="7057186640035488495">elokuvan aikajana</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="7223624360433298498">kulunut aika</translation>

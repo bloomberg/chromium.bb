@@ -44,6 +44,7 @@
 <translation id="786327964234957808">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> に切り替えようとしています。既存の Chromium データは <ph name="DOMAIN" /> で管理されています。この操作を行うと、データはこの端末から削除されますが、<ph name="USER_EMAIL1" /> には残ります。</translation>
 <translation id="8111736072665034317">このアプリを使用すると、Chromium の<ph name="BEGIN_LINK" />利用規約<ph name="END_LINK" />に同意したことになります。</translation>
 <translation id="8175055321229419309">ヒント: <ph name="BEGIN_LINK" />Chromium を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
+<translation id="8200548749940012969">お使いのどの端末でも同じ設定を使用するには、Chromium にログインします。</translation>
 <translation id="8252885722420466166">ユーザーの現在時に基づいて Chromium で Google を使いやすくします。</translation>
 <translation id="8353224596138547809">Chromium でこのサイトのパスワードを保存しますか？</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>

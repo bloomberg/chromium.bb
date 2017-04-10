@@ -39,6 +39,7 @@
 <translation id="2077129598763517140">హార్డ్‌వేర్ త్వరితం అందుబాటులో ఉన్నప్పుడు ఉపయోగించు</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
 <translation id="2120620239521071941">ఇది ఈ పరికరం నుండి <ph name="ITEMS_COUNT" /> అంశాలను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
+<translation id="2123055963409958220"><ph name="BEGIN_LINK" />ప్రస్తుత సెట్టింగ్‌లను<ph name="END_LINK" /> నివేదించడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="2147651015520127414">Chrome ఈ వెబ్‌సైట్ ప్రమాణపత్రాన్ని <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది.</translation>
 <translation id="216054706567564023">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMSను పంపుతాము.</translation>
 <translation id="2246246234298806438">అంతర్నిర్మిత PDF వ్యూవర్ లేనప్పుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు.</translation>
@@ -138,6 +139,7 @@
 <translation id="5028489144783860647">Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
 <translation id="5037239767309817516">దయచేసి ఈ మార్పు అమలులోకి రావడానికి అన్ని Google Chrome విండోలను మూసివేయండి మరియు దీన్ని మళ్ళీ ప్రారంభించండి.</translation>
 <translation id="5132929315877954718">Google Chrome కోసం గొప్ప అనువర్తనాలు, ఆటలు, పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి.</translation>
+<translation id="5166975452760862670">Google Chrome ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="5170938038195470297">మీ ప్రొఫైల్ ఉపయోగించబడదు ఎందుకంటే ఇది ఒక క్రొత్త Google Chrome సంస్కరణ నుండి తీసుకోబడింది. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క క్రొత్త సంస్కరణను ఉపయోగించండి.</translation>
 <translation id="5193136243808726294">Google Chrome OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -158,6 +160,7 @@
 <translation id="568643307450491754">మీ బుక్‌మార్క్‌లను Chrome మెనులో లేదా బుక్‌మార్క్‌ల బార్‌లో కనుగొనండి.</translation>
 <translation id="573759479754913123">Chrome OS గురించి</translation>
 <translation id="5749068826913805084">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromeకు నిల్వ ప్రాప్యత అవసరం.</translation>
+<translation id="5774845247549698882">Chrome OS ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{దీని వలన ఈ పరికరం నుండి $1 అంశం శాశ్వతంగా తొలగించబడుతుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి $2 వలె సైన్ ఇన్ చేయండి.}other{దీని వలన ఈ పరికరం నుండి $1 అంశాలు శాశ్వతంగా తొలగించబడతాయి. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి $2 వలె సైన్ ఇన్ చేయండి.}}</translation>
 <translation id="5855036575689098185">మీ కంప్యూటర్‌లో అమలవుతున్న సాఫ్ట్‌వేర్ Google Chromeకు అనుకూలంగా లేదు.</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
@@ -168,6 +171,7 @@
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
 <translation id="6012342843556706400">ఈ సైట్‌కు స్థానాన్ని భాగస్వామ్యం చేయడానికి Chromeకి స్థాన ప్రాప్యత అనుమతించడం అవసరం.</translation>
 <translation id="6014844626092547096">ఇప్పుడు మీరు Chromeకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణని నిలిపివేసారు.</translation>
+<translation id="6070348360322141662">అదనపు భద్రత దృష్ట్యా, Google Chrome మీ డేటాను గుప్తీకరిస్తుంది</translation>
 <translation id="6113794647360055231">Chrome ఇప్పుడు మెరుగైంది</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OSను నవీకరించు</translation>
@@ -256,6 +260,7 @@
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>
 <translation id="8679801911857917785">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="870251953148363156">&amp;Google Chromeను నవీకరించు</translation>
+<translation id="873133009373065397">Google Chrome డిఫాల్ట్ బ్రౌజర్‌ను నిశ్చయించలేదు లేదా సెట్ చేయలేదు</translation>
 <translation id="8796108026289707191">మీరు ఇప్పుడు Google Chromeని పునఃప్రారంభించాలి.</translation>
 <translation id="8823341990149967727">Chrome కాలం చెల్లినది</translation>
 <translation id="884296878221830158">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు లేదా హోమ్ బటన్‌ను క్లిక్ చేసేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
@@ -268,4 +273,5 @@
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
 <translation id="919706545465235479">సమకాలీకరణను ప్రారంభించడానికి Chromeని నవీకరించాలి</translation>
 <translation id="924447568950697217">Chromeని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయండి</translation>
+<translation id="989369509083708165">మీ డిఫాల్ట్ బ్రౌజర్ Google Chrome</translation>
 </translationbundle>

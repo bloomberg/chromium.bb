@@ -39,6 +39,7 @@
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
 <translation id="2120620239521071941">ऐसा करने से इस डिवाइस से <ph name="ITEMS_COUNT" /> आइटम हट जाएंगे. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
+<translation id="2123055963409958220"><ph name="BEGIN_LINK" />अभी वाली सेटिंग<ph name="END_LINK" /> की रिपोर्ट करके Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2147651015520127414">Chrome ने सत्‍यापित किया है कि वेबसाइट का यह प्रमाणपत्र <ph name="ISSUER" /> ने जारी किया है.</translation>
 <translation id="216054706567564023">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके खाता पुनर्प्राप्ति फ़ोन नंबर पर एक SMS भेजेंगे.</translation>
 <translation id="2246246234298806438">अंतर्निहित PDF दिखाने का साधन गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
@@ -138,6 +139,7 @@
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
 <translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
 <translation id="5132929315877954718">Google Chrome के लिए बेहतरीन ऐप्स ,गेम, एक्सटेंशन और थीम खोजें.</translation>
+<translation id="5166975452760862670">Google Chrome इस भाषा में प्रदर्शित किया जा रहा है</translation>
 <translation id="5170938038195470297">आपकी प्रोफ़ाइल का उपयोग नहीं किया जा सकता क्‍योंकि यह Google Chrome के किसी नए वर्शन से है.
 
 कुछ विशेषताएं अनुपलब्‍ध हो सकती हैं. कृपया कोई भिन्‍न प्रोफ़ाइल निर्देशिका निर्दिष्ट करें या Chrome के किसी नए वर्शन का उपयोग करें.</translation>
@@ -160,6 +162,7 @@
 <translation id="568643307450491754">Chrome मेनू में या बुकमार्क बार पर अपने बुकमार्क ढूंढें.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी ऐक्‍सेस की आवश्‍यकता होगी.</translation>
+<translation id="5774845247549698882">Chrome OS इस भाषा में प्रदर्शित किया जा रहा है</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएगा. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}one{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}other{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}}</translation>
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
@@ -170,6 +173,7 @@
 <translation id="5941830788786076944">Google Chrome को सामान्य ब्राउज़र बनाएं</translation>
 <translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="6014844626092547096">अब आपने Chrome में प्रवेश कर लिया हैं! सिंक को आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
+<translation id="6070348360322141662">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपका डेटा एन्‍क्रिप्‍ट करेगा</translation>
 <translation id="6113794647360055231">Chrome पहले से बेहतर हो गया है</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
@@ -227,7 +231,7 @@
 <translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7808348361785373670">Chrome से नि‍कालें...</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट गड़बड़ी के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
-<translation id="7855730255114109580">Google Chrome अद्यतित है</translation>
+<translation id="7855730255114109580">Google Chrome अप टू डेट है</translation>
 <translation id="7888186132678118370">Chrome को अपने टास्कबार में पिन करें</translation>
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
 <translation id="7896673875602241923">इस कंप्यूटर पर पहले किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया है. अपनी जानकारी अलग रखने के लिए कृपया नया Chrome उपयोगकर्ता बनाएं.</translation>
@@ -258,6 +262,7 @@
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
 <translation id="8679801911857917785">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पेज दिखाया जाए.</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
+<translation id="873133009373065397">Google Chrome डिफ़ॉल्ट ब्राउज़र निर्धारित या सेट नहीं कर सकता</translation>
 <translation id="8796108026289707191">आपको Google Chrome को अभी पुन: प्रारंभ करना चाहिए.</translation>
 <translation id="8823341990149967727">Chrome पुराना हो गया है</translation>
 <translation id="884296878221830158">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं या होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
@@ -270,4 +275,5 @@
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
 <translation id="919706545465235479">सिंक शुरू करने के लिए Chrome अपडेट करें</translation>
 <translation id="924447568950697217">Chrome को अपना डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
+<translation id="989369509083708165">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र है</translation>
 </translationbundle>

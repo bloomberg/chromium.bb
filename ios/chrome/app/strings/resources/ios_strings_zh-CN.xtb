@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
+<translation id="3474624961160222204">继续以<ph name="NAME" />的身份使用</translation>
 <translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步您的标签页…</translation>
 <translation id="3489372701259491571">删除已保存的密码</translation>
+<translation id="3494788280727468875">确认清除浏览数据</translation>
 <translation id="3519193562722059437">打开一个标签页即可浏览网络。</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3551320343578183772">关闭标签页</translation>
@@ -143,6 +145,7 @@
 要调整搜索字词，请长按将其选中。要缩小搜索范围，请将面板向上滑动到顶部，然后触摸搜索框。</translation>
 <translation id="3607167657931203000">自动填充数据</translation>
 <translation id="3608436266458100337">阅读器模式</translation>
+<translation id="3628119975092896051">您的阅读清单可供离线访问。要将某个网页添加到该清单中，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
@@ -303,6 +306,7 @@
 <translation id="7131892264600713844">目前显示的是这台设备的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="7133798577887235672">全称</translation>
 <translation id="7136892417564438900">无法使用相机</translation>
+<translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7167621057293532233">数据类型</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">说出答案</translation>
@@ -312,6 +316,7 @@
 <translation id="7400418766976504921">网址</translation>
 <translation id="7419187830569376338">在 <ph name="SEARCH_ENGINE" /> 中搜索此图片</translation>
 <translation id="7425346204213733349">对您的书签、历史记录、密码及其他设置所做的更改将不再同步到您的 Google 帐号。但现有数据将继续存储在您的 Google 帐号中。</translation>
+<translation id="744343212394640790">不是 <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">省/区/县</translation>
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>

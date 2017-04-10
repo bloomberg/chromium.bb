@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">הזן ערך חוקי. הערך החוקי הקרוב ביותר הוא <ph name="VALID_VALUE" /></translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2674318244760992338">כותרת תחתונה</translation>
+<translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2723001399770238859">אודיו</translation>
 <translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME" /> ומעלה.</translation>
 <translation id="2759744352195237655">לחצן קופץ</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">ספריה</translation>
 <translation id="6934078000481955284">‏רכיב blockquote</translation>
 <translation id="6941933287844615239">הורד מדיה</translation>
+<translation id="6989848892321993519">עליך להאריך את הטקסט ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע בתו אחד).</translation>
 <translation id="7057186640035488495">משך הסרט</translation>
 <translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
 <translation id="7223624360433298498">זמן שחלף</translation>

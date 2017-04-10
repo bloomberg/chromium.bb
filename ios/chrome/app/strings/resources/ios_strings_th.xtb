@@ -126,10 +126,12 @@
 <translation id="3414292259312108062">Chrome จะเก็บข้อมูลนี้ไว้ใน<ph name="BEGIN_LINK" />รหัสผ่านที่บันทึกไว้ของ Google<ph name="END_LINK" /> และป้อนให้คุณโดยอัตโนมัติ เพื่อให้คุณไม่ต้องจำเอง</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
+<translation id="3474624961160222204">ดำเนินการต่อในชื่อ <ph name="NAME" /></translation>
 <translation id="3474649192738347024">กรอกฟอร์มแล้ว</translation>
 <translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3482959374254649722">กำลังซิงค์แท็บ...</translation>
 <translation id="3489372701259491571">ลบรหัสผ่านที่บันทึกไว้</translation>
+<translation id="3494788280727468875">ยืนยันการล้างข้อมูลการท่องเว็บ</translation>
 <translation id="3519193562722059437">เปิดแท็บเพื่อท่องเว็บ</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3551320343578183772">ปิดแท็บ</translation>
@@ -141,6 +143,7 @@
 หากต้องการแก้ไขข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับการค้นหา ให้เลื่อนแผงขึ้นและแตะช่องค้นหา</translation>
 <translation id="3607167657931203000">ป้อนข้อมูลอัตโนมัติ</translation>
 <translation id="3608436266458100337">โหมดผู้อ่าน</translation>
+<translation id="3628119975092896051">เรื่องรออ่านของคุณพร้อมใช้งานในแบบออฟไลน์ หากต้องการเพิ่มหน้าลงในเรื่องรออ่าน ให้แตะ<ph name="SHARE_OPENING_ICON" /></translation>
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
@@ -301,6 +304,7 @@
 <translation id="7131892264600713844">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์นี้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">ชื่อและนามสกุล</translation>
 <translation id="7136892417564438900">กล้องถ่ายรูปไม่พร้อมใช้งาน</translation>
+<translation id="7159472599653637159">ขอเว็บไซต์สำหรับมือถือ</translation>
 <translation id="7167621057293532233">ประเภทข้อมูล</translation>
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7203585745079012652">พูดคำตอบกลับ</translation>
@@ -310,6 +314,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">ค้นหา <ph name="SEARCH_ENGINE" /> สำหรับภาพนี้</translation>
 <translation id="7425346204213733349">การเปลี่ยนแปลงบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google ของคุณอีกต่อไป อย่างไรก็ตาม ข้อมูลที่คุณมีจะยังคงจัดเก็บอยู่ในบัญชี Google</translation>
+<translation id="744343212394640790">ไม่ใช่ <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">เขต/แขวง</translation>
 <translation id="7456847797759667638">เปิดตำแหน่ง...</translation>
 <translation id="7464701184726199289">การดำเนินการนี้จะล้างข้อมูลที่ซิงค์จากอุปกรณ์ทั้งหมด การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>

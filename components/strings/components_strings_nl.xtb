@@ -45,6 +45,7 @@
 <translation id="1344588688991793829">Instellingen voor automatisch aanvullen in Chromium...</translation>
 <translation id="1374468813861204354">suggesties</translation>
 <translation id="1375198122581997741">Over deze versie</translation>
+<translation id="1377321085342047638">Kaartnummer</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> heeft geen gegevens verzonden.</translation>
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1413809658975081374">Privacyfout</translation>
@@ -172,6 +173,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> heeft een ongeldige reactie verzonden.</translation>
 <translation id="2552545117464357659">Nieuwer</translation>
 <translation id="2556876185419854533">&amp;Bewerken ongedaan maken</translation>
+<translation id="2587730715158995865">Van <ph name="ARTICLE_PUBLISHER" />. Lees dit en <ph name="OTHER_ARTICLE_COUNT" /> andere artikelen.</translation>
 <translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="2597378329261239068">Dit document is beveiligd met een wachtwoord. Geef een wachtwoord op.</translation>
 <translation id="2609632851001447353">Varianten</translation>
@@ -228,6 +230,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{ten minste 1 item op gesynchroniseerde apparaten}=1{1 item (en meer op gesynchroniseerde apparaten)}other{# items (en meer op gesynchroniseerde apparaten)}}</translation>
 <translation id="3041612393474885105">Certificaatgegevens</translation>
 <translation id="3063697135517575841">Chrome kan je creditcard momenteel niet bevestigen. Probeer het later opnieuw.</translation>
+<translation id="3064966200440839136">Je verlaat de incognitomodus om te betalen via een externe app. Doorgaan?</translation>
 <translation id="3093245981617870298">Je bent offline.</translation>
 <translation id="3105172416063519923">Item-ID:</translation>
 <translation id="3109728660330352905">Je hebt geen toestemming om deze pagina te bekijken.</translation>
@@ -260,6 +263,7 @@
 <translation id="3345135638360864351">Je verzoek om toegang tot deze site kan niet worden verzonden naar <ph name="NAME" />. Probeer het opnieuw.</translation>
 <translation id="3355823806454867987">Proxyinstellingen wijzigen...</translation>
 <translation id="3369192424181595722">Klokfout</translation>
+<translation id="337311366426640088">Nog <ph name="ITEM_COUNT" /> items...</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
@@ -275,6 +279,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Ophaalinterval:</translation>
 <translation id="3462200631372590220">Gedetailleerde informatie verbergen</translation>
+<translation id="3478058380795961209">Vervalmaand</translation>
 <translation id="3479539252931486093">Wat dit onverwacht? <ph name="BEGIN_LINK" />Laat het ons weten<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="348000606199325318">Crash-ID <ph name="CRASH_LOCAL_ID" /> (Server-ID: <ph name="CRASH_ID" />)</translation>
@@ -456,7 +461,6 @@
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
-<translation id="5326702247179446998">Ontvanger vereist</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5337705430875057403">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk te misleiden om iets gevaarlijks te doen, zoals software installeren of je persoonlijke gegevens bekendmaken (bijvoorbeeld wachtwoorden, telefoonnummers of creditcards).</translation>
 <translation id="53553865750799677">Niet-ondersteund ophaaladres. Selecteer een ander adres.</translation>
@@ -558,6 +562,7 @@
 <translation id="6358450015545214790">Wat betekent dit?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andere suggestie}other{# andere suggesties}}</translation>
 <translation id="6387478394221739770">Ben je geïnteresseerd in nieuwe, coole Chrome-functies? Probeer ons bèta-kanaal op chrome.com/beta.</translation>
+<translation id="6389470377220713856">Naam op kaart</translation>
 <translation id="6389758589412724634">Chromium beschikt over onvoldoende geheugen om deze webpagina weer te geven.</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6410264514553301377">Geef de vervaldatum en CVC-code op voor <ph name="CREDIT_CARD" /></translation>
@@ -607,6 +612,7 @@
 <translation id="6778737459546443941">Je ouder of voogd heeft dit nog niet goedgekeurd</translation>
 <translation id="6810899417690483278">Aanpassings-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="6824266427216888781">Kan regiogegevens niet laden</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
@@ -621,7 +627,6 @@
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7000990526846637657">Geen geschiedenisitems gevonden</translation>
-<translation id="7001663382399377034">Ontvanger toevoegen</translation>
 <translation id="7009986207543992532">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat geretourneerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -767,6 +772,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
 <translation id="8363502534493474904">Schakel de vliegtuigmodus uit</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
+<translation id="8368476060205742148">Google Play-services</translation>
 <translation id="8380941800586852976">Gevaarlijk</translation>
 <translation id="8382348898565613901">Je onlangs bezochte bladwijzers worden hier weergegeven</translation>
 <translation id="8398259832188219207">Crashrapport geüpload op <ph name="UPLOAD_TIME" /></translation>
@@ -782,6 +788,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8492969205326575646">Niet-ondersteund kaarttype</translation>
 <translation id="8498891568109133222">Het duurt te lang voordat <ph name="HOST_NAME" /> reageert.</translation>
 <translation id="852346902619691059">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="8532105204136943229">Vervaljaar</translation>
 <translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
 <translation id="8559762987265718583">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>

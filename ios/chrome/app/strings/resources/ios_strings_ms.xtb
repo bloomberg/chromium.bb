@@ -128,10 +128,12 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3414292259312108062">Chrome akan menyimpan ini dalam <ph name="BEGIN_LINK" />Kata laluan Google yang disimpan<ph name="END_LINK" /> anda dan auto isi untuk anda agar anda tidak perlu mengingati kata laluan itu sendiri.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
+<translation id="3474624961160222204">Teruskan sebagai <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Borang diisi.</translation>
 <translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3482959374254649722">Menyegerakkan tab anda...</translation>
 <translation id="3489372701259491571">Padamkan Kata Laluan Yang Disimpan</translation>
+<translation id="3494788280727468875">Sahkan Kosongkan Data Semakan Imbas.</translation>
 <translation id="3519193562722059437">Buka tab untuk menyemak imbas web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Tutup Tab</translation>
@@ -143,6 +145,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhalusi carian anda, luncurkan panel ke atas dan sentuh kotak carian.</translation>
 <translation id="3607167657931203000">Autolengkap Data</translation>
 <translation id="3608436266458100337">Mod pembaca</translation>
+<translation id="3628119975092896051">Senarai bacaan anda tersedia di luar talian. Untuk menambahkan halaman pada senarai bacaan anda, ketik <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
@@ -303,6 +306,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7131892264600713844">Menunjukkan sejarah daripada peranti ini. <ph name="BEGIN_LINK" />Ketahui lebih lanjut.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nama Penuh</translation>
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
+<translation id="7159472599653637159">Minta Tapak Mudah Alih</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
 <translation id="7189598951263744875">Kongsi...</translation>
 <translation id="7203585745079012652">Sebut Kembali Jawapan</translation>
@@ -312,6 +316,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Cari Imej Ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Perubahan kepada penanda halaman, sejarah, kata laluan dan tetapan anda yang lain tidak akan disegerakkan ke Akaun Google anda lagi. Walau bagaimanapun, data sedia ada akan kekal disimpan dalam Akaun Google anda.</translation>
+<translation id="744343212394640790">Bukan <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Negeri / Daerah</translation>
 <translation id="7456847797759667638">Buka Lokasi...</translation>
 <translation id="7464701184726199289">Tetapan ini akan menghapuskan data yang disegerakkan daripada semua peranti. Tetapan tapak yang disimpan tidak akan dipadamkan dan mungkin mencerminkan tabiat semak imbas anda. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>

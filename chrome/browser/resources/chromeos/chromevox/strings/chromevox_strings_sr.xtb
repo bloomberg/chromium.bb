@@ -165,6 +165,7 @@
 <translation id="2800204403141299078">Нема више различитих елемената.</translation>
 <translation id="2800780099804980316">Нема претходног заглавља 1. нивоа.</translation>
 <translation id="280499067616661124">Функција ChromeVox-а Пронађи на страници</translation>
+<translation id="2808001342598757276">Осветли екран</translation>
 <translation id="2811019999044652585">Да бисте прелазили на друге делове екрана, као што су траке с алаткама или системска палета, притисните Control + тастер за кретање унапред. Тастер за кретање унапред на Chromebook-у се налази одмах изнад тастера са бројем 2.</translation>
 <translation id="2811204574343810641">Ред</translation>
 <translation id="2816654101880605877">Нема следећег клизача.</translation>
@@ -565,6 +566,7 @@
 <translation id="6006050241733874051">Образац</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обрнута коса црта}one{# обрнута коса црта}few{# обрнуте косе црте}other{# обрнутих косих црта}}</translation>
 <translation id="6037602951055904232">Померање унапред</translation>
+<translation id="6044160928851315051">Затамни екран</translation>
 <translation id="6082768461603900813">Основно кретање</translation>
 <translation id="611827076493383239">посећено</translation>
 <translation id="6119955456199054975">Крај ћелије.</translation>

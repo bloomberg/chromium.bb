@@ -128,10 +128,12 @@
 <translation id="3414292259312108062">Chrome ይህንን በእርስዎ በ<ph name="BEGIN_LINK" />Google የተቀመጡ የይለፍ ቃሎች<ph name="END_LINK" /> ያከማቸው እና እራስዎ ማስታወስ እንዳያስፈልግዎት በራስ-ሰር ይሞላልዎታል።</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ደቂቃዎች</translation>
 <translation id="3448016392200048164">የተከፈለ ዕይታ</translation>
+<translation id="3474624961160222204">እንደ <ph name="NAME" /> ይቀጥሉ</translation>
 <translation id="3474649192738347024">ቅጾች ተሞልተዋል።</translation>
 <translation id="3478058380795961209">ጊዜው የሚያልፍበት ወር</translation>
 <translation id="3482959374254649722">የእርስዎን ትሮች በማሰመር ላይ...</translation>
 <translation id="3489372701259491571">የተቀመጠውን የይለፍ ቃል ሰርዝ</translation>
+<translation id="3494788280727468875">የአሰሳ ውሂብን ማጽዳትን ያረጋግጡ</translation>
 <translation id="3519193562722059437">ድሩን ለማሰስ ትር ይክፈቱ።</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
 <translation id="3551320343578183772">ትር ዝጋ</translation>
@@ -143,6 +145,7 @@
 የፍለጋ ቃልዎን ለማስተካከል ለመምረጥ በረዥሙ ይጫኑ። ፍለጋዎን ይበልጥ ለማጥራት መቃኑን እስከ ላይ ድረስ ያንሸራትቱት እና የፍለጋ ሳጥኑን ይንኩ።</translation>
 <translation id="3607167657931203000">የራስ-ሙላ ውሂብ</translation>
 <translation id="3608436266458100337">የአንባቢ ሁነታ</translation>
+<translation id="3628119975092896051">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል። አንድ ገጽ ወደ የእርስዎ የንባብ ዝርዝር ለማከል <ph name="SHARE_OPENING_ICON" />ን መታ ያድርጉ።</translation>
 <translation id="3638472932233958418">ድረ-ገጾችን አስቀድመው ይጫኑ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ላይ ዕልባት ተደርጓል</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
@@ -303,6 +306,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7131892264600713844">ታሪክን ከዚህ መሣሪያ በማሳየት ላይ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት።<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">ሙሉ ስም</translation>
 <translation id="7136892417564438900">ካሜራ አይገኝም</translation>
+<translation id="7159472599653637159">የተንቀሳቃሽ ስልክ ጣቢያ ጠይቅ</translation>
 <translation id="7167621057293532233">የውሂብ ዓይነቶች</translation>
 <translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
@@ -312,6 +316,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">ይህንን ምስል በ<ph name="SEARCH_ENGINE" /> ውስጥ ፈልግ</translation>
 <translation id="7425346204213733349">በእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ላይ የተደረጉ ለውጦች ከአሁን በኋላ ከእርስዎ የGoogle መለያ ጋር አይሠምሩም። ሆኖም ግን ነባር ውሂብዎ በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
+<translation id="744343212394640790"><ph name="EMAIL" /> አይደለም</translation>
 <translation id="7454057999980797137">ግዛት / አውራጃ</translation>
 <translation id="7456847797759667638">የተቀመጠበትን ቦታ ክፈት…</translation>
 <translation id="7464701184726199289">ይሄ የሠመረ ከሁሉም መሣሪያዎች ያጸዳል። የተቀመጡ የጣቢያ ቅንብሮች አይሰረዙም፣ እና የእርስዎን የአሰሳ ልማዶች ሊያንጸባርቁ ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>

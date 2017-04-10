@@ -128,10 +128,12 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
 <translation id="3448016392200048164">Layar Terpisah</translation>
+<translation id="3474624961160222204">Lanjutkan sebagai <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulir terisi.</translation>
 <translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
 <translation id="3482959374254649722">Menyinkronkan tab Anda...</translation>
 <translation id="3489372701259491571">Hapus Sandi yang Tersimpan</translation>
+<translation id="3494788280727468875">Konfirmasi Hapus Data Browsing</translation>
 <translation id="3519193562722059437">Buka tab untuk menjelajahi web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Tutup Tab</translation>
@@ -143,6 +145,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyaring penelusuran, geser panel ke atas kemudian sentuh kotak telusur.</translation>
 <translation id="3607167657931203000">Data Isi-Otomatis</translation>
 <translation id="3608436266458100337">Mode pembaca</translation>
+<translation id="3628119975092896051">Daftar bacaan Anda tersedia secara offline. Untuk menambahkan halaman ke daftar bacaan, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Dibookmark ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
@@ -303,6 +306,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7131892264600713844">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nama Lengkap</translation>
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
+<translation id="7159472599653637159">Minta Situs Seluler</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
 <translation id="7189598951263744875">Bagikan...</translation>
 <translation id="7203585745079012652">Ucapkan Jawabannya</translation>
@@ -312,6 +316,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Telusuri Gambar Ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Perubahan pada bookmark, riwayat, sandi, dan setelan lainnya tidak akan disinkronkan lagi dengan Akun Google. Namun, data yang sudah ada akan tetap disimpan di Akun Google Anda.</translation>
+<translation id="744343212394640790">Bukan <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Prov./Wilayah</translation>
 <translation id="7456847797759667638">Buka Lokasi...</translation>
 <translation id="7464701184726199289">Tindakan ini akan menghapus data yang disinkronkan dari semua perangkat. Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>

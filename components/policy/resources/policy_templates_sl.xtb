@@ -57,25 +57,6 @@
 <translation id="1152117524387175066">Poročanje o stanju stikala za razvijalce naprave ob zagonu.
 
       Če je pravilnik nastavljen na »False«, se o stanju stikala za razvijalce ne poroča.</translation>
-<translation id="1156080716265314451">Konfigurira seznam tiskalnikov.
-
-      Ta pravilnikom skrbnikom omogoča navajanje konfiguracij tiskalnikov za
-      uporabnike.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> in <ph name="PRINTER_DESCRIPTION" /> sta poljubno oblikovana niza,
-      ki ju je mogoče prilagoditi za preprostejše izbiranje tiskalnika. <ph name="PRINTER_MANUFACTURER" /> in <ph name="PRINTER_MODEL" /> se morate ujemati z enim od tiskalnikov, ki jih podpira <ph name="PRODUCT_NAME" />.
-      <ph name="PRINTER_URI" /> mora biti naslov, do katerega je mogoče dostopati
-      z odjemalskega računalnika, vključno s tem: <ph name="URI_SCHEME" />,
-      <ph name="URI_PORT" /> in <ph name="URI_QUEUE" />. Identifikator <ph name="PRINTER_UUID" /> je izbiren. Če je naveden, se uporablja
-      za lažje odstranjevanje podvojenih tiskalnikov <ph name="ZEROCONF_DISCOVERY" />.
-
-      Nastavitev tiskalnika se dokonča po njegovi prvi uporabi. Datoteke PPD
-      se prenesejo, ko se začne tiskalnik uporabljati. Nato so pogosto uporabljene datoteke
-      PPD predpomnjene.
-
-      Ta pravilnik nima vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v
-      posameznih napravah. Namenjen je kot dopolnilo
-      konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.</translation>
 <translation id="1160939557934457296">Onemogoči nadaljevanje z opozorilne strani varnega brskanja</translation>
 <translation id="1198465924256827162">Kako pogosto se pošljejo nalaganja stanja naprave (v milisekundah).
 
@@ -1558,11 +1539,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če tega pravilnika ne nastavitev, bo brskalnik <ph name="PRODUCT_OS_NAME" /> uporabljal privzeto vrednost 3 ur.
 
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
-<translation id="5535957389335373033">Kako pogosto se pošiljajo omrežni paketi za spremljanje (v milisekundah).
-
-      Če ta pravilnik ni nastavljen, je privzeta pogostost 3 minute. Najmanjša
-      vrednost za pogostost je 30 sekund, največja pa 24 ur – vrednosti
-      zunaj tega obsega bodo omejene na ta obseg.</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
 <translation id="5559079916187891399">Ta pravilnik ne vpliva na aplikacije za Android.</translation>
 <translation id="5560039246134246593">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_NAME" />.

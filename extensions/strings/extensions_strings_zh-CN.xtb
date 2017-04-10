@@ -5,6 +5,7 @@
 <translation id="1140871961407805696">后置</translation>
 <translation id="1256619696651732561">扩展程序清单解析器</translation>
 <translation id="1445572445564823378">此扩展程序拖慢了 <ph name="PRODUCT_NAME" />的运行速度。您应将其停用，以恢复 <ph name="PRODUCT_NAME" />的性能。</translation>
+<translation id="1468038450257740950">WebGL 不受支持。</translation>
 <translation id="149347756975725155">无法加载扩展程序图标“<ph name="ICON" />”。</translation>
 <translation id="1803557475693955505">无法加载背景页“<ph name="BACKGROUND_PAGE" />”。</translation>
 <translation id="2159915644201199628">无法对图片解码：“<ph name="IMAGE_NAME" />”</translation>
@@ -25,6 +26,7 @@
 <translation id="4811956658694082538">某个实用程序进程崩溃了，因此软件包无法安装。请重新启动 Chrome，然后重试。</translation>
 <translation id="5026754133087629784">网页视图：<ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">应用视图：<ph name="APPVIEW_TAG_NAME" /></translation>
+<translation id="5436430103864390185">不支持成形的窗口。</translation>
 <translation id="5456409301717116725">此扩展程序包含密钥文件“<ph name="KEY_PATH" />”，您最好不要执行此操作。</translation>
 <translation id="5627523580512561598">扩展程序“<ph name="EXTENSION_NAME" />”</translation>
 <translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
@@ -34,6 +36,7 @@
 <translation id="6143635259298204954">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径不得包含符号链接。您的个人资料中不存在这样的路径。</translation>
 <translation id="641087317769093025">无法解压缩扩展程序</translation>
 <translation id="6542618148162044354">“<ph name="APP_NAME" />”请求访问您的一台或多台设备：</translation>
+<translation id="6566142449942033617">无法加载插件的路径“<ph name="PLUGIN_PATH" />”。</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT" />”。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />提供的<ph name="PRODUCT_NAME" />（序列号：<ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH" />”</translation>
@@ -41,6 +44,7 @@
 <translation id="6840444547062817500">此扩展程序自行重新加载的频率过高。</translation>
 <translation id="7003844668372540529">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME" />。该扩展程序无法删除或修改。</translation>
+<translation id="7581279002575751816">NPAPI 插件不受支持。</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />（扩展程序 ID为“<ph name="EXTENSION_ID" />”）已被管理员阻止。</translation>
 <translation id="7972881773422714442">选项：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">前置</translation>

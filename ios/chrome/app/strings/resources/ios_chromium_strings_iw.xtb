@@ -44,6 +44,7 @@
 <translation id="786327964234957808">‏אתה עובר מחשבון סינכרון <ph name="USER_EMAIL1" /> אל <ph name="USER_EMAIL2" />. נתוני Chromium הקיימים שלך מנוהלים על-ידי <ph name="DOMAIN" />. פעולה זו תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו ב-<ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">‏בשימוש באפליקציה הזו אתה מביע את הסכמתך ל<ph name="BEGIN_LINK" />תנאים ולהגבלות<ph name="END_LINK" /> של Chromium.</translation>
 <translation id="8175055321229419309">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">‏היכנס ל-Chromium כדי להחיל את ההגדרות שלך בכל המכשירים.</translation>
 <translation id="8252885722420466166">‏לחוויית Google משופרת ב-Chromium בהתבסס על המיקום שלך.</translation>
 <translation id="8353224596138547809">‏האם אתה מעוניין ש-Chromium ישמור את הסיסמה עבור אתר זה?</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>

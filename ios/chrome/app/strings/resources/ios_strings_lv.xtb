@@ -128,10 +128,12 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="3414292259312108062">Šo informāciju Chrome saglabās <ph name="BEGIN_LINK" />Google saglabātajās parolēs<ph name="END_LINK" /> un izmantos automātiskajai aizpildei, lai jums tā nav jāatceras.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Dalītais skats</translation>
+<translation id="3474624961160222204">Turpināt kā: <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Veidlapas aizpildītas.</translation>
 <translation id="3478058380795961209">Der. term. mēn.</translation>
 <translation id="3482959374254649722">Notiek ciļņu sinhronizācija...</translation>
 <translation id="3489372701259491571">Dzēst saglabāto paroli</translation>
+<translation id="3494788280727468875">Apstiprināt pārlūkošanas datu notīrīšanu</translation>
 <translation id="3519193562722059437">Atveriet cilni, lai pārlūkotu tīmekli.</translation>
 <translation id="3527085408025491307">Mape</translation>
 <translation id="3551320343578183772">Aizvērt cilni</translation>
@@ -143,6 +145,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīzāku meklēšanu, velciet paneli augšup līdz galam un pieskarieties meklēšanas lodziņam.</translation>
 <translation id="3607167657931203000">Aut. aizpildes dati</translation>
 <translation id="3608436266458100337">Lasītāja režīms</translation>
+<translation id="3628119975092896051">Jūsu lasīšanas saraksts ir pieejams bezsaistē. Lai tam pievienotu kādu lapu, pieskarieties ikonai <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pirmsiel. tīm. lapas</translation>
 <translation id="3691593122358196899">Grāmatzīme saglabāta mapē <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
@@ -303,6 +306,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7131892264600713844">Tiek rādīta vēsture no šīs ierīces. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Vārds, uzvārds</translation>
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
+<translation id="7159472599653637159">Pieprasīt mobilo vietni</translation>
 <translation id="7167621057293532233">Datu tipi</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
@@ -312,6 +316,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Meklēt šo attēlu šeit: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Grāmatzīmju, vēstures, paroļu un citu iestatījumu izmaiņas vairs netiks sinhronizētas ar jūsu Google kontu. Tomēr esošie dati joprojām tiks glabāti jūsu Google kontā.</translation>
+<translation id="744343212394640790"><ph name="EMAIL" /> nav mana e-pasta adrese</translation>
 <translation id="7454057999980797137">Štats/valsts</translation>
 <translation id="7456847797759667638">Atvērt atrašanās vietu...</translation>
 <translation id="7464701184726199289">Tādējādi visās ierīcēs tiek notīrīti sinhronizētie dati. Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>

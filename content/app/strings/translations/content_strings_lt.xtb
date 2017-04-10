@@ -45,6 +45,7 @@
 <translation id="2613802280814924224">Įveskite tinkamą vertę. Artimiausia tinkama vertė yra <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2674318244760992338">poraštė</translation>
+<translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2723001399770238859">garso įrašas</translation>
 <translation id="2746543609216772311">Vertė turi būti <ph name="MINIMUM_DATE_OR_TIME" /> ar vėlesnė data.</translation>
 <translation id="2759744352195237655">Iššokantysis mygtukas</translation>
@@ -143,6 +144,7 @@
 <translation id="6885760532393684712">katalogas</translation>
 <translation id="6934078000481955284">citata</translation>
 <translation id="6941933287844615239">atsisiųsti mediją</translation>
+<translation id="6989848892321993519">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate 1 simbolį).</translation>
 <translation id="7057186640035488495">filmo laikas</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
 <translation id="7223624360433298498">praėjęs laikas</translation>

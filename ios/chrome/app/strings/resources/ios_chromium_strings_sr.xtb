@@ -44,6 +44,7 @@
 <translation id="786327964234957808">Мењате налог за синхронизацију из <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Постојећим Chromium подацима управља <ph name="DOMAIN" />. На овај начин бришете податке са овог уређаја, али подаци остају на <ph name="USER_EMAIL1" />.</translation>
 <translation id="8111736072665034317">Коришћењем ове апликације прихватате Chromium-ове <ph name="BEGIN_LINK" />услове коришћења услуге<ph name="END_LINK" />.</translation>
 <translation id="8175055321229419309">Савет: <ph name="BEGIN_LINK" />Преместите Chromium на док<ph name="END_LINK" /></translation>
+<translation id="8200548749940012969">Да би вам подешавања били доступна на свим уређајима, пријавите се у Chromium.</translation>
 <translation id="8252885722420466166">Побољшајте Google доживљај у Chromium-у на основу локације.</translation>
 <translation id="8353224596138547809">Да ли желите да Chromium сачува лозинку за овај сајт?</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
