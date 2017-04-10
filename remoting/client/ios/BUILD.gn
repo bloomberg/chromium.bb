@@ -9,6 +9,7 @@ group("all") {
 
   deps = [
     ":ios_core",
+    "./app:all",
     "./bridge:all",
   ]
 }
@@ -24,12 +25,8 @@ group("all_test") {
 
 source_set("ios_core") {
   sources = [
-    "app_runtime.cc",
-    "app_runtime.h",
     "client_gestures.h",
     "client_gestures.mm",
-    "host.h",
-    "host.mm",
     "host_preferences.h",
     "host_preferences.mm",
     "host_preferences_persistence.h",
@@ -45,6 +42,8 @@ source_set("ios_core") {
   }
 
   public_deps = [
+    "//remoting/client/ios/domain",
+    "//remoting/client/ios/facade",
     "//third_party/webrtc/base:rtc_base",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
@@ -72,8 +71,6 @@ source_set("ios_core_unit_tests") {
   ]
 
   sources = [
-    #    "host_refresh_unittest.mm",
-    #    "host_refresh_unittest_helper.h",
     "key_input_unittest.mm",
   ]
 

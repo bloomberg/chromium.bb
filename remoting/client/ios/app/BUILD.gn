@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/mac/tweak_info_plist.gni")
-import("//build/config/ios/rules.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/ios/rules.gni")
+import("//build/mac/tweak_info_plist.gni")
 import("//build/util/process_version.gni")
 import("//remoting/build/config/remoting_build.gni")
 
@@ -20,19 +20,35 @@ source_set("main") {
   sources = [
     "app_delegate.h",
     "app_delegate.mm",
-    "example_view_controller.h",
-    "example_view_controller.mm",
+    "host_collection_view_cell.h",
+    "host_collection_view_cell.mm",
+    "host_collection_view_controller.h",
+    "host_collection_view_controller.mm",
+    "host_view_controller.h",
+    "host_view_controller.mm",
     "main.mm",
+    "pin_entry_view_controller.h",
+    "pin_entry_view_controller.mm",
+    "remoting_settings_view_controller.h",
+    "remoting_settings_view_controller.mm",
+    "remoting_view_controller.h",
+    "remoting_view_controller.mm",
   ]
 
   deps = [
     "//base",
+    "//google_apis",
     "//remoting/base",
     "//remoting/client",
+    "//remoting/client/ios:ios_core",
     "//remoting/protocol",
     "//ui/base",
     "//ui/gfx",
     "//ui/resources",
+  ]
+
+  public_deps = [
+    "//ios/third_party/material_components_ios",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -76,6 +92,15 @@ ios_app_bundle("ios_remoting_app") {
   deps = [
     ":main",
     "//base",
+    "//remoting/client/ios/app/resources:assets",
+    "//remoting/client/ios/app/resources:launchscreen_assets",
+    "//remoting/client/ios/app/resources:remoting_icons",
     "//remoting/client/ios/display",
   ]
+
+  bundle_deps = [ ":launchscreen_storyboard" ]
+}
+
+bundle_data_ib_file("launchscreen_storyboard") {
+  source = "resources/LaunchScreen.storyboard"
 }

@@ -9,11 +9,11 @@
 #import "remoting/client/ios/app/app_delegate.h"
 
 #include "base/logging.h"
-
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "remoting/client/ios/app/example_view_controller.h"
 
+#import "remoting/client/ios/app/remoting_view_controller.h"
+#import "remoting/client/ios/facade/remoting_service.h"
 
 @implementation AppDelegate
 
@@ -29,13 +29,33 @@
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-
-  ExampleViewController *vc = [[ExampleViewController alloc] init];
-
-  self.window.rootViewController = vc;
-
-  [self.window makeKeyAndVisible];
+  [self launchRemotingViewController];
   return YES;
+}
+
+- (BOOL)application:(UIApplication*)application handleOpenURL:(NSURL*)url {
+  NSMutableDictionary* components = [[NSMutableDictionary alloc] init];
+  NSArray* urlComponents = [[url query] componentsSeparatedByString:@"&"];
+
+  for (NSString* componentPair in urlComponents) {
+    NSArray* pair = [componentPair componentsSeparatedByString:@"="];
+    NSString* key = [[pair firstObject] stringByRemovingPercentEncoding];
+    NSString* value = [[pair lastObject] stringByRemovingPercentEncoding];
+    [components setObject:value forKey:key];
+  }
+  NSString* authorizationCode = [components objectForKey:@"code"];
+
+  [[RemotingService SharedInstance]
+      authenticateWithAuthorizationCode:authorizationCode];
+
+  [self launchRemotingViewController];
+  return YES;
+}
+
+- (void)launchRemotingViewController {
+  RemotingViewController* vc = [[RemotingViewController alloc] init];
+  self.window.rootViewController = vc;
+  [self.window makeKeyAndVisible];
 }
 
 @end
