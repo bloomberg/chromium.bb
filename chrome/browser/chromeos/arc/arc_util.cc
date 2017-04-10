@@ -35,6 +35,22 @@ bool g_disallow_for_testing = false;
 }  // namespace
 
 bool IsArcAllowedForProfile(const Profile* profile) {
+  if (!IsArcAllowedInAppListForProfile(profile))
+    return false;
+
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // Do not allow newer version of ARC on old filesystem.
+    // Check this condition only on real Chrome OS devices. Test runs on Linux
+    // workstation does not have expected /etc/lsb-release field nor profile
+    // creation step.
+    if (!IsArcCompatibleFileSystemUsedForProfile(profile))
+      return false;
+  }
+
+  return true;
+}
+
+bool IsArcAllowedInAppListForProfile(const Profile* profile) {
   if (g_disallow_for_testing) {
     VLOG(1) << "ARC is disallowed for testing.";
     return false;
@@ -101,28 +117,27 @@ bool IsArcAllowedForProfile(const Profile* profile) {
     return false;
   }
 
-  // Do not allow newer version of ARC on old filesystem.
-  // Check this condition only on real Chrome OS devices. Test runs on Linux
-  // workstation does not have expected /etc/lsb-release field nor profile
-  // creation step.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    // chromeos::UserSessionManager::PrepareProfile does the actual file system
-    // check and stores the result to prefs, so that it survives crash-restart.
-    const bool is_filesystem_compatible =
-        profile->GetPrefs()->GetBoolean(prefs::kArcCompatibleFilesystemChosen);
-    std::string arc_sdk_version;
-    const bool is_M = base::SysInfo::GetLsbReleaseValue(
-                          kLsbReleaseArcVersionKey, &arc_sdk_version) &&
-                      arc_sdk_version == kAndroidMSdkVersion;
-    // To run ARC we want to make sure either
-    // - Underlying file system is compatible with ARC, or
-    // - SDK version is M.
-    if (!is_filesystem_compatible && !is_M) {
-      VLOG(1)
-          << "Users with SDK version (" << arc_sdk_version
-          << ") are not supported when they postponed to migrate to dircrypto.";
-      return false;
-    }
+  return true;
+}
+
+bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile) {
+  // chromeos::UserSessionManager::PrepareProfile does the actual file system
+  // check and stores the result to prefs, so that it survives crash-restart.
+  const bool is_filesystem_compatible =
+      profile->GetPrefs()->GetBoolean(prefs::kArcCompatibleFilesystemChosen);
+  std::string arc_sdk_version;
+  const bool is_M = base::SysInfo::GetLsbReleaseValue(kLsbReleaseArcVersionKey,
+                                                      &arc_sdk_version) &&
+                    arc_sdk_version == kAndroidMSdkVersion;
+
+  // To run ARC we want to make sure either
+  // - Underlying file system is compatible with ARC, or
+  // - SDK version is M.
+  if (!is_filesystem_compatible && !is_M) {
+    VLOG(1)
+        << "Users with SDK version (" << arc_sdk_version
+        << ") are not supported when they postponed to migrate to dircrypto.";
+    return false;
   }
 
   return true;

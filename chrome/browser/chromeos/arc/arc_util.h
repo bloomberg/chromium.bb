@@ -26,6 +26,19 @@ namespace arc {
 // nullptr can be safely passed to this function. In that case, returns false.
 bool IsArcAllowedForProfile(const Profile* profile);
 
+// Returns true if ARC app is allowed to show up on app list for the given
+// profile. This can be a looser condition than IsArcAllowedForProfile.
+// ARC may be temporaliry disallowed for the profile, but it may become again
+// avaiable after the user's action. ARC app list can stay there to ease the
+// user (by showing apps not gone) and to give a guide for the action.
+bool IsArcAllowedInAppListForProfile(const Profile* profile);
+
+// Returns true if the profile is already marked to be on a filesystem
+// compatible to the currently installed ARC version. The check almost never
+// is meaningful on test workstation. Usually it should be checked only when
+// running on the real Chrome OS.
+bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile);
+
 // Disallows ARC for all profiles for testing.
 // In most cases, disabling ARC should be done via commandline. However,
 // there are some cases to be tested where ARC is available, but ARC is not

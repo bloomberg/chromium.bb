@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/sys_info.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
@@ -138,16 +139,21 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 
   // false for nullptr.
   EXPECT_FALSE(IsArcAllowedForProfile(nullptr));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(nullptr));
 
   // false for incognito mode profile.
   EXPECT_FALSE(IsArcAllowedForProfile(profile()->GetOffTheRecordProfile()));
+  EXPECT_FALSE(
+      IsArcAllowedInAppListForProfile(profile()->GetOffTheRecordProfile()));
 
   // false for Legacy supervised user.
   profile()->SetSupervisedUserId("foo");
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
@@ -156,6 +162,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
@@ -166,6 +173,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 // User without GAIA account.
@@ -174,6 +182,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_PublicAccount) {
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
@@ -187,6 +196,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
@@ -198,6 +208,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcNotAvailable) {
@@ -209,6 +220,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcNotAvailable) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcInstalled) {
@@ -221,6 +233,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcInstalled) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
@@ -233,6 +246,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
@@ -250,12 +264,58 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_GuestAccount) {
   ScopedLogIn login(GetFakeUserManager(),
                     GetFakeUserManager()->GetGuestAccountId());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
 }
 
 // Demo account is interpreted as EphemeralDataUser.
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DemoAccount) {
   ScopedLogIn login(GetFakeUserManager(), user_manager::DemoAccountId());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcAllowedInAppListForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
+  // TODO(kinaba): Come up with some way to test the conditions below
+  // causes differences in the return values of IsArcAllowedForProfile()
+  // and IsArcAllowedInAppListForProfile().
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+
+  // Unconfirmed + Old ARC
+  profile()->GetPrefs()->ClearPref(prefs::kArcCompatibleFilesystemChosen);
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // Unconfirmed + New ARC
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
+  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // Old FS + Old ARC
+  profile()->GetPrefs()->SetBoolean(prefs::kArcCompatibleFilesystemChosen,
+                                    false);
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // Old FS + New ARC
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
+  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // New FS + Old ARC
+  profile()->GetPrefs()->SetBoolean(prefs::kArcCompatibleFilesystemChosen,
+                                    true);
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // New FS + New ARC
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile) {
