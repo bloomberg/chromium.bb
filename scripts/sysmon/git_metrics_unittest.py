@@ -27,21 +27,21 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
       self.git_repo._check_output(['init'])
       self.git_repo._check_output(['commit', '--allow-empty', '-m', 'hi'])
 
-  def testCollectGitHashTypesAreCorrect(self):
+  def test_collect_git_hash_types_are_correct(self):
     """Tests that collecting the git hash doesn't have type conflicts."""
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
 
     # This has the side-effect of checking the types are correct.
     collector._collect_commit_hash_metric()
 
-  def testCollectGitTimeTypesAreCorrect(self):
+  def test_collect_git_time_types_are_correct(self):
     """Tests that collecting the git commit time works."""
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
 
     # This has the side-effect of checking the types are correct.
     collector._collect_timestamp_metric()
 
-  def testCollectGitHashCallsSet(self):
+  def test_collect_git_hash_calls_set(self):
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
 
     with mock.patch.object(git_metrics._GitMetricCollector,
@@ -54,7 +54,7 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
         mock.call(commit_hash, {'repo': self.git_dir})
     ])
 
-  def testCollectGitTimeCallsSet(self):
+  def test_collect_git_time_calls_set(self):
     collector = git_metrics._GitMetricCollector(self.git_dir, '/foo/bar')
     with mock.patch.object(git_metrics._GitMetricCollector,
                            '_timestamp_metric',
