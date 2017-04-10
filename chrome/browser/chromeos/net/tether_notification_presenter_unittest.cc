@@ -102,13 +102,50 @@ cryptauth::RemoteDevice CreateTestRemoteDevice() {
 }  // namespace
 
 class TetherNotificationPresenterTest : public testing::Test {
+ public:
+  class TestNetworkConnect : public NetworkConnect {
+   public:
+    TestNetworkConnect() {}
+    ~TestNetworkConnect() override {}
+
+    std::string network_id_to_connect() { return network_id_to_connect_; }
+
+    // NetworkConnect:
+    void DisconnectFromNetworkId(const std::string& network_id) override {}
+    bool MaybeShowConfigureUI(const std::string& network_id,
+                              const std::string& connect_error) override {
+      return false;
+    }
+    void SetTechnologyEnabled(const chromeos::NetworkTypePattern& technology,
+                              bool enabled_state) override {}
+    void ShowMobileSetup(const std::string& network_id) override {}
+    void ConfigureNetworkIdAndConnect(
+        const std::string& network_id,
+        const base::DictionaryValue& shill_properties,
+        bool shared) override {}
+    void CreateConfigurationAndConnect(base::DictionaryValue* shill_properties,
+                                       bool shared) override {}
+    void SetTetherDelegate(TetherDelegate* tether_delegate) override {}
+
+    void CreateConfiguration(base::DictionaryValue* shill_properties,
+                             bool shared) override {}
+
+    void ConnectToNetworkId(const std::string& network_id) override {
+      network_id_to_connect_ = network_id;
+    }
+
+   private:
+    std::string network_id_to_connect_;
+  };
+
  protected:
   TetherNotificationPresenterTest() : test_device_(CreateTestRemoteDevice()) {}
 
   void SetUp() override {
     test_message_center_ = base::WrapUnique(new TestMessageCenter());
-    notification_presenter_ = base::WrapUnique(
-        new TetherNotificationPresenter(test_message_center_.get()));
+    test_network_connect_ = base::WrapUnique(new TestNetworkConnect());
+    notification_presenter_ = base::WrapUnique(new TetherNotificationPresenter(
+        test_message_center_.get(), test_network_connect_.get()));
   }
 
   std::string GetActiveHostNotificationId() {
@@ -123,6 +160,7 @@ class TetherNotificationPresenterTest : public testing::Test {
   const cryptauth::RemoteDevice test_device_;
 
   std::unique_ptr<TestMessageCenter> test_message_center_;
+  std::unique_ptr<TestNetworkConnect> test_network_connect_;
 
   std::unique_ptr<TetherNotificationPresenter> notification_presenter_;
 
@@ -216,7 +254,12 @@ TEST_F(TetherNotificationPresenterTest,
   // Tap the notification's button.
   test_message_center_->NotifyNotificationButtonTapped(
       GetPotentialHotspotNotificationId(), 0 /* button_index */);
-  // TODO(khorimoto): Test that the connection dialog is shown.
+
+  EXPECT_EQ(test_device_.GetDeviceId(),
+            test_network_connect_->network_id_to_connect());
+
+  // TODO(hansberry): Test for the case of the user not yet going through
+  // the connection dialog.
 }
 
 TEST_F(TetherNotificationPresenterTest,

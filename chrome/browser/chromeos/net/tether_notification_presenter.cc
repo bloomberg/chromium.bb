@@ -61,12 +61,12 @@ TetherNotificationPresenter::CreateNotification(
       rich_notification_data, nullptr);
 }
 
-TetherNotificationPresenter::TetherNotificationPresenter()
-    : TetherNotificationPresenter(message_center::MessageCenter::Get()) {}
-
 TetherNotificationPresenter::TetherNotificationPresenter(
-    message_center::MessageCenter* message_center)
-    : message_center_(message_center), weak_ptr_factory_(this) {
+    message_center::MessageCenter* message_center,
+    NetworkConnect* network_connect)
+    : message_center_(message_center),
+      network_connect_(network_connect),
+      weak_ptr_factory_(this) {
   message_center_->AddObserver(this);
 }
 
@@ -152,12 +152,11 @@ void TetherNotificationPresenter::OnNotificationButtonClicked(
                << " of notification with ID " << notification_id
                << " was clicked.";
 
-  // Only the "potential hotspot nearby" notification has a button, and it only
-  // has one button (index 0).
-  DCHECK(std::string(kPotentialHotspotNotificationId) == notification_id);
-  DCHECK(0 == button_index);
-
-  // TODO(khorimoto): Start a connection.
+  if (notification_id == kPotentialHotspotNotificationId && button_index == 0) {
+    // TODO (hansberry): Only directly start a connection if this is not the
+    // first time the user has connected to a host.
+    network_connect_->ConnectToNetworkId(hotspot_nearby_device_.GetDeviceId());
+  }
 }
 
 void TetherNotificationPresenter::ShowNotification(

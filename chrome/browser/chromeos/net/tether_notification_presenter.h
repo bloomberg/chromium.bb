@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/components/tether/notification_presenter.h"
+#include "chromeos/network/network_connect.h"
 #include "components/cryptauth/remote_device.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
@@ -32,7 +33,10 @@ class TetherNotificationPresenter
     : public NotificationPresenter,
       public message_center::MessageCenterObserver {
  public:
-  TetherNotificationPresenter();
+  // Caller must ensure that |message_center| amd |network_connect| outlive
+  // this instance.
+  TetherNotificationPresenter(message_center::MessageCenter* message_center,
+                              NetworkConnect* network_connect);
   ~TetherNotificationPresenter() override;
 
   // NotificationPresenter:
@@ -47,10 +51,6 @@ class TetherNotificationPresenter
   void OnNotificationClicked(const std::string& notification_id) override;
   void OnNotificationButtonClicked(const std::string& notification_id,
                                    int button_index) override;
-
- protected:
-  explicit TetherNotificationPresenter(
-      message_center::MessageCenter* message_center);
 
  private:
   friend class TetherNotificationPresenterTest;
@@ -73,6 +73,7 @@ class TetherNotificationPresenter
       std::unique_ptr<message_center::Notification> notification);
 
   message_center::MessageCenter* message_center_;
+  NetworkConnect* network_connect_;
 
   cryptauth::RemoteDevice hotspot_nearby_device_;
   base::WeakPtrFactory<TetherNotificationPresenter> weak_ptr_factory_;
