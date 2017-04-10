@@ -85,13 +85,18 @@ if (is_mac || is_ios) {
       using_sanitizer || enable_profiling || is_debug || current_cpu == "arm64"
 }
 
-# Unwinding with frame pointers requires that frame pointers are enabled by
-# default for most translation units, and that the architecture isn't thumb, as
-# frame pointers are not correctly emitted for thumb.
-if (enabled_frame_pointers && !(current_cpu == "arm" && arm_use_thumb)) {
-  can_unwind_with_frame_pointers = true
-} else {
+# Unwinding with frame pointers requires that they are enabled by default for
+# most translation units, that they are emitted correctly, and that the
+# compiler or platform provides a way to access them.
+if (current_cpu == "arm" && arm_use_thumb) {
+  # ARM Thumb builds do not emit frame pointers correctly.
   can_unwind_with_frame_pointers = false
+} else if (is_win) {
+  # Windows 32-bit does provide frame pointers, but the compiler does not
+  # provide intrinsics to access them, so we don't use them.
+  can_unwind_with_frame_pointers = false
+} else {
+  can_unwind_with_frame_pointers = enabled_frame_pointers
 }
 
 declare_args() {

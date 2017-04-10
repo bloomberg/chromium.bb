@@ -115,7 +115,6 @@ BASE_EXPORT size_t TraceStackFramePointers(const void** out_trace,
                                            size_t max_depth,
                                            size_t skip_initial);
 
-#if !defined(OS_WIN)
 // Links stack frame |fp| to |parent_fp|, so that during stack unwinding
 // TraceStackFramePointers() visits |parent_fp| after visiting |fp|.
 // Both frame pointers must come from __builtin_frame_address().
@@ -165,7 +164,6 @@ class BASE_EXPORT ScopedStackFrameLinker {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedStackFrameLinker);
 };
-#endif  // !defined(OS_WIN)
 
 #endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 

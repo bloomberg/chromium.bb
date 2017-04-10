@@ -204,20 +204,20 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
   if (profiling_mode == "") {
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::PSEUDO_STACK);
-#if (BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS) || !defined(NDEBUG))
+#if !defined(OS_NACL)
   } else if (profiling_mode == switches::kEnableHeapProfilingModeNative) {
-    // We need frame pointers for native tracing to work, and they are
-    // enabled in profiling and debug builds.
+    // If we don't have frame pointers then native tracing falls-back to
+    // using base::debug::StackTrace, which may be slow.
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::NATIVE_STACK);
-#endif
+#endif  // !defined(OS_NACL)
 #if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
   } else if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler) {
     // Enable heap tracking, which in turn enables capture of heap usage
     // tracking in tracked_objects.cc.
     if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
       base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
-#endif
+#endif  // BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
   } else {
     CHECK(false) << "Invalid mode '" << profiling_mode << "' for "
                << switches::kEnableHeapProfiling << " flag.";
