@@ -43,7 +43,7 @@ StorageNamespace::StorageNamespace(
 StorageNamespace::~StorageNamespace() {}
 
 StorageArea* StorageNamespace::LocalStorageArea(SecurityOrigin* origin) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   static WebStorageNamespace* local_storage_namespace = nullptr;
   if (!local_storage_namespace)
     local_storage_namespace =

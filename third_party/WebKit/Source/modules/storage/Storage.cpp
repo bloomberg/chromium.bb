@@ -82,7 +82,7 @@ void Storage::NamedPropertyEnumerator(Vector<String>& names,
     String key = this->key(i, exception_state);
     if (exception_state.HadException())
       return;
-    ASSERT(!key.IsNull());
+    DCHECK(!key.IsNull());
     String val = getItem(key, exception_state);
     if (exception_state.HadException())
       return;

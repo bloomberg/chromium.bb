@@ -245,7 +245,7 @@ void StorageArea::DispatchSessionStorageEvent(
 
 bool StorageArea::IsEventSource(Storage* storage,
                                 WebStorageArea* source_area_instance) {
-  ASSERT(storage);
+  DCHECK(storage);
   StorageArea* area = storage->Area();
   return area->storage_area_.get() == source_area_instance;
 }
