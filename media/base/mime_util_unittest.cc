@@ -65,8 +65,8 @@ static void RunCodecSupportTest(const MimeUtil::PlatformInfo& states_to_vary,
   MimeUtil::PlatformInfo info;
 
 #define RUN_TEST_VECTOR(name)                   \
-  size_t name##_index = 0;                      \
-  for (info.name = name##_states[name##_index]; \
+  for (size_t name##_index = 0;                 \
+       info.name = name##_states[name##_index], \
        name##_index < name##_states.size(); ++name##_index)
 
   RUN_TEST_VECTOR(has_platform_decoders) {
@@ -333,6 +333,7 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
 
           // These codecs are always supported with the unified pipeline.
           case MimeUtil::FLAC:
+          case MimeUtil::H264:
           case MimeUtil::PCM:
           case MimeUtil::MPEG2_AAC:
           case MimeUtil::MP3:
@@ -345,10 +346,6 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
             break;
 
           // These codecs are only supported if platform decoders are supported.
-          case MimeUtil::H264:
-            EXPECT_EQ(info.has_platform_decoders, result);
-            break;
-
           case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport() && info.has_platform_decoders, result);
             break;
