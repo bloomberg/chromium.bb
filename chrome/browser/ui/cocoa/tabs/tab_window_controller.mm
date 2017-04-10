@@ -76,7 +76,9 @@
 // layout doesn't log a warning when a view's autoresizing mask can't be
 // maintained), ensure that it's on instead of letting it depend on content.
 + (BOOL)requiresConstraintBasedLayout {
-  return YES;
+  // TODO(sdy): Turn back on (or remove) after investigating a performance
+  // regression: https://crbug.com/706931
+  return NO;
 }
 
 @end
