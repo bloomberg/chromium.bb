@@ -138,7 +138,7 @@ class DenormalDisabler {
 
   // Assume the worst case that other architectures and compilers
   // need to flush denormals to zero manually.
-  static inline float flushDenormalFloatToZero(float f) {
+  static inline float FlushDenormalFloatToZero(float f) {
     return (fabs(f) < FLT_MIN) ? 0.0f : f;
   }
 };
