@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -18,17 +19,14 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("chromecast")
 public final class SystemTimeChangeNotifierAndroid {
-    private final Context mContext;
     private BroadcastReceiver mTimeChangeObserver;
 
     @CalledByNative
-    private static SystemTimeChangeNotifierAndroid create(Context context) {
-        return new SystemTimeChangeNotifierAndroid(context);
+    private static SystemTimeChangeNotifierAndroid create() {
+        return new SystemTimeChangeNotifierAndroid();
     }
 
-    private SystemTimeChangeNotifierAndroid(Context context) {
-        mContext = context;
-    }
+    private SystemTimeChangeNotifierAndroid() {}
 
     @CalledByNative
     private void initializeFromNative(final long nativeSystemTimeChangeNotifier) {
@@ -40,11 +38,11 @@ public final class SystemTimeChangeNotifierAndroid {
             }
         };
         IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_CHANGED);
-        mContext.registerReceiver(mTimeChangeObserver, filter);
+        ContextUtils.getApplicationContext().registerReceiver(mTimeChangeObserver, filter);
     }
 
     @CalledByNative private void finalizeFromNative() {
-        mContext.unregisterReceiver(mTimeChangeObserver);
+        ContextUtils.getApplicationContext().unregisterReceiver(mTimeChangeObserver);
         mTimeChangeObserver = null;
     }
 

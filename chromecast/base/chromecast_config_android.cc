@@ -4,7 +4,6 @@
 
 #include "chromecast/base/chromecast_config_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/lazy_instance.h"
 #include "jni/ChromecastConfigAndroid_jni.h"
@@ -39,8 +38,7 @@ bool ChromecastConfigAndroid::CanSendUsageStats() {
   // TODO(gunsch): make opt-in.stats pref the source of truth for this data,
   // instead of Android prefs, then delete ChromecastConfigAndroid.
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_ChromecastConfigAndroid_canSendUsageStats(
-      env, base::android::GetApplicationContext());
+  return Java_ChromecastConfigAndroid_canSendUsageStats(env);
 }
 
 // Registers a handler to be notified when SendUsageStats is changed.

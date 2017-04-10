@@ -4,8 +4,6 @@
 
 package org.chromium.chromecast.shell;
 
-import android.content.Context;
-
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -19,10 +17,9 @@ public final class CastCrashHandler {
     private static final String TAG = "cr_CastCrashHandler";
 
     @CalledByNative
-    public static void initializeUploader(Context context, String crashDumpPath,
-            boolean uploadCrashToStaging) {
+    public static void initializeUploader(String crashDumpPath, boolean uploadCrashToStaging) {
         CastCrashUploader uploader = new CastCrashUploader(crashDumpPath, uploadCrashToStaging);
-        if (ChromecastConfigAndroid.canSendUsageStats(context)) {
+        if (ChromecastConfigAndroid.canSendUsageStats()) {
             uploader.startPeriodicUpload();
         } else {
             Log.d(TAG, "Removing crash dumps instead of uploading");

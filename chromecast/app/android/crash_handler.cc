@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
@@ -91,9 +90,8 @@ void CrashHandler::InitializeUploader() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> crash_dump_path_java =
       base::android::ConvertUTF8ToJavaString(env, crash_dump_path_.value());
-  Java_CastCrashHandler_initializeUploader(
-      env, base::android::GetApplicationContext(), crash_dump_path_java,
-      UploadCrashToStaging());
+  Java_CastCrashHandler_initializeUploader(env, crash_dump_path_java,
+                                           UploadCrashToStaging());
 }
 
 }  // namespace chromecast

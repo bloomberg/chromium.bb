@@ -17,10 +17,9 @@ public final class ChromecastConfigAndroid {
 
     private static CastSettingsManager sSettingsManager;
 
-    public static void initializeForBrowser(Context applicationContext) {
+    public static void initializeForBrowser(Context context) {
         sSettingsManager = CastSettingsManager.createCastSettingsManager(
-                applicationContext,
-                new CastSettingsManager.OnSettingChangedListener() {
+                context, new CastSettingsManager.OnSettingChangedListener() {
                     @Override
                     public void onSendUsageStatsChanged(boolean enabled) {
                         nativeSetSendUsageStatsEnabled(enabled);
@@ -29,7 +28,7 @@ public final class ChromecastConfigAndroid {
     }
 
     @CalledByNative
-    public static boolean canSendUsageStats(Context context) {
+    public static boolean canSendUsageStats() {
         return sSettingsManager.isSendUsageStatsEnabled();
     }
 
