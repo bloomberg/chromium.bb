@@ -12,6 +12,7 @@
     style="@style/PreferenceLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingEnd="8dp"
     android:orientation="vertical">
 
     <TextView
@@ -24,7 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:textSize="16sp"
-        android:paddingStart="0dp"
         android:paddingTop="6dp" />
 
 </LinearLayout>
