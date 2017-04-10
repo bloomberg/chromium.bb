@@ -62,7 +62,7 @@ def find(filesystem, base_dir, paths=None, skipped_directories=None, file_filter
         An iterable of absolute paths that were found.
     """
     paths = paths or ['*']
-    skipped_directories = skipped_directories or set(['.svn', '_svn'])
+    skipped_directories = skipped_directories or set()
     absolute_paths = _normalize(filesystem, base_dir, paths)
     return _normalized_find(filesystem, absolute_paths, skipped_directories, file_filter, directory_sort_key)
 

@@ -202,9 +202,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     def execute(self, options, args, tool):
         self._tool = tool
-        if tool.git().executable_name == 'svn':
-            _log.error('Auto rebaseline only works with a git checkout.')
-            return
 
         if not options.dry_run and tool.git().has_working_directory_changes():
             _log.error('Cannot proceed with working directory changes. Clean working directory first.')

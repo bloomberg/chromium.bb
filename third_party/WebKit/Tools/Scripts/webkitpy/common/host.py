@@ -64,6 +64,7 @@ class Host(SystemHost):
 
     # We call this from the Host constructor, as it's one of the
     # earliest calls made for all webkitpy-based programs.
+    # TODO(qyearsley): Remove this in a separate clean-up CL.
     def _engage_awesome_locale_hacks(self):
         # To make life easier on our non-English users, we override
         # the locale environment variables inside webkitpy.

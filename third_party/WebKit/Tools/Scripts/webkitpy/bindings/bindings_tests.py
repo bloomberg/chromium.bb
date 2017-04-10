@@ -256,10 +256,6 @@ def bindings_tests(output_directory, verbose):
     def no_excess_files(output_files):
         generated_files = set([os.path.relpath(path, output_directory)
                                for path in output_files])
-        # Add subversion working copy directories in core and modules.
-        for component in COMPONENT_DIRECTORY:
-            generated_files.add(os.path.join(component, '.svn'))
-
         excess_files = []
         for path in list_files(REFERENCE_DIRECTORY):
             relpath = os.path.relpath(path, REFERENCE_DIRECTORY)

@@ -686,7 +686,7 @@ class Port(object):
 
     def real_tests(self, paths):
         # When collecting test cases, skip these directories.
-        skipped_directories = set(['.svn', '_svn', 'platform', 'resources', 'support', 'script-tests', 'reference', 'reftest'])
+        skipped_directories = set(['platform', 'resources', 'support', 'script-tests', 'reference', 'reftest'])
         files = find_files.find(self._filesystem, self.layout_tests_dir(), paths,
                                 skipped_directories, functools.partial(Port.is_test_file, self), self.test_key)
         return self._convert_wpt_file_paths_to_url_paths([self.relative_test_filename(f) for f in files])

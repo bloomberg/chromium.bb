@@ -87,14 +87,8 @@ class WebKitFinder(object):
 
         Raises an AssertionError if the top dir can't be determined.
         """
-        # Note: This code somewhat duplicates the code in
-        # git.find_checkout_root(). However, that code only works if the top
-        # of the SCM repository also matches the top of the WebKit tree. Some SVN users
-        # (the chromium test bots, for example), might only check out subdirectories like
-        # Tools/Scripts. This code will also work if there is no SCM system at all.
-        # TODO(qyearsley): Remove duplicate code; we're not concerned with SVN users anymore.
-        # Also, instead of caching the result with a private instance variable, we can use
-        # the memoized decorator.
+        # TODO(qyearsley): This code somewhat duplicates the code in
+        # git.find_checkout_root().
         if not self._webkit_base:
             self._webkit_base = self._webkit_base
             module_path = self._filesystem.abspath(self._filesystem.path_to_module(self.__module__))

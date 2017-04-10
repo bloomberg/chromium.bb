@@ -28,7 +28,6 @@ from webkitpy.common.system.system_host import SystemHost
 
 
 class PNGChecker(object):
-    """Check svn:mime-type for checking style"""
 
     categories = set(['image/png'])
 

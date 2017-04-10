@@ -151,7 +151,7 @@ class PerfTestsRunner(object):
                 else:
                     _log.warning('Path was not found:' + arg)
 
-        skipped_directories = set(['.svn', 'resources'])
+        skipped_directories = set(['resources'])
         test_files = find_files.find(filesystem, self._base_path, paths, skipped_directories, _is_test_file)
         tests = []
         for path in test_files:
