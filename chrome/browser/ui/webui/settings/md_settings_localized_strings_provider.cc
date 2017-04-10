@@ -276,7 +276,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
     {"aboutUpdateWarningContinue",
      IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON},
-#endif
+#endif  // defined(OS_CHROMEOS)
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
