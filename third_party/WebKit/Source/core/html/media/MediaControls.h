@@ -74,20 +74,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // to modules.
   virtual MediaControlPanelElement* PanelElement() = 0;
   virtual Document& OwnerDocument() = 0;
-  virtual void OnVolumeChange() = 0;
-  virtual void OnFocusIn() = 0;
-  virtual void OnTimeUpdate() = 0;
-  virtual void OnDurationChange() = 0;
-  virtual void OnPlay() = 0;
-  virtual void OnPlaying() = 0;
-  virtual void OnPause() = 0;
-  virtual void OnTextTracksAddedOrRemoved() = 0;
-  virtual void OnTextTracksChanged() = 0;
-  virtual void OnError() = 0;
-  virtual void OnLoadedMetadata() = 0;
-  virtual void OnEnteredFullscreen() = 0;
-  virtual void OnExitedFullscreen() = 0;
-  virtual void OnPanelKeypress() = 0;
   virtual void BeginScrubbing() = 0;
   virtual void EndScrubbing() = 0;
   virtual void UpdateCurrentTimeDisplay() = 0;

@@ -105,21 +105,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     // There is no update because only the overlay is expected to change.
     RefreshCastButtonVisibilityWithoutUpdate();
   }
-  // Methods called by MediaControlsMediaEventListener.
-  void OnVolumeChange() override;
-  void OnFocusIn() override;
-  void OnTimeUpdate() override;
-  void OnDurationChange() override;
-  void OnPlay() override;
-  void OnPlaying() override;
-  void OnPause() override;
-  void OnTextTracksAddedOrRemoved() override;
-  void OnTextTracksChanged() override;
-  void OnError() override;
-  void OnLoadedMetadata() override;
-  void OnEnteredFullscreen() override;
-  void OnExitedFullscreen() override;
-  void OnPanelKeypress() override;
   Document& OwnerDocument() { return GetDocument(); }
 
   DECLARE_VIRTUAL_TRACE();
@@ -194,6 +179,22 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void StoppedCasting();
   void RefreshCastButtonVisibility();
   void RefreshCastButtonVisibilityWithoutUpdate();
+
+  // Methods called by MediaControlsMediaEventListener.
+  void OnVolumeChange();
+  void OnFocusIn();
+  void OnTimeUpdate();
+  void OnDurationChange();
+  void OnPlay();
+  void OnPlaying();
+  void OnPause();
+  void OnTextTracksAddedOrRemoved();
+  void OnTextTracksChanged();
+  void OnError();
+  void OnLoadedMetadata();
+  void OnEnteredFullscreen();
+  void OnExitedFullscreen();
+  void OnPanelKeypress();
 
   // Media control elements.
   Member<MediaControlOverlayEnclosureElement> overlay_enclosure_;

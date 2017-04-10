@@ -2,45 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/shadow/MediaControlsMediaEventListener.h"
+#include "modules/media_controls/MediaControlsMediaEventListener.h"
 
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/media/MediaControls.h"
-#include "core/html/shadow/MediaControlElements.h"
 #include "core/html/track/TextTrackList.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 
 namespace blink {
 
 MediaControlsMediaEventListener::MediaControlsMediaEventListener(
-    MediaControls* media_controls)
+    MediaControlsImpl* media_controls)
     : EventListener(kCPPEventListenerType), media_controls_(media_controls) {
-  if (MediaElement().isConnected())
+  if (GetMediaElement().isConnected())
     Attach();
 }
 
 void MediaControlsMediaEventListener::Attach() {
-  DCHECK(MediaElement().isConnected());
+  DCHECK(GetMediaElement().isConnected());
 
-  MediaElement().addEventListener(EventTypeNames::volumechange, this, false);
-  MediaElement().addEventListener(EventTypeNames::focusin, this, false);
-  MediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
-  MediaElement().addEventListener(EventTypeNames::play, this, false);
-  MediaElement().addEventListener(EventTypeNames::playing, this, false);
-  MediaElement().addEventListener(EventTypeNames::pause, this, false);
-  MediaElement().addEventListener(EventTypeNames::durationchange, this, false);
-  MediaElement().addEventListener(EventTypeNames::error, this, false);
-  MediaElement().addEventListener(EventTypeNames::loadedmetadata, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::volumechange, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::focusin, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::play, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::playing, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::pause, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::durationchange, this,
+                                     false);
+  GetMediaElement().addEventListener(EventTypeNames::error, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::loadedmetadata, this,
+                                     false);
 
   // Listen to two different fullscreen events in order to make sure the new and
   // old APIs are handled.
-  MediaElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
-                                  false);
-  media_controls_->OwnerDocument().addEventListener(
+  GetMediaElement().addEventListener(EventTypeNames::webkitfullscreenchange,
+                                     this, false);
+  media_controls_->GetDocument().addEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
   // TextTracks events.
-  TextTrackList* text_tracks = MediaElement().textTracks();
+  TextTrackList* text_tracks = GetMediaElement().textTracks();
   text_tracks->addEventListener(EventTypeNames::addtrack, this, false);
   text_tracks->addEventListener(EventTypeNames::change, this, false);
   text_tracks->addEventListener(EventTypeNames::removetrack, this, false);
@@ -53,12 +54,12 @@ void MediaControlsMediaEventListener::Attach() {
 }
 
 void MediaControlsMediaEventListener::Detach() {
-  DCHECK(!MediaElement().isConnected());
+  DCHECK(!GetMediaElement().isConnected());
 
-  media_controls_->OwnerDocument().removeEventListener(
+  media_controls_->GetDocument().removeEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
-  TextTrackList* text_tracks = MediaElement().textTracks();
+  TextTrackList* text_tracks = GetMediaElement().textTracks();
   text_tracks->removeEventListener(EventTypeNames::addtrack, this, false);
   text_tracks->removeEventListener(EventTypeNames::change, this, false);
   text_tracks->removeEventListener(EventTypeNames::removetrack, this, false);
@@ -74,7 +75,7 @@ bool MediaControlsMediaEventListener::operator==(
   return this == &other;
 }
 
-HTMLMediaElement& MediaControlsMediaEventListener::MediaElement() {
+HTMLMediaElement& MediaControlsMediaEventListener::GetMediaElement() {
   return media_controls_->MediaElement();
 }
 
@@ -121,7 +122,7 @@ void MediaControlsMediaEventListener::handleEvent(
   // Fullscreen handling.
   if (event->type() == EventTypeNames::fullscreenchange ||
       event->type() == EventTypeNames::webkitfullscreenchange) {
-    if (MediaElement().IsFullscreen())
+    if (GetMediaElement().IsFullscreen())
       media_controls_->OnEnteredFullscreen();
     else
       media_controls_->OnExitedFullscreen();

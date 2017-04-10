@@ -5,17 +5,16 @@
 #ifndef MediaControlsMediaEventListener_h
 #define MediaControlsMediaEventListener_h
 
-#include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 
 namespace blink {
 
 class HTMLMediaElement;
-class MediaControls;
+class MediaControlsImpl;
 
-class CORE_EXPORT MediaControlsMediaEventListener final : public EventListener {
+class MediaControlsMediaEventListener final : public EventListener {
  public:
-  explicit MediaControlsMediaEventListener(MediaControls*);
+  explicit MediaControlsMediaEventListener(MediaControlsImpl*);
 
   // Called by MediaControls when the HTMLMediaElement is added to a document
   // document. All event listeners should be added.
@@ -31,11 +30,11 @@ class CORE_EXPORT MediaControlsMediaEventListener final : public EventListener {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  HTMLMediaElement& MediaElement();
+  HTMLMediaElement& GetMediaElement();
 
   void handleEvent(ExecutionContext*, Event*) override;
 
-  Member<MediaControls> media_controls_;
+  Member<MediaControlsImpl> media_controls_;
 };
 
 }  // namespace blink

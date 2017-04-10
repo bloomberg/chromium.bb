@@ -8,6 +8,8 @@ blink_modules_sources("media_controls") {
   sources = [
     "MediaControlsImpl.cpp",
     "MediaControlsImpl.h",
+    "MediaControlsMediaEventListener.cpp",
+    "MediaControlsMediaEventListener.h",
     "MediaControlsOrientationLockDelegate.cpp",
     "MediaControlsOrientationLockDelegate.h",
     "MediaControlsWindowEventListener.cpp",
