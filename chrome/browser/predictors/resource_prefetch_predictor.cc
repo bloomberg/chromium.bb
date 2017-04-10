@@ -23,6 +23,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/mime_util/mime_util.h"
+#include "components/precache/core/precache_manifest_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -219,22 +220,6 @@ void ReportPredictionAccuracy(
   UMA_HISTOGRAM_ENUMERATION(
       internal::kResourcePrefetchPredictorRedirectStatusHistogram,
       static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
-}
-
-void RemoveUnknownFieldsFromPrecacheManifest(
-    precache::PrecacheManifest* manifest) {
-  manifest->mutable_unknown_fields()->clear();
-  for (auto& resource : *manifest->mutable_resource())
-    resource.mutable_unknown_fields()->clear();
-  if (manifest->has_experiments()) {
-    manifest->mutable_experiments()->mutable_unknown_fields()->clear();
-    for (auto& kv : *manifest->mutable_experiments()
-                         ->mutable_resources_by_experiment_group()) {
-      kv.second.mutable_unknown_fields()->clear();
-    }
-  }
-  if (manifest->has_id())
-    manifest->mutable_id()->mutable_unknown_fields()->clear();
 }
 
 }  // namespace
@@ -1483,7 +1468,7 @@ void ResourcePrefetchPredictor::OnManifestFetched(
     cache_entry->second = manifest;
   }
 
-  RemoveUnknownFieldsFromPrecacheManifest(&cache_entry->second);
+  precache::RemoveUnknownFields(&cache_entry->second);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,

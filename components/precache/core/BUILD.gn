@@ -25,6 +25,8 @@ static_library("core") {
     "precache_database.h",
     "precache_fetcher.cc",
     "precache_fetcher.h",
+    "precache_manifest_util.cc",
+    "precache_manifest_util.h",
     "precache_referrer_host_table.cc",
     "precache_referrer_host_table.h",
     "precache_session_table.cc",

@@ -28,6 +28,7 @@
 #include "base/task_runner_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/precache/core/precache_database.h"
+#include "components/precache/core/precache_manifest_util.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/quota.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
@@ -123,41 +124,6 @@ bool ParseProtoFromFetchResponse(const net::URLFetcher& source,
     return false;
   }
   return true;
-}
-
-// Returns the resource selection bitset from the |manifest| for the given
-// |experiment_id|. If the experiment group is not found, then this returns
-// nullopt, in which case all resources should be selected.
-base::Optional<std::vector<bool>> GetResourceBitset(
-    const PrecacheManifest& manifest,
-    uint32_t experiment_id) {
-  base::Optional<std::vector<bool>> ret;
-  if (manifest.has_experiments()) {
-    const auto& resource_bitset_map =
-        manifest.experiments().resources_by_experiment_group();
-    const auto& it = resource_bitset_map.find(experiment_id);
-    if (it != resource_bitset_map.end()) {
-      if (it->second.has_bitset()) {
-        const std::string& bitset = it->second.bitset();
-        ret.emplace(bitset.size() * 8);
-        for (size_t i = 0; i < bitset.size(); ++i) {
-          for (size_t j = 0; j < 8; ++j) {
-            if ((1 << j) & bitset[i])
-              ret.value()[i * 8 + j] = true;
-          }
-        }
-      } else if (it->second.has_deprecated_bitset()) {
-        uint64_t bitset = it->second.deprecated_bitset();
-        ret.emplace(64);
-        for (int i = 0; i < 64; ++i) {
-          if ((0x1ULL << i) & bitset)
-            ret.value()[i] = true;
-        }
-      }
-    }
-  }
-  // Only return one variable to ensure RVO triggers.
-  return ret;
 }
 
 // URLFetcherResponseWriter that ignores the response body, in order to avoid
