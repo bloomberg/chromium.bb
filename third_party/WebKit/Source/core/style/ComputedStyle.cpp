@@ -1197,6 +1197,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       HasTransformRelatedProperty() || HasMask() || ClipPath() ||
       BoxReflect() || HasFilterInducingProperty() || HasBackdropFilter() ||
       HasBlendMode() || HasIsolation() || HasViewportConstrainedPosition() ||
+      GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
       ContainsPaint()) {
     SetIsStackingContext(true);

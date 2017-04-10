@@ -3027,8 +3027,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            GetPosition() == EPosition::kSticky;
   }
   bool HasViewportConstrainedPosition() const {
-    return GetPosition() == EPosition::kFixed ||
-           GetPosition() == EPosition::kSticky;
+    return GetPosition() == EPosition::kFixed;
+  }
+  bool HasStickyConstrainedPosition() const {
+    return GetPosition() == EPosition::kSticky &&
+           (!Top().IsAuto() || !Left().IsAuto() || !Right().IsAuto() ||
+            !Bottom().IsAuto());
   }
 
   // Clip utility functions.

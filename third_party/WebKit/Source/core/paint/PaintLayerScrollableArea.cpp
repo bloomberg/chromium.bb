@@ -1584,7 +1584,7 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     d->sticky_constraints_map_.erase(layer);
     if (needs_compositing_update &&
-        layer->GetLayoutObject().Style()->GetPosition() == EPosition::kSticky)
+        layer->GetLayoutObject().Style()->HasStickyConstrainedPosition())
       layer->SetNeedsCompositingInputsUpdate();
   }
 }

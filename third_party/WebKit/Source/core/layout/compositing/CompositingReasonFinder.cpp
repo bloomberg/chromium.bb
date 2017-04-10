@@ -216,8 +216,8 @@ bool CompositingReasonFinder::RequiresCompositingForTransformAnimation(
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
-  if (layer->GetLayoutObject().Style()->GetPosition() != EPosition::kFixed &&
-      layer->GetLayoutObject().Style()->GetPosition() != EPosition::kSticky)
+  if (!layer->GetLayoutObject().Style()->HasViewportConstrainedPosition() &&
+      !layer->GetLayoutObject().Style()->HasStickyConstrainedPosition())
     return false;
 
   if (!(ignore_lcd_text ||

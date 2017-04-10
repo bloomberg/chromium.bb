@@ -1767,8 +1767,9 @@ bool FrameView::InvalidateViewportConstrainedObjects() {
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
     LayoutItem layout_item = LayoutItem(layout_object);
-    ASSERT(layout_item.Style()->HasViewportConstrainedPosition());
-    ASSERT(layout_item.HasLayer());
+    DCHECK(layout_item.Style()->HasViewportConstrainedPosition() ||
+           layout_item.Style()->HasStickyConstrainedPosition());
+    DCHECK(layout_item.HasLayer());
     PaintLayer* layer = LayoutBoxModel(layout_item).Layer();
 
     if (layer->IsPaintInvalidationContainer())
