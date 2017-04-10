@@ -1969,6 +1969,20 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(1.32, result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
+  {
+    constraint_factory_.Reset();
+    constraint_factory_.basic().height.SetMax(4000);
+    constraint_factory_.basic().width.SetMax(4000);
+    auto result = SelectSettings();
+    EXPECT_EQ(4000, result.Width());
+    EXPECT_EQ(4000, result.Height());
+    // Only specifying a maximum resolution allows resolution adjustment.
+    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
+              result.ResolutionChangePolicy());
+    EXPECT_EQ(1.0 / 4000, result.track_adapter_settings().min_aspect_ratio);
+    EXPECT_EQ(4000.0, result.track_adapter_settings().max_aspect_ratio);
+    CheckTrackAdapterSettingsEqualsFormat(result);
+  }
 }
 
 }  // namespace content

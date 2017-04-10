@@ -118,13 +118,26 @@ ResolutionSet ScreenCastResolutionCapabilities() {
 media::ResolutionChangePolicy SelectResolutionPolicyFromCandidates(
     const ResolutionSet& resolution_set) {
   ResolutionSet capabilities = ScreenCastResolutionCapabilities();
+  // TODO(guidou): Since the real maximum screen resolution is not known, use
+  // max_width and max_height from |resolution_set| as the actual capability,
+  // if necessary, to decide the resolution policy. Update this to use the
+  // actual capability once the actual screen resolution is used as default.
+  // http://crbug.com/257097
+  int capabilities_max_height =
+      std::min(resolution_set.max_height(), capabilities.max_height());
+  int capabilities_max_width =
+      std::min(resolution_set.max_width(), capabilities.max_width());
+  double capabilities_min_aspect_ratio =
+      static_cast<double>(capabilities.min_width()) / capabilities_max_height;
+  double capabilities_max_aspect_ratio =
+      static_cast<double>(capabilities_max_width) / capabilities.min_height();
   bool can_adjust_resolution =
       resolution_set.min_height() <= capabilities.min_height() &&
-      resolution_set.max_height() >= capabilities.max_height() &&
+      resolution_set.max_height() >= capabilities_max_height &&
       resolution_set.min_width() <= capabilities.min_width() &&
-      resolution_set.max_width() >= capabilities.max_width() &&
-      resolution_set.min_aspect_ratio() <= capabilities.min_aspect_ratio() &&
-      resolution_set.max_aspect_ratio() >= capabilities.max_aspect_ratio();
+      resolution_set.max_width() >= capabilities_max_width &&
+      resolution_set.min_aspect_ratio() <= capabilities_min_aspect_ratio &&
+      resolution_set.max_aspect_ratio() >= capabilities_max_aspect_ratio;
 
   return can_adjust_resolution ? media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT
                                : media::RESOLUTION_POLICY_FIXED_RESOLUTION;
