@@ -474,7 +474,7 @@ void MessageCenterView::ClickOnNotificationButton(
 
 void MessageCenterView::ClickOnSettingsButton(
     const std::string& notification_id) {
-  tray_->ShowNotifierSettingsBubble();
+  message_center_->ClickOnSettingsButton(notification_id);
 }
 
 void MessageCenterView::UpdateNotificationSize(

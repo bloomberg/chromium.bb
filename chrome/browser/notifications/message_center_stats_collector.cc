@@ -109,7 +109,7 @@ void MessageCenterStatsCollector::OnNotificationButtonClicked(
   notification_stat.CollectAction(NOTIFICATION_ACTION_BUTTON_CLICK);
 }
 
-void MessageCenterStatsCollector::OnNotificationSettingsClicked() {
+void MessageCenterStatsCollector::OnNotificationSettingsClicked(bool handled) {
   base::RecordAction(base::UserMetricsAction("Notifications.ShowSiteSettings"));
 }
 

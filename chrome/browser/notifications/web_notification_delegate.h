@@ -31,7 +31,7 @@ class WebNotificationDelegate : public NotificationDelegate {
  public:
   // NotificationDelegate implementation.
   std::string id() const override;
-  void SettingsClick() override;
+  bool SettingsClick() override;
   bool ShouldDisplaySettingsButton() override;
   bool ShouldDisplayOverFullscreen() const override;
 

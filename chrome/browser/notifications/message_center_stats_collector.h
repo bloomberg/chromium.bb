@@ -71,7 +71,7 @@ class MessageCenterStatsCollector
   void OnNotificationClicked(const std::string& notification_id) override;
   void OnNotificationButtonClicked(const std::string& notification_id,
                                    int button_index) override;
-  void OnNotificationSettingsClicked() override;
+  void OnNotificationSettingsClicked(bool handled) override;
   void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override;

@@ -49,7 +49,8 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
                                     const base::string16& reply);
 
   // To be called when the user clicks the settings button in a notification.
-  virtual void SettingsClick();
+  // Returns whether the settings click was handled by the delegate.
+  virtual bool SettingsClick();
 
   // To be called in order to detect if a settings button should be displayed.
   virtual bool ShouldDisplaySettingsButton();

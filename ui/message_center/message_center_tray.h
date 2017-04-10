@@ -77,6 +77,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
   void OnNotificationClicked(const std::string& notification_id) override;
   void OnNotificationButtonClicked(const std::string& notification_id,
                                    int button_index) override;
+  void OnNotificationSettingsClicked(bool handled) override;
   void OnNotificationDisplayed(const std::string& notification_id,
                                const DisplaySource source) override;
   void OnQuietModeChanged(bool in_quiet_mode) override;
