@@ -409,6 +409,19 @@ fuzzer_test("skia_pathop_fuzzer") {
   }
 }
 
+fuzzer_test("skia_color_space_fuzzer") {
+  sources = [
+    "color_space_data.h",
+    "skia_color_space_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//skia",
+  ]
+  dict = "dicts/icc.dict"
+  libfuzzer_options = [ "max_len=4194304" ]
+}
+
 fuzzer_test("prtime_fuzzer") {
   sources = [
     "prtime_fuzzer.cc",
