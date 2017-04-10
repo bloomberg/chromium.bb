@@ -2550,6 +2550,7 @@ if (is_android) {
   android_aidl("base_java_aidl") {
     import_include = [ "android/java/src" ]
     sources = [
+      "android/java/src/org/chromium/base/process_launcher/ICallbackInt.aidl",
       "android/java/src/org/chromium/base/process_launcher/IChildProcessService.aidl",
     ]
   }

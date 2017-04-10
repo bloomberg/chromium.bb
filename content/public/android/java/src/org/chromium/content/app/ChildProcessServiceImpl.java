@@ -32,6 +32,7 @@ import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
+import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
@@ -126,23 +127,20 @@ public class ChildProcessServiceImpl {
         }
 
         @Override
-        public int setupConnection(Bundle args, IBinder callback) {
-            int callingPid = Binder.getCallingPid();
+        public void setupConnection(Bundle args, ICallbackInt pidCallback, IBinder gpuCallback)
+                throws RemoteException {
             synchronized (mBinderLock) {
-                if (mBindToCallerCheck && mBoundCallingPid != callingPid) {
-                    if (mBoundCallingPid == 0) {
-                        Log.e(TAG, "Service has not been bound with bindToCaller()");
-                    } else {
-                        Log.e(TAG, "Client pid %d does not match the bound pid %d", callingPid,
-                                mBoundCallingPid);
-                    }
-                    return -1;
+                if (mBindToCallerCheck && mBoundCallingPid == 0) {
+                    Log.e(TAG, "Service has not been bound with bindToCaller()");
+                    pidCallback.call(-1);
+                    return;
                 }
             }
 
-            mGpuCallback = callback != null ? IGpuProcessCallback.Stub.asInterface(callback) : null;
+            pidCallback.call(Process.myPid());
+            mGpuCallback =
+                    gpuCallback != null ? IGpuProcessCallback.Stub.asInterface(gpuCallback) : null;
             getServiceInfo(args);
-            return Process.myPid();
         }
 
         @Override
