@@ -8,6 +8,7 @@ import argparse
 import collections
 import errno
 import os
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -20,15 +21,6 @@ import xctest_utils
 
 
 DERIVED_DATA = os.path.expanduser('~/Library/Developer/Xcode/DerivedData')
-
-
-XCTEST_PROJECT = os.path.abspath(os.path.join(
-  os.path.dirname(__file__),
-  'TestProject',
-  'TestProject.xcodeproj',
-))
-
-XCTEST_SCHEME = 'TestProject'
 
 
 class Error(Exception):
@@ -657,6 +649,25 @@ class DeviceTestRunner(TestRunner):
     self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
+    if xctest:
+      self.xctestrun_file = tempfile.mkstemp()[1]
+      self.xctestrun_data = {
+        'TestTargetName': {
+          'IsAppHostedTestBundle': True,
+          'TestBundlePath': '%s' % self.xctest_path,
+          'TestHostPath': '%s' % self.app_path,
+          'TestingEnvironmentVariables': {
+            'DYLD_INSERT_LIBRARIES':
+              '__PLATFORMS__/iPhoneOS.platform/Developer/Library/'
+            'PrivateFrameworks/IDEBundleInjection.framework/IDEBundleInjection',
+            'DYLD_LIBRARY_PATH':
+              '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
+            'DYLD_FRAMEWORK_PATH':
+              '__PLATFORMS__/iPhoneOS.platform/Developer/Library/Frameworks',
+            'XCInjectBundleInto':'__TESTHOST__/%s' % self.app_name
+          }
+        }
+      }
 
   def uninstall_apps(self):
     """Uninstalls all apps found on the device."""
@@ -723,13 +734,19 @@ class DeviceTestRunner(TestRunner):
       A list of strings forming the command to launch the test.
     """
     if self.xctest_path:
+      if test_filter:
+        if invert:
+          self.xctestrun_data['TestTargetName'].update(
+            {'SkipTestIdentifiers': test_filter})
+        else:
+          self.xctestrun_data['TestTargetName'].update(
+            {'OnlyTestIdentifiers': test_filter})
+      plistlib.writePlist(self.xctestrun_data, self.xctestrun_file)
       return [
         'xcodebuild',
         'test-without-building',
-        'BUILT_PRODUCTS_DIR=%s' % os.path.dirname(self.app_path),
+        '-xctestrun', self.xctestrun_file,
         '-destination', 'id=%s' % self.udid,
-        '-project', XCTEST_PROJECT,
-        '-scheme', XCTEST_SCHEME,
       ]
 
     cmd = [

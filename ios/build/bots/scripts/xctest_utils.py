@@ -212,7 +212,7 @@ class XCTestLogParser(object):
         if self._test_status[self._current_test][0] == 'started':
           self._test_status[self._current_test] = (
               'timeout', self._failure_description)
-      test_name = '%s.%s' % (results.group(1), results.group(2))
+      test_name = '%s/%s' % (results.group(1), results.group(2))
       self._test_status[test_name] = ('started', ['Did not complete.'])
       self._current_test = test_name
       if self.retrying_failed:
@@ -225,7 +225,7 @@ class XCTestLogParser(object):
     # Is it a test success line?
     results = self._test_ok.match(line)
     if results:
-      test_name = '%s.%s' % (results.group(1), results.group(2))
+      test_name = '%s/%s' % (results.group(1), results.group(2))
       status = self._StatusOfTest(test_name)
       if status != 'started':
         self._RecordError(line, 'success while in status %s' % status)
@@ -240,7 +240,7 @@ class XCTestLogParser(object):
     # Is it a test failure line?
     results = self._test_fail.match(line)
     if results:
-      test_name = '%s.%s' % (results.group(1), results.group(2))
+      test_name = '%s/%s' % (results.group(1), results.group(2))
       status = self._StatusOfTest(test_name)
       if status not in ('started', 'failed', 'timeout'):
         self._RecordError(line, 'failure while in status %s' % status)
