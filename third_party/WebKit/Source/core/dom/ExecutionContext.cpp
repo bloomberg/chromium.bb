@@ -56,6 +56,11 @@ ExecutionContext::ExecutionContext()
 
 ExecutionContext::~ExecutionContext() {}
 
+ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
+  v8::HandleScope scope(script_state->GetIsolate());
+  return ToExecutionContext(script_state->GetContext());
+}
+
 void ExecutionContext::SuspendSuspendableObjects() {
   DCHECK(!is_context_suspended_);
   NotifySuspendingSuspendableObjects();

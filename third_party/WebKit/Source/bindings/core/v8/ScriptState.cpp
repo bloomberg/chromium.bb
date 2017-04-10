@@ -66,8 +66,7 @@ ScriptValue ScriptState::GetFromExtrasExports(const char* name) {
 }
 
 ExecutionContext* ScriptState::GetExecutionContext() const {
-  v8::HandleScope scope(isolate_);
-  return ToExecutionContext(GetContext());
+  return ExecutionContext::From(this);
 }
 
 }  // namespace blink

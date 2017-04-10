@@ -53,6 +53,7 @@ class ExecutionContextTask;
 class LocalDOMWindow;
 class PublicURLManager;
 class SecurityOrigin;
+class ScriptState;
 enum class TaskType : unsigned;
 
 enum ReasonForCallingCanExecuteScripts {
@@ -74,6 +75,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     kStandardSecureContextCheck,
     kWebCryptoSecureContextCheck
   };
+
+  static ExecutionContext* From(const ScriptState*);
 
   virtual bool IsDocument() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }

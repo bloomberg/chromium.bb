@@ -136,6 +136,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   DOMWrapperWorld& World() const { return *world_; }
+  // DEPRECATED: Use ExecutionContext::From instead
   virtual ExecutionContext* GetExecutionContext() const;
 
   // This can return an empty handle if the v8::Context is gone.
