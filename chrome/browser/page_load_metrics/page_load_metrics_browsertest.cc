@@ -665,8 +665,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintNotRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title1.html"));
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/page_with_active_connections.html"));
+  fcp_observer->WaitForMatchingIPC();
 
   // Navigate away before a FMP is reported.
   NavigateToUntrackedUrl();
