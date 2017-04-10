@@ -7,7 +7,6 @@
 
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/shelf/shelf_alignment_menu.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -23,21 +22,7 @@ class WmShelf;
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  ~LauncherContextMenu() override;
-
-  // Static function to create contextmenu instance.
-  static LauncherContextMenu* Create(ChromeLauncherControllerImpl* controller,
-                                     const ash::ShelfItem* item,
-                                     ash::WmShelf* wm_shelf);
-
-  // ui::SimpleMenuModel::Delegate overrides:
-  bool IsItemForCommandIdDynamic(int command_id) const override;
-  base::string16 GetLabelForCommandId(int command_id) const override;
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
-
- protected:
+  // Menu item command ids, used by subclasses and tests.
   enum MenuItem {
     MENU_OPEN_NEW,
     MENU_CLOSE,
@@ -54,6 +39,21 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_ITEM_COUNT
   };
 
+  ~LauncherContextMenu() override;
+
+  // Static function to create contextmenu instance.
+  static LauncherContextMenu* Create(ChromeLauncherControllerImpl* controller,
+                                     const ash::ShelfItem* item,
+                                     ash::WmShelf* wm_shelf);
+
+  // ui::SimpleMenuModel::Delegate overrides:
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+
+ protected:
   LauncherContextMenu(ChromeLauncherControllerImpl* controller,
                       const ash::ShelfItem* item,
                       ash::WmShelf* wm_shelf);
@@ -64,32 +64,13 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // Add menu item for pin/unpin.
   void AddPinMenu();
 
-  // Add common shelf options items, e.g. autohide mode, alignment and
-  // setting wallpaper.
+  // Add common shelf options items, e.g. autohide, alignment, and wallpaper.
   void AddShelfOptionsMenu();
 
   // Helper method to execute common commands. Returns true if handled.
   bool ExecuteCommonCommand(int command_id, int event_flags);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      LauncherContextMenuTest,
-      NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           NewWindowMenuIsDisabledWhenIncognitoModeForced);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           AutoHideOptionInMaximizedMode);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           DesktopShellLauncherContextMenuItemCheck);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           ArcLauncherContextMenuItemCheck);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           DesktopShellLauncherContextMenuVerifyCloseItem);
-  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
-                           AutohideShelfOptionOnExternalDisplay);
-  FRIEND_TEST_ALL_PREFIXES(ShelfAppBrowserTest,
-                           LauncherContextMenuVerifyCloseItemAppearance);
-
   ChromeLauncherControllerImpl* controller_;
 
   ash::ShelfItem item_;

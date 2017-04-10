@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/wm_shell.h"
 #include "ash/wm_window.h"
 #include "base/macros.h"
@@ -46,13 +47,15 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     arc_test_.SetUp(profile_.get());
     session_manager_ = base::MakeUnique<session_manager::SessionManager>();
     ash::test::AshTestBase::SetUp();
-    controller_.reset(new ChromeLauncherControllerImpl(
-        profile(), ash::Shell::Get()->shelf_model()));
+    std::unique_ptr<ChromeLauncherControllerImpl> controller =
+        base::MakeUnique<ChromeLauncherControllerImpl>(
+            profile(), ash::Shell::Get()->shelf_model());
+    controller_ = controller.get();
     controller_->Init();
+    ash::test::ShellTestApi().SetShelfDelegate(std::move(controller));
   }
 
   void TearDown() override {
-    controller_.reset(nullptr);
     ash::test::AshTestBase::TearDown();
   }
 
@@ -69,13 +72,13 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::ShelfItem item;
     item.id = 123;  // dummy id
     item.type = shelf_item_type;
-    return LauncherContextMenu::Create(controller_.get(), &item, wm_shelf);
+    return LauncherContextMenu::Create(controller_, &item, wm_shelf);
   }
 
   LauncherContextMenu* CreateLauncherContextMenuForDesktopShell(
       ash::WmShelf* wm_shelf) {
     ash::ShelfItem* item = nullptr;
-    return LauncherContextMenu::Create(controller_.get(), item, wm_shelf);
+    return LauncherContextMenu::Create(controller_, item, wm_shelf);
   }
 
   // Creates app window and set optional ARC application id.
@@ -94,11 +97,11 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   Profile* profile() { return profile_.get(); }
 
-  ChromeLauncherControllerImpl* controller() { return controller_.get(); }
+  ChromeLauncherControllerImpl* controller() { return controller_; }
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<ChromeLauncherControllerImpl> controller_;
+  ChromeLauncherControllerImpl* controller_ = nullptr;
   ArcAppTest arc_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
