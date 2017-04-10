@@ -9,34 +9,30 @@
 // <include src="login_shared.js">
 
 /**
- * Asynchronously loads the pin keyboard.
+ * Ensures that the pin keyboard is loaded.
+ * @param {function()} onLoaded Callback run when the pin keyboard is loaded.
  */
-function showPinKeyboardAsync() {
+function ensurePinKeyboardLoaded(onLoaded) {
   'use strict';
 
-  // This function could get called multiple times. Do nothing if we have
-  // already loaded. This check needs to happen before the registerAssets call,
-  // because that will clobber the loaded state.
-  if (cr.ui.login.ResourceLoader.hasDeferredAssets('custom-elements'))
+  // The element we want to see if loaded.
+  var getPinKeyboard = function() {
+    return $('pod-row').querySelectorAll('pin-keyboard')[0];
+  };
+
+  // Do not reload assets if they are already loaded. Run |onLoaded| once assets
+  // are done loading, though.
+  if (cr.ui.login.ResourceLoader.hasDeferredAssets('custom-elements')) {
+    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(getPinKeyboard,
+                                                       onLoaded);
     return;
+  }
 
   // Register loader for custom elements.
   cr.ui.login.ResourceLoader.registerAssets({
     id: 'custom-elements',
     html: [{ url: 'chrome://oobe/custom_elements.html' }]
   });
-
-  // Called after polymer has been loaded. Fades the pin element in.
-  var onPinLoaded = function(pinKeyboard) {
-    var podRow = $('pod-row');
-    podRow.toggleTransitions(true);
-    podRow.setFocusedPodPinVisibility(true);
-  };
-
-  // The element we want to see if loaded.
-  var getPinKeyboard = function() {
-    return $('pod-row').querySelectorAll('pin-keyboard')[0];
-  };
 
   // We only load the PIN element when it is actually shown so that lock screen
   // load times remain low when the user is not using a PIN.
@@ -46,7 +42,7 @@ function showPinKeyboardAsync() {
   // fly-in animation to complete without interruption.
   cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
     cr.ui.login.ResourceLoader.waitUntilLayoutComplete(getPinKeyboard,
-                                                       onPinLoaded);
+                                                       onLoaded);
   });
 }
 
@@ -71,7 +67,7 @@ cr.define('cr.ui.Oobe', function() {
      * lock session so it should also get preloaded.
      */
     preloadPinKeyboard: function() {
-      showPinKeyboardAsync();
+      ensurePinKeyboardLoaded(function() {});
     },
 
     // Dummy Oobe functions not present with stripped login UI.

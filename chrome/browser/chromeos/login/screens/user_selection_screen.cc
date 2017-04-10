@@ -49,7 +49,6 @@ const char kKeyPublicAccount[] = "publicAccount";
 const char kKeyLegacySupervisedUser[] = "legacySupervisedUser";
 const char kKeyChildUser[] = "childUser";
 const char kKeyDesktopUser[] = "isDesktopUser";
-const char kKeyShowPin[] = "showPin";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -118,19 +117,6 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
   user_dict->Set(kKeyInitialKeyboardLayout, GetCurrentKeyboardLayout());
 }
 
-// Returns true if the PIN keyboard should be displayed for the given |user|.
-bool CanShowPinForUser(user_manager::User* user) {
-  if (!user->is_logged_in())
-    return false;
-
-  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      quick_unlock::QuickUnlockFactory::GetForUser(user);
-  if (!quick_unlock_storage)
-    return false;
-
-  return quick_unlock_storage->IsPinAuthenticationAvailable();
-}
-
 // Returns true if the fingerprint icon should be displayed for the given
 // |user|.
 bool AllowFingerprintForUser(user_manager::User* user) {
@@ -190,7 +176,6 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeyChildUser, is_child_user);
   user_dict->SetBoolean(kKeyDesktopUser, false);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
-  user_dict->SetBoolean(kKeyShowPin, CanShowPinForUser(user));
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
   user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());

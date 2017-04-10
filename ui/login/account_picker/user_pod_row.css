@@ -44,18 +44,9 @@ pin-keyboard {
   transition: all 180ms;
 }
 
-.pod.flying-pin-pod {
-  transition: height 180ms ease-in-out,
-              top 180ms ease-in-out;
-}
-
 .pod.pin-enabled {
   height: 417px;
   top: -87px !important;
-}
-
-.disable-pin-animation .pod.pin-enabled {
-  transition: none;
 }
 
 .pod .pin-container {

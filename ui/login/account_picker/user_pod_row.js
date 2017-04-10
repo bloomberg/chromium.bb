@@ -744,6 +744,13 @@ cr.define('login', function() {
      */
     fingerprintAuthenticated_: false,
 
+    /**
+     * True iff the pod can display the pin keyboard. The pin keyboard may not
+     * always be displayed even if this is true, ie, if the virtual keyboard is
+     * also being displayed.
+     */
+    pinEnabled: false,
+
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -1225,10 +1232,6 @@ cr.define('login', function() {
         this.submitButton.classList.toggle('error-shown', visible);
     },
 
-    toggleTransitions: function(enable) {
-      this.classList.toggle('flying-pin-pod', enable);
-    },
-
     updatePinClass_: function(element, enable) {
       element.classList.toggle('pin-enabled', enable);
       element.classList.toggle('pin-disabled', !enable);
@@ -1240,6 +1243,10 @@ cr.define('login', function() {
 
       // Do not show pin if virtual keyboard is there.
       if (visible && Oobe.getInstance().virtualKeyboardShown)
+        return;
+
+      // Do not show pin keyboard if the pod does not have pin enabled.
+      if (visible && !this.pinEnabled)
         return;
 
       var elements = this.getElementsByClassName('pin-tag');
@@ -2850,15 +2857,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Enables or disables transitions on every pod instance.
-     * @param {boolean} enable
-     */
-    toggleTransitions: function(enable) {
-      for (var i = 0; i < this.pods.length; ++i)
-        this.pods[i].toggleTransitions(enable);
-    },
-
-    /**
      * Performs visual changes on the user pod if there is an error.
      * @param {boolean} visible Whether to show or hide the display.
      */
@@ -2872,7 +2870,7 @@ cr.define('login', function() {
      * @param {boolean} visible
      */
     setFocusedPodPinVisibility: function(visible) {
-      if (this.focusedPod_ && this.focusedPod_.user.showPin)
+      if (this.focusedPod_)
         this.focusedPod_.setPinVisibility(visible);
     },
 
@@ -2894,21 +2892,60 @@ cr.define('login', function() {
     },
 
     /**
-     * Remove the pin keyboard from the pod with the given |username|.
+     * Enables or disables the pin keyboard for the given user. A disabled pin
+     * keyboard will never be displayed.
+     *
+     * If the user's pod is focused, then enabling the pin keyboard will display
+     * it; disabling the pin keyboard will hide it.
+     * @param {!string} username
+     * @param {boolean} enabled
+     */
+    setPinEnabled: function(username, enabled) {
+      var pod = this.getPodWithUsername_(username);
+      if (!pod) {
+        console.error('Attempt to enable/disable pin keyboard of missing pod.');
+        return;
+      }
+
+      // Make sure to set |pinEnabled| before toggling visiblity to avoid
+      // validation errors.
+      pod.pinEnabled = enabled;
+
+      if (this.focusedPod_ == pod) {
+        if (enabled) {
+          ensurePinKeyboardLoaded(
+              this.setPinVisibility.bind(this, username, true));
+        } else {
+          this.setPinVisibility(username, false);
+        }
+      }
+    },
+
+    /**
+     * Shows or hides the pin keyboard from the pod with the given |username|.
+     * This is only a visibility change; the pin keyboard can be reshown.
+     *
+     * Use setPinEnabled if the pin keyboard should be disabled for the given
+     * user.
      * @param {!user} username
      * @param {boolean} visible
      */
-    removePinKeyboard: function(username) {
+    setPinVisibility: function(username, visible) {
       var pod = this.getPodWithUsername_(username);
       if (!pod) {
-        console.warn('Attempt to remove pin keyboard of missing pod.');
+        console.error('Attempt to show/hide pin keyboard of missing pod.');
         return;
       }
-      // Remove the child, so that the virtual keyboard cannot bring it up
-      // again after three tries.
-      if (pod.pinContainer)
-        pod.removeChild(pod.pinContainer);
-      pod.setPinVisibility(false);
+      if (visible && pod.pinEnabled === false) {
+        console.error('Attempt to show disabled pin keyboard');
+        return;
+      }
+      if (visible && this.focusedPod_ != pod) {
+        console.error('Attempt to show pin keyboard on non-focused pod');
+        return;
+      }
+
+      pod.setPinVisibility(visible);
     },
 
     /**

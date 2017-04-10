@@ -35,10 +35,6 @@
                          checked to determine if loaded. */
 }
 
-.disable-pin-animation .pin-container {
-  transition: none;
-}
-
 #scroll-container {
   bottom: 0;        /* Allows content overlap with control bar. */
   left: 0;

@@ -721,6 +721,14 @@ void SigninScreenHandler::ShowImpl() {
     params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
   }
+
+  // Enable pin for any users who can use it.
+  if (user_manager::UserManager::IsInitialized()) {
+    for (user_manager::User* user :
+         user_manager::UserManager::Get()->GetLoggedInUsers()) {
+      UpdatePinKeyboardState(user->GetAccountId());
+    }
+  }
 }
 
 void SigninScreenHandler::UpdateUIState(UIState ui_state,
@@ -959,7 +967,7 @@ void SigninScreenHandler::Initialize() {
   // Preload PIN keyboard if any of the users can authenticate via PIN.
   if (user_manager::UserManager::IsInitialized()) {
     for (user_manager::User* user :
-         user_manager::UserManager::Get()->GetLoggedInUsers()) {
+         user_manager::UserManager::Get()->GetUnlockUsers()) {
       chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
           chromeos::quick_unlock::QuickUnlockFactory::GetForUser(user);
       if (quick_unlock_storage &&
@@ -1007,12 +1015,15 @@ void SigninScreenHandler::RefocusCurrentPod() {
   core_oobe_view_->RefocusCurrentPod();
 }
 
-void SigninScreenHandler::HidePinKeyboardIfNeeded(const AccountId& account_id) {
+void SigninScreenHandler::UpdatePinKeyboardState(const AccountId& account_id) {
   chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
-  if (quick_unlock_storage &&
-      !quick_unlock_storage->IsPinAuthenticationAvailable())
-    CallJS("login.AccountPickerScreen.disablePinKeyboardForUser", account_id);
+  if (!quick_unlock_storage)
+    return;
+
+  bool is_enabled = quick_unlock_storage->IsPinAuthenticationAvailable();
+  CallJS("login.AccountPickerScreen.setPinEnabledForUser", account_id,
+         is_enabled);
 }
 
 void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
@@ -1139,7 +1150,7 @@ void SigninScreenHandler::Observe(int type,
 void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
   for (user_manager::User* user :
        user_manager::UserManager::Get()->GetUnlockUsers()) {
-    HidePinKeyboardIfNeeded(user->GetAccountId());
+    UpdatePinKeyboardState(user->GetAccountId());
   }
 }
 
@@ -1182,7 +1193,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
     user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   delegate_->Login(user_context, SigninSpecifics());
 
-  HidePinKeyboardIfNeeded(account_id);
+  UpdatePinKeyboardState(account_id);
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {

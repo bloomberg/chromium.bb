@@ -347,8 +347,8 @@ class SigninScreenHandler
   // Restore input focus to current user pod.
   void RefocusCurrentPod();
 
-  // Hides the PIN keyboard if it is no longer available.
-  void HidePinKeyboardIfNeeded(const AccountId& account_id);
+  // Enable or disable the pin keyboard for the given account.
+  void UpdatePinKeyboardState(const AccountId& account_id);
 
   // WebUI message handlers.
   void HandleGetUsers();
