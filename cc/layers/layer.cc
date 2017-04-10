@@ -94,7 +94,6 @@ Layer::Layer()
       is_scroll_clip_layer_(false),
       needs_show_scrollbars_(false),
       safe_opaque_background_color_(0),
-      draw_blend_mode_(SkBlendMode::kSrcOver),
       num_unclipped_descendants_(0) {}
 
 Layer::~Layer() {
@@ -1163,7 +1162,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPosition(inputs_.position);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
-  layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetUseLocalTransformForBackfaceVisibility(
       use_local_transform_for_backface_visibility_);

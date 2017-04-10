@@ -187,11 +187,6 @@ class CC_EXPORT LayerImpl {
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return mutable_properties_; }
 
-  void set_draw_blend_mode(SkBlendMode blend_mode) {
-    draw_blend_mode_ = blend_mode;
-  }
-  SkBlendMode draw_blend_mode() const { return draw_blend_mode_; }
-
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
 
@@ -512,7 +507,6 @@ class CC_EXPORT LayerImpl {
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
-  SkBlendMode draw_blend_mode_;
   gfx::PointF position_;
 
   gfx::Rect clip_rect_in_target_space_;

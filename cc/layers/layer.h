@@ -132,14 +132,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetBlendMode(SkBlendMode blend_mode);
   SkBlendMode blend_mode() const { return inputs_.blend_mode; }
 
-  void set_draw_blend_mode(SkBlendMode blend_mode) {
-    if (draw_blend_mode_ == blend_mode)
-      return;
-    draw_blend_mode_ = blend_mode;
-    SetNeedsPushProperties();
-  }
-  SkBlendMode draw_blend_mode() const { return draw_blend_mode_; }
-
   // A layer is root for an isolated group when it and all its descendants are
   // drawn over a black and fully transparent background, creating an isolated
   // group. It should be used along with SetBlendMode(), in order to restrict
@@ -637,9 +629,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool is_scroll_clip_layer_ : 1;
   bool needs_show_scrollbars_ : 1;
   SkColor safe_opaque_background_color_;
-  // draw_blend_mode may be different than blend_mode_,
-  // when a RenderSurface re-parents the layer's blend_mode.
-  SkBlendMode draw_blend_mode_;
   std::unique_ptr<std::set<Layer*>> scroll_children_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;

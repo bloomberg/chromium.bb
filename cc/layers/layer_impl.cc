@@ -70,7 +70,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       safe_opaque_background_color_(0),
-      draw_blend_mode_(SkBlendMode::kSrcOver),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
       clip_tree_index_(ClipTree::kInvalidNodeId),
@@ -151,7 +150,7 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, bounds(),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
                 draw_properties_.is_clipped, draw_properties_.opacity,
-                draw_blend_mode_, GetSortingContextId());
+                SkBlendMode::kSrcOver, GetSortingContextId());
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(
@@ -170,7 +169,7 @@ void LayerImpl::PopulateScaledSharedQuadState(
 
   state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,
                 draw_properties().clip_rect, draw_properties().is_clipped,
-                draw_properties().opacity, draw_blend_mode_,
+                draw_properties().opacity, SkBlendMode::kSrcOver,
                 GetSortingContextId());
 }
 
@@ -331,7 +330,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->touch_event_handler_region_ = touch_event_handler_region_;
   layer->background_color_ = background_color_;
   layer->safe_opaque_background_color_ = safe_opaque_background_color_;
-  layer->draw_blend_mode_ = draw_blend_mode_;
   layer->position_ = position_;
   layer->transform_tree_index_ = transform_tree_index_;
   layer->effect_tree_index_ = effect_tree_index_;

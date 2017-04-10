@@ -1580,13 +1580,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   ExecuteCalculateDrawProperties(root);
 
   // Since the child layer has a blend mode other than normal, it should get
-  // its own render surface. Also, layer's draw_properties should contain the
-  // default blend mode, since the render surface becomes responsible for
-  // applying the blend mode.
+  // its own render surface.
   ASSERT_TRUE(child->GetRenderSurface());
   EXPECT_EQ(1.0f, child->draw_opacity());
   EXPECT_EQ(0.5f, child->GetRenderSurface()->draw_opacity());
-  EXPECT_EQ(SkBlendMode::kSrcOver, child->draw_blend_mode());
+  EXPECT_EQ(SkBlendMode::kMultiply, child->GetRenderSurface()->BlendMode());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {

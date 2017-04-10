@@ -263,7 +263,6 @@ static inline bool Is3dSorted(LayerImpl* layer) {
 template <typename LayerType>
 void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                          LayerType* layer,
-                         bool created_render_surface,
                          bool created_transform_node,
                          DataForRecursion<LayerType>* data_for_children) {
   const bool inherits_clip = !ClipParent(layer);
@@ -1131,17 +1130,13 @@ void BuildPropertyTreesInternal(
   bool created_render_surface =
       AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
-  if (created_render_surface) {
+  if (created_render_surface)
     data_for_children.render_target = data_for_children.effect_tree_parent;
-    layer->set_draw_blend_mode(SkBlendMode::kSrcOver);
-  } else {
-    layer->set_draw_blend_mode(BlendMode(layer));
-  }
 
   bool created_transform_node = AddTransformNodeIfNeeded(
       data_from_parent, layer, created_render_surface, &data_for_children);
-  AddClipNodeIfNeeded(data_from_parent, layer, created_render_surface,
-                      created_transform_node, &data_for_children);
+  AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
+                      &data_for_children);
 
   AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
