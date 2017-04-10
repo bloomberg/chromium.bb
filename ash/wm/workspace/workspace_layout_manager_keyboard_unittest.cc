@@ -46,8 +46,6 @@ WorkspaceLayoutManager* GetWorkspaceLayoutManager(WmWindow* container) {
 
 }  // namespace
 
-// TODO: this is a duplicate of that in ash/common, and should move once
-// keyboard is refactored to work in mash.
 class WorkspaceLayoutManagerKeyboardTest : public AshTest {
  public:
   WorkspaceLayoutManagerKeyboardTest() : layout_manager_(nullptr) {}

@@ -10,16 +10,8 @@ include_rules = [
   "+services/service_manager/public",
   "+services/tracing/public",
 ]
-# TODO(jamescook): Are these still needed now that //ash/common is gone?
-specific_include_rules = {
-  "root_window_controller.cc": [
-    "+ash/shelf/shelf_layout_manager.h",
-  ],
-  "shelf_delegate_mus.cc": [
-    "+ash/shelf/shelf.h",
-    "+ash/shelf/shelf_widget.h",
-  ],
 
+specific_include_rules = {
   "app_launch_unittest.cc": [
     "+mash/quick_launch/public",
   ],

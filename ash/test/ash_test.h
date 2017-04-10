@@ -55,7 +55,7 @@ class WindowOwner {
 
 // Base class for ash tests. This class calls through to AshTestImpl for the
 // real implementation. This class exists so that tests can be written to
-// ash/common and run in both mus and aura.
+// run in both mus and aura.
 //
 // TODO: this class is deprecated and should be removed.
 // http://crbug.com/707057.

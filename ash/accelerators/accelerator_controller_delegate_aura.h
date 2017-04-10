@@ -14,9 +14,10 @@ namespace ash {
 
 class ScreenshotDelegate;
 
-// Contains all the accelerators that have dependencies on portions of ash
-// not yet converted to ash/common. When adding a new accelerator that only
-// depends on ash/common code, add it to accelerator_controller.cc instead.
+// Support for accelerators that only work in classic ash and not in mash,
+// for example accelerators related to display management. These sorts of
+// accelerators should be rare. Most new accelerators should be added to
+// accelerator_controller.cc instead.
 class ASH_EXPORT AcceleratorControllerDelegateAura
     : public AcceleratorControllerDelegate {
  public:
