@@ -22,7 +22,7 @@ using midi::mojom::Result;
 
 // If many users have more devices, this number will be increased.
 // But the number is expected to be big enough for now.
-const Sample kMaxUmaDevices = 31;
+constexpr Sample kMaxUmaDevices = 31;
 
 // Used to count events for usage histogram.
 enum class Usage {
@@ -35,7 +35,7 @@ enum class Usage {
   OUTPUT_PORT_ADDED,
 
   // New items should be inserted here, and |MAX| should point the last item.
-  MAX = INITIALIZED,
+  MAX = OUTPUT_PORT_ADDED,
 };
 
 void ReportUsage(Usage usage) {
