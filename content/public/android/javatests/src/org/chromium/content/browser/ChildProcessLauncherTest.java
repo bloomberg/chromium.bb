@@ -445,7 +445,13 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertFalse(conn.getService().bindToCaller());
 
         assertEquals(1, retryConn.getServiceNumber());
-        assertTrue(retryConn.getPid() > 0);
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting retry connection to get pid") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return retryConn.getPid() > 0;
+                    }
+                });
         assertTrue(retryConn.getPid() != helperConnPid);
         assertTrue(retryConn.getService().bindToCaller());
     }
