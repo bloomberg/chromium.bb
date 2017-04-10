@@ -97,7 +97,7 @@ class Frame;
 // While having a RemoteFrame implies the frame must be cross-origin, the
 // opposite is not true: a LocalFrame can be same-origin or cross-origin. One
 // additional complexity (which slightly violates the HTML standard): it is
-// possible to have SecurityOrigin::canAccess() return true for a RemoteFrame's
+// possible to have SecurityOrigin::CanAccess() return true for a RemoteFrame's
 // security origin; however, it is important to still deny access as if the
 // frame were cross-origin. This is due to complexities in the process
 // allocation model for renderer processes. See https://crbug.com/601629.
@@ -164,27 +164,27 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
  protected:
   // Lifecycle represents the following four states.
   //
-  // * ContextIsUninitialized
+  // * kContextIsUninitialized
   // We lazily initialize WindowProxies for performance reasons, and this state
   // is "to be initialized on demand". WindowProxy basically behaves the same as
-  // |ContextIsInitialized| from a point of view of call sites.
-  // - Possible next states: ContextIsInitialized
+  // |kContextIsInitialized| from a point of view of call sites.
+  // - Possible next states: kContextIsInitialized
   // It's possible to detach the context's frame from the DOM or navigate to a
   // new page without initializing the WindowProxy, however, there is no
-  // transition to |FrameIsDetached| or |GlobalObjectIsDetached|
-  // because |disposeContext| does not change the state if the state is
-  // |ContextIsUninitialized|. In either case of a) the browsing context
+  // transition to |kFrameIsDetached| or |kGlobalObjectIsDetached|
+  // because |DisposeContext| does not change the state if the state is
+  // |kContextIsUninitialized|. In either case of a) the browsing context
   // container is detached from the DOM or b) the page is navigated away, there
   // must be no way for author script to access the context of
-  // |ContextIsUninitialized| because |ContextIsUninitialized| means that author
-  // script has never accessed the context, hence there must exist no reference
-  // to the context.
+  // |kContextIsUninitialized| because |kContextIsUninitialized| means that
+  // author script has never accessed the context, hence there must exist no
+  // reference to the context.
   //
-  // * ContextIsInitialized
+  // * kContextIsInitialized
   // The context is initialized and its frame is still attached to the DOM.
-  // - Possible next states: FrameIsDetached, GlobalObjectIsDetached
+  // - Possible next states: kFrameIsDetached, kGlobalObjectIsDetached
   //
-  // * GlobalObjectIsDetached
+  // * kGlobalObjectIsDetached
   // The context is initialized and its frame is still attached to the DOM, but
   // the global object(inner global)'s Document is no longer the active Document
   // of the frame (i.e. it is being navigated away). The global object (inner
@@ -193,14 +193,14 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // have references to the context.
   // The spec does not support full web features in this state. Blink supports
   // less things than the spec.
-  // This state is also used when swapping frames.  See also |WebFrame::swap|.
-  // - Possible next states: ContextIsInitialized
+  // This state is also used when swapping frames.  See also |WebFrame::Swap|.
+  // - Possible next states: kContextIsInitialized
   // This state is in the middle of navigation. Once document loading is
   // completed, the WindowProxy will always be reinitialized, as
-  // |DocumentLoader::installNewDocument| ends up calling to
-  // |WindowProxy::updateDocument|, which reinitializes the WindowProxy.
+  // |DocumentLoader::InstallNewDocument| ends up calling to
+  // |WindowProxy::UpdateDocument|, which reinitializes the WindowProxy.
   //
-  // * FrameIsDetached
+  // * kFrameIsDetached
   // The context was initialized, but its frame has been detached from the DOM.
   // Note that the context is still alive and author script may have references
   // to the context and hence author script may run in the context.
