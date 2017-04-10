@@ -113,6 +113,12 @@ const base::Feature kConsistentOmniboxGeolocation{
     "ConsistentOmniboxGeolocation", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_ANDROID)
+// Experiment to extract structured metadata for app indexing.
+const base::Feature kCopylessPaste{"CopylessPaste",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Enables or disables desktop ios promotion, which shows a promotion to the
 // user promoting Chrome for iOS.

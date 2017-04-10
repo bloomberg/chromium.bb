@@ -3200,6 +3200,16 @@ extern const char kEnableEncryptionMigrationDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+
+// Name of the flag that enables Copyless Paste.
+extern const char kEnableCopylessPasteName[];
+
+// Description of the flag that enables Copyless Paste.
+extern const char kEnableCopylessPasteDescription[];
+
+#endif  // defined(OS_ANDROID)
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

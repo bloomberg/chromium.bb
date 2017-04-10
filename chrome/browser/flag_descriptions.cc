@@ -2952,4 +2952,17 @@ const char kEnableEncryptionMigrationDescription[] =
 
 #endif  // #if defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+
+const char kEnableCopylessPasteName[] = "App Indexing (Copyless Paste)";
+
+const char kEnableCopylessPasteDescription[] =
+    "Provide suggestions for text input, based on your recent context. For "
+    "example, if you looked at a restaurant website and switched to the Maps "
+    "app, the keyboard would offer the name of that restaurant as a suggestion "
+    "to enter into the search bar. The data is indexed locally, and never sent "
+    "to the server. It's disabled in incognito mode.";
+
+#endif  // defined(OS_ANDROID)
+
 }  // namespace flag_descriptions

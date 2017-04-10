@@ -72,6 +72,10 @@ extern const base::Feature kCleanupToolUI;
 extern const base::Feature kConsistentOmniboxGeolocation;
 #endif
 
+#if defined(OS_ANDROID)
+extern const base::Feature kCopylessPaste;
+#endif
+
 #if defined(OS_WIN)
 extern const base::Feature kDesktopIOSPromotion;
 #endif  // defined(OS_WIN)

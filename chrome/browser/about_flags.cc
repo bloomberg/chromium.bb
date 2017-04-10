@@ -2614,6 +2614,12 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::switches::kEnableZipArchiverOnFileManager)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"enable-copyless-paste", flag_descriptions::kEnableCopylessPasteName,
+     flag_descriptions::kEnableCopylessPasteDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kCopylessPaste)},
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
