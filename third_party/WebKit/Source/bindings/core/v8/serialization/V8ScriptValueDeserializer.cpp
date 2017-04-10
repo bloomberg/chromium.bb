@@ -8,6 +8,7 @@
 #include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -215,8 +216,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           !ReadUint64(&element) || !ReadUint32(&properties) || element == 0 ||
           !properties || (properties & ~kValidPropertiesMask))
         return nullptr;
-      return CompositorProxy::Create(script_state_->GetExecutionContext(),
-                                     element, properties);
+      return CompositorProxy::Create(
+          ExecutionContext::From(script_state_.Get()), element, properties);
     }
     case kFileTag:
       return ReadFile();

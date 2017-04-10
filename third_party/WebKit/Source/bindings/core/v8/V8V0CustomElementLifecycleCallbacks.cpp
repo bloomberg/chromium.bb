@@ -178,7 +178,8 @@ void V8V0CustomElementLifecycleCallbacks::Created(Element* element) {
 
   v8::TryCatch exception_catcher(isolate);
   exception_catcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(callback, script_state_->GetExecutionContext(),
+  V8ScriptRunner::CallFunction(callback,
+                               ExecutionContext::From(script_state_.Get()),
                                receiver, 0, 0, isolate);
 }
 
@@ -220,7 +221,8 @@ void V8V0CustomElementLifecycleCallbacks::AttributeChanged(
 
   v8::TryCatch exception_catcher(isolate);
   exception_catcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(callback, script_state_->GetExecutionContext(),
+  V8ScriptRunner::CallFunction(callback,
+                               ExecutionContext::From(script_state_.Get()),
                                receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
@@ -245,7 +247,8 @@ void V8V0CustomElementLifecycleCallbacks::Call(
 
   v8::TryCatch exception_catcher(isolate);
   exception_catcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(callback, script_state_->GetExecutionContext(),
+  V8ScriptRunner::CallFunction(callback,
+                               ExecutionContext::From(script_state_.Get()),
                                receiver, 0, 0, isolate);
 }
 

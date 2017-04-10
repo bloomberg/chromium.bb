@@ -33,7 +33,7 @@ void InstallConditionalFeaturesCore(const WrapperTypeInfo* wrapper_type_info,
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
   // configuration of origin trial enabled attributes and interfaces in IDL
   // files. (crbug.com/615060)
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return;
   v8::Isolate* isolate = script_state->GetIsolate();

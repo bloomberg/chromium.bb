@@ -47,6 +47,7 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -166,7 +167,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   if (!script_state->ContextIsValid())
     return;
 
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   std::unique_ptr<SourceLocation> location =
       SourceLocation::FromMessage(isolate, message, context);
 
@@ -224,7 +225,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
 
   v8::Local<v8::Promise> promise = data.GetPromise();
   v8::Isolate* isolate = promise->GetIsolate();
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   v8::Local<v8::Value> exception = data.GetValue();
   if (V8DOMWrapper::IsWrapper(isolate, exception)) {
@@ -294,7 +295,7 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
   if (!script_state->ContextIsValid())
     return;
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return;
 
@@ -527,7 +528,7 @@ static void MessageHandlerInWorker(v8::Local<v8::Message> message,
 
   per_isolate_data->SetReportingException(true);
 
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   std::unique_ptr<SourceLocation> location =
       SourceLocation::FromMessage(isolate, message, context);
 
@@ -552,7 +553,8 @@ static void MessageHandlerInWorker(v8::Local<v8::Message> message,
   if (!isolate->IsExecutionTerminating()) {
     V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
         script_state, event, data, script_state->GetContext()->Global());
-    script_state->GetExecutionContext()->DispatchErrorEvent(event, cors_status);
+    ExecutionContext::From(script_state)
+        ->DispatchErrorEvent(event, cors_status);
   }
 
   per_isolate_data->SetReportingException(false);

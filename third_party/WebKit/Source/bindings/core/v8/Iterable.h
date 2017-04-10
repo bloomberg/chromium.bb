@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/Iterator.h"
 
 namespace blink {
@@ -82,7 +83,7 @@ class Iterable {
 
       v8::Local<v8::Value> result;
       if (!V8ScriptRunner::CallFunction(v8_callback,
-                                        script_state->GetExecutionContext(),
+                                        ExecutionContext::From(script_state),
                                         v8_this_arg, 3, args, isolate)
                .ToLocal(&result)) {
         exception_state.RethrowV8Exception(try_catch.Exception());

@@ -5,6 +5,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
 
@@ -43,7 +44,7 @@ ScriptState* V8TestingScope::GetScriptState() const {
 }
 
 ExecutionContext* V8TestingScope::GetExecutionContext() const {
-  return GetScriptState()->GetExecutionContext();
+  return ExecutionContext::From(GetScriptState());
 }
 
 v8::Isolate* V8TestingScope::GetIsolate() const {

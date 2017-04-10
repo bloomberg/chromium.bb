@@ -41,7 +41,8 @@ namespace blink {
 bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
                                               SQLError* error) {
   v8::Isolate* isolate = m_scriptState->GetIsolate();
-  ExecutionContext* execution_context = m_scriptState->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(m_scriptState.Get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return true;
@@ -69,7 +70,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
   // the error callback did not return false, or there was no error callback.
   // Jump to the last step in the overall steps.
   if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
-                                    m_scriptState->GetExecutionContext(),
+                                    ExecutionContext::From(m_scriptState.Get()),
                                     m_scriptState->GetContext()->Global(),
                                     WTF_ARRAY_LENGTH(argv), argv, isolate)
            .ToLocal(&result))

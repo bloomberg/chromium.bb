@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 
@@ -46,7 +47,7 @@ V8EventListener::V8EventListener(bool is_attribute, ScriptState* script_state)
 v8::Local<v8::Function> V8EventListener::GetListenerFunction(
     ScriptState* script_state) {
   v8::Local<v8::Object> listener =
-      GetListenerObject(script_state->GetExecutionContext());
+      GetListenerObject(ExecutionContext::From(script_state));
 
   // Has the listener been disposed?
   if (listener.IsEmpty())
@@ -94,19 +95,19 @@ v8::Local<v8::Value> V8EventListener::CallListenerFunction(
   if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!script_state->GetExecutionContext()->IsDocument())
+  if (!ExecutionContext::From(script_state)->IsDocument())
     return v8::Local<v8::Value>();
 
   LocalFrame* frame =
-      ToDocument(script_state->GetExecutionContext())->GetFrame();
+      ToDocument(ExecutionContext::From(script_state))->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
   // TODO(jochen): Consider moving this check into canExecuteScripts.
   // http://crbug.com/608641
   if (script_state->World().IsMainWorld() &&
-      !script_state->GetExecutionContext()->CanExecuteScripts(
-          kAboutToExecuteScript))
+      !ExecutionContext::From(script_state)
+           ->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {js_event};

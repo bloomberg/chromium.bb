@@ -16,7 +16,8 @@ void V8ResizeObserverCallback::handleEvent(
     const HeapVector<Member<ResizeObserverEntry>>& entries,
     ResizeObserver* observer) {
   v8::Isolate* isolate = m_scriptState->GetIsolate();
-  ExecutionContext* execution_context = m_scriptState->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(m_scriptState.Get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return;
@@ -45,7 +46,7 @@ void V8ResizeObserverCallback::handleEvent(
   v8::TryCatch exception_catcher(m_scriptState->GetIsolate());
   exception_catcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(
-      m_callback.NewLocal(isolate), m_scriptState->GetExecutionContext(),
+      m_callback.NewLocal(isolate), ExecutionContext::From(m_scriptState.Get()),
       this_object, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 

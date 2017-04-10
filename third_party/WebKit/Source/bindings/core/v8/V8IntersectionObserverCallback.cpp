@@ -29,7 +29,8 @@ V8IntersectionObserverCallback::~V8IntersectionObserverCallback() {}
 void V8IntersectionObserverCallback::HandleEvent(
     const HeapVector<Member<IntersectionObserverEntry>>& entries,
     IntersectionObserver& observer) {
-  ExecutionContext* execution_context = script_state_->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(script_state_.Get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return;
@@ -58,7 +59,7 @@ void V8IntersectionObserverCallback::HandleEvent(
   v8::TryCatch exception_catcher(script_state_->GetIsolate());
   exception_catcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(script_state_->GetIsolate()),
-                               script_state_->GetExecutionContext(),
+                               ExecutionContext::From(script_state_.Get()),
                                this_object, 2, argv,
                                script_state_->GetIsolate());
 }

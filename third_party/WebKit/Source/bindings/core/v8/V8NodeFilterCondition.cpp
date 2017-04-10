@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 #include "core/frame/UseCounter.h"
@@ -112,7 +113,7 @@ unsigned V8NodeFilterCondition::AcceptNode(
   v8::Local<v8::Value> result;
   v8::Local<v8::Value> args[] = {node_wrapper};
   if (!V8ScriptRunner::CallFunction(callback,
-                                    script_state_->GetExecutionContext(),
+                                    ExecutionContext::From(script_state_.Get()),
                                     receiver, 1, args, isolate)
            .ToLocal(&result)) {
     exception_state.RethrowV8Exception(exception_catcher.Exception());

@@ -55,7 +55,7 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
     return v8::Null(GetIsolate());
 
   v8::Local<v8::Object> listener =
-      GetListenerObject(script_state->GetExecutionContext());
+      GetListenerObject(ExecutionContext::From(script_state));
   if (listener.IsEmpty() || !listener->IsFunction())
     return v8::Null(GetIsolate());
 
@@ -79,13 +79,13 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
   v8::MaybeLocal<v8::Value> result;
-  if (script_state->GetExecutionContext()->IsWorkerGlobalScope()) {
+  if (ExecutionContext::From(script_state)->IsWorkerGlobalScope()) {
     result = V8ScriptRunner::CallFunction(
-        call_function, script_state->GetExecutionContext(), this_value,
+        call_function, ExecutionContext::From(script_state), this_value,
         WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
   } else {
     result = V8ScriptRunner::CallFunction(
-        call_function, script_state->GetExecutionContext(), this_value,
+        call_function, ExecutionContext::From(script_state), this_value,
         WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
   }
   v8::Local<v8::Value> return_value;

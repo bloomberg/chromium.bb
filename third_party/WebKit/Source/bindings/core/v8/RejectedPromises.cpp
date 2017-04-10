@@ -52,7 +52,7 @@ class RejectedPromises::Message final {
     // If execution termination has been triggered, quietly bail out.
     if (script_state_->GetIsolate()->IsExecutionTerminating())
       return;
-    ExecutionContext* execution_context = script_state_->GetExecutionContext();
+    ExecutionContext* execution_context = ExecutionContext::From(script_state_);
     if (!execution_context)
       return;
 
@@ -93,7 +93,7 @@ class RejectedPromises::Message final {
   }
 
   void Revoke() {
-    ExecutionContext* execution_context = script_state_->GetExecutionContext();
+    ExecutionContext* execution_context = ExecutionContext::From(script_state_);
     if (!execution_context)
       return;
 

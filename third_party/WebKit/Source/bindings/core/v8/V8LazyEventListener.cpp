@@ -41,6 +41,7 @@
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/Node.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -88,7 +89,7 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
     Event* event) {
   ASSERT(!js_event.IsEmpty());
   v8::Local<v8::Object> listener_object =
-      GetListenerObject(script_state->GetExecutionContext());
+      GetListenerObject(ExecutionContext::From(script_state));
   if (listener_object.IsEmpty())
     return v8::Local<v8::Value>();
 
@@ -97,16 +98,16 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!script_state->GetExecutionContext()->IsDocument())
+  if (!ExecutionContext::From(script_state)->IsDocument())
     return v8::Local<v8::Value>();
 
   LocalFrame* frame =
-      ToDocument(script_state->GetExecutionContext())->GetFrame();
+      ToDocument(ExecutionContext::From(script_state))->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
-  if (!script_state->GetExecutionContext()->CanExecuteScripts(
-          kAboutToExecuteScript))
+  if (!ExecutionContext::From(script_state)
+           ->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {js_event};

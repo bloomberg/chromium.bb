@@ -46,7 +46,7 @@ void InstallConditionalFeaturesForModules(
   (*g_original_install_conditional_features_function)(
       wrapper_type_info, script_state, prototype_object, interface_object);
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return;
   v8::Isolate* isolate = script_state->GetIsolate();

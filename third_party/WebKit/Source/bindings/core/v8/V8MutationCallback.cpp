@@ -51,7 +51,8 @@ void V8MutationCallback::Call(
     const HeapVector<Member<MutationRecord>>& mutations,
     MutationObserver* observer) {
   v8::Isolate* isolate = script_state_->GetIsolate();
-  ExecutionContext* execution_context = script_state_->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(script_state_.Get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return;

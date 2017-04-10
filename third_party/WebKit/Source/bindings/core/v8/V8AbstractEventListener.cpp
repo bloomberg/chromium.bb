@@ -37,6 +37,7 @@
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -146,8 +147,8 @@ void V8AbstractEventListener::InvokeEventHandler(
       event->target()->UncaughtExceptionInEventHandler();
 
     if (!try_catch.CanContinue()) {  // Result of TerminateExecution().
-      if (script_state->GetExecutionContext()->IsWorkerGlobalScope())
-        ToWorkerGlobalScope(script_state->GetExecutionContext())
+      if (ExecutionContext::From(script_state)->IsWorkerGlobalScope())
+        ToWorkerGlobalScope(ExecutionContext::From(script_state))
             ->ScriptController()
             ->ForbidExecution();
       return;

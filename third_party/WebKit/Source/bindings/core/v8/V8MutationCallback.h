@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationCallback.h"
 #include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
@@ -50,7 +51,7 @@ class V8MutationCallback final : public MutationCallback {
             MutationObserver*) override;
 
   ExecutionContext* GetExecutionContext() const override {
-    return script_state_->GetExecutionContext();
+    return ExecutionContext::From(script_state_.Get());
   }
 
   DECLARE_VIRTUAL_TRACE();

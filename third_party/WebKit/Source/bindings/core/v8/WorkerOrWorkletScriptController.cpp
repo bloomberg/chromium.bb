@@ -42,6 +42,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerThreadDebugger.h"
@@ -273,7 +274,7 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
     execution_state_->had_exception = true;
     execution_state_->error_message = ToCoreString(message->Get());
     execution_state_->location_ = SourceLocation::FromMessage(
-        isolate_, message, script_state_->GetExecutionContext());
+        isolate_, message, ExecutionContext::From(script_state_.Get()));
     execution_state_->exception =
         ScriptValue(script_state_.Get(), block.Exception());
     block.Reset();

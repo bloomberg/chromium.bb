@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/events/ErrorEvent.h"
 #include "core/html/HTMLElement.h"
@@ -270,7 +271,8 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
 Element* ScriptCustomElementDefinition::CallConstructor() {
   v8::Isolate* isolate = script_state_->GetIsolate();
   DCHECK(ScriptState::Current(isolate) == script_state_);
-  ExecutionContext* execution_context = script_state_->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(script_state_.Get());
   v8::Local<v8::Value> result;
   if (!V8Call(V8ScriptRunner::CallAsConstructor(isolate, Constructor(),
                                                 execution_context, 0, nullptr),
@@ -316,7 +318,8 @@ void ScriptCustomElementDefinition::RunCallback(
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
-  ExecutionContext* execution_context = script_state_->GetExecutionContext();
+  ExecutionContext* execution_context =
+      ExecutionContext::From(script_state_.Get());
   v8::Local<v8::Value> element_handle =
       ToV8(element, script_state_->GetContext()->Global(), isolate);
   V8ScriptRunner::CallFunction(callback, execution_context, element_handle,

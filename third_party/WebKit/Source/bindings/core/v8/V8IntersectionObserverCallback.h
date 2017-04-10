@@ -8,6 +8,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/IntersectionObserverCallback.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ class V8IntersectionObserverCallback final
                    IntersectionObserver&) override;
 
   ExecutionContext* GetExecutionContext() const override {
-    return script_state_->GetExecutionContext();
+    return ExecutionContext::From(script_state_.Get());
   }
 
  private:

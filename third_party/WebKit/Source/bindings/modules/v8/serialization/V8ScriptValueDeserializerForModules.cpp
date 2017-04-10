@@ -5,6 +5,7 @@
 #include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
 
 #include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/peerconnection/RTCCertificate.h"
@@ -34,7 +35,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       if (!ReadUint32(&raw_type) || raw_type > kFileSystemTypeLast ||
           !ReadUTF8String(&name) || !ReadUTF8String(&root_url))
         return nullptr;
-      return DOMFileSystem::Create(GetScriptState()->GetExecutionContext(),
+      return DOMFileSystem::Create(ExecutionContext::From(GetScriptState()),
                                    name, static_cast<FileSystemType>(raw_type),
                                    KURL(kParsedURLString, root_url));
     }

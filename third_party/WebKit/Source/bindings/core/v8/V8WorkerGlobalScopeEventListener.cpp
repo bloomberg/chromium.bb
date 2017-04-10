@@ -37,6 +37,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -51,7 +52,7 @@ V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(
 void V8WorkerGlobalScopeEventListener::HandleEvent(ScriptState* script_state,
                                                    Event* event) {
   WorkerOrWorkletScriptController* script =
-      ToWorkerGlobalScope(script_state->GetExecutionContext())
+      ToWorkerGlobalScope(ExecutionContext::From(script_state))
           ->ScriptController();
   if (!script)
     return;
@@ -80,7 +81,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::CallListenerFunction(
 
   v8::Local<v8::Value> parameters[1] = {js_event};
   v8::MaybeLocal<v8::Value> maybe_result = V8ScriptRunner::CallFunction(
-      handler_function, script_state->GetExecutionContext(), receiver,
+      handler_function, ExecutionContext::From(script_state), receiver,
       WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
 
   v8::Local<v8::Value> result;
@@ -95,7 +96,7 @@ v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::GetReceiverObject(
     ScriptState* script_state,
     Event* event) {
   v8::Local<v8::Object> listener =
-      GetListenerObject(script_state->GetExecutionContext());
+      GetListenerObject(ExecutionContext::From(script_state));
 
   if (!listener.IsEmpty() && !listener->IsFunction())
     return listener;

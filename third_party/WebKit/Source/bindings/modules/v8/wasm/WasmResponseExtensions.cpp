@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/V8Response.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
@@ -149,7 +150,7 @@ void CompileFromResponseCallback(
   ExceptionToRejectPromiseScope reject_promise_scope(args, exception_state);
 
   ScriptState* script_state = ScriptState::ForReceiverObject(args);
-  if (!script_state->GetExecutionContext()) {
+  if (!ExecutionContext::From(script_state)) {
     V8SetReturnValue(args, ScriptPromise().V8Value());
     return;
   }
