@@ -13,6 +13,10 @@
 #include <string>
 #include <vector>
 
+namespace version_info {
+enum class Channel;
+}
+
 namespace install_static {
 
 struct InstallConstants;
@@ -191,7 +195,8 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* special_build,
                                  std::wstring* channel_name);
 
-// Gets the channel name for the current Chrome process.
+// Gets the channel or channel name for the current Chrome process.
+version_info::Channel GetChromeChannel();
 std::wstring GetChromeChannelName();
 
 // Returns true if the |source| string matches the |pattern|. The pattern

@@ -173,6 +173,12 @@ bool CrashReporterClient::ShouldEnableBreakpadMicrodumps() {
 }
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+bool CrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
+  return false;
+}
+#endif
+
 bool CrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return false;

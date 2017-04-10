@@ -12,10 +12,15 @@ class CommandLine;
 namespace crash_reporter {
 
 // Helper for running an embedded copy of crashpad_handler. Searches for and
-// removes --switches::kProcessType=xyz arguments in the command line, and all
+// removes --(process_type_switch)=xyz arguments in the command line, and all
 // options starting with '/' (for "/prefetch:N"), and then runs
 // crashpad::HandlerMain with the remaining arguments.
-int RunAsCrashpadHandler(const base::CommandLine& command_line);
+//
+// Normally, pass switches::kProcessType for process_type_switch. It's accepted
+// as a parameter because this component does not have access to content/, where
+// that variable lives.
+int RunAsCrashpadHandler(const base::CommandLine& command_line,
+                         const char* process_type_switch);
 
 }  // namespace crash_reporter
 

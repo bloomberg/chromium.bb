@@ -19,12 +19,13 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/format_macros.h"
+#include "base/rand_util.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/version_info/channel.h"
 
 namespace {
 
@@ -340,14 +341,13 @@ bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
 }
 
 bool ChromeCrashReporterClient::GetIsPerUserInstall() {
-  return !install_static::InstallDetails::Get().system_level();
+  return !install_static::IsSystemInstall();
 }
 
 bool ChromeCrashReporterClient::GetShouldDumpLargerDumps() {
-  // Capture larger dumps for Google Chrome "beta", "dev", and "canary"
-  // channels. Stable channel and Chromium builds are on channel "", and use
-  // smaller dumps.
-  return !install_static::InstallDetails::Get().channel().empty();
+  // Capture larger dumps for Google Chrome beta, dev, and canary channels, and
+  // Chromium builds. The Google Chrome stable channel uses smaller dumps.
+  return install_static::GetChromeChannel() != version_info::Channel::STABLE;
 }
 
 int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
@@ -403,6 +403,34 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
 
 bool ChromeCrashReporterClient::GetCollectStatsInSample() {
   return install_static::GetCollectStatsInSample();
+}
+
+bool ChromeCrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
+  // The expensive mechanism dedicates a process to be crashpad_handler's own
+  // crashpad_handler. In Google Chrome, scale back on this in the more stable
+  // channels. There's a fallback crash handler that can catch crashes when this
+  // expensive mechanism isn't used, although the fallback crash handler has
+  // different characteristics so it's desirable to use the expensive mechanism
+  // at least some of the time.
+  double probability;
+  switch (install_static::GetChromeChannel()) {
+    case version_info::Channel::STABLE:
+      return false;
+
+    case version_info::Channel::BETA:
+      probability = 0.1;
+      break;
+
+    case version_info::Channel::DEV:
+      probability = 0.25;
+      break;
+
+    default:
+      probability = 0.5;
+      break;
+  }
+
+  return base::RandDouble() < probability;
 }
 
 bool ChromeCrashReporterClient::EnableBreakpadForProcess(

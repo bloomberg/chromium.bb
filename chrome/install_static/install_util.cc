@@ -20,6 +20,7 @@
 #include "chrome/install_static/policy_path_parser.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
+#include "components/version_info/channel.h"
 
 namespace install_static {
 
@@ -559,6 +560,26 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
     }
   }
   *channel_name = GetChromeChannelName();
+}
+
+version_info::Channel GetChromeChannel() {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::wstring channel_name(GetChromeChannelName());
+  if (channel_name.empty()) {
+    return version_info::Channel::STABLE;
+  }
+  if (channel_name == L"beta") {
+    return version_info::Channel::BETA;
+  }
+  if (channel_name == L"dev") {
+    return version_info::Channel::DEV;
+  }
+  if (channel_name == L"canary") {
+    return version_info::Channel::CANARY;
+  }
+#endif
+
+  return version_info::Channel::UNKNOWN;
 }
 
 std::wstring GetChromeChannelName() {

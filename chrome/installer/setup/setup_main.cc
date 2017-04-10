@@ -1329,7 +1329,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess());
+        *base::CommandLine::ForCurrentProcess(), switches::kProcessType);
   }
 
   // install_util uses chrome paths.

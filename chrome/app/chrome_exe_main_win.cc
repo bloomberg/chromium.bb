@@ -245,7 +245,7 @@ int main() {
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     crash_reporter::SetupFallbackCrashHandling(*command_line);
     return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess());
+        *base::CommandLine::ForCurrentProcess(), switches::kProcessType);
   } else if (process_type == crash_reporter::switches::kFallbackCrashHandler) {
     return RunFallbackCrashHandler(*command_line);
   }

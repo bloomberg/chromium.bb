@@ -53,6 +53,10 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   int GetAndroidMinidumpDescriptor() override;
 #endif
 
+#if defined(OS_MACOSX)
+  bool ShouldMonitorCrashHandlerExpensively() override;
+#endif
+
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:

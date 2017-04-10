@@ -22,10 +22,20 @@ static_library("version_info") {
     "//components/strings",
   ]
 
+  public_deps = [
+    ":channel",
+  ]
+
   if (use_unofficial_version_number) {
     defines = [ "USE_UNOFFICIAL_VERSION_NUMBER" ]
     deps += [ "//ui/base" ]
   }
+}
+
+source_set("channel") {
+  sources = [
+    "channel.h",
+  ]
 }
 
 process_version("generate_version_info") {

@@ -7,10 +7,9 @@
 
 #include <string>
 
-namespace version_info {
+#include "components/version_info/channel.h"
 
-// The possible channels for an installation, from most fun to most stable.
-enum class Channel { UNKNOWN = 0, CANARY, DEV, BETA, STABLE };
+namespace version_info {
 
 // Returns the product name and version information for UserAgent header,
 // e.g. "Chrome/a.b.c.d".

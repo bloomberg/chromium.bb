@@ -49,6 +49,8 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) override;
 
+  bool ShouldMonitorCrashHandlerExpensively() override;
+
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:

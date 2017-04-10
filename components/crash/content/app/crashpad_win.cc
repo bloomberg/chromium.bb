@@ -35,7 +35,14 @@ void GetPlatformCrashpadAnnotations(
       exe_file, &product_name, &version, &special_build, &channel_name);
   (*annotations)["prod"] = base::UTF16ToUTF8(product_name);
   (*annotations)["ver"] = base::UTF16ToUTF8(version);
-  (*annotations)["channel"] = base::UTF16ToUTF8(channel_name);
+#if defined(GOOGLE_CHROME_BUILD)
+  // Empty means stable.
+  const bool allow_empty_channel = true;
+#else
+  const bool allow_empty_channel = false;
+#endif
+  if (allow_empty_channel || !channel_name.empty())
+    (*annotations)["channel"] = base::UTF16ToUTF8(channel_name);
   if (!special_build.empty())
     (*annotations)["special"] = base::UTF16ToUTF8(special_build);
 #if defined(ARCH_CPU_X86)
@@ -96,17 +103,34 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     // If the handler is embedded in the binary (e.g. chrome, setup), we
     // reinvoke it with --type=crashpad-handler. Otherwise, we use the
     // standalone crashpad_handler.exe (for tests, etc.).
-    std::vector<std::string> arguments;
+    std::vector<std::string> start_arguments;
     if (embedded_handler) {
-      arguments.push_back(std::string("--type=") + switches::kCrashpadHandler);
+      start_arguments.push_back(std::string("--type=") +
+                                switches::kCrashpadHandler);
       // The prefetch argument added here has to be documented in
       // chrome_switches.cc, below the kPrefetchArgument* constants. A constant
       // can't be used here because crashpad can't depend on Chrome.
-      arguments.push_back("/prefetch:7");
+      start_arguments.push_back("/prefetch:7");
     } else {
       base::FilePath exe_dir = exe_file.DirName();
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
+
+    std::vector<std::string> arguments(start_arguments);
+
+    if (crash_reporter_client->ShouldMonitorCrashHandlerExpensively()) {
+      arguments.push_back("--monitor-self");
+      for (const std::string& start_argument : start_arguments) {
+        arguments.push_back(std::string("--monitor-self-argument=") +
+                            start_argument);
+      }
+    }
+
+    // Set up --monitor-self-annotation even in the absence of --monitor-self so
+    // that minidumps produced by Crashpad's generate_dump tool will contain
+    // these annotations.
+    arguments.push_back(std::string("--monitor-self-annotation=ptype=") +
+                        switches::kCrashpadHandler);
 
     GetCrashpadClient().StartHandler(exe_file, database_path, metrics_path, url,
                                      process_annotations, arguments, false,
