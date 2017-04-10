@@ -1670,11 +1670,12 @@ static unsigned int lcg_rand16(unsigned int *state) {
 }
 
 void av1_calculate_next_scaled_size(AV1_COMP *cpi, int *width, int *height) {
+  static unsigned int seed = 56789;
   AV1EncoderConfig *oxcf = &cpi->oxcf;
-
   // TODO(afergs): Get width from frame instead?
   *width = oxcf->width;
   *height = oxcf->height;
+  if (oxcf->pass == 1) return;
 
   if (oxcf->resize_mode == RESIZE_FIXED) {
     *width = oxcf->scaled_frame_width;
@@ -1683,7 +1684,6 @@ void av1_calculate_next_scaled_size(AV1_COMP *cpi, int *width, int *height) {
   }
   if (oxcf->resize_mode == RESIZE_DYNAMIC) {
     // NOTE: RESIZE_DYNAMIC defaults to random now.
-    static unsigned int seed = 56789;
     if (oxcf->pass == 2 || oxcf->pass == 0) {
       int scale_num = lcg_rand16(&seed) % 4 + 13;
       int scale_den = 16;
@@ -1697,22 +1697,29 @@ void av1_calculate_next_scaled_size(AV1_COMP *cpi, int *width, int *height) {
 }
 
 #if CONFIG_FRAME_SUPERRES
-#define RANDOM_SUPERRES 1
-int av1_calculate_next_superres_scale(AV1_COMP *cpi, int width, int height) {
+// TODO(afergs): Rename av1_rc_update_superres_scale(...)?
+int av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
+                                      int height) {
+  static unsigned int seed = 34567;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  (void)width;
-  (void)height;
-  (void)oxcf;
-#if RANDOM_SUPERRES
-  if (oxcf->pass == 2 || oxcf->pass == 0) {
-    static unsigned int seed = 34567;
-    int new_num = lcg_rand16(&seed) % 9 + 8;
-    if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
-        new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
-      new_num = SUPERRES_SCALE_DENOMINATOR;
-    return new_num;
+  if (oxcf->pass == 1) return SUPERRES_SCALE_DENOMINATOR;
+  uint8_t new_num = cpi->common.superres_scale_numerator;
+
+  switch (oxcf->superres_mode) {
+    case SUPERRES_NONE: return SUPERRES_SCALE_DENOMINATOR; break;
+    case SUPERRES_FIXED: new_num = oxcf->superres_scale_numerator; break;
+    case SUPERRES_DYNAMIC:
+      // SUPERRES_DYNAMIC: Just random for now.
+      new_num = lcg_rand16(&seed) % 9 + 8;
+      break;
+    default: assert(0);
   }
-#endif  // RANDOM_SUPERRES
-  return SUPERRES_SCALE_DENOMINATOR;
+
+  // Make sure overall reduction is no more than 1/2 of the source size.
+  if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
+      new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
+    new_num = SUPERRES_SCALE_DENOMINATOR;
+
+  return new_num;
 }
 #endif  // CONFIG_FRAME_SUPERRES

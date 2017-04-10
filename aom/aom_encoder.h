@@ -402,6 +402,29 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int rc_resize_down_thresh;
 
+  /*!\brief Frame super-resolution scaling mode.
+   *
+   * Similar to spatial resampling, frame super-resolution integrates
+   * upscaling after the encode/decode process. Taking control of upscaling and
+   * using restoration filters should allow it to outperform normal resizing.
+   *
+   * Mode 0 is SUPERRES_NONE, mode 1 is SUPERRES_FIXED, and mode 2 is
+   * SUPERRES_DYNAMIC.
+   */
+  unsigned int rc_superres_mode;
+
+  /*!\brief Frame super-resolution numerator.
+   *
+   * The numerator for superres to use. If fixed it will only change if the
+   * cumulative scale change over resizing and superres is greater than 1/2;
+   * this forces superres to reduce scaling.
+   *
+   * Valid numerators are 8 to 16.
+   *
+   * Ignored by SUPERRES_DYNAMIC.
+   */
+  unsigned int rc_superres_numerator;
+
   /*!\brief Rate control algorithm to use.
    *
    * Indicates whether the end usage of this stream is to be streamed over

@@ -259,7 +259,7 @@ int av1_resize_one_pass_cbr(struct AV1_COMP *cpi);
 void av1_calculate_next_scaled_size(struct AV1_COMP *cpi, int *width,
                                     int *height);
 #if CONFIG_FRAME_SUPERRES
-int av1_calculate_next_superres_scale(struct AV1_COMP *cpi, int width,
+int av1_calculate_next_superres_scale(const struct AV1_COMP *cpi, int width,
                                       int height);
 #endif  // CONFIG_FRAME_SUPERRES
 #ifdef __cplusplus

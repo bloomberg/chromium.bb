@@ -263,6 +263,12 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     RANGE_CHECK_HI(cfg, rc_scaled_height, cfg->g_h);
   }
 
+#if CONFIG_FRAME_SUPERRES
+  RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_DYNAMIC);
+  RANGE_CHECK(cfg, rc_superres_numerator, SUPERRES_SCALE_DENOMINATOR / 2,
+              SUPERRES_SCALE_DENOMINATOR);
+#endif  // CONFIG_FRAME_SUPERRES
+
   // AV1 does not support a lower bound on the keyframe interval in
   // automatic keyframe placement mode.
   if (cfg->kf_mode != AOM_KF_DISABLED && cfg->kf_min_dist != cfg->kf_max_dist &&
@@ -505,8 +511,12 @@ static aom_codec_err_t set_encoder_config(
   }
 
 #if CONFIG_FRAME_SUPERRES
-  oxcf->superres_enabled = 1;  // TODO(afergs): Check the config
-#endif                         // CONFIG_FRAME_SUPERRES
+  oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
+  oxcf->superres_scale_numerator = (uint8_t)cfg->rc_superres_numerator;
+  if (oxcf->superres_mode == SUPERRES_FIXED &&
+      oxcf->superres_scale_numerator == SUPERRES_SCALE_DENOMINATOR)
+    oxcf->superres_mode = SUPERRES_NONE;
+#endif  // CONFIG_FRAME_SUPERRES
 
   oxcf->maximum_buffer_size_ms = is_vbr ? 240000 : cfg->rc_buf_sz;
   oxcf->starting_buffer_level_ms = is_vbr ? 60000 : cfg->rc_buf_initial_sz;
@@ -1595,6 +1605,9 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,   // rc_scaled_height
         60,  // rc_resize_down_thresold
         30,  // rc_resize_up_thresold
+
+        0,                           // rc_superres_mode
+        SUPERRES_SCALE_DENOMINATOR,  // rc_superres_numerator
 
         AOM_VBR,      // rc_end_usage
         { NULL, 0 },  // rc_twopass_stats_in

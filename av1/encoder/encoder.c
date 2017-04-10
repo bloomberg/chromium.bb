@@ -3849,17 +3849,20 @@ static void setup_frame_size(AV1_COMP *cpi) {
   int encode_height;
 
   av1_calculate_next_scaled_size(cpi, &encode_width, &encode_height);
+  printf("encode size: %dx%d ", encode_width, encode_height);
 
 #if CONFIG_FRAME_SUPERRES
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
-  cpi->common.superres_scale_numerator =
-      av1_calculate_next_superres_scale(cpi, encode_width, encode_width);
+  cm->superres_scale_numerator = (uint8_t)av1_calculate_next_superres_scale(
+      cpi, encode_width, encode_width);
   av1_calculate_superres_size(cm, &encode_width, &encode_height);
-// printf("Resize/superres %d x %d -> %d x %d\n", encode_width, encode_height,
-//        cm->superres_upscaled_width, cm->superres_upscaled_height);
+  // printf("Resize/superres %d x %d -> %d x %d\n", encode_width, encode_height,
+  //        cm->superres_upscaled_width, cm->superres_upscaled_height);
+  printf("superres numerator: %02d ", cm->superres_scale_numerator);
 #endif  // CONFIG_FRAME_SUPERRES
+  printf("Final encode size: %dx%d\n", encode_width, encode_height);
 
   set_frame_size(cpi, encode_width, encode_height);
 }
