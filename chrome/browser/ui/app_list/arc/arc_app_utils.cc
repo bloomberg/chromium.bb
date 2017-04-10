@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
@@ -22,6 +23,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -176,10 +178,15 @@ class LaunchAppWithoutSize {
 const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
+const char kFilesAppId[] = "clippbnfpgifdekheldlleoeiiababjg";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
-  return (app_id != kSettingsAppId);
+  if (app_id == kFilesAppId) {
+    return base::FeatureList::IsEnabled(kShowArcFilesAppFeature);
+  } else {
+    return (app_id != kSettingsAppId);
+  }
 }
 
 bool LaunchAppWithRect(content::BrowserContext* context,
