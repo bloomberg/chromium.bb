@@ -5,12 +5,16 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_PARSER_HOST_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_PARSER_HOST_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/payments/content/payment_manifest_parser.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 template <class MojoInterface>
@@ -22,10 +26,13 @@ namespace payments {
 // Host of the utility process that parses manifest contents.
 class PaymentManifestParserHost {
  public:
-  // Called on successful parsing. The result is a move-only vector, which is
-  // empty on parse failure.
-  using Callback =
-      base::OnceCallback<void(std::vector<mojom::PaymentManifestSectionPtr>)>;
+  // Called on successful parsing of a payment method manifest. The result is a
+  // move-only vector, which is empty on parse failure.
+  using PaymentMethodCallback = base::OnceCallback<void(std::vector<GURL>)>;
+  // Called on successful parsing of a web app manifest. The result is a
+  // move-only vector, which is empty on parse failure.
+  using WebAppCallback =
+      base::OnceCallback<void(std::vector<mojom::WebAppManifestSectionPtr>)>;
 
   PaymentManifestParserHost();
 
@@ -36,13 +43,15 @@ class PaymentManifestParserHost {
   // done as soon as it is known that the parser will be needed.
   void StartUtilityProcess();
 
-  void ParsePaymentManifest(const std::string& content, Callback callback);
+  void ParsePaymentMethodManifest(const std::string& content,
+                                  PaymentMethodCallback callback);
+  void ParseWebAppManifest(const std::string& content, WebAppCallback callback);
 
  private:
-  // The |callback_identifier| parameter is a pointer to one of the items in the
-  // |pending_callbacks_| list.
-  void OnParse(const Callback* callback_identifier,
-               std::vector<mojom::PaymentManifestSectionPtr> manifest);
+  void OnPaymentMethodParse(int64_t callback_identifier,
+                            const std::vector<GURL>& web_app_manifest_urls);
+  void OnWebAppParse(int64_t callback_identifier,
+                     std::vector<mojom::WebAppManifestSectionPtr> manifest);
 
   void OnUtilityProcessStopped();
 
@@ -50,7 +59,10 @@ class PaymentManifestParserHost {
       content::UtilityProcessMojoClient<mojom::PaymentManifestParser>>
       mojo_client_;
 
-  std::vector<Callback> pending_callbacks_;
+  int64_t callback_counter_;
+  std::unordered_map<int64_t, PaymentMethodCallback>
+      pending_payment_method_callbacks_;
+  std::unordered_map<int64_t, WebAppCallback> pending_web_app_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParserHost);
 };

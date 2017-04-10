@@ -21,12 +21,20 @@ public class PaymentManifestDownloader {
         /**
          * Called on successful download of a payment method manifest.
          *
-         * @param contents The successfully downloaded payment method manifest.
+         * @param content The successfully downloaded payment method manifest.
          */
         @CalledByNative("ManifestDownloadCallback")
-        void onManifestDownloadSuccess(String contents);
+        void onPaymentMethodManifestDownloadSuccess(String content);
 
-        /** Called on failed download of a payment method manifest. */
+        /**
+         * Called on successful download of a web app manifest.
+         *
+         * @param content The successfully downloaded web app manifest.
+         */
+        @CalledByNative("ManifestDownloadCallback")
+        void onWebAppManifestDownloadSuccess(String content);
+
+        /** Called on failed download. */
         @CalledByNative("ManifestDownloadCallback")
         void onManifestDownloadFailure();
     }
@@ -44,13 +52,23 @@ public class PaymentManifestDownloader {
     }
 
     /**
-     * Downloads the manifest file asynchronously.
+     * Downloads the payment method manifest file asynchronously.
      *
      * @param methodName The payment method name that is a URI with HTTPS scheme.
      * @param callback   The callback to invoke when finished downloading.
      */
-    public void download(URI methodName, ManifestDownloadCallback callback) {
-        nativeDownloadPaymentManifest(mWebContents, methodName, callback);
+    public void downloadPaymentMethodManifest(URI methodName, ManifestDownloadCallback callback) {
+        nativeDownloadPaymentMethodManifest(mWebContents, methodName, callback);
+    }
+
+    /**
+     * Downloads the web app manifest file asynchronously.
+     *
+     * @param webAppmanifestUri The web app manifest URI with HTTPS scheme.
+     * @param callback          The callback to invoke when finished downloading.
+     */
+    public void downloadWebAppManifest(URI webAppManifestUri, ManifestDownloadCallback callback) {
+        nativeDownloadWebAppManifest(mWebContents, webAppManifestUri, callback);
     }
 
     @CalledByNative
@@ -58,6 +76,8 @@ public class PaymentManifestDownloader {
         return methodName.toString();
     }
 
-    private static native void nativeDownloadPaymentManifest(
+    private static native void nativeDownloadPaymentMethodManifest(
+            WebContents webContents, URI methodName, ManifestDownloadCallback callback);
+    private static native void nativeDownloadWebAppManifest(
             WebContents webContents, URI methodName, ManifestDownloadCallback callback);
 }

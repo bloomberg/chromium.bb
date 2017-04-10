@@ -271,7 +271,7 @@
     Unable to launch payment app.
   </message>
 
-  <message name="IDS_UTILITY_PROCESS_PAYMENT_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing manifest files.">
+  <message name="IDS_UTILITY_PROCESS_PAYMENT_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing payment manifest files.">
     Payment Manifest Parser
   </message>
   <if expr="is_android">

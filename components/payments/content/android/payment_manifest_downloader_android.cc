@@ -28,19 +28,34 @@ class SelfDeletingDownloadDelegate
  public:
   explicit SelfDeletingDownloadDelegate(
       const base::android::JavaParamRef<jobject>& jcallback)
-      : jcallback_(jcallback) {}
+      : jcallback_(jcallback), is_downloading_payment_method_manifest_(true) {}
 
   void set_downloader(std::unique_ptr<PaymentManifestDownloader> downloader) {
     downloader_ = std::move(downloader);
   }
 
-  void Download() { downloader_->Download(); }
+  void DownloadPaymentMethodManifest() {
+    is_downloading_payment_method_manifest_ = true;
+    downloader_->DownloadPaymentMethodManifest();
+  }
+
+  void DownloadWebAppManifest() {
+    is_downloading_payment_method_manifest_ = false;
+    downloader_->DownloadWebAppManifest();
+  }
 
   // PaymentManifestDownloader::Delegate
   void OnManifestDownloadSuccess(const std::string& content) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ManifestDownloadCallback_onManifestDownloadSuccess(
-        env, jcallback_, base::android::ConvertUTF8ToJavaString(env, content));
+    if (is_downloading_payment_method_manifest_) {
+      Java_ManifestDownloadCallback_onPaymentMethodManifestDownloadSuccess(
+          env, jcallback_,
+          base::android::ConvertUTF8ToJavaString(env, content));
+    } else {
+      Java_ManifestDownloadCallback_onWebAppManifestDownloadSuccess(
+          env, jcallback_,
+          base::android::ConvertUTF8ToJavaString(env, content));
+    }
     delete this;
   }
 
@@ -55,22 +70,16 @@ class SelfDeletingDownloadDelegate
   ~SelfDeletingDownloadDelegate() override {}
 
   base::android::ScopedJavaGlobalRef<jobject> jcallback_;
+  bool is_downloading_payment_method_manifest_;
   std::unique_ptr<PaymentManifestDownloader> downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeletingDownloadDelegate);
 };
 
-}  // namespace
-
-bool RegisterPaymentManifestDownloader(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-void DownloadPaymentManifest(
+SelfDeletingDownloadDelegate* BuildSelfDeletingDownloadDelegate(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& jweb_contents,
-    const base::android::JavaParamRef<jobject>& jmethod_name,
+    const base::android::JavaParamRef<jobject>& juri,
     const base::android::JavaParamRef<jobject>& jcallback) {
   SelfDeletingDownloadDelegate* delegate =
       new SelfDeletingDownloadDelegate(jcallback);
@@ -79,22 +88,53 @@ void DownloadPaymentManifest(
       content::WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents) {
     delegate->OnManifestDownloadFailure();
-    return;
+    return nullptr;
   }
 
-  GURL method_name(base::android::ConvertJavaStringToUTF8(
-      env, Java_PaymentManifestDownloader_getUriString(env, jmethod_name)));
-  DCHECK(method_name.is_valid());
-  DCHECK(method_name.SchemeIs(url::kHttpsScheme));
+  GURL url(base::android::ConvertJavaStringToUTF8(
+      env, Java_PaymentManifestDownloader_getUriString(env, juri)));
+  DCHECK(url.is_valid());
+  DCHECK(url.SchemeIs(url::kHttpsScheme));
 
   std::unique_ptr<PaymentManifestDownloader> downloader =
       base::MakeUnique<PaymentManifestDownloader>(
           content::BrowserContext::GetDefaultStoragePartition(
               web_contents->GetBrowserContext())
               ->GetURLRequestContext(),
-          method_name, delegate);
+          url, delegate);
   delegate->set_downloader(std::move(downloader));
-  delegate->Download();
+
+  return delegate;
+}
+
+}  // namespace
+
+bool RegisterPaymentManifestDownloader(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+void DownloadPaymentMethodManifest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jobject>& jmethod_name,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  SelfDeletingDownloadDelegate* delegate = BuildSelfDeletingDownloadDelegate(
+      env, jweb_contents, jmethod_name, jcallback);
+  if (delegate)
+    delegate->DownloadPaymentMethodManifest();
+}
+
+void DownloadWebAppManifest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jobject>& jweb_app_manifest_uri,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  SelfDeletingDownloadDelegate* delegate = BuildSelfDeletingDownloadDelegate(
+      env, jweb_contents, jweb_app_manifest_uri, jcallback);
+  if (delegate)
+    delegate->DownloadWebAppManifest();
 }
 
 }  // namespace payments

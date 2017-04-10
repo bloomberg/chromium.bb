@@ -20,27 +20,11 @@ class URLRequestContextGetter;
 
 namespace payments {
 
-// Downloader of the payment method manifest based on the payment method name
-// that is a URL with HTTPS scheme, e.g., https://bobpay.com. The download
-// happens via two consecutive HTTP requests:
+// Downloader of the payment method manifest and web-app manifest based on the
+// payment method name that is a URL with HTTPS scheme, e.g.,
+// https://bobpay.com.
 //
-// 1) HEAD request for the payment method name. The HTTP response header is
-//    parsed for Link header that points to the location of the payment method
-//    manifest file. Example of a relative location:
-//
-//      Link: <data/payment-manifest.json>; rel="payment-method-manifest"
-//
-//    (This is relative to the payment method URL.) Example of an absolute
-//    location:
-//
-//      Link: <https://bobpay.com/data/payment-manifest.json>;
-//      rel="payment-method-manifest"
-//
-//    The absolute location must use HTTPS scheme.
-//
-// 2) GET request for the payment method manifest file.
-//
-// The downloader does not follow redirects. A download succeeds only if both
+// The downloader does not follow redirects. A download succeeds only if all
 // HTTP response codes are 200.
 class PaymentManifestDownloader : public net::URLFetcherDelegate {
  public:
@@ -52,27 +36,52 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
 
     // Called when failed to download the manifest for any reason:
     //  - HTTP response code is not 200.
+    //  - HTTP GET on the manifest URL returns empty content.
+    //
+    // In the case of a payment method manifest download, can also be called
+    // when:
     //  - HTTP response headers are absent.
-    //  - HTTP response headers does not contain Link headers.
+    //  - HTTP response headers do not contain Link headers.
     //  - Link header does not contain rel="payment-method-manifest".
     //  - Link header does not contain a valid URL.
-    //  - HTTP GET on the manifest URL returns empty content.
     virtual void OnManifestDownloadFailure() = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  // |delegate| should not be null and must outlive this object. |method_name|
-  // should be a valid URL that starts with "https://".
+  // |delegate| should not be null and must outlive this object. |url| should be
+  // a valid URL with HTTPS scheme.
   PaymentManifestDownloader(
       const scoped_refptr<net::URLRequestContextGetter>& context,
-      const GURL& method_name,
+      const GURL& url,
       Delegate* delegate);
 
   ~PaymentManifestDownloader() override;
 
-  void Download();
+  // Download a payment method manifest via two consecutive HTTP requests:
+  //
+  // 1) HEAD request for the payment method name. The HTTP response header is
+  //    parsed for Link header that points to the location of the payment method
+  //    manifest file. Example of a relative location:
+  //
+  //      Link: <data/payment-manifest.json>; rel="payment-method-manifest"
+  //
+  //    (This is relative to the payment method URL.) Example of an absolute
+  //    location:
+  //
+  //      Link: <https://bobpay.com/data/payment-manifest.json>;
+  //      rel="payment-method-manifest"
+  //
+  //    The absolute location must use HTTPS scheme.
+  //
+  // 2) GET request for the payment method manifest file.
+  void DownloadPaymentMethodManifest();
+
+  // Download a web app manifest via a single HTTP request:
+  //
+  // 1) GET request for the payment method name.
+  void DownloadWebAppManifest();
 
  private:
   void InitiateDownload(const GURL& url,
@@ -82,7 +91,7 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   scoped_refptr<net::URLRequestContextGetter> context_;
-  const GURL method_name_;
+  const GURL url_;
 
   // Non-owned. Never null. Outlives this object.
   Delegate* delegate_;

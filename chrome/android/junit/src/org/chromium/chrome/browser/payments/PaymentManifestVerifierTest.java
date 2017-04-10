@@ -18,7 +18,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
-import org.chromium.payments.mojom.PaymentManifestSection;
+import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +34,7 @@ public class PaymentManifestVerifierTest {
     private final ResolveInfo mBobPay;
     private final List<ResolveInfo> mMatchingApps;
     private final PaymentManifestDownloader mDownloader;
-    private final PaymentManifestParser mAnyAppAllowedParser;
+    private final PaymentManifestParser mParser;
     private final PackageManagerDelegate mPackageManagerDelegate;
     private final ManifestVerifyCallback mCallback;
 
@@ -55,18 +55,42 @@ public class PaymentManifestVerifierTest {
 
         mDownloader = new PaymentManifestDownloader(null) {
             @Override
-            public void download(URI uri, ManifestDownloadCallback callback) {
-                callback.onManifestDownloadSuccess("some content here");
+            public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess("some content here");
+            }
+
+            @Override
+            public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onWebAppManifestDownloadSuccess("some content here");
             }
         };
 
-        mAnyAppAllowedParser = new PaymentManifestParser() {
+        mParser = new PaymentManifestParser() {
             @Override
-            public void parse(String content, ManifestParseCallback callback) {
-                PaymentManifestSection[] manifest = new PaymentManifestSection[1];
-                manifest[0] = new PaymentManifestSection();
-                manifest[0].packageName = "*";
-                callback.onManifestParseSuccess(manifest);
+            public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+                try {
+                    callback.onPaymentMethodManifestParseSuccess(
+                            new URI[] {new URI("https://bobpay.com/app.json")});
+                } catch (URISyntaxException e) {
+                    assert false;
+                }
+            }
+
+            @Override
+            public void parseWebAppManifest(String content, ManifestParseCallback callback) {
+                WebAppManifestSection[] manifest = new WebAppManifestSection[1];
+                manifest[0] = new WebAppManifestSection();
+                manifest[0].id = "com.bobpay.app";
+                manifest[0].minVersion = 10;
+                // SHA256("01020304050607080900"):
+                manifest[0].fingerprints = new byte[][] {{(byte) 0x9A, (byte) 0x89, (byte) 0xC6,
+                        (byte) 0x8C, (byte) 0x4C, (byte) 0x5E, (byte) 0x28, (byte) 0xB8,
+                        (byte) 0xC4, (byte) 0xA5, (byte) 0x56, (byte) 0x76, (byte) 0x73,
+                        (byte) 0xD4, (byte) 0x62, (byte) 0xFF, (byte) 0xF5, (byte) 0x15,
+                        (byte) 0xDB, (byte) 0x46, (byte) 0x11, (byte) 0x6F, (byte) 0x99,
+                        (byte) 0x00, (byte) 0x62, (byte) 0x4D, (byte) 0x09, (byte) 0xC4,
+                        (byte) 0x74, (byte) 0xF5, (byte) 0x93, (byte) 0xFB}};
+                callback.onWebAppManifestParseSuccess(manifest);
             }
         };
 
@@ -90,14 +114,15 @@ public class PaymentManifestVerifierTest {
     }
 
     @Test
-    public void testUnableToDownload() {
+    public void testUnableToDownloadPaymentMethodManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(
                 mMethodName, mMatchingApps, new PaymentManifestDownloader(null) {
                     @Override
-                    public void download(URI uri, ManifestDownloadCallback callback) {
+                    public void downloadPaymentMethodManifest(
+                            URI uri, ManifestDownloadCallback callback) {
                         callback.onManifestDownloadFailure();
                     }
-                }, mAnyAppAllowedParser, mPackageManagerDelegate, mCallback);
+                }, mParser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 
@@ -105,11 +130,33 @@ public class PaymentManifestVerifierTest {
     }
 
     @Test
-    public void testUnableToParse() {
+    public void testUnableToDownloadWebAppManifest() {
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
+                mMethodName, mMatchingApps, new PaymentManifestDownloader(null) {
+                    @Override
+                    public void downloadPaymentMethodManifest(
+                            URI uri, ManifestDownloadCallback callback) {
+                        callback.onPaymentMethodManifestDownloadSuccess("some content");
+                    }
+
+                    @Override
+                    public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+                        callback.onManifestDownloadFailure();
+                    }
+                }, mParser, mPackageManagerDelegate, mCallback);
+
+        verifier.verify();
+
+        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
+    }
+
+    @Test
+    public void testUnableToParsePaymentMethodManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(
                 mMethodName, mMatchingApps, mDownloader, new PaymentManifestParser() {
                     @Override
-                    public void parse(String content, ManifestParseCallback callback) {
+                    public void parsePaymentMethodManifest(
+                            String content, ManifestParseCallback callback) {
                         callback.onManifestParseFailure();
                     }
                 }, mPackageManagerDelegate, mCallback);
@@ -120,38 +167,36 @@ public class PaymentManifestVerifierTest {
     }
 
     @Test
-    public void testAnyAppAllowed() {
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mDownloader, mAnyAppAllowedParser, mPackageManagerDelegate, mCallback);
+    public void testUnableToParseWebAppManifest() {
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
+                mMethodName, mMatchingApps, mDownloader, new PaymentManifestParser() {
+                    @Override
+                    public void parsePaymentMethodManifest(
+                            String content, ManifestParseCallback callback) {
+                        try {
+                            callback.onPaymentMethodManifestParseSuccess(
+                                    new URI[] {new URI("https://alicepay.com/app.json")});
+                        } catch (URISyntaxException e) {
+                            assert false;
+                        }
+                    }
+
+                    @Override
+                    public void parseWebAppManifest(
+                            String content, ManifestParseCallback callback) {
+                        callback.onManifestParseFailure();
+                    }
+                }, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onValidPaymentApp(mMethodName, mAlicePay);
-        Mockito.verify(mCallback).onValidPaymentApp(mMethodName, mBobPay);
+        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
     }
 
     @Test
     public void testBobPayAllowed() {
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
-                mMethodName, mMatchingApps, mDownloader, new PaymentManifestParser() {
-                    @Override
-                    public void parse(String content, ManifestParseCallback callback) {
-                        PaymentManifestSection[] manifest = new PaymentManifestSection[1];
-                        manifest[0] = new PaymentManifestSection();
-                        manifest[0].packageName = "com.bobpay.app";
-                        manifest[0].version = 10;
-                        // SHA256("01020304050607080900"):
-                        manifest[0].sha256CertFingerprints = new byte[][] {{(byte) 0x9A,
-                                (byte) 0x89, (byte) 0xC6, (byte) 0x8C, (byte) 0x4C, (byte) 0x5E,
-                                (byte) 0x28, (byte) 0xB8, (byte) 0xC4, (byte) 0xA5, (byte) 0x56,
-                                (byte) 0x76, (byte) 0x73, (byte) 0xD4, (byte) 0x62, (byte) 0xFF,
-                                (byte) 0xF5, (byte) 0x15, (byte) 0xDB, (byte) 0x46, (byte) 0x11,
-                                (byte) 0x6F, (byte) 0x99, (byte) 0x00, (byte) 0x62, (byte) 0x4D,
-                                (byte) 0x09, (byte) 0xC4, (byte) 0x74, (byte) 0xF5, (byte) 0x93,
-                                (byte) 0xFB}};
-                        callback.onManifestParseSuccess(manifest);
-                    }
-                }, mPackageManagerDelegate, mCallback);
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
+                mDownloader, mParser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 

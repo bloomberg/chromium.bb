@@ -39,6 +39,10 @@ mojom("mojom_parser") {
   sources = [
     "payment_manifest_parser.mojom",
   ]
+
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
+  ]
 }
 
 mojom("mojom_payment_app") {

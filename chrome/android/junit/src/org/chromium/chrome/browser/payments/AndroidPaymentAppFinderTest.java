@@ -26,9 +26,10 @@ import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedC
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentManifestSection;
+import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +48,6 @@ public class AndroidPaymentAppFinderTest {
      * Argument matcher that matches Intents using |filterEquals| method.
      */
     private static class IntentArgumentMatcher implements ArgumentMatcher<Intent> {
-
         private final Intent mIntent;
 
         public IntentArgumentMatcher(Intent intent) {
@@ -289,27 +289,42 @@ public class AndroidPaymentAppFinderTest {
 
         PaymentManifestDownloader downloader = new PaymentManifestDownloader(null) {
             @Override
-            public void download(URI uri, ManifestDownloadCallback callback) {
-                callback.onManifestDownloadSuccess("some content here");
+            public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess("some content here");
+            }
+
+            @Override
+            public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+                callback.onWebAppManifestDownloadSuccess("some content here");
             }
         };
 
         PaymentManifestParser parser = new PaymentManifestParser() {
             @Override
-            public void parse(String content, ManifestParseCallback callback) {
-                PaymentManifestSection[] manifest = new PaymentManifestSection[1];
-                manifest[0] = new PaymentManifestSection();
-                manifest[0].packageName = "com.bobpay.app";
-                manifest[0].version = 10;
+            public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+                try {
+                    callback.onPaymentMethodManifestParseSuccess(
+                            new URI[] {new URI("https://bobpay.com/app.json")});
+                } catch (URISyntaxException e) {
+                    assert false;
+                }
+            }
+
+            @Override
+            public void parseWebAppManifest(String content, ManifestParseCallback callback) {
+                WebAppManifestSection[] manifest = new WebAppManifestSection[1];
+                manifest[0] = new WebAppManifestSection();
+                manifest[0].id = "com.bobpay.app";
+                manifest[0].minVersion = 10;
                 // SHA256("01020304050607080900"):
-                manifest[0].sha256CertFingerprints = new byte[][] {{(byte) 0x9A, (byte) 0x89,
-                        (byte) 0xC6, (byte) 0x8C, (byte) 0x4C, (byte) 0x5E, (byte) 0x28,
-                        (byte) 0xB8, (byte) 0xC4, (byte) 0xA5, (byte) 0x56, (byte) 0x76,
-                        (byte) 0x73, (byte) 0xD4, (byte) 0x62, (byte) 0xFF, (byte) 0xF5,
-                        (byte) 0x15, (byte) 0xDB, (byte) 0x46, (byte) 0x11, (byte) 0x6F,
-                        (byte) 0x99, (byte) 0x00, (byte) 0x62, (byte) 0x4D, (byte) 0x09,
-                        (byte) 0xC4, (byte) 0x74, (byte) 0xF5, (byte) 0x93, (byte) 0xFB}};
-                callback.onManifestParseSuccess(manifest);
+                manifest[0].fingerprints = new byte[][] {{(byte) 0x9A, (byte) 0x89, (byte) 0xC6,
+                        (byte) 0x8C, (byte) 0x4C, (byte) 0x5E, (byte) 0x28, (byte) 0xB8,
+                        (byte) 0xC4, (byte) 0xA5, (byte) 0x56, (byte) 0x76, (byte) 0x73,
+                        (byte) 0xD4, (byte) 0x62, (byte) 0xFF, (byte) 0xF5, (byte) 0x15,
+                        (byte) 0xDB, (byte) 0x46, (byte) 0x11, (byte) 0x6F, (byte) 0x99,
+                        (byte) 0x00, (byte) 0x62, (byte) 0x4D, (byte) 0x09, (byte) 0xC4,
+                        (byte) 0x74, (byte) 0xF5, (byte) 0x93, (byte) 0xFB}};
+                callback.onWebAppManifestParseSuccess(manifest);
             }
 
             @Override

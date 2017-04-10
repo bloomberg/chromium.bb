@@ -31,19 +31,27 @@ bool IsValidManifestUrl(const GURL& url) {
 
 PaymentManifestDownloader::PaymentManifestDownloader(
     const scoped_refptr<net::URLRequestContextGetter>& context,
-    const GURL& method_name,
+    const GURL& url,
     Delegate* delegate)
     : context_(context),
-      method_name_(method_name),
+      url_(url),
       delegate_(delegate),
       is_downloading_http_link_header_(true) {
-  DCHECK(IsValidManifestUrl(method_name_));
+  DCHECK(IsValidManifestUrl(url_));
 }
 
 PaymentManifestDownloader::~PaymentManifestDownloader() {}
 
-void PaymentManifestDownloader::Download() {
-  InitiateDownload(method_name_, net::URLFetcher::HEAD);
+void PaymentManifestDownloader::DownloadPaymentMethodManifest() {
+  DCHECK(!fetcher_);
+  is_downloading_http_link_header_ = true;
+  InitiateDownload(url_, net::URLFetcher::HEAD);
+}
+
+void PaymentManifestDownloader::DownloadWebAppManifest() {
+  DCHECK(!fetcher_);
+  is_downloading_http_link_header_ = false;
+  InitiateDownload(url_, net::URLFetcher::GET);
 }
 
 void PaymentManifestDownloader::InitiateDownload(
@@ -83,11 +91,12 @@ void PaymentManifestDownloader::OnURLFetchComplete(
     std::string link_header;
     headers->GetNormalizedHeader("link", &link_header);
     if (!link_header.empty()) {
-      std::string manifest_url;
+      std::string payment_method_manifest_url;
       std::unordered_map<std::string, base::Optional<std::string>> params;
       for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
-        if (!link_header_util::ParseLinkHeaderValue(value.first, value.second,
-                                                    &manifest_url, &params)) {
+        if (!link_header_util::ParseLinkHeaderValue(
+                value.first, value.second, &payment_method_manifest_url,
+                &params)) {
           continue;
         }
 
@@ -100,7 +109,7 @@ void PaymentManifestDownloader::OnURLFetchComplete(
                               base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
         if (std::find(rel_parts.begin(), rel_parts.end(),
                       "payment-method-manifest") != rel_parts.end()) {
-          InitiateDownload(method_name_.Resolve(manifest_url),
+          InitiateDownload(url_.Resolve(payment_method_manifest_url),
                            net::URLFetcher::GET);
           return;
         }

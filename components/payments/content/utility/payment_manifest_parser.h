@@ -10,37 +10,56 @@
 
 #include "base/macros.h"
 #include "components/payments/content/payment_manifest_parser.mojom.h"
+#include "url/gurl.h"
 
 namespace payments {
 
-// Parser for payment manifests. Should be used only in a utility process.
+// Parser for payment method manifests and web app manifests. Should be used
+// only in a sandboxed utility process.
 //
-// Example valid manifest structure:
+// Example valid payment method manifest structure:
 //
 // {
-//   "android": [{
-//     "package": "com.bobpay.app",
-//     "version": 1,
-//     "sha256_cert_fingerprints": ["12:34:56:78:90:AB:CD:EF"]
+//   "default_applications": ["https://bobpay.com/payment-app.json"],
+//   "supported_origins": ["https://alicepay.com"]  // Not yet parsed or used.
+// }
+//
+// Example valid web app manifest structure:
+//
+// {
+//   "related_applications": [{
+//     "platform": "play",
+//     "id": "com.bobpay.app",
+//     "min_version": "1",
+//     "fingerprint": [{
+//       "type": "sha256_cert",
+//       "value": "91:5C:88:65:FF:C4:E8:20:CF:F7:3E:C8:64:D0:95:F0:06:19:2E:A6"
+//     }]
 //   }]
 // }
 //
 // Spec:
-// https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE/edit#heading=h.cjp3jlnl47h5
+// https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE
 class PaymentManifestParser : public mojom::PaymentManifestParser {
  public:
   static void Create(mojom::PaymentManifestParserRequest request);
 
-  // The return value is move-only, so no copying occurs.
-  static std::vector<mojom::PaymentManifestSectionPtr> ParseIntoVector(
+  static std::vector<GURL> ParsePaymentMethodManifestIntoVector(
       const std::string& input);
+
+  // The return value is move-only, so no copying occurs.
+  static std::vector<mojom::WebAppManifestSectionPtr>
+  ParseWebAppManifestIntoVector(const std::string& input);
 
   PaymentManifestParser();
   ~PaymentManifestParser() override;
 
   // mojom::PaymentManifestParser
-  void Parse(const std::string& content,
-             const ParseCallback& callback) override;
+  void ParsePaymentMethodManifest(
+      const std::string& content,
+      const ParsePaymentMethodManifestCallback& callback) override;
+  void ParseWebAppManifest(const std::string& content,
+                           const ParseWebAppManifestCallback& callack) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParser);

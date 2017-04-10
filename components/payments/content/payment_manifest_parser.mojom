@@ -5,15 +5,21 @@
 [JavaPackage="org.chromium.payments.mojom"]
 module payments.mojom;
 
-struct PaymentManifestSection {
-  string package_name;
-  // Optional version number. 0 if not defined.
-  int64 version;
+import "url/mojo/url.mojom";
+
+struct WebAppManifestSection {
+  // The package name of the app.
+  string id;
+  // Minimum version number of the app.
+  int64 min_version;
   // The result of SHA256(signing certificate bytes) for each certificate in the
-  // package.
-  array<array<uint8, 32>> sha256_cert_fingerprints;
+  // app.
+  array<array<uint8, 32>> fingerprints;
 };
 
 interface PaymentManifestParser {
-  Parse(string content) => (array<PaymentManifestSection> manifest);
+  ParsePaymentMethodManifest(string content)
+      => (array<url.mojom.Url> webAppManifestUrls);
+  ParseWebAppManifest(string content)
+      => (array<WebAppManifestSection> manifest);
 };

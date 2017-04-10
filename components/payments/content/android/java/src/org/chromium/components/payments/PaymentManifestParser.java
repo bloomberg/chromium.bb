@@ -6,7 +6,10 @@ package org.chromium.components.payments;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.payments.mojom.PaymentManifestSection;
+import org.chromium.payments.mojom.WebAppManifestSection;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /** Parses payment manifests in a utility process. */
 @JNINamespace("payments")
@@ -16,10 +19,18 @@ public class PaymentManifestParser {
         /**
          * Called on successful parse of a payment method manifest.
          *
-         * @param manifest The successfully parsed payment method manifest.
+         * @param webAppManifestUris The successfully parsed payment method manifest.
          */
         @CalledByNative("ManifestParseCallback")
-        void onManifestParseSuccess(PaymentManifestSection[] manifest);
+        void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris);
+
+        /**
+         * Called on successful parse of a web app manifest.
+         *
+         * @param manifest The successfully parsed web app manifest.
+         */
+        @CalledByNative("ManifestParseCallback")
+        void onWebAppManifestParseSuccess(WebAppManifestSection[] manifest);
 
         /** Called on failed parse of a payment method manifest. */
         @CalledByNative("ManifestParseCallback")
@@ -49,38 +60,66 @@ public class PaymentManifestParser {
     }
 
     /**
-     * Parses the manifest file asynchronously.
+     * Parses the payment method manifest file asynchronously.
      *
      * @param content  The content to parse.
      * @param callback The callback to invoke when finished parsing.
      */
-    public void parse(String content, ManifestParseCallback callback) {
-        nativeParsePaymentManifest(mNativePaymentManifestParserAndroid, content, callback);
+    public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+        nativeParsePaymentMethodManifest(mNativePaymentManifestParserAndroid, content, callback);
+    }
+
+    /**
+     * Parses the web app manifest file asynchronously.
+     *
+     * @param content  The content to parse.
+     * @param callback The callback to invoke when finished parsing.
+     */
+    public void parseWebAppManifest(String content, ManifestParseCallback callback) {
+        nativeParseWebAppManifest(mNativePaymentManifestParserAndroid, content, callback);
     }
 
     @CalledByNative
-    private static PaymentManifestSection[] createManifest(int numberOfsections) {
-        return new PaymentManifestSection[numberOfsections];
+    private static URI[] createWebAppManifestUris(int numberOfWebAppManifests) {
+        return new URI[numberOfWebAppManifests];
     }
 
     @CalledByNative
-    private static void addSectionToManifest(PaymentManifestSection[] manifest, int sectionIndex,
-            String packageName, long version, int numberOfFingerprints) {
-        manifest[sectionIndex] = new PaymentManifestSection();
-        manifest[sectionIndex].packageName = packageName;
-        manifest[sectionIndex].version = version;
-        manifest[sectionIndex].sha256CertFingerprints = new byte[numberOfFingerprints][];
+    private static boolean addUri(URI[] uris, int uriIndex, String uriToAdd) {
+        try {
+            uris[uriIndex] = new URI(uriToAdd);
+        } catch (URISyntaxException e) {
+            return false;
+        }
+        return true;
     }
 
     @CalledByNative
-    private static void addFingerprintToSection(PaymentManifestSection[] manifest, int sectionIndex,
+    private static WebAppManifestSection[] createManifest(int numberOfsections) {
+        return new WebAppManifestSection[numberOfsections];
+    }
+
+    @CalledByNative
+    private static void addSectionToManifest(WebAppManifestSection[] manifest, int sectionIndex,
+            String id, long minVersion, int numberOfFingerprints) {
+        manifest[sectionIndex] = new WebAppManifestSection();
+        manifest[sectionIndex].id = id;
+        manifest[sectionIndex].minVersion = minVersion;
+        manifest[sectionIndex].fingerprints = new byte[numberOfFingerprints][];
+    }
+
+    @CalledByNative
+    private static void addFingerprintToSection(WebAppManifestSection[] manifest, int sectionIndex,
             int fingerprintIndex, byte[] fingerprint) {
-        manifest[sectionIndex].sha256CertFingerprints[fingerprintIndex] = fingerprint;
+        manifest[sectionIndex].fingerprints[fingerprintIndex] = fingerprint;
     }
 
     private static native long nativeCreatePaymentManifestParserAndroid();
     private static native void nativeStartUtilityProcess(long nativePaymentManifestParserAndroid);
-    private static native void nativeParsePaymentManifest(long nativePaymentManifestParserAndroid,
+    private static native void nativeParsePaymentMethodManifest(
+            long nativePaymentManifestParserAndroid, String content,
+            ManifestParseCallback callback);
+    private static native void nativeParseWebAppManifest(long nativePaymentManifestParserAndroid,
             String content, ManifestParseCallback callback);
     private static native void nativeStopUtilityProcess(long nativePaymentManifestParserAndroid);
 }

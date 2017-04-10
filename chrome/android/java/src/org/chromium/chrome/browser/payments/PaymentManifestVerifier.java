@@ -14,15 +14,17 @@ import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownloadCallback;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
-import org.chromium.payments.mojom.PaymentManifestSection;
+import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -84,11 +86,16 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
 
     private final PaymentManifestDownloader mDownloader;
     private final URI mMethodName;
-    private final List<AppInfo> mMatchingApps;
+
+    /** A mapping from the package name to the application that matches the method name.  */
+    private final Map<String, AppInfo> mMatchingApps;
+
     private final PaymentManifestParser mParser;
     private final PackageManagerDelegate mPackageManagerDelegate;
     private final ManifestVerifyCallback mCallback;
     private final MessageDigest mMessageDigest;
+    private int mPendingWebAppManifestsCount;
+    private boolean mAtLeastOneManifestFailedToDownloadOrParse;
 
     /**
      * Builds the manifest verifier.
@@ -110,12 +117,13 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
         assert !matchingApps.isEmpty();
 
         mMethodName = methodName;
-        mMatchingApps = new ArrayList<>();
+        mMatchingApps = new HashMap<>();
         for (int i = 0; i < matchingApps.size(); i++) {
             AppInfo appInfo = new AppInfo();
             appInfo.resolveInfo = matchingApps.get(i);
-            mMatchingApps.add(appInfo);
+            mMatchingApps.put(appInfo.resolveInfo.activityInfo.packageName, appInfo);
         }
+
         mDownloader = downloader;
         mParser = parser;
         mPackageManagerDelegate = packageManagerDelegate;
@@ -126,7 +134,7 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             // Intentionally ignore.
-            Log.d(TAG, "Unable to generate SHA-256 hashes. Only \"package\": \"*\" supported.");
+            Log.d(TAG, "Unable to generate SHA-256 hashes.");
         }
         mMessageDigest = md;
     }
@@ -136,89 +144,40 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
      * privileges to handle this payment method.
      */
     public void verify() {
-        mDownloader.download(mMethodName, this);
-    }
-
-    @Override
-    public void onManifestDownloadSuccess(String content) {
-        mParser.parse(content, this);
-    }
-
-    @Override
-    public void onManifestDownloadFailure() {
-        mCallback.onInvalidManifest(mMethodName);
-    }
-
-    @Override
-    public void onManifestParseSuccess(PaymentManifestSection[] manifest) {
-        assert manifest != null;
-        assert manifest.length > 0;
-
-        for (int i = 0; i < manifest.length; i++) {
-            PaymentManifestSection section = manifest[i];
-            // "package": "*" in the manifest file indicates an unrestricted payment method. Any app
-            // can use this payment method name.
-            if ("*".equals(section.packageName)) {
-                for (int j = 0; j < mMatchingApps.size(); j++) {
-                    mCallback.onValidPaymentApp(mMethodName, mMatchingApps.get(j).resolveInfo);
-                }
-                return;
-            }
-        }
-
         if (mMessageDigest == null) {
             mCallback.onInvalidManifest(mMethodName);
             return;
         }
 
-        for (int i = 0; i < mMatchingApps.size(); i++) {
-            AppInfo appInfo = mMatchingApps.get(i);
-            PackageInfo packageInfo = mPackageManagerDelegate.getPackageInfoWithSignatures(
-                    appInfo.resolveInfo.activityInfo.packageName);
+        List<String> invalidAppsToRemove = new ArrayList<>();
+        for (Map.Entry<String, AppInfo> entry : mMatchingApps.entrySet()) {
+            String packageName = entry.getKey();
+            AppInfo appInfo = entry.getValue();
 
-            // Leaving appInfo.sha256CertFingerprints uninitialized will call onInvalidPaymentApp()
-            // for this app below.
-            if (packageInfo == null) continue;
+            PackageInfo packageInfo =
+                    mPackageManagerDelegate.getPackageInfoWithSignatures(packageName);
+            if (packageInfo == null) {
+                mCallback.onInvalidPaymentApp(mMethodName, appInfo.resolveInfo);
+                invalidAppsToRemove.add(packageName);
+                continue;
+            }
 
             appInfo.version = packageInfo.versionCode;
             appInfo.sha256CertFingerprints = new HashSet<>();
             Signature[] signatures = packageInfo.signatures;
-            for (int j = 0; j < signatures.length; j++) {
-                mMessageDigest.update(signatures[j].toByteArray());
+            for (int i = 0; i < signatures.length; i++) {
+                mMessageDigest.update(signatures[i].toByteArray());
 
                 // The digest is reset after completing the hash computation.
                 appInfo.sha256CertFingerprints.add(byteArrayToString(mMessageDigest.digest()));
             }
         }
 
-        List<Set<String>> sectionsFingerprints = new ArrayList<>();
-        for (int i = 0; i < manifest.length; i++) {
-            PaymentManifestSection section = manifest[i];
-            Set<String> fingerprints = new HashSet<>();
-            if (section.sha256CertFingerprints != null) {
-                for (int j = 0; j < section.sha256CertFingerprints.length; j++) {
-                    fingerprints.add(byteArrayToString(section.sha256CertFingerprints[j]));
-                }
-            }
-            sectionsFingerprints.add(fingerprints);
+        for (int i = 0; i < invalidAppsToRemove.size(); i++) {
+            mMatchingApps.remove(invalidAppsToRemove.get(i));
         }
 
-        for (int i = 0; i < mMatchingApps.size(); i++) {
-            AppInfo appInfo = mMatchingApps.get(i);
-            boolean isAllowed = false;
-            for (int j = 0; j < manifest.length; j++) {
-                PaymentManifestSection section = manifest[j];
-                if (appInfo.resolveInfo.activityInfo.packageName.equals(section.packageName)
-                        && appInfo.version >= section.version
-                        && appInfo.sha256CertFingerprints != null
-                        && appInfo.sha256CertFingerprints.equals(sectionsFingerprints.get(j))) {
-                    mCallback.onValidPaymentApp(mMethodName, appInfo.resolveInfo);
-                    isAllowed = true;
-                    break;
-                }
-            }
-            if (!isAllowed) mCallback.onInvalidPaymentApp(mMethodName, appInfo.resolveInfo);
-        }
+        if (!mMatchingApps.isEmpty()) mDownloader.downloadPaymentMethodManifest(mMethodName, this);
     }
 
     /**
@@ -240,7 +199,79 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
     }
 
     @Override
+    public void onPaymentMethodManifestDownloadSuccess(String content) {
+        mParser.parsePaymentMethodManifest(content, this);
+    }
+
+    @Override
+    public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris) {
+        assert webAppManifestUris != null;
+        assert webAppManifestUris.length > 0;
+        assert !mAtLeastOneManifestFailedToDownloadOrParse;
+        assert mPendingWebAppManifestsCount == 0;
+
+        mPendingWebAppManifestsCount = webAppManifestUris.length;
+        for (int i = 0; i < webAppManifestUris.length; i++) {
+            mDownloader.downloadWebAppManifest(webAppManifestUris[i], this);
+        }
+    }
+
+    @Override
+    public void onWebAppManifestDownloadSuccess(String content) {
+        if (mAtLeastOneManifestFailedToDownloadOrParse) return;
+        mParser.parseWebAppManifest(content, this);
+    }
+
+    @Override
+    public void onWebAppManifestParseSuccess(WebAppManifestSection[] manifest) {
+        assert manifest != null;
+        assert manifest.length > 0;
+
+        if (mAtLeastOneManifestFailedToDownloadOrParse) return;
+
+        List<Set<String>> sectionsFingerprints = new ArrayList<>();
+        for (int i = 0; i < manifest.length; i++) {
+            WebAppManifestSection section = manifest[i];
+            Set<String> fingerprints = new HashSet<>();
+            for (int j = 0; j < section.fingerprints.length; j++) {
+                fingerprints.add(byteArrayToString(section.fingerprints[j]));
+            }
+            sectionsFingerprints.add(fingerprints);
+        }
+
+        for (int i = 0; i < manifest.length; i++) {
+            WebAppManifestSection section = manifest[i];
+            AppInfo appInfo = mMatchingApps.get(section.id);
+            if (appInfo != null && appInfo.version >= section.minVersion
+                    && appInfo.sha256CertFingerprints != null
+                    && appInfo.sha256CertFingerprints.equals(sectionsFingerprints.get(i))) {
+                mCallback.onValidPaymentApp(mMethodName, appInfo.resolveInfo);
+                mMatchingApps.remove(section.id);
+                break;
+            }
+        }
+
+        mPendingWebAppManifestsCount--;
+        if (mPendingWebAppManifestsCount == 0) {
+            for (Map.Entry<String, AppInfo> entry : mMatchingApps.entrySet()) {
+                mCallback.onInvalidPaymentApp(mMethodName, entry.getValue().resolveInfo);
+            }
+        }
+    }
+
+    @Override
+    public void onManifestDownloadFailure() {
+        if (mAtLeastOneManifestFailedToDownloadOrParse) return;
+        mAtLeastOneManifestFailedToDownloadOrParse = true;
+
+        mCallback.onInvalidManifest(mMethodName);
+    }
+
+    @Override
     public void onManifestParseFailure() {
+        if (mAtLeastOneManifestFailedToDownloadOrParse) return;
+        mAtLeastOneManifestFailedToDownloadOrParse = true;
+
         mCallback.onInvalidManifest(mMethodName);
     }
 }

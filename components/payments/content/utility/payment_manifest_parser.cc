@@ -11,10 +11,12 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/payments/content/utility/fingerprint_parser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "url/url_constants.h"
 
 namespace payments {
 
@@ -26,9 +28,9 @@ void PaymentManifestParser::Create(
 }
 
 // static
-std::vector<mojom::PaymentManifestSectionPtr>
-PaymentManifestParser::ParseIntoVector(const std::string& input) {
-  std::vector<mojom::PaymentManifestSectionPtr> output;
+std::vector<GURL> PaymentManifestParser::ParsePaymentMethodManifestIntoVector(
+    const std::string& input) {
+  std::vector<GURL> output;
   std::unique_ptr<base::Value> value(base::JSONReader::Read(input));
   if (!value)
     return output;
@@ -39,89 +41,130 @@ PaymentManifestParser::ParseIntoVector(const std::string& input) {
     return output;
 
   base::ListValue* list = nullptr;
-  if (!dict->GetList("android", &list) || !list)
+  if (!dict->GetList("default_applications", &list))
     return output;
 
-  size_t sections_size = list->GetSize();
-  const size_t kMaximumNumberOfSections = 100U;
-  if (sections_size > kMaximumNumberOfSections)
+  size_t apps_number = list->GetSize();
+  const size_t kMaximumNumberOfApps = 100U;
+  if (apps_number > kMaximumNumberOfApps)
     return output;
 
-  const char* const kVersion = "version";
-  const char* const kFingerprints = "sha256_cert_fingerprints";
-  for (size_t i = 0; i < sections_size; ++i) {
-    base::DictionaryValue* item = nullptr;
-    if (!list->GetDictionary(i, &item) || !item) {
+  std::string item;
+  for (size_t i = 0; i < apps_number; ++i) {
+    if (!list->GetString(i, &item) && item.empty()) {
       output.clear();
       return output;
     }
 
-    mojom::PaymentManifestSectionPtr section =
-        mojom::PaymentManifestSection::New();
-    section->version = 0;
-
-    if (!item->GetString("package", &section->package_name) ||
-        section->package_name.empty() ||
-        !base::IsStringASCII(section->package_name)) {
+    GURL url(item);
+    if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme)) {
       output.clear();
       return output;
     }
 
-    if (section->package_name == "*") {
-      output.clear();
-      // If there's a section with "package": "*", then it must be the only
-      // section and it should not have "version" or "sha256_cert_fingerprints".
-      // (Any deviations from a correct format cause the full file to be
-      // rejected.)
-      if (!item->HasKey(kVersion) && !item->HasKey(kFingerprints) &&
-          sections_size == 1U) {
-        output.push_back(std::move(section));
-      }
-      return output;
-    }
+    output.push_back(url);
+  }
 
-    if (!item->HasKey(kVersion) || !item->HasKey(kFingerprints)) {
-      output.clear();
-      return output;
-    }
+  return output;
+}
 
-    int version = 0;
-    if (!item->GetInteger(kVersion, &version)) {
-      output.clear();
-      return output;
-    }
+// static
+std::vector<mojom::WebAppManifestSectionPtr>
+PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
+  std::vector<mojom::WebAppManifestSectionPtr> output;
+  std::unique_ptr<base::Value> value(base::JSONReader::Read(input));
+  if (!value)
+    return output;
 
-    section->version = static_cast<int64_t>(version);
+  std::unique_ptr<base::DictionaryValue> dict =
+      base::DictionaryValue::From(std::move(value));
+  if (!dict)
+    return output;
 
-    base::ListValue* fingerprints = nullptr;
-    if (!item->GetList(kFingerprints, &fingerprints) || !fingerprints ||
-        fingerprints->empty()) {
+  base::ListValue* list = nullptr;
+  if (!dict->GetList("related_applications", &list))
+    return output;
+
+  size_t related_applications_size = list->GetSize();
+  for (size_t i = 0; i < related_applications_size; ++i) {
+    base::DictionaryValue* related_application = nullptr;
+    if (!list->GetDictionary(i, &related_application) || !related_application) {
       output.clear();
       return output;
     }
 
-    size_t fingerprints_size = fingerprints->GetSize();
+    std::string platform;
+    if (!related_application->GetString("platform", &platform) ||
+        platform != "play") {
+      continue;
+    }
+
+    const size_t kMaximumNumberOfRelatedApplications = 100U;
+    if (output.size() >= kMaximumNumberOfRelatedApplications) {
+      output.clear();
+      return output;
+    }
+
+    const char* const kId = "id";
+    const char* const kMinVersion = "min_version";
+    const char* const kFingerprints = "fingerprints";
+    if (!related_application->HasKey(kId) ||
+        !related_application->HasKey(kMinVersion) ||
+        !related_application->HasKey(kFingerprints)) {
+      output.clear();
+      return output;
+    }
+
+    mojom::WebAppManifestSectionPtr section =
+        mojom::WebAppManifestSection::New();
+    section->min_version = 0;
+
+    if (!related_application->GetString(kId, &section->id) ||
+        section->id.empty() || !base::IsStringASCII(section->id)) {
+      output.clear();
+      return output;
+    }
+
+    std::string min_version;
+    if (!related_application->GetString(kMinVersion, &min_version) ||
+        min_version.empty() || !base::IsStringASCII(min_version) ||
+        !base::StringToInt64(min_version, &section->min_version)) {
+      output.clear();
+      return output;
+    }
+
     const size_t kMaximumNumberOfFingerprints = 100U;
-    if (fingerprints_size > kMaximumNumberOfFingerprints) {
+    base::ListValue* fingerprints_list = nullptr;
+    if (!related_application->GetList(kFingerprints, &fingerprints_list) ||
+        fingerprints_list->empty() ||
+        fingerprints_list->GetSize() > kMaximumNumberOfFingerprints) {
       output.clear();
       return output;
     }
 
+    size_t fingerprints_size = fingerprints_list->GetSize();
     for (size_t j = 0; j < fingerprints_size; ++j) {
-      std::string fingerprint;
-      if (!fingerprints->GetString(j, &fingerprint) || fingerprint.empty()) {
+      base::DictionaryValue* fingerprint_dict = nullptr;
+      std::string fingerprint_type;
+      std::string fingerprint_value;
+      if (!fingerprints_list->GetDictionary(i, &fingerprint_dict) ||
+          !fingerprint_dict ||
+          !fingerprint_dict->GetString("type", &fingerprint_type) ||
+          fingerprint_type != "sha256_cert" ||
+          !fingerprint_dict->GetString("value", &fingerprint_value) ||
+          fingerprint_value.empty()) {
         output.clear();
         return output;
       }
 
-      std::vector<uint8_t> fingerprint_bytes =
-          FingerprintStringToByteArray(fingerprint);
-      if (32U != fingerprint_bytes.size()) {
+      std::vector<uint8_t> hash =
+          FingerprintStringToByteArray(fingerprint_value);
+      if (hash.empty()) {
         output.clear();
         return output;
       }
 
-      section->sha256_cert_fingerprints.push_back(fingerprint_bytes);
+      section->fingerprints.push_back(hash);
     }
 
     output.push_back(std::move(section));
@@ -134,9 +177,16 @@ PaymentManifestParser::PaymentManifestParser() {}
 
 PaymentManifestParser::~PaymentManifestParser() {}
 
-void PaymentManifestParser::Parse(const std::string& content,
-                                  const ParseCallback& callback) {
-  callback.Run(ParseIntoVector(content));
+void PaymentManifestParser::ParsePaymentMethodManifest(
+    const std::string& content,
+    const ParsePaymentMethodManifestCallback& callback) {
+  callback.Run(ParsePaymentMethodManifestIntoVector(content));
+}
+
+void PaymentManifestParser::ParseWebAppManifest(
+    const std::string& content,
+    const ParseWebAppManifestCallback& callback) {
+  callback.Run(ParseWebAppManifestIntoVector(content));
 }
 
 }  // namespace payments
