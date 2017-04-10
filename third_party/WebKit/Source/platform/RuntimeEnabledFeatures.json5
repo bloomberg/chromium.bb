@@ -431,6 +431,9 @@
       name: "ForceOverlayFullscreenVideo",
     },
     {
+      name: "ForceTallerSelectPopup",
+    },
+    {
       name: "ForeignFetch",
       origin_trial_feature_name: "ForeignFetch",
       status: "experimental",

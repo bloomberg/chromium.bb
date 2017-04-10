@@ -138,6 +138,10 @@ void WebRuntimeFeatures::EnableFileSystem(bool enable) {
   RuntimeEnabledFeatures::setFileSystemEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableForceTallerSelectPopup(bool enable) {
+  RuntimeEnabledFeatures::setForceTallerSelectPopupEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableGamepadExtensions(bool enable) {
   RuntimeEnabledFeatures::setGamepadExtensionsEnabled(enable);
 }

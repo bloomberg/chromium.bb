@@ -82,6 +82,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableFastMobileScrolling(bool);
   BLINK_EXPORT static void EnableFeaturePolicy(bool);
   BLINK_EXPORT static void EnableFileSystem(bool);
+  BLINK_EXPORT static void EnableForceTallerSelectPopup(bool);
   BLINK_EXPORT static void EnableGamepadExtensions(bool);
   BLINK_EXPORT static void EnableGenericSensor(bool);
   BLINK_EXPORT static void EnableHeapCompaction(bool);

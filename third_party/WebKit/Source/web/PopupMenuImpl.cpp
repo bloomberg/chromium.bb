@@ -263,10 +263,29 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
       owner_element.VisibleBoundsInVisualViewport(),
       owner_element.GetDocument().View());
 
+  float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
   data->Append(Platform::Current()->LoadResource("listPicker.css"));
+  if (!RuntimeEnabledFeatures::forceTallerSelectPopupEnabled())
+    PagePopupClient::AddString("@media (any-pointer:coarse) {", data);
+  int padding = static_cast<int>(roundf(4 * scale_factor));
+  int min_height = static_cast<int>(roundf(24 * scale_factor));
+  PagePopupClient::AddString(String::Format("option, optgroup {"
+                                            "padding-top: %dpx;"
+                                            "padding-bottom: %dpx;"
+                                            "min-height: %dpx;"
+                                            "display: flex;"
+                                            "align-items: center;"
+                                            "}",
+                                            padding, padding, min_height),
+                             data);
+  if (!RuntimeEnabledFeatures::forceTallerSelectPopupEnabled()) {
+    // Closes @media.
+    PagePopupClient::AddString("}", data);
+  }
+
   PagePopupClient::AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
@@ -292,7 +311,6 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
   PagePopupClient::AddString("],\n", data);
 
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
   AddProperty("zoomFactor", 1, data);
   AddProperty("scaleFactor", scale_factor, data);
   bool is_rtl = !owner_style->IsLeftToRightDirection();
