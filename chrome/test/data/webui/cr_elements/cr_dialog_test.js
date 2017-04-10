@@ -156,19 +156,35 @@ suite('cr-dialog', function() {
     var bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
 
+    dialog.showModal();  // Attach the dialog for the first time here.
+
     var observerCount = 0;
 
     // Needs to setup the observer before attaching, since InteractionObserver
     // calls callback before MutationObserver does.
-    var observer = new MutationObserver(function() {
+    var observer = new MutationObserver(function(changes) {
+      // Only care about class mutations.
+      if (changes[0].attributeName != 'class')
+        return;
+
       observerCount++;
-      if (observerCount == 1) {  // Triggered when scrolled to bottom.
-        assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
-        bodyContainer.scrollTop = 0;
-      } else if (observerCount == 2) {  // Triggered when scrolled back to top.
-        assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
-        observer.disconnect();
-        done();
+      switch (observerCount) {
+        case 1:  // Triggered when scrolled to bottom.
+          assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
+          assertTrue(bodyContainer.classList.contains('top-scrollable'));
+          bodyContainer.scrollTop = 0;
+          break;
+        case 2:  // Triggered when scrolled back to top.
+          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
+          assertFalse(bodyContainer.classList.contains('top-scrollable'));
+          bodyContainer.scrollTop = 2;
+          break;
+        case 3:  // Triggered when finally scrolling to middle.
+          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
+          assertTrue(bodyContainer.classList.contains('top-scrollable'));
+          observer.disconnect();
+          done();
+          break;
       }
     });
     observer.observe(bodyContainer, {attributes: true});
@@ -176,6 +192,5 @@ suite('cr-dialog', function() {
     // Height is normally set via CSS, but mixin doesn't work with innerHTML.
     bodyContainer.style.height = '1px';
     bodyContainer.scrollTop = 100;
-    dialog.showModal();  // Attach the dialog for the first time here.
   });
 });

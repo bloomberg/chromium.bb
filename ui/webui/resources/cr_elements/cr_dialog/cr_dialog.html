@@ -8,6 +8,7 @@
   <template>
     <style>
       :host {
+        --scroll-border: 1px solid var(--paper-grey-300);
         border: 0;
         border-radius: 2px;
         bottom: 0;
@@ -28,69 +29,35 @@
         top: 0;
       }
 
-      .top-container {
-        align-items: center;
-        border-bottom: 1px solid var(--divider-color);
-        display: flex;
-        min-height: 52px;
-      }
-
-      .title-container {
-        display: flex;
-        flex: 1;
-        outline: none;
-      }
-
-      :host ::content .title {
-        font-size: 123.07%; /* (16px / 13px) * 100 */
-      }
-
-      #close {
-        --paper-icon-button: {
-          height: 40px;
-          width: 40px;
-        };
-        -webkit-margin-end: 6px;
-        /* <paper-icon-button> overrides --iron-icon-{height,width}, so this
-         * padding essentially reduces 40x40 to 20x20. */
-        padding: 10px;
-      }
-
-      .body-container {
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        @apply(--cr-dialog-body-container);
-      }
-
       :host([show-scroll-borders]) .body-container {
         /* Prevent layout moving when border does appear. */
         border-bottom: 1px solid transparent;
+        border-top: 1px solid transparent;
       }
 
       :host([show-scroll-borders]) .body-container.bottom-scrollable {
-        border-bottom: 1px solid var(--paper-grey-300);
+        border-bottom: var(--scroll-border);
+      }
+
+      :host([show-scroll-borders]) .body-container.top-scrollable {
+        border-top: var(--scroll-border);
       }
 
       :host ::content .body {
-        padding-bottom: 12px;
-        padding-top: 12px;
+        padding: 12px 16px;
       }
 
-      :host ::content .body,
       :host ::content .title {
-        -webkit-padding-end: 24px;
-        -webkit-padding-start: 24px;
+        font-size: 115.38%;  /* (15px / 13px) * 100 */
+        line-height: 1;
+        padding: 16px 16px;
         flex: 1;
       }
 
       :host ::content .button-container {
-        -webkit-padding-end: 16px;
-        -webkit-padding-start: 16px;
+        padding: 16px 16px;
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 12px;
-        margin-top: 12px;
       }
 
       :host ::content .button-container .cancel-button {
@@ -108,6 +75,39 @@
       :host ::content .border-top-divider {
         border-top: 1px solid var(--divider-color);
       }
+
+      .body-container {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        @apply(--cr-dialog-body-container);
+      }
+
+      .top-container {
+        align-items: center;
+        display: flex;
+        min-height: 47px;
+      }
+
+      .title-container {
+        display: flex;
+        flex: 1;
+        outline: none;
+      }
+
+      #close {
+        --paper-icon-button: {
+          height: 36px;
+          width: 36px;
+        };
+
+        --layout-inline: {
+          display: flex;
+        };
+
+        -webkit-margin-end: 4px;
+        padding: 10px;  /* Makes the actual icon 16x16. */
+      }
     </style>
     <div class="top-container">
       <div class="title-container" tabindex="-1">
@@ -118,6 +118,7 @@
       </paper-icon-button>
     </div>
     <div class="body-container">
+      <span id="bodyTopMarker"></span>
       <content select=".body"></content>
       <span id="bodyBottomMarker"></span>
     </div>

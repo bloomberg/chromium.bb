@@ -41,8 +41,10 @@
         width: 15px;
       }
 
-      #manuallyAddPrinterButton {
-        -webkit-margin-end: 210px;
+      .dialog-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
       }
     </style>
     <add-printer-dialog>
@@ -60,17 +62,23 @@
         </div>
       </div>
       <div class="dialog-buttons">
-        <paper-button id="manuallyAddPrinterButton"
-            on-tap="switchToManualAddDialog_">
-          $i18n{manuallyAddPrinterButtonText}
-        </paper-button>
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
-          $i18n{cancelButtonText}
-        </paper-button>
-        <paper-button class="action-button" id="addPrinterButton"
-            disabled="[[!selectedPrinter]]" on-tap="switchToConfiguringDialog_">
-          $i18n{addPrinterButtonText}
-        </paper-button>
+        <div>  <!-- Left group -->
+          <paper-button id="manuallyAddPrinterButton" class="secondary-button"
+              on-tap="switchToManualAddDialog_">
+            $i18n{manuallyAddPrinterButtonText}
+          </paper-button>
+        </div>
+        <div>  <!-- Right group -->
+          <paper-button class="cancel-button secondary-button"
+              on-tap="onCancelTap_">
+            $i18n{cancelButtonText}
+          </paper-button>
+          <paper-button class="action-button" id="addPrinterButton"
+              disabled="[[!selectedPrinter]]"
+              on-tap="switchToConfiguringDialog_">
+            $i18n{addPrinterButtonText}
+          </paper-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>
@@ -201,7 +209,8 @@
         </div>
       </div>
       <div class="dialog-buttons">
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
+        <paper-button class="cancel-button secondary-button"
+            on-tap="onCancelTap_">
           $i18n{cancelButtonText}
         </paper-button>
         <paper-button class="action-button" on-tap="switchToManufacturerDialog_"
@@ -251,8 +260,10 @@
         padding: 10px 20px;
       }
 
-      #manuallyAddPrinterButton {
-        -webkit-margin-end: 210px;
+      .dialog-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
       }
 
       #browseButton {
@@ -303,17 +314,22 @@
         </div>
       </div>
       <div class="dialog-buttons">
-        <paper-button id="manuallyAddPrinterButton"
-            on-tap="switchToManualAddDialog_">
-          $i18n{manuallyAddPrinterButtonText}
-        </paper-button>
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
-          $i18n{cancelButtonText}
-        </paper-button>
-        <paper-button class="action-button" id="addPrinterButton"
-            on-tap="switchToConfiguringDialog_">
-          $i18n{addPrinterButtonText}
-        </paper-button>
+        <div>  <!-- Left group -->
+          <paper-button id="manuallyAddPrinterButton" class="secondary-button"
+              on-tap="switchToManualAddDialog_">
+            $i18n{manuallyAddPrinterButtonText}
+          </paper-button>
+        </div>
+        <div>  <!-- Right group -->
+          <paper-button class="cancel-button secondary-button"
+              on-tap="onCancelTap_">
+            $i18n{cancelButtonText}
+          </paper-button>
+          <paper-button class="action-button" id="addPrinterButton"
+              on-tap="switchToConfiguringDialog_">
+            $i18n{addPrinterButtonText}
+          </paper-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>
@@ -334,7 +350,8 @@
         <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
       </div>
       <div class="dialog-buttons">
-        <paper-button class="cancel-button" on-tap="onCancelConfiguringTap_">
+        <paper-button class="cancel-button secondary-button"
+            on-tap="onCancelConfiguringTap_">
           $i18n{cancelButtonText}
         </paper-button>
       </div>

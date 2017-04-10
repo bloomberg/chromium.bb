@@ -66,10 +66,21 @@ Polymer({
     if (this.showScrollBorders) {
       var bodyContainer = this.$$('.body-container');
 
+      var bottomMarker = this.$.bodyBottomMarker;
+      var topMarker = this.$.bodyTopMarker;
+
       var callback = function(entries) {
-        assert(entries.length == 1);
-        bodyContainer.classList.toggle(
-            'bottom-scrollable', entries[0].intersectionRatio == 0);
+        assert(entries.length <= 2);
+        for (var i = 0; i < entries.length; i++) {
+          var target = entries[i].target;
+          assert(target == bottomMarker || target == topMarker);
+
+          var classToToggle =
+              target == bottomMarker ? 'bottom-scrollable' : 'top-scrollable';
+
+          bodyContainer.classList.toggle(
+              classToToggle, entries[i].intersectionRatio == 0);
+        }
       };
 
       this.intersectionObserver_ = new IntersectionObserver(
@@ -78,7 +89,8 @@ Polymer({
             root: bodyContainer,
             threshold: 0,
           }));
-      this.intersectionObserver_.observe(this.$.bodyBottomMarker);
+      this.intersectionObserver_.observe(bottomMarker);
+      this.intersectionObserver_.observe(topMarker);
     }
   },
 
