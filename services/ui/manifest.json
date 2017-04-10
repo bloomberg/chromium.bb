@@ -48,6 +48,7 @@
         "window_manager": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "display::mojom::DisplayController",
+          "display::mojom::NativeDisplayDelegate",
           "ui::mojom::AccessibilityManager",
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayManager",

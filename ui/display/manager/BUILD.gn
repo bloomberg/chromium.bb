@@ -35,6 +35,8 @@ component("manager") {
     "display_manager_utilities.cc",
     "display_manager_utilities.h",
     "display_pref_util.h",
+    "forwarding_display_delegate.cc",
+    "forwarding_display_delegate.h",
     "json_converter.cc",
     "json_converter.h",
     "managed_display_info.cc",
@@ -48,6 +50,7 @@ component("manager") {
   deps = [
     "//base",
     "//ui/base",
+    "//ui/display/mojo:interfaces",
     "//ui/display/util",
     "//ui/events/devices",
     "//ui/strings",
