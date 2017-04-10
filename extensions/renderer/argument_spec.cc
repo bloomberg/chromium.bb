@@ -149,17 +149,15 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
   if (type_ == ArgumentType::FUNCTION) {
     if (!value->IsFunction())
       return false;
-    // Certain APIs, like webRequest and contextMenus, have functions as
-    // parameters that aren't the callback. We need these included in the
-    // signature for validation purposes, but don't *really* need to serialize
-    // them. Unfortunately, if we don't, validation in the browser fails. For
-    // now, the expectation is that functions are serialized as dictionaries,
-    // to match the content::V8ValueConverter behavior.
-    // TODO(devlin): Change this somehow. We could, for instance, add a
-    // 'validation_only' property to the schema to indicate that a parameter
-    // or property shouldn't be serialized or included in the compiled types.
-    if (out_value)
+
+    if (out_value) {
+      // Certain APIs (contextMenus) have functions as parameters other than the
+      // callback (contextMenus uses it for an onclick listener). Our generated
+      // types have adapted to consider functions "objects" and serialize them
+      // as dictionaries.
+      // TODO(devlin): It'd be awfully nice to get rid of this eccentricity.
       *out_value = base::MakeUnique<base::DictionaryValue>();
+    }
     return true;
   }
 

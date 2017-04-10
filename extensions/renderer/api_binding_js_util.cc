@@ -79,10 +79,15 @@ void APIBindingJSUtil::SendRequest(
 
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
-  std::string error;
-  CHECK(signature->ParseArgumentsToJSON(context, request_args, *type_refs_,
-                                        &converted_arguments, &callback,
-                                        &error));
+
+  // Some APIs (like fileSystem and contextMenus) don't provide arguments that
+  // match the expected schema. For now, we need to ignore these and trust the
+  // JS gives us something we expect.
+  // TODO(devlin): We should ideally always be able to validate these, meaning
+  // that we either need to make the APIs give us the expected signature, or
+  // need to have a way of indicating an internal signature.
+  CHECK(signature->ConvertArgumentsIgnoringSchema(
+      context, request_args, &converted_arguments, &callback));
 
   request_handler_->StartRequest(context, name, std::move(converted_arguments),
                                  callback, custom_callback, thread);

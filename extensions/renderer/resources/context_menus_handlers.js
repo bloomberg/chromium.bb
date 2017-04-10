@@ -7,9 +7,23 @@
 // <webview> tag (see chrome_web_view_experimental.js).
 
 var contextMenuNatives = requireNative('context_menus');
-var sendRequest = require('sendRequest').sendRequest;
-var Event = require('event_bindings').Event;
-var lastError = require('lastError');
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
+var hasLastError = bindingUtil ?
+    $Function.bind(bindingUtil.hasLastError, bindingUtil) :
+    require('lastError').hasError;
+
+var jsEvent;
+function createNewEvent(name) {
+  if (bindingUtil) {
+    // Native custom events ignore schema.
+    return bindingUtil.createCustomEvent(name, undefined, undefined);
+  }
+  if (!jsEvent)
+    jsEvent = require('event_bindings').Event;
+  return new jsEvent(name);
+}
 
 // Add the bindings to the contextMenus API.
 function createContextMenusHandlers(isWebview) {
@@ -25,7 +39,7 @@ function createContextMenusHandlers(isWebview) {
   function getCallback(handleCallback) {
     return function() {
       var extensionCallback = arguments[arguments.length - 1];
-      if (lastError.hasError(chrome)) {
+      if (hasLastError(bindingUtil ? undefined : chrome)) {
         if (extensionCallback)
           extensionCallback();
         return;
@@ -39,7 +53,7 @@ function createContextMenusHandlers(isWebview) {
 
   var contextMenus = { __proto__: null };
   contextMenus.handlers = { __proto__: null };
-  contextMenus.event = new Event(eventName);
+  contextMenus.event = createNewEvent(eventName);
 
   contextMenus.getIdFromCreateProperties = function(createProperties) {
     if (typeof createProperties.id !== 'undefined')
@@ -102,8 +116,11 @@ function createContextMenusHandlers(isWebview) {
       customCallback: getCallback($Function.bind(createCallback, null,
                                                  instanceId, id, onclick)),
     };
-    sendRequest(this.name, $Array.from(arguments),
-                this.definition.parameters, optArgs);
+    var name = isWebview ?
+        'chromeWebViewInternal.contextMenusCreate' : 'contextMenus.create';
+    sendRequest(name, $Array.from(arguments),
+                bindingUtil ? undefined : this.definition.parameters,
+                optArgs);
     return id;
   };
 
@@ -119,8 +136,11 @@ function createContextMenusHandlers(isWebview) {
       customCallback: getCallback($Function.bind(removeCallback, null,
                                                  instanceId, id)),
     };
-    sendRequest(this.name, $Array.from(arguments),
-                this.definition.parameters, optArgs);
+    var name = isWebview ?
+        'chromeWebViewInternal.contextMenusRemove' : 'contextMenus.remove';
+    sendRequest(name, $Array.from(arguments),
+                bindingUtil ? undefined : this.definition.parameters,
+                optArgs);
   };
 
   function updateCallback(instanceId, id, onclick) {
@@ -144,8 +164,11 @@ function createContextMenusHandlers(isWebview) {
                                                  instanceId, id, onclick)),
     };
 
-    sendRequest(this.name, $Array.from(arguments),
-                this.definition.parameters, optArgs);
+    var name = isWebview ?
+        'chromeWebViewInternal.contextMenusUpdate' :
+        'contextMenus.update';
+    sendRequest(name, $Array.from(arguments),
+                bindingUtil ? undefined : this.definition.parameters, optArgs);
   };
 
   function removeAllCallback(instanceId) {
@@ -160,7 +183,10 @@ function createContextMenusHandlers(isWebview) {
                                                  instanceId)),
     };
 
-    sendRequest(this.name, $Array.from(arguments),
+    var name = isWebview ?
+        'chromeWebViewInternal.contextMenusRemoveAll' :
+        'contextMenus.removeAll';
+    sendRequest(name, $Array.from(arguments),
                 this.definition.parameters, optArgs);
   };
 

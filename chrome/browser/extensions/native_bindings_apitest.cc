@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -10,6 +12,8 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -143,6 +147,50 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebRequest) {
                               ->tab_strip_model()
                               ->GetActiveWebContents()
                               ->GetLastCommittedURL());
+}
+
+// Tests the context menu API, which includes calling sendRequest with an
+// different signature than specified and using functions as properties on an
+// object.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ContextMenusTest) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Context menus",
+           "manifest_version": 2,
+           "version": "0.1",
+           "permissions": ["contextMenus"],
+           "background": {
+             "scripts": ["background.js"]
+           }
+         })");
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      R"(chrome.contextMenus.create(
+           {
+             title: 'Context Menu Item',
+             onclick: () => { chrome.test.sendMessage('clicked'); },
+           }, () => { chrome.test.sendMessage('registered'); });)");
+
+  const Extension* extension = nullptr;
+  {
+    ExtensionTestMessageListener listener("registered", false);
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::Create(
+          web_contents, GURL("https://www.example.com"), GURL(), GURL()));
+
+  ExtensionTestMessageListener listener("clicked", false);
+  int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(command_id));
+  menu->ExecuteCommand(command_id, 0);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
 }  // namespace extensions
