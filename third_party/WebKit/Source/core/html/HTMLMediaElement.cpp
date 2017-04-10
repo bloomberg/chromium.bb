@@ -3663,8 +3663,7 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
   if (first_child && first_child->IsTextTrackContainer())
     return ToTextTrackContainer(*first_child);
 
-  TextTrackContainer* text_track_container =
-      TextTrackContainer::Create(GetDocument());
+  TextTrackContainer* text_track_container = TextTrackContainer::Create(*this);
 
   // The text track container should be inserted before the media controls,
   // so that they are rendered behind them.

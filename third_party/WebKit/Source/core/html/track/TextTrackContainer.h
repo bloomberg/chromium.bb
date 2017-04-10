@@ -38,7 +38,7 @@ class HTMLMediaElement;
 
 class TextTrackContainer final : public HTMLDivElement {
  public:
-  static TextTrackContainer* Create(Document&);
+  static TextTrackContainer* Create(HTMLMediaElement&);
 
   // Runs the "rules for updating the text track rendering". The
   // ExposingControls enum is used in the WebVTT processing model to reset the
@@ -48,13 +48,20 @@ class TextTrackContainer final : public HTMLDivElement {
     kDidStartExposingControls
   };
   void UpdateDisplay(HTMLMediaElement&, ExposingControls);
+  void UpdateDefaultFontSize(LayoutObject*);
+
+  DECLARE_VIRTUAL_TRACE();
 
  private:
   TextTrackContainer(Document&);
 
   bool IsTextTrackContainer() const override { return true; }
+  void ObserveSizeChanges(Element&);
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+
+  Member<ResizeObserver> video_size_observer_;
+  float default_font_size_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, IsTextTrackContainer());
