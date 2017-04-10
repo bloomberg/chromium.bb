@@ -21,10 +21,6 @@ class TestGitMetrics(cros_test_lib.TempDirTestCase):
   """Tests for git metrics."""
 
   def setUp(self):
-    self._InitRepo()
-
-  def _InitRepo(self):
-    """Initializes a repo in the temp directory."""
     self.git_dir = os.path.join(self.tempdir, '.git')
     with osutils.ChdirContext(self.tempdir):
       self.git_repo = git_metrics._GitRepo(self.git_dir)
