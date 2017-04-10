@@ -24,6 +24,9 @@
 #include "ios/web/public/test/response_providers/data_response_provider.h"
 #include "ios/web/public/test/url_test_util.h"
 
+using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewContainingText;
+
 namespace {
 
 // URL for a generic website in the user navigation flow.
@@ -123,8 +126,6 @@ void TestResponseProvider::GetResponseHeadersAndBody(
 }
 
 }  // namespace
-
-using chrome_test_util::OmniboxText;
 
 // Tests submition of HTTP forms POST data including cases involving navigation.
 @interface FormsTestCase : ChromeTestCase
@@ -344,6 +345,27 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_nil()];
 
   [self waitForExpectedResponse:"GET"];
+}
+
+// Tests that pressing the button on a POST-based form changes the page and that
+// the back button works as expected afterwards.
+- (void)testGoBackButtonAfterFormSubmission {
+  GURL formURL = TestResponseProvider::GetFormUrl();
+  GURL destinationURL = TestResponseProvider::GetPrintFormDataUrl();
+
+  [ChromeEarlGrey loadURL:formURL];
+  chrome_test_util::TapWebViewElementWithId(kSubmitButton);
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kExpectedPostData)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Go back and verify the browser navigates to the original URL.
+  [self goBack];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Unicorn")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

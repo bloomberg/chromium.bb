@@ -354,34 +354,6 @@ id<GREYMatcher> GoButtonMatcher() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that pressing the button on a POST-based form changes the page and that
-// the back button works as expected afterwards.
-- (void)testBrowsingPostEntryWithButton {
-  // Create map of canned responses and set up the test HTML server.
-  std::map<GURL, std::string> responses;
-  const GURL URL = web::test::HttpServer::MakeUrl("http://postEntryWithButton");
-  const GURL destinationURL = web::test::HttpServer::MakeUrl("http://foo");
-  // This is a page with a button that posts to the destination.
-  responses[URL] = base::StringPrintf(
-      "<form action='%s' method='post'>"
-      "<input value='button' type='submit' id='button'></form>",
-      destinationURL.spec().c_str());
-  // This is the page that should be showing at the end of the test.
-  responses[destinationURL] = "bar!";
-  web::test::SetUpSimpleHttpServer(responses);
-
-  [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::TapWebViewElementWithId("button");
-
-  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Go back and verify the browser navigates to the original URL.
-  [self goBack];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
 // Tests that a link with a JavaScript-based navigation changes the page and
 // that the back button works as expected afterwards.
 - (void)testBrowsingJavaScriptBasedNavigation {
