@@ -301,9 +301,10 @@ class TestGitClBasic(unittest.TestCase):
     test('123a', fail=True)
     test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
     # Rietveld.
+    test('https://codereview.source.com/www123', fail=True)
+    # Matches both, but we take Rietveld now.
     test('https://codereview.source.com/123',
          123, None, 'codereview.source.com')
-    test('https://codereview.source.com/www123', fail=True)
     # Gerrrit.
     test('https://chrome-review.source.com/c/123/4',
          123, 4, 'chrome-review.source.com')
@@ -2265,7 +2266,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.Changelist, 'GetDescription', lambda *args: 'foobar')
 
     self.assertEqual(0, git_cl.main([
-        'description', 'https://code.review.org/123123', '-d', '--rietveld']))
+        'description', '-d', '--rietveld', 'https://code.review.org/123123']))
     self.assertEqual('foobar\n', out.getvalue())
 
   def test_StatusFieldOverrideIssueMissingArgs(self):

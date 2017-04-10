@@ -1061,11 +1061,19 @@ def ParseIssueNumberArgument(arg):
     parsed_url = urlparse.urlparse(url)
   except ValueError:
     return fail_result
-  for cls in _CODEREVIEW_IMPLEMENTATIONS.itervalues():
-    tmp = cls.ParseIssueURL(parsed_url)
-    if tmp is not None:
-      return tmp
-  return fail_result
+
+  results = {}
+  for name, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
+    parsed = cls.ParseIssueURL(parsed_url)
+    if parsed is not None:
+      results[name] = parsed
+
+  if not results:
+    return fail_result
+  if len(results) == 1:
+    return results.values()[0]
+  # Choose Rietveld if there are two.
+  return results['rietveld']
 
 
 class GerritChangeNotExists(Exception):
@@ -4410,7 +4418,7 @@ def CMDdescription(parser, args):
   if len(args) > 0:
     target_issue_arg = ParseIssueNumberArgument(args[0])
     if not target_issue_arg.valid:
-      parser.print_help()
+      parser.error('invalid codereview url or CL id')
       return 1
 
   auth_config = auth.extract_auth_config_from_options(options)
@@ -5739,7 +5747,7 @@ def CMDcheckout(parser, args):
 
   issue_arg = ParseIssueNumberArgument(args[0])
   if not issue_arg.valid:
-    parser.print_help()
+    parser.error('invalid codereview url or CL id')
     return 1
   target_issue = str(issue_arg.issue)
 
