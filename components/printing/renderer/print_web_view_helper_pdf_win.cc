@@ -29,12 +29,10 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = params.params;
   for (size_t i = 0; i < printed_pages.size(); ++i) {
-    page_params.page_number = printed_pages[i];
-    PrintPageInternal(page_params, frame, &metafile, &page_size_in_dpi[i],
-                      &content_area_in_dpi[i], &printable_area_in_dpi[i]);
+    PrintPageInternal(params.params, printed_pages[i], frame, &metafile,
+                      &page_size_in_dpi[i], &content_area_in_dpi[i],
+                      &printable_area_in_dpi[i]);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.

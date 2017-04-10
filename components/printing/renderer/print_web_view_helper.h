@@ -25,7 +25,6 @@
 #include "ui/gfx/geometry/size.h"
 
 struct PrintMsg_Print_Params;
-struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
@@ -292,11 +291,12 @@ class PrintWebViewHelper
 
   // Prints the page listed in |params|.
 #if defined(OS_MACOSX)
-  void PrintPagesInternal(const PrintMsg_PrintPage_Params& params,
-                          blink::WebLocalFrame* frame,
-                          const std::vector<int>& printed_pages);
+  void PrintPagesInternal(const PrintMsg_Print_Params& params,
+                          const std::vector<int>& printed_pages,
+                          blink::WebLocalFrame* frame);
 #else
-  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
+  void PrintPageInternal(const PrintMsg_Print_Params& params,
+                         int page_number,
                          blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,

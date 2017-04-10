@@ -168,16 +168,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   IPC_STRUCT_TRAITS_MEMBER(should_print_backgrounds)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
-  // Parameters to render the page as a printed page. It must always be the same
-  // value for all the document.
-  IPC_STRUCT_MEMBER(PrintMsg_Print_Params, params)
-
-  // The page number is the indicator of the square that should be rendered
-  // according to the layout specified in PrintMsg_Print_Params.
-  IPC_STRUCT_MEMBER(int, page_number)
-IPC_STRUCT_END()
-
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
   IPC_STRUCT_TRAITS_MEMBER(from)
   IPC_STRUCT_TRAITS_MEMBER(to)

@@ -1337,9 +1337,6 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
 bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  page_params.page_number = page_number;
   std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
@@ -1348,7 +1345,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  PrintPageInternal(page_params, print_preview_context_.prepared_frame(),
+  PrintPageInternal(print_params, page_number,
+                    print_preview_context_.prepared_frame(),
                     initial_render_metafile, nullptr, nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
@@ -1846,27 +1844,27 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if !defined(OS_MACOSX)
-void PrintWebViewHelper::PrintPageInternal(
-    const PrintMsg_PrintPage_Params& params,
-    blink::WebLocalFrame* frame,
-    PdfMetafileSkia* metafile,
-    gfx::Size* page_size_in_dpi,
-    gfx::Rect* content_area_in_dpi,
-    gfx::Rect* printable_area_in_dpi) {
+void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
+                                           int page_number,
+                                           blink::WebLocalFrame* frame,
+                                           PdfMetafileSkia* metafile,
+                                           gfx::Size* page_size_in_dpi,
+                                           gfx::Rect* content_area_in_dpi,
+                                           gfx::Rect* printable_area_in_dpi) {
   PageSizeMargins page_layout_in_points;
 
   double css_scale_factor = 1.0f;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  if (params.params.scale_factor >= kEpsilon)
-    css_scale_factor = params.params.scale_factor;
+  if (params.scale_factor >= kEpsilon)
+    css_scale_factor = params.scale_factor;
 #endif
 
   // Save the original page size here to avoid rounding errors incurred by
   // converting to pixels and back and by scaling the page for reflow and
   // scaling back. Windows uses |page_size_in_dpi| for the actual page size
   // so requires an accurate value.
-  gfx::Size original_page_size = params.params.page_size;
-  ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
+  gfx::Size original_page_size = params.page_size;
+  ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);
   gfx::Size page_size;
@@ -1889,12 +1887,11 @@ void PrintWebViewHelper::PrintPageInternal(
   }
 
   gfx::Rect canvas_area =
-      params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
+      params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
   // TODO(thestig): Figure out why Linux is different.
 #if defined(OS_WIN)
-  float webkit_page_shrink_factor =
-      frame->GetPrintPageShrink(params.page_number);
+  float webkit_page_shrink_factor = frame->GetPrintPageShrink(page_number);
   float scale_factor = css_scale_factor * webkit_page_shrink_factor;
 #else
   float scale_factor = css_scale_factor;
@@ -1908,7 +1905,7 @@ void PrintWebViewHelper::PrintPageInternal(
   MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  if (params.params.display_header_footer) {
+  if (params.display_header_footer) {
     // TODO(thestig): Figure out why Linux needs this. It is almost certainly
     // |printingMinimumShrinkFactor| from Blink.
 #if defined(OS_WIN)
@@ -1917,16 +1914,14 @@ void PrintWebViewHelper::PrintPageInternal(
     const float fudge_factor = kPrintingMinimumShrinkFactor;
 #endif
     // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(canvas, params.page_number + 1,
-                         print_preview_context_.total_page_count(), *frame,
-                         scale_factor / fudge_factor, page_layout_in_points,
-                         params.params);
+    PrintHeaderAndFooter(
+        canvas, page_number + 1, print_preview_context_.total_page_count(),
+        *frame, scale_factor / fudge_factor, page_layout_in_points, params);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-  float webkit_scale_factor =
-      RenderPageContent(frame, params.page_number, canvas_area, content_area,
-                        scale_factor, canvas);
+  float webkit_scale_factor = RenderPageContent(
+      frame, page_number, canvas_area, content_area, scale_factor, canvas);
   DCHECK_GT(webkit_scale_factor, 0.0f);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.

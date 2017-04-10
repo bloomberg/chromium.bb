@@ -28,38 +28,35 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-
   if (delegate_->UseSingleMetafile()) {
-    PrintPagesInternal(page_params, frame, printed_pages);
+    PrintPagesInternal(print_params, printed_pages, frame);
     return true;
   }
 
   for (int page_number : printed_pages)
-    PrintPagesInternal(page_params, frame, std::vector<int>{page_number});
+    PrintPagesInternal(print_params, std::vector<int>{page_number}, frame);
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 void PrintWebViewHelper::PrintPagesInternal(
-    const PrintMsg_PrintPage_Params& params,
-    blink::WebLocalFrame* frame,
-    const std::vector<int>& printed_pages) {
+    const PrintMsg_Print_Params& params,
+    const std::vector<int>& printed_pages,
+    blink::WebLocalFrame* frame) {
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;
   for (int page_number : printed_pages) {
-    RenderPage(params.params, page_number, frame, false, &metafile,
-               &page_size_in_dpi, &content_area_in_dpi);
+    RenderPage(params, page_number, frame, false, &metafile, &page_size_in_dpi,
+               &content_area_in_dpi);
   }
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile.GetDataSize();
-  page_params.document_cookie = params.params.document_cookie;
+  page_params.document_cookie = params.document_cookie;
   page_params.page_size = page_size_in_dpi;
   page_params.content_area = content_area_in_dpi;
 
