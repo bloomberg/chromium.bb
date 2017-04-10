@@ -4729,9 +4729,6 @@ void FrameView::SetParentVisible(bool visible) {
 
   for (const auto& child : children_)
     child->SetParentVisible(visible);
-
-  for (const auto& plugin : plugins_)
-    plugin->SetParentVisible(visible);
 }
 
 void FrameView::Show() {
@@ -4752,9 +4749,6 @@ void FrameView::Show() {
     if (IsParentVisible()) {
       for (const auto& child : children_)
         child->SetParentVisible(true);
-
-      for (const auto& plugin : plugins_)
-        plugin->SetParentVisible(true);
     }
   }
 
@@ -4766,9 +4760,6 @@ void FrameView::Hide() {
     if (IsParentVisible()) {
       for (const auto& child : children_)
         child->SetParentVisible(false);
-
-      for (const auto& plugin : plugins_)
-        plugin->SetParentVisible(false);
     }
     SetSelfVisible(false);
     if (ScrollingCoordinator* scrolling_coordinator =
