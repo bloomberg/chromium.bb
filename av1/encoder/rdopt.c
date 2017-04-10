@@ -1832,6 +1832,42 @@ static int tx_size_cost(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 }
 
+// #TODO(angiebird): use this function whenever it's possible
+static int tx_type_cost(const AV1_COMP *cpi, const MACROBLOCKD *xd,
+                        BLOCK_SIZE bsize, TX_SIZE tx_size, TX_TYPE tx_type) {
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const int is_inter = is_inter_block(mbmi);
+#if CONFIG_EXT_TX
+  const AV1_COMMON *cm = &cpi->common;
+  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+      !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
+    const int ext_tx_set =
+        get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+    if (is_inter) {
+      if (ext_tx_set > 0)
+        return cpi
+            ->inter_tx_type_costs[ext_tx_set][txsize_sqr_map[tx_size]][tx_type];
+    } else {
+      if (ext_tx_set > 0 && ALLOW_INTRA_EXT_TX)
+        return cpi->intra_tx_type_costs[ext_tx_set][txsize_sqr_map[tx_size]]
+                                       [mbmi->mode][tx_type];
+    }
+  }
+#else
+  (void)bsize;
+  if (tx_size < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
+      !FIXED_TX_TYPE) {
+    if (is_inter) {
+      return cpi->inter_tx_type_costs[tx_size][tx_type];
+    } else {
+      return cpi->intra_tx_type_costs[tx_size]
+                                     [intra_mode_to_tx_type_context[mbmi->mode]]
+                                     [tx_type];
+    }
+  }
+#endif  // CONFIG_EXT_TX
+  return 0;
+}
 static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                         RD_STATS *rd_stats, int64_t ref_best_rd, BLOCK_SIZE bs,
                         TX_TYPE tx_type, int tx_size) {
@@ -1860,36 +1896,7 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
-#if CONFIG_EXT_TX
-  if (get_ext_tx_types(tx_size, bs, is_inter, cm->reduced_tx_set_used) > 1 &&
-      !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-    const int ext_tx_set =
-        get_ext_tx_set(tx_size, bs, is_inter, cm->reduced_tx_set_used);
-    if (is_inter) {
-      if (ext_tx_set > 0)
-        rd_stats->rate +=
-            cpi->inter_tx_type_costs[ext_tx_set][txsize_sqr_map[mbmi->tx_size]]
-                                    [mbmi->tx_type];
-    } else {
-      if (ext_tx_set > 0 && ALLOW_INTRA_EXT_TX)
-        rd_stats->rate +=
-            cpi->intra_tx_type_costs[ext_tx_set][txsize_sqr_map[mbmi->tx_size]]
-                                    [mbmi->mode][mbmi->tx_type];
-    }
-  }
-#else
-  if (tx_size < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
-      !FIXED_TX_TYPE) {
-    if (is_inter) {
-      rd_stats->rate += cpi->inter_tx_type_costs[mbmi->tx_size][mbmi->tx_type];
-    } else {
-      rd_stats->rate +=
-          cpi->intra_tx_type_costs[mbmi->tx_size]
-                                  [intra_mode_to_tx_type_context[mbmi->mode]]
-                                  [mbmi->tx_type];
-    }
-  }
-#endif  // CONFIG_EXT_TX
+  rd_stats->rate += tx_type_cost(cpi, xd, bs, tx_size, tx_type);
 
   if (rd_stats->skip) {
     if (is_inter) {
