@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
@@ -23,6 +24,7 @@ class WebDialogDelegate;
 // Platform-agnostic base implementation of ConstrainedWebDialogDelegate.
 class ConstrainedWebDialogDelegateBase
     : public ConstrainedWebDialogDelegate,
+      public content::WebContentsObserver,
       public ui::WebDialogWebContentsDelegate {
  public:
   // |browser_context| and |delegate| must outlive |this| instance, whereas
@@ -38,12 +40,15 @@ class ConstrainedWebDialogDelegateBase
   const ui::WebDialogDelegate* GetWebDialogDelegate() const override;
   ui::WebDialogDelegate* GetWebDialogDelegate() override;
   void OnDialogCloseFromWebUI() override;
-  void ReleaseWebContentsOnDialogClose() override;
+  std::unique_ptr<content::WebContents> ReleaseWebContents() override;
   content::WebContents* GetWebContents() override;
   gfx::NativeWindow GetNativeDialog() override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   gfx::Size GetPreferredSize() const override;
+
+  // WebContentsObserver interface
+  void WebContentsDestroyed() override;
 
   // WebDialogWebContentsDelegate interface.
   void HandleKeyboardEvent(
@@ -57,14 +62,14 @@ class ConstrainedWebDialogDelegateBase
   std::unique_ptr<ui::WebDialogDelegate> web_dialog_delegate_;
 
   // Holds the HTML to display in the constrained dialog.
-  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_holder_;
+
+  // Pointer to |web_contents_| that remains valid until it is destroyed.
+  content::WebContents* web_contents_;
 
   // Was the dialog closed from WebUI (in which case |web_dialog_delegate_|'s
   // OnDialogClosed() method has already been called)?
   bool closed_via_webui_;
-
-  // If true, release |web_contents_| on close instead of destroying it.
-  bool release_contents_on_close_;
 
   std::unique_ptr<WebDialogWebContentsDelegate> override_tab_delegate_;
 

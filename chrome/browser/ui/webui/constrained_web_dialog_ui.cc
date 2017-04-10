@@ -108,6 +108,12 @@ void ConstrainedWebDialogUI::SetConstrainedDelegate(
                             new ConstrainedWebDialogDelegateUserData(delegate));
 }
 
+// static
+void ConstrainedWebDialogUI::ClearConstrainedDelegate(
+    content::WebContents* web_contents) {
+  web_contents->RemoveUserData(&kConstrainedWebDialogDelegateUserDataKey);
+}
+
 ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
   ConstrainedWebDialogDelegateUserData* user_data =
       static_cast<ConstrainedWebDialogDelegateUserData*>(

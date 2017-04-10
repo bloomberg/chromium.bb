@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -32,10 +34,9 @@ class ConstrainedWebDialogDelegate {
   // message from WebUI.
   virtual void OnDialogCloseFromWebUI() = 0;
 
-  // If called, on dialog closure, the dialog will release its WebContents
-  // instead of destroying it. After which point, the caller will own the
-  // released WebContents.
-  virtual void ReleaseWebContentsOnDialogClose() = 0;
+  // If called, the dialog will release the ownership of its WebContents.
+  // The dialog will continue to use it until it is destroyed.
+  virtual std::unique_ptr<content::WebContents> ReleaseWebContents() = 0;
 
   // Returns the WebContents owned by the constrained window.
   virtual content::WebContents* GetWebContents() = 0;
@@ -74,6 +75,7 @@ class ConstrainedWebDialogUI : public content::WebUIController {
   // Sets the delegate on the WebContents.
   static void SetConstrainedDelegate(content::WebContents* web_contents,
                                      ConstrainedWebDialogDelegate* delegate);
+  static void ClearConstrainedDelegate(content::WebContents* web_contents);
 
  protected:
   // Returns the ConstrainedWebDialogDelegate saved with the WebContents.

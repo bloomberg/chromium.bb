@@ -118,8 +118,8 @@ class ConstrainedWebDialogDelegateViewMac :
   void OnDialogCloseFromWebUI() override {
     return impl_->OnDialogCloseFromWebUI();
   }
-  void ReleaseWebContentsOnDialogClose() override {
-    return impl_->ReleaseWebContentsOnDialogClose();
+  std::unique_ptr<content::WebContents> ReleaseWebContents() override {
+    return impl_->ReleaseWebContents();
   }
   gfx::NativeWindow GetNativeDialog() override { return window_; }
   WebContents* GetWebContents() override { return impl_->GetWebContents(); }

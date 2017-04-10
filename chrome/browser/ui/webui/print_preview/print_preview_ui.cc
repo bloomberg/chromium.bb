@@ -655,8 +655,11 @@ void PrintPreviewUI::OnHidePreviewDialog() {
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
-  delegate->ReleaseWebContentsOnDialogClose();
-  background_printing_manager->OwnPrintPreviewDialog(preview_dialog);
+  std::unique_ptr<content::WebContents> preview_contents =
+      delegate->ReleaseWebContents();
+  DCHECK_EQ(preview_dialog, preview_contents.get());
+  background_printing_manager->OwnPrintPreviewDialog(
+      preview_contents.release());
   OnClosePrintPreviewDialog();
 }
 

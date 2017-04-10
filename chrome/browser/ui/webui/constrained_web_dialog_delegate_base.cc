@@ -29,12 +29,13 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
     : WebDialogWebContentsDelegate(browser_context,
                                    new ChromeWebContentsHandler),
       web_dialog_delegate_(delegate),
-      closed_via_webui_(false),
-      release_contents_on_close_(false) {
+      closed_via_webui_(false) {
   CHECK(delegate);
-  web_contents_.reset(
-      WebContents::Create(WebContents::CreateParams(browser_context)));
-  zoom::ZoomController::CreateForWebContents(web_contents_.get());
+  web_contents_ =
+      WebContents::Create(WebContents::CreateParams(browser_context));
+  web_contents_holder_.reset(web_contents_);
+  WebContentsObserver::Observe(web_contents_);
+  zoom::ZoomController::CreateForWebContents(web_contents_);
   if (tab_delegate) {
     override_tab_delegate_.reset(tab_delegate);
     web_contents_->SetDelegate(tab_delegate);
@@ -44,12 +45,12 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, Profile::FromBrowserContext(browser_context), web_contents_.get());
+      prefs, Profile::FromBrowserContext(browser_context), web_contents_);
 
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   // Set |this| as a delegate so the ConstrainedWebDialogUI can retrieve it.
-  ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents_.get(), this);
+  ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents_, this);
 
   web_contents_->GetController().LoadURL(delegate->GetDialogContentURL(),
                                          content::Referrer(),
@@ -58,8 +59,12 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
 }
 
 ConstrainedWebDialogDelegateBase::~ConstrainedWebDialogDelegateBase() {
-  if (release_contents_on_close_)
-    ignore_result(web_contents_.release());
+  if (web_contents_) {
+    // Remove reference to |this| in the WebContent since it will becomes
+    // invalid and the lifetime of the WebContent may exceed the one of this
+    // object.
+    ConstrainedWebDialogUI::ClearConstrainedDelegate(web_contents_);
+  }
 }
 
 const WebDialogDelegate*
@@ -74,15 +79,16 @@ WebDialogDelegate*
 
 void ConstrainedWebDialogDelegateBase::OnDialogCloseFromWebUI() {
   closed_via_webui_ = true;
-  CloseContents(web_contents_.get());
+  CloseContents(web_contents_);
 }
 
 bool ConstrainedWebDialogDelegateBase::closed_via_webui() const {
   return closed_via_webui_;
 }
 
-void ConstrainedWebDialogDelegateBase::ReleaseWebContentsOnDialogClose() {
-  release_contents_on_close_ = true;
+std::unique_ptr<content::WebContents>
+ConstrainedWebDialogDelegateBase::ReleaseWebContents() {
+  return std::move(web_contents_holder_);
 }
 
 gfx::NativeWindow ConstrainedWebDialogDelegateBase::GetNativeDialog() {
@@ -91,7 +97,7 @@ gfx::NativeWindow ConstrainedWebDialogDelegateBase::GetNativeDialog() {
 }
 
 WebContents* ConstrainedWebDialogDelegateBase::GetWebContents() {
-  return web_contents_.get();
+  return web_contents_;
 }
 
 void ConstrainedWebDialogDelegateBase::HandleKeyboardEvent(
@@ -112,6 +118,10 @@ gfx::Size ConstrainedWebDialogDelegateBase::GetMaximumSize() const {
 gfx::Size ConstrainedWebDialogDelegateBase::GetPreferredSize() const {
   NOTREACHED();
   return gfx::Size();
+}
+
+void ConstrainedWebDialogDelegateBase::WebContentsDestroyed() {
+  web_contents_ = nullptr;
 }
 
 void ConstrainedWebDialogDelegateBase::ResizeToGivenSize(
