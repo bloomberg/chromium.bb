@@ -72,11 +72,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_CHROMEOS)
   WebRuntimeFeatures::EnableForceTallerSelectPopup(true);
 #endif
-
-// The Notification Center on Mac OS X does not support content images.
-#if defined(OS_MACOSX)
-  WebRuntimeFeatures::EnableNotificationContentImage(false);
-#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
