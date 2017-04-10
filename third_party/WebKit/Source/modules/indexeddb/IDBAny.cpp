@@ -42,7 +42,7 @@ IDBAny* IDBAny::CreateNull() {
 }
 
 IDBAny::IDBAny(Type type) : type_(type) {
-  ASSERT(type == kUndefinedType || type == kNullType);
+  DCHECK(type == kUndefinedType || type == kNullType);
 }
 
 IDBAny::~IDBAny() {}
@@ -53,55 +53,55 @@ void IDBAny::ContextWillBeDestroyed() {
 }
 
 DOMStringList* IDBAny::DomStringList() const {
-  ASSERT(type_ == kDOMStringListType);
+  DCHECK_EQ(type_, kDOMStringListType);
   return dom_string_list_.Get();
 }
 
 IDBCursor* IDBAny::IdbCursor() const {
-  ASSERT(type_ == kIDBCursorType);
+  DCHECK_EQ(type_, kIDBCursorType);
   SECURITY_DCHECK(idb_cursor_->IsKeyCursor());
   return idb_cursor_.Get();
 }
 
 IDBCursorWithValue* IDBAny::IdbCursorWithValue() const {
-  ASSERT(type_ == kIDBCursorWithValueType);
+  DCHECK_EQ(type_, kIDBCursorWithValueType);
   SECURITY_DCHECK(idb_cursor_->IsCursorWithValue());
   return ToIDBCursorWithValue(idb_cursor_.Get());
 }
 
 IDBDatabase* IDBAny::IdbDatabase() const {
-  ASSERT(type_ == kIDBDatabaseType);
+  DCHECK_EQ(type_, kIDBDatabaseType);
   return idb_database_.Get();
 }
 
 IDBIndex* IDBAny::IdbIndex() const {
-  ASSERT(type_ == kIDBIndexType);
+  DCHECK_EQ(type_, kIDBIndexType);
   return idb_index_.Get();
 }
 
 IDBObjectStore* IDBAny::IdbObjectStore() const {
-  ASSERT(type_ == kIDBObjectStoreType);
+  DCHECK_EQ(type_, kIDBObjectStoreType);
   return idb_object_store_.Get();
 }
 
 const IDBKey* IDBAny::Key() const {
   // If type is IDBValueType then instead use value()->primaryKey().
-  ASSERT(type_ == kKeyType);
+  DCHECK_EQ(type_, kKeyType);
   return idb_key_.Get();
 }
 
 IDBValue* IDBAny::Value() const {
-  ASSERT(type_ == kIDBValueType);
+  DCHECK_EQ(type_, kIDBValueType);
   return idb_value_.Get();
 }
 
 const Vector<RefPtr<IDBValue>>* IDBAny::Values() const {
-  ASSERT(type_ == kIDBValueArrayType);
+  DCHECK_EQ(type_, kIDBValueArrayType);
   return &idb_values_;
 }
 
 int64_t IDBAny::Integer() const {
-  ASSERT(type_ == kIntegerType);
+  DCHECK_EQ(type_, kIntegerType);
   return integer_;
 }
 

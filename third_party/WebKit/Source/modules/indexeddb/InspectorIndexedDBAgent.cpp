@@ -371,7 +371,7 @@ static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
       break;
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   return key_path;
@@ -941,7 +941,7 @@ class ClearObjectStore final
 
     DummyExceptionStateForTesting exception_state;
     idb_object_store->clear(GetScriptState(), exception_state);
-    ASSERT(!exception_state.HadException());
+    DCHECK(!exception_state.HadException());
     if (exception_state.HadException()) {
       ExceptionCode ec = exception_state.Code();
       request_callback_->sendFailure(Response::Error(

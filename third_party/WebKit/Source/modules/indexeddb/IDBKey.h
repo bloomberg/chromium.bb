@@ -79,27 +79,27 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
   bool IsValid() const;
 
   const KeyArray& Array() const {
-    ASSERT(type_ == kArrayType);
+    DCHECK_EQ(type_, kArrayType);
     return array_;
   }
 
   PassRefPtr<SharedBuffer> Binary() const {
-    ASSERT(type_ == kBinaryType);
+    DCHECK_EQ(type_, kBinaryType);
     return binary_;
   }
 
   const String& GetString() const {
-    ASSERT(type_ == kStringType);
+    DCHECK_EQ(type_, kStringType);
     return string_;
   }
 
   double Date() const {
-    ASSERT(type_ == kDateType);
+    DCHECK_EQ(type_, kDateType);
     return number_;
   }
 
   double Number() const {
-    ASSERT(type_ == kNumberType);
+    DCHECK_EQ(type_, kNumberType);
     return number_;
   }
 

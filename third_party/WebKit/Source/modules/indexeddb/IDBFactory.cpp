@@ -54,7 +54,7 @@ static const char kPermissionDeniedErrorMessage[] =
 IDBFactory::IDBFactory() {}
 
 static bool IsContextValid(ExecutionContext* context) {
-  ASSERT(context->IsDocument() || context->IsWorkerGlobalScope());
+  DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
   if (context->IsDocument()) {
     Document* document = ToDocument(context);
     return document->GetFrame() && document->GetPage();
@@ -110,7 +110,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                                            int64_t version,
                                            ExceptionState& exception_state) {
   IDBDatabase::RecordApiCallsHistogram(kIDBOpenCall);
-  ASSERT(version >= 1 || version == IDBDatabaseMetadata::kNoVersion);
+  DCHECK(version >= 1 || version == IDBDatabaseMetadata::kNoVersion);
   if (!IsContextValid(script_state->GetExecutionContext()))
     return nullptr;
   if (!script_state->GetExecutionContext()
@@ -207,7 +207,7 @@ short IDBFactory::cmp(ScriptState* script_state,
                                            first_value, exception_state);
   if (exception_state.HadException())
     return 0;
-  ASSERT(first);
+  DCHECK(first);
   if (!first->IsValid()) {
     exception_state.ThrowDOMException(kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
@@ -218,7 +218,7 @@ short IDBFactory::cmp(ScriptState* script_state,
                                             second_value, exception_state);
   if (exception_state.HadException())
     return 0;
-  ASSERT(second);
+  DCHECK(second);
   if (!second->IsValid()) {
     exception_state.ThrowDOMException(kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);

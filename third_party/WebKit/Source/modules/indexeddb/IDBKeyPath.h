@@ -61,12 +61,12 @@ class MODULES_EXPORT IDBKeyPath {
   Type GetType() const { return type_; }
 
   const Vector<String>& Array() const {
-    ASSERT(type_ == kArrayType);
+    DCHECK_EQ(type_, kArrayType);
     return array_;
   }
 
   const String& GetString() const {
-    ASSERT(type_ == kStringType);
+    DCHECK_EQ(type_, kStringType);
     return string_;
   }
 

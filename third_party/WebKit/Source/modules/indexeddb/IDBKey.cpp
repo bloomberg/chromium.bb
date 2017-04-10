@@ -60,7 +60,7 @@ static int CompareNumbers(const T& a, const T& b) {
 }
 
 int IDBKey::Compare(const IDBKey* other) const {
-  ASSERT(other);
+  DCHECK(other);
   if (type_ != other->type_)
     return type_ > other->type_ ? -1 : 1;
 
@@ -84,16 +84,16 @@ int IDBKey::Compare(const IDBKey* other) const {
       return CompareNumbers(number_, other->number_);
     case kInvalidType:
     case kTypeEnumMax:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
 bool IDBKey::IsLessThan(const IDBKey* other) const {
-  ASSERT(other);
+  DCHECK(other);
   return Compare(other) == -1;
 }
 

@@ -110,13 +110,13 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   virtual void OnSuccess(IDBKey*, IDBKey* primary_key, PassRefPtr<IDBValue>);
 
   // Only IDBOpenDBRequest instances should receive these:
-  virtual void OnBlocked(int64_t old_version) { ASSERT_NOT_REACHED(); }
+  virtual void OnBlocked(int64_t old_version) { NOTREACHED(); }
   virtual void OnUpgradeNeeded(int64_t old_version,
                                std::unique_ptr<WebIDBDatabase>,
                                const IDBDatabaseMetadata&,
                                WebIDBDataLoss,
                                String data_loss_message) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   virtual void OnSuccess(std::unique_ptr<WebIDBDatabase>,
                          const IDBDatabaseMetadata&) {

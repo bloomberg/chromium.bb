@@ -24,7 +24,7 @@ IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
         ToDocument(*context).GetFrame(), SupplementName()));
 
   WorkerClients* clients = ToWorkerGlobalScope(*context).Clients();
-  ASSERT(clients);
+  DCHECK(clients);
   return static_cast<IndexedDBClient*>(
       Supplement<WorkerClients>::From(clients, SupplementName()));
 }

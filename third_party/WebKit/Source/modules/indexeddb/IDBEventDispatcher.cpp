@@ -37,7 +37,7 @@ DispatchEventResult IDBEventDispatcher::Dispatch(
     Event* event,
     HeapVector<Member<EventTarget>>& event_targets) {
   size_t size = event_targets.size();
-  ASSERT(size);
+  DCHECK(size);
 
   event->SetEventPhase(Event::kCapturingPhase);
   for (size_t i = size - 1; i; --i) {  // Don't do the first element.

@@ -100,14 +100,14 @@ void IDBParseKeyPath(const String& key_path,
 
 IDBKeyPath::IDBKeyPath(const String& string)
     : type_(kStringType), string_(string) {
-  ASSERT(!string_.IsNull());
+  DCHECK(!string_.IsNull());
 }
 
 IDBKeyPath::IDBKeyPath(const Vector<String>& array)
     : type_(kArrayType), array_(array) {
 #if DCHECK_IS_ON()
   for (size_t i = 0; i < array_.size(); ++i)
-    ASSERT(!array_[i].IsNull());
+    DCHECK(!array_[i].IsNull());
 #endif
 }
 
@@ -117,14 +117,14 @@ IDBKeyPath::IDBKeyPath(const StringOrStringSequence& key_path) {
   } else if (key_path.isString()) {
     type_ = kStringType;
     string_ = key_path.getAsString();
-    ASSERT(!string_.IsNull());
+    DCHECK(!string_.IsNull());
   } else {
-    ASSERT(key_path.isStringSequence());
+    DCHECK(key_path.isStringSequence());
     type_ = kArrayType;
     array_ = key_path.getAsStringSequence();
 #if DCHECK_IS_ON()
     for (size_t i = 0; i < array_.size(); ++i)
-      ASSERT(!array_[i].IsNull());
+      DCHECK(!array_[i].IsNull());
 #endif
   }
 }
@@ -146,7 +146,7 @@ IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& key_path) {
         array_.push_back(key_path.Array()[i]);
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 IDBKeyPath::operator WebIDBKeyPath() const {
@@ -158,7 +158,7 @@ IDBKeyPath::operator WebIDBKeyPath() const {
     case kArrayType:
       return WebIDBKeyPath(array_);
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return WebIDBKeyPath();
 }
 
@@ -179,7 +179,7 @@ bool IDBKeyPath::IsValid() const {
       }
       return true;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -195,7 +195,7 @@ bool IDBKeyPath::operator==(const IDBKeyPath& other) const {
     case kArrayType:
       return array_ == other.array_;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
