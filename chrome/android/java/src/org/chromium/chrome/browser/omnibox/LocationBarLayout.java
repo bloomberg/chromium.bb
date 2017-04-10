@@ -1872,7 +1872,7 @@ public class LocationBarLayout extends FrameLayout
 
     /**
      * Whether {@code v} is a view (location icon, verbose status, ...) which can be clicked to
-     * show the origin info dialog.
+     * show the Page Info popup.
      */
     private boolean shouldShowPageInfoForView(View v) {
         return v == mSecurityButton || v == mNavigationButton || v == mVerboseStatusTextView;

@@ -20,7 +20,7 @@ import java.util.Locale;
 
 /**
  * A helper class that emphasizes the various components of a URL. Useful in the
- * Omnibox and Origin Info dialog where different parts of the URL should appear
+ * Omnibox and Page Info popup where different parts of the URL should appear
  * in different colours depending on the scheme, host and connection.
  */
 public class OmniboxUrlEmphasizer {

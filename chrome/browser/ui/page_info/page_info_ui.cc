@@ -87,7 +87,7 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
      IDR_BLOCKED_MIDI_SYSEX, IDR_ALLOWED_MIDI_SYSEX},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC,
      IDR_BLOCKED_BACKGROUND_SYNC, IDR_ALLOWED_BACKGROUND_SYNC},
-    // Autoplay is Android-only at the moment, and the Origin Info bubble in
+    // Autoplay is Android-only at the moment, and the Page Info popup on
     // Android ignores these block/allow icon pairs, so we can specify 0 there.
     {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY, 0, 0},
     {CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, IDS_SUBRESOURCE_FILTER_HEADER,

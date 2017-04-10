@@ -77,7 +77,7 @@ enum class SchemeDisplay {
 //
 // Generally, prefer SchemeDisplay::SHOW to omitting the scheme unless there is
 // plenty of indication as to whether the origin is secure elsewhere in the UX.
-// For example, in Chrome's Origin Info Bubble, there are icons and strings
+// For example, in Chrome's Page Info Bubble, there are icons and strings
 // indicating origin (non-)security. But in the HTTP Basic Auth prompt (for
 // example), the scheme may be the only indicator.
 base::string16 FormatUrlForSecurityDisplay(
