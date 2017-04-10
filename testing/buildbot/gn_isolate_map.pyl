@@ -154,6 +154,7 @@
     "args": [
       "--mus",
     ],
+    "executable": "ash_unittests",
   },
   "audio_unittests": {
     "label": "//media:audio_unittests",
