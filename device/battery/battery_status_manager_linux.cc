@@ -61,7 +61,7 @@ base::Version UPowerProperties::daemon_version() {
 
 class UPowerObject {
  public:
-  typedef dbus::PropertySet::PropertyChangedCallback PropertyChangedCallback;
+  using PropertyChangedCallback = dbus::PropertySet::PropertyChangedCallback;
 
   UPowerObject(dbus::Bus* dbus,
                const PropertyChangedCallback property_changed_callback);
@@ -225,7 +225,7 @@ uint32_t BatteryProperties::type(uint32_t default_value) {
 
 class BatteryObject {
  public:
-  typedef dbus::PropertySet::PropertyChangedCallback PropertyChangedCallback;
+  using PropertyChangedCallback = dbus::PropertySet::PropertyChangedCallback;
 
   BatteryObject(dbus::Bus* dbus,
                 const dbus::ObjectPath& device_path,
@@ -334,8 +334,8 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     if (!system_bus_)
       InitDBus();
 
-    upower_.reset(new UPowerObject(system_bus_.get(),
-                                   UPowerObject::PropertyChangedCallback()));
+    upower_ = base::MakeUnique<UPowerObject>(
+        system_bus_.get(), UPowerObject::PropertyChangedCallback());
     upower_->proxy()->ConnectToSignal(
         kUPowerServiceName, kUPowerSignalDeviceAdded,
         base::Bind(&BatteryStatusNotificationThread::DeviceAdded,
@@ -397,14 +397,14 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
         [&current, this](const dbus::ObjectPath& device_path) {
           if (current && current->proxy()->object_path() == device_path)
             return std::move(current);
-          else
-            return CreateBattery(device_path);
+          return CreateBattery(device_path);
         };
 
-    dbus::ObjectPath display_device_path = upower_->GetDisplayDevice();
+    dbus::ObjectPath display_device_path;
+    if (!IsDaemonVersionBelow_0_99())
+      display_device_path = upower_->GetDisplayDevice();
     if (display_device_path.IsValid()) {
-      std::unique_ptr<BatteryObject> battery =
-          UseCurrentOrCreateBattery(display_device_path);
+      auto battery = UseCurrentOrCreateBattery(display_device_path);
       if (battery->IsValid())
         battery_ = std::move(battery);
     }
@@ -412,9 +412,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     if (!battery_) {
       int num_batteries = 0;
       for (const auto& device_path : upower_->EnumerateDevices()) {
-        std::unique_ptr<BatteryObject> battery =
-            UseCurrentOrCreateBattery(device_path);
-
+        auto battery = UseCurrentOrCreateBattery(device_path);
         if (!battery->IsValid())
           continue;
 
@@ -433,13 +431,13 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
       UpdateNumberBatteriesHistogram(num_batteries);
     }
 
-    if (battery_) {
-      battery_->properties()->ConnectSignals();
-      NotifyBatteryStatus();
-    } else {
+    if (!battery_) {
       callback_.Run(mojom::BatteryStatus());
       return;
     }
+
+    battery_->properties()->ConnectSignals();
+    NotifyBatteryStatus();
 
     if (IsDaemonVersionBelow_0_99()) {
       // UPower Version 0.99 replaced the Changed signal with the
@@ -476,11 +474,10 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
 
   std::unique_ptr<BatteryObject> CreateBattery(
       const dbus::ObjectPath& device_path) {
-    std::unique_ptr<BatteryObject> battery(new BatteryObject(
+    return base::MakeUnique<BatteryObject>(
         system_bus_.get(), device_path,
         base::Bind(&BatteryStatusNotificationThread::BatteryPropertyChanged,
-                   base::Unretained(this))));
-    return battery;
+                   base::Unretained(this)));
   }
 
   void DeviceAdded(dbus::Signal* signal /* unused */) {
@@ -589,13 +586,14 @@ bool BatteryStatusManagerLinux::StartNotifierThreadIfNecessary() {
     return true;
 
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-  notifier_thread_.reset(new BatteryStatusNotificationThread(callback_));
-  if (!notifier_thread_->StartWithOptions(thread_options)) {
-    notifier_thread_.reset();
+  auto notifier_thread =
+      base::MakeUnique<BatteryStatusNotificationThread>(callback_);
+  if (!notifier_thread->StartWithOptions(thread_options)) {
     LOG(ERROR) << "Could not start the " << kBatteryNotifierThreadName
                << " thread";
     return false;
   }
+  notifier_thread_ = std::move(notifier_thread);
   return true;
 }
 
@@ -608,20 +606,17 @@ std::unique_ptr<BatteryStatusManagerLinux>
 BatteryStatusManagerLinux::CreateForTesting(
     const BatteryStatusService::BatteryUpdateCallback& callback,
     dbus::Bus* bus) {
-  std::unique_ptr<BatteryStatusManagerLinux> manager(
-      new BatteryStatusManagerLinux(callback));
-  if (manager->StartNotifierThreadIfNecessary())
-    manager->notifier_thread_->SetDBusForTesting(bus);
-  else
-    manager.reset();
+  auto manager = base::MakeUnique<BatteryStatusManagerLinux>(callback);
+  if (!manager->StartNotifierThreadIfNecessary())
+    return nullptr;
+  manager->notifier_thread_->SetDBusForTesting(bus);
   return manager;
 }
 
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return std::unique_ptr<BatteryStatusManager>(
-      new BatteryStatusManagerLinux(callback));
+  return base::MakeUnique<BatteryStatusManagerLinux>(callback);
 }
 
 }  // namespace device
