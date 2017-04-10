@@ -12,6 +12,26 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/gfx/codec/png_codec.h"
 
+namespace {
+// dst_stride is int, not size_t, as it may be negative for inverted (in Y)
+// images.
+void CopyPixelsToBuffer(const SkBitmap& src,
+                        uint8_t* dst_pixels,
+                        int dst_stride) {
+  SkBitmap tmp(src);
+  tmp.lockPixels();
+  const char* src_pixels = static_cast<const char*>(tmp.getPixels());
+  size_t src_stride = tmp.rowBytes();
+  // Only need to copy the important parts of the row.
+  size_t bytes_per_row = tmp.width() * tmp.bytesPerPixel();
+  for (int y = 0; y < tmp.height(); ++y) {
+    memcpy(dst_pixels, src_pixels, bytes_per_row);
+    src_pixels += src_stride;
+    dst_pixels += dst_stride;
+  }
+}
+}  // namespace
+
 namespace remoting {
 namespace test {
 
@@ -33,9 +53,7 @@ std::unique_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
                         file_content.size(), &bitmap);
   std::unique_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(bitmap.width(), bitmap.height())));
-  bitmap.copyPixelsTo(frame->data(),
-                      frame->stride() * frame->size().height(),
-                      frame->stride());
+  CopyPixelsToBuffer(bitmap, frame->data(), frame->stride());
   return frame;
 }
 
