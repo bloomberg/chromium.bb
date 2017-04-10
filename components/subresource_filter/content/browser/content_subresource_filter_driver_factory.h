@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
@@ -127,6 +128,14 @@ class ContentSubresourceFilterDriverFactory
     return throttle_manager_.get();
   }
 
+  // TODO(https://crbug.com/708181): Allow tests to change the configuration
+  // after construction (which happens at WebContents creation) but before a
+  // navigation start. Can be removed once the Safe Browsing navigation throttle
+  // handles all activation decisions.
+  void set_configuration_for_testing(Configuration configuration) {
+    configuration_ = std::move(configuration);
+  }
+
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
@@ -162,6 +171,8 @@ class ContentSubresourceFilterDriverFactory
 
   void RecordRedirectChainMatchPatternForList(
       ActivationList activation_list) const;
+
+  Configuration configuration_;
 
   std::unique_ptr<SubresourceFilterClient> client_;
 

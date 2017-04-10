@@ -112,7 +112,8 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
 
 // static
 std::string SubresourceFilterComponentInstallerTraits::GetInstallerTag() {
-  std::string ruleset_flavor = subresource_filter::GetRulesetFlavor();
+  std::string ruleset_flavor =
+      subresource_filter::GetActiveConfiguration().ruleset_flavor;
   if (ruleset_flavor.empty())
     return ruleset_flavor;
 

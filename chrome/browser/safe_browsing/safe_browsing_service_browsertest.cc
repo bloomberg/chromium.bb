@@ -928,12 +928,17 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubresourceFilterEndToEndTest) {
                                    &malware_full_hash);
   SetupResponseForUrl(phishing_url, malware_full_hash);
 
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+  driver_factory->set_configuration_for_testing(
+      subresource_filter::GetActiveConfiguration());
+
   // Navigation to a phishing page should trigger an interstitial. If the user
   // clicks through it, the page load should proceed, but with subresource
   // filtering activated. This is verified by probing whether `included_script`
   // that is disallowed above indeed fails to load.
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)));
   ui_test_utils::NavigateToURL(browser(), phishing_url);
   ASSERT_TRUE(Mock::VerifyAndClearExpectations(&observer_));
@@ -1996,12 +2001,17 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   MarkUrlForPhishingUnexpired(phishing_url,
                               ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+  driver_factory->set_configuration_for_testing(
+      subresource_filter::GetActiveConfiguration());
+
   // Navigation to a phishing page should trigger an interstitial. If the user
   // clicks through it, the page load should proceed, but with subresource
   // filtering activated. This is verified by probing whether `included_script`
   // that is disallowed above indeed fails to load.
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)));
   ui_test_utils::NavigateToURL(browser(), phishing_url);
   ASSERT_TRUE(Mock::VerifyAndClearExpectations(&observer_));

@@ -34,15 +34,14 @@ std::string DistillURLToHostAndPath(const GURL& url) {
   return url.host() + url.path();
 }
 
-// Returns true with a probability of GetPerformanceMeasurementRate() if
+// Returns true with a probability given by |performance_measurement_rate| if
 // ThreadTicks is supported, otherwise returns false.
-bool ShouldMeasurePerformanceForPageLoad() {
+bool ShouldMeasurePerformanceForPageLoad(double performance_measurement_rate) {
   if (!base::ThreadTicks::IsSupported())
     return false;
-  // TODO(pkalinnikov): Cache |rate| and other variation params in
-  // ContentSubresourceFilterDriverFactory.
-  const double rate = GetPerformanceMeasurementRate();
-  return rate == 1 || (rate > 0 && base::RandDouble() < rate);
+  return performance_measurement_rate == 1 ||
+         (performance_measurement_rate > 0 &&
+          base::RandDouble() < performance_measurement_rate);
 }
 
 // Records histograms about the length of redirect chains, and about the pattern
@@ -91,6 +90,7 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     content::WebContents* web_contents,
     std::unique_ptr<SubresourceFilterClient> client)
     : content::WebContentsObserver(web_contents),
+      configuration_(GetActiveConfiguration()),
       client_(std::move(client)),
       throttle_manager_(
           base::MakeUnique<ContentSubresourceFilterThrottleManager>(
@@ -146,11 +146,10 @@ void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
 ContentSubresourceFilterDriverFactory::ActivationDecision
 ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
     const GURL& url) const {
-  if (GetMaximumActivationLevel() == ActivationLevel::DISABLED)
+  if (configuration_.activation_level == ActivationLevel::DISABLED)
     return ActivationDecision::ACTIVATION_DISABLED;
 
-  ActivationScope scope = GetCurrentActivationScope();
-  if (scope == ActivationScope::NO_SITES)
+  if (configuration_.activation_scope == ActivationScope::NO_SITES)
     return ActivationDecision::ACTIVATION_DISABLED;
 
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -158,7 +157,7 @@ ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
   if (IsWhitelisted(url))
     return ActivationDecision::URL_WHITELISTED;
 
-  switch (scope) {
+  switch (configuration_.activation_scope) {
     case ActivationScope::ALL_SITES:
       return ActivationDecision::ACTIVATED;
     case ActivationScope::ACTIVATION_LIST: {
@@ -166,10 +165,11 @@ ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
       // AddActivationListMatch to ensure the activation list only has relevant
       // entries.
       DCHECK(url.SchemeIsHTTPOrHTTPS() ||
-             !DidURLMatchActivationList(url, GetCurrentActivationList()));
+             !DidURLMatchActivationList(url, configuration_.activation_list));
       bool should_activate =
-          DidURLMatchActivationList(url, GetCurrentActivationList());
-      if (GetCurrentActivationList() == ActivationList::PHISHING_INTERSTITIAL) {
+          DidURLMatchActivationList(url, configuration_.activation_list);
+      if (configuration_.activation_list ==
+          ActivationList::PHISHING_INTERSTITIAL) {
         // Handling special case, where activation on the phishing sites also
         // mean the activation on the sites with social engineering metadata.
         should_activate |= DidURLMatchActivationList(
@@ -213,7 +213,7 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   RecordRedirectChainMatchPattern();
 
-  if (ShouldWhitelistSiteOnReload() &&
+  if (configuration_.should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
     AddHostOfURLToWhitelistSet(url);
@@ -226,16 +226,17 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
     return;
   }
 
-  activation_level_ = GetMaximumActivationLevel();
+  activation_level_ = configuration_.activation_level;
   measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
-                         ShouldMeasurePerformanceForPageLoad();
+                         ShouldMeasurePerformanceForPageLoad(
+                             configuration_.performance_measurement_rate);
   ActivationState state = ActivationState(activation_level_);
   state.measure_performance = measure_performance_;
   throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  if (ShouldSuppressNotifications())
+  if (configuration_.should_suppress_notifications)
     return;
 
   client_->ToggleNotificationVisibility(activation_level_ ==

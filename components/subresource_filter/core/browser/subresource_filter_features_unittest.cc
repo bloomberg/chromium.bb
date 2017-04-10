@@ -42,8 +42,10 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, kActivationScopeNoSites);
 
-    EXPECT_EQ(test_case.expected_activation_level, GetMaximumActivationLevel());
-    EXPECT_EQ(ActivationScope::NO_SITES, GetCurrentActivationScope());
+    Configuration actual_configuration = GetActiveConfiguration();
+    EXPECT_EQ(test_case.expected_activation_level,
+              actual_configuration.activation_level);
+    EXPECT_EQ(ActivationScope::NO_SITES, actual_configuration.activation_scope);
   }
 }
 
@@ -77,8 +79,10 @@ TEST(SubresourceFilterFeaturesTest, ActivationScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         kActivationLevelDisabled, test_case.activation_scope_param);
 
-    EXPECT_EQ(ActivationLevel::DISABLED, GetMaximumActivationLevel());
-    EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
+    Configuration actual_configuration = GetActiveConfiguration();
+    EXPECT_EQ(ActivationLevel::DISABLED, actual_configuration.activation_level);
+    EXPECT_EQ(test_case.expected_activation_scope,
+              actual_configuration.activation_scope);
   }
 }
 
@@ -126,8 +130,11 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, test_case.activation_scope_param);
 
-    EXPECT_EQ(test_case.expected_activation_scope, GetCurrentActivationScope());
-    EXPECT_EQ(test_case.expected_activation_level, GetMaximumActivationLevel());
+    Configuration actual_configuration = GetActiveConfiguration();
+    EXPECT_EQ(test_case.expected_activation_level,
+              actual_configuration.activation_level);
+    EXPECT_EQ(test_case.expected_activation_scope,
+              actual_configuration.activation_scope);
   }
 }
 
@@ -179,7 +186,9 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
         kActivationLevelDisabled, kActivationScopeNoSites,
         test_case.activation_list_param);
 
-    EXPECT_EQ(test_case.expected_activation_list, GetCurrentActivationList());
+    Configuration actual_configuration = GetActiveConfiguration();
+    EXPECT_EQ(test_case.expected_activation_list,
+              actual_configuration.activation_list);
   }
 }
 
@@ -214,8 +223,9 @@ TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
         {{kPerformanceMeasurementRateParameterName,
           test_case.perf_measurement_param}});
 
+    Configuration actual_configuration = GetActiveConfiguration();
     EXPECT_EQ(test_case.expected_perf_measurement_rate,
-              GetPerformanceMeasurementRate());
+              actual_configuration.performance_measurement_rate);
   }
 }
 
@@ -231,8 +241,8 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
                     {true, "", false},
                     {true, "false", false},
                     {true, "invalid value", false},
-                    {true, "True", false},
-                    {true, "TRUE", false},
+                    {true, "True", true},
+                    {true, "TRUE", true},
                     {true, "true", true}};
 
   for (const auto& test_case : kTestCases) {
@@ -247,8 +257,9 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
         {{kSuppressNotificationsParameterName,
           test_case.suppress_notifications_param}});
 
+    Configuration actual_configuration = GetActiveConfiguration();
     EXPECT_EQ(test_case.expected_suppress_notifications_value,
-              ShouldSuppressNotifications());
+              actual_configuration.should_suppress_notifications);
   }
 }
 
@@ -264,8 +275,8 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
                     {true, "", false},
                     {true, "false", false},
                     {true, "invalid value", false},
-                    {true, "True", false},
-                    {true, "TRUE", false},
+                    {true, "True", true},
+                    {true, "TRUE", true},
                     {true, "true", true}};
 
   for (const auto& test_case : kTestCases) {
@@ -280,8 +291,9 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
         {{kWhitelistSiteOnReloadParameterName,
           test_case.whitelist_site_on_reload_param}});
 
+    Configuration actual_configuration = GetActiveConfiguration();
     EXPECT_EQ(test_case.expected_whitelist_site_on_reload_value,
-              ShouldWhitelistSiteOnReload());
+              actual_configuration.should_whitelist_site_on_reload);
   }
 }
 

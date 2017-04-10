@@ -459,7 +459,7 @@ class ContentSubresourceFilterDriverFactoryTest
 
  private:
   static bool expected_measure_performance() {
-    const double rate = GetPerformanceMeasurementRate();
+    const double rate = GetActiveConfiguration().performance_measurement_rate;
     // Note: The case when 0 < rate < 1 is not deterministic, don't test it.
     EXPECT_TRUE(rate == 0 || rate == 1);
     return rate == 1;
@@ -520,6 +520,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
@@ -534,6 +535,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, NoActivationWhenNoMatch) {
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATION_LIST_NOT_MATCHED);
 }
@@ -546,6 +548,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   EmulateInPageNavigation({false}, EMPTY, ActivationDecision::ACTIVATED);
 }
 
@@ -556,6 +559,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           ActivationDecision::ACTIVATED);
 }
@@ -568,6 +572,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial,
       "1" /* performance_measurement_rate */);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           ActivationDecision::ACTIVATED);
 }
@@ -577,6 +582,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   const GURL url(kExampleUrl);
   NavigateAndExpectActivation({false}, {url}, EMPTY,
                               ActivationDecision::ACTIVATED);
@@ -591,6 +597,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
   struct RedirectRedirectChainMatchPatternTestData {
     std::vector<bool> blacklisted_urls;
     std::vector<GURL> navigation_chain;
@@ -684,6 +691,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, NotificationVisibility) {
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeAllSites);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
@@ -700,6 +708,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       kActivationScopeAllSites, "" /* activation_lists */,
       "" /* performance_measurement_rate */,
       "true" /* suppress_notifications */);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
@@ -742,6 +751,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
         kActivationScopeAllSites, "" /* activation_lists */,
         "" /* performance_measurement_rate */, "" /* suppress_notifications */,
         "true" /* whitelist_site_on_reload */);
+    factory()->set_configuration_for_testing(GetActiveConfiguration());
 
     NavigateAndExpectActivation(
         {false}, {GURL(kExampleUrl)},
@@ -764,6 +774,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, test_data.activation_level,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
@@ -771,7 +782,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
   factory()->AddHostOfURLToWhitelistSet(url);
   NavigateAndExpectActivation(
       {true}, {GURL(kExampleUrlWithParams)}, NO_REDIRECTS_HIT,
-      GetMaximumActivationLevel() == ActivationLevel::DISABLED
+      GetActiveConfiguration().activation_level == ActivationLevel::DISABLED
           ? ActivationDecision::ACTIVATION_DISABLED
           : ActivationDecision::URL_WHITELISTED);
 }
@@ -785,6 +796,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       kActivationScopeActivationList, test_data.activation_list);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
   std::vector<GURL> navigation_chain;
@@ -808,6 +820,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       test_data.activation_scope,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   const GURL test_url(kExampleUrlWithParams);
 
@@ -821,7 +834,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
     NavigateAndExpectActivation(
         {test_data.url_matches_activation_list}, {GURL(kExampleUrlWithParams)},
         expected_pattern,
-        GetCurrentActivationScope() == ActivationScope::NO_SITES
+        GetActiveConfiguration().activation_scope == ActivationScope::NO_SITES
             ? ActivationDecision::ACTIVATION_DISABLED
             : ActivationDecision::URL_WHITELISTED);
   }
@@ -837,6 +850,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
       test_data.activation_scope,
       kActivationListSocialEngineeringAdsInterstitial);
+  factory()->set_configuration_for_testing(GetActiveConfiguration());
 
   // data URLs are also not supported, but not listed here, as it's not possible
   // for a page to redirect to them after https://crbug.com/594215 is fixed.
@@ -850,7 +864,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
     RedirectChainMatchPattern expected_pattern = EMPTY;
     NavigateAndExpectActivation(
         {test_data.url_matches_activation_list}, {GURL(url)}, expected_pattern,
-        GetCurrentActivationScope() == ActivationScope::NO_SITES
+        GetActiveConfiguration().activation_scope == ActivationScope::NO_SITES
             ? ActivationDecision::ACTIVATION_DISABLED
             : ActivationDecision::UNSUPPORTED_SCHEME);
   }

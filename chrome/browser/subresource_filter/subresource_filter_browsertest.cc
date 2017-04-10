@@ -260,7 +260,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   }
 
   virtual void SetUpActivationFeature() {
-    scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
+    ToggleFeatures(base::MakeUnique<ScopedSubresourceFilterFeatureToggle>(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
         kActivationScopeActivationList, kActivationListPhishingInterstitial,
         measure_performance_ ? "1" : "0", "" /* suppress_notifications */,
@@ -362,8 +362,12 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
         test_ruleset_publisher_.SetRuleset(test_ruleset_pair.unindexed));
   }
 
-  void set_scoped_feature_toggle(ScopedSubresourceFilterFeatureToggle* toggle) {
-    scoped_feature_toggle_.reset(toggle);
+  void ToggleFeatures(
+      std::unique_ptr<ScopedSubresourceFilterFeatureToggle> features) {
+    scoped_feature_toggle_ = std::move(features);
+    ContentSubresourceFilterDriverFactory* driver_factory =
+        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
+    driver_factory->set_configuration_for_testing(GetActiveConfiguration());
   }
 
  private:
@@ -459,7 +463,7 @@ class SubresourceFilterListBrowserTest
       : SubresourceFilterBrowserTestImpl(false, false) {}
 
   void SetUpActivationFeature() override {
-    set_scoped_feature_toggle(new ScopedSubresourceFilterFeatureToggle(
+    ToggleFeatures(base::MakeUnique<ScopedSubresourceFilterFeatureToggle>(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
         kActivationScopeActivationList, kActivationListSubresourceFilter, "0",
         "" /* suppress_notifications */, "false"));
