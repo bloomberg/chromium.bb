@@ -154,22 +154,6 @@ class MockClient : public VideoCaptureDevice::Client {
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 
-class DeviceEnumerationListener
-    : public base::RefCounted<DeviceEnumerationListener> {
- public:
-  MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
-               void(VideoCaptureDeviceDescriptors* descriptors));
-  // GMock doesn't support move-only arguments, so we use this forward method.
-  void OnEnumeratedDevicesCallback(
-      std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors) {
-    OnEnumeratedDevicesCallbackPtr(descriptors.release());
-  }
-
- private:
-  friend class base::RefCounted<DeviceEnumerationListener>;
-  virtual ~DeviceEnumerationListener() {}
-};
-
 class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
@@ -216,8 +200,8 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
  protected:
   FakeVideoCaptureDeviceBase()
       : loop_(new base::MessageLoop()),
+        descriptors_(new VideoCaptureDeviceDescriptors()),
         client_(CreateClient()),
-        device_enumeration_listener_(new DeviceEnumerationListener()),
         image_capture_client_(new ImageCaptureClient()),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
@@ -238,26 +222,12 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
     run_loop_->Run();
   }
 
-  std::unique_ptr<VideoCaptureDeviceDescriptors> EnumerateDevices() {
-    VideoCaptureDeviceDescriptors* descriptors;
-    EXPECT_CALL(*device_enumeration_listener_.get(),
-                OnEnumeratedDevicesCallbackPtr(_))
-        .WillOnce(SaveArg<0>(&descriptors));
-
-    video_capture_device_factory_->EnumerateDeviceDescriptors(
-        base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
-                   device_enumeration_listener_));
-    base::RunLoop().RunUntilIdle();
-    return std::unique_ptr<VideoCaptureDeviceDescriptors>(descriptors);
-  }
-
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
-  VideoCaptureDeviceDescriptors descriptors_;
   const std::unique_ptr<base::MessageLoop> loop_;
+  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockClient> client_;
-  const scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   const scoped_refptr<ImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
   const std::unique_ptr<FakeVideoCaptureDeviceFactory>
@@ -281,9 +251,8 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
     return;
   }
 
-  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
-      EnumerateDevices());
-  ASSERT_FALSE(descriptors->empty());
+  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
+  ASSERT_FALSE(descriptors_->empty());
 
   std::unique_ptr<VideoCaptureDevice> device =
       FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
@@ -331,15 +300,14 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   video_capture_device_factory_->SetToDefaultDevicesConfig(4);
-  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
-      EnumerateDevices());
-  ASSERT_EQ(4u, descriptors->size());
+  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
+  ASSERT_EQ(4u, descriptors_->size());
   const VideoPixelFormat expected_format_by_device_index[] = {
       PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_MJPEG,
       PIXEL_FORMAT_I420};
 
   int device_index = 0;
-  for (const auto& descriptors_iterator : *descriptors) {
+  for (const auto& descriptors_iterator : *descriptors_) {
     VideoCaptureFormats supported_formats;
     video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
                                                        &supported_formats);
@@ -373,11 +341,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
 TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
   const size_t device_count = 2;
   video_capture_device_factory_->SetToDefaultDevicesConfig(device_count);
-  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
-      EnumerateDevices());
-  ASSERT_EQ(device_count, descriptors->size());
-  ASSERT_FALSE(descriptors->at(0).camera_calibration);
-  const VideoCaptureDeviceDescriptor& depth_device = descriptors->at(1);
+  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
+  ASSERT_EQ(device_count, descriptors_->size());
+  ASSERT_FALSE(descriptors_->at(0).camera_calibration);
+  const VideoCaptureDeviceDescriptor& depth_device = descriptors_->at(1);
   EXPECT_EQ("/dev/video1", depth_device.device_id);
   ASSERT_TRUE(depth_device.camera_calibration);
   EXPECT_EQ(135.0, depth_device.camera_calibration->focal_length_x);
@@ -561,15 +528,14 @@ TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
   device_setting.device_id = "Device with no supported formats";
   config.emplace_back(device_setting);
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
-
-  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
-      EnumerateDevices());
-  EXPECT_EQ(1u, descriptors->size());
+  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
+  EXPECT_EQ(1u, descriptors_->size());
   media::VideoCaptureFormats supported_formats;
-  video_capture_device_factory_->GetSupportedFormats(descriptors->at(0),
+  video_capture_device_factory_->GetSupportedFormats(descriptors_->at(0),
                                                      &supported_formats);
   EXPECT_EQ(0u, supported_formats.size());
-  auto device = video_capture_device_factory_->CreateDevice(descriptors->at(0));
+  auto device =
+      video_capture_device_factory_->CreateDevice(descriptors_->at(0));
   EXPECT_TRUE(device.get());
 
   auto client = CreateClient();
@@ -586,13 +552,11 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
   FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       GetParam().switch_value_string, &config);
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
-
-  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
-      EnumerateDevices());
-  EXPECT_EQ(GetParam().expected_device_count, descriptors->size());
+  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
+  EXPECT_EQ(GetParam().expected_device_count, descriptors_->size());
 
   int device_index = 0;
-  for (const auto& descriptors_iterator : *descriptors) {
+  for (const auto& descriptors_iterator : *descriptors_) {
     media::VideoCaptureFormats supported_formats;
     video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
                                                        &supported_formats);

@@ -15,7 +15,7 @@ namespace media {
 // devices in the different platforms. VCDFs are created by MediaStreamManager
 // on IO thread and plugged into VideoCaptureManager, who owns and operates them
 // in Device Thread (a.k.a. Audio Thread).
-// Typical operation is to first call EnumerateDeviceDescriptors() to obtain
+// Typical operation is to first call GetDeviceDescriptors() to obtain
 // information about available devices. The obtained descriptors can then be
 // used to either obtain the supported formats of a device using
 // GetSupportedFormats(), or to create an instance of VideoCaptureDevice for
@@ -34,13 +34,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
   // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
   virtual std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) = 0;
-
-  // Asynchronous version of GetDeviceDescriptors calling back to |callback|.
-  // TODO(chfremer): Consider removing this if none of the implementations
-  // overrides it. See crbug.com/708233.
-  virtual void EnumerateDeviceDescriptors(
-      const base::Callback<
-          void(std::unique_ptr<VideoCaptureDeviceDescriptors>)>& callback);
 
   // Obtains the supported formats of a device.
   // This method should be called before allocating or starting a device. In

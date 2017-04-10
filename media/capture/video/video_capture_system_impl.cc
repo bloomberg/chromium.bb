@@ -68,33 +68,14 @@ VideoCaptureSystemImpl::~VideoCaptureSystemImpl() = default;
 void VideoCaptureSystemImpl::GetDeviceInfosAsync(
     const DeviceInfoCallback& result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Use of Unretained() is safe assuming that |result_callback| has ownership
-  // of |this|.
-  factory_->EnumerateDeviceDescriptors(media::BindToCurrentLoop(
-      base::Bind(&VideoCaptureSystemImpl::OnDescriptorsReceived,
-                 base::Unretained(this), result_callback)));
-}
-
-// Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
-std::unique_ptr<VideoCaptureDevice> VideoCaptureSystemImpl::CreateDevice(
-    const std::string& device_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const VideoCaptureDeviceInfo* device_info = LookupDeviceInfoFromId(device_id);
-  if (!device_info)
-    return nullptr;
-  return factory_->CreateDevice(device_info->descriptor);
-}
-
-void VideoCaptureSystemImpl::OnDescriptorsReceived(
-    const DeviceInfoCallback& result_callback,
-    std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  VideoCaptureDeviceDescriptors descriptors;
+  factory_->GetDeviceDescriptors(&descriptors);
   // For devices for which we already have an entry in |devices_info_cache_|,
   // we do not want to query the |factory_| for supported formats again. We
   // simply copy them from |devices_info_cache_|.
   std::vector<VideoCaptureDeviceInfo> new_devices_info_cache;
-  new_devices_info_cache.reserve(descriptors->size());
-  for (const auto& descriptor : *descriptors) {
+  new_devices_info_cache.reserve(descriptors.size());
+  for (const auto& descriptor : descriptors) {
     if (auto* cached_info = LookupDeviceInfoFromId(descriptor.device_id)) {
       new_devices_info_cache.push_back(*cached_info);
     } else {
@@ -108,6 +89,16 @@ void VideoCaptureSystemImpl::OnDescriptorsReceived(
 
   devices_info_cache_.swap(new_devices_info_cache);
   result_callback.Run(devices_info_cache_);
+}
+
+// Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
+std::unique_ptr<VideoCaptureDevice> VideoCaptureSystemImpl::CreateDevice(
+    const std::string& device_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const VideoCaptureDeviceInfo* device_info = LookupDeviceInfoFromId(device_id);
+  if (!device_info)
+    return nullptr;
+  return factory_->CreateDevice(device_info->descriptor);
 }
 
 const VideoCaptureDeviceInfo* VideoCaptureSystemImpl::LookupDeviceInfoFromId(

@@ -37,7 +37,7 @@ enum class VideoCaptureTransportType {
 };
 
 // Represents information about a capture device as returned by
-// VideoCaptureDeviceFactory::EnumerateDeviceDescriptors().
+// VideoCaptureDeviceFactory::GetDeviceDescriptors().
 // |device_id| represents a unique id of a physical device. Since the same
 // physical device may be accessible through different APIs |capture_api|
 // disambiguates the API.

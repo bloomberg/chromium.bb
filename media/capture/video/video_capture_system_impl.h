@@ -23,10 +23,6 @@ class CAPTURE_EXPORT VideoCaptureSystemImpl : public VideoCaptureSystem {
       const std::string& device_id) override;
 
  private:
-  void OnDescriptorsReceived(
-      const DeviceInfoCallback& result_callback,
-      std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors);
-
   // Returns nullptr if no descriptor found.
   const VideoCaptureDeviceInfo* LookupDeviceInfoFromId(
       const std::string& device_id);
