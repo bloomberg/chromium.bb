@@ -88,12 +88,6 @@ void DisplayClientCompositorFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void DisplayClientCompositorFrameSink::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  // TODO(fsamuel, staraz): Implement this.
-}
-
 void DisplayClientCompositorFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   DCHECK(thread_checker_->CalledOnValidThread());

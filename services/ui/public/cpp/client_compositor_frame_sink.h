@@ -51,8 +51,6 @@ class ClientCompositorFrameSink
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
 
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

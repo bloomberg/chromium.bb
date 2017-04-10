@@ -76,10 +76,7 @@ void OffscreenCanvasCompositorFrameSink::ReclaimResources(
 
 void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
     const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  if (client_)
-    client_->WillDrawSurface(local_surface_id, damage_rect);
-}
+    const gfx::Rect& damage_rect) {}
 
 void OffscreenCanvasCompositorFrameSink::OnClientConnectionLost() {
   provider_->OnCompositorFrameSinkClientConnectionLost(

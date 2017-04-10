@@ -450,12 +450,6 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
   }
 }
 
-void OffscreenCanvasFrameDispatcherImpl::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
-    ::gfx::mojom::blink::RectPtr damage_rect) {
-  // TODO(fsamuel, staraz): Implement this.
-}
-
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResource(unsigned resource_id) {
   // An image resource needs to be returned by both the
   // CompositorFrameSink and the HTMLCanvasElement. These

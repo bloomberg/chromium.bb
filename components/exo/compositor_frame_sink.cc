@@ -66,10 +66,4 @@ void CompositorFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void CompositorFrameSink::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  client_->WillDrawSurface(local_surface_id, damage_rect);
-}
-
 }  // namespace exo

@@ -48,8 +48,6 @@ class CompositorFrameSinkHolder
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
 
   // Overridden from cc::ExternalBeginFrameSourceClient:
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

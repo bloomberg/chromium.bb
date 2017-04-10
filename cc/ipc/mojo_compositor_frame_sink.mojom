@@ -59,9 +59,6 @@ interface MojoCompositorFrameSinkClient {
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   ReclaimResources(ReturnedResourceArray resources);
-
-  // Called when surface is being scheduled for a draw.
-  WillDrawSurface(LocalSurfaceId local_surface_id, gfx.mojom.Rect damage_rect);
 };
 
 // MojoCompositorFrameSinkPrivate is used by the display compositor host to

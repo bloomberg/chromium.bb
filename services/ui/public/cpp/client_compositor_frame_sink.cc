@@ -134,12 +134,6 @@ void ClientCompositorFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void ClientCompositorFrameSink::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  // TODO(fsamuel, staraz): Implement this.
-}
-
 void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
 }

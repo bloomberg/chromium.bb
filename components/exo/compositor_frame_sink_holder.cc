@@ -61,10 +61,6 @@ void CompositorFrameSinkHolder::ReclaimResources(
   }
 }
 
-void CompositorFrameSinkHolder::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // cc::ExternalBeginFrameSourceClient overrides:
 
