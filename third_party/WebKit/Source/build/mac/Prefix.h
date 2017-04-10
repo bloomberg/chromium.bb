@@ -48,7 +48,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
