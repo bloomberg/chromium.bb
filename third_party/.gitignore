@@ -49,7 +49,7 @@
 /drmemory/unpacked
 /elfutils/src
 /errorprone/lib
-/espresso/lib/*.jar
+/espresso/lib/*-2.2.1-*.jar
 /eyesfree/src
 /ffmpeg
 /findbugs
