@@ -75,30 +75,40 @@ class LocalDeviceInstrumentationTestRun(
         self._env.BlacklistDevice)
     @trace_event.traced
     def individual_device_set_up(dev, host_device_tuples):
-      def install_apk():
-        if self._test_instance.apk_under_test:
-          if self._test_instance.apk_under_test_incremental_install_script:
-            local_device_test_run.IncrementalInstall(
-                dev,
-                self._test_instance.apk_under_test,
-                self._test_instance.apk_under_test_incremental_install_script)
-          else:
-            permissions = self._test_instance.apk_under_test.GetPermissions()
-            dev.Install(self._test_instance.apk_under_test,
-                        permissions=permissions)
+      steps = []
+      def install_helper(apk, permissions):
+        return lambda: dev.Install(apk, permissions=permissions)
+      def incremental_install_helper(dev, apk, script):
+        return lambda: local_device_test_run.IncrementalInstall(
+                           dev, apk, script)
 
-        if self._test_instance.test_apk_incremental_install_script:
-          local_device_test_run.IncrementalInstall(
-              dev,
-              self._test_instance.test_apk,
-              self._test_instance.test_apk_incremental_install_script)
+      if self._test_instance.apk_under_test:
+        if self._test_instance.apk_under_test_incremental_install_script:
+          steps.append(incremental_install_helper(
+                           dev,
+                           self._test_instance.apk_under_test,
+                           self._test_instance.
+                               apk_under_test_incremental_install_script))
         else:
-          permissions = self._test_instance.test_apk.GetPermissions()
-          dev.Install(self._test_instance.test_apk, permissions=permissions)
+          permissions = self._test_instance.apk_under_test.GetPermissions()
+          steps.append(install_helper(self._test_instance.apk_under_test,
+                                      permissions))
 
-        for apk in self._test_instance.additional_apks:
-          dev.Install(apk)
+      if self._test_instance.test_apk_incremental_install_script:
+        steps.append(incremental_install_helper(
+                         dev,
+                         self._test_instance.test_apk,
+                         self._test_instance.
+                             test_apk_incremental_install_script))
+      else:
+        permissions = self._test_instance.test_apk.GetPermissions()
+        steps.append(install_helper(self._test_instance.test_apk,
+                                    permissions))
 
+      steps.extend(install_helper(apk, None)
+                   for apk in self._test_instance.additional_apks)
+
+      def set_debug_app():
         # Set debug app in order to enable reading command line flags on user
         # builds
         if self._test_instance.flags:
@@ -165,8 +175,8 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
-      steps = (install_apk, edit_shared_prefs, push_test_data,
-               create_flag_changer)
+      steps += [set_debug_app, edit_shared_prefs, push_test_data,
+                create_flag_changer]
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(steps)
       else:
