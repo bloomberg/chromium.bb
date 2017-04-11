@@ -25,13 +25,13 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
 
   // From blink::Platform:
   void CacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
-    cached_ur_ls_.push_back(url);
+    cached_urls_.push_back(url);
   }
 
-  const Vector<WebURL>& CachedURLs() const { return cached_ur_ls_; }
+  const Vector<WebURL>& CachedURLs() const { return cached_urls_; }
 
  private:
-  Vector<WebURL> cached_ur_ls_;
+  Vector<WebURL> cached_urls_;
 };
 
 ResourceResponse CreateTestResourceResponse() {

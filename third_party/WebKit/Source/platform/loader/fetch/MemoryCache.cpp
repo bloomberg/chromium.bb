@@ -291,7 +291,7 @@ void MemoryCache::TypeStatistic::AddResource(Resource* o) {
   decoded_size += o->DecodedSize();
   encoded_size += o->EncodedSize();
   overhead_size += o->OverheadSize();
-  encoded_size_duplicated_in_data_ur_ls +=
+  encoded_size_duplicated_in_data_urls +=
       o->Url().ProtocolIsData() ? o->EncodedSize() : 0;
 }
 
