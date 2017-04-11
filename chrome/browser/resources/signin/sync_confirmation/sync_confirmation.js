@@ -32,6 +32,7 @@ cr.define('sync.confirmation', function() {
 
   function clearFocus() {
     document.activeElement.blur();
+    document.documentElement.classList.add('focus-allowed');
   }
 
   function setUserImageURL(url) {

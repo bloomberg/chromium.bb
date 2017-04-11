@@ -26,6 +26,11 @@
         --paper-checkbox-unchecked-color: var(--paper-grey-600);
         -webkit-margin-start: 2px;
       }
+<if expr="is_macosx">
+      html:not(.focus-allowed) paper-checkbox {
+        --paper-checkbox-ink-size: 0;
+      }
+</if>
     </style>
   </head>
   <body>
