@@ -132,6 +132,23 @@ void InsertBestBindAddressChromeOS(const chromeos::NetworkTypePattern& type,
     bind_address_list->push_back(bind_ip_address);
   }
 }
+
+net::IPAddressList GetBestBindAddressOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  net::IPAddressList bind_address_list;
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::Ethernet(),
+                                  &bind_address_list);
+    InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::WiFi(),
+                                  &bind_address_list);
+  } else {
+    VLOG(1) << "InsertBestBindAddressChromeOSOnUIThread called with "
+               "uninitialized NetworkHandler";
+  }
+  return bind_address_list;
+}
+
 #else
 NetworkInterfaceList GetNetworkListOnFileThread() {
   NetworkInterfaceList list;
@@ -433,16 +450,10 @@ void DialServiceImpl::StartDiscovery() {
   }
 
 #if defined(OS_CHROMEOS)
-  // The ChromeOS specific version of getting network interfaces does not
-  // require trampolining to another thread, and contains additional interface
-  // information such as interface types (i.e. wifi vs cellular).
-  net::IPAddressList chrome_os_address_list;
-  InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::Ethernet(),
-                                &chrome_os_address_list);
-  InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::WiFi(),
-                                &chrome_os_address_list);
-  DiscoverOnAddresses(chrome_os_address_list);
-
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE, base::Bind(&GetBestBindAddressOnUIThread),
+      base::Bind(&DialServiceImpl::DiscoverOnAddresses,
+                 weak_factory_.GetWeakPtr()));
 #else
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE, base::Bind(&GetNetworkListOnFileThread),
