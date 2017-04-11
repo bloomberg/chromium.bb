@@ -34,7 +34,7 @@ bool MockTranslateDriver::IsLinkNavigation() {
 }
 
 
-bool MockTranslateDriver::IsOffTheRecord() {
+bool MockTranslateDriver::IsIncognito() {
   return false;
 }
 

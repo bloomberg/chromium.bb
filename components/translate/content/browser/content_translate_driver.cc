@@ -126,7 +126,7 @@ void ContentTranslateDriver::RevertTranslation(int page_seq_no) {
   it->second->RevertTranslation();
 }
 
-bool ContentTranslateDriver::IsOffTheRecord() {
+bool ContentTranslateDriver::IsIncognito() {
   return navigation_controller_->GetBrowserContext()->IsOffTheRecord();
 }
 

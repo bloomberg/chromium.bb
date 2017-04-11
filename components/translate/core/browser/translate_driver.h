@@ -34,8 +34,8 @@ class TranslateDriver {
   // Reverts the contents of the page to its original language.
   virtual void RevertTranslation(int page_seq_no) = 0;
 
-  // Returns whether the user is currently operating in off-the-record mode.
-  virtual bool IsOffTheRecord() = 0;
+  // Returns whether the user is currently operating in incognito mode.
+  virtual bool IsIncognito() = 0;
 
   // Returns the mime type of the current page.
   virtual const std::string& GetContentsMimeType() = 0;

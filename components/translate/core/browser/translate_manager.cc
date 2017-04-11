@@ -281,7 +281,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // automatically translate.  Note that in incognito mode we disable that
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
-  if (!translate_driver_->IsOffTheRecord()) {
+  if (!translate_driver_->IsIncognito()) {
     std::string auto_target_lang =
         GetAutoTargetLanguage(language_code, translate_prefs.get());
     if (!auto_target_lang.empty()) {
@@ -441,7 +441,7 @@ void TranslateManager::DoTranslatePage(const std::string& translate_script,
 // Notifies |g_callback_list_| of translate errors.
 void TranslateManager::NotifyTranslateError(TranslateErrors::Type error_type) {
   if (!g_callback_list_ || error_type == TranslateErrors::NONE ||
-      translate_driver_->IsOffTheRecord()) {
+      translate_driver_->IsIncognito()) {
     return;
   }
 

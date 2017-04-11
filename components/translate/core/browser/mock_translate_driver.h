@@ -38,7 +38,7 @@ class MockTranslateDriver : public TranslateDriver {
 
   void RevertTranslation(int page_seq_no) override {}
 
-  bool IsOffTheRecord() override;
+  bool IsIncognito() override;
 
   const std::string& GetContentsMimeType() override;
 

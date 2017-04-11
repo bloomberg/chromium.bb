@@ -209,7 +209,7 @@ std::string TranslateUIDelegate::GetTargetLanguageCode() const {
 }
 
 void TranslateUIDelegate::Translate() {
-  if (!translate_driver_->IsOffTheRecord()) {
+  if (!translate_driver_->IsIncognito()) {
     prefs_->ResetTranslationDeniedCount(GetOriginalLanguageCode());
     prefs_->ResetTranslationIgnoredCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationAcceptedCount(GetOriginalLanguageCode());
@@ -232,7 +232,7 @@ void TranslateUIDelegate::RevertTranslation() {
 }
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
-  if (!translate_driver_->IsOffTheRecord()) {
+  if (!translate_driver_->IsIncognito()) {
     const std::string& language = GetOriginalLanguageCode();
     if (explicitly_closed) {
       prefs_->ResetTranslationAcceptedCount(language);
