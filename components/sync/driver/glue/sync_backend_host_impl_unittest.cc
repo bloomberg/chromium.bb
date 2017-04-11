@@ -59,10 +59,6 @@ namespace {
 static const base::FilePath::CharType kTestSyncDir[] =
     FILE_PATH_LITERAL("sync-test");
 
-ACTION_P(Signal, event) {
-  event->Signal();
-}
-
 void EmptyNetworkTimeUpdate(const base::Time&,
                             const base::TimeDelta&,
                             const base::TimeDelta&) {}
