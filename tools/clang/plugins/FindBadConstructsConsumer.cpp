@@ -216,8 +216,14 @@ bool FindBadConstructsConsumer::VisitVarDecl(clang::VarDecl* var_decl) {
   return true;
 }
 
-void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
+void FindBadConstructsConsumer::CheckChromeClass(LocationType location_type,
+                                                 SourceLocation record_location,
                                                  CXXRecordDecl* record) {
+  // TODO(dcheng): After emitWarning() is removed, move warning filtering into
+  // ReportIfSpellingLocNotIgnored.
+  if (location_type == LocationType::kBlink)
+    return;
+
   bool implementation_file = InImplementationFile(record_location);
 
   if (!implementation_file) {
@@ -245,9 +251,13 @@ void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
   CheckWeakPtrFactoryMembers(record_location, record);
 }
 
-void FindBadConstructsConsumer::CheckChromeEnum(SourceLocation enum_location,
+void FindBadConstructsConsumer::CheckChromeEnum(LocationType location_type,
+                                                SourceLocation enum_location,
                                                 EnumDecl* enum_decl) {
   if (!options_.check_enum_last_value)
+    return;
+
+  if (location_type == LocationType::kBlink)
     return;
 
   bool got_one = false;
@@ -451,9 +461,12 @@ SuppressibleDiagnosticBuilder
 FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
     SourceLocation loc,
     unsigned diagnostic_id) {
-  return SuppressibleDiagnosticBuilder(
-      &diagnostic(), loc, diagnostic_id,
-      InBannedDirectory(instance().getSourceManager().getSpellingLoc(loc)));
+  LocationType type =
+      ClassifyLocation(instance().getSourceManager().getSpellingLoc(loc));
+  bool ignored =
+      type == LocationType::kThirdParty || type == LocationType::kBlink;
+  return SuppressibleDiagnosticBuilder(&diagnostic(), loc, diagnostic_id,
+                                       ignored);
 }
 
 // Checks that virtual methods are correctly annotated, and have no body in a
@@ -609,7 +622,8 @@ void FindBadConstructsConsumer::CheckVirtualBodies(
         bool emit = true;
         if (loc.isMacroID()) {
           SourceManager& manager = instance().getSourceManager();
-          if (InBannedDirectory(manager.getSpellingLoc(loc)))
+          LocationType type = ClassifyLocation(manager.getSpellingLoc(loc));
+          if (type == LocationType::kThirdParty || type == LocationType::kBlink)
             emit = false;
           else {
             StringRef name = Lexer::getImmediateMacroName(
@@ -998,8 +1012,10 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
           // Check if we should even be considering this type (note that there
           // should be fewer auto types than banned namespace/directory types,
           // so check this last.
+          LocationType location_type =
+              ClassifyLocation(var_decl->getLocStart());
           if (!InBannedNamespace(var_decl) &&
-              !InBannedDirectory(var_decl->getLocStart())) {
+              location_type != LocationType::kThirdParty) {
             // The range starts from |var_decl|'s loc start, which is the
             // beginning of the full expression defining this |var_decl|. It
             // ends, however, where this |var_decl|'s type loc ends, since

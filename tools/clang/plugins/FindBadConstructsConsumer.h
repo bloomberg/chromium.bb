@@ -56,9 +56,11 @@ class FindBadConstructsConsumer
   bool VisitCallExpr(clang::CallExpr* call_expr);
 
   // ChromeClassTester overrides:
-  void CheckChromeClass(clang::SourceLocation record_location,
+  void CheckChromeClass(LocationType location_type,
+                        clang::SourceLocation record_location,
                         clang::CXXRecordDecl* record) override;
-  void CheckChromeEnum(clang::SourceLocation enum_location,
+  void CheckChromeEnum(LocationType location_type,
+                       clang::SourceLocation enum_location,
                        clang::EnumDecl* enum_decl) override;
 
  private:
