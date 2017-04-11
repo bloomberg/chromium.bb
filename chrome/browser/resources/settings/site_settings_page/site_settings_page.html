@@ -184,6 +184,26 @@
           aria-label="$i18n{siteSettingsPopups}"
           aria-describedby="popupsSecondary"></button>
     </div>
+    <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]">
+      <div class="settings-box two-line"
+          category$="[[ContentSettingsTypes.SUBRESOURCE_FILTER]]"
+          data-route="SITE_SETTINGS_SUBRESOURCE_FILTER" on-tap="onTapNavigate_"
+          actionable>
+        <iron-icon icon="cr:open-in-new"></iron-icon>
+        <div class="middle">
+          $i18n{siteSettingsSubresourceFilter}
+          <div class="secondary" id="subresourceFilterSecondary">
+            [[defaultSettingLabel_(
+                default_.subresourceFilter,
+                '$i18nPolymer{siteSettingsSubresourceFilterBlock}',
+                '$i18nPolymer{siteSettingsSubresourceFilterAllow}')]]
+          </div>
+        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{siteSettingsSubresourceFilter}"
+            aria-describedby="subresourceFilterSecondary"></button>
+      </div>
+    </template>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.BACKGROUND_SYNC]]"
         data-route="SITE_SETTINGS_BACKGROUND_SYNC" on-tap="onTapNavigate_"
@@ -276,26 +296,6 @@
           aria-label="$i18n{siteSettingsMidiDevices}"
           aria-describedby="midiDevicesSecondary"></button>
     </div>
-    <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]">
-      <div class="settings-box two-line"
-          category$="[[ContentSettingsTypes.SUBRESOURCE_FILTER]]"
-          data-route="SITE_SETTINGS_SUBRESOURCE_FILTER" on-tap="onTapNavigate_"
-          actionable>
-        <iron-icon icon="cr:open-in-new"></iron-icon>
-        <div class="middle">
-          $i18n{siteSettingsSubresourceFilter}
-          <div class="secondary" id="subresourceFilterSecondary">
-            [[defaultSettingLabel_(
-                default_.subresourceFilter,
-                '$i18nPolymer{siteSettingsSubresourceFilterBlock}',
-                '$i18nPolymer{siteSettingsSubresourceFilterAllow}')]]
-          </div>
-        </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="$i18n{siteSettingsSubresourceFilter}"
-            aria-describedby="subresourceFilterSecondary"></button>
-      </div>
-    </template>
     <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
         data-route="SITE_SETTINGS_ZOOM_LEVELS"
         on-tap="onTapNavigate_" actionable>
