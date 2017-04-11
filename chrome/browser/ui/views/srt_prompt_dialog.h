@@ -5,14 +5,21 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SRT_PROMPT_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_SRT_PROMPT_DIALOG_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
+
+namespace gfx {
+class SlideAnimation;
+}
 
 namespace safe_browsing {
 class SRTPromptController;
@@ -34,7 +41,8 @@ class SRTPromptController;
 // interaction with the dialog. See the |SRTPromptController| class's
 // description for more details.
 class SRTPromptDialog : public views::DialogDelegateView,
-                        public views::ButtonListener {
+                        public views::ButtonListener,
+                        public gfx::AnimationDelegate {
  public:
   // The |controller| object manages its own lifetime and is not owned by
   // |SRTPromptDialog|. See the description of the |SRTPromptController| class
@@ -62,7 +70,13 @@ class SRTPromptDialog : public views::DialogDelegateView,
   // views::ButtonListener overrides.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // gfx::AnimationDelegate overrides.
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
  private:
+  class ExpandableMessageView;
+
   SkColor GetDetailsButtonColor();
   void UpdateDetailsButton();
 
@@ -71,7 +85,8 @@ class SRTPromptDialog : public views::DialogDelegateView,
   // user interaction since the controller can delete itself after that point.
   safe_browsing::SRTPromptController* controller_;
 
-  views::View* details_view_;
+  std::unique_ptr<gfx::SlideAnimation> slide_animation_;
+  ExpandableMessageView* details_view_;
   views::LabelButton* details_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SRTPromptDialog);

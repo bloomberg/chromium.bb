@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/safe_browsing/srt_prompt_controller.h"
@@ -17,6 +18,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -152,13 +154,70 @@ views::View* CreateLabelView(int top_vertical_space,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// SRTPromptDialog::ExpandableMessageView
+//
+// A view, whose visibilty can be toggled, and will be used for the details
+// section the main dialog.
+class SRTPromptDialog::ExpandableMessageView : public views::View {
+ public:
+  explicit ExpandableMessageView(const std::vector<LabelInfo>& labels);
+  ~ExpandableMessageView() override;
+
+  void AnimateToState(double state);
+
+  // views::View overrides.
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+
+ private:
+  // A number between 0 and 1 that determines how much of the view's preferred
+  // height should be visible.
+  double animation_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpandableMessageView);
+};
+
+SRTPromptDialog::ExpandableMessageView::ExpandableMessageView(
+    const std::vector<LabelInfo>& labels)
+    : animation_state_(0.0) {
+  // Add the main message view inside a scroll view.
+  views::View* label_view =
+      CreateLabelView(views::kUnrelatedControlLargeHorizontalSpacing, labels);
+  views::ScrollView* scroll_view = new views::ScrollView();
+  scroll_view->ClipHeightTo(kDetailsSectionMaxHeight, kDetailsSectionMaxHeight);
+  scroll_view->SetContents(label_view);
+  scroll_view->SetSize(gfx::Size(kDialogWidth, kDetailsSectionMaxHeight));
+  AddChildView(scroll_view);
+}
+
+SRTPromptDialog::ExpandableMessageView::~ExpandableMessageView() {}
+
+void SRTPromptDialog::ExpandableMessageView::AnimateToState(double state) {
+  DCHECK_LE(0.0, state);
+  DCHECK_GE(1.0, state);
+
+  animation_state_ = state;
+  PreferredSizeChanged();
+}
+
+gfx::Size SRTPromptDialog::ExpandableMessageView::GetPreferredSize() const {
+  return gfx::Size(kDialogWidth, kDetailsSectionMaxHeight * animation_state_);
+}
+
+int SRTPromptDialog::ExpandableMessageView::GetHeightForWidth(int width) const {
+  return GetPreferredSize().height();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SRTPromptDialog
 
 SRTPromptDialog::SRTPromptDialog(safe_browsing::SRTPromptController* controller)
     : browser_(nullptr),
       controller_(controller),
-      details_view_(new views::View()),
-      details_button_(nullptr) {
+      slide_animation_(base::MakeUnique<gfx::SlideAnimation>(this)),
+      details_view_(new ExpandableMessageView(controller_->GetDetailsText())),
+      details_button_(
+          new views::LabelButton(this, controller_->GetShowDetailsLabel())) {
   DCHECK(controller_);
 
   SetLayoutManager(new views::BoxLayout(
@@ -170,15 +229,8 @@ SRTPromptDialog::SRTPromptDialog(safe_browsing::SRTPromptController* controller)
   AddChildView(CreateLabelView(0, controller_->GetMainText()));
   AddChildView(new views::Separator());
 
-  // The details section starts off empty and will be populated when the user
-  // clicks the button to expand the details section. Its child views are
-  // removed when the section is closed.
-  details_view_->SetLayoutManager(new views::FillLayout());
-  details_view_->SetVisible(false);
   AddChildView(details_view_);
 
-  details_button_ =
-      new views::LabelButton(this, controller_->GetShowDetailsLabel());
   details_button_->SetEnabledTextColors(GetDetailsButtonColor());
   UpdateDetailsButton();
   AddChildView(CreateViewWithInsets(
@@ -197,6 +249,7 @@ SRTPromptDialog::~SRTPromptDialog() {
 void SRTPromptDialog::Show(Browser* browser) {
   DCHECK(browser);
   DCHECK(!browser_);
+  DCHECK(controller_);
 
   browser_ = browser;
   constrained_window::CreateBrowserModalDialogViews(
@@ -218,6 +271,7 @@ ui::ModalType SRTPromptDialog::GetModalType() const {
 }
 
 base::string16 SRTPromptDialog::GetWindowTitle() const {
+  DCHECK(controller_);
   return controller_->GetWindowTitle();
 }
 
@@ -226,6 +280,7 @@ base::string16 SRTPromptDialog::GetWindowTitle() const {
 base::string16 SRTPromptDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
+  DCHECK(controller_);
 
   if (button == ui::DIALOG_BUTTON_OK)
     return controller_->GetAcceptButtonLabel();
@@ -261,26 +316,24 @@ void SRTPromptDialog::ButtonPressed(views::Button* sender,
   DCHECK_EQ(sender, details_button_);
   DCHECK(browser_);
 
-  details_view_->SetVisible(!details_view_->visible());
-  if (details_view_->visible()) {
-    // Populate the details view adding the main message view inside a scroll
-    // view.
-    views::View* label_view =
-        CreateLabelView(views::kUnrelatedControlLargeHorizontalSpacing,
-                        controller_->GetDetailsText());
-    views::ScrollView* scroll_view = new views::ScrollView();
-    scroll_view->ClipHeightTo(/*min_height=*/0, kDetailsSectionMaxHeight);
-    scroll_view->SetContents(label_view);
-    details_view_->AddChildView(scroll_view);
-  } else {
-    details_view_->RemoveAllChildViews(/*delete_children=*/true);
-  }
+  if (slide_animation_->IsShowing())
+    slide_animation_->Hide();
+  else
+    slide_animation_->Show();
+}
 
-  UpdateDetailsButton();
+void SRTPromptDialog::AnimationProgressed(const gfx::Animation* animation) {
+  DCHECK_EQ(slide_animation_.get(), animation);
 
+  details_view_->AnimateToState(animation->GetCurrentValue());
   ChromeWebModalDialogManagerDelegate* manager = browser_;
   constrained_window::UpdateWidgetModalDialogPosition(
       GetWidget(), manager->GetWebContentsModalDialogHost());
+}
+
+void SRTPromptDialog::AnimationEnded(const gfx::Animation* animation) {
+  DCHECK_EQ(slide_animation_.get(), animation);
+  UpdateDetailsButton();
 }
 
 SkColor SRTPromptDialog::GetDetailsButtonColor() {
@@ -289,12 +342,13 @@ SkColor SRTPromptDialog::GetDetailsButtonColor() {
 }
 
 void SRTPromptDialog::UpdateDetailsButton() {
-  details_button_->SetText(details_view_->visible()
+  DCHECK(controller_);
+  details_button_->SetText(slide_animation_->IsShowing()
                                ? controller_->GetHideDetailsLabel()
                                : controller_->GetShowDetailsLabel());
   details_button_->SetImage(
       views::Button::STATE_NORMAL,
-      details_view_->visible()
+      slide_animation_->IsShowing()
           ? gfx::CreateVectorIcon(kCaretUpIcon, GetDetailsButtonColor())
           : gfx::CreateVectorIcon(kCaretDownIcon, GetDetailsButtonColor()));
 }
