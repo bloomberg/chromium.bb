@@ -585,12 +585,7 @@ PendingScript* HTMLParserScriptRunner::RequestPendingScript(
     Element* element) const {
   ScriptElementBase* script_element =
       ScriptElementBase::FromElementIfPossible(element);
-  ScriptResource* resource = script_element->Loader()->GetResource();
-  // Here |resource| should be non-null. If it were nullptr,
-  // ScriptLoader::fetchScript() should have returned false and
-  // thus the control shouldn't have reached here.
-  CHECK(resource);
-  return PendingScript::Create(script_element, resource);
+  return script_element->Loader()->CreatePendingScript();
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'

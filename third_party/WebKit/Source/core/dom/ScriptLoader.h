@@ -67,6 +67,11 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                      LegacyTypeSupport = kDisallowLegacyTypeInTypeAttribute);
 
   String ScriptContent() const;
+
+  // Creates a PendingScript for external script whose fetch is started in
+  // fetchScript().
+  PendingScript* CreatePendingScript();
+
   // Returns false if and only if execution was blocked.
   bool ExecuteScript(const ScriptSourceCode&);
   virtual void Execute();

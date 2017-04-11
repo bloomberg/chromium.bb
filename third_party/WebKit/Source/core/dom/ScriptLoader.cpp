@@ -324,7 +324,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // completion to be able to remove it from the memory cache.
   if (document_write_intervention_ ==
       DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    pending_script_ = PendingScript::Create(element_.Get(), resource_.Get());
+    pending_script_ = CreatePendingScript();
     pending_script_->WatchForLoad(this);
     return true;
   }
@@ -410,7 +410,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // "Add the element to the end of the list of scripts that will execute
     // in order as soon as possible associated with the node document of the
     // script element at the time the prepare a script algorithm started."
-    pending_script_ = PendingScript::Create(element_.Get(), resource_.Get());
+    pending_script_ = CreatePendingScript();
     async_exec_type_ = ScriptRunner::kInOrder;
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
@@ -432,7 +432,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // "The element must be added to the set of scripts that will execute
     //  as soon as possible of the node document of the script element at the
     //  time the prepare a script algorithm started."
-    pending_script_ = PendingScript::Create(element_.Get(), resource_.Get());
+    pending_script_ = CreatePendingScript();
     async_exec_type_ = ScriptRunner::kAsync;
     pending_script_->StartStreamingIfPossible(&element_->GetDocument(),
                                               ScriptStreamer::kAsync);
@@ -587,6 +587,11 @@ bool ScriptLoader::FetchScript(const String& source_url,
   }
 
   return true;
+}
+
+PendingScript* ScriptLoader::CreatePendingScript() {
+  CHECK(resource_);
+  return PendingScript::Create(element_, resource_);
 }
 
 void ScriptLoader::LogScriptMIMEType(LocalFrame* frame,
