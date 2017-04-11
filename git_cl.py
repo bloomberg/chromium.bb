@@ -1050,7 +1050,7 @@ class _ParsedIssueNumberArgument(object):
     return self.issue is not None
 
 
-def ParseIssueNumberArgument(arg):
+def ParseIssueNumberArgument(arg, codereview=None):
   """Parses the issue argument and returns _ParsedIssueNumberArgument."""
   fail_result = _ParsedIssueNumberArgument()
 
@@ -1064,6 +1064,10 @@ def ParseIssueNumberArgument(arg):
   except ValueError:
     return fail_result
 
+  if codereview is not None:
+    parsed = _CODEREVIEW_IMPLEMENTATIONS[codereview].ParseIssueURL(parsed_url)
+    return parsed or fail_result
+
   results = {}
   for name, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
     parsed = cls.ParseIssueURL(parsed_url)
@@ -1074,7 +1078,11 @@ def ParseIssueNumberArgument(arg):
     return fail_result
   if len(results) == 1:
     return results.values()[0]
-  # Choose Rietveld if there are two.
+
+  if parsed_url.netloc and parsed_url.netloc.split('.')[0].endswith('-review'):
+    # This is likely Gerrit.
+    return results['gerrit']
+  # Choose Rietveld as before if URL can parsed by either.
   return results['rietveld']
 
 
@@ -4422,10 +4430,10 @@ def CMDdescription(parser, args):
 
   target_issue_arg = None
   if len(args) > 0:
-    target_issue_arg = ParseIssueNumberArgument(args[0])
+    target_issue_arg = ParseIssueNumberArgument(args[0],
+                                                options.forced_codereview)
     if not target_issue_arg.valid:
       parser.error('invalid codereview url or CL id')
-      return 1
 
   auth_config = auth.extract_auth_config_from_options(options)
 
@@ -4433,14 +4441,23 @@ def CMDdescription(parser, args):
       'auth_config': auth_config,
       'codereview': options.forced_codereview,
   }
+  detected_codereview_from_url = False
   if target_issue_arg:
     kwargs['issue'] = target_issue_arg.issue
     kwargs['codereview_host'] = target_issue_arg.hostname
+    if target_issue_arg.codereview and not options.forced_codereview:
+      detected_codereview_from_url = True
+      kwargs['codereview'] = target_issue_arg.codereview
 
   cl = Changelist(**kwargs)
-
   if not cl.GetIssue():
+    assert not detected_codereview_from_url
     DieWithError('This branch has no associated changelist.')
+
+  if detected_codereview_from_url:
+    logging.info('canonical issue/change URL: %s (type: %s)\n',
+                 cl.GetIssueURL(), target_issue_arg.codereview)
+
   description = ChangeDescription(cl.GetDescription())
 
   if options.display:
@@ -5121,7 +5138,6 @@ def CMDpatch(parser, args):
   _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
-
   if options.reapply:
     if options.newbranch:
       parser.error('--reapply works on the current branch only')
@@ -5147,6 +5163,22 @@ def CMDpatch(parser, args):
   if len(args) != 1 or not args[0]:
     parser.error('Must specify issue number or url')
 
+  target_issue_arg = ParseIssueNumberArgument(args[0],
+                                              options.forced_codereview)
+  if not target_issue_arg.valid:
+    parser.error('invalid codereview url or CL id')
+
+  cl_kwargs = {
+      'auth_config': auth_config,
+      'codereview_host': target_issue_arg.hostname,
+      'codereview': options.forced_codereview,
+  }
+  detected_codereview_from_url = False
+  if target_issue_arg.codereview and not options.forced_codereview:
+    detected_codereview_from_url = True
+    cl_kwargs['codereview'] = target_issue_arg.codereview
+    cl_kwargs['issue'] = target_issue_arg.issue
+
   # We don't want uncommitted changes mixed up with the patch.
   if git_common.is_dirty_git_tree('patch'):
     return 1
@@ -5159,7 +5191,7 @@ def CMDpatch(parser, args):
   elif not GetCurrentBranch():
     DieWithError('A branch is required to apply patch. Hint: use -b option.')
 
-  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
+  cl = Changelist(**cl_kwargs)
 
   if cl.IsGerrit():
     if options.reject:
@@ -5169,8 +5201,12 @@ def CMDpatch(parser, args):
     if options.directory:
       parser.error('--directory is not supported with Gerrit codereview.')
 
-  return cl.CMDPatchIssue(args[0], options.reject, options.nocommit,
-                          options.directory)
+  if detected_codereview_from_url:
+    print('canonical issue/change URL: %s (type: %s)\n' %
+          (cl.GetIssueURL(), target_issue_arg.codereview))
+
+  return cl.CMDPatchWithParsedIssue(target_issue_arg, options.reject,
+                                    options.nocommit, options.directory)
 
 
 def GetTreeStatus(url=None):
@@ -5754,7 +5790,7 @@ def CMDcheckout(parser, args):
   issue_arg = ParseIssueNumberArgument(args[0])
   if not issue_arg.valid:
     parser.error('invalid codereview url or CL id')
-    return 1
+
   target_issue = str(issue_arg.issue)
 
   def find_issues(issueprefix):

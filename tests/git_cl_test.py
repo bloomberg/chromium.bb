@@ -469,7 +469,9 @@ class TestParseIssueURL(unittest.TestCase):
 
   def test_ParseIssueNumberArgument(self):
     def test(arg, *args, **kwargs):
-      self._validate(git_cl.ParseIssueNumberArgument(arg), *args, **kwargs)
+      codereview_hint = kwargs.pop('hint', None)
+      self._validate(git_cl.ParseIssueNumberArgument(arg, codereview_hint),
+                     *args, **kwargs)
 
     test('123', 123)
     test('', fail=True)
@@ -479,9 +481,13 @@ class TestParseIssueURL(unittest.TestCase):
     test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
     # Rietveld.
     test('https://codereview.source.com/www123', fail=True)
-    # Matches both, but we take Rietveld now.
+    # Matches both, but we take Rietveld now by default.
     test('https://codereview.source.com/123',
          123, None, 'codereview.source.com', 'rietveld')
+    # Matches both, but we take Gerrit if specifically requested.
+    test('https://codereview.source.com/123',
+         123, None, 'codereview.source.com', 'gerrit',
+         hint='gerrit')
     # Gerrrit.
     test('https://chrome-review.source.com/c/123/4',
          123, 4, 'chrome-review.source.com', 'gerrit')
@@ -1638,7 +1644,7 @@ class TestGitCl(TestCase):
         squash=False,
         squash_mode='override_nosquash')
 
-  def test_gerrit_patch_bad_chars(self):
+  def test_gerrit_patchset_title_bad_chars(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self._run_gerrit_upload_test(
         ['-f', '-t', 'Don\'t put bad cha,.rs'],
@@ -1940,9 +1946,10 @@ class TestGitCl(TestCase):
       ]
     return calls
 
-  def _patch_common(self, is_gerrit=False, force_codereview=False,
+  def _patch_common(self, default_codereview=None, force_codereview=False,
                     new_branch=False, git_short_host='host',
-                    detect_gerrit_server=True):
+                    detect_gerrit_server=True,
+                    actual_codereview=None):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
@@ -1955,25 +1962,43 @@ class TestGitCl(TestCase):
     else:
       self.calls = [((['git', 'symbolic-ref', 'HEAD'],), 'master')]
 
-    if not force_codereview:
-      # These calls detect codereview to use.
-      self.calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
-        ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
-        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ]
-
-    if is_gerrit:
+    if default_codereview:
       if not force_codereview:
+        # These calls detect codereview to use.
         self.calls += [
-          ((['git', 'config', 'gerrit.host'],), 'true'),
+          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+          ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
+          ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
+          ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ]
-      if detect_gerrit_server:
-        self.calls += self._get_gerrit_codereview_server_calls(
-            'master', git_short_host=git_short_host,
-            detect_branch=not new_branch and force_codereview)
+      if default_codereview == 'gerrit':
+        if not force_codereview:
+          self.calls += [
+            ((['git', 'config', 'gerrit.host'],), 'true'),
+          ]
+        if detect_gerrit_server:
+          self.calls += self._get_gerrit_codereview_server_calls(
+              'master', git_short_host=git_short_host,
+              detect_branch=not new_branch and force_codereview)
+        actual_codereview = 'gerrit'
 
+      elif default_codereview == 'rietveld':
+        self.calls += [
+          ((['git', 'config', 'gerrit.host'],), CERR1),
+          ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+          ((['git', 'config', 'branch.master.rietveldserver',],), CERR1),
+        ]
+        actual_codereview = 'rietveld'
+
+    if actual_codereview == 'rietveld':
+      self.calls += [
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ]
+      if not default_codereview:
+        self.calls += [
+          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ]
+    elif actual_codereview == 'gerrit':
       self.calls += [
         (('GetChangeDetail', git_short_host + '-review.googlesource.com',
           '123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
@@ -1997,16 +2022,9 @@ class TestGitCl(TestCase):
            },
          }),
       ]
-    else:
-      self.calls += [
-        ((['git', 'config', 'gerrit.host'],), CERR1),
-        ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-        ((['git', 'config', 'branch.master.rietveldserver',],), CERR1),
-        ((['git', 'rev-parse', '--show-cdup'],), ''),
-      ]
 
-  def _common_patch_successful(self, new_branch=False):
-    self._patch_common(new_branch=new_branch)
+  def _common_patch_rietveld_successful(self, **kwargs):
+    self._patch_common(**kwargs)
     self.calls += [
       ((['git', 'config', 'branch.master.rietveldissue', '123456'],),
        ''),
@@ -2020,21 +2038,29 @@ class TestGitCl(TestCase):
          '(http://crrev.com/123456#ps60001)'],), ''),
     ]
 
-  def test_patch_successful(self):
-    self._common_patch_successful()
+  def test_patch_rietveld_default(self):
+    self._common_patch_rietveld_successful(default_codereview='rietveld')
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
 
-  def test_patch_successful_new_branch(self):
-    self._common_patch_successful(new_branch=True)
+  def test_patch_rietveld_successful_new_branch(self):
+    self._common_patch_rietveld_successful(default_codereview='rietveld',
+                                           new_branch=True)
     self.assertEqual(git_cl.main(['patch', '-b', 'master', '123456']), 0)
 
-  def test_patch_conflict(self):
-    self._patch_common()
+  def test_patch_rietveld_guess_by_url(self):
+    self._common_patch_rietveld_successful(
+        default_codereview=None,  # It doesn't matter.
+        actual_codereview='rietveld')
+    self.assertEqual(git_cl.main(
+        ['patch', 'https://codereview.example.com/123456']), 0)
+
+  def test_patch_rietveld_conflict(self):
+    self._patch_common(default_codereview='rietveld')
     GitCheckoutMock.conflict = True
     self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
-  def test_gerrit_patch_successful(self):
-    self._patch_common(is_gerrit=True, git_short_host='chromium',
+  def test_patch_gerrit_default(self):
+    self._patch_common(default_codereview='gerrit', git_short_host='chromium',
                        detect_gerrit_server=True)
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
@@ -2048,8 +2074,8 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
 
-  def test_patch_force_codereview(self):
-    self._patch_common(is_gerrit=True, force_codereview=True,
+  def test_patch_gerrit_force(self):
+    self._patch_common(default_codereview='gerrit', force_codereview=True,
                        git_short_host='host', detect_gerrit_server=True)
     self.calls += [
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
@@ -2063,12 +2089,15 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(git_cl.main(['patch', '--gerrit', '123456']), 0)
 
-  def test_gerrit_patch_url_successful(self):
-    self._patch_common(is_gerrit=True, git_short_host='else',
-                       detect_gerrit_server=False)
+  def test_patch_gerrit_guess_by_url(self):
+    self._patch_common(
+        default_codereview=None,  # It doesn't matter what's default.
+        actual_codereview='gerrit',
+        git_short_host='else', detect_gerrit_server=False)
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
@@ -2079,32 +2108,49 @@ class TestGitCl(TestCase):
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/#/c/123456/1']), 0)
 
-  def test_gerrit_patch_conflict(self):
-    self._patch_common(is_gerrit=True, detect_gerrit_server=False,
+  def test_patch_gerrit_guess_by_url_like_rietveld(self):
+    self._patch_common(
+        default_codereview=None,  # It doesn't matter what's default.
+        actual_codereview='gerrit',
+        git_short_host='else', detect_gerrit_server=False)
+    self.calls += [
+      ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
+         'refs/changes/56/123456/1'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
+       ''),
+      ((['git', 'config', 'branch.master.gerritserver',
+        'https://else-review.googlesource.com'],), ''),
+      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+    ]
+    self.assertEqual(git_cl.main(
+      ['patch', 'https://else-review.googlesource.com/123456/1']), 0)
+
+  def test_patch_gerrit_conflict(self):
+    self._patch_common(default_codereview='gerrit', detect_gerrit_server=True,
                        git_short_host='chromium')
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
-         'refs/changes/56/123456/1'],), ''),
+         'refs/changes/56/123456/7'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
         'https://chromium-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
+      ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
       ((['DieWithError', 'Command "git cherry-pick FETCH_HEAD" failed.\n'],),
        SystemExitMock()),
     ]
     with self.assertRaises(SystemExitMock):
-      git_cl.main(['patch',
-                   'https://chromium-review.googlesource.com/#/c/123456/1'])
+      git_cl.main(['patch', '123456'])
 
-  def test_gerrit_patch_not_exists(self):
+  def test_patch_gerrit_not_exists(self):
     def notExists(_issue, *_, **kwargs):
       self.assertFalse(kwargs['ignore_404'])
       raise git_cl.gerrit_util.GerritError(404, '')
     self.mock(git_cl.gerrit_util, 'GetChangeDetail', notExists)
 
-    url = 'https://chromium-review.googlesource.com'
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -2112,11 +2158,17 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
       ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
       ((['git', 'config', 'gerrit.host'],), 'true'),
-      ((['DieWithError', 'change 123456 at ' + url + ' does not exist '
-                         'or you have no access to it'],), SystemExitMock()),
+      ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
+      ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/my/repo'),
+      ((['DieWithError',
+         'change 123456 at https://chromium-review.googlesource.com does not '
+         'exist or you have no access to it'],), SystemExitMock()),
     ]
     with self.assertRaises(SystemExitMock):
-      self.assertEqual(1, git_cl.main(['patch', url + '/#/c/123456/1']))
+      self.assertEqual(1, git_cl.main(['patch', '123456']))
 
   def _checkout_calls(self):
     return [
