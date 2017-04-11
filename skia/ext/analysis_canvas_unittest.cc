@@ -325,11 +325,10 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
 }
 
 TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
-  SkRTreeFactory factory;
   SkPictureRecorder recorder;
 
   // Create a picture with 3 commands, last of which is non-solid.
-  SkCanvas* record_canvas = recorder.beginRecording(256, 256, &factory);
+  SkCanvas* record_canvas = recorder.beginRecording(256, 256);
 
   std::string text = "text";
   SkPoint point = SkPoint::Make(SkIntToScalar(25), SkIntToScalar(25));
