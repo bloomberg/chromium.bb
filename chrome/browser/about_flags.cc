@@ -28,7 +28,6 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
-#include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
@@ -806,27 +805,6 @@ const FeatureEntry::FeatureVariation kUseNewDoodleApiVariations[] = {
     {"(force test doodle 8)", kUseNewDoodleApiTest8,
      arraysize(kUseNewDoodleApiTest8), nullptr}};
 #endif  // OS_ANDROID
-
-const FeatureEntry::FeatureParam kDelayNavigation5SecondDelay[] = {
-    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
-    {DelayNavigationThrottle::kParamDelayNavigationProbability, "1"}};
-
-const FeatureEntry::FeatureParam kDelayNavigation5SecondDelay25Percent[] = {
-    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
-    {DelayNavigationThrottle::kParamDelayNavigationProbability, "0.25"}};
-
-const FeatureEntry::FeatureParam kDelayNavigation5SecondDelayRandomize[] = {
-    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
-    {DelayNavigationThrottle::kParamDelayNavigationProbability, "1"},
-    {DelayNavigationThrottle::kParamDelayNavigationRandomize, "true"}};
-
-const FeatureEntry::FeatureVariation kDelayNavigationFeatureVariations[] = {
-    {"(5 second delay, 100% probability)", kDelayNavigation5SecondDelay,
-     arraysize(kDelayNavigation5SecondDelay), nullptr},
-    {"(5 second delay, 25% probability)", kDelayNavigation5SecondDelay25Percent,
-     arraysize(kDelayNavigation5SecondDelay25Percent), nullptr},
-    {"(0-5 second randomized delay)", kDelayNavigation5SecondDelayRandomize,
-     arraysize(kDelayNavigation5SecondDelayRandomize), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
@@ -2590,12 +2568,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kUseNewDoodleApiVariations,
                                     chrome::android::kUseNewDoodleApi.name)},
 #endif  // OS_ANDROID
-
-    {"delay-navigation", flag_descriptions::kDelayNavigationName,
-     flag_descriptions::kDelayNavigationDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kDelayNavigationFeature,
-                                    kDelayNavigationFeatureVariations,
-                                    "DelayNavigation")},
 
 #if defined(OS_ANDROID)
     {"enable-custom-context-menu",

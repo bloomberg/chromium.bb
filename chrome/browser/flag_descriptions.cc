@@ -2785,11 +2785,6 @@ const char kUseNewDoodleApiDescription[] =
 
 #endif  // defined(OS_ANDROID)
 
-const char kDelayNavigationName[] = "Delay navigations";
-
-const char kDelayNavigationDescription[] =
-    "Add a fixed delay to main frame navigations.";
-
 const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging "
     "Ash.";
