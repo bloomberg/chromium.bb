@@ -5,8 +5,6 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
-#include <memory>
-#include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
@@ -16,6 +14,8 @@
 namespace blink {
 
 class BytesConsumer;
+class Dictionary;
+class ExecutionContext;
 class ExceptionState;
 class Headers;
 
@@ -28,7 +28,6 @@ class RequestInit {
 
   String method;
   Member<Headers> headers;
-  Dictionary headers_dictionary;
   String content_type;
   Member<BytesConsumer> body;
   Referrer referrer;

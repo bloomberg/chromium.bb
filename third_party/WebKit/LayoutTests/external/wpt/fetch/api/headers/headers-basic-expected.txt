@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Create headers from no parameter 
-FAIL Create headers from undefined parameter Failed to construct 'Headers': No matching constructor signature.
+PASS Create headers from undefined parameter 
 PASS Create headers from empty object 
 PASS Create headers with null should throw 
 PASS Create headers with 1 should throw 

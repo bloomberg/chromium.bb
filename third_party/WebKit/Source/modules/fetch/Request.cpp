@@ -309,7 +309,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // We don't create a copy of r's Headers object when init's headers member
   // is present.
   Headers* headers = nullptr;
-  if (!init.headers && init.headers_dictionary.IsUndefinedOrNull()) {
+  if (!init.headers) {
     headers = r->getHeaders()->Clone();
   }
   // "Empty |r|'s request's header list."
@@ -335,10 +335,7 @@ Request* Request::CreateRequestWithRequestOrString(
   }
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
   if (init.headers) {
-    ASSERT(init.headers_dictionary.IsUndefinedOrNull());
     r->getHeaders()->FillWith(init.headers.Get(), exception_state);
-  } else if (!init.headers_dictionary.IsUndefinedOrNull()) {
-    r->getHeaders()->FillWith(init.headers_dictionary, exception_state);
   } else {
     ASSERT(headers);
     r->getHeaders()->FillWith(headers, exception_state);

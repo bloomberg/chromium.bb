@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class Dictionary;
+class ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders;
 class ExceptionState;
 
 // http://fetch.spec.whatwg.org/#headers-class
@@ -32,11 +32,10 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
     kNoneGuard
   };
 
-  static Headers* Create();
   static Headers* Create(ExceptionState&);
-  static Headers* Create(const Headers*, ExceptionState&);
-  static Headers* Create(const Vector<Vector<String>>&, ExceptionState&);
-  static Headers* Create(const Dictionary&, ExceptionState&);
+  static Headers* Create(
+      const ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders&,
+      ExceptionState&);
 
   // Shares the FetchHeaderList. Called when creating a Request or Response.
   static Headers* Create(FetchHeaderList*);
@@ -57,7 +56,7 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
   // These methods should only be called when size() would return 0.
   void FillWith(const Headers*, ExceptionState&);
   void FillWith(const Vector<Vector<String>>&, ExceptionState&);
-  void FillWith(const Dictionary&, ExceptionState&);
+  void FillWith(const Vector<std::pair<String, String>>&, ExceptionState&);
 
   FetchHeaderList* HeaderList() const { return header_list_; }
   DECLARE_TRACE();

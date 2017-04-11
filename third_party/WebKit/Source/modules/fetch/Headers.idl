@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://fetch.spec.whatwg.org/#typedefdef-headersinit
+
+// The actual typedef in the spec is
+//    (sequence<sequence<ByteString>> or record<ByteString,ByteString>)
+// which also implicitly includes Headers since it is iterable.
+// See http://crbug.com/690428.
+typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString> or Headers) HeadersInit;
+
 // https://fetch.spec.whatwg.org/#headers-class
 
-typedef Dictionary OpenEndedDictionary;
 [
-    Constructor,
-    Constructor(Headers input),
-    Constructor(OpenEndedDictionary input),
-    Constructor(sequence<sequence<ByteString>> input),
+    Constructor(optional HeadersInit init),
     Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface Headers {

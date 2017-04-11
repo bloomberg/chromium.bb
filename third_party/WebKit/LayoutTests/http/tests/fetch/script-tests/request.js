@@ -129,6 +129,32 @@ test(function() {
                   'Request.headers should match');
     assert_equals(request3.headers.getAll('X-Fetch-Bar')[0], 'bar',
                   'Request.headers should match');
+    var request4 = new Request(URL,
+                               {headers: {'X-Fetch-Foo': 'foo1',
+                                          'X-Fetch-Foo': 'foo2',
+                                          'X-Fetch-Bar': 'bar'}});
+    assert_equals(request4.headers.getAll('X-Fetch-Foo')[0], 'foo2',
+                  'Request.headers should match');
+    assert_equals(request4.headers.getAll('X-Fetch-Bar')[0], 'bar',
+                  'Request.headers should match');
+    // https://github.com/whatwg/fetch/issues/479
+    var request5 = new Request(request, {headers: undefined});
+    assert_equals(request5.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+                  'Request.headers should match');
+    assert_equals(request5.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+                  'Request.headers should match');
+    assert_equals(request5.headers.getAll('X-Fetch-Bar')[0], 'bar',
+                  'Request.headers should match');
+    var request6 = new Request(request, {});
+    assert_equals(request6.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+                  'Request.headers should match');
+    assert_equals(request6.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+                  'Request.headers should match');
+    assert_equals(request6.headers.getAll('X-Fetch-Bar')[0], 'bar',
+                  'Request.headers should match');
+    assert_throws(new TypeError(),
+                  () => { new Request(request, {headers: null}) },
+                  'null cannot be converted to a HeaderInit');
   }, 'Request header test');
 
 test(function() {
@@ -695,7 +721,7 @@ async_test(function(t) {
 
 test(function() {
     // https://fetch.spec.whatwg.org/#dom-request
-    // Step 20:
+    // Step 32:
     // Fill r's Headers object with headers. Rethrow any exceptions.
     INVALID_HEADER_NAMES.forEach(function(name) {
         assert_throws(

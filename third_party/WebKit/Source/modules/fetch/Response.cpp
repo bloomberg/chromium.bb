@@ -15,7 +15,7 @@
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
-#include "bindings/modules/v8/ByteStringSequenceSequenceOrDictionaryOrHeaders.h"
+#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/URLSearchParams.h"
@@ -231,8 +231,9 @@ Response* Response::Create(ScriptState* script_state,
     if (init.headers().isByteStringSequenceSequence()) {
       r->headers_->FillWith(init.headers().getAsByteStringSequenceSequence(),
                             exception_state);
-    } else if (init.headers().isDictionary()) {
-      r->headers_->FillWith(init.headers().getAsDictionary(), exception_state);
+    } else if (init.headers().isByteStringByteStringRecord()) {
+      r->headers_->FillWith(init.headers().getAsByteStringByteStringRecord(),
+                            exception_state);
     } else if (init.headers().isHeaders()) {
       r->headers_->FillWith(init.headers().getAsHeaders(), exception_state);
     }

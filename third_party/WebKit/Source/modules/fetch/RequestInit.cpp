@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
+#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "bindings/modules/v8/V8PasswordCredential.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
@@ -32,18 +33,18 @@ RequestInit::RequestInit(ExecutionContext* context,
                          ExceptionState& exception_state)
     : are_any_members_set(false) {
   are_any_members_set |= DictionaryHelper::Get(options, "method", method);
-  are_any_members_set |= DictionaryHelper::Get(options, "headers", headers);
-  if (!headers) {
-    Vector<Vector<String>> headers_vector;
-    if (DictionaryHelper::Get(options, "headers", headers_vector,
-                              exception_state)) {
-      headers = Headers::Create(headers_vector, exception_state);
-      are_any_members_set = true;
-    } else {
-      are_any_members_set |=
-          DictionaryHelper::Get(options, "headers", headers_dictionary);
-    }
-  }
+
+  // From https://github.com/whatwg/fetch/issues/479:
+  // - undefined is the same as "this member has not been passed".
+  // - {} means "the list of headers is empty", so the member has been set.
+  // - null is an invalid value for both sequences and records, but it is not
+  //   the same as undefined: a value has been set, even if invalid, and will
+  //   throw a TypeError later when it gets converted to a HeadersInit object.
+  v8::Local<v8::Value> v8_headers;
+  bool is_header_set = DictionaryHelper::Get(options, "headers", v8_headers) &&
+                       !v8_headers->IsUndefined();
+  are_any_members_set |= is_header_set;
+
   are_any_members_set |= DictionaryHelper::Get(options, "mode", mode);
   are_any_members_set |= DictionaryHelper::Get(options, "redirect", redirect);
   AtomicString referrer_string;
@@ -101,6 +102,20 @@ RequestInit::RequestInit(ExecutionContext* context,
   }
 
   v8::Isolate* isolate = ToIsolate(context);
+
+  if (is_header_set) {
+    ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders
+        headers_init;
+    V8ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders::toImpl(
+        isolate, v8_headers, headers_init,
+        UnionTypeConversionMode::kNotNullable, exception_state);
+    if (exception_state.HadException())
+      return;
+    headers = Headers::Create(headers_init, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
+
   if (is_credential_set) {
     if (V8PasswordCredential::hasInstance(v8_credential, isolate)) {
       // TODO(mkwst): According to the spec, we'd serialize this once we touch
