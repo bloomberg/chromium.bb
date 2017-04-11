@@ -161,16 +161,6 @@ TEST(ContiguousContainerTest, ReverseIteration) {
                 "Non-const iteration should produce non-const references.");
 }
 
-// Checks that the latter list has pointers to the elements of the former.
-template <typename It1, typename It2>
-bool EqualPointers(It1 it1, const It1& end1, It2 it2) {
-  for (; it1 != end1; ++it1, ++it2) {
-    if (&*it1 != *it2)
-      return false;
-  }
-  return true;
-}
-
 TEST(ContiguousContainerTest, CapacityInBytes) {
   const int iterations = 500;
   const size_t initial_capacity = 10 * kMaxPointSize;
