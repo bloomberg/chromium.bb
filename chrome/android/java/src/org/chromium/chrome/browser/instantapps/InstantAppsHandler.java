@@ -225,7 +225,7 @@ public class InstantAppsHandler {
         }
 
         if (IntentUtils.safeGetBooleanExtra(intent, DO_NOT_LAUNCH_EXTRA, false)
-                || ((intent.getFlags() & FLAG_DO_NOT_LAUNCH) != 0)) {
+                || (BuildInfo.isAtLeastO() && (intent.getFlags() & FLAG_DO_NOT_LAUNCH) != 0)) {
             maybeRecordFallbackStats(intent);
             Log.i(TAG, "Not handling with Instant Apps (DO_NOT_LAUNCH_EXTRA)");
             return false;
