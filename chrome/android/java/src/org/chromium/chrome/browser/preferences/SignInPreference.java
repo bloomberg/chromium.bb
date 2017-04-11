@@ -38,6 +38,7 @@ public class SignInPreference extends Preference
         implements SignInAllowedObserver, ProfileDownloader.Observer,
                    AndroidSyncSettings.AndroidSyncSettingsObserver, SyncStateChangedListener {
     private boolean mViewEnabled;
+    private boolean mShowingPromo;
 
     /**
      * Constructor for inflating from XML.
@@ -84,10 +85,18 @@ public class SignInPreference extends Preference
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (SigninManager.get(getContext()).isSigninDisabledByPolicy()) {
             setupSigninDisabled();
+            mShowingPromo = false;
         } else if (accountName == null) {
             setupNotSignedIn();
+
+            if (!mShowingPromo) {
+                // This user action should be recorded when message with sign-in prompt is shown
+                RecordUserAction.record("Signin_Impression_FromSettings");
+            }
+            mShowingPromo = true;
         } else {
             setupSignedIn(accountName);
+            mShowingPromo = false;
         }
 
         setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -97,10 +106,6 @@ public class SignInPreference extends Preference
                         getContext(), SigninAccessPoint.SETTINGS);
             }
         });
-
-        if (accountName == null && SigninManager.get(getContext()).isSignInAllowed()) {
-            RecordUserAction.record("Signin_Impression_FromSettings");
-        }
     }
 
     private void setupSigninDisabled() {
