@@ -122,6 +122,15 @@ Polymer({
     if (index == -1) {
       this.languageSettingsPrivate.addSpellcheckWord(word);
       this.unshift('words_', word);
+      if (this.words_.length == 1) {
+        // When adding a word to an _empty_ list, the template is expanded. This
+        // is a workaround to resize the iron-list as well.
+        // TODO(dschuyler): Remove this hack after iron-list no longer needs
+        // this workaround to update the list at the same time the template
+        // wrapping the list is expanded.
+        Polymer.dom.flush();
+        this.$$('#list').notifyResize();
+      }
     }
   },
 
