@@ -223,36 +223,21 @@ enum class ResourceType { kIsMainResource, kIsNotMainResource };
 // Determines WebCachePolicy for a main resource, or WebCachePolicy that is
 // corresponding to FrameLoadType.
 // TODO(toyoshim): Probably, we should split FrameLoadType to WebCachePolicy
-// conversion logic into a separate function once other TODOs in this function
-// are resolved.
+// conversion logic into a separate function.
 WebCachePolicy DetermineWebCachePolicy(RequestMethod method,
                                        RequestType request_type,
                                        ResourceType resource_type,
                                        FrameLoadType load_type) {
   switch (load_type) {
     case kFrameLoadTypeStandard:
+    case kFrameLoadTypeReplaceCurrentItem:
+    case kFrameLoadTypeInitialInChildFrame:
       return (request_type == RequestType::kIsConditional ||
               method == RequestMethod::kIsPost)
                  ? WebCachePolicy::kValidatingCacheData
                  : WebCachePolicy::kUseProtocolCachePolicy;
-    case kFrameLoadTypeReplaceCurrentItem:
-    case kFrameLoadTypeInitialInChildFrame:
-      // TODO(toyoshim): Should be the same with FrameLoadTypeStandard, but
-      // keep legacy logic as is. To be changed in a follow-up patch soon.
-      return (resource_type == ResourceType::kIsMainResource &&
-              (request_type == RequestType::kIsConditional ||
-               method == RequestMethod::kIsPost))
-                 ? WebCachePolicy::kValidatingCacheData
-                 : WebCachePolicy::kUseProtocolCachePolicy;
-    case kFrameLoadTypeInitialHistoryLoad:
-      // TODO(toyoshim): Should be the same with FrameLoadTypeBackForward, but
-      // keep legacy logic as is. To be changed in a follow-up patch soon.
-      return (resource_type == ResourceType::kIsMainResource &&
-              (request_type == RequestType::kIsConditional ||
-               method == RequestMethod::kIsPost))
-                 ? WebCachePolicy::kValidatingCacheData
-                 : WebCachePolicy::kUseProtocolCachePolicy;
     case kFrameLoadTypeBackForward:
+    case kFrameLoadTypeInitialHistoryLoad:
       // Mutates the policy for POST requests to avoid form resubmission.
       return method == RequestMethod::kIsPost
                  ? WebCachePolicy::kReturnCacheDataDontLoad
