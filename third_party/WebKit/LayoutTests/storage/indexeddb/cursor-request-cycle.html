@@ -73,7 +73,10 @@ function onOpen(evt)
             shouldBeEqualToString("cursor.key", "key2");
             shouldBeEqualToString("cursor.value", "value2");
 
-            cursorObservation = internals.observeGC(cursor);
+            // Access objects in an inner function to avoid references to
+            // objects remaining live on this function's stack frame
+            // (http://crbug.com/595672/).
+            (() => { cursorObservation = internals.observeGC(cursor); })();
             evalAndLog("cursor = null");
             evalAndLog("gc()");
             shouldBeTrue("cursorRequestObservation.wasCollected");

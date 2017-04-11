@@ -11,7 +11,7 @@ description('Tests that unused listeners are collected.');
 shouldBe('typeof window.internals.observeGC', '"function"',
 'this test requires window.internals');
 
-var callback = function(e) {
+let callback = function(e) {
 	testFailed("Should not get here.");
 };
 
