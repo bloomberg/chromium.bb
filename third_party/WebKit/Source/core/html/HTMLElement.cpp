@@ -205,7 +205,7 @@ void HTMLElement::MapLanguageAttributeToLocale(const AtomicString& value,
     first_separator = ui_language.Find('_');
     if (first_separator != kNotFound)
       ui_language = ui_language.Left(first_separator);
-    if (!EqualIgnoringCase(html_language, ui_language))
+    if (!DeprecatedEqualIgnoringCase(html_language, ui_language))
       UseCounter::Count(GetDocument(),
                         UseCounter::kLangAttributeDoesNotMatchToUILocale);
   } else {
@@ -224,8 +224,9 @@ bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
 }
 
 static inline bool IsValidDirAttribute(const AtomicString& value) {
-  return EqualIgnoringCase(value, "auto") || EqualIgnoringCase(value, "ltr") ||
-         EqualIgnoringCase(value, "rtl");
+  return DeprecatedEqualIgnoringCase(value, "auto") ||
+         DeprecatedEqualIgnoringCase(value, "ltr") ||
+         DeprecatedEqualIgnoringCase(value, "rtl");
 }
 
 void HTMLElement::CollectStyleForPresentationAttribute(
@@ -233,14 +234,14 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (EqualIgnoringCase(value, "middle"))
+    if (DeprecatedEqualIgnoringCase(value, "middle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueCenter);
     else
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
   } else if (name == contenteditableAttr) {
-    if (value.IsEmpty() || EqualIgnoringCase(value, "true")) {
+    if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWrite);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
@@ -251,7 +252,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       if (HasTagName(htmlTag))
         UseCounter::Count(GetDocument(),
                           UseCounter::kContentEditableTrueOnHTML);
-    } else if (EqualIgnoringCase(value, "plaintext-only")) {
+    } else if (DeprecatedEqualIgnoringCase(value, "plaintext-only")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWritePlaintextOnly);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
@@ -260,7 +261,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
                                               CSSValueAfterWhiteSpace);
       UseCounter::Count(GetDocument(),
                         UseCounter::kContentEditablePlainTextOnly);
-    } else if (EqualIgnoringCase(value, "false")) {
+    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadOnly);
     }
@@ -269,17 +270,17 @@ void HTMLElement::CollectStyleForPresentationAttribute(
                                             CSSValueNone);
   } else if (name == draggableAttr) {
     UseCounter::Count(GetDocument(), UseCounter::kDraggableAttribute);
-    if (EqualIgnoringCase(value, "true")) {
+    if (DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
                                               CSSValueElement);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyUserSelect,
                                               CSSValueNone);
-    } else if (EqualIgnoringCase(value, "false")) {
+    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
                                               CSSValueNone);
     }
   } else if (name == dirAttr) {
-    if (EqualIgnoringCase(value, "auto")) {
+    if (DeprecatedEqualIgnoringCase(value, "auto")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyUnicodeBidi, UnicodeBidiAttributeForDirAuto(this));
     } else {
@@ -591,25 +592,25 @@ void HTMLElement::ApplyAlignmentAttributeToStyle(
   CSSValueID float_value = CSSValueInvalid;
   CSSValueID vertical_align_value = CSSValueInvalid;
 
-  if (EqualIgnoringCase(alignment, "absmiddle")) {
+  if (DeprecatedEqualIgnoringCase(alignment, "absmiddle")) {
     vertical_align_value = CSSValueMiddle;
-  } else if (EqualIgnoringCase(alignment, "absbottom")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "absbottom")) {
     vertical_align_value = CSSValueBottom;
-  } else if (EqualIgnoringCase(alignment, "left")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "left")) {
     float_value = CSSValueLeft;
     vertical_align_value = CSSValueTop;
-  } else if (EqualIgnoringCase(alignment, "right")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "right")) {
     float_value = CSSValueRight;
     vertical_align_value = CSSValueTop;
-  } else if (EqualIgnoringCase(alignment, "top")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "top")) {
     vertical_align_value = CSSValueTop;
-  } else if (EqualIgnoringCase(alignment, "middle")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "middle")) {
     vertical_align_value = CSSValueWebkitBaselineMiddle;
-  } else if (EqualIgnoringCase(alignment, "center")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "center")) {
     vertical_align_value = CSSValueMiddle;
-  } else if (EqualIgnoringCase(alignment, "bottom")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "bottom")) {
     vertical_align_value = CSSValueBaseline;
-  } else if (EqualIgnoringCase(alignment, "texttop")) {
+  } else if (DeprecatedEqualIgnoringCase(alignment, "texttop")) {
     vertical_align_value = CSSValueTextTop;
   }
 
@@ -631,11 +632,11 @@ String HTMLElement::contentEditable() const {
 
   if (value.IsNull())
     return "inherit";
-  if (value.IsEmpty() || EqualIgnoringCase(value, "true"))
+  if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true"))
     return "true";
-  if (EqualIgnoringCase(value, "false"))
+  if (DeprecatedEqualIgnoringCase(value, "false"))
     return "false";
-  if (EqualIgnoringCase(value, "plaintext-only"))
+  if (DeprecatedEqualIgnoringCase(value, "plaintext-only"))
     return "plaintext-only";
 
   return "inherit";
@@ -643,13 +644,13 @@ String HTMLElement::contentEditable() const {
 
 void HTMLElement::setContentEditable(const String& enabled,
                                      ExceptionState& exception_state) {
-  if (EqualIgnoringCase(enabled, "true"))
+  if (DeprecatedEqualIgnoringCase(enabled, "true"))
     setAttribute(contenteditableAttr, "true");
-  else if (EqualIgnoringCase(enabled, "false"))
+  else if (DeprecatedEqualIgnoringCase(enabled, "false"))
     setAttribute(contenteditableAttr, "false");
-  else if (EqualIgnoringCase(enabled, "plaintext-only"))
+  else if (DeprecatedEqualIgnoringCase(enabled, "plaintext-only"))
     setAttribute(contenteditableAttr, "plaintext-only");
-  else if (EqualIgnoringCase(enabled, "inherit"))
+  else if (DeprecatedEqualIgnoringCase(enabled, "inherit"))
     removeAttribute(contenteditableAttr);
   else
     exception_state.ThrowDOMException(kSyntaxError,
@@ -663,7 +664,7 @@ bool HTMLElement::isContentEditableForBinding() const {
 }
 
 bool HTMLElement::draggable() const {
-  return EqualIgnoringCase(getAttribute(draggableAttr), "true");
+  return DeprecatedEqualIgnoringCase(getAttribute(draggableAttr), "true");
 }
 
 void HTMLElement::setDraggable(bool value) {
@@ -703,9 +704,10 @@ TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
 
   if (value == g_null_atom)
     return kTranslateAttributeInherit;
-  if (EqualIgnoringCase(value, "yes") || EqualIgnoringCase(value, ""))
+  if (DeprecatedEqualIgnoringCase(value, "yes") ||
+      DeprecatedEqualIgnoringCase(value, ""))
     return kTranslateAttributeYes;
-  if (EqualIgnoringCase(value, "no"))
+  if (DeprecatedEqualIgnoringCase(value, "no"))
     return kTranslateAttributeNo;
 
   return kTranslateAttributeInherit;
@@ -740,11 +742,11 @@ static inline const AtomicString& ToValidDirValue(const AtomicString& value) {
   DEFINE_STATIC_LOCAL(const AtomicString, rtl_value, ("rtl"));
   DEFINE_STATIC_LOCAL(const AtomicString, auto_value, ("auto"));
 
-  if (EqualIgnoringCase(value, ltr_value))
+  if (DeprecatedEqualIgnoringCase(value, ltr_value))
     return ltr_value;
-  if (EqualIgnoringCase(value, rtl_value))
+  if (DeprecatedEqualIgnoringCase(value, rtl_value))
     return rtl_value;
-  if (EqualIgnoringCase(value, auto_value))
+  if (DeprecatedEqualIgnoringCase(value, auto_value))
     return auto_value;
   return g_null_atom;
 }
@@ -776,7 +778,7 @@ bool HTMLElement::HasDirectionAuto() const {
   // https://html.spec.whatwg.org/multipage/semantics.html#the-bdi-element
   const AtomicString& direction = FastGetAttribute(dirAttr);
   return (isHTMLBDIElement(*this) && direction == g_null_atom) ||
-         EqualIgnoringCase(direction, "auto");
+         DeprecatedEqualIgnoringCase(direction, "auto");
 }
 
 TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
@@ -804,7 +806,7 @@ TextDirection HTMLElement::Directionality(
   Node* node = FlatTreeTraversal::FirstChild(*this);
   while (node) {
     // Skip bdi, script, style and text form controls.
-    if (EqualIgnoringCase(node->nodeName(), "bdi") ||
+    if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
         isHTMLScriptElement(*node) || isHTMLStyleElement(*node) ||
         (node->IsElementNode() && ToElement(node)->IsTextControl()) ||
         (node->IsElementNode() &&
@@ -861,7 +863,7 @@ void HTMLElement::DirAttributeChanged(const AtomicString& value) {
     ToHTMLElement(parent)
         ->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
 
-  if (EqualIgnoringCase(value, "auto"))
+  if (DeprecatedEqualIgnoringCase(value, "auto"))
     CalculateAndAdjustDirectionality();
 }
 
@@ -1009,7 +1011,7 @@ bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
   String color_string = attribute_value.StripWhiteSpace();
 
   // "transparent" doesn't apply a color either.
-  if (EqualIgnoringCase(color_string, "transparent"))
+  if (DeprecatedEqualIgnoringCase(color_string, "transparent"))
     return false;
 
   // If the string is a 3/6-digit hex color or a named CSS color, use that.
@@ -1106,10 +1108,10 @@ bool HTMLElement::MatchesReadWritePseudoClass() const {
   if (FastHasAttribute(contenteditableAttr)) {
     const AtomicString& value = FastGetAttribute(contenteditableAttr);
 
-    if (value.IsEmpty() || EqualIgnoringCase(value, "true") ||
-        EqualIgnoringCase(value, "plaintext-only"))
+    if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true") ||
+        DeprecatedEqualIgnoringCase(value, "plaintext-only"))
       return true;
-    if (EqualIgnoringCase(value, "false"))
+    if (DeprecatedEqualIgnoringCase(value, "false"))
       return false;
     // All other values should be treated as "inherit".
   }

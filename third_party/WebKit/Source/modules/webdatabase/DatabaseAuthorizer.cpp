@@ -244,7 +244,7 @@ int DatabaseAuthorizer::CreateVTable(const String& table_name,
     return kSQLAuthDeny;
 
   // Allow only the FTS3 extension
-  if (!EqualIgnoringCase(module_name, "fts3"))
+  if (!DeprecatedEqualIgnoringCase(module_name, "fts3"))
     return kSQLAuthDeny;
 
   last_action_changed_database_ = true;
@@ -257,7 +257,7 @@ int DatabaseAuthorizer::DropVTable(const String& table_name,
     return kSQLAuthDeny;
 
   // Allow only the FTS3 extension
-  if (!EqualIgnoringCase(module_name, "fts3"))
+  if (!DeprecatedEqualIgnoringCase(module_name, "fts3"))
     return kSQLAuthDeny;
 
   return UpdateDeletesBasedOnTableName(table_name);
@@ -355,7 +355,7 @@ int DatabaseAuthorizer::DenyBasedOnTableName(const String& table_name) const {
   //     equalIgnoringCase(tableName, Database::databaseInfoTableName()))
   //   return SQLAuthDeny;
 
-  if (EqualIgnoringCase(table_name, database_info_table_name_))
+  if (DeprecatedEqualIgnoringCase(table_name, database_info_table_name_))
     return kSQLAuthDeny;
 
   return kSQLAuthAllow;

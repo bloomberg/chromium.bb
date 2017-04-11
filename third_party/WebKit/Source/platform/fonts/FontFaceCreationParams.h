@@ -119,7 +119,7 @@ class FontFaceCreationParams {
 
   bool operator==(const FontFaceCreationParams& other) const {
     return creation_type_ == other.creation_type_ &&
-           EqualIgnoringCase(family_, other.family_) &&
+           DeprecatedEqualIgnoringCase(family_, other.family_) &&
            filename_ == other.filename_ &&
            fontconfig_interface_id_ == other.fontconfig_interface_id_ &&
            ttc_index_ == other.ttc_index_;

@@ -176,8 +176,8 @@ void RecordDecodeSpeedHistogram(const char* data,
 
 // static
 bool WebFontDecoder::SupportsFormat(const String& format) {
-  return EqualIgnoringCase(format, "woff") ||
-         EqualIgnoringCase(format, "woff2");
+  return DeprecatedEqualIgnoringCase(format, "woff") ||
+         DeprecatedEqualIgnoringCase(format, "woff2");
 }
 
 sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {

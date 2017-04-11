@@ -333,7 +333,7 @@ Element* TreeScope::FindAnchor(const String& name) {
        Traversal<HTMLAnchorElement>::StartsAfter(RootNode())) {
     if (RootNode().GetDocument().InQuirksMode()) {
       // Quirks mode, case insensitive comparison of names.
-      if (EqualIgnoringCase(anchor.GetName(), name))
+      if (DeprecatedEqualIgnoringCase(anchor.GetName(), name))
         return &anchor;
     } else {
       // Strict mode, names need to match exactly.
@@ -503,7 +503,8 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
   Element* result = nullptr;
   Node& root = RootNode();
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (EqualIgnoringCase(element.FastGetAttribute(accesskeyAttr), key))
+    if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(accesskeyAttr),
+                                    key))
       result = &element;
     for (ShadowRoot* shadow_root = element.YoungestShadowRoot(); shadow_root;
          shadow_root = shadow_root->OlderShadowRoot()) {

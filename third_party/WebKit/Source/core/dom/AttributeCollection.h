@@ -204,7 +204,7 @@ size_t AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
     // and all HTML/SVG attributes have a null namespace!
     if (!it->GetName().HasPrefix()) {
       if (should_ignore_attribute_case &&
-          EqualIgnoringCase(name, it->LocalName()))
+          DeprecatedEqualIgnoringCase(name, it->LocalName()))
         return index;
     } else {
       // FIXME: Would be faster to do this comparison without calling toString,

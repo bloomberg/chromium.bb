@@ -48,14 +48,14 @@ inline const AtomicString& AdjustFamilyNameToAvoidUnsupportedFonts(
   // using 'Courier New' on windows.
   DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
   DEFINE_STATIC_LOCAL(AtomicString, courier_new, ("Courier New"));
-  if (EqualIgnoringCase(family_name, courier))
+  if (DeprecatedEqualIgnoringCase(family_name, courier))
     return courier_new;
 
   // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
   // (truetype font).
   DEFINE_STATIC_LOCAL(AtomicString, ms_sans, ("MS Sans Serif"));
   DEFINE_STATIC_LOCAL(AtomicString, microsoft_sans, ("Microsoft Sans Serif"));
-  if (EqualIgnoringCase(family_name, ms_sans))
+  if (DeprecatedEqualIgnoringCase(family_name, ms_sans))
     return microsoft_sans;
 
   // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
@@ -64,8 +64,8 @@ inline const AtomicString& AdjustFamilyNameToAvoidUnsupportedFonts(
   DEFINE_STATIC_LOCAL(AtomicString, ms_serif, ("MS Serif"));
   DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
   DEFINE_STATIC_LOCAL(AtomicString, times_new_roman, ("Times New Roman"));
-  if (EqualIgnoringCase(family_name, ms_serif) ||
-      EqualIgnoringCase(family_name, times))
+  if (DeprecatedEqualIgnoringCase(family_name, ms_serif) ||
+      DeprecatedEqualIgnoringCase(family_name, times))
     return times_new_roman;
 #endif
 
@@ -77,30 +77,30 @@ inline const AtomicString& AlternateFamilyName(
   // Alias Courier <-> Courier New
   DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
   DEFINE_STATIC_LOCAL(AtomicString, courier_new, ("Courier New"));
-  if (EqualIgnoringCase(family_name, courier))
+  if (DeprecatedEqualIgnoringCase(family_name, courier))
     return courier_new;
 #if !OS(WIN)
   // On Windows, Courier New (truetype font) is always present and
   // Courier is a bitmap font. So, we don't want to map Courier New to
   // Courier.
-  if (EqualIgnoringCase(family_name, courier_new))
+  if (DeprecatedEqualIgnoringCase(family_name, courier_new))
     return courier;
 #endif
 
   // Alias Times and Times New Roman.
   DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
   DEFINE_STATIC_LOCAL(AtomicString, times_new_roman, ("Times New Roman"));
-  if (EqualIgnoringCase(family_name, times))
+  if (DeprecatedEqualIgnoringCase(family_name, times))
     return times_new_roman;
-  if (EqualIgnoringCase(family_name, times_new_roman))
+  if (DeprecatedEqualIgnoringCase(family_name, times_new_roman))
     return times;
 
   // Alias Arial and Helvetica
   DEFINE_STATIC_LOCAL(AtomicString, arial, ("Arial"));
   DEFINE_STATIC_LOCAL(AtomicString, helvetica, ("Helvetica"));
-  if (EqualIgnoringCase(family_name, arial))
+  if (DeprecatedEqualIgnoringCase(family_name, arial))
     return helvetica;
-  if (EqualIgnoringCase(family_name, helvetica))
+  if (DeprecatedEqualIgnoringCase(family_name, helvetica))
     return arial;
 
   return g_empty_atom;

@@ -696,10 +696,10 @@ static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource,
                                              const String& value) {
-  if (EqualIgnoringCase(value, "div"))
+  if (DeprecatedEqualIgnoringCase(value, "div"))
     frame.GetEditor().SetDefaultParagraphSeparator(
         kEditorParagraphSeparatorIsDiv);
-  else if (EqualIgnoringCase(value, "p"))
+  else if (DeprecatedEqualIgnoringCase(value, "p"))
     frame.GetEditor().SetDefaultParagraphSeparator(
         kEditorParagraphSeparatorIsP);
 
@@ -1823,7 +1823,8 @@ static bool ExecuteStyleWithCSS(LocalFrame& frame,
                                 Event*,
                                 EditorCommandSource,
                                 const String& value) {
-  frame.GetEditor().SetShouldStyleWithCSS(!EqualIgnoringCase(value, "false"));
+  frame.GetEditor().SetShouldStyleWithCSS(
+      !DeprecatedEqualIgnoringCase(value, "false"));
   return true;
 }
 
@@ -1831,7 +1832,8 @@ static bool ExecuteUseCSS(LocalFrame& frame,
                           Event*,
                           EditorCommandSource,
                           const String& value) {
-  frame.GetEditor().SetShouldStyleWithCSS(EqualIgnoringCase(value, "false"));
+  frame.GetEditor().SetShouldStyleWithCSS(
+      DeprecatedEqualIgnoringCase(value, "false"));
   return true;
 }
 

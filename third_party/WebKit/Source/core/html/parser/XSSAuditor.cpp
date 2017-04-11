@@ -174,8 +174,8 @@ static bool IsNameOfInlineEventHandler(const Vector<UChar, 32>& name) {
 
 static bool IsDangerousHTTPEquiv(const String& value) {
   String equiv = value.StripWhiteSpace();
-  return EqualIgnoringCase(equiv, "refresh") ||
-         EqualIgnoringCase(equiv, "set-cookie");
+  return DeprecatedEqualIgnoringCase(equiv, "refresh") ||
+         DeprecatedEqualIgnoringCase(equiv, "set-cookie");
 }
 
 static inline String Decode16BitUnicodeEscapeSequences(const String& string) {

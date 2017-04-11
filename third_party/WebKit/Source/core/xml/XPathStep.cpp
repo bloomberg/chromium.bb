@@ -217,7 +217,7 @@ static inline bool NodeMatchesBasicTest(Node* node,
           // Paths without namespaces should match HTML elements in HTML
           // documents despite those having an XHTML namespace. Names are
           // compared case-insensitively.
-          return EqualIgnoringCase(element.localName(), name) &&
+          return DeprecatedEqualIgnoringCase(element.localName(), name) &&
                  (namespace_uri.IsNull() ||
                   namespace_uri == element.namespaceURI());
         }

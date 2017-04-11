@@ -150,7 +150,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
     decoder->UseLenientXMLDecoding();
     return decoder;
   }
-  if (EqualIgnoringCase(mime_type, "text/html"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
     return TextResourceDecoder::Create("text/html", "UTF-8");
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
       DOMImplementation::IsJSONMIMEType(mime_type))

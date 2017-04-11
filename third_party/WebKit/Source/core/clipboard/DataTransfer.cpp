@@ -449,7 +449,8 @@ bool DataTransfer::HasFileOfType(const String& type) const {
   for (size_t i = 0; i < data_object_->length(); ++i) {
     if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
       Blob* blob = data_object_->Item(i)->GetAsFile();
-      if (blob && blob->IsFile() && EqualIgnoringCase(blob->type(), type))
+      if (blob && blob->IsFile() &&
+          DeprecatedEqualIgnoringCase(blob->type(), type))
         return true;
     }
   }

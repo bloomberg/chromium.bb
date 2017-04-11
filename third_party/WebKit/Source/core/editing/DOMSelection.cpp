@@ -401,43 +401,43 @@ void DOMSelection::modify(const String& alter_string,
     return;
 
   FrameSelection::EAlteration alter;
-  if (EqualIgnoringCase(alter_string, "extend"))
+  if (DeprecatedEqualIgnoringCase(alter_string, "extend"))
     alter = FrameSelection::kAlterationExtend;
-  else if (EqualIgnoringCase(alter_string, "move"))
+  else if (DeprecatedEqualIgnoringCase(alter_string, "move"))
     alter = FrameSelection::kAlterationMove;
   else
     return;
 
   SelectionDirection direction;
-  if (EqualIgnoringCase(direction_string, "forward"))
+  if (DeprecatedEqualIgnoringCase(direction_string, "forward"))
     direction = kDirectionForward;
-  else if (EqualIgnoringCase(direction_string, "backward"))
+  else if (DeprecatedEqualIgnoringCase(direction_string, "backward"))
     direction = kDirectionBackward;
-  else if (EqualIgnoringCase(direction_string, "left"))
+  else if (DeprecatedEqualIgnoringCase(direction_string, "left"))
     direction = kDirectionLeft;
-  else if (EqualIgnoringCase(direction_string, "right"))
+  else if (DeprecatedEqualIgnoringCase(direction_string, "right"))
     direction = kDirectionRight;
   else
     return;
 
   TextGranularity granularity;
-  if (EqualIgnoringCase(granularity_string, "character"))
+  if (DeprecatedEqualIgnoringCase(granularity_string, "character"))
     granularity = kCharacterGranularity;
-  else if (EqualIgnoringCase(granularity_string, "word"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "word"))
     granularity = kWordGranularity;
-  else if (EqualIgnoringCase(granularity_string, "sentence"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "sentence"))
     granularity = kSentenceGranularity;
-  else if (EqualIgnoringCase(granularity_string, "line"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "line"))
     granularity = kLineGranularity;
-  else if (EqualIgnoringCase(granularity_string, "paragraph"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraph"))
     granularity = kParagraphGranularity;
-  else if (EqualIgnoringCase(granularity_string, "lineboundary"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "lineboundary"))
     granularity = kLineBoundary;
-  else if (EqualIgnoringCase(granularity_string, "sentenceboundary"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "sentenceboundary"))
     granularity = kSentenceBoundary;
-  else if (EqualIgnoringCase(granularity_string, "paragraphboundary"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraphboundary"))
     granularity = kParagraphBoundary;
-  else if (EqualIgnoringCase(granularity_string, "documentboundary"))
+  else if (DeprecatedEqualIgnoringCase(granularity_string, "documentboundary"))
     granularity = kDocumentBoundary;
   else
     return;

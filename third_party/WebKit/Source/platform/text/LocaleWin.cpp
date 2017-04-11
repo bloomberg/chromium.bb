@@ -57,7 +57,8 @@ static LCID LCIDFromLocaleInternal(LCID user_default_lcid,
                                    const String& user_default_language_code,
                                    const String& locale) {
   String locale_language_code = ExtractLanguageCode(locale);
-  if (EqualIgnoringCase(locale_language_code, user_default_language_code))
+  if (DeprecatedEqualIgnoringCase(locale_language_code,
+                                  user_default_language_code))
     return user_default_lcid;
   if (locale.length() >= LOCALE_NAME_MAX_LENGTH)
     return 0;

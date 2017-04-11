@@ -253,7 +253,7 @@ void EventSource::DidReceiveResponse(
     const String& charset = response.TextEncodingName();
     // If we have a charset, the only allowed value is UTF-8 (case-insensitive).
     response_is_valid =
-        charset.IsEmpty() || EqualIgnoringCase(charset, "UTF-8");
+        charset.IsEmpty() || DeprecatedEqualIgnoringCase(charset, "UTF-8");
     if (!response_is_valid) {
       StringBuilder message;
       message.Append("EventSource's response has a charset (\"");

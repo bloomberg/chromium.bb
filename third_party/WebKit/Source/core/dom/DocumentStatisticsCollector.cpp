@@ -174,7 +174,7 @@ bool HasOpenGraphArticle(const Element& head) {
 
     if (meta.GetName() == og_type ||
         meta.getAttribute(property_attr) == og_type) {
-      if (EqualIgnoringCase(meta.Content(), "article")) {
+      if (DeprecatedEqualIgnoringCase(meta.Content(), "article")) {
         return true;
       }
     }

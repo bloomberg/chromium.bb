@@ -52,13 +52,13 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (EqualIgnoringCase(value, "left")) {
+    if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyMarginLeft, 0,
           CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
                                               CSSValueAuto);
-    } else if (EqualIgnoringCase(value, "right")) {
+    } else if (DeprecatedEqualIgnoringCase(value, "right")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft,
                                               CSSValueAuto);
       AddPropertyToPresentationAttributeStyle(

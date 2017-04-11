@@ -81,7 +81,8 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == hiddenAttr) {
-    if (EqualIgnoringCase(value, "yes") || EqualIgnoringCase(value, "true")) {
+    if (DeprecatedEqualIgnoringCase(value, "yes") ||
+        DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWidth, 0, CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(

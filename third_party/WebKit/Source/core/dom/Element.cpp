@@ -2949,7 +2949,7 @@ void Element::setOuterHTML(const String& html,
 Node* Element::InsertAdjacent(const String& where,
                               Node* new_child,
                               ExceptionState& exception_state) {
-  if (EqualIgnoringCase(where, "beforeBegin")) {
+  if (DeprecatedEqualIgnoringCase(where, "beforeBegin")) {
     if (ContainerNode* parent = this->parentNode()) {
       parent->InsertBefore(new_child, this, exception_state);
       if (!exception_state.HadException())
@@ -2958,17 +2958,17 @@ Node* Element::InsertAdjacent(const String& where,
     return nullptr;
   }
 
-  if (EqualIgnoringCase(where, "afterBegin")) {
+  if (DeprecatedEqualIgnoringCase(where, "afterBegin")) {
     InsertBefore(new_child, FirstChild(), exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
-  if (EqualIgnoringCase(where, "beforeEnd")) {
+  if (DeprecatedEqualIgnoringCase(where, "beforeEnd")) {
     AppendChild(new_child, exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
-  if (EqualIgnoringCase(where, "afterEnd")) {
+  if (DeprecatedEqualIgnoringCase(where, "afterEnd")) {
     if (ContainerNode* parent = this->parentNode()) {
       parent->InsertBefore(new_child, nextSibling(), exception_state);
       if (!exception_state.HadException())
@@ -3017,8 +3017,8 @@ void Element::SetNeedsResizeObserverUpdate() {
 static Element* ContextElementForInsertion(const String& where,
                                            Element* element,
                                            ExceptionState& exception_state) {
-  if (EqualIgnoringCase(where, "beforeBegin") ||
-      EqualIgnoringCase(where, "afterEnd")) {
+  if (DeprecatedEqualIgnoringCase(where, "beforeBegin") ||
+      DeprecatedEqualIgnoringCase(where, "afterEnd")) {
     Element* parent = element->parentElement();
     if (!parent) {
       exception_state.ThrowDOMException(kNoModificationAllowedError,
@@ -3027,8 +3027,8 @@ static Element* ContextElementForInsertion(const String& where,
     }
     return parent;
   }
-  if (EqualIgnoringCase(where, "afterBegin") ||
-      EqualIgnoringCase(where, "beforeEnd"))
+  if (DeprecatedEqualIgnoringCase(where, "afterBegin") ||
+      DeprecatedEqualIgnoringCase(where, "beforeEnd"))
     return element;
   exception_state.ThrowDOMException(
       kSyntaxError, "The value provided ('" + where +
@@ -3661,9 +3661,10 @@ SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
   const AtomicString& value = FastGetAttribute(spellcheckAttr);
   if (value == g_null_atom)
     return kSpellcheckAttributeDefault;
-  if (EqualIgnoringCase(value, "true") || EqualIgnoringCase(value, ""))
+  if (DeprecatedEqualIgnoringCase(value, "true") ||
+      DeprecatedEqualIgnoringCase(value, ""))
     return kSpellcheckAttributeTrue;
-  if (EqualIgnoringCase(value, "false"))
+  if (DeprecatedEqualIgnoringCase(value, "false"))
     return kSpellcheckAttributeFalse;
 
   return kSpellcheckAttributeDefault;

@@ -99,7 +99,7 @@ void HiddenInputType::SetValue(const String& sanitized_value,
 }
 
 void HiddenInputType::AppendToFormData(FormData& form_data) const {
-  if (EqualIgnoringCase(GetElement().GetName(), "_charset_")) {
+  if (DeprecatedEqualIgnoringCase(GetElement().GetName(), "_charset_")) {
     form_data.append(GetElement().GetName(),
                      String(form_data.Encoding().GetName()));
     return;

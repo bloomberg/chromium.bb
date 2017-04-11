@@ -46,16 +46,16 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == typeAttr) {
-    if (EqualIgnoringCase(value, "disc"))
+    if (DeprecatedEqualIgnoringCase(value, "disc"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueDisc);
-    else if (EqualIgnoringCase(value, "circle"))
+    else if (DeprecatedEqualIgnoringCase(value, "circle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueCircle);
-    else if (EqualIgnoringCase(value, "square"))
+    else if (DeprecatedEqualIgnoringCase(value, "square"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueSquare);
-    else if (EqualIgnoringCase(value, "none"))
+    else if (DeprecatedEqualIgnoringCase(value, "none"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueNone);
   } else {

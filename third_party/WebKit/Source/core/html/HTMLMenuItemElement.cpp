@@ -32,12 +32,13 @@ void HTMLMenuItemElement::ParseAttribute(
 
 void HTMLMenuItemElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
-    if (EqualIgnoringCase(FastGetAttribute(typeAttr), "checkbox")) {
+    if (DeprecatedEqualIgnoringCase(FastGetAttribute(typeAttr), "checkbox")) {
       if (FastHasAttribute(checkedAttr))
         removeAttribute(checkedAttr);
       else
         setAttribute(checkedAttr, "checked");
-    } else if (EqualIgnoringCase(FastGetAttribute(typeAttr), "radio")) {
+    } else if (DeprecatedEqualIgnoringCase(FastGetAttribute(typeAttr),
+                                           "radio")) {
       if (Element* parent = parentElement()) {
         AtomicString group = FastGetAttribute(radiogroupAttr);
         for (HTMLMenuItemElement& menu_item :

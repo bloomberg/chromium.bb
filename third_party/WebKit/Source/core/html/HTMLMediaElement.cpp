@@ -2229,7 +2229,7 @@ void HTMLMediaElement::setPreload(const AtomicString& preload) {
 
 WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
   const AtomicString& preload = FastGetAttribute(preloadAttr);
-  if (EqualIgnoringCase(preload, "none")) {
+  if (DeprecatedEqualIgnoringCase(preload, "none")) {
     UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementPreloadNone);
     return WebMediaPlayer::kPreloadNone;
   }
@@ -2246,7 +2246,7 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
     return WebMediaPlayer::kPreloadNone;
   }
 
-  if (EqualIgnoringCase(preload, "metadata")) {
+  if (DeprecatedEqualIgnoringCase(preload, "metadata")) {
     UseCounter::Count(GetDocument(),
                       UseCounter::kHTMLMediaElementPreloadMetadata);
     return WebMediaPlayer::kPreloadMetaData;
@@ -2259,7 +2259,7 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
     return WebMediaPlayer::kPreloadMetaData;
   }
 
-  if (EqualIgnoringCase(preload, "auto")) {
+  if (DeprecatedEqualIgnoringCase(preload, "auto")) {
     UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementPreloadAuto);
     return WebMediaPlayer::kPreloadAuto;
   }
@@ -3864,7 +3864,7 @@ WebMediaPlayer::CORSMode HTMLMediaElement::CorsMode() const {
   const AtomicString& cross_origin_mode = FastGetAttribute(crossoriginAttr);
   if (cross_origin_mode.IsNull())
     return WebMediaPlayer::kCORSModeUnspecified;
-  if (EqualIgnoringCase(cross_origin_mode, "use-credentials"))
+  if (DeprecatedEqualIgnoringCase(cross_origin_mode, "use-credentials"))
     return WebMediaPlayer::kCORSModeUseCredentials;
   return WebMediaPlayer::kCORSModeAnonymous;
 }

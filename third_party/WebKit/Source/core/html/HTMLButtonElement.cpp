@@ -88,9 +88,9 @@ bool HTMLButtonElement::IsPresentationAttribute(
 void HTMLButtonElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == typeAttr) {
-    if (EqualIgnoringCase(params.new_value, "reset"))
+    if (DeprecatedEqualIgnoringCase(params.new_value, "reset"))
       type_ = RESET;
-    else if (EqualIgnoringCase(params.new_value, "button"))
+    else if (DeprecatedEqualIgnoringCase(params.new_value, "button"))
       type_ = BUTTON;
     else
       type_ = SUBMIT;

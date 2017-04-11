@@ -88,11 +88,12 @@ void HTMLFrameSetElement::ParseAttribute(
     }
   } else if (name == frameborderAttr) {
     if (!value.IsNull()) {
-      if (EqualIgnoringCase(value, "no") || EqualIgnoringCase(value, "0")) {
+      if (DeprecatedEqualIgnoringCase(value, "no") ||
+          DeprecatedEqualIgnoringCase(value, "0")) {
         frameborder_ = false;
         frameborder_set_ = true;
-      } else if (EqualIgnoringCase(value, "yes") ||
-                 EqualIgnoringCase(value, "1")) {
+      } else if (DeprecatedEqualIgnoringCase(value, "yes") ||
+                 DeprecatedEqualIgnoringCase(value, "1")) {
         frameborder_set_ = true;
       }
     } else {

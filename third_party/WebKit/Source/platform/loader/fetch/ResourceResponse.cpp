@@ -348,16 +348,16 @@ void ResourceResponse::UpdateHeaderParsedState(const AtomicString& name) {
   static const char kExpiresHeader[] = "expires";
   static const char kLastModifiedHeader[] = "last-modified";
 
-  if (EqualIgnoringCase(name, kAgeHeader))
+  if (DeprecatedEqualIgnoringCase(name, kAgeHeader))
     have_parsed_age_header_ = false;
-  else if (EqualIgnoringCase(name, kCacheControlHeader) ||
-           EqualIgnoringCase(name, kPragmaHeader))
+  else if (DeprecatedEqualIgnoringCase(name, kCacheControlHeader) ||
+           DeprecatedEqualIgnoringCase(name, kPragmaHeader))
     cache_control_header_ = CacheControlHeader();
-  else if (EqualIgnoringCase(name, kDateHeader))
+  else if (DeprecatedEqualIgnoringCase(name, kDateHeader))
     have_parsed_date_header_ = false;
-  else if (EqualIgnoringCase(name, kExpiresHeader))
+  else if (DeprecatedEqualIgnoringCase(name, kExpiresHeader))
     have_parsed_expires_header_ = false;
-  else if (EqualIgnoringCase(name, kLastModifiedHeader))
+  else if (DeprecatedEqualIgnoringCase(name, kLastModifiedHeader))
     have_parsed_last_modified_header_ = false;
 }
 
@@ -517,7 +517,7 @@ bool ResourceResponse::IsAttachment() const {
   if (loc != kNotFound)
     value = value.Left(loc);
   value = value.StripWhiteSpace();
-  return EqualIgnoringCase(value, kAttachmentString);
+  return DeprecatedEqualIgnoringCase(value, kAttachmentString);
 }
 
 AtomicString ResourceResponse::HttpContentType() const {

@@ -1286,7 +1286,9 @@ const UChar StringImpl::kLatin1CaseFoldTable[256] = {
     0x00fc, 0x00fd, 0x00fe, 0x00ff,
 };
 
-bool EqualIgnoringCase(const LChar* a, const LChar* b, unsigned length) {
+bool DeprecatedEqualIgnoringCase(const LChar* a,
+                                 const LChar* b,
+                                 unsigned length) {
   DCHECK_GE(length, 0u);
   if (a == b)
     return true;
@@ -1298,14 +1300,18 @@ bool EqualIgnoringCase(const LChar* a, const LChar* b, unsigned length) {
   return true;
 }
 
-bool EqualIgnoringCase(const UChar* a, const UChar* b, unsigned length) {
+bool DeprecatedEqualIgnoringCase(const UChar* a,
+                                 const UChar* b,
+                                 unsigned length) {
   DCHECK_GE(length, 0u);
   if (a == b)
     return true;
   return !Unicode::Umemcasecmp(a, b, length);
 }
 
-bool EqualIgnoringCase(const UChar* a, const LChar* b, unsigned length) {
+bool DeprecatedEqualIgnoringCase(const UChar* a,
+                                 const LChar* b,
+                                 unsigned length) {
   while (length--) {
     if (FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
       return false;
@@ -1405,8 +1411,8 @@ ALWAYS_INLINE static size_t FindIgnoringCaseInternal(
 
   unsigned i = 0;
   // keep looping until we match
-  while (!EqualIgnoringCase(search_characters + i, match_characters,
-                            match_length)) {
+  while (!DeprecatedEqualIgnoringCase(search_characters + i, match_characters,
+                                      match_length)) {
     if (i == delta)
       return kNotFound;
     ++i;
@@ -1599,17 +1605,19 @@ bool StringImpl::StartsWithIgnoringCase(const StringView& prefix) const {
   if (prefix.length() > length())
     return false;
   if (Is8Bit()) {
-    if (prefix.Is8Bit())
-      return EqualIgnoringCase(Characters8(), prefix.Characters8(),
-                               prefix.length());
-    return EqualIgnoringCase(Characters8(), prefix.Characters16(),
-                             prefix.length());
+    if (prefix.Is8Bit()) {
+      return DeprecatedEqualIgnoringCase(Characters8(), prefix.Characters8(),
+                                         prefix.length());
+    }
+    return DeprecatedEqualIgnoringCase(Characters8(), prefix.Characters16(),
+                                       prefix.length());
   }
-  if (prefix.Is8Bit())
-    return EqualIgnoringCase(Characters16(), prefix.Characters8(),
-                             prefix.length());
-  return EqualIgnoringCase(Characters16(), prefix.Characters16(),
-                           prefix.length());
+  if (prefix.Is8Bit()) {
+    return DeprecatedEqualIgnoringCase(Characters16(), prefix.Characters8(),
+                                       prefix.length());
+  }
+  return DeprecatedEqualIgnoringCase(Characters16(), prefix.Characters16(),
+                                     prefix.length());
 }
 
 bool StringImpl::StartsWithIgnoringASCIICase(const StringView& prefix) const {
@@ -1656,17 +1664,19 @@ bool StringImpl::EndsWithIgnoringCase(const StringView& suffix) const {
     return false;
   unsigned start_offset = length() - suffix.length();
   if (Is8Bit()) {
-    if (suffix.Is8Bit())
-      return EqualIgnoringCase(Characters8() + start_offset,
-                               suffix.Characters8(), suffix.length());
-    return EqualIgnoringCase(Characters8() + start_offset,
-                             suffix.Characters16(), suffix.length());
+    if (suffix.Is8Bit()) {
+      return DeprecatedEqualIgnoringCase(Characters8() + start_offset,
+                                         suffix.Characters8(), suffix.length());
+    }
+    return DeprecatedEqualIgnoringCase(Characters8() + start_offset,
+                                       suffix.Characters16(), suffix.length());
   }
-  if (suffix.Is8Bit())
-    return EqualIgnoringCase(Characters16() + start_offset,
-                             suffix.Characters8(), suffix.length());
-  return EqualIgnoringCase(Characters16() + start_offset, suffix.Characters16(),
-                           suffix.length());
+  if (suffix.Is8Bit()) {
+    return DeprecatedEqualIgnoringCase(Characters16() + start_offset,
+                                       suffix.Characters8(), suffix.length());
+  }
+  return DeprecatedEqualIgnoringCase(Characters16() + start_offset,
+                                     suffix.Characters16(), suffix.length());
 }
 
 bool StringImpl::EndsWithIgnoringASCIICase(const StringView& suffix) const {

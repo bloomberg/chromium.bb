@@ -119,9 +119,9 @@ static WTF::TextEncoding FindTextEncoding(const char* encoding_name,
 
 TextResourceDecoder::ContentType TextResourceDecoder::DetermineContentType(
     const String& mime_type) {
-  if (EqualIgnoringCase(mime_type, "text/css"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
     return kCSSContent;
-  if (EqualIgnoringCase(mime_type, "text/html"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
     return kHTMLContent;
   if (DOMImplementation::IsXMLMIMEType(mime_type))
     return kXMLContent;

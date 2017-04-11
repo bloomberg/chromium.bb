@@ -102,8 +102,9 @@ const String MediaQueryEvaluator::MediaType() const {
 bool MediaQueryEvaluator::MediaTypeMatch(
     const String& media_type_to_match) const {
   return media_type_to_match.IsEmpty() ||
-         EqualIgnoringCase(media_type_to_match, MediaTypeNames::all) ||
-         EqualIgnoringCase(media_type_to_match, MediaType());
+         DeprecatedEqualIgnoringCase(media_type_to_match,
+                                     MediaTypeNames::all) ||
+         DeprecatedEqualIgnoringCase(media_type_to_match, MediaType());
 }
 
 static bool ApplyRestrictor(MediaQuery::RestrictorType r, bool value) {
@@ -330,10 +331,11 @@ static bool EvalResolution(const MediaQueryExpValue& value,
   // this method only got called if this media type matches the one defined
   // in the query. Thus, if if the document's media type is "print", the
   // media type of the query will either be "print" or "all".
-  if (EqualIgnoringCase(media_values.MediaType(), MediaTypeNames::screen)) {
+  if (DeprecatedEqualIgnoringCase(media_values.MediaType(),
+                                  MediaTypeNames::screen)) {
     actual_resolution = clampTo<float>(media_values.DevicePixelRatio());
-  } else if (EqualIgnoringCase(media_values.MediaType(),
-                               MediaTypeNames::print)) {
+  } else if (DeprecatedEqualIgnoringCase(media_values.MediaType(),
+                                         MediaTypeNames::print)) {
     // The resolution of images while printing should not depend on the DPI
     // of the screen. Until we support proper ways of querying this info
     // we use 300px which is considered minimum for current printers.
@@ -739,7 +741,8 @@ static bool ScanMediaFeatureEval(const MediaQueryExpValue& value,
                                  MediaFeaturePrefix,
                                  const MediaValues& media_values) {
   // Scan only applies to 'tv' media.
-  if (!EqualIgnoringCase(media_values.MediaType(), MediaTypeNames::tv))
+  if (!DeprecatedEqualIgnoringCase(media_values.MediaType(),
+                                   MediaTypeNames::tv))
     return false;
 
   if (!value.IsValid())

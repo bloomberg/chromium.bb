@@ -121,8 +121,8 @@ PassRefPtr<FontCustomPlatformData> FontCustomPlatformData::Create(
 }
 
 bool FontCustomPlatformData::SupportsFormat(const String& format) {
-  return EqualIgnoringCase(format, "truetype") ||
-         EqualIgnoringCase(format, "opentype") ||
+  return DeprecatedEqualIgnoringCase(format, "truetype") ||
+         DeprecatedEqualIgnoringCase(format, "opentype") ||
          WebFontDecoder::SupportsFormat(format);
 }
 

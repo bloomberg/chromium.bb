@@ -475,7 +475,7 @@ inline bool operator!=(const char* a, const String& b) {
 inline bool EqualPossiblyIgnoringCase(const String& a,
                                       const String& b,
                                       bool ignore_case) {
-  return ignore_case ? EqualIgnoringCase(a, b) : (a == b);
+  return ignore_case ? DeprecatedEqualIgnoringCase(a, b) : (a == b);
 }
 
 inline bool EqualIgnoringNullity(const String& a, const String& b) {

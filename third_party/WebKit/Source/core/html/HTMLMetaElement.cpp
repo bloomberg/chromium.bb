@@ -182,9 +182,9 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
   // 3) device-width and device-height are used as keywords.
   // 4) Other keywords and unknown values translate to 0.0.
 
-  if (EqualIgnoringCase(value_string, "device-width"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
     return Length(kDeviceWidth);
-  if (EqualIgnoringCase(value_string, "device-height"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
     return Length(kDeviceHeight);
 
   float value =
@@ -210,13 +210,13 @@ float HTMLMetaElement::ParseViewportValueAsZoom(
   // 5) no and unknown values are translated to 0.0
 
   computed_value_matches_parsed_value = false;
-  if (EqualIgnoringCase(value_string, "yes"))
+  if (DeprecatedEqualIgnoringCase(value_string, "yes"))
     return 1;
-  if (EqualIgnoringCase(value_string, "no"))
+  if (DeprecatedEqualIgnoringCase(value_string, "no"))
     return 0;
-  if (EqualIgnoringCase(value_string, "device-width"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
     return 10;
-  if (EqualIgnoringCase(value_string, "device-height"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
     return 10;
 
   float value =
@@ -251,17 +251,17 @@ bool HTMLMetaElement::ParseViewportValueAsUserZoom(
   // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
   computed_value_matches_parsed_value = false;
-  if (EqualIgnoringCase(value_string, "yes")) {
+  if (DeprecatedEqualIgnoringCase(value_string, "yes")) {
     computed_value_matches_parsed_value = true;
     return true;
   }
-  if (EqualIgnoringCase(value_string, "no")) {
+  if (DeprecatedEqualIgnoringCase(value_string, "no")) {
     computed_value_matches_parsed_value = true;
     return false;
   }
-  if (EqualIgnoringCase(value_string, "device-width"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
     return true;
-  if (EqualIgnoringCase(value_string, "device-height"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
     return true;
 
   float value =
@@ -276,13 +276,13 @@ float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
                                                bool report_warnings,
                                                const String& key_string,
                                                const String& value_string) {
-  if (EqualIgnoringCase(value_string, "device-dpi"))
+  if (DeprecatedEqualIgnoringCase(value_string, "device-dpi"))
     return ViewportDescription::kValueDeviceDPI;
-  if (EqualIgnoringCase(value_string, "low-dpi"))
+  if (DeprecatedEqualIgnoringCase(value_string, "low-dpi"))
     return ViewportDescription::kValueLowDPI;
-  if (EqualIgnoringCase(value_string, "medium-dpi"))
+  if (DeprecatedEqualIgnoringCase(value_string, "medium-dpi"))
     return ViewportDescription::kValueMediumDPI;
-  if (EqualIgnoringCase(value_string, "high-dpi"))
+  if (DeprecatedEqualIgnoringCase(value_string, "high-dpi"))
     return ViewportDescription::kValueHighDPI;
 
   bool ok;
@@ -473,21 +473,21 @@ void HTMLMetaElement::Process() {
 
   const AtomicString& name_value = FastGetAttribute(nameAttr);
   if (!name_value.IsEmpty()) {
-    if (EqualIgnoringCase(name_value, "viewport"))
+    if (DeprecatedEqualIgnoringCase(name_value, "viewport"))
       ProcessViewportContentAttribute(content_value,
                                       ViewportDescription::kViewportMeta);
-    else if (EqualIgnoringCase(name_value, "referrer"))
+    else if (DeprecatedEqualIgnoringCase(name_value, "referrer"))
       GetDocument().ParseAndSetReferrerPolicy(
           content_value, true /* support legacy keywords */);
-    else if (EqualIgnoringCase(name_value, "handheldfriendly") &&
-             EqualIgnoringCase(content_value, "true"))
+    else if (DeprecatedEqualIgnoringCase(name_value, "handheldfriendly") &&
+             DeprecatedEqualIgnoringCase(content_value, "true"))
       ProcessViewportContentAttribute(
           "width=device-width", ViewportDescription::kHandheldFriendlyMeta);
-    else if (EqualIgnoringCase(name_value, "mobileoptimized"))
+    else if (DeprecatedEqualIgnoringCase(name_value, "mobileoptimized"))
       ProcessViewportContentAttribute(
           "width=device-width, initial-scale=1",
           ViewportDescription::kMobileOptimizedMeta);
-    else if (EqualIgnoringCase(name_value, "theme-color") &&
+    else if (DeprecatedEqualIgnoringCase(name_value, "theme-color") &&
              GetDocument().GetFrame())
       GetDocument()
           .GetFrame()

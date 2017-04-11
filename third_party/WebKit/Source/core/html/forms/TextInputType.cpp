@@ -46,9 +46,9 @@ void TextInputType::CountUsage() {
   if (GetElement().FastHasAttribute(maxlengthAttr))
     CountUsageIfVisible(UseCounter::kInputTypeTextMaxLength);
   const AtomicString& type = GetElement().FastGetAttribute(typeAttr);
-  if (EqualIgnoringCase(type, InputTypeNames::datetime))
+  if (DeprecatedEqualIgnoringCase(type, InputTypeNames::datetime))
     CountUsageIfVisible(UseCounter::kInputTypeDateTimeFallback);
-  else if (EqualIgnoringCase(type, InputTypeNames::week))
+  else if (DeprecatedEqualIgnoringCase(type, InputTypeNames::week))
     CountUsageIfVisible(UseCounter::kInputTypeWeekFallback);
 }
 

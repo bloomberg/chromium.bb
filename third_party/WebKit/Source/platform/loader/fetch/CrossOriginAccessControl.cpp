@@ -62,7 +62,7 @@ static AtomicString CreateAccessControlRequestHeadersHeader(
       // Exclude simple headers.
       continue;
     }
-    if (EqualIgnoringCase(header.key, "referer")) {
+    if (DeprecatedEqualIgnoringCase(header.key, "referer")) {
       // When the request is from a Worker, referrer header was added by
       // WorkerThreadableLoader. But it should not be added to
       // Access-Control-Request-Headers header.
@@ -353,7 +353,7 @@ CrossOriginAccessControl::CheckExternalPreflight(
       response.HttpHeaderField(HTTPNames::Access_Control_Allow_External);
   if (result.IsNull())
     return kPreflightMissingAllowExternal;
-  if (!EqualIgnoringCase(result, "true"))
+  if (!DeprecatedEqualIgnoringCase(result, "true"))
     return kPreflightInvalidAllowExternal;
   return kPreflightSuccess;
 }

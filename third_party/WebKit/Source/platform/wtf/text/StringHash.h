@@ -100,7 +100,7 @@ class CaseFoldingHash {
     // Save one branch inside each StringView by derefing the StringImpl,
     // and another branch inside the compare function by skipping the null
     // checks.
-    return EqualIgnoringCaseAndNullity(*a, *b);
+    return DeprecatedEqualIgnoringCaseAndNullity(*a, *b);
   }
 
   static unsigned GetHash(const RefPtr<StringImpl>& key) {

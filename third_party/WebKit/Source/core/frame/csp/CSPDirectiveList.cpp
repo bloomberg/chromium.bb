@@ -1054,9 +1054,9 @@ void CSPDirectiveList::ParseRequireSRIFor(const String& name,
 
     if (token_begin < position) {
       String token = String(token_begin, position - token_begin);
-      if (EqualIgnoringCase(token, "script")) {
+      if (DeprecatedEqualIgnoringCase(token, "script")) {
         require_sri_for_ |= RequireSRIForToken::kScript;
-      } else if (EqualIgnoringCase(token, "style")) {
+      } else if (DeprecatedEqualIgnoringCase(token, "style")) {
         require_sri_for_ |= RequireSRIForToken::kStyle;
       } else {
         if (number_of_token_errors)

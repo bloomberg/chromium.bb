@@ -838,14 +838,14 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   // 4. "If for is not an ASCII case-insensitive match for the string
   //     "window",
   //     then abort these steps at this point. The script is not executed."
-  if (!EqualIgnoringCase(for_attribute, "window"))
+  if (!DeprecatedEqualIgnoringCase(for_attribute, "window"))
     return false;
   event_attribute = event_attribute.StripWhiteSpace();
   // 5. "If event is not an ASCII case-insensitive match for either the
   //     string "onload" or the string "onload()",
   //     then abort these steps at this point. The script is not executed.
-  return EqualIgnoringCase(event_attribute, "onload") ||
-         EqualIgnoringCase(event_attribute, "onload()");
+  return DeprecatedEqualIgnoringCase(event_attribute, "onload") ||
+         DeprecatedEqualIgnoringCase(event_attribute, "onload()");
 }
 
 String ScriptLoader::ScriptContent() const {

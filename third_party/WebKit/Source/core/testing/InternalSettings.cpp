@@ -197,11 +197,11 @@ void InternalSettings::setViewportMetaEnabled(bool enabled,
 void InternalSettings::setViewportStyle(const String& style,
                                         ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  if (EqualIgnoringCase(style, "default"))
+  if (DeprecatedEqualIgnoringCase(style, "default"))
     GetSettings()->SetViewportStyle(WebViewportStyle::kDefault);
-  else if (EqualIgnoringCase(style, "mobile"))
+  else if (DeprecatedEqualIgnoringCase(style, "mobile"))
     GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
-  else if (EqualIgnoringCase(style, "television"))
+  else if (DeprecatedEqualIgnoringCase(style, "television"))
     GetSettings()->SetViewportStyle(WebViewportStyle::kTelevision);
   else
     exception_state.ThrowDOMException(
@@ -342,13 +342,13 @@ void InternalSettings::setAccessibilityFontScaleFactor(
 void InternalSettings::setEditingBehavior(const String& editing_behavior,
                                           ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  if (EqualIgnoringCase(editing_behavior, "win"))
+  if (DeprecatedEqualIgnoringCase(editing_behavior, "win"))
     GetSettings()->SetEditingBehaviorType(kEditingWindowsBehavior);
-  else if (EqualIgnoringCase(editing_behavior, "mac"))
+  else if (DeprecatedEqualIgnoringCase(editing_behavior, "mac"))
     GetSettings()->SetEditingBehaviorType(kEditingMacBehavior);
-  else if (EqualIgnoringCase(editing_behavior, "unix"))
+  else if (DeprecatedEqualIgnoringCase(editing_behavior, "unix"))
     GetSettings()->SetEditingBehaviorType(kEditingUnixBehavior);
-  else if (EqualIgnoringCase(editing_behavior, "android"))
+  else if (DeprecatedEqualIgnoringCase(editing_behavior, "android"))
     GetSettings()->SetEditingBehaviorType(kEditingAndroidBehavior);
   else
     exception_state.ThrowDOMException(kSyntaxError,
@@ -492,11 +492,11 @@ void InternalSettings::setImageAnimationPolicy(
     const String& policy,
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  if (EqualIgnoringCase(policy, "allowed"))
+  if (DeprecatedEqualIgnoringCase(policy, "allowed"))
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAllowed);
-  else if (EqualIgnoringCase(policy, "once"))
+  else if (DeprecatedEqualIgnoringCase(policy, "once"))
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAnimateOnce);
-  else if (EqualIgnoringCase(policy, "none"))
+  else if (DeprecatedEqualIgnoringCase(policy, "none"))
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyNoAnimation);
   else
     exception_state.ThrowDOMException(

@@ -61,23 +61,30 @@ bool EqualStringView(const StringView& a, const StringView& b) {
   return Equal(a.Characters16(), b.Characters16(), a.length());
 }
 
-bool EqualIgnoringCaseAndNullity(const StringView& a, const StringView& b) {
+bool DeprecatedEqualIgnoringCaseAndNullity(const StringView& a,
+                                           const StringView& b) {
   if (a.length() != b.length())
     return false;
   if (a.Is8Bit()) {
-    if (b.Is8Bit())
-      return EqualIgnoringCase(a.Characters8(), b.Characters8(), a.length());
-    return EqualIgnoringCase(a.Characters8(), b.Characters16(), a.length());
+    if (b.Is8Bit()) {
+      return DeprecatedEqualIgnoringCase(a.Characters8(), b.Characters8(),
+                                         a.length());
+    }
+    return DeprecatedEqualIgnoringCase(a.Characters8(), b.Characters16(),
+                                       a.length());
   }
-  if (b.Is8Bit())
-    return EqualIgnoringCase(a.Characters16(), b.Characters8(), a.length());
-  return EqualIgnoringCase(a.Characters16(), b.Characters16(), a.length());
+  if (b.Is8Bit()) {
+    return DeprecatedEqualIgnoringCase(a.Characters16(), b.Characters8(),
+                                       a.length());
+  }
+  return DeprecatedEqualIgnoringCase(a.Characters16(), b.Characters16(),
+                                     a.length());
 }
 
-bool EqualIgnoringCase(const StringView& a, const StringView& b) {
+bool DeprecatedEqualIgnoringCase(const StringView& a, const StringView& b) {
   if (a.IsNull() || b.IsNull())
     return a.IsNull() == b.IsNull();
-  return EqualIgnoringCaseAndNullity(a, b);
+  return DeprecatedEqualIgnoringCaseAndNullity(a, b);
 }
 
 bool EqualIgnoringASCIICase(const StringView& a, const StringView& b) {

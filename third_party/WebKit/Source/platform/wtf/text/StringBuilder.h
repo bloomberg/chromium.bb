@@ -235,24 +235,27 @@ bool Equal(const StringBuilder& s, const CharType* buffer, unsigned length) {
 }
 
 template <typename CharType>
-bool EqualIgnoringCase(const StringBuilder& s,
-                       const CharType* buffer,
-                       unsigned length) {
+bool DeprecatedEqualIgnoringCase(const StringBuilder& s,
+                                 const CharType* buffer,
+                                 unsigned length) {
   if (s.length() != length)
     return false;
 
   if (s.Is8Bit())
-    return EqualIgnoringCase(s.Characters8(), buffer, length);
+    return DeprecatedEqualIgnoringCase(s.Characters8(), buffer, length);
 
-  return EqualIgnoringCase(s.Characters16(), buffer, length);
+  return DeprecatedEqualIgnoringCase(s.Characters16(), buffer, length);
 }
 
 // Unicode aware case insensitive string matching. Non-ASCII characters might
 // match to ASCII characters. This function is rarely used to implement web
 // platform features.
-inline bool EqualIgnoringCase(const StringBuilder& s, const char* string) {
-  return EqualIgnoringCase(s, reinterpret_cast<const LChar*>(string),
-                           strlen(string));
+// This function is deprecated. We should introduce EqualIgnoringASCIICase() or
+// EqualIgnoringUnicodeCase(). See crbug.com/627682
+inline bool DeprecatedEqualIgnoringCase(const StringBuilder& s,
+                                        const char* string) {
+  return DeprecatedEqualIgnoringCase(s, reinterpret_cast<const LChar*>(string),
+                                     strlen(string));
 }
 
 template <typename StringType>

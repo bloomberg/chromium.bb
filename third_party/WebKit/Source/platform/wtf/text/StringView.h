@@ -221,9 +221,12 @@ inline void StringView::Set(const StringImpl& impl,
 // Unicode aware case insensitive string matching. Non-ASCII characters might
 // match to ASCII characters. These functions are rarely used to implement web
 // platform features.
-WTF_EXPORT bool EqualIgnoringCase(const StringView&, const StringView&);
-WTF_EXPORT bool EqualIgnoringCaseAndNullity(const StringView&,
+// These functions are deprecated. Use EqualIgnoringASCIICase(), or introduce
+// EqualIgnoringUnicodeCase(). See crbug.com/627682
+WTF_EXPORT bool DeprecatedEqualIgnoringCase(const StringView&,
                                             const StringView&);
+WTF_EXPORT bool DeprecatedEqualIgnoringCaseAndNullity(const StringView&,
+                                                      const StringView&);
 
 WTF_EXPORT bool EqualIgnoringASCIICase(const StringView&, const StringView&);
 
@@ -266,7 +269,7 @@ inline bool StringView::IsAllSpecialCharacters() const {
 
 using WTF::StringView;
 using WTF::EqualIgnoringASCIICase;
-using WTF::EqualIgnoringCase;
+using WTF::DeprecatedEqualIgnoringCase;
 using WTF::IsAllSpecialCharacters;
 
 #endif

@@ -642,7 +642,7 @@ Value FunLang::Evaluate(EvaluationContext& context) const {
 
   String lang_value = language_attribute->Value();
   while (true) {
-    if (EqualIgnoringCase(lang_value, lang))
+    if (DeprecatedEqualIgnoringCase(lang_value, lang))
       return true;
 
     // Remove suffixes one by one.

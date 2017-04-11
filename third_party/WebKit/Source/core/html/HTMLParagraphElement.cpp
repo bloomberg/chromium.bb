@@ -40,14 +40,14 @@ void HTMLParagraphElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (EqualIgnoringCase(value, "middle") ||
-        EqualIgnoringCase(value, "center"))
+    if (DeprecatedEqualIgnoringCase(value, "middle") ||
+        DeprecatedEqualIgnoringCase(value, "center"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitCenter);
-    else if (EqualIgnoringCase(value, "left"))
+    else if (DeprecatedEqualIgnoringCase(value, "left"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitLeft);
-    else if (EqualIgnoringCase(value, "right"))
+    else if (DeprecatedEqualIgnoringCase(value, "right"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitRight);
     else

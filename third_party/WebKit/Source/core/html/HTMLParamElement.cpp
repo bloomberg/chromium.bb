@@ -46,8 +46,9 @@ const AtomicString& HTMLParamElement::Value() const {
 }
 
 bool HTMLParamElement::IsURLParameter(const String& name) {
-  return EqualIgnoringCase(name, "data") || EqualIgnoringCase(name, "movie") ||
-         EqualIgnoringCase(name, "src");
+  return DeprecatedEqualIgnoringCase(name, "data") ||
+         DeprecatedEqualIgnoringCase(name, "movie") ||
+         DeprecatedEqualIgnoringCase(name, "src");
 }
 
 bool HTMLParamElement::IsURLAttribute(const Attribute& attribute) const {

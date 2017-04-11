@@ -45,30 +45,34 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
   for (unsigned index = 0; index < length; index++) {
     // Turn off the corresponding sandbox flag if it's set as "allowed".
     String sandbox_token(policy[index]);
-    if (EqualIgnoringCase(sandbox_token, "allow-same-origin")) {
+    if (DeprecatedEqualIgnoringCase(sandbox_token, "allow-same-origin")) {
       flags &= ~kSandboxOrigin;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-forms")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token, "allow-forms")) {
       flags &= ~kSandboxForms;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-scripts")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token, "allow-scripts")) {
       flags &= ~kSandboxScripts;
       flags &= ~kSandboxAutomaticFeatures;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-top-navigation")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token,
+                                           "allow-top-navigation")) {
       flags &= ~kSandboxTopNavigation;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-popups")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token, "allow-popups")) {
       flags &= ~kSandboxPopups;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-pointer-lock")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token,
+                                           "allow-pointer-lock")) {
       flags &= ~kSandboxPointerLock;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-orientation-lock")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token,
+                                           "allow-orientation-lock")) {
       flags &= ~kSandboxOrientationLock;
-    } else if (EqualIgnoringCase(sandbox_token,
-                                 "allow-popups-to-escape-sandbox")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token,
+                                           "allow-popups-to-escape-sandbox")) {
       flags &= ~kSandboxPropagatesToAuxiliaryBrowsingContexts;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-modals")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token, "allow-modals")) {
       flags &= ~kSandboxModals;
-    } else if (EqualIgnoringCase(sandbox_token, "allow-presentation")) {
+    } else if (DeprecatedEqualIgnoringCase(sandbox_token,
+                                           "allow-presentation")) {
       flags &= ~kSandboxPresentation;
-    } else if (EqualIgnoringCase(sandbox_token,
-                                 "allow-top-navigation-by-user-activation") &&
+    } else if (DeprecatedEqualIgnoringCase(
+                   sandbox_token, "allow-top-navigation-by-user-activation") &&
                RuntimeEnabledFeatures::
                    topNavByUserActivationInSandboxEnabled()) {
       flags &= ~kSandboxTopNavigationByUserActivation;

@@ -32,7 +32,7 @@ static const struct {
 
 static uint32_t CompositorMutablePropertyForName(const String& attribute_name) {
   for (const auto& mapping : kAllowedProperties) {
-    if (EqualIgnoringCase(mapping.name, attribute_name))
+    if (DeprecatedEqualIgnoringCase(mapping.name, attribute_name))
       return mapping.property;
   }
   return CompositorMutableProperty::kNone;

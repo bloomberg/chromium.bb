@@ -69,14 +69,14 @@ const WebString& WebServiceWorkerRequest::Method() const {
 
 void WebServiceWorkerRequest::SetHeader(const WebString& key,
                                         const WebString& value) {
-  if (EqualIgnoringCase(key, "referer"))
+  if (DeprecatedEqualIgnoringCase(key, "referer"))
     return;
   private_->headers_.Set(key, value);
 }
 
 void WebServiceWorkerRequest::AppendHeader(const WebString& key,
                                            const WebString& value) {
-  if (EqualIgnoringCase(key, "referer"))
+  if (DeprecatedEqualIgnoringCase(key, "referer"))
     return;
   HTTPHeaderMap::AddResult result = private_->headers_.Add(key, value);
   if (!result.is_new_entry)

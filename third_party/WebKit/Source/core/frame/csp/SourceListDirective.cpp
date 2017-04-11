@@ -41,7 +41,8 @@ static bool IsSourceListNone(const UChar* begin, const UChar* end) {
 
   const UChar* position = begin;
   skipWhile<UChar, IsSourceCharacter>(position, end);
-  if (!EqualIgnoringCase("'none'", StringView(begin, position - begin)))
+  if (!DeprecatedEqualIgnoringCase("'none'",
+                                   StringView(begin, position - begin)))
     return false;
 
   skipWhile<UChar, IsASCIISpace>(position, end);
@@ -178,7 +179,7 @@ bool SourceListDirective::ParseSource(
 
   StringView token(begin, end - begin);
 
-  if (EqualIgnoringCase("'none'", token))
+  if (DeprecatedEqualIgnoringCase("'none'", token))
     return false;
 
   if (end - begin == 1 && *begin == '*') {
@@ -186,32 +187,32 @@ bool SourceListDirective::ParseSource(
     return true;
   }
 
-  if (EqualIgnoringCase("'self'", token)) {
+  if (DeprecatedEqualIgnoringCase("'self'", token)) {
     AddSourceSelf();
     return true;
   }
 
-  if (EqualIgnoringCase("'unsafe-inline'", token)) {
+  if (DeprecatedEqualIgnoringCase("'unsafe-inline'", token)) {
     AddSourceUnsafeInline();
     return true;
   }
 
-  if (EqualIgnoringCase("'unsafe-eval'", token)) {
+  if (DeprecatedEqualIgnoringCase("'unsafe-eval'", token)) {
     AddSourceUnsafeEval();
     return true;
   }
 
-  if (EqualIgnoringCase("'strict-dynamic'", token)) {
+  if (DeprecatedEqualIgnoringCase("'strict-dynamic'", token)) {
     AddSourceStrictDynamic();
     return true;
   }
 
-  if (EqualIgnoringCase("'unsafe-hashed-attributes'", token)) {
+  if (DeprecatedEqualIgnoringCase("'unsafe-hashed-attributes'", token)) {
     AddSourceUnsafeHashedAttributes();
     return true;
   }
 
-  if (EqualIgnoringCase("'report-sample'", token)) {
+  if (DeprecatedEqualIgnoringCase("'report-sample'", token)) {
     AddReportSample();
     return true;
   }
@@ -323,7 +324,7 @@ bool SourceListDirective::ParseNonce(const UChar* begin,
 
   // TODO(esprehn): Should be StringView(begin, nonceLength).startsWith(prefix).
   if (nonce_length <= prefix.length() ||
-      !EqualIgnoringCase(prefix, StringView(begin, prefix.length())))
+      !DeprecatedEqualIgnoringCase(prefix, StringView(begin, prefix.length())))
     return true;
 
   const UChar* position = begin + prefix.length();
@@ -373,7 +374,8 @@ bool SourceListDirective::ParseHash(
     // TODO(esprehn): Should be StringView(begin, end -
     // begin).startsWith(prefix).
     if (hash_length > prefix.length() &&
-        EqualIgnoringCase(prefix, StringView(begin, prefix.length()))) {
+        DeprecatedEqualIgnoringCase(prefix,
+                                    StringView(begin, prefix.length()))) {
       hash_algorithm = algorithm.type;
       break;
     }

@@ -113,10 +113,10 @@ bool MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
 
 bool MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
     const String& mime_type) {
-  if (EqualIgnoringCase(mime_type, "image/jpeg") ||
-      EqualIgnoringCase(mime_type, "image/png"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "image/jpeg") ||
+      DeprecatedEqualIgnoringCase(mime_type, "image/png"))
     return true;
-  if (EqualIgnoringCase(mime_type, "image/webp"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "image/webp"))
     return true;
   return false;
 }
@@ -197,7 +197,7 @@ bool MIMETypeRegistry::IsJavaAppletMIMEType(const String& mime_type) {
 }
 
 bool MIMETypeRegistry::IsSupportedStyleSheetMIMEType(const String& mime_type) {
-  return EqualIgnoringCase(mime_type, "text/css");
+  return DeprecatedEqualIgnoringCase(mime_type, "text/css");
 }
 
 bool MIMETypeRegistry::IsSupportedFontMIMEType(const String& mime_type) {
@@ -210,7 +210,7 @@ bool MIMETypeRegistry::IsSupportedFontMIMEType(const String& mime_type) {
 }
 
 bool MIMETypeRegistry::IsSupportedTextTrackMIMEType(const String& mime_type) {
-  return EqualIgnoringCase(mime_type, "text/vtt");
+  return DeprecatedEqualIgnoringCase(mime_type, "text/vtt");
 }
 
 }  // namespace blink

@@ -771,7 +771,8 @@ void HTMLFormElement::GetNamedElements(
 }
 
 bool HTMLFormElement::ShouldAutocomplete() const {
-  return !EqualIgnoringCase(FastGetAttribute(autocompleteAttr), "off");
+  return !DeprecatedEqualIgnoringCase(FastGetAttribute(autocompleteAttr),
+                                      "off");
 }
 
 void HTMLFormElement::FinishParsingChildren() {

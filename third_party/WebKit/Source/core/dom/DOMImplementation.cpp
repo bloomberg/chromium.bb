@@ -113,9 +113,9 @@ XMLDocument* DOMImplementation::createDocument(
 }
 
 bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
-  if (EqualIgnoringCase(mime_type, "text/xml") ||
-      EqualIgnoringCase(mime_type, "application/xml") ||
-      EqualIgnoringCase(mime_type, "text/xsl"))
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/xml") ||
+      DeprecatedEqualIgnoringCase(mime_type, "application/xml") ||
+      DeprecatedEqualIgnoringCase(mime_type, "text/xsl"))
     return true;
 
   // Per RFCs 3023 and 2045, an XML MIME type is of the form:
@@ -191,9 +191,9 @@ bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
 
 static bool IsTextPlainType(const String& mime_type) {
   return mime_type.StartsWith("text/", kTextCaseASCIIInsensitive) &&
-         !(EqualIgnoringCase(mime_type, "text/html") ||
-           EqualIgnoringCase(mime_type, "text/xml") ||
-           EqualIgnoringCase(mime_type, "text/xsl"));
+         !(DeprecatedEqualIgnoringCase(mime_type, "text/html") ||
+           DeprecatedEqualIgnoringCase(mime_type, "text/xml") ||
+           DeprecatedEqualIgnoringCase(mime_type, "text/xsl"));
 }
 
 bool DOMImplementation::IsTextMIMEType(const String& mime_type) {

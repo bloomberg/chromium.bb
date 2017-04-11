@@ -705,7 +705,7 @@ FrameLoadType FrameLoader::DetermineFrameLoadType(
   // was created, then the navigation must be done with replacement enabled."
   if (request.ReplacesCurrentItem() ||
       (!state_machine_.CommittedMultipleRealLoads() &&
-       EqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
+       DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
     return kFrameLoadTypeReplaceCurrentItem;
 
   if (request.GetResourceRequest().Url() == document_loader_->UrlForHistory()) {
@@ -1264,7 +1264,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
   // We don't do this if we are submitting a form with method other than "GET",
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
-  return EqualIgnoringCase(http_method, HTTPNames::GET) &&
+  return DeprecatedEqualIgnoringCase(http_method, HTTPNames::GET) &&
          !IsReloadLoadType(load_type) &&
          load_type != kFrameLoadTypeBackForward &&
          url.HasFragmentIdentifier() &&

@@ -2009,7 +2009,7 @@ void StyleResolver::UpdateMediaType() {
   if (FrameView* view = GetDocument().View()) {
     bool was_print = print_media_type_;
     print_media_type_ =
-        EqualIgnoringCase(view->MediaType(), MediaTypeNames::print);
+        DeprecatedEqualIgnoringCase(view->MediaType(), MediaTypeNames::print);
     if (was_print != print_media_type_)
       matched_properties_cache_.ClearViewportDependent();
   }

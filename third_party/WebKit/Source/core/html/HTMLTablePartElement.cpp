@@ -67,33 +67,33 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       style->SetProperty(CSSProperty(CSSPropertyBackgroundImage, *image_value));
     }
   } else if (name == valignAttr) {
-    if (EqualIgnoringCase(value, "top"))
+    if (DeprecatedEqualIgnoringCase(value, "top"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               CSSValueTop);
-    else if (EqualIgnoringCase(value, "middle"))
+    else if (DeprecatedEqualIgnoringCase(value, "middle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               CSSValueMiddle);
-    else if (EqualIgnoringCase(value, "bottom"))
+    else if (DeprecatedEqualIgnoringCase(value, "bottom"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               CSSValueBottom);
-    else if (EqualIgnoringCase(value, "baseline"))
+    else if (DeprecatedEqualIgnoringCase(value, "baseline"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               CSSValueBaseline);
     else
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               value);
   } else if (name == alignAttr) {
-    if (EqualIgnoringCase(value, "middle") ||
-        EqualIgnoringCase(value, "center"))
+    if (DeprecatedEqualIgnoringCase(value, "middle") ||
+        DeprecatedEqualIgnoringCase(value, "center"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitCenter);
-    else if (EqualIgnoringCase(value, "absmiddle"))
+    else if (DeprecatedEqualIgnoringCase(value, "absmiddle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueCenter);
-    else if (EqualIgnoringCase(value, "left"))
+    else if (DeprecatedEqualIgnoringCase(value, "left"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitLeft);
-    else if (EqualIgnoringCase(value, "right"))
+    else if (DeprecatedEqualIgnoringCase(value, "right"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitRight);
     else

@@ -137,7 +137,7 @@ const AtomicString& HistoryItem::FormContentType() const {
 }
 
 void HistoryItem::SetFormInfoFromRequest(const ResourceRequest& request) {
-  if (EqualIgnoringCase(request.HttpMethod(), "POST")) {
+  if (DeprecatedEqualIgnoringCase(request.HttpMethod(), "POST")) {
     // FIXME: Eventually we have to make this smart enough to handle the case
     // where we have a stream for the body to handle the "data interspersed with
     // files" feature.

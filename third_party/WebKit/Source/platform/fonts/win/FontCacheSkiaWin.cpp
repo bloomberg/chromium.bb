@@ -221,8 +221,9 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   return nullptr;
 }
 
-static inline bool EqualIgnoringCase(const AtomicString& a, const SkString& b) {
-  return EqualIgnoringCase(a, ToAtomicString(b));
+static inline bool DeprecatedEqualIgnoringCase(const AtomicString& a,
+                                               const SkString& b) {
+  return DeprecatedEqualIgnoringCase(a, ToAtomicString(b));
 }
 
 static bool TypefacesMatchesFamily(const SkTypeface* tf,
@@ -233,7 +234,7 @@ static bool TypefacesMatchesFamily(const SkTypeface* tf,
   SkTypeface::LocalizedString actual_family;
 
   while (actual_families->next(&actual_family)) {
-    if (EqualIgnoringCase(family, actual_family.fString)) {
+    if (DeprecatedEqualIgnoringCase(family, actual_family.fString)) {
       matches_requested_family = true;
       break;
     }
@@ -248,7 +249,7 @@ static bool TypefacesMatchesFamily(const SkTypeface* tf,
   if (!matches_requested_family) {
     SkString family_name;
     tf->getFamilyName(&family_name);
-    if (EqualIgnoringCase(family, family_name))
+    if (DeprecatedEqualIgnoringCase(family, family_name))
       matches_requested_family = true;
   }
 

@@ -648,13 +648,14 @@ const AtomicString& TextControlElement::autocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
 
   const AtomicString& value = FastGetAttribute(autocapitalizeAttr);
-  if (EqualIgnoringCase(value, none) || EqualIgnoringCase(value, off))
+  if (DeprecatedEqualIgnoringCase(value, none) ||
+      DeprecatedEqualIgnoringCase(value, off))
     return none;
-  if (EqualIgnoringCase(value, characters))
+  if (DeprecatedEqualIgnoringCase(value, characters))
     return characters;
-  if (EqualIgnoringCase(value, words))
+  if (DeprecatedEqualIgnoringCase(value, words))
     return words;
-  if (EqualIgnoringCase(value, sentences))
+  if (DeprecatedEqualIgnoringCase(value, sentences))
     return sentences;
 
   // Invalid or missing value.
@@ -936,11 +937,11 @@ String TextControlElement::DirectionForFormData() const {
     if (dir_attribute_value.IsNull())
       continue;
 
-    if (EqualIgnoringCase(dir_attribute_value, "rtl") ||
-        EqualIgnoringCase(dir_attribute_value, "ltr"))
+    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "rtl") ||
+        DeprecatedEqualIgnoringCase(dir_attribute_value, "ltr"))
       return dir_attribute_value;
 
-    if (EqualIgnoringCase(dir_attribute_value, "auto")) {
+    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "auto")) {
       bool is_auto;
       TextDirection text_direction =
           element->DirectionalityIfhasDirAutoAttribute(is_auto);

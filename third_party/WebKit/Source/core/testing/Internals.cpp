@@ -191,18 +191,18 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
 
 static WTF::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     const String& marker_type) {
-  if (EqualIgnoringCase(marker_type, "Spelling"))
+  if (DeprecatedEqualIgnoringCase(marker_type, "Spelling"))
     return DocumentMarker::kSpelling;
-  if (EqualIgnoringCase(marker_type, "Grammar"))
+  if (DeprecatedEqualIgnoringCase(marker_type, "Grammar"))
     return DocumentMarker::kGrammar;
-  if (EqualIgnoringCase(marker_type, "TextMatch"))
+  if (DeprecatedEqualIgnoringCase(marker_type, "TextMatch"))
     return DocumentMarker::kTextMatch;
   return WTF::kNullopt;
 }
 
 static WTF::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     const String& marker_type) {
-  if (marker_type.IsEmpty() || EqualIgnoringCase(marker_type, "all"))
+  if (marker_type.IsEmpty() || DeprecatedEqualIgnoringCase(marker_type, "all"))
     return DocumentMarker::AllMarkers();
   WTF::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)

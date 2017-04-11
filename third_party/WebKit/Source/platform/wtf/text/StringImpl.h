@@ -599,12 +599,22 @@ ALWAYS_INLINE bool Equal(const UChar* a, const LChar* b, unsigned length) {
 // Unicode aware case insensitive string matching. Non-ASCII characters might
 // match to ASCII characters. These functions are rarely used to implement web
 // platform features.
-WTF_EXPORT bool EqualIgnoringCase(const LChar*, const LChar*, unsigned length);
-WTF_EXPORT bool EqualIgnoringCase(const UChar*, const LChar*, unsigned length);
-inline bool EqualIgnoringCase(const LChar* a, const UChar* b, unsigned length) {
-  return EqualIgnoringCase(b, a, length);
+// These functions are deprecated. Use EqualIgnoringASCIICase(), or introduce
+// EqualIgnoringUnicodeCase(). See crbug.com/627682
+WTF_EXPORT bool DeprecatedEqualIgnoringCase(const LChar*,
+                                            const LChar*,
+                                            unsigned length);
+WTF_EXPORT bool DeprecatedEqualIgnoringCase(const UChar*,
+                                            const LChar*,
+                                            unsigned length);
+inline bool DeprecatedEqualIgnoringCase(const LChar* a,
+                                        const UChar* b,
+                                        unsigned length) {
+  return DeprecatedEqualIgnoringCase(b, a, length);
 }
-WTF_EXPORT bool EqualIgnoringCase(const UChar*, const UChar*, unsigned length);
+WTF_EXPORT bool DeprecatedEqualIgnoringCase(const UChar*,
+                                            const UChar*,
+                                            unsigned length);
 
 WTF_EXPORT bool EqualIgnoringNullity(StringImpl*, StringImpl*);
 

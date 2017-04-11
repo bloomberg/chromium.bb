@@ -162,7 +162,7 @@ WebString WebURLRequest::HttpHeaderField(const WebString& name) const {
 
 void WebURLRequest::SetHTTPHeaderField(const WebString& name,
                                        const WebString& value) {
-  RELEASE_ASSERT(!EqualIgnoringCase(name, "referer"));
+  RELEASE_ASSERT(!DeprecatedEqualIgnoringCase(name, "referer"));
   resource_request_->SetHTTPHeaderField(name, value);
 }
 

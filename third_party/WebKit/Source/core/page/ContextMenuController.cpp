@@ -91,8 +91,8 @@ void ContextMenuController::PopulateCustomContextMenu(const Event& event) {
 
   HTMLElement& element = ToHTMLElement(*node);
   HTMLMenuElement* menu_element = element.AssignedContextMenu();
-  if (!menu_element ||
-      !EqualIgnoringCase(menu_element->FastGetAttribute(typeAttr), "context"))
+  if (!menu_element || !DeprecatedEqualIgnoringCase(
+                           menu_element->FastGetAttribute(typeAttr), "context"))
     return;
   RelatedEvent* related_event =
       RelatedEvent::Create(EventTypeNames::show, true, true, node);

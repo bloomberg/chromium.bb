@@ -1918,7 +1918,8 @@ bool FrameView::ProcessUrlFragmentHelper(const String& name,
 
   // Implement the rule that "" and "top" both mean top of page as in other
   // browsers.
-  if (!anchor_node && !(name.IsEmpty() || EqualIgnoringCase(name, "top")))
+  if (!anchor_node &&
+      !(name.IsEmpty() || DeprecatedEqualIgnoringCase(name, "top")))
     return false;
 
   if (behavior == kUrlFragmentScroll)

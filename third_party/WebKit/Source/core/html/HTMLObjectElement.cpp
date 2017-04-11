@@ -133,9 +133,9 @@ static void MapDataParamToSrc(Vector<String>* param_names,
   // Real and WMP require "src" attribute).
   int src_index = -1, data_index = -1;
   for (unsigned i = 0; i < param_names->size(); ++i) {
-    if (EqualIgnoringCase((*param_names)[i], "src"))
+    if (DeprecatedEqualIgnoringCase((*param_names)[i], "src"))
       src_index = i;
-    else if (EqualIgnoringCase((*param_names)[i], "data"))
+    else if (DeprecatedEqualIgnoringCase((*param_names)[i], "data"))
       data_index = i;
   }
 
@@ -169,12 +169,14 @@ void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
     // TODO(schenney): crbug.com/572908 url adjustment does not belong in this
     // function.
     if (url.IsEmpty() && url_parameter.IsEmpty() &&
-        (EqualIgnoringCase(name, "src") || EqualIgnoringCase(name, "movie") ||
-         EqualIgnoringCase(name, "code") || EqualIgnoringCase(name, "url")))
+        (DeprecatedEqualIgnoringCase(name, "src") ||
+         DeprecatedEqualIgnoringCase(name, "movie") ||
+         DeprecatedEqualIgnoringCase(name, "code") ||
+         DeprecatedEqualIgnoringCase(name, "url")))
       url_parameter = StripLeadingAndTrailingHTMLSpaces(p->Value());
     // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
     // in this function.
-    if (service_type.IsEmpty() && EqualIgnoringCase(name, "type")) {
+    if (service_type.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
       service_type = p->Value();
       size_t pos = service_type.Find(";");
       if (pos != kNotFound)
@@ -428,7 +430,7 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
 
   for (HTMLElement& child : Traversal<HTMLElement>::ChildrenOf(*this)) {
     if (isHTMLParamElement(child) &&
-        EqualIgnoringCase(child.GetNameAttribute(), "type") &&
+        DeprecatedEqualIgnoringCase(child.GetNameAttribute(), "type") &&
         MIMETypeRegistry::IsJavaAppletMIMEType(
             child.getAttribute(valueAttr).GetString()))
       return true;

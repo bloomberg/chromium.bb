@@ -2817,7 +2817,7 @@ bool WebGLRenderingContextBase::ExtensionTracker::MatchesNameWithPrefixes(
   const char* const* prefix_set = Prefixes();
   for (; *prefix_set; ++prefix_set) {
     String prefixed_name = String(*prefix_set) + ExtensionName();
-    if (EqualIgnoringCase(prefixed_name, name)) {
+    if (DeprecatedEqualIgnoringCase(prefixed_name, name)) {
       return true;
     }
   }

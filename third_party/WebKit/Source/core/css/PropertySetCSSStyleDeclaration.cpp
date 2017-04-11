@@ -244,7 +244,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
   if (!property_id)
     return;
 
-  bool important = EqualIgnoringCase(priority, "important");
+  bool important = DeprecatedEqualIgnoringCase(priority, "important");
   if (!important && !priority.IsEmpty())
     return;
 

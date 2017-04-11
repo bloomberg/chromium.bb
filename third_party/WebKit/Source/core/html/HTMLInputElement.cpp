@@ -699,7 +699,7 @@ void HTMLInputElement::ParseAttribute(
     AddToRadioButtonGroup();
     TextControlElement::ParseAttribute(params);
   } else if (name == autocompleteAttr) {
-    if (EqualIgnoringCase(value, "off")) {
+    if (DeprecatedEqualIgnoringCase(value, "off")) {
       autocomplete_ = kOff;
     } else {
       if (value.IsEmpty())

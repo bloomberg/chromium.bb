@@ -194,7 +194,7 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
     return false;
 
   if (it->algorithm_name_length != algorithm_name.length() ||
-      !EqualIgnoringCase(algorithm_name, it->algorithm_name))
+      !DeprecatedEqualIgnoringCase(algorithm_name, it->algorithm_name))
     return false;
 
   id = it->algorithm_id;

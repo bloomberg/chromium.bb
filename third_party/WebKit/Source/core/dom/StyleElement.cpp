@@ -39,9 +39,9 @@
 namespace blink {
 
 static bool IsCSS(const Element& element, const AtomicString& type) {
-  return type.IsEmpty() ||
-         (element.IsHTMLElement() ? EqualIgnoringCase(type, "text/css")
-                                  : (type == "text/css"));
+  return type.IsEmpty() || (element.IsHTMLElement()
+                                ? DeprecatedEqualIgnoringCase(type, "text/css")
+                                : (type == "text/css"));
 }
 
 StyleElement::StyleElement(Document* document, bool created_by_parser)

@@ -4529,7 +4529,7 @@ Event* Document::createEvent(ScriptState* script_state,
     if (event) {
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
-      if (EqualIgnoringCase(event_type, "TouchEvent") &&
+      if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
           !RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled())
         break;
       return event;
@@ -5144,8 +5144,9 @@ KURL Document::OpenSearchDescriptionURL() {
            Traversal<HTMLLinkElement>::FirstChild(*head());
        link_element;
        link_element = Traversal<HTMLLinkElement>::NextSibling(*link_element)) {
-    if (!EqualIgnoringCase(link_element->GetType(), kOpenSearchMIMEType) ||
-        !EqualIgnoringCase(link_element->Rel(), kOpenSearchRelation))
+    if (!DeprecatedEqualIgnoringCase(link_element->GetType(),
+                                     kOpenSearchMIMEType) ||
+        !DeprecatedEqualIgnoringCase(link_element->Rel(), kOpenSearchRelation))
       continue;
     if (link_element->Href().IsEmpty())
       continue;
@@ -5198,10 +5199,10 @@ String Document::designMode() const {
 
 void Document::setDesignMode(const String& value) {
   bool new_value = design_mode_;
-  if (EqualIgnoringCase(value, "on")) {
+  if (DeprecatedEqualIgnoringCase(value, "on")) {
     new_value = true;
     UseCounter::Count(*this, UseCounter::kDocumentDesignModeEnabeld);
-  } else if (EqualIgnoringCase(value, "off")) {
+  } else if (DeprecatedEqualIgnoringCase(value, "off")) {
     new_value = false;
   }
   if (new_value == design_mode_)
@@ -5469,7 +5470,7 @@ Color Document::ThemeColor() const {
   for (HTMLMetaElement& meta_element :
        Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
     Color color = Color::kTransparent;
-    if (EqualIgnoringCase(meta_element.GetName(), "theme-color") &&
+    if (DeprecatedEqualIgnoringCase(meta_element.GetName(), "theme-color") &&
         CSSParser::ParseColor(
             color, meta_element.Content().GetString().StripWhiteSpace(), true))
       return color;
@@ -5795,7 +5796,7 @@ void Document::InitDNSPrefetch() {
 
 void Document::ParseDNSPrefetchControlHeader(
     const String& dns_prefetch_control) {
-  if (EqualIgnoringCase(dns_prefetch_control, "on") &&
+  if (DeprecatedEqualIgnoringCase(dns_prefetch_control, "on") &&
       !have_explicitly_disabled_dns_prefetch_) {
     is_dns_prefetch_enabled_ = true;
     return;

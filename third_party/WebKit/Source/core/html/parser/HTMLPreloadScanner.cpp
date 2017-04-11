@@ -372,11 +372,12 @@ class TokenPreloadScanner::StartTagScanner {
   void ProcessInputAttribute(const NameType& attribute_name,
                              const String& attribute_value) {
     // FIXME - Don't set type multiple times.
-    if (Match(attribute_name, srcAttr))
+    if (Match(attribute_name, srcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
-    else if (Match(attribute_name, typeAttr))
+    } else if (Match(attribute_name, typeAttr)) {
       input_is_image_ =
-          EqualIgnoringCase(attribute_value, InputTypeNames::image);
+          DeprecatedEqualIgnoringCase(attribute_value, InputTypeNames::image);
+    }
   }
 
   template <typename NameType>
@@ -681,13 +682,13 @@ static void HandleMetaNameAttribute(
     return;
 
   String content_attribute_value(content_attribute->Value());
-  if (EqualIgnoringCase(name_attribute_value, "viewport")) {
+  if (DeprecatedEqualIgnoringCase(name_attribute_value, "viewport")) {
     HandleMetaViewport(content_attribute_value, document_parameters,
                        media_values, viewport);
     return;
   }
 
-  if (EqualIgnoringCase(name_attribute_value, "referrer")) {
+  if (DeprecatedEqualIgnoringCase(name_attribute_value, "referrer")) {
     HandleMetaReferrer(content_attribute_value, document_parameters,
                        css_scanner);
   }
@@ -819,10 +820,11 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
             token.GetAttributeItem(http_equivAttr);
         if (equiv_attribute) {
           String equiv_attribute_value(equiv_attribute->Value());
-          if (EqualIgnoringCase(equiv_attribute_value,
-                                "content-security-policy")) {
+          if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
+                                          "content-security-policy")) {
             *is_csp_meta_tag = true;
-          } else if (EqualIgnoringCase(equiv_attribute_value, "accept-ch")) {
+          } else if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
+                                                 "accept-ch")) {
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(contentAttr);
             if (content_attribute)

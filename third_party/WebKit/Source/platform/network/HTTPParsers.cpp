@@ -281,7 +281,7 @@ ContentDispositionType GetContentDispositionType(
   String disposition_type = parameters[0];
   disposition_type.StripWhiteSpace();
 
-  if (EqualIgnoringCase(disposition_type, "inline"))
+  if (DeprecatedEqualIgnoringCase(disposition_type, "inline"))
     return kContentDispositionInline;
 
   // Some broken sites just send bogus headers like
@@ -717,15 +717,17 @@ CacheControlHeader ParseCacheControlDirectives(
     for (size_t i = 0; i < directives_size; ++i) {
       // RFC2616 14.9.1: A no-cache directive with a value is only meaningful
       // for proxy caches.  It should be ignored by a browser level cache.
-      if (EqualIgnoringCase(directives[i].first, kNoCacheDirective) &&
+      if (DeprecatedEqualIgnoringCase(directives[i].first, kNoCacheDirective) &&
           directives[i].second.IsEmpty()) {
         cache_control_header.contains_no_cache = true;
-      } else if (EqualIgnoringCase(directives[i].first, kNoStoreDirective)) {
+      } else if (DeprecatedEqualIgnoringCase(directives[i].first,
+                                             kNoStoreDirective)) {
         cache_control_header.contains_no_store = true;
-      } else if (EqualIgnoringCase(directives[i].first,
-                                   kMustRevalidateDirective)) {
+      } else if (DeprecatedEqualIgnoringCase(directives[i].first,
+                                             kMustRevalidateDirective)) {
         cache_control_header.contains_must_revalidate = true;
-      } else if (EqualIgnoringCase(directives[i].first, kMaxAgeDirective)) {
+      } else if (DeprecatedEqualIgnoringCase(directives[i].first,
+                                             kMaxAgeDirective)) {
         if (!std::isnan(cache_control_header.max_age)) {
           // First max-age directive wins if there are multiple ones.
           continue;

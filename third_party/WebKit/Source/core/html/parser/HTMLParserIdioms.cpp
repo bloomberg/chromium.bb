@@ -418,7 +418,7 @@ WTF::TextEncoding EncodingFromMetaAttributes(
     const String& attribute_value = AtomicString(html_attribute.second);
 
     if (ThreadSafeMatch(attribute_name, http_equivAttr)) {
-      if (EqualIgnoringCase(attribute_value, "content-type"))
+      if (DeprecatedEqualIgnoringCase(attribute_value, "content-type"))
         got_pragma = true;
     } else if (charset.IsEmpty()) {
       if (ThreadSafeMatch(attribute_name, charsetAttr)) {

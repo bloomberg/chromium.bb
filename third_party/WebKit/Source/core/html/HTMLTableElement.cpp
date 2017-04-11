@@ -277,22 +277,22 @@ static bool GetBordersFromFrameAttributeValue(const AtomicString& value,
   border_bottom = false;
   border_left = false;
 
-  if (EqualIgnoringCase(value, "above"))
+  if (DeprecatedEqualIgnoringCase(value, "above"))
     border_top = true;
-  else if (EqualIgnoringCase(value, "below"))
+  else if (DeprecatedEqualIgnoringCase(value, "below"))
     border_bottom = true;
-  else if (EqualIgnoringCase(value, "hsides"))
+  else if (DeprecatedEqualIgnoringCase(value, "hsides"))
     border_top = border_bottom = true;
-  else if (EqualIgnoringCase(value, "vsides"))
+  else if (DeprecatedEqualIgnoringCase(value, "vsides"))
     border_left = border_right = true;
-  else if (EqualIgnoringCase(value, "lhs"))
+  else if (DeprecatedEqualIgnoringCase(value, "lhs"))
     border_left = true;
-  else if (EqualIgnoringCase(value, "rhs"))
+  else if (DeprecatedEqualIgnoringCase(value, "rhs"))
     border_right = true;
-  else if (EqualIgnoringCase(value, "box") ||
-           EqualIgnoringCase(value, "border"))
+  else if (DeprecatedEqualIgnoringCase(value, "box") ||
+           DeprecatedEqualIgnoringCase(value, "border"))
     border_top = border_bottom = border_left = border_right = true;
-  else if (!EqualIgnoringCase(value, "void"))
+  else if (!DeprecatedEqualIgnoringCase(value, "void"))
     return false;
   return true;
 }
@@ -337,7 +337,7 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     }
   } else if (name == alignAttr) {
     if (!value.IsEmpty()) {
-      if (EqualIgnoringCase(value, "center")) {
+      if (DeprecatedEqualIgnoringCase(value, "center")) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyWebkitMarginStart, CSSValueAuto);
         AddPropertyToPresentationAttributeStyle(
@@ -411,15 +411,15 @@ void HTMLTableElement::ParseAttribute(
         params.new_value, border_top, border_right, border_bottom, border_left);
   } else if (name == rulesAttr) {
     rules_attr_ = kUnsetRules;
-    if (EqualIgnoringCase(params.new_value, "none"))
+    if (DeprecatedEqualIgnoringCase(params.new_value, "none"))
       rules_attr_ = kNoneRules;
-    else if (EqualIgnoringCase(params.new_value, "groups"))
+    else if (DeprecatedEqualIgnoringCase(params.new_value, "groups"))
       rules_attr_ = kGroupsRules;
-    else if (EqualIgnoringCase(params.new_value, "rows"))
+    else if (DeprecatedEqualIgnoringCase(params.new_value, "rows"))
       rules_attr_ = kRowsRules;
-    else if (EqualIgnoringCase(params.new_value, "cols"))
+    else if (DeprecatedEqualIgnoringCase(params.new_value, "cols"))
       rules_attr_ = kColsRules;
-    else if (EqualIgnoringCase(params.new_value, "all"))
+    else if (DeprecatedEqualIgnoringCase(params.new_value, "all"))
       rules_attr_ = kAllRules;
   } else if (params.name == cellpaddingAttr) {
     if (!params.new_value.IsEmpty())

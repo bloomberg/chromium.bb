@@ -56,13 +56,13 @@ CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
     return CSSValueUpperRoman;
   if (value == "1")
     return CSSValueDecimal;
-  if (EqualIgnoringCase(value, "disc"))
+  if (DeprecatedEqualIgnoringCase(value, "disc"))
     return CSSValueDisc;
-  if (EqualIgnoringCase(value, "circle"))
+  if (DeprecatedEqualIgnoringCase(value, "circle"))
     return CSSValueCircle;
-  if (EqualIgnoringCase(value, "square"))
+  if (DeprecatedEqualIgnoringCase(value, "square"))
     return CSSValueSquare;
-  if (EqualIgnoringCase(value, "none"))
+  if (DeprecatedEqualIgnoringCase(value, "none"))
     return CSSValueNone;
   return CSSValueInvalid;
 }

@@ -201,8 +201,9 @@ bool CSSStyleSheetResource::CanUseSheet(MIMETypeCheck mime_type_check) const {
     return true;
   AtomicString content_type = HttpContentType();
   return content_type.IsEmpty() ||
-         EqualIgnoringCase(content_type, "text/css") ||
-         EqualIgnoringCase(content_type, "application/x-unknown-content-type");
+         DeprecatedEqualIgnoringCase(content_type, "text/css") ||
+         DeprecatedEqualIgnoringCase(content_type,
+                                     "application/x-unknown-content-type");
 }
 
 StyleSheetContents* CSSStyleSheetResource::RestoreParsedStyleSheet(

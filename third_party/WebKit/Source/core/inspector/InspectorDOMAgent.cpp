@@ -1011,7 +1011,7 @@ Response InspectorDOMAgent::performSearch(
                (node->nodeName().FindIgnoringCase(tag_name_query) !=
                 kNotFound)) ||
               (start_tag_found && end_tag_found &&
-               EqualIgnoringCase(node->nodeName(), tag_name_query)) ||
+               DeprecatedEqualIgnoringCase(node->nodeName(), tag_name_query)) ||
               (start_tag_found && !end_tag_found &&
                node->nodeName().StartsWith(tag_name_query,
                                            kTextCaseUnicodeInsensitive)) ||

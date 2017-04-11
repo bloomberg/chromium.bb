@@ -59,7 +59,7 @@ static inline bool IsFontPresent(const UChar* font_name,
   bool matches_requested_family = false;
   SkTypeface::LocalizedString actual_family;
   while (actual_families->next(&actual_family)) {
-    if (EqualIgnoringCase(
+    if (DeprecatedEqualIgnoringCase(
             family, AtomicString::FromUTF8(actual_family.fString.c_str()))) {
       matches_requested_family = true;
       break;

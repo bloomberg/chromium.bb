@@ -86,8 +86,10 @@ void CustomContextMenuProvider::AppendMenuItem(HTMLMenuItemElement* menu_item,
   }
   ContextMenuAction action = static_cast<ContextMenuAction>(
       kContextMenuItemBaseCustomTag + menu_items_.size() - 1);
-  if (EqualIgnoringCase(menu_item->FastGetAttribute(typeAttr), "checkbox") ||
-      EqualIgnoringCase(menu_item->FastGetAttribute(typeAttr), "radio"))
+  if (DeprecatedEqualIgnoringCase(menu_item->FastGetAttribute(typeAttr),
+                                  "checkbox") ||
+      DeprecatedEqualIgnoringCase(menu_item->FastGetAttribute(typeAttr),
+                                  "radio"))
     context_menu.AppendItem(
         ContextMenuItem(kCheckableActionType, action, label_string, icon,
                         enabled, menu_item->FastHasAttribute(checkedAttr)));

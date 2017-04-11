@@ -1482,7 +1482,7 @@ bool XMLHttpRequest::ResponseIsXML() const {
 }
 
 bool XMLHttpRequest::ResponseIsHTML() const {
-  return EqualIgnoringCase(FinalResponseMIMEType(), "text/html");
+  return DeprecatedEqualIgnoringCase(FinalResponseMIMEType(), "text/html");
 }
 
 int XMLHttpRequest::status() const {

@@ -93,7 +93,7 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
       String target_string;
       for (size_t j = 0; j < targets->size(); ++j) {
         if (targets->at(j)->AsString(&target_string)) {
-          if (EqualIgnoringCase(target_string, "self")) {
+          if (DeprecatedEqualIgnoringCase(target_string, "self")) {
             if (!origin->IsUnique())
               origins.push_back(origin);
           } else if (target_string == "*") {

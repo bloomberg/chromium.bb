@@ -555,7 +555,7 @@ const QualifiedName& HTMLImageElement::SubResourceAttributeName() const {
 
 bool HTMLImageElement::draggable() const {
   // Image elements are draggable by default.
-  return !EqualIgnoringCase(getAttribute(draggableAttr), "false");
+  return !DeprecatedEqualIgnoringCase(getAttribute(draggableAttr), "false");
 }
 
 void HTMLImageElement::setHeight(unsigned value) {
