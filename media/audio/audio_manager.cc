@@ -254,21 +254,19 @@ void AudioManagerDeleter::operator()(const AudioManager* instance) const {
     LOG(WARNING) << "Multiple instances of AudioManager detected";
   }
 
-#if defined(OS_MACOSX)
-  // If we are on Mac, tasks after this point are not executed, hence this is
-  // the only chance to delete the audio manager (which on Mac lives on the
-  // main browser thread instead of a dedicated audio thread). If we don't
-  // delete here, the CoreAudio thread can keep providing callbacks, which
-  // uses a state that is destroyed in ~BrowserMainLoop().
-  // See http://crbug.com/623703 for more details.
-  DCHECK(instance->GetTaskRunner()->BelongsToCurrentThread());
-  delete instance;
-#else
-  // AudioManager must be destroyed on the audio thread.
-  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance)) {
-    LOG(WARNING) << "Failed to delete AudioManager instance.";
+  // The deleter runs on the main thread, and AudioManager must be destroyed on
+  // the audio thread. If the audio thread is the same as the main one, tasks
+  // after this point are not executed, hence this is the only chance to delete
+  // AudioManager. See http://crbug.com/623703 for more details.
+  if (instance->GetTaskRunner()->BelongsToCurrentThread()) {
+    delete instance;
+    return;
   }
-#endif
+
+  // AudioManager must be destroyed on the audio thread. See
+  // http://crbug.com/705455 for an existing AudioManager lifetime issue.
+  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance))
+    LOG(WARNING) << "Failed to delete AudioManager instance.";
 }
 
 // Forward declaration of the platform specific AudioManager factory function.

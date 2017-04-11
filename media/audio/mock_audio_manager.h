@@ -26,6 +26,8 @@ class MockAudioManager : public AudioManager {
   using UniquePtr = std::unique_ptr<MockAudioManager, Deleter>;
   using GetDeviceDescriptionsCallback =
       base::RepeatingCallback<void(AudioDeviceDescriptions*)>;
+  using GetAssociatedOutputDeviceIDCallback =
+      base::RepeatingCallback<std::string(const std::string&)>;
 
   explicit MockAudioManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -90,6 +92,8 @@ class MockAudioManager : public AudioManager {
       GetDeviceDescriptionsCallback callback);
   void SetOutputDeviceDescriptionsCallback(
       GetDeviceDescriptionsCallback callback);
+  void SetAssociatedOutputDeviceIDCallback(
+      GetAssociatedOutputDeviceIDCallback callback);
 
  protected:
   ~MockAudioManager() override;
@@ -104,6 +108,7 @@ class MockAudioManager : public AudioManager {
   bool has_output_devices_ = true;
   GetDeviceDescriptionsCallback get_input_device_descriptions_cb_;
   GetDeviceDescriptionsCallback get_output_device_descriptions_cb_;
+  GetAssociatedOutputDeviceIDCallback get_associated_output_device_id_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };

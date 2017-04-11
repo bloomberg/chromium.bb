@@ -1261,8 +1261,7 @@ void MediaStreamManager::InitializeMaybeAsync(
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 2"));
-  audio_input_device_manager_ =
-      new AudioInputDeviceManager(audio_system_->GetAudioManager());
+  audio_input_device_manager_ = new AudioInputDeviceManager(audio_system_);
   audio_input_device_manager_->RegisterListener(this);
 
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is

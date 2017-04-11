@@ -26,7 +26,7 @@
 #include "content/public/common/media_stream_request.h"
 
 namespace media {
-class AudioManager;
+class AudioSystem;
 }
 
 namespace content {
@@ -40,7 +40,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // TODO(xians): Remove it when the webrtc unittest does not need it any more.
   static const int kFakeOpenSessionId;
 
-  explicit AudioInputDeviceManager(media::AudioManager* audio_manager);
+  explicit AudioInputDeviceManager(media::AudioSystem* audio_system);
 
   // Gets the opened device info by |session_id|. Returns NULL if the device
   // is not opened, otherwise the opened device. Called on IO thread.
@@ -66,18 +66,17 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   typedef std::vector<StreamDeviceInfo> StreamDeviceList;
   ~AudioInputDeviceManager() override;
 
-  // Opens the device on media stream device thread.
-  void OpenOnDeviceThread(int session_id, const MediaStreamDevice& device);
+  // Callback called on IO thread when device is opened.
+  void OpenedOnIOThread(int session_id,
+                        const MediaStreamDevice& device,
+                        base::TimeTicks start_time,
+                        const media::AudioParameters& input_params,
+                        const media::AudioParameters& matched_output_params,
+                        const std::string& matched_output_device_id);
 
-  // Callback used by OpenOnDeviceThread(), called with the session_id
-  // referencing the opened device on IO thread.
-  void OpenedOnIOThread(int session_id, const StreamDeviceInfo& info);
-  // Callback used by CloseOnDeviceThread(), called with the session_id
-  // referencing the closed device on IO thread.
+  // Callback called on IO thread with the session_id referencing the closed
+  // device.
   void ClosedOnIOThread(MediaStreamType type, int session_id);
-
-  // Verifies that the calling thread is media stream device thread.
-  bool IsOnDeviceThread() const;
 
   // Helper to return iterator to the device referenced by |session_id|. If no
   // device is found, it will return devices_.end().
@@ -98,10 +97,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   int keyboard_mic_streams_count_;
 #endif
 
-  media::AudioManager* const audio_manager_;  // Weak.
-
-  // The message loop of media stream device thread that this object runs on.
-  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
+  media::AudioSystem* const audio_system_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };

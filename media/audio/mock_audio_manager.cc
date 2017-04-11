@@ -115,7 +115,9 @@ AudioParameters MockAudioManager::GetInputStreamParameters(
 std::string MockAudioManager::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return std::string();
+  return get_associated_output_device_id_cb_.is_null()
+             ? std::string()
+             : get_associated_output_device_id_cb_.Run(input_device_id);
 }
 
 std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
@@ -165,6 +167,11 @@ void MockAudioManager::SetInputDeviceDescriptionsCallback(
 void MockAudioManager::SetOutputDeviceDescriptionsCallback(
     GetDeviceDescriptionsCallback callback) {
   get_output_device_descriptions_cb_ = std::move(callback);
+}
+
+void MockAudioManager::SetAssociatedOutputDeviceIDCallback(
+    GetAssociatedOutputDeviceIDCallback callback) {
+  get_associated_output_device_id_cb_ = std::move(callback);
 }
 
 }  // namespace media.

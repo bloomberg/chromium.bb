@@ -36,9 +36,14 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
   void GetDeviceDescriptions(OnDeviceDescriptionsCallback on_descriptions_cp,
                              bool for_input) override;
 
-  base::SingleThreadTaskRunner* GetTaskRunner() const override;
+  void GetAssociatedOutputDeviceID(const std::string& input_device_id,
+                                   OnDeviceIdCallback on_device_id_cb) override;
 
-  AudioManager* GetAudioManager() const override;
+  void GetInputDeviceInfo(
+      const std::string& input_device_id,
+      OnInputDeviceInfoCallback on_input_device_info_cb) override;
+
+  base::SingleThreadTaskRunner* GetTaskRunner() const override;
 
  protected:
   AudioSystemImpl(AudioManager* audio_manager);

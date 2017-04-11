@@ -293,7 +293,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
   // Calls to |audio_system_| must not be posted to the audio thread if it
-  // differs from the UI one.
+  // differs from the UI one. See http://crbug.com/705455.
   std::unique_ptr<media::AudioSystem> audio_system_;
 
   std::unique_ptr<midi::MidiService> midi_service_;

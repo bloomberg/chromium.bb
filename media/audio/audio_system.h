@@ -23,13 +23,18 @@ class AudioManager;
 class MEDIA_EXPORT AudioSystem {
  public:
   // Replies are asynchronously sent from audio system thread to the thread the
-  // call is issued on. Attention! Since audio system thread may outlive all the
-  // others, callbacks must always be bound to weak pointers!
+  // call is issued on. Attention! Audio system thread may outlive the client
+  // objects; bind callbacks with care.
   using OnAudioParamsCallback = base::Callback<void(const AudioParameters&)>;
   using OnBoolCallback = base::Callback<void(bool)>;
   using OnDeviceDescriptionsCallback =
       base::Callback<void(AudioDeviceDescriptions)>;
+  using OnDeviceIdCallback = base::Callback<void(const std::string&)>;
+  using OnInputDeviceInfoCallback = base::Callback<
+      void(const AudioParameters&, const AudioParameters&, const std::string&)>;
 
+  // Must not be called on audio system thread if it differs from the one
+  // AudioSystem is destroyed on. See http://crbug.com/705455.
   static AudioSystem* Get();
 
   virtual ~AudioSystem();
@@ -61,13 +66,22 @@ class MEDIA_EXPORT AudioSystem {
   // Replies with device descriptions of input audio devices if |for_input| is
   // true, and of output audio devices otherwise.
   virtual void GetDeviceDescriptions(
-      OnDeviceDescriptionsCallback on_descriptions_cp,
+      OnDeviceDescriptionsCallback on_descriptions_cb,
       bool for_input) = 0;
 
-  virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
+  // Replies with an empty string if there is no associated output device found.
+  virtual void GetAssociatedOutputDeviceID(
+      const std::string& input_device_id,
+      OnDeviceIdCallback on_device_id_cb) = 0;
 
-  // Must not be used for anything but stream creation.
-  virtual AudioManager* GetAudioManager() const = 0;
+  // Replies with audio parameters for the specified input device and audio
+  // parameters and device ID of the associated output device, if any (otherwise
+  // it's AudioParameters() and an empty string).
+  virtual void GetInputDeviceInfo(
+      const std::string& input_device_id,
+      OnInputDeviceInfoCallback on_input_device_info_cb) = 0;
+
+  virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
 
  protected:
   // Sets the global AudioSystem pointer to the specified non-null value.

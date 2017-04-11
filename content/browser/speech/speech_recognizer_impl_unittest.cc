@@ -92,6 +92,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
   ~SpeechRecognizerImplTest() override {
     // Deleting |audio_manager_| on audio thread.
+    audio_system_.reset();
     audio_manager_.reset();
     audio_thread_.Stop();
   }
