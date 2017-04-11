@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo C System API
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo C System API
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]

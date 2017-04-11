@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo Embedder Development Kit (EDK)
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo Embedder Development Kit (EDK)
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]

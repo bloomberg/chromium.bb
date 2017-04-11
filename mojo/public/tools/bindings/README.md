@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojom IDL and Bindings Generator
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojom IDL and Bindings Generator
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]

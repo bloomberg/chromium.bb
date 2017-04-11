@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo C++ System API
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo C++ System API
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
@@ -225,7 +225,7 @@ time by the `mojo::SimpleWatcher::ArmingPolicy` enum:
 * `MANUAL` mode requires the user to manually call `Arm` and/or `ArmOrNotify`
   before any notifications will fire regarding the state of the watched handle.
   Every time the notification callback is run, the `SimpleWatcher` must be
-  rearmed again before the next one can fire. See 
+  rearmed again before the next one can fire. See
   [Arming a Watcher](/mojo/public/c/system#Arming-a-Watcher) and the
   documentation in `SimpleWatcher`'s header.
 
@@ -286,7 +286,7 @@ with common synchronization primitives (namely `base::WaitableEvent`.)
 
 While these API features should be used sparingly, they are sometimes necessary.
 
-See the documentation in 
+See the documentation in
 [wait.h](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/wait.h)
 and [wait_set.h](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/wait_set.h)
 for a more detailed API reference.
@@ -335,7 +335,7 @@ if (ready_index == 0) {
 ```
 
 Similar to `mojo::Wait`, `mojo::WaitMany` is primarily useful in testing. When
-waiting on multiple handles in production code, you should almost always instead 
+waiting on multiple handles in production code, you should almost always instead
 use a more efficient and more flexible `mojo::WaitSet` as described in the next
 section.
 

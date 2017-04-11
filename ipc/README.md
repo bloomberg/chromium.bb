@@ -50,9 +50,13 @@ of life?
 We have a small but growing number of services defined in
 [`//services`](https://cs.chromium.org/chromium/src/services), each of which has
 some set of public interfaces defined in their `public/interfaces` subdirectory.
-In the limit we want all IPC interfaces to be defined by some Mojom in these
-directories, so this is the preferred destination for any new message
-conversions.
+In the limit, this is the preferred destination for any message conversions
+pertaining to foundational system services (more info at
+[https://www.chromium.org/servicification](https://www.chromium.org/servicification).)
+For other code it may make sense to introduce services elsewhere (*e.g.*, in
+`//chrome/services` or `//components/foo/service`), or to simply
+avoid using services altogether for now and instead define some one-off Mojom
+interface alongside the old messages file.
 
 If you need help deciding where a message should live, or if you feel it would
 be appropriate to introduce a new service to implement some feature or large set

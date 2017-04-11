@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo JavaScript System and Bindings APIs
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo JavaScript System and Bindings APIs
 This document is a subset of the [Mojo documentation](/mojo).
 
 **NOTE:** The JavaScript APIs are currently in flux and will stabilize soon.

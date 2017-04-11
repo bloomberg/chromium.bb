@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo C++ Bindings API
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo C++ Bindings API
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
@@ -143,7 +143,7 @@ routed to some implementation which will **bind** it. The `InterfaceRequest<T>`
 doesn't actually *do* anything other than hold onto a pipe endpoint and carry
 useful compile-time type information.
 
-![Diagram illustrating InterfacePtr and InterfaceRequest on either end of a message pipe](https://docs.google.com/drawings/d/17d5gvErbQ6DthEBMS7I1WhCh9bz0n12pvNjydzuRfTI/pub?w=600&h=100)
+![Diagram illustrating InterfacePtr and InterfaceRequest on either end of a message pipe](https://docs.google.com/drawings/d/1_Ocprq7EGgTKcSE_WlOn_RBfXcr5C3FJyIbWhwzwNX8/pub?w=608&h=100)
 
 So how do we create a strongly-typed message pipe?
 
@@ -210,7 +210,7 @@ logger->Log("Hello!");
 
 This actually writes a `Log` message to the pipe.
 
-![Diagram illustrating a message traveling on a pipe from LoggerPtr to LoggerRequest](https://docs.google.com/a/google.com/drawings/d/1jWEc6jJIP2ed77Gg4JJ3EVC7hvnwcImNqQJywFwpT8g/pub?w=648&h=123)
+![Diagram illustrating a message traveling on a pipe from LoggerPtr to LoggerRequest](https://docs.google.com/drawings/d/11vnOpNP3UBLlWg4KplQuIU3r_e1XqwDFETD-O_bV-2w/pub?w=635&h=112)
 
 But as mentioned above, `InterfaceRequest` *doesn't actually do anything*, so
 that message will just sit on the pipe forever. We need a way to read messages
@@ -277,7 +277,7 @@ motion by the above line of code:
 3. The `Log` message is read and deserialized, causing the `Binding` to invoke
    the `Logger::Log` implementation on its bound `LoggerImpl`.
 
-![Diagram illustrating the progression of binding a request, reading a pending message, and dispatching it](https://docs.google.com/drawings/d/1c73-PegT4lmjfHoxhWrHTQXRvzxgb0wdeBa35WBwZ3Q/pub?w=550&h=500)
+![Diagram illustrating the progression of binding a request, reading a pending message, and dispatching it](https://docs.google.com/drawings/d/1F2VvfoOINGuNibomqeEU8KekYCtxYVFC00146CFGGQY/pub?w=550&h=500)
 
 As a result, our implementation will eventually log the client's `"Hello!"`
 message via `LOG(ERROR)`.

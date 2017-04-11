@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo
+# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
@@ -29,7 +29,7 @@ The documentation here is segmented according to the different isolated layers
 and libraries comprising the system. The basic hierarchy of features is as
 follows:
 
-![Mojo Library Layering: EDK on bottom, different language bindings on top, public system support APIs in the middle](https://docs.google.com/drawings/d/1aNbLfF-fejgzxCxH_b8xAaCVvftW8BGTH_EHD7nvU1w/pub?w=570&h=327)
+![Mojo Library Layering: EDK on bottom, different language bindings on top, public system support APIs in the middle](https://docs.google.com/drawings/d/1RwhzKblXUZw-zhy_KDVobAYprYSqxZzopXTUsbwzDPw/pub?w=570&h=324)
 
 ## Embedder Development Kit (EDK)
 Every process to be interconnected via Mojo IPC is called a **Mojo embedder**
