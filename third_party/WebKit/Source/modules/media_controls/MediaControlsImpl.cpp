@@ -46,6 +46,9 @@
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
+#include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
+#include "modules/media_controls/elements/MediaControlOverlayEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlPanelEnclosureElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -294,28 +297,25 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //  +-MediaControlTextTrackListItemSubtitles
 //       (-internal-media-controls-text-track-list-kind-subtitles)
 void MediaControlsImpl::InitializeControls() {
-  MediaControlOverlayEnclosureElement* overlay_enclosure =
-      MediaControlOverlayEnclosureElement::Create(*this);
+  overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
 
   if (RuntimeEnabledFeatures::mediaControlsOverlayPlayButtonEnabled()) {
     MediaControlOverlayPlayButtonElement* overlay_play_button =
         MediaControlOverlayPlayButtonElement::Create(*this);
     overlay_play_button_ = overlay_play_button;
-    overlay_enclosure->AppendChild(overlay_play_button);
+    overlay_enclosure_->AppendChild(overlay_play_button);
   }
 
   MediaControlCastButtonElement* overlay_cast_button =
       MediaControlCastButtonElement::Create(*this, true);
   overlay_cast_button_ = overlay_cast_button;
-  overlay_enclosure->AppendChild(overlay_cast_button);
+  overlay_enclosure_->AppendChild(overlay_cast_button);
 
-  overlay_enclosure_ = overlay_enclosure;
-  AppendChild(overlay_enclosure);
+  AppendChild(overlay_enclosure_);
 
   // Create an enclosing element for the panel so we can visually offset the
   // controls correctly.
-  MediaControlPanelEnclosureElement* enclosure =
-      MediaControlPanelEnclosureElement::Create(*this);
+  enclosure_ = new MediaControlPanelEnclosureElement(*this);
 
   MediaControlPanelElement* panel = MediaControlPanelElement::Create(*this);
 
@@ -340,10 +340,8 @@ void MediaControlsImpl::InitializeControls() {
   timeline_ = timeline;
   panel->AppendChild(timeline);
 
-  MediaControlMuteButtonElement* mute_button =
-      MediaControlMuteButtonElement::Create(*this);
-  mute_button_ = mute_button;
-  panel->AppendChild(mute_button);
+  mute_button_ = new MediaControlMuteButtonElement(*this);
+  panel->AppendChild(mute_button_);
 
   MediaControlVolumeSliderElement* slider =
       MediaControlVolumeSliderElement::Create(*this);
@@ -373,10 +371,9 @@ void MediaControlsImpl::InitializeControls() {
   panel->AppendChild(toggle_closed_captions_button);
 
   panel_ = panel;
-  enclosure->AppendChild(panel);
+  enclosure_->AppendChild(panel);
 
-  enclosure_ = enclosure;
-  AppendChild(enclosure);
+  AppendChild(enclosure_);
 
   MediaControlTextTrackListElement* text_track_list =
       MediaControlTextTrackListElement::Create(*this);
@@ -404,7 +401,7 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
       *this, MediaControlDownloadButtonElement::Create(*this)));
   overflow_list_->AppendChild(mute_button_->CreateOverflowElement(
-      *this, MediaControlMuteButtonElement::Create(*this)));
+      *this, new MediaControlMuteButtonElement(*this)));
   overflow_list_->AppendChild(cast_button_->CreateOverflowElement(
       *this, MediaControlCastButtonElement::Create(*this, false)));
   overflow_list_->AppendChild(

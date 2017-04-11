@@ -38,6 +38,9 @@ class Event;
 class MediaControlsMediaEventListener;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
+class MediaControlMuteButtonElement;
+class MediaControlOverlayEnclosureElement;
+class MediaControlPanelEnclosureElement;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by
@@ -96,7 +99,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
   void EnterFullscreen() override;
   void ExitFullscreen() override;
-  void ShowOverlayCastButtonIfNeeded() override;
   void ToggleOverflowMenu() override;
   bool OverflowMenuVisible() override;
   // TODO(mlamouri): this method is needed in order to notify the controls that
@@ -106,6 +108,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     RefreshCastButtonVisibilityWithoutUpdate();
   }
   Document& OwnerDocument() { return GetDocument(); }
+
+  void ShowOverlayCastButtonIfNeeded();
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -70,49 +70,6 @@ class CORE_EXPORT MediaControlPanelElement final
 
 // ----------------------------
 
-class CORE_EXPORT MediaControlPanelEnclosureElement final
-    : public MediaControlDivElement {
- public:
-  static MediaControlPanelEnclosureElement* Create(MediaControls&);
-
- private:
-  explicit MediaControlPanelEnclosureElement(MediaControls&);
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlOverlayEnclosureElement final
-    : public MediaControlDivElement {
- public:
-  static MediaControlOverlayEnclosureElement* Create(MediaControls&);
-
- private:
-  explicit MediaControlOverlayEnclosureElement(MediaControls&);
-  EventDispatchHandlingState* PreDispatchEventHandler(Event*) override;
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlMuteButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlMuteButtonElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-  void UpdateDisplayType() override;
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
- private:
-  explicit MediaControlMuteButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-};
-
-// ----------------------------
-
 class CORE_EXPORT MediaControlPlayButtonElement final
     : public MediaControlInputElement {
  public:
