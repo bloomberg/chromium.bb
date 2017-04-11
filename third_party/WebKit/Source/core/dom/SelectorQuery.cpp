@@ -269,6 +269,7 @@ void SelectorQuery::FindTraverseRootsAndExecute(
       const AtomicString& class_name = selector->Value();
       Element* element = ElementTraversal::FirstWithin(root_node);
       while (element) {
+        QUERY_STATS_INCREMENT(fast_class);
         if (HasClassName(*element, class_name)) {
           ExecuteForTraverseRoot<SelectorQueryTrait>(*element, root_node,
                                                      output);

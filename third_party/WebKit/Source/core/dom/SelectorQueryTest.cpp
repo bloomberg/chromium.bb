@@ -8,7 +8,9 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +28,7 @@ struct QueryTest {
 };
 
 template <unsigned length>
-void RunTests(Document& document, const QueryTest (&test_cases)[length]) {
+void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
   for (const auto& test_case : test_cases) {
     const char* selector = test_case.selector;
     SCOPED_TRACE(testing::Message()
@@ -34,10 +36,10 @@ void RunTests(Document& document, const QueryTest (&test_cases)[length]) {
                                          : "querySelector('")
                  << selector << "')");
     if (test_case.query_all) {
-      StaticElementList* match_all = document.QuerySelectorAll(selector);
+      StaticElementList* match_all = scope.QuerySelectorAll(selector);
       EXPECT_EQ(test_case.matches, match_all->length());
     } else {
-      Element* match = document.QuerySelector(selector);
+      Element* match = scope.QuerySelector(selector);
       EXPECT_EQ(test_case.matches, match ? 1u : 0u);
     }
 #if DCHECK_IS_ON()
@@ -163,6 +165,36 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       // a fastClass scan. It could have looked at 4 elements instead.
       {"#second .two", true, 2, {14, 0, 14, 0, 0, 0, 0}},
 
+      // We combine the class fast path with the fast scan mode when possible.
+      {".B span", false, 1, {11, 0, 0, 0, 11, 0, 0}},
+      {".B span", true, 4, {14, 0, 10, 0, 4, 0, 0}},
+
+      // We expand the scope of id selectors when affected by an adjectent
+      // combinator.
+      {"#c + :last-child", false, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"#a ~ :last-child", false, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"#c + div", true, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"#a ~ span", true, 2, {4, 0, 0, 0, 4, 0, 0}},
+
+      // We only expand the scope for id selectors if they're directly affected
+      // the adjacent combinator.
+      {"#first span + span", false, 1, {2, 0, 0, 0, 2, 0, 0}},
+      {"#first span ~ span", false, 1, {2, 0, 0, 0, 2, 0, 0}},
+      {"#second span + span", true, 3, {4, 0, 0, 0, 4, 0, 0}},
+      {"#second span ~ span", true, 3, {4, 0, 0, 0, 4, 0, 0}},
+
+      // We disable the fast path for class selectors when affected by adjacent
+      // combinator.
+      {".one + :last-child", false, 1, {8, 0, 0, 0, 8, 0, 0}},
+      {".A ~ :last-child", false, 1, {9, 0, 0, 0, 9, 0, 0}},
+      {".A + div", true, 1, {14, 0, 0, 0, 14, 0, 0}},
+      {".one ~ span", true, 5, {14, 0, 0, 0, 14, 0, 0}},
+
+      // We re-enable the fast path for classes once past the selector directly
+      // affected by the adjacent combinator.
+      {".B span + span", true, 3, {14, 0, 10, 0, 4, 0, 0}},
+      {".B span ~ span", true, 3, {14, 0, 10, 0, 4, 0, 0}},
+
       // Selectors with no classes or ids use the fast scan.
       {":scope", false, 1, {1, 0, 0, 0, 1, 0, 0}},
       {":scope", true, 1, {14, 0, 0, 0, 14, 0, 0}},
@@ -183,6 +215,75 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       {"::content .a", true, 0, {14, 0, 0, 0, 0, 14, 0}},
   };
   RunTests(*document, kTestCases);
+}
+
+TEST(SelectorQueryTest, FastPathScoped) {
+  Document* document = HTMLDocument::Create();
+  document->write(
+      "<!DOCTYPE html>"
+      "<html id=root-id class=root-class>"
+      "  <head></head>"
+      "  <body>"
+      "    <span id=first>"
+      "      <span id=A class='a child'></span>"
+      "      <span id=B class='a child'>"
+      "          <a class=first></a>"
+      "          <a class=second></a>"
+      "          <a class=third></a>"
+      "      </span>"
+      "      <span id=multiple class='b child'></span>"
+      "      <span id=multiple class='c child'></span>"
+      "    </span>"
+      "  </body>"
+      "</html>");
+  // TODO(esprehn): Element::attachShadow() should not require a ScriptState,
+  // it should handle the use counting in the bindings layer instead of in the
+  // C++.
+  Element* scope = document->getElementById("first");
+  ASSERT_NE(nullptr, scope);
+  ShadowRoot& shadowRoot =
+      scope->EnsureShadow().AddShadowRoot(*scope, ShadowRootType::kOpen);
+  // Make the inside the shadow root be identical to that of the outer document.
+  shadowRoot.appendChild(
+      document->documentElement()->CloneElementWithChildren());
+  static const struct QueryTest kTestCases[] = {
+      // Id in the right most selector.
+      {"#first", false, 0, {0, 0, 0, 0, 0, 0, 0}},
+
+      {"#B", false, 1, {1, 1, 0, 0, 0, 0, 0}},
+      {"#multiple", false, 1, {1, 1, 0, 0, 0, 0, 0}},
+      {"#multiple.c", false, 1, {2, 2, 0, 0, 0, 0, 0}},
+
+      // Class in the right most selector.
+      {".child", false, 1, {1, 0, 1, 0, 0, 0, 0}},
+      {".child", true, 4, {7, 0, 7, 0, 0, 0, 0}},
+
+      // If an ancestor has the class name we fast scan all the descendants of
+      // the scope.
+      {".root-class span", true, 4, {7, 0, 0, 0, 7, 0, 0}},
+
+      // If an ancestor has the class name in the middle of the selector we fast
+      // scan all the descendants of the scope.
+      {".root-class span:nth-child(2)", false, 1, {2, 0, 0, 0, 2, 0, 0}},
+      {".root-class span:nth-child(2)", true, 1, {7, 0, 0, 0, 7, 0, 0}},
+
+      // If the id is an ancestor we scan all the descendants.
+      {"#root-id span", true, 4, {7, 0, 0, 0, 7, 0, 0}},
+  };
+
+  {
+    SCOPED_TRACE("Inside document");
+    RunTests(*scope, kTestCases);
+  }
+
+  {
+    // Run all the tests a second time but with a scope inside a shadow root,
+    // all the fast paths should behave the same.
+    SCOPED_TRACE("Inside shadow root");
+    scope = shadowRoot.getElementById("first");
+    ASSERT_NE(nullptr, scope);
+    RunTests(*scope, kTestCases);
+  }
 }
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
@@ -211,6 +312,52 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
       {"body #one", true, 2, {6, 0, 0, 0, 0, 6, 0}},
   };
   RunTests(*document, kTestCases);
+}
+
+TEST(SelectorQueryTest, DisconnectedSubtreeSlowPath) {
+  Document* document = HTMLDocument::Create();
+  Element* scope = document->createElement("div");
+  scope->setInnerHTML(
+      "<section>"
+      "  <span id=first>"
+      "    <span id=A class=A></span>"
+      "    <span id=B class=child></span>"
+      "    <span id=multiple class=child></span>"
+      "    <span id=multiple class=B></span>"
+      "  </span>"
+      "</section>");
+  ShadowRoot& shadowRoot =
+      scope->EnsureShadow().AddShadowRoot(*scope, ShadowRootType::kOpen);
+  // Make the inside the ShadowRoot look identical to the outer document.
+  shadowRoot.appendChild(
+      ElementTraversal::FirstChild(*scope)->CloneElementWithChildren());
+  static const struct QueryTest kTestCases[] = {
+      // TODO(esprehn): Disconnected subtrees always uses the slow path, but
+      // we can actually use it in a number of cases, for example using the id
+      // map for things inside a tree scope, or using the fast class scanning
+      // always.
+      {"#A", false, 1, {3, 0, 0, 0, 0, 3, 0}},
+      {"#B", false, 1, {4, 0, 0, 0, 0, 4, 0}},
+      {"#B", true, 1, {6, 0, 0, 0, 0, 6, 0}},
+      {"#multiple", true, 2, {6, 0, 0, 0, 0, 6, 0}},
+      {".child", false, 1, {4, 0, 0, 0, 0, 4, 0}},
+      {".child", true, 2, {6, 0, 0, 0, 0, 6, 0}},
+      {"#first span", false, 1, {3, 0, 0, 0, 0, 3, 0}},
+      {"#first span", true, 4, {6, 0, 0, 0, 0, 6, 0}},
+  };
+
+  {
+    SCOPED_TRACE("Inside disconnected subtree");
+    RunTests(*scope, kTestCases);
+  }
+
+  {
+    // Run all the tests a second time but with a scope inside a shadow root,
+    // this tests for cases where we could have used the id map the ShadowRoot
+    // is keeping track of.
+    SCOPED_TRACE("Inside disconnected shadow root subtree");
+    RunTests(shadowRoot, kTestCases);
+  }
 }
 
 }  // namespace blink
