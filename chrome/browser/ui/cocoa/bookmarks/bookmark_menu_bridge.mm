@@ -70,6 +70,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folder_image_.reset(
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
+    [folder_image_ setTemplate:YES];
   }
 
   ClearBookmarkMenu(bookmark_menu);
@@ -355,6 +356,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   if (!favicon) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
+    [favicon setTemplate:YES];
   }
   [item setImage:favicon];
 }
