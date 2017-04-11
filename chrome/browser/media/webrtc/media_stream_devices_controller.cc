@@ -281,11 +281,10 @@ class MediaStreamDevicesController::PermissionPromptDelegateImpl
 
 // static
 void MediaStreamDevicesController::RequestPermissions(
-    content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   PermissionPromptDelegateImpl delegate;
-  RequestPermissionsWithDelegate(web_contents, request, callback, &delegate);
+  RequestPermissionsWithDelegate(request, callback, &delegate);
 }
 
 // static
@@ -401,10 +400,13 @@ PermissionRequestType MediaStreamDevicesController::GetPermissionRequestType()
 
 // static
 void MediaStreamDevicesController::RequestPermissionsWithDelegate(
-    content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     internal::PermissionPromptDelegate* delegate) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(
+          content::RenderFrameHost::FromID(request.render_process_id,
+                                           request.render_frame_id));
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
     MediaPermissionRequestLogger::LogRequest(
         web_contents, request.render_process_id, request.render_frame_id,

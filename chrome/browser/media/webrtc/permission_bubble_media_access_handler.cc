@@ -142,7 +142,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 #endif
 
   MediaStreamDevicesController::RequestPermissions(
-      web_contents, request,
+      request,
       base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
                  base::Unretained(this), web_contents));
 }

@@ -47,7 +47,6 @@ class PermissionPromptDelegate {
 class MediaStreamDevicesController : public PermissionRequest {
  public:
   static void RequestPermissions(
-      content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
 
@@ -90,7 +89,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   class PermissionPromptDelegateImpl;
 
   static void RequestPermissionsWithDelegate(
-      content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       internal::PermissionPromptDelegate* delegate);

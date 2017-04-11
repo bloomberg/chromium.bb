@@ -23,6 +23,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -38,7 +40,7 @@ class MediaStreamDevicesControllerTestApi
       const content::MediaResponseCallback& callback) {
     MediaStreamDevicesControllerTestApi delegate(manager);
     MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        web_contents, request, callback, &delegate);
+        request, callback, &delegate);
   }
 
  private:
@@ -124,6 +126,7 @@ class PermissionDialogTest
     // Skip super: It will install a mock permission UI factory, but for this
     // test we want to show "real" UI.
     InProcessBrowserTest::SetUpOnMainThread();
+    ui_test_utils::NavigateToURL(browser(), GetUrl());
   }
 
  private:
@@ -170,9 +173,11 @@ void PermissionDialogTest::AddMediaRequest(PermissionRequestManager* manager,
     audio_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
   else
     video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
-  content::MediaStreamRequest request(0, 0, 0, GetUrl(), false, request_type,
-                                      audio_id, video_id, audio_type,
-                                      video_type, false);
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
+  content::MediaStreamRequest request(render_process_id, render_frame_id, 0,
+                                      GetUrl(), false, request_type, audio_id,
+                                      video_id, audio_type, video_type, false);
 
   // Add fake devices, otherwise the request will auto-block.
   MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices(

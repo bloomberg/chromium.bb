@@ -24,6 +24,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +107,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
                           const content::MediaStreamRequest& request,
                           const content::MediaResponseCallback& callback) {
     MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        web_contents, request, callback, &prompt_delegate_);
+        request, callback, &prompt_delegate_);
   }
 
   TestPermissionPromptDelegate* prompt_delegate() { return &prompt_delegate_; }
@@ -169,9 +170,13 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     content::MediaStreamType video_type =
         video_id.empty() ? content::MEDIA_NO_SERVICE
                          : content::MEDIA_DEVICE_VIDEO_CAPTURE;
-    return content::MediaStreamRequest(0, 0, 0, example_url(), false,
-                                       request_type, audio_id, video_id,
-                                       audio_type, video_type, false);
+    EXPECT_EQ(example_url(),
+              GetWebContents()->GetMainFrame()->GetLastCommittedURL());
+    int render_process_id = GetWebContents()->GetRenderProcessHost()->GetID();
+    int render_frame_id = GetWebContents()->GetMainFrame()->GetRoutingID();
+    return content::MediaStreamRequest(
+        render_process_id, render_frame_id, 0, example_url(), false,
+        request_type, audio_id, video_id, audio_type, video_type, false);
   }
 
   content::MediaStreamRequest CreateRequest(const std::string& audio_id,

@@ -3158,6 +3158,26 @@ class MediaStreamDevicesControllerBrowserTest
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
+  void SetUpOnMainThread() override {
+    PolicyTest::SetUpOnMainThread();
+    ui_test_utils::NavigateToURL(browser(), request_url_);
+  }
+
+  content::MediaStreamRequest CreateRequest(
+      content::MediaStreamType audio_request_type,
+      content::MediaStreamType video_request_type) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(request_url_,
+              web_contents->GetMainFrame()->GetLastCommittedURL());
+    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+    int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
+    return content::MediaStreamRequest(
+        render_process_id, render_frame_id, 0, request_url_.GetOrigin(), false,
+        content::MEDIA_DEVICE_ACCESS, std::string(), std::string(),
+        audio_request_type, video_request_type, false);
+  }
+
   // Configure a given policy map. The |policy_name| is the name of either the
   // audio or video capture allow policy and must never be NULL.
   // |whitelist_policy| and |allow_rule| are optional.  If NULL, no whitelist
@@ -3201,14 +3221,12 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishAudioTest() {
-    content::MediaStreamRequest request(
-        0, 0, 0, request_url_.GetOrigin(), false, content::MEDIA_DEVICE_ACCESS,
-        std::string(), std::string(), content::MEDIA_DEVICE_AUDIO_CAPTURE,
-        content::MEDIA_NO_SERVICE, false);
+    content::MediaStreamRequest request(CreateRequest(
+        content::MEDIA_DEVICE_AUDIO_CAPTURE, content::MEDIA_NO_SERVICE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        browser()->tab_strip_model()->GetActiveWebContents(), request,
+        request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
                    base::Unretained(this)),
         &prompt_delegate_);
@@ -3217,14 +3235,12 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishVideoTest() {
-    content::MediaStreamRequest request(
-        0, 0, 0, request_url_.GetOrigin(), false, content::MEDIA_DEVICE_ACCESS,
-        std::string(), std::string(), content::MEDIA_NO_SERVICE,
-        content::MEDIA_DEVICE_VIDEO_CAPTURE, false);
+    content::MediaStreamRequest request(CreateRequest(
+        content::MEDIA_NO_SERVICE, content::MEDIA_DEVICE_VIDEO_CAPTURE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        browser()->tab_strip_model()->GetActiveWebContents(), request,
+        request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
                    base::Unretained(this)),
         &prompt_delegate_);
