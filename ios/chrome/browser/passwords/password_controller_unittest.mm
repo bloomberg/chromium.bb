@@ -749,6 +749,49 @@ static NSString* kInputFieldValueVerificationScript =
      "  }"
      "}; result";
 
+// Test html content and expected result for __gCrWeb.hasPasswordField call.
+struct TestDataForPasswordFormDetection {
+  NSString* page_content;
+  BOOL contains_password;
+};
+
+// Tests that the existence of (or the lack of) a password field in the page is
+// detected correctly.
+TEST_F(PasswordControllerTest, HasPasswordField) {
+  TestDataForPasswordFormDetection test_data[] = {
+      // Form without a password field.
+      {@"<form><input type='text' name='password'></form>", NO},
+      // Form with a password field.
+      {@"<form><input type='password' name='password'></form>", YES}};
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    TestDataForPasswordFormDetection& data = test_data[i];
+    LoadHtml(data.page_content);
+    id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
+    EXPECT_NSEQ(@(data.contains_password), result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.page_content);
+  }
+}
+
+// Tests that the existence a password field in a nested iframe/ is detected
+// correctly.
+TEST_F(PasswordControllerTest, HasPasswordFieldinFrame) {
+  TestDataForPasswordFormDetection data = {
+    // Form with a password field in a nested iframe.
+    @"<iframe name='pf'></iframe>"
+     "<script>"
+     "  var doc = frames['pf'].document.open();"
+     "  doc.write('<form><input type=\\'password\\'></form>');"
+     "  doc.close();"
+     "</script>",
+    YES
+  };
+  LoadHtml(data.page_content);
+  id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
+  EXPECT_NSEQ(@(data.contains_password), result)
+      << base::SysNSStringToUTF8(data.page_content);
+}
+
 struct FillPasswordFormTestData {
   const std::string origin;
   const std::string action;
@@ -760,10 +803,14 @@ struct FillPasswordFormTestData {
   NSString* expected_result;
 };
 
-// Test that filling password forms works correctly.
+// Tests that filling password forms works correctly.
 TEST_F(PasswordControllerTest, FillPasswordForm) {
   LoadHtml(kHtmlWithMultiplePasswordForms);
 
+  // TODO(crbug.com/614092): can we remove this assertion? This call is the only
+  // reason why hasPasswordField is a public API on gCrWeb. If the page does
+  // not contain a password field, shouldn't one of the expectations of the
+  // remaining tests also fail?
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"__gCrWeb.hasPasswordField()"));
 
   const std::string base_url = BaseUrl();
