@@ -52,7 +52,7 @@
     <a onclick="reportIssues();"><b>Feedback</b></a>
   </body>
   <script>
-    showSuiteTableOnlyWithReplaceState();
+    loadPage();
     // Enable sorting for each column of tables.
     Array.prototype.slice.call(document.getElementsByTagName('th'))
         .forEach(function(head) {
@@ -61,6 +61,5 @@
                 function() { sortByColumn(head); });
         }
     );
-    setBrowserBackButtonLogic();
   </script>
 </html>
