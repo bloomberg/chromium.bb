@@ -58,6 +58,12 @@ class ArcPowerBridge : public ArcService,
   // held by ARC.
   std::multimap<mojom::DisplayWakeLockType, int> wake_locks_;
 
+  // Last time that the power manager notified about a brightness change.
+  base::TimeTicks last_brightness_changed_time_;
+  // Timer used to run UpdateAndroidScreenBrightness() to notify Android
+  // about brightness changes.
+  base::OneShotTimer notify_brightness_timer_;
+
   base::WeakPtrFactory<ArcPowerBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPowerBridge);

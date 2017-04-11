@@ -16,6 +16,11 @@
 
 namespace arc {
 
+// Delay for notifying Android about screen brightness changes, added in
+// order to prevent spammy brightness updates.
+constexpr base::TimeDelta kNotifyBrightnessDelay =
+    base::TimeDelta::FromMilliseconds(200);
+
 ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
   arc_bridge_service()->power()->AddObserver(this);
@@ -69,7 +74,19 @@ void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void ArcPowerBridge::BrightnessChanged(int level, bool user_initiated) {
-  UpdateAndroidScreenBrightness(static_cast<double>(level));
+  double percent = static_cast<double>(level);
+  const base::TimeTicks now = base::TimeTicks::Now();
+  if (last_brightness_changed_time_.is_null() ||
+      (now - last_brightness_changed_time_) >= kNotifyBrightnessDelay) {
+    UpdateAndroidScreenBrightness(percent);
+    notify_brightness_timer_.Stop();
+  } else {
+    notify_brightness_timer_.Start(
+        FROM_HERE, kNotifyBrightnessDelay,
+        base::Bind(&ArcPowerBridge::UpdateAndroidScreenBrightness,
+                   weak_ptr_factory_.GetWeakPtr(), percent));
+  }
+  last_brightness_changed_time_ = now;
 }
 
 void ArcPowerBridge::OnPowerStateChanged(
