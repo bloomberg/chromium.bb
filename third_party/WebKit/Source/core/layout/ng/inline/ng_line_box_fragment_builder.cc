@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_line_box_fragment_builder.h"
+#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 
 #include "core/layout/ng/geometry/ng_logical_size.h"
+#include "core/layout/ng/inline/ng_inline_break_token.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_inline_break_token.h"
-#include "core/layout/ng/ng_inline_node.h"
-#include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

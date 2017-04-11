@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_layout_inline_items_builder.h"
+#include "core/layout/ng/inline/ng_layout_inline_items_builder.h"
 
 #include "core/layout/LayoutInline.h"
-#include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/ng/ng_bidi_paragraph.h"
+#include "core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "core/layout/ng/inline/ng_inline_break_token.h"
+#include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
+#include "core/layout/ng/inline/ng_layout_inline_items_builder.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/inline/ng_text_fragment.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_inline_break_token.h"
-#include "core/layout/ng/ng_inline_layout_algorithm.h"
-#include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"

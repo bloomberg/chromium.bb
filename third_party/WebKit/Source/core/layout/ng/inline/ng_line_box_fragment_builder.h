@@ -6,7 +6,7 @@
 #define NGLineBoxFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/ng_line_height_metrics.h"
+#include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

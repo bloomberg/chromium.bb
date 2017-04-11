@@ -6,7 +6,7 @@
 #define NGLayoutInlineItemsBuilder_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"

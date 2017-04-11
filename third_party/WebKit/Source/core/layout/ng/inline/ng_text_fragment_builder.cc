@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_text_fragment_builder.h"
+#include "core/layout/ng/inline/ng_text_fragment_builder.h"
 
+#include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_inline_node.h"
-#include "core/layout/ng/ng_physical_text_fragment.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -6,8 +6,8 @@
 #define NGLineBoxFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {
