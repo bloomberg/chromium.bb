@@ -876,6 +876,7 @@ source_set("views_unittests_sources") {
     "controls/native/native_view_host_unittest.cc",
     "controls/prefix_selector_unittest.cc",
     "controls/progress_bar_unittest.cc",
+    "controls/resize_area_unittest.cc",
     "controls/scroll_view_unittest.cc",
     "controls/scrollbar/scrollbar_unittest.cc",
     "controls/slider_unittest.cc",
