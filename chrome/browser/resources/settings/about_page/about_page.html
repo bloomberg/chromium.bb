@@ -85,7 +85,8 @@
     </style>
     <div>
       <settings-section page-title="$i18n{aboutPageTitle}" section="about">
-        <settings-animated-pages id="pages" section="about">
+        <settings-animated-pages id="pages" section="about"
+            focus-config="[[focusConfig_]]">
           <neon-animatable route-path="default">
             <div class="settings-box two-line">
               <img id="product-logo" on-tap="onProductLogoTap_"
@@ -182,7 +183,8 @@
             <div class="settings-box" on-tap="onDetailedBuildInfoTap_"
                 actionable>
               <div class="start">$i18n{aboutDetailedBuildInfo}</div>
-              <button class="subpage-arrow" is="paper-icon-button-light"
+              <button id="detailed-build-info-trigger" class="subpage-arrow"
+                  is="paper-icon-button-light"
                   aria-label="$i18n{aboutDetailedBuildInfo}">
               </button>
             </div>

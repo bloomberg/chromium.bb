@@ -21,6 +21,18 @@ Polymer({
 
     /** @private {!AndroidAppsInfo|undefined} */
     androidAppsInfo_: Object,
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+        map.set(
+            settings.Route.ANDROID_APPS_DETAILS.path,
+            '#android-apps .subpage-arrow');
+        return map;
+      },
+    },
   },
 
   /** @private {?settings.AndroidAppsBrowserProxy} */

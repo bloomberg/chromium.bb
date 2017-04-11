@@ -101,6 +101,23 @@ Polymer({
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
       }
     },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+// <if expr="use_nss_certs">
+        map.set(
+            settings.Route.CERTIFICATES.path,
+            '#manageCertificates .subpage-arrow');
+// </if>
+        map.set(
+            settings.Route.SITE_SETTINGS.path,
+            '#site-settings-subpage-trigger .subpage-arrow');
+        return map;
+      },
+    },
   },
 
   listeners: {

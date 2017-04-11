@@ -19,7 +19,8 @@
 <dom-module id="settings-device-page">
   <template>
     <style include="settings-shared"></style>
-    <settings-animated-pages id="pages" section="device">
+    <settings-animated-pages id="pages" section="device"
+        focus-config="[[focusConfig_]]">
       <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
             on-tap="onPointersTap_" actionable>

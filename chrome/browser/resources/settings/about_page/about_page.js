@@ -73,6 +73,18 @@ Polymer({
       type: Boolean,
       computed: 'computeShowCheckUpdates_(currentUpdateStatusEvent_)',
     },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+        map.set(
+            settings.Route.DETAILED_BUILD_INFO.path,
+            '#detailed-build-info-trigger');
+        return map;
+      },
+    }
 // </if>
   },
 

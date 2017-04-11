@@ -42,7 +42,8 @@
           on-close="onDialogClosed_">
       </settings-clear-browsing-data-dialog>
     </template>
-    <settings-animated-pages id="pages" section="privacy">
+    <settings-animated-pages id="pages" section="privacy"
+        focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div class="settings-box first">
           <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>

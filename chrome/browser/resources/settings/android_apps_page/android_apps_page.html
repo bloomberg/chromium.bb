@@ -16,7 +16,8 @@
   <template>
     <style include="settings-shared"></style>
 
-    <settings-animated-pages id="pages" section="androidApps">
+    <settings-animated-pages id="pages" section="androidApps"
+        focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div id="android-apps" class="settings-box two-line first" actionable
             on-tap="onSubpageTap_">
