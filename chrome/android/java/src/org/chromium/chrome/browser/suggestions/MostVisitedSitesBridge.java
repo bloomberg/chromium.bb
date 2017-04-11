@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.TileSource.TileSourceEnum;
-import org.chromium.chrome.browser.suggestions.TileVisualType.TileVisualTypeEnum;
 
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
@@ -74,7 +72,7 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
 
     @Override
     public void recordOpenedMostVisitedItem(
-            int index, @TileVisualTypeEnum int type, @TileSourceEnum int source) {
+            int index, @TileVisualType int type, @TileSource int source) {
         nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, type, source);
     }
 

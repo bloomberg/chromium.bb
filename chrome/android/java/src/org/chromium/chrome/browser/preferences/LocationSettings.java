@@ -12,7 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.components.location.LocationSettingsDialogContext.LocationSettingsDialogContextEnum;
+import org.chromium.components.location.LocationSettingsDialogContext;
 import org.chromium.components.location.LocationSettingsDialogOutcome;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -72,7 +72,7 @@ public class LocationSettings {
 
     @CalledByNative
     private static void promptToEnableSystemLocationSetting(
-            @LocationSettingsDialogContextEnum int promptContext, WebContents webContents,
+            @LocationSettingsDialogContext int promptContext, WebContents webContents,
             final long nativeCallback) {
         WindowAndroid window = webContents.getTopLevelNativeWindow();
         if (window == null) {

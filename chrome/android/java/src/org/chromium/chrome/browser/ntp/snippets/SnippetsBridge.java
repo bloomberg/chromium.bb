@@ -11,10 +11,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction.ContentSuggestionsAdditionalActionEnum;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -33,13 +31,13 @@ public class SnippetsBridge
     private SuggestionsSource.Observer mObserver;
     private SuggestionsRanker mSuggestionsRanker;
 
-    public static boolean isCategoryStatusAvailable(@CategoryStatusEnum int status) {
+    public static boolean isCategoryStatusAvailable(@CategoryStatus int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.AVAILABLE;
     }
 
     /** Returns whether the category is considered "enabled", and can show content suggestions. */
-    public static boolean isCategoryEnabled(@CategoryStatusEnum int status) {
+    public static boolean isCategoryEnabled(@CategoryStatus int status) {
         switch (status) {
             case CategoryStatus.INITIALIZING:
             case CategoryStatus.AVAILABLE:
@@ -49,7 +47,7 @@ public class SnippetsBridge
         return false;
     }
 
-    public static boolean isCategoryLoading(@CategoryStatusEnum int status) {
+    public static boolean isCategoryLoading(@CategoryStatus int status) {
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.INITIALIZING;
     }
 
@@ -124,7 +122,7 @@ public class SnippetsBridge
     }
 
     @Override
-    @CategoryStatusEnum
+    @CategoryStatus
     public int getCategoryStatus(int category) {
         assert mNativeSnippetsBridge != 0;
         return nativeGetCategoryStatus(mNativeSnippetsBridge, category);
@@ -321,8 +319,8 @@ public class SnippetsBridge
 
     @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
-            @ContentSuggestionsCardLayoutEnum int cardLayout,
-            @ContentSuggestionsAdditionalActionEnum int additionalAction, boolean showIfEmpty,
+            @ContentSuggestionsCardLayout int cardLayout,
+            @ContentSuggestionsAdditionalAction int additionalAction, boolean showIfEmpty,
             String noSuggestionsMessage) {
         return new SuggestionsCategoryInfo(
                 category, title, cardLayout, additionalAction, showIfEmpty, noSuggestionsMessage);
@@ -339,8 +337,7 @@ public class SnippetsBridge
     }
 
     @CalledByNative
-    private void onCategoryStatusChanged(
-            @CategoryInt int category, @CategoryStatusEnum int newStatus) {
+    private void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int newStatus) {
         if (mObserver != null) mObserver.onCategoryStatusChanged(category, newStatus);
     }
 

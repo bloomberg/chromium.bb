@@ -77,7 +77,7 @@ public class WebApkInstaller {
         mInstallDelegate.installAsync(packageName, version, title, token, url, callback);
     }
 
-    private void notify(@WebApkInstallResult.WebApkInstallResultEnum int result) {
+    private void notify(@WebApkInstallResult int result) {
         if (mNativePointer != 0) {
             nativeOnInstallFinished(mNativePointer, result);
         }
@@ -114,5 +114,5 @@ public class WebApkInstaller {
     }
 
     private native void nativeOnInstallFinished(
-            long nativeWebApkInstaller, @WebApkInstallResult.WebApkInstallResultEnum int result);
+            long nativeWebApkInstaller, @WebApkInstallResult int result);
 }

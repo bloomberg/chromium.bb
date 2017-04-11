@@ -8,9 +8,9 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction.ContentSuggestionsAdditionalActionEnum;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 
 import javax.annotation.Nullable;
@@ -36,15 +36,15 @@ public class SuggestionsCategoryInfo {
     /**
      * Layout of the cards to be used to display suggestions in this category.
      */
-    @ContentSuggestionsCardLayoutEnum
+    @ContentSuggestionsCardLayout
     private final int mCardLayout;
 
     /**
      * The type of additional action supported by the category, or
-     * {@link ContentSuggestionsAdditionalActionEnum#NONE} if no such action is supported.
+     * {@link ContentSuggestionsAdditionalAction#NONE} if no such action is supported.
      * @see ActionItem
      */
-    @ContentSuggestionsAdditionalActionEnum
+    @ContentSuggestionsAdditionalAction
     private final int mAdditionalAction;
 
     /** Whether this category should be shown if it offers no suggestions. */
@@ -56,8 +56,8 @@ public class SuggestionsCategoryInfo {
     private final String mNoSuggestionsMessage;
 
     public SuggestionsCategoryInfo(@CategoryInt int category, String title,
-            @ContentSuggestionsCardLayoutEnum int cardLayout,
-            @ContentSuggestionsAdditionalActionEnum int additionalAction, boolean showIfEmpty,
+            @ContentSuggestionsCardLayout int cardLayout,
+            @ContentSuggestionsAdditionalAction int additionalAction, boolean showIfEmpty,
             String noSuggestionsMessage) {
         mCategory = category;
         mTitle = title;
@@ -76,12 +76,12 @@ public class SuggestionsCategoryInfo {
         return mCategory;
     }
 
-    @ContentSuggestionsCardLayoutEnum
+    @ContentSuggestionsCardLayout
     public int getCardLayout() {
         return mCardLayout;
     }
 
-    @ContentSuggestionsAdditionalActionEnum
+    @ContentSuggestionsAdditionalAction
     public int getAdditionalAction() {
         return mAdditionalAction;
     }

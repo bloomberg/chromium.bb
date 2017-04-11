@@ -11,7 +11,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
-import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -46,7 +45,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     /**
      * Sets the status to be returned for a given category.
      */
-    public void setStatusForCategory(@CategoryInt int category, @CategoryStatusEnum int status) {
+    public void setStatusForCategory(@CategoryInt int category, @CategoryStatus int status) {
         mCategoryStatus.put(category, status);
         if (status == CategoryStatus.NOT_PROVIDED) {
             mCategories.remove(Integer.valueOf(category));
@@ -194,7 +193,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         return result;
     }
 
-    @CategoryStatusEnum
+    @CategoryStatus
     @Override
     public int getCategoryStatus(@CategoryInt int category) {
         return mCategoryStatus.get(category);

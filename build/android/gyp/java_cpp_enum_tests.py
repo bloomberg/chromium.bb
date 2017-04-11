@@ -51,21 +51,20 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class ClassName {
-  @IntDef({
-      E1, E2
-  })
-  @Retention(RetentionPolicy.SOURCE)
-  public @interface ClassNameEnum {}
+@IntDef({
+    ClassName.E1, ClassName.E2
+})
+@Retention(RetentionPolicy.SOURCE)
+public @interface ClassName {
   /**
    * %s
    * really really long.
    */
-  public static final int E1 = 1;
+  int E1 = 1;
   /**
    * This is a comment.
    */
-  public static final int E2 = 2 << 2;
+  int E2 = 2 << 2;
 }
 """
     long_comment = ('This is a multiple line comment that is really long. '

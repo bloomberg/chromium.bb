@@ -80,6 +80,5 @@ interface MostVisitedSites {
      * @param type The visual type of the item as defined in {@link TileVisualType}.
      * @param source The {@link TileSource} that generated this item.
      */
-    void recordOpenedMostVisitedItem(int index, @TileVisualType.TileVisualTypeEnum int type,
-            @TileSource.TileSourceEnum int source);
+    void recordOpenedMostVisitedItem(int index, @TileVisualType int type, @TileSource int source);
 }

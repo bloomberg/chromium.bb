@@ -30,8 +30,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut.ContentSuggestionsNotificationOptOutEnum;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
 import org.chromium.chrome.browser.preferences.ContentSuggestionsPreferences;
 
 import java.util.Collection;
@@ -76,19 +75,17 @@ public class ContentSuggestionsNotificationHelper {
 
     /**
      * Records the reason why Content Suggestions notifications have been opted out.
-     * @see ContentSuggestionsNotificationOptOutEnum;
+     * @see ContentSuggestionsNotificationOptOut;
      */
-    public static void recordNotificationOptOut(
-            @ContentSuggestionsNotificationOptOutEnum int reason) {
+    public static void recordNotificationOptOut(@ContentSuggestionsNotificationOptOut int reason) {
         nativeRecordNotificationOptOut(reason);
     }
 
     /**
      * Records an action performed on a Content Suggestions notification.
-     * @see ContentSuggestionsNotificationActionEnum;
+     * @see ContentSuggestionsNotificationAction;
      */
-    public static void recordNotificationAction(
-            @ContentSuggestionsNotificationActionEnum int action) {
+    public static void recordNotificationAction(@ContentSuggestionsNotificationAction int action) {
         nativeRecordNotificationAction(action);
     }
 
@@ -367,7 +364,7 @@ public class ContentSuggestionsNotificationHelper {
     }
 
     private static String cachedMetricNameForAction(
-            @ContentSuggestionsNotificationActionEnum int action) {
+            @ContentSuggestionsNotificationAction int action) {
         switch (action) {
             case ContentSuggestionsNotificationAction.TAP:
                 return PREF_CACHED_ACTION_TAP;
@@ -399,8 +396,7 @@ public class ContentSuggestionsNotificationHelper {
      *
      * @param action The action to update the pref for.
      */
-    private static void recordCachedActionMetric(
-            @ContentSuggestionsNotificationActionEnum int action) {
+    private static void recordCachedActionMetric(@ContentSuggestionsNotificationAction int action) {
         String prefName = cachedMetricNameForAction(action);
         assert !prefName.isEmpty();
 
@@ -474,7 +470,7 @@ public class ContentSuggestionsNotificationHelper {
             int hideDeadlineCount, int hideExpiryCount, int hideFrontmostCount,
             int hideDisabledCount, int hideShutdownCount, int consecutiveIgnored);
     private static native void nativeRecordNotificationOptOut(
-            @ContentSuggestionsNotificationOptOutEnum int reason);
+            @ContentSuggestionsNotificationOptOut int reason);
     private static native void nativeRecordNotificationAction(
-            @ContentSuggestionsNotificationActionEnum int action);
+            @ContentSuggestionsNotificationAction int action);
 }

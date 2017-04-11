@@ -4,17 +4,17 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.android_webview.renderer_priority.RendererPriority.RendererPriorityEnum;
+import org.chromium.android_webview.renderer_priority.RendererPriority;
 /**
  * This class provides more specific information about why the render process
  * exited. It is peer of android.webkit.RenderProcessGoneDetail.
  */
 public class AwRenderProcessGoneDetail {
     private final boolean mDidCrash;
-    @RendererPriorityEnum
+    @RendererPriority
     private final int mRendererPriority;
 
-    public AwRenderProcessGoneDetail(boolean didCrash, @RendererPriorityEnum int rendererPriority) {
+    public AwRenderProcessGoneDetail(boolean didCrash, @RendererPriority int rendererPriority) {
         mDidCrash = didCrash;
         mRendererPriority = rendererPriority;
     }
@@ -23,7 +23,7 @@ public class AwRenderProcessGoneDetail {
         return mDidCrash;
     }
 
-    @RendererPriorityEnum
+    @RendererPriority
     public int rendererPriority() {
         return mRendererPriority;
     }

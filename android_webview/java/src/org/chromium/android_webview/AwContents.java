@@ -47,7 +47,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
-import org.chromium.android_webview.renderer_priority.RendererPriority.RendererPriorityEnum;
+import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -2691,7 +2691,7 @@ public class AwContents implements SmartClipProvider {
         return mIsPopupWindow;
     }
 
-    @RendererPriorityEnum
+    @RendererPriority
     public int getRendererRequestedPriority() {
         return nativeGetRendererRequestedPriority(mNativeAwContents);
     }
@@ -2701,7 +2701,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void setRendererPriorityPolicy(
-            @RendererPriorityEnum int rendererRequestedPriority, boolean waivedWhenNotVisible) {
+            @RendererPriority int rendererRequestedPriority, boolean waivedWhenNotVisible) {
         nativeSetRendererPriorityPolicy(
                 mNativeAwContents, rendererRequestedPriority, waivedWhenNotVisible);
     }

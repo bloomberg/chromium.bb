@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction.ContentSuggestionsAdditionalActionEnum;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -745,7 +744,7 @@ public class SuggestionsSectionTest {
     }
 
     private static void verifyAction(
-            SuggestionsSection section, @ContentSuggestionsAdditionalActionEnum int action) {
+            SuggestionsSection section, @ContentSuggestionsAdditionalAction int action) {
         SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
         SuggestionsUiDelegate manager = mock(SuggestionsUiDelegate.class);
         SuggestionsNavigationDelegate navDelegate = mock(SuggestionsNavigationDelegate.class);

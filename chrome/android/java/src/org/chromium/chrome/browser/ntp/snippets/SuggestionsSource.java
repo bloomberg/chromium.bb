@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 
 import java.util.List;
 
@@ -27,7 +26,7 @@ public interface SuggestionsSource {
         void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions);
 
         /** Called when a category changed its status. */
-        void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatusEnum int newStatus);
+        void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int newStatus);
 
         /**
          * Called when a suggestion is invalidated, which means it needs to be removed from the UI
@@ -54,7 +53,7 @@ public interface SuggestionsSource {
     /**
      * Gets the status of a category, possibly indicating the reason why it is disabled.
      */
-    @CategoryStatusEnum
+    @CategoryStatus
     int getCategoryStatus(int category);
 
     /**

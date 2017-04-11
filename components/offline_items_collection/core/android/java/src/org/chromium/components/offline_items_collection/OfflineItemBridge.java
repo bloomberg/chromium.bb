@@ -6,8 +6,6 @@ package org.chromium.components.offline_items_collection;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.components.offline_items_collection.OfflineItemFilter.OfflineItemFilterEnum;
-import org.chromium.components.offline_items_collection.OfflineItemState.OfflineItemStateEnum;
 
 import java.util.ArrayList;
 
@@ -41,10 +39,10 @@ public class OfflineItemBridge {
     @CalledByNative
     private static OfflineItem createOfflineItemAndMaybeAddToList(ArrayList<OfflineItem> list,
             String nameSpace, String id, String title, String description,
-            @OfflineItemFilterEnum int filter, boolean isTransient, long totalSizeBytes,
+            @OfflineItemFilter int filter, boolean isTransient, long totalSizeBytes,
             boolean externallyRemoved, long creationTimeMs, long lastAccessedTimeMs,
             boolean isOpenable, String pageUrl, String originalUrl, boolean isOffTheRecord,
-            @OfflineItemStateEnum int state, boolean isResumable, boolean allowMetered,
+            @OfflineItemState int state, boolean isResumable, boolean allowMetered,
             long receivedBytes, int percentCompleted, long timeRemainingMs) {
         OfflineItem item = new OfflineItem();
         item.id.namespace = nameSpace;

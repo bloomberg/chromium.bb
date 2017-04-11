@@ -5,8 +5,6 @@
 package org.chromium.components.offline_items_collection;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.components.offline_items_collection.OfflineItemFilter.OfflineItemFilterEnum;
-import org.chromium.components.offline_items_collection.OfflineItemState.OfflineItemStateEnum;
 
 /**
  * This class is the Java counterpart to the C++ OfflineItem
@@ -22,7 +20,7 @@ public class OfflineItem {
     // Display metadata.
     public String title;
     public String description;
-    @OfflineItemFilterEnum
+    @OfflineItemFilter
     public int filter;
     public boolean isTransient;
 
@@ -39,7 +37,7 @@ public class OfflineItem {
     public boolean isOffTheRecord;
 
     // In Progress Metadata.
-    @OfflineItemStateEnum
+    @OfflineItemState
     public int state;
     public boolean isResumable;
     public boolean allowMetered;

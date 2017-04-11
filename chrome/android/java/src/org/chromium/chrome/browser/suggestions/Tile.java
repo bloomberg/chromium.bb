@@ -7,9 +7,6 @@ package org.chromium.chrome.browser.suggestions;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.suggestions.TileSource.TileSourceEnum;
-import org.chromium.chrome.browser.suggestions.TileVisualType.TileVisualTypeEnum;
-
 /**
  * Holds the details to populate a site suggestion tile.
  */
@@ -19,10 +16,10 @@ public class Tile implements OfflinableSuggestion {
     private final String mWhitelistIconPath;
     private final int mIndex;
 
-    @TileSourceEnum
+    @TileSource
     private final int mSource;
 
-    @TileVisualTypeEnum
+    @TileVisualType
     private int mType = TileVisualType.NONE;
 
     @Nullable
@@ -39,8 +36,8 @@ public class Tile implements OfflinableSuggestion {
      * @param index The index of this tile in the list of tiles.
      * @param source The {@code TileSource} that generated this tile.
      */
-    public Tile(String title, String url, String whitelistIconPath, int index,
-            @TileSourceEnum int source) {
+    public Tile(
+            String title, String url, String whitelistIconPath, int index, @TileSource int source) {
         mTitle = title;
         mUrl = url;
         mWhitelistIconPath = whitelistIconPath;
@@ -126,7 +123,7 @@ public class Tile implements OfflinableSuggestion {
      * @return The source of this tile. Used for metrics tracking. Valid values are listed in
      * {@code TileSource}.
      */
-    @TileSourceEnum
+    @TileSource
     public int getSource() {
         return mSource;
     }
@@ -134,7 +131,7 @@ public class Tile implements OfflinableSuggestion {
     /**
      * @return The visual type of this tile. Valid values are listed in {@link TileVisualType}.
      */
-    @TileVisualTypeEnum
+    @TileVisualType
     public int getType() {
         return mType;
     }
@@ -143,7 +140,7 @@ public class Tile implements OfflinableSuggestion {
      * Sets the visual type of this tile. Valid values are listed in
      * {@link TileVisualType}.
      */
-    public void setType(@TileVisualTypeEnum int type) {
+    public void setType(@TileVisualType int type) {
         mType = type;
     }
 

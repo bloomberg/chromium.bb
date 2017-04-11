@@ -294,8 +294,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * Updates {@link WebappDataStorage} with the time of the latest WebAPK update and whether the
      * WebAPK update succeeded.
      */
-    private static void recordUpdate(WebappDataStorage storage,
-            @WebApkInstallResult.WebApkInstallResultEnum int result, boolean relaxUpdates) {
+    private static void recordUpdate(
+            WebappDataStorage storage, @WebApkInstallResult int result, boolean relaxUpdates) {
         // Update the request time and result together. It prevents getting a correct request time
         // but a result from the previous request.
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
@@ -357,8 +357,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * fails.
      */
     @CalledByNative
-    private static void onBuiltWebApk(String id,
-            @WebApkInstallResult.WebApkInstallResultEnum int result, boolean relaxUpdates) {
+    private static void onBuiltWebApk(
+            String id, @WebApkInstallResult int result, boolean relaxUpdates) {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
         if (storage == null) return;
 
