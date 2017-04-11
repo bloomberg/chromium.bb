@@ -178,9 +178,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_Delete Delete
 #endif
-// Flaky: crbug.com/699426
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_Delete,
+    MAYBE_Delete,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
@@ -197,9 +196,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_DirectoryTreeContextMenu DirectoryTreeContextMenu
 #endif
-// Flaky: crbug.com/700156, crbug.com/699083
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_DirectoryTreeContextMenu,
+    MAYBE_DirectoryTreeContextMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
@@ -259,9 +257,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_DriveSpecific DriveSpecific
 #endif
-// Flaky: crbug.com/698834
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_DriveSpecific,
+    MAYBE_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
@@ -311,7 +308,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ShareDialog ShareDialog
 #endif
-// Flaky: crbug.com/702119.
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_ShareDialog,
     FileManagerBrowserTest,
@@ -348,7 +344,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_SuggestAppDialog SuggestAppDialog
 #endif
-// Flaky: crbug.com/701923
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_SuggestAppDialog,
     FileManagerBrowserTest,
@@ -360,9 +355,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ExecuteDefaultTaskOnDownloads ExecuteDefaultTaskOnDownloads
 #endif
-// Flaky: crbug.com/699171
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_ExecuteDefaultTaskOnDownloads,
+    MAYBE_ExecuteDefaultTaskOnDownloads,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
@@ -373,9 +367,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
 #endif
-// Flaky: crbug.com/699978
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_ExecuteDefaultTaskOnDrive,
+    MAYBE_ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "executeDefaultTaskOnDrive")));
@@ -413,10 +406,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_FolderShortcuts,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "traverseFolderShortcuts")));
-// Flaky: crbug.com/702119.
-// TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
+        TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
@@ -455,9 +447,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexFocusDownloads TabindexFocusDownloads
 #endif
-// Flaky: crbug.com/699534
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_TabindexFocusDownloads,
+    MAYBE_TabindexFocusDownloads,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDownloads"),
@@ -481,7 +472,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexOpenDialog TabindexOpenDialog
 #endif
-// Flaky: crbug.com/615259
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_TabindexOpenDialog,
     FileManagerBrowserTest,
@@ -496,7 +486,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexSaveFileDialog TabindexSaveFileDialog
 #endif
-// Flaky: crbug.com/615259
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_TabindexSaveFileDialog,
     FileManagerBrowserTest,
@@ -548,9 +537,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ShowGridView ShowGridView
 #endif
-// Flaky: crbug.com/698772
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_ShowGridView,
+    MAYBE_ShowGridView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
@@ -567,9 +555,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "requestMount"),
         TestParameter(NOT_IN_GUEST_MODE, "requestMountMultipleMounts"),
-        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice")));
-// Flaky: crbug.com/702119.
-// TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice"),
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_GearMenu DISABLED_GearMenu
