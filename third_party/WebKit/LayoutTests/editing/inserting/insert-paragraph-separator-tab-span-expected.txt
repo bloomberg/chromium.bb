@@ -3,7 +3,6 @@ Only tab should be inside a Apple tab span in the following tests.
 
 last visible position:
 | <span>
-|   class="Apple-tab-span"
 |   style="white-space:pre"
 |   "	"
 | <div>
@@ -14,7 +13,6 @@ first visible position:
 |   <br>
 | "hello world WebKit <#selection-caret>"
 | <span>
-|   class="Apple-tab-span"
 |   style="white-space:pre"
 |   "	"
 
@@ -23,7 +21,6 @@ before tab span:
 | <div>
 |   "hello world WebKit <#selection-caret>"
 |   <span>
-|     class="Apple-tab-span"
 |     style="white-space:pre"
 |     "	"
 |   " rocks"
@@ -31,7 +28,6 @@ before tab span:
 after tab span:
 | "hi, "
 | <span>
-|   class="Apple-tab-span"
 |   style="white-space:pre"
 |   "	"
 | <div>

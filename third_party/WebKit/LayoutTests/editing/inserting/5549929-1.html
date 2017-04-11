@@ -1,7 +1,7 @@
 <p>This tests for a crash when inserting into a tab into a tab span that contains a br.  You should no longer be able to get a br inside a tab span while editing but we should still avoid the crash.</p>
 <div id="div" contenteditable="true">
 <div>foo</div>
-<div><span id="span" class="Apple-tab-span"><br></span></div>
+<div><span id="span"><br></span></div>
 <div>bar</div>
 
 <script>

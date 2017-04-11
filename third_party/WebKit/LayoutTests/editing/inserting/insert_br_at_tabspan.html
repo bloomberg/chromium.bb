@@ -7,7 +7,7 @@
 test(() => assert_selection(
     [
         '<div contenteditable>',
-            'a|<span class="Apple-tab-span" style="white-space:pre">\t\t\t</span>z',
+            'a|<span style="white-space:pre">\t\t\t</span>z',
         '</div>',
     ].join(''),
     selection => {
@@ -16,7 +16,7 @@ test(() => assert_selection(
     },
     [
         '<div contenteditable>',
-            'a<br>x|<span class="Apple-tab-span" style="white-space:pre">\t\t\t</span>z',
+            'a<br>x|<span style="white-space:pre">\t\t\t</span>z',
         '</div>',
     ].join('')),
     'Insert newline and a character before tabspan');
@@ -24,7 +24,7 @@ test(() => assert_selection(
 test(() => assert_selection(
     [
         '<div contenteditable>',
-            'a<span class="Apple-tab-span" style="white-space:pre">\t|\t\t</span>z',
+            'a<span style="white-space:pre">\t|\t\t</span>z',
         '</div>',
     ].join(''),
     selection => {
@@ -33,8 +33,8 @@ test(() => assert_selection(
     },
     [
         '<div contenteditable>',
-            'a<span class="Apple-tab-span" style="white-space:pre">\t</span><br>',
-            'x|<span class="Apple-tab-span" style="white-space:pre">\t\t</span>z',
+            'a<span style="white-space:pre">\t</span><br>',
+            'x|<span style="white-space:pre">\t\t</span>z',
         '</div>',
     ].join('')),
     'Insert newline and a character in tabspan');
@@ -42,7 +42,7 @@ test(() => assert_selection(
 test(() => assert_selection(
     [
         '<div contenteditable>',
-            'a<span class="Apple-tab-span" style="white-space:pre">\t\t\t|</span>z',
+            'a<span style="white-space:pre">\t\t\t|</span>z',
         '</div>',
     ].join(''),
     selection => {
@@ -51,7 +51,7 @@ test(() => assert_selection(
     },
     [
         '<div contenteditable>',
-            'a<span class="Apple-tab-span" style="white-space:pre">\t\t\t</span><br>x|z',
+            'a<span style="white-space:pre">\t\t\t</span><br>x|z',
         '</div>',
     ].join('')),
     'Insert newline and a character after tabspan');

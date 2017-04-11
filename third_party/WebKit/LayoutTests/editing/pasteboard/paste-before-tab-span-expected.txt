@@ -5,7 +5,6 @@ Result:
 |   id="test"
 |   "hellohelloa<#selection-caret>"
 |   <span>
-|     class="Apple-tab-span"
 |     style="white-space:pre"
 |     "		"
 |   "world"

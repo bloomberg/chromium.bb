@@ -12,7 +12,6 @@ You should see aax\tz below:
 |   id="test"
 |   "aax<#selection-caret>"
 |   <span>
-|     class="Apple-tab-span"
 |     style="white-space:pre"
 |     "			"
 |   "z"

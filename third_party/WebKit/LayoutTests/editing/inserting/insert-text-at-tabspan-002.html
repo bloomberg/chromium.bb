@@ -7,7 +7,7 @@ test(() => assert_selection(
   [
     '<div contenteditable>',
       'a',
-      '<span class="Apple-tab-span" style="white-space:pre">	|		</span>',
+      '<span style="white-space:pre">	|		</span>',
       'z',
     '</div>'
   ].join(''),
@@ -15,9 +15,9 @@ test(() => assert_selection(
   [
     '<div contenteditable>',
       'a',
-      '<span class="Apple-tab-span" style="white-space:pre">	</span>',
+      '<span style="white-space:pre">	</span>',
       'x|',
-      '<span class="Apple-tab-span" style="white-space:pre">		</span>',
+      '<span style="white-space:pre">		</span>',
       'z',
     '</div>'
   ].join('')), 'Insert text in tabspan');

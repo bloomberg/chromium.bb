@@ -7,14 +7,14 @@ test(() =>
     assert_selection(
         [
             '<div contenteditable><span>',
-            '<span class="Apple-tab-span" style="white-space:pre">\t\t</span>',
+            '<span style="white-space:pre">\t\t</span>',
             '|foo',
             '</span></div>',
         ].join(''),
         'delete',
         [
             '<div contenteditable><span>',
-            '<span class="Apple-tab-span" style="white-space:pre">\t|</span>',
+            '<span style="white-space:pre">\t|</span>',
             'foo',
             '</span></div>',
         ].join('')),
@@ -25,14 +25,14 @@ test(() =>
         [
             '<div contenteditable><span>',
             'foo',
-            '<span class="Apple-tab-span" style="white-space:pre">\t\t|</span>',
+            '<span style="white-space:pre">\t\t|</span>',
             '</span></div>',
         ].join(''),
         'delete',
         [
             '<div contenteditable><span>',
             'foo',
-            '<span class="Apple-tab-span" style="white-space:pre">\t|</span>',
+            '<span style="white-space:pre">\t|</span>',
             '</span></div>',
         ].join('')),
     'Delete tab character in SPAN from caret in same SPAN');
@@ -42,7 +42,7 @@ test(() =>
         [
             '<div contenteditable><span>',
             '<br>',
-            '<span class="Apple-tab-span" style="white-space:pre">\t\t|</span>',
+            '<span style="white-space:pre">\t\t|</span>',
             'foo',
             '</span></div>',
         ].join(''),
@@ -50,7 +50,7 @@ test(() =>
         [
             '<div contenteditable><span>',
             '<br>',
-            '<span class="Apple-tab-span" style="white-space:pre">\t|</span>',
+            '<span style="white-space:pre">\t|</span>',
             'foo',
             '</span></div>',
         ].join('')),
