@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class NotificationUIManager;
@@ -34,12 +36,31 @@ namespace chromeos {
 // CUPS backend.
 class PrinterDetector : public KeyedService {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // The set of available printers has changed.
+    virtual void OnAvailableUsbPrintersChanged(
+        const std::vector<Printer>& printers) = 0;
+  };
+
   // Factory function for the Legacy implementation.
   static std::unique_ptr<PrinterDetector> CreateLegacy(Profile* profile);
 
   // Factory function for the CUPS implementation.
   static std::unique_ptr<PrinterDetector> CreateCups(Profile* profile);
   ~PrinterDetector() override {}
+
+  // Observer management.  Note these are only implemented for the cups backend.
+  // TODO(justincarlson) - Change these all to pure virtual functions when the
+  // legacy backend is retired.
+
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+
+  // Get the current set of detected printers.
+  virtual std::vector<Printer> GetPrinters();
 
  protected:
   PrinterDetector() = default;

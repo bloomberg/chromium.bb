@@ -16,9 +16,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/printing/fake_printer_discoverer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -378,23 +378,16 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
 }
 
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
-  if (!printer_discoverer_.get())
-    printer_discoverer_ = chromeos::PrinterDiscoverer::Create();
+  if (!printer_discoverer_.get()) {
+    printer_discoverer_ =
+        chromeos::PrinterDiscoverer::CreateForProfile(profile_);
+  }
 
   printer_discoverer_->AddObserver(this);
-  if (!printer_discoverer_->StartDiscovery()) {
-    CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::Value("on-printer-discovery-failed"));
-    printer_discoverer_->RemoveObserver(this);
-  }
 }
 
 void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
-  if (printer_discoverer_.get()) {
-    printer_discoverer_->RemoveObserver(this);
-    printer_discoverer_->StopDiscovery();
-    printer_discoverer_.reset();
-  }
+  printer_discoverer_.reset();
 }
 
 void CupsPrintersHandler::OnPrintersFound(
@@ -402,16 +395,14 @@ void CupsPrintersHandler::OnPrintersFound(
   std::unique_ptr<base::ListValue> printers_list =
       base::MakeUnique<base::ListValue>();
   for (const auto& printer : printers) {
-    std::unique_ptr<base::DictionaryValue> printer_info =
-        GetPrinterInfo(printer);
-    printers_list->Append(std::move(printer_info));
+    printers_list->Append(GetPrinterInfo(printer));
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("on-printer-discovered"), *printers_list);
 }
 
-void CupsPrintersHandler::OnDiscoveryDone() {
+void CupsPrintersHandler::OnDiscoveryInitialScanDone() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("on-printer-discovery-done"));
 }

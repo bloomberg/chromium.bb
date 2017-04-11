@@ -12,8 +12,11 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
@@ -72,18 +75,48 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
                                 public device::UsbService::Observer {
  public:
   explicit CupsPrinterDetectorImpl(Profile* profile)
-      : profile_(profile), observer_(this), weak_ptr_factory_(this) {
+      : profile_(profile),
+        usb_observer_(this),
+        observer_list_(
+            new base::ObserverListThreadSafe<PrinterDetector::Observer>),
+        weak_ptr_factory_(this) {
     device::UsbService* usb_service =
         device::DeviceClient::Get()->GetUsbService();
     if (usb_service) {
-      observer_.Add(usb_service);
+      usb_observer_.Add(usb_service);
       usb_service->GetDevices(base::Bind(&CupsPrinterDetectorImpl::OnGetDevices,
                                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
   ~CupsPrinterDetectorImpl() override = default;
 
+  // PrinterDetector interface function.
+  void AddObserver(PrinterDetector::Observer* observer) override {
+    observer_list_->AddObserver(observer);
+  }
+
+  // PrinterDetector interface function.
+  void RemoveObserver(PrinterDetector::Observer* observer) override {
+    observer_list_->RemoveObserver(observer);
+  }
+
+  // PrinterDetector interface function.
+  std::vector<Printer> GetPrinters() override {
+    base::AutoLock auto_lock(pp_lock_);
+    return GetPrintersLocked();
+  }
+
  private:
+  std::vector<Printer> GetPrintersLocked() {
+    pp_lock_.AssertAcquired();
+    std::vector<Printer> printers;
+    printers.reserve(present_printers_.size());
+    for (const auto& entry : present_printers_) {
+      printers.push_back(*entry.second);
+    }
+    return printers;
+  }
+
   // Callback for initial enumeration of usb devices.
   void OnGetDevices(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
@@ -105,24 +138,21 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     if (!UsbDeviceIsPrinter(*device)) {
       return;
     }
-    known_printers_.erase(device->guid());
-    // TODO(justincarlson):  Update failed printers.
-  }
 
-  // Returns the existing printer using this URI, if one exists, or
-  // null otherwise.
-  std::unique_ptr<Printer> FindExistingPrinter(const std::string& uri) {
-    // TODO(justincarlson): add a GetPrinterByURI to PrintersManager.
-    // https://crbug.com/700602
-    auto existing_printers =
-        PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
-    for (std::unique_ptr<Printer>& printer : existing_printers) {
-      if (printer->uri() == uri) {
-        // Found a match, so use the existing configuration.
-        return std::move(printer);
-      }
+    base::AutoLock auto_lock(pp_lock_);
+    if (base::ContainsKey(present_printers_, device->guid())) {
+      present_printers_.erase(device->guid());
+      auto printers = GetPrintersLocked();
+      // We already have pp_lock_, so need to call the pre-locked version of
+      // GetPrinters to prevent deadlock.
+      observer_list_->Notify(
+          FROM_HERE, &PrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          GetPrintersLocked());
+    } else {
+      // If the device has been removed but it's not in present_printers_, it
+      // must still be in the setup flow.
+      deferred_printer_removals_.insert(device->guid());
     }
-    return nullptr;
   }
 
   // If this device is a printer and we haven't already tried to set it up,
@@ -132,20 +162,32 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
                         bool hotplugged) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    if (!UsbDeviceIsPrinter(*device) ||
-        base::ContainsKey(known_printers_, device->guid())) {
+    if (!UsbDeviceIsPrinter(*device)) {
       return;
     }
-    known_printers_.insert(device->guid());
 
+    // If we got this far, we want to try to auto-configure this printer.
     auto data = base::MakeUnique<SetUpPrinterData>();
     data->configurer = PrinterConfigurer::Create(profile_);
     data->device = device;
     data->hotplugged = hotplugged;
 
-    data->printer = FindExistingPrinter(UsbPrinterUri(*device));
-    if (data->printer != nullptr) {
+    data->printer = UsbDeviceToPrinter(*device);
+    if (data->printer == nullptr) {
+      // We've failed to understand this printer device, an error will already
+      // have been logged, so just bail.
+      return;
+    }
+
+    // If the user already has a configuration for this device, substitute that
+    // one for the one we generated automatically and skip the parts where we
+    // try to automagically figure out the driver.
+    std::unique_ptr<Printer> existing_printer_configuration =
+        PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
+            data->printer->id());
+    if (existing_printer_configuration != nullptr) {
       data->is_new = false;
+      data->printer = std::move(existing_printer_configuration);
       OnPrinterResolved(std::move(data));
       return;
     }
@@ -155,10 +197,6 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     // TODO(justincarlson): Add a notification that we are attempting to set up
     // this printer at this point.
     data->is_new = true;
-    data->printer = UsbDeviceToPrinter(*device);
-    if (data->printer == nullptr) {
-      return;
-    }
 
     // Look for an exact match based on USB ids.
     scoped_refptr<PpdProvider> ppd_provider =
@@ -214,18 +252,30 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (result == PrinterSetupResult::SUCCESS) {
       if (data->is_new) {
+        // We aren't done with data->printer yet, so we have to copy it instead
+        // of moving it.
+        auto printer_copy = base::MakeUnique<Printer>(*data->printer);
         PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
-            std::move(data->printer));
+            std::move(printer_copy));
       }
       // TODO(justincarlson): If the device was hotplugged, pop a timed
       // notification that says the printer is now available for printing.
     }
-    // TODO(justincarlson): If this doesn't succeed, Pop a notification that
+    // TODO(justincarlson): If this doesn't succeed, pop a notification that
     // tells the user automatic setup failed and offers to open the CUPS printer
     // configuration settings.
-    //
-    // TODO(justincarlson): If this doesn't succeed, Update the list of printers
-    // that failed to set up.
+
+    if (base::ContainsKey(deferred_printer_removals_, data->device->guid())) {
+      // The device was removed before we finished the flow, so just don't add
+      // it to present_printers_;
+      deferred_printer_removals_.erase(data->device->guid());
+    } else {
+      base::AutoLock auto_lock(pp_lock_);
+      present_printers_.emplace(data->device->guid(), std::move(data->printer));
+      observer_list_->Notify(
+          FROM_HERE, &PrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          GetPrintersLocked());
+    }
   }
 
   void SetNotificationUIManagerForTesting(
@@ -233,18 +283,32 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     LOG(FATAL) << "Not implemented for CUPS";
   }
 
-  // USB GUIDs of printers we've already dealt with.  There's an inherent race
-  // between initially querying all usb devices and receiving a notification
-  // about a new device, so this set lets us guarantee that we handle a given
-  // printer exactly once.
-  std::set<std::string> known_printers_;
+  // Map from USB GUID to Printer that we have detected as being currently
+  // plugged in and have finished processing.  Note present_printers_ may be
+  // accessed from multiple threads, so is protected by pp_lock_.
+  std::map<std::string, std::unique_ptr<Printer>> present_printers_;
+  base::Lock pp_lock_;
+
+  // If the usb device is removed before we've finished processing it, we'll
+  // defer the cleanup until the setup flow finishes.  This is the set of
+  // guids which have been removed before the flow finished.
+  std::set<std::string> deferred_printer_removals_;
 
   Profile* profile_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
+  ScopedObserver<device::UsbService, device::UsbService::Observer>
+      usb_observer_;
+  scoped_refptr<base::ObserverListThreadSafe<PrinterDetector::Observer>>
+      observer_list_;
   base::WeakPtrFactory<CupsPrinterDetectorImpl> weak_ptr_factory_;
 };
 
 }  // namespace
+
+// Nop base class implementation of GetPrinters().  Because this is non-empty we
+// have to define it out-of-line.
+std::vector<Printer> PrinterDetector::GetPrinters() {
+  return std::vector<Printer>();
+}
 
 // static
 std::unique_ptr<PrinterDetector> PrinterDetector::CreateCups(Profile* profile) {

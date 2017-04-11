@@ -88,7 +88,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // chromeos::PrinterDiscoverer::Observer override:
   void OnPrintersFound(const std::vector<Printer>& printers) override;
-  void OnDiscoveryDone() override;
+  void OnDiscoveryInitialScanDone() override;
 
   // Invokes debugd to add the printer to CUPS.  If |ipp_everywhere| is true,
   // automatic configuration will be attempted  and |ppd_path| is ignored.

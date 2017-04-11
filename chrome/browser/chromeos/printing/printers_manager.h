@@ -51,7 +51,8 @@ class PrintersManager : public KeyedService {
   // Returns printers from enterprise policy.
   std::vector<std::unique_ptr<Printer>> GetRecommendedPrinters() const;
 
-  // Returns the printer with id |printer_id|.
+  // Returns the printer with id |printer_id|, or nullptr if no such
+  // printer exists.
   std::unique_ptr<Printer> GetPrinter(const std::string& printer_id) const;
 
   // Adds or updates a printer. Printers are identified by the id field.  Use an
