@@ -76,6 +76,10 @@ directory. The script will be given the arguments plus
         action='append',
         help='Override the value of a value in the result style JSON file '
              '(--result-jsons-override-value layout_test_dirs /tmp/output).')
+    parser.add_argument(
+        '--summary-json',
+        help='(Swarming Isolated Merge Script API) Summary of shard state running on swarming.'
+             '(Output of the swarming.py collect --task-summary-json=XXX command.)')
 
     # Script to run after merging the directories together. Normally used with archive_layout_test_results.py
     # scripts/slave/chromium/archive_layout_test_results.py \
