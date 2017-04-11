@@ -393,8 +393,8 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
   if (!GetElementData())
     return;
   if (GetElementData()->style_attribute_is_dirty_ &&
-      EqualPossiblyIgnoringCase(local_name, styleAttr.LocalName(),
-                                ShouldIgnoreAttributeCase())) {
+      EqualPossiblyIgnoringASCIICase(local_name, styleAttr.LocalName(),
+                                     ShouldIgnoreAttributeCase())) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
@@ -1243,7 +1243,7 @@ void Element::setAttribute(const AtomicString& local_name,
 
   SynchronizeAttribute(local_name);
   const AtomicString& case_adjusted_local_name =
-      ShouldIgnoreAttributeCase() ? local_name.DeprecatedLower() : local_name;
+      ShouldIgnoreAttributeCase() ? local_name.LowerASCII() : local_name;
 
   if (!GetElementData()) {
     SetAttributeInternal(
@@ -2463,7 +2463,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   }
 
   if (!IsHTMLElement() && attr_node->GetDocument().IsHTMLDocument() &&
-      attr_node->name() != attr_node->name().DeprecatedLower())
+      attr_node->name() != attr_node->name().LowerASCII())
     UseCounter::Count(
         GetDocument(),
         UseCounter::
@@ -2630,7 +2630,7 @@ void Element::removeAttribute(const AtomicString& name) {
     return;
 
   AtomicString local_name =
-      ShouldIgnoreAttributeCase() ? name.DeprecatedLower() : name;
+      ShouldIgnoreAttributeCase() ? name.LowerASCII() : name;
   size_t index = GetElementData()->Attributes().FindIndex(local_name, false);
   if (index == kNotFound) {
     if (UNLIKELY(local_name == styleAttr) &&
@@ -2675,8 +2675,7 @@ bool Element::hasAttribute(const AtomicString& local_name) const {
     return false;
   SynchronizeAttribute(local_name);
   return GetElementData()->Attributes().FindIndex(
-             ShouldIgnoreAttributeCase() ? local_name.DeprecatedLower()
-                                         : local_name,
+             ShouldIgnoreAttributeCase() ? local_name.LowerASCII() : local_name,
              false) != kNotFound;
 }
 
@@ -3888,7 +3887,7 @@ Attr* Element::AttrIfExists(const QualifiedName& name) {
   if (AttrNodeList* attr_node_list = this->GetAttrNodeList()) {
     bool should_ignore_case = ShouldIgnoreAttributeCase();
     for (const auto& attr : *attr_node_list) {
-      if (attr->GetQualifiedName().MatchesPossiblyIgnoringCase(
+      if (attr->GetQualifiedName().MatchesPossiblyIgnoringASCIICase(
               name, should_ignore_case))
         return attr.Get();
     }

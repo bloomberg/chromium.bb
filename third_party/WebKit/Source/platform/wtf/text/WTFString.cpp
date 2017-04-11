@@ -294,6 +294,12 @@ String String::UpperUnicode(const AtomicString& locale_identifier) const {
   return impl_->UpperUnicode(locale_identifier);
 }
 
+String String::LowerASCII() const {
+  if (!impl_)
+    return String();
+  return impl_->LowerASCII();
+}
+
 String String::UpperASCII() const {
   if (!impl_)
     return String();

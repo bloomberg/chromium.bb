@@ -297,6 +297,9 @@ class WTF_EXPORT String {
   String LowerUnicode(const AtomicString& locale_identifier) const;
   String UpperUnicode(const AtomicString& locale_identifier) const;
 
+  // Returns a lowercase version of the string.
+  // This function converts ASCII characters only.
+  String LowerASCII() const;
   // Returns a uppercase version of the string.
   // This function converts ASCII characters only.
   String UpperASCII() const;
@@ -472,10 +475,10 @@ inline bool operator!=(const char* a, const String& b) {
   return !(a == b);
 }
 
-inline bool EqualPossiblyIgnoringCase(const String& a,
-                                      const String& b,
-                                      bool ignore_case) {
-  return ignore_case ? DeprecatedEqualIgnoringCase(a, b) : (a == b);
+inline bool EqualPossiblyIgnoringASCIICase(const String& a,
+                                           const String& b,
+                                           bool ignore_case) {
+  return ignore_case ? EqualIgnoringASCIICase(a, b) : (a == b);
 }
 
 inline bool EqualIgnoringNullity(const String& a, const String& b) {

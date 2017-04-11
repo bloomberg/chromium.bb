@@ -142,7 +142,8 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
-    if (it->GetName().MatchesPossiblyIgnoringCase(name, should_ignore_case))
+    if (it->GetName().MatchesPossiblyIgnoringASCIICase(name,
+                                                       should_ignore_case))
       return index;
   }
   return kNotFound;
@@ -204,14 +205,14 @@ size_t AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
     // and all HTML/SVG attributes have a null namespace!
     if (!it->GetName().HasPrefix()) {
       if (should_ignore_attribute_case &&
-          DeprecatedEqualIgnoringCase(name, it->LocalName()))
+          EqualIgnoringASCIICase(name, it->LocalName()))
         return index;
     } else {
-      // FIXME: Would be faster to do this comparison without calling toString,
+      // FIXME: Would be faster to do this comparison without calling ToString,
       // which generates a temporary string by concatenation. But this branch is
       // only reached if the attribute name has a prefix, which is rare in HTML.
-      if (EqualPossiblyIgnoringCase(name, it->GetName().ToString(),
-                                    should_ignore_attribute_case))
+      if (EqualPossiblyIgnoringASCIICase(name, it->GetName().ToString(),
+                                         should_ignore_attribute_case))
         return index;
     }
   }
