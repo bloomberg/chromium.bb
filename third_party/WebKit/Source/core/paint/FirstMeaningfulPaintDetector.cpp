@@ -99,7 +99,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
     return;
 
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "loading", "firstMeaningfulPaintCandidate",
+      "loading,devtools.timeline", "firstMeaningfulPaintCandidate",
       TraceEvent::ToTraceTimestamp(provisional_first_meaningful_paint_),
       "frame", GetDocument()->GetFrame());
   // Ignore the first meaningful paint candidate as this generally is the first
