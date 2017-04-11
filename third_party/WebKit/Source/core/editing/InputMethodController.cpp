@@ -263,6 +263,10 @@ int CalculateAfterDeletionLengthsInCodePoints(
   return offset;
 }
 
+Element* RootEditableElementOfSelection(const FrameSelection& selection) {
+  return RootEditableElementOf(selection.GetSelectionInDOMTree().Base());
+}
+
 }  // anonymous namespace
 
 InputMethodController* InputMethodController::Create(LocalFrame& frame) {
@@ -1019,10 +1023,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return info;
   }
-  Element* element = GetFrame()
-                         .Selection()
-                         .ComputeVisibleSelectionInDOMTreeDeprecated()
-                         .RootEditableElement();
+  Element* element = RootEditableElementOfSelection(GetFrame().Selection());
   if (!element)
     return info;
 
@@ -1172,10 +1173,7 @@ WebTextInputType InputMethodController::TextInputType() const {
   // It's important to preserve the equivalence of textInputInfo().type and
   // textInputType(), so perform the same rootEditableElement() existence check
   // here for consistency.
-  if (!GetFrame()
-           .Selection()
-           .ComputeVisibleSelectionInDOMTreeDeprecated()
-           .RootEditableElement())
+  if (!RootEditableElementOfSelection(GetFrame().Selection()))
     return kWebTextInputTypeNone;
 
   if (!IsAvailable())
