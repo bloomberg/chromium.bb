@@ -243,8 +243,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   bool skip_session_extensions = false;
 #if defined(OS_CHROMEOS)
-  // Skip loading session extensions if we are not in a user session.
-  skip_session_extensions = !chromeos::LoginState::Get()->IsUserLoggedIn();
+  // Skip loading session extensions if we are not in a user session or if the
+  // profile is the sign-in profile, which doesn't correspond to a user session.
+  skip_session_extensions = !chromeos::LoginState::Get()->IsUserLoggedIn() ||
+                            chromeos::ProfileHelper::IsSigninProfile(profile_);
   if (chrome::IsRunningInForcedAppMode()) {
     extension_service_->component_loader()->
         AddDefaultComponentExtensionsForKioskMode(skip_session_extensions);

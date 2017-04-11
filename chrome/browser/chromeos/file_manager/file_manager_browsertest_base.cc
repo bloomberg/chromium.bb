@@ -17,10 +17,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -524,6 +528,18 @@ void FileManagerBrowserTestBase::SetUp() {
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(profile()));
+
+  // The file manager component app should have been added for loading into the
+  // user profile, but not into the sign-in profile.
+  ASSERT_TRUE(extensions::ExtensionSystem::Get(profile())
+                  ->extension_service()
+                  ->component_loader()
+                  ->Exists(kFileManagerAppId));
+  ASSERT_FALSE(extensions::ExtensionSystem::Get(
+                   chromeos::ProfileHelper::GetSigninProfile())
+                   ->extension_service()
+                   ->component_loader()
+                   ->Exists(kFileManagerAppId));
 
   if (GetGuestModeParam() != IN_GUEST_MODE) {
     // Install the web server to serve the mocked share dialog.
