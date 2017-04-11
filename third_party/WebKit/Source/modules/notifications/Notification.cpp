@@ -368,11 +368,12 @@ ScriptPromise Notification::requestPermission(
     Deprecation::CountDeprecation(
         context, UseCounter::kNotificationPermissionRequestedInsecureOrigin);
   }
+
   if (context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (frame && !frame->IsMainFrame()) {
-      UseCounter::Count(context,
-                        UseCounter::kNotificationPermissionRequestedIframe);
+      Deprecation::CountDeprecation(
+          context, UseCounter::kNotificationPermissionRequestedIframe);
     }
   }
 

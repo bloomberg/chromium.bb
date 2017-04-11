@@ -15,11 +15,10 @@
 namespace {
 
 enum Milestone {
-  M56,
-  M57,
   M58,
   M59,
   M60,
+  M61,
 };
 
 const char* milestoneString(Milestone milestone) {
@@ -27,16 +26,14 @@ const char* milestoneString(Milestone milestone) {
   // https://www.chromium.org/developers/calendar
 
   switch (milestone) {
-    case M56:
-      return "M56, around January 2017";
-    case M57:
-      return "M57, around March 2017";
     case M58:
       return "M58, around April 2017";
     case M59:
       return "M59, around June 2017";
     case M60:
       return "M60, around August 2017";
+    case M61:
+      return "M61, around September 2017";
   }
 
   ASSERT_NOT_REACHED();
@@ -354,7 +351,16 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "deprecated and will be removed in %s. You should consider "
           "switching your application to a secure origin, such as HTTPS. See "
           "https://goo.gl/rStTGz for more details.",
-          milestoneString(M60));
+          milestoneString(M61));
+
+    case UseCounter::kNotificationPermissionRequestedIframe:
+      return String::Format(
+          "Using the Notification API from an iframe is deprecated and will "
+          "be removed in %s. You should consider requesting permission from "
+          "the top-level frame or opening a new window instead. See "
+          "https://www.chromestatus.com/feature/6451284559265792 for more "
+          "details.",
+          milestoneString(M61));
 
     case UseCounter::kElementCreateShadowRootMultiple:
       return "Calling Element.createShadowRoot() for an element which already "
