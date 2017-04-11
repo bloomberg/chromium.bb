@@ -112,7 +112,17 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   // The id of the display to rotate.
   int64_t display_id_;
-  bool is_rotating_;
+
+  // For current slow rotation animation, there are two states |ROTATING| and
+  // |IDLE|. For the smooth rotation animation, we need to send copy request
+  // and get copy result before animating.
+  enum ScreenRotationState {
+    COPY_REQUESTED,
+    ROTATING,
+    IDLE,
+  };
+  ScreenRotationState screen_rotation_state_;
+
   std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
   // Only set in unittest to disable animation timers.
   bool disable_animation_timers_for_test_;

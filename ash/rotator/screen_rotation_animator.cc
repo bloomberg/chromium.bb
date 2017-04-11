@@ -189,7 +189,7 @@ class ScreenRotationAnimationMetricsReporter
 
 ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
     : display_id_(display_id),
-      is_rotating_(false),
+      screen_rotation_state_(IDLE),
       metrics_reporter_(
           base::MakeUnique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
@@ -226,6 +226,8 @@ void ScreenRotationAnimator::RequestCopyRootLayerAndAnimateRotation(
   ui::Layer* layer = GetRootWindow(display_id_)->layer();
   copy_output_request->set_area(gfx::Rect(layer->size()));
   layer->RequestCopyOfOutput(std::move(copy_output_request));
+
+  screen_rotation_state_ = COPY_REQUESTED;
 }
 
 ScreenRotationAnimator::CopyCallback
@@ -239,20 +241,19 @@ ScreenRotationAnimator::CreateAfterCopyCallback(
 void ScreenRotationAnimator::OnRootLayerCopiedBeforeRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
     std::unique_ptr<cc::CopyOutputResult> result) {
-  // If display was removed, should abort rotation.
-  if (!IsDisplayIdValid(display_id_)) {
+  // In the following cases, abort rotation:
+  // 1) if the display was removed,
+  // 2) the copy request has been canceled or failed. It would fail if,
+  // for examples: a) The layer is removed from the compositor and destroye
+  // before committing the request to the compositor. b) The compositor is
+  // shutdown.
+  if (!IsDisplayIdValid(display_id_) || result->IsEmpty()) {
     ProcessAnimationQueue();
+    rotation_request.reset();
     return;
   }
 
-  // Fall back to recreate layers solution when the copy request has been
-  // canceled or failed. It would fail if, for examples: a) The layer is removed
-  // from the compositor and destroyed before committing the request to the
-  // compositor. b) The compositor is shutdown.
-  if (result->IsEmpty())
-    CreateOldLayerTree();
-  else
-    CopyOldLayerTree(std::move(result));
+  CopyOldLayerTree(std::move(result));
   AnimateRotation(std::move(rotation_request));
 }
 
@@ -279,6 +280,8 @@ void ScreenRotationAnimator::CopyOldLayerTree(
 
 void ScreenRotationAnimator::AnimateRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request) {
+  screen_rotation_state_ = ROTATING;
+
   aura::Window* root_window = GetRootWindow(display_id_);
   std::unique_ptr<LayerCleanupObserver> old_layer_cleanup_observer(
       new LayerCleanupObserver(weak_factory_.GetWeakPtr()));
@@ -378,15 +381,21 @@ void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
   std::unique_ptr<ScreenRotationRequest> rotation_request =
       base::MakeUnique<ScreenRotationRequest>(new_rotation, source);
 
-  if (is_rotating_) {
-    last_pending_request_ = std::move(rotation_request);
-    // The pending request will be processed when the
-    // OnLayerAnimation(Ended|Aborted) methods should be called after
-    // StopAnimating().
-    StopAnimating();
-  } else {
-    is_rotating_ = true;
-    StartRotationAnimation(std::move(rotation_request));
+  switch (screen_rotation_state_) {
+    case IDLE:
+      StartRotationAnimation(std::move(rotation_request));
+      break;
+    case ROTATING:
+      last_pending_request_ = std::move(rotation_request);
+      // The pending request will be processed when the
+      // OnLayerAnimation(Ended|Aborted) methods should be called after
+      // |StopAnimating()|.
+      StopAnimating();
+      break;
+    case COPY_REQUESTED:
+      // TODO(wutao): We need to handle this otherwise the device will be in
+      // inconsistent state.
+      break;
   }
 }
 
@@ -401,7 +410,7 @@ void ScreenRotationAnimator::RemoveScreenRotationAnimatorObserver(
 }
 
 void ScreenRotationAnimator::ProcessAnimationQueue() {
-  is_rotating_ = false;
+  screen_rotation_state_ = IDLE;
   old_layer_tree_owner_.reset();
   if (last_pending_request_ && IsDisplayIdValid(display_id_)) {
     std::unique_ptr<ScreenRotationRequest> rotation_request =
