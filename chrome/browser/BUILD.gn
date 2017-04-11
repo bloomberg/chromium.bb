@@ -4385,6 +4385,8 @@ static_library("test_support") {
     "net/url_request_mock_util.h",
     "notifications/notification_test_util.cc",
     "notifications/notification_test_util.h",
+    "notifications/stub_notification_display_service.cc",
+    "notifications/stub_notification_display_service.h",
     "notifications/stub_notification_platform_bridge.cc",
     "notifications/stub_notification_platform_bridge.h",
     "policy/test/local_policy_test_server.cc",

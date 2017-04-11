@@ -19,9 +19,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
+#include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -212,10 +212,14 @@ class NotificationsApiDelegate : public NotificationDelegate {
                            const std::string& id)
       : api_function_(api_function),
         event_router_(EventRouter::Get(profile)),
+        display_helper_(
+            ExtensionNotificationDisplayHelperFactory::GetForProfile(profile)),
         extension_id_(extension_id),
         id_(id),
         scoped_id_(CreateScopedIdentifier(extension_id, id)) {
     DCHECK(api_function_);
+    DCHECK(display_helper_);
+
     shutdown_notifier_subscription_ =
         ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
             base::Bind(&NotificationsApiDelegate::Shutdown,
@@ -230,6 +234,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
     args->AppendBoolean(by_user);
     SendEvent(events::NOTIFICATIONS_ON_CLOSED,
               notifications::OnClosed::kEventName, gesture, std::move(args));
+
+    DCHECK(display_helper_);
+    display_helper_->EraseDataForNotificationId(scoped_id_);
   }
 
   void Click() override {
@@ -302,8 +309,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   void Shutdown() {
-    event_router_ = nullptr;
     shutdown_notifier_subscription_.reset();
+    event_router_ = nullptr;
+    display_helper_ = nullptr;
   }
 
   std::unique_ptr<base::ListValue> CreateBaseEventArgs() {
@@ -318,6 +326,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   // profile-keyed service shutdown events and reset to nullptr at that time,
   // so make sure to check for a valid pointer before use.
   EventRouter* event_router_;
+  ExtensionNotificationDisplayHelper* display_helper_;
 
   const std::string extension_id_;
   const std::string id_;
@@ -496,7 +505,7 @@ bool NotificationsApiFunction::CreateNotification(
   notification.set_never_timeout(options->require_interaction &&
                                  *options->require_interaction);
 
-  g_browser_process->notification_ui_manager()->Add(notification, GetProfile());
+  GetDisplayHelper()->Display(notification);
   return true;
 }
 
@@ -630,8 +639,10 @@ bool NotificationsApiFunction::UpdateNotification(
   if (options->is_clickable.get())
     notification->set_clickable(*options->is_clickable);
 
-  g_browser_process->notification_ui_manager()->Update(*notification,
-                                                       GetProfile());
+  // It's safe to follow the regular path for adding a new notification as it's
+  // already been verified that there is a notification that can be updated.
+  GetDisplayHelper()->Display(*notification);
+
   return true;
 }
 
@@ -650,6 +661,11 @@ bool NotificationsApiFunction::IsNotificationsApiEnabled() const {
 
 bool NotificationsApiFunction::CanRunWhileDisabled() const {
   return false;
+}
+
+ExtensionNotificationDisplayHelper* NotificationsApiFunction::GetDisplayHelper()
+    const {
+  return ExtensionNotificationDisplayHelperFactory::GetForProfile(GetProfile());
 }
 
 bool NotificationsApiFunction::RunAsync() {
@@ -728,9 +744,9 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   // We are in update.  If the ID doesn't exist, succeed but call the callback
   // with "false".
   const Notification* matched_notification =
-      g_browser_process->notification_ui_manager()->FindById(
-          CreateScopedIdentifier(extension_->id(), params_->notification_id),
-          NotificationUIManager::GetProfileID(GetProfile()));
+      GetDisplayHelper()->GetByNotificationId(
+          CreateScopedIdentifier(extension_->id(), params_->notification_id));
+
   if (!matched_notification) {
     SetResult(base::MakeUnique<base::Value>(false));
     SendResponse(true);
@@ -766,9 +782,8 @@ bool NotificationsClearFunction::RunNotificationsApi() {
   params_ = api::notifications::Clear::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  bool cancel_result = g_browser_process->notification_ui_manager()->CancelById(
-      CreateScopedIdentifier(extension_->id(), params_->notification_id),
-      NotificationUIManager::GetProfileID(GetProfile()));
+  bool cancel_result = GetDisplayHelper()->Close(
+      CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
   SetResult(base::MakeUnique<base::Value>(cancel_result));
   SendResponse(true);
@@ -781,11 +796,8 @@ NotificationsGetAllFunction::NotificationsGetAllFunction() {}
 NotificationsGetAllFunction::~NotificationsGetAllFunction() {}
 
 bool NotificationsGetAllFunction::RunNotificationsApi() {
-  NotificationUIManager* notification_ui_manager =
-      g_browser_process->notification_ui_manager();
   std::set<std::string> notification_ids =
-      notification_ui_manager->GetAllIdsByProfileAndSourceOrigin(
-          NotificationUIManager::GetProfileID(GetProfile()), extension_->url());
+      GetDisplayHelper()->GetNotificationIdsForExtension(extension_->url());
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 

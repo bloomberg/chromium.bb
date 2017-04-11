@@ -13,6 +13,7 @@ class BrowserContext;
 class NotificationCommon {
  public:
   // Things as user can do to a notification.
+  // TODO(peter): Prefix these options with OPERATION_.
   enum Operation {
     CLICK = 0,
     CLOSE = 1,
@@ -21,6 +22,7 @@ class NotificationCommon {
   };
 
   // Possible kinds of notifications
+  // TODO(peter): Prefix these options with TYPE_.
   enum Type {
     PERSISTENT = 0,
     NON_PERSISTENT = 1,

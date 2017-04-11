@@ -15,6 +15,11 @@
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
+#endif
 
 namespace {
 
@@ -41,6 +46,10 @@ NativeNotificationDisplayService::NativeNotificationDisplayService(
                          base::MakeUnique<NonPersistentNotificationHandler>());
   AddNotificationHandler(NotificationCommon::PERSISTENT,
                          base::MakeUnique<PersistentNotificationHandler>());
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  AddNotificationHandler(NotificationCommon::EXTENSION,
+                         base::MakeUnique<ExtensionNotificationHandler>());
+#endif
 }
 
 NativeNotificationDisplayService::~NativeNotificationDisplayService() {}

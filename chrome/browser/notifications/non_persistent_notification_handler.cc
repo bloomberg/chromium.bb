@@ -8,8 +8,8 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
-NonPersistentNotificationHandler::NonPersistentNotificationHandler() {}
-NonPersistentNotificationHandler::~NonPersistentNotificationHandler() {}
+NonPersistentNotificationHandler::NonPersistentNotificationHandler() = default;
+NonPersistentNotificationHandler::~NonPersistentNotificationHandler() = default;
 
 void NonPersistentNotificationHandler::OnClose(
     Profile* profile,
@@ -28,8 +28,6 @@ void NonPersistentNotificationHandler::OnClick(
     const std::string& notification_id,
     int action_index,
     const base::NullableString16& reply) {
-  // Buttons and replies not supported for non persistent notifications.
-  DCHECK_EQ(action_index, -1);
   DCHECK(reply.is_null());
 
   if (notifications_.find(notification_id) != notifications_.end()) {

@@ -20,6 +20,8 @@ namespace extensions {
 
 extern const base::Feature kAllowFullscreenAppNotificationsFeature;
 
+class ExtensionNotificationDisplayHelper;
+
 class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
  public:
   // Whether the current extension and channel allow the API. Public for
@@ -39,6 +41,10 @@ class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
   bool IsNotificationsApiEnabled() const;
 
   bool AreExtensionNotificationsAllowed() const;
+
+  // Returns the display helper that should be used for interacting with the
+  // common notification system.
+  ExtensionNotificationDisplayHelper* GetDisplayHelper() const;
 
   // Returns true if the API function is still allowed to run even when the
   // notifications for a notifier have been disabled.

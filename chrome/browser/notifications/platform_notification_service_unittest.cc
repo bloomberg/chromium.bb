@@ -98,6 +98,8 @@ class PlatformNotificationServiceTest : public testing::Test {
     std::unique_ptr<NotificationPlatformBridge> notification_bridge =
         base::MakeUnique<StubNotificationPlatformBridge>();
 
+    // TODO(peter): These tests should use the NotificationDisplayService, which
+    // will allow the StubNotificationPlatformBridge to be removed.
     TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
         std::move(ui_manager));
     TestingBrowserProcess::GetGlobal()->SetNotificationPlatformBridge(
