@@ -28,6 +28,7 @@ TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
+  params.SetString("type", "prompt");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -44,6 +45,7 @@ TEST(JavaScriptDialogManager, HandleDialogNullPrompt) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
+  params.SetString("type", "prompt");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -57,6 +59,7 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
+  params.SetString("type", "alert");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -113,6 +116,7 @@ TEST(JavaScriptDialogManager, OneDialog) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
+  params.SetString("type", "alert");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
@@ -123,6 +127,9 @@ TEST(JavaScriptDialogManager, OneDialog) {
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("hi", message);
+  std::string type;
+  ASSERT_EQ(kOk, manager.GetTypeOfDialog(&type).code());
+  ASSERT_EQ("alert", type);
 
   client.set_closing_count(1);
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
@@ -136,23 +143,30 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "1");
+  params.SetString("type", "confirm");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
   params.SetString("message", "2");
+  params.SetString("type", "alert");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
 
   std::string message;
+  std::string type;
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kOk, manager.GetTypeOfDialog(&type).code());
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ("1", message);
+  ASSERT_EQ("confirm", type);
 
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kOk, manager.GetTypeOfDialog(&type).code());
   ASSERT_EQ("2", message);
+  ASSERT_EQ("alert", type);
 
   client.set_closing_count(2);
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
@@ -166,6 +180,7 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
+  params.SetString("type", "alert");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
@@ -176,6 +191,9 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("hi", message);
+  std::string type;
+  ASSERT_EQ(kOk, manager.GetTypeOfDialog(&type).code());
+  ASSERT_EQ("alert", type);
 
   ASSERT_EQ(
       kOk,

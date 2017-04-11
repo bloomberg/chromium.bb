@@ -69,10 +69,22 @@ Status ExecuteSetAlertValue(Session* session,
   if (!params.GetString("text", &text))
     return Status(kUnknownError, "missing or invalid 'text'");
 
-  if (!web_view->GetJavaScriptDialogManager()->IsDialogOpen())
+  JavaScriptDialogManager* dialog_manager =
+      web_view->GetJavaScriptDialogManager();
+
+  if (!dialog_manager->IsDialogOpen())
     return Status(kNoAlertOpen);
 
-  session->prompt_text.reset(new std::string(text));
+  std::string type;
+  Status status = dialog_manager->GetTypeOfDialog(&type);
+  if (status.IsError())
+    return status;
+
+  if (type == "prompt")
+    session->prompt_text.reset(new std::string(text));
+  else
+    return Status(kElementNotVisible,
+                  " User dialog does not have a text box input field.");
   return Status(kOk);
 }
 

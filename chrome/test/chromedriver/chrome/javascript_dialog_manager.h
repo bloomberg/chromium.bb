@@ -29,6 +29,8 @@ class JavaScriptDialogManager : public DevToolsEventListener {
 
   Status GetDialogMessage(std::string* message);
 
+  Status GetTypeOfDialog(std::string* type);
+
   Status HandleDialog(bool accept, const std::string* text);
 
   // Overridden from DevToolsEventListener:
@@ -44,6 +46,8 @@ class JavaScriptDialogManager : public DevToolsEventListener {
   // cases. E.g., if the page shows an alert but before the manager received
   // the event, a script was injected via Inspector that triggered an alert.
   std::list<std::string> unhandled_dialog_queue_;
+
+  std::list<std::string> dialog_type_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogManager);
 };

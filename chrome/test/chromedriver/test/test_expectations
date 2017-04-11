@@ -13,7 +13,6 @@ import fnmatch
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.testIncludesAlertTextInUnhandledAlertException',
-    'AlertsTest.testSettingTheValueOfAnAlertThrows',
     'AlertsTest.testShouldGetTextOfAlertOpenedInSetTimeout',
     'AlertsTest.testShouldHandleAlertOnPageUnload',
     'AlertsTest.testShouldHandleAlertOnWindowClose',
