@@ -25,9 +25,9 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.notifications.ChannelsInitializer;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
-import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
@@ -172,11 +172,8 @@ public class ContentSuggestionsNotificationHelper {
                 0);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
-                                NotificationConstants.CHANNEL_ID_BROWSER,
-                                context.getString(R.string.notification_category_browser),
-                                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
-                                context.getString(R.string.notification_category_group_general))
+                        .createChromeNotificationBuilder(
+                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)

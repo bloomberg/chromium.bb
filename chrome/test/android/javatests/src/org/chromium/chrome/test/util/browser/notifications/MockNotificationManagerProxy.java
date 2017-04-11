@@ -6,6 +6,7 @@ package org.chromium.chrome.test.util.browser.notifications;
 
 import android.app.Notification;
 
+import org.chromium.chrome.browser.notifications.ChannelsInitializer;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import javax.annotation.Nullable;
  */
 public class MockNotificationManagerProxy implements NotificationManagerProxy {
     private static final String KEY_SEPARATOR = ":";
+    private List<ChannelsInitializer.Channel> mChannels;
+    private List<ChannelsInitializer.ChannelGroup> mNotificationChannelGroups;
 
     /**
      * Holds a notification and the arguments passed to #notify and #cancel.
@@ -45,6 +48,8 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     public MockNotificationManagerProxy() {
         mNotifications = new LinkedHashMap<>();
         mMutationCount = 0;
+        mChannels = new ArrayList<>();
+        mNotificationChannelGroups = new ArrayList<>();
     }
 
     /**
@@ -88,6 +93,24 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     public void cancelAll() {
         mNotifications.clear();
         mMutationCount++;
+    }
+
+    @Override
+    public void createNotificationChannel(ChannelsInitializer.Channel channel) {
+        mChannels.add(channel);
+    }
+
+    public List<ChannelsInitializer.Channel> getChannels() {
+        return mChannels;
+    }
+
+    @Override
+    public void createNotificationChannelGroup(ChannelsInitializer.ChannelGroup channelGroup) {
+        mNotificationChannelGroups.add(channelGroup);
+    }
+
+    public List<ChannelsInitializer.ChannelGroup> getNotificationChannelGroups() {
+        return mNotificationChannelGroups;
     }
 
     @Override

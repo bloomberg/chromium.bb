@@ -38,6 +38,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.notifications.ChannelsInitializer;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -770,11 +771,7 @@ public class MediaNotificationManager {
 
     private void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, NotificationConstants.CHANNEL_ID_BROWSER,
-                getContext().getString(org.chromium.chrome.R.string.notification_category_browser),
-                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
-                getContext().getString(
-                        org.chromium.chrome.R.string.notification_category_group_general));
+                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.notificationSmallIcon);

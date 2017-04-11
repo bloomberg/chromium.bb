@@ -16,6 +16,7 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.ChannelsInitializer;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -103,13 +104,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         // notification id ensures there's only one sync notification at a time.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
-                                NotificationConstants.CHANNEL_ID_BROWSER,
-                                mApplicationContext.getString(
-                                        R.string.notification_category_browser),
-                                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
-                                mApplicationContext.getString(
-                                        R.string.notification_category_group_general))
+                        .createChromeNotificationBuilder(
+                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setContentTitle(title)
