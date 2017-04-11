@@ -13,9 +13,9 @@ import subprocess
 import sys
 import tempfile
 
+import archive
 import describe
 import file_format
-import map2size
 import models
 import paths
 
@@ -52,7 +52,7 @@ def _CompareWithGolden(func):
 
 
 def _RunApp(name, *args):
-  argv = [os.path.join(_SCRIPT_DIR, name), '--no-pypy']
+  argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name, '--no-pypy']
   argv.extend(args)
   return subprocess.check_output(argv).splitlines()
 
@@ -64,16 +64,15 @@ class IntegrationTest(unittest.TestCase):
     if not IntegrationTest.size_info:
       lazy_paths = paths.LazyPaths(output_directory=_TEST_DATA_DIR)
       IntegrationTest.size_info = (
-          map2size.CreateSizeInfo(_TEST_MAP_PATH, lazy_paths))
+          archive.CreateSizeInfo(_TEST_MAP_PATH, lazy_paths))
     return copy.deepcopy(IntegrationTest.size_info)
 
   @_CompareWithGolden
-  def test_Map2Size(self):
+  def test_Archive(self):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
-      _RunApp('map2size.py', '--output-directory', _TEST_DATA_DIR,
-              '--map-file', _TEST_MAP_PATH, '--elf-file', '',
-              '--output-file', temp_file.name)
-      size_info = map2size.LoadAndPostProcessSizeInfo(temp_file.name)
+      _RunApp('archive', temp_file.name, '--output-directory', _TEST_DATA_DIR,
+              '--map-file', _TEST_MAP_PATH, '--elf-file', '')
+      size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing the .map.
     expected_size_info = self._CloneSizeInfo()
     self.assertEquals(expected_size_info.metadata, size_info.metadata)
@@ -87,19 +86,18 @@ class IntegrationTest(unittest.TestCase):
     stats = describe.DescribeSizeInfoCoverage(size_info)
     return itertools.chain(stats, sym_strs)
 
-  def test_Map2Size_NoSourcePaths(self):
+  def test_Archive_NoSourcePaths(self):
     # Just tests that it doesn't crash.
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
-      _RunApp('map2size.py', '--no-source-paths',
-              '--map-file', _TEST_MAP_PATH, '--elf-file', '',
-              '--output-file', temp_file.name)
-      map2size.LoadAndPostProcessSizeInfo(temp_file.name)
+      _RunApp('archive', temp_file.name, '--no-source-paths',
+              '--map-file', _TEST_MAP_PATH, '--elf-file', '')
+      archive.LoadAndPostProcessSizeInfo(temp_file.name)
 
   @_CompareWithGolden
   def test_ConsoleNullDiff(self):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       file_format.SaveSizeInfo(self._CloneSizeInfo(), temp_file.name)
-      return _RunApp('console.py', '--query', 'Diff(size_info1, size_info2)',
+      return _RunApp('console', '--query', 'Diff(size_info1, size_info2)',
                      temp_file.name, temp_file.name)
 
   @_CompareWithGolden

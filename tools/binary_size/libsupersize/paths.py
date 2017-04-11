@@ -12,13 +12,6 @@ _STATUS_DETECTED = 1
 _STATUS_VERIFIED = 2
 
 
-def AddOptions(parser):
-  parser.add_argument('--tool-prefix', default='',
-                      help='Path prefix for c++filt.')
-  parser.add_argument('--output-directory',
-                      help='Path to the root build directory.')
-
-
 class LazyPaths(object):
   def __init__(self, args=None, tool_prefix=None, output_directory=None,
                input_file=None):

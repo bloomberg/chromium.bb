@@ -1,17 +1,8 @@
-#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Tool for analyzing binary size of executables using nm or linker map files.
-
-Map files can be created by passing "-Map Foo.map" to the linker. If a map file
-is unavailable, this tool can also be pointed at an unstripped executable, but
-the information does not seem to be as accurate in this case.
-
-Inspired by SymbolSort for Windows:
-  https://github.com/adrianstone55/SymbolSort
-"""
+"""An interactive console for looking analyzing .size files."""
 
 import argparse
 import atexit
@@ -24,10 +15,9 @@ import readline
 import subprocess
 import sys
 
+import archive
 import describe
 import file_format
-import helpers
-import map2size
 import match_util
 import models
 import paths
@@ -120,8 +110,7 @@ class _Session(object):
     output_dir = self._lazy_paths.output_directory or ''
     path = os.path.normpath(os.path.join(output_dir, filename))
 
-    found_build_id = map2size.BuildIdFromElf(
-        path, self._lazy_paths.tool_prefix)
+    found_build_id = archive.BuildIdFromElf(path, self._lazy_paths.tool_prefix)
     expected_build_id = size_info.metadata.get(models.METADATA_ELF_BUILD_ID)
     assert found_build_id == expected_build_id, (
         'Build ID does not match for %s' % path)
@@ -228,26 +217,30 @@ class _Session(object):
     code.InteractiveConsole(self._variables).interact(self._CreateBanner())
 
 
-def main(argv):
-  parser = argparse.ArgumentParser()
-  parser.add_argument('inputs', nargs='+',
-                      help='Input .size files to load. For a single file, '
-                           'it will be mapped to variables as: size_info & '
-                           'symbols (where symbols = size_info.symbols). For '
-                           'multiple inputs, the names will be size_info1, '
-                           'symbols1, etc.')
-  parser.add_argument('--query',
-                      help='Print the result of the given snippet. Example: '
-                           'symbols.WhereInSection("d").'
-                           'WhereBiggerThan(100)')
-  paths.AddOptions(parser)
-  args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
+def AddArguments(parser):
+  parser.add_argument(
+      'inputs', nargs='+',
+      help='Input .size files to load. For a single file, it will be mapped to '
+           'the variable "size_info". For multiple inputs, the names will be '
+           'size_info1, size_info2, etc.')
+  parser.add_argument(
+      '--query', help='Print the result of the given snippet. Example: '
+                      'size_info.symbols.WhereInSection("d")'
+                      '.WhereBiggerThan(100)')
+  parser.add_argument('--tool-prefix', default='',
+                      help='Path prefix for objdump. Required only for '
+                           'Disassemble().')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory. Used only for '
+                           'Disassemble().')
 
+
+def Run(args, parser):
   for path in args.inputs:
     if not path.endswith('.size'):
       parser.error('All inputs must end with ".size"')
 
-  size_infos = [map2size.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
+  size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
   lazy_paths = paths.LazyPaths(args=args, input_file=args.inputs[0])
   session = _Session(size_infos, lazy_paths)
 
@@ -257,7 +250,3 @@ def main(argv):
   else:
     logging.info('Entering interactive console.')
     session.GoInteractive()
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))

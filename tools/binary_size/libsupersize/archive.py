@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -400,24 +399,27 @@ def _ParseGnArgs(args_path):
   return ["%s=%s" % x for x in sorted(args.iteritems())]
 
 
-def main(argv):
-  parser = argparse.ArgumentParser(argv)
+def AddArguments(parser):
+  parser.add_argument('size_file', help='Path to output .size file.')
   parser.add_argument('--elf-file', required=True,
                       help='Path to input ELF file. Currently used for '
-                           'capturing metadata. Pass "" to skip metadata '
-                           'collection.')
+                           'capturing metadata. Pass "" to skip '
+                           'metadata collection.')
   parser.add_argument('--map-file',
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?')
-  parser.add_argument('--output-file', required=True,
-                      help='Path to output .size file.')
   parser.add_argument('--no-source-paths', action='store_true',
                       help='Do not use .ninja files to map '
                            'object_path -> source_path')
-  paths.AddOptions(parser)
-  args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
-  if not args.output_file.endswith('.size'):
-    parser.error('output_file must end with .size')
+  parser.add_argument('--tool-prefix', default='',
+                      help='Path prefix for c++filt.')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.')
+
+
+def Run(args, parser):
+  if not args.size_file.endswith('.size'):
+    parser.error('size_file must end with .size')
 
   if args.map_file:
     if (not args.map_file.endswith('.map')
@@ -469,10 +471,6 @@ def main(argv):
 
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
-  logging.info('Saving result to %s', args.output_file)
-  file_format.SaveSizeInfo(size_info, args.output_file)
+  logging.info('Saving result to %s', args.size_file)
+  file_format.SaveSizeInfo(size_info, args.size_file)
   logging.info('Done')
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))

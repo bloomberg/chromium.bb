@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,8 +11,8 @@ import os
 import shutil
 import sys
 
+import archive
 import helpers
-import map2size
 
 
 # Node dictionary keys. These are output in json read by the webapp so
@@ -163,8 +162,7 @@ def _CopyTemplateFiles(dest_dir):
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), dest_dir)
 
 
-def main(argv):
-  parser = argparse.ArgumentParser()
+def AddArguments(parser):
   parser.add_argument('input_file',
                       help='Path to input .size file.')
   parser.add_argument('--report-dir', metavar='PATH', required=True,
@@ -175,9 +173,14 @@ def main(argv):
                            'space)')
   parser.add_argument('--include-symbols', action='store_true',
                       help='Use per-symbol granularity rather than per-file.')
-  args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
 
-  size_info = map2size.LoadAndPostProcessSizeInfo(args.input_file)
+
+def Run(args, parser):
+  if not args.input_file.endswith('.size'):
+    parser.error('Input must end with ".size"')
+
+  logging.info('Reading .size file')
+  size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
   symbols = size_info.symbols
   if not args.include_bss:
     symbols = symbols.WhereInSection('b').Inverted()
@@ -191,15 +194,11 @@ def main(argv):
   logging.info('Creating JSON objects')
   tree_root = _MakeCompactTree(symbols, args.include_symbols)
 
-  logging.info('Serializing')
+  logging.info('Serializing JSON')
   with open(os.path.join(args.report_dir, 'data.js'), 'w') as out_file:
     out_file.write('var tree_data=')
     # Use separators without whitespace to get a smaller file.
     json.dump(tree_root, out_file, ensure_ascii=False, check_circular=False,
               separators=(',', ':'))
 
-  print 'Report saved to ' + args.report_dir + '/index.html'
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  logging.warning('Report saved to %s/index.html', args.report_dir)

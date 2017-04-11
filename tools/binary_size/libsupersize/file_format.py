@@ -10,10 +10,11 @@ import collections
 import datetime
 import gzip
 import json
-import models
 import logging
 import os
 import shutil
+
+import models
 
 
 # File format version for .size files.
