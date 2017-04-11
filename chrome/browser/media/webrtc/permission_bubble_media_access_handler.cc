@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/media/webrtc/media_permission.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -82,11 +83,13 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
           ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
 
-  MediaPermission permission(content_settings_type, security_origin,
-                             web_contents->GetLastCommittedURL().GetOrigin(),
-                             profile, web_contents);
-  content::MediaStreamRequestResult unused;
-  return permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW;
+  DCHECK(!security_origin.is_empty());
+  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+  PermissionManager* permission_manager = PermissionManager::Get(profile);
+  return permission_manager
+             ->GetPermissionStatus(content_settings_type, security_origin,
+                                   embedding_origin)
+             .content_setting == CONTENT_SETTING_ALLOW;
 }
 
 void PermissionBubbleMediaAccessHandler::HandleRequest(

@@ -15,9 +15,10 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_permission.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -718,6 +719,7 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     content::MediaStreamRequestResult* denial_reason) const {
   DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
          content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  DCHECK(!request_.security_origin.is_empty());
   DCHECK(content::IsOriginSecure(request_.security_origin) ||
          request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
   if (!was_requested) {
@@ -735,10 +737,17 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_BLOCK;
   }
 
-  MediaPermission permission(content_type, request.security_origin,
-                             web_contents_->GetLastCommittedURL().GetOrigin(),
-                             profile_, web_contents_);
-  return permission.GetPermissionStatus(denial_reason);
+  PermissionResult result =
+      PermissionManager::Get(profile_)->GetPermissionStatus(
+          content_type, request.security_origin,
+          web_contents_->GetLastCommittedURL().GetOrigin());
+  if (result.content_setting == CONTENT_SETTING_BLOCK) {
+    *denial_reason = (result.source == PermissionStatusSource::KILL_SWITCH)
+                         ? content::MEDIA_DEVICE_KILL_SWITCH_ON
+                         : content::MEDIA_DEVICE_PERMISSION_DENIED;
+  }
+
+  return result.content_setting;
 }
 
 ContentSetting MediaStreamDevicesController::GetNewSetting(
