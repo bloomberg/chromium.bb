@@ -42,6 +42,10 @@ Polymer({
     this.updateFromStore();
   },
 
+  getDropTarget: function() {
+    return this.$.message;
+  },
+
   /**
    * @param {Event} e
    * @private

@@ -20,6 +20,14 @@ cr.define('bookmarks', function() {
   }
 
   /**
+   * @param {BookmarkElement} element
+   * @return {boolean}
+   */
+  function isBookmarkList(element) {
+    return element.tagName == 'BOOKMARKS-LIST';
+  }
+
+  /**
    * @param {Array<!Element>|undefined} path
    * @return {BookmarkElement}
    */
@@ -28,7 +36,8 @@ cr.define('bookmarks', function() {
       return null;
 
     for (var i = 0; i < path.length; i++) {
-      if (isBookmarkItem(path[i]) || isBookmarkFolderNode(path[i]))
+      if (isBookmarkItem(path[i]) || isBookmarkFolderNode(path[i]) ||
+          isBookmarkList(path[i]))
         return path[i];
     }
     return null;
@@ -342,6 +351,13 @@ cr.define('bookmarks', function() {
      * @return {{parentId: string, index: number}}
      */
     calculateDropInfo_: function(dropDestination) {
+      if (isBookmarkList(dropDestination.element)) {
+        return {
+          index: 0,
+          parentId: bookmarks.Store.getInstance().data.selectedFolder,
+        };
+      }
+
       var node = getBookmarkNode(dropDestination.element);
       var position = dropDestination.position;
       var index = -1;
@@ -502,18 +518,21 @@ cr.define('bookmarks', function() {
     calculateValidDropPositions_: function(overElement) {
       var dragInfo = this.dragInfo_;
       var state = bookmarks.Store.getInstance().data;
+      var itemId = overElement.itemId;
 
       // Drags aren't allowed onto the search result list.
-      if (isBookmarkItem(overElement) &&
+      if ((isBookmarkList(overElement) || isBookmarkItem(overElement)) &&
           bookmarks.util.isShowingSearch(state)) {
         return DropPosition.NONE;
       }
 
+      if (isBookmarkList(overElement))
+        itemId = state.selectedFolder;
+
       // Drags of a bookmark onto itself or of a folder into its children aren't
       // allowed.
-      if (dragInfo.isDraggingBookmark(overElement.itemId) ||
-          dragInfo.isDraggingFolderToDescendant(
-              overElement.itemId, state.nodes)) {
+      if (dragInfo.isDraggingBookmark(itemId) ||
+          dragInfo.isDraggingFolderToDescendant(itemId, state.nodes)) {
         return DropPosition.NONE;
       }
 
@@ -532,6 +551,9 @@ cr.define('bookmarks', function() {
     calculateDropAboveBelow_: function(overElement) {
       var dragInfo = this.dragInfo_;
       var state = bookmarks.Store.getInstance().data;
+
+      if (isBookmarkList(overElement))
+        return DropPosition.NONE;
 
       // We cannot drop between Bookmarks bar and Other bookmarks.
       if (getBookmarkNode(overElement).parentId == ROOT_NODE_ID)
@@ -579,6 +601,13 @@ cr.define('bookmarks', function() {
      *     target.
      */
     canDropOn_: function(overElement) {
+      // Allow dragging onto empty bookmark lists.
+      if (isBookmarkList(overElement)) {
+        var state = bookmarks.Store.getInstance().data;
+        return state.selectedFolder &&
+            state.nodes[state.selectedFolder].children.length == 0;
+      }
+
       // We can only drop on a folder.
       if (getBookmarkNode(overElement).url)
         return false;

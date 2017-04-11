@@ -338,6 +338,12 @@ suite('drag and drop', function() {
     assertEquals(
         DropPosition.ON | DropPosition.ABOVE | DropPosition.BELOW,
         dndManager.calculateValidDropPositions_(getFolderNode('112')));
+
+    // Drags onto an empty search list do nothing.
+    store.data.search.results = [];
+    store.notifyObservers();
+    assertEquals(
+        DropPosition.NONE, dndManager.calculateValidDropPositions_(list));
   });
 
   test('calculateDropInfo_', function() {
@@ -442,5 +448,36 @@ suite('drag and drop', function() {
         bookmarks.actions.changeFolderOpen('11', true), store.lastAction);
     assertEquals(0, autoExpander.lastTimestamp_);
     assertEquals(null, autoExpander.lastElement_);
+  });
+
+  test('drag onto empty list', function() {
+    store.data.selectedFolder = '14';
+    store.notifyObservers();
+
+    var dragElement = getFolderNode('15');
+    var dragTarget = list;
+
+    // Dragging onto an empty list.
+    dispatchDragEvent('dragstart', dragElement);
+    dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
+
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(
+        DropPosition.ON, dndManager.calculateValidDropPositions_(dragTarget));
+    assertDragStyle(dragTarget, DRAG_STYLE.ON);
+
+    dispatchDragEvent('dragend', dragTarget);
+
+    // Dragging onto a non-empty list.
+    store.data.selectedFolder = '11';
+    store.notifyObservers();
+
+    dispatchDragEvent('dragstart', dragElement);
+    dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
+
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(
+        DropPosition.NONE, dndManager.calculateValidDropPositions_(dragTarget));
+    assertDragStyle(dragTarget, DRAG_STYLE.NONE);
   });
 });
