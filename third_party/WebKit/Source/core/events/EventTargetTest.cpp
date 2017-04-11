@@ -22,7 +22,7 @@ class EventTargetTest : public RenderingTest {
 TEST_F(EventTargetTest, PreventDefaultNotCalled) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   HistogramTester histogram_tester;
-  GetDocument().GetFrame()->Script().ExecuteScriptInMainWorld(
+  GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function(e) {}, {});"
       "window.dispatchEvent(new TouchEvent('touchstart', {cancelable: "
       "false}));");
@@ -36,7 +36,7 @@ TEST_F(EventTargetTest, PreventDefaultNotCalled) {
 TEST_F(EventTargetTest, PreventDefaultCalled) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   HistogramTester histogram_tester;
-  GetDocument().GetFrame()->Script().ExecuteScriptInMainWorld(
+  GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function(e) "
       "{e.preventDefault();}, {});"
       "window.dispatchEvent(new TouchEvent('touchstart', {cancelable: "

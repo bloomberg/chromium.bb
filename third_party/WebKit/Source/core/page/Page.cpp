@@ -546,7 +546,8 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
                 .StateMachine()
                 ->CommittedFirstRealDocumentLoad()) {
           // Forcibly instantiate WindowProxy.
-          local_frame->Script().WindowProxy(DOMWrapperWorld::MainWorld());
+          local_frame->GetScriptController().WindowProxy(
+              DOMWrapperWorld::MainWorld());
         }
       }
     } break;

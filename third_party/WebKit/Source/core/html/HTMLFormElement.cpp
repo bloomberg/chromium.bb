@@ -443,8 +443,10 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   }
 
   if (submission->Action().ProtocolIsJavaScript()) {
-    GetDocument().GetFrame()->Script().ExecuteScriptIfJavaScriptURL(
-        submission->Action(), this);
+    GetDocument()
+        .GetFrame()
+        ->GetScriptController()
+        .ExecuteScriptIfJavaScriptURL(submission->Action(), this);
     return;
   }
 

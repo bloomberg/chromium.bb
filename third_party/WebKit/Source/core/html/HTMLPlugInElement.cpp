@@ -378,8 +378,10 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::PluginWrapper() {
     else
       plugin = PluginWidget();
 
-    if (plugin)
-      plugin_wrapper_ = frame->Script().CreatePluginWrapper(*plugin);
+    if (plugin) {
+      plugin_wrapper_ =
+          frame->GetScriptController().CreatePluginWrapper(*plugin);
+    }
   }
   return plugin_wrapper_.Get();
 }

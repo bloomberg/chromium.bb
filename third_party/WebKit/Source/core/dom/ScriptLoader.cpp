@@ -662,7 +662,7 @@ bool ScriptLoader::DoExecuteScript(const ScriptSourceCode& source_code) {
   const ContentSecurityPolicy* csp =
       element_document->GetContentSecurityPolicy();
   bool should_bypass_main_world_csp =
-      (frame->Script().ShouldBypassMainWorldCSP()) ||
+      (frame->GetScriptController().ShouldBypassMainWorldCSP()) ||
       csp->AllowScriptWithHash(source_code.Source(),
                                ContentSecurityPolicy::InlineType::kBlock);
 
@@ -745,7 +745,8 @@ bool ScriptLoader::DoExecuteScript(const ScriptSourceCode& source_code) {
 
   //    2. "Run the classic script given by the script's script."
   // Note: This is where the script is compiled and actually executed.
-  frame->Script().ExecuteScriptInMainWorld(source_code, access_control_status);
+  frame->GetScriptController().ExecuteScriptInMainWorld(source_code,
+                                                        access_control_status);
 
   //    - "module":
   // TODO(hiroshige): Implement this.

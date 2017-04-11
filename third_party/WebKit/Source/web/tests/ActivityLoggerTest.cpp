@@ -76,8 +76,10 @@ class ActivityLoggerTest : public testing::Test {
     V8DOMActivityLogger::SetActivityLogger(kIsolatedWorldId, String(),
                                            WTF::WrapUnique(activity_logger_));
     web_view_helper_.Initialize(true);
-    script_controller_ =
-        &web_view_helper_.WebView()->MainFrameImpl()->GetFrame()->Script();
+    script_controller_ = &web_view_helper_.WebView()
+                              ->MainFrameImpl()
+                              ->GetFrame()
+                              ->GetScriptController();
     FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),
                                 "about:blank");
   }

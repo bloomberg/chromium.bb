@@ -62,7 +62,7 @@ V8LazyEventListener* CreateAttributeEventListener(
 
   v8::Isolate* isolate = ToIsolate(&node->GetDocument());
   if (LocalFrame* frame = node->GetDocument().GetFrame()) {
-    ScriptController& script_controller = frame->Script();
+    ScriptController& script_controller = frame->GetScriptController();
     if (!node->GetDocument().CanExecuteScripts(kAboutToExecuteScript))
       return nullptr;
     position = script_controller.EventHandlerPosition();
@@ -88,7 +88,7 @@ V8LazyEventListener* CreateAttributeEventListener(
   if (!frame->GetDocument()->CanExecuteScripts(kAboutToExecuteScript))
     return nullptr;
 
-  TextPosition position = frame->Script().EventHandlerPosition();
+  TextPosition position = frame->GetScriptController().EventHandlerPosition();
   String source_url = frame->GetDocument()->Url().GetString();
 
   return V8LazyEventListener::Create(name.LocalName(), event_parameter_name,

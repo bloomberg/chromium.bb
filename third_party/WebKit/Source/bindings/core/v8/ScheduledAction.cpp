@@ -157,8 +157,8 @@ void ScheduledAction::Execute(LocalFrame* frame) {
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this
              << ": executing from source";
-    frame->Script().ExecuteScriptAndReturnValue(script_state_->GetContext(),
-                                                ScriptSourceCode(code_));
+    frame->GetScriptController().ExecuteScriptAndReturnValue(
+        script_state_->GetContext(), ScriptSourceCode(code_));
   }
 
   // The frame might be invalid at this point because JavaScript could have

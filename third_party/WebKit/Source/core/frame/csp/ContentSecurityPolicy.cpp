@@ -1481,8 +1481,11 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
     const ExecutionContext* context) {
   if (context && context->IsDocument()) {
     const Document* document = ToDocument(context);
-    if (document->GetFrame())
-      return document->GetFrame()->Script().ShouldBypassMainWorldCSP();
+    if (document->GetFrame()) {
+      return document->GetFrame()
+          ->GetScriptController()
+          .ShouldBypassMainWorldCSP();
+    }
   }
   return false;
 }

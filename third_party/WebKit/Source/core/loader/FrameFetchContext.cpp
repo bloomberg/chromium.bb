@@ -767,7 +767,7 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
   // FIXME: Convert this to check the isolated world's Content Security Policy
   // once webkit.org/b/104520 is solved.
   bool should_bypass_main_world_csp =
-      GetFrame()->Script().ShouldBypassMainWorldCSP() ||
+      GetFrame()->GetScriptController().ShouldBypassMainWorldCSP() ||
       options.content_security_policy_option ==
           kDoNotCheckContentSecurityPolicy;
 

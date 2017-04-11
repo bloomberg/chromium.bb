@@ -3485,7 +3485,7 @@ void Document::DisableEval(const String& error_message) {
   if (!GetFrame())
     return;
 
-  GetFrame()->Script().DisableEval(error_message);
+  GetFrame()->GetScriptController().DisableEval(error_message);
 }
 
 void Document::DidLoadAllImports() {
@@ -4759,7 +4759,7 @@ void Document::setDomain(const String& raw_domain,
     if (View() && (was_cross_domain != frame_->IsCrossOriginSubframe()))
       View()->CrossOriginStatusChanged();
 
-    frame_->Script().UpdateSecurityOrigin(GetSecurityOrigin());
+    frame_->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
   }
 }
 
@@ -5744,7 +5744,7 @@ String Document::suborigin() const {
 void Document::DidUpdateSecurityOrigin() {
   if (!frame_)
     return;
-  frame_->Script().UpdateSecurityOrigin(GetSecurityOrigin());
+  frame_->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
 }
 
 bool Document::IsContextThread() const {

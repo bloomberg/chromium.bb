@@ -363,7 +363,7 @@ DEFINE_TRACE(LocalFrame) {
   visitor->Trace(view_);
   visitor->Trace(dom_window_);
   visitor->Trace(page_popup_owner_);
-  visitor->Trace(script_);
+  visitor->Trace(script_controller_);
   visitor->Trace(editor_);
   visitor->Trace(spell_checker_);
   visitor->Trace(selection_);
@@ -443,7 +443,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   Client()->WillBeDetached();
   // Notify ScriptController that the frame is closing, since its cleanup ends
   // up calling back to LocalFrameClient via WindowProxy.
-  Script().ClearForClose();
+  GetScriptController().ClearForClose();
   SetView(nullptr);
 
   page_->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
@@ -537,7 +537,7 @@ LocalDOMWindow* LocalFrame::DomWindow() const {
 
 void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
   if (dom_window)
-    Script().ClearWindowProxy();
+    GetScriptController().ClearWindowProxy();
 
   if (this->DomWindow())
     this->DomWindow()->Reset();
@@ -882,7 +882,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
           client->GetFrameBlameContext())),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
-      script_(ScriptController::Create(
+      script_controller_(ScriptController::Create(
           *this,
           *static_cast<LocalWindowProxyManager*>(GetWindowProxyManager()))),
       editor_(Editor::Create(*this)),

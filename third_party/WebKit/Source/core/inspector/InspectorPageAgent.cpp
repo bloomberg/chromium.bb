@@ -648,11 +648,13 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
       auto script = scripts->at(i);
       String script_text;
       if (script.second->asString(&script_text))
-        frame->Script().ExecuteScriptInMainWorld(script_text);
+        frame->GetScriptController().ExecuteScriptInMainWorld(script_text);
     }
   }
-  if (!script_to_evaluate_on_load_once_.IsEmpty())
-    frame->Script().ExecuteScriptInMainWorld(script_to_evaluate_on_load_once_);
+  if (!script_to_evaluate_on_load_once_.IsEmpty()) {
+    frame->GetScriptController().ExecuteScriptInMainWorld(
+        script_to_evaluate_on_load_once_);
+  }
 }
 
 void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {

@@ -329,7 +329,7 @@ void FrameLoader::Clear() {
   if (frame_->View())
     frame_->View()->Clear();
 
-  frame_->Script().EnableEval();
+  frame_->GetScriptController().EnableEval();
 
   frame_->GetNavigationScheduler().Cancel();
 
@@ -740,7 +740,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     return true;
 
   KURL url = request.GetResourceRequest().Url();
-  if (frame_->Script().ExecuteScriptIfJavaScriptURL(url, nullptr))
+  if (frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr))
     return false;
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
@@ -1601,7 +1601,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
   Settings* settings = frame_->GetSettings();
   if (settings && settings->GetForceMainWorldInitialization()) {
     // Forcibly instantiate WindowProxy.
-    frame_->Script().WindowProxy(DOMWrapperWorld::MainWorld());
+    frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
   probe::didClearDocumentOfWindowObject(frame_);
 

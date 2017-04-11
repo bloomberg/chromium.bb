@@ -117,7 +117,7 @@ void HTMLFrameElementBase::OpenURL(bool replace_current_item) {
   if (ContentFrame()->Owner()->GetSandboxFlags() & kSandboxOrigin)
     return;
   ToLocalFrame(ContentFrame())
-      ->Script()
+      ->GetScriptController()
       .ExecuteScriptIfJavaScriptURL(script_url, this);
 }
 

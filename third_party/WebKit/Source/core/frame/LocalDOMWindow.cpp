@@ -356,7 +356,7 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   if (!GetFrame())
     return document_;
 
-  GetFrame()->Script().UpdateDocument();
+  GetFrame()->GetScriptController().UpdateDocument();
   document_->UpdateViewportDescription();
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {

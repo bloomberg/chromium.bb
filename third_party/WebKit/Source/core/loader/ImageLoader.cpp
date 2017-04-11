@@ -81,7 +81,7 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
       loader->GetElement()
           ->GetDocument()
           .GetFrame()
-          ->Script()
+          ->GetScriptController()
           .ShouldBypassMainWorldCSP())
     return ImageLoader::kBypassMainWorldCSP;
   return ImageLoader::kDoNotBypassMainWorldCSP;

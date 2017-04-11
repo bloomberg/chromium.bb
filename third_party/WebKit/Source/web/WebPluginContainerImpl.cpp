@@ -486,7 +486,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
                      : nullptr);
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =
-      frame->Script().ExecuteScriptInMainWorldAndReturnValue(
+      frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
           ScriptSourceCode(script));
 
   // Failure is reported as a null string.

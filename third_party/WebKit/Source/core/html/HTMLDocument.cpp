@@ -154,7 +154,7 @@ void HTMLDocument::AddItemToMap(HashCountedSet<AtomicString>& map,
     return;
   map.insert(name);
   if (LocalFrame* f = GetFrame()) {
-    f->Script()
+    f->GetScriptController()
         .WindowProxy(DOMWrapperWorld::MainWorld())
         ->NamedItemAdded(this, name);
   }
@@ -166,7 +166,7 @@ void HTMLDocument::RemoveItemFromMap(HashCountedSet<AtomicString>& map,
     return;
   map.erase(name);
   if (LocalFrame* f = GetFrame()) {
-    f->Script()
+    f->GetScriptController()
         .WindowProxy(DOMWrapperWorld::MainWorld())
         ->NamedItemRemoved(this, name);
   }

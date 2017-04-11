@@ -675,7 +675,7 @@ void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   TextPosition position(OrdinalNumber::FromOneBasedInt(source.start_line),
                         OrdinalNumber::First());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->Script().ExecuteScriptInMainWorld(
+  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       ScriptSourceCode(source.code, source.url, position));
 }
 
@@ -690,7 +690,8 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   HeapVector<ScriptSourceCode> sources =
       CreateSourcesVector(sources_in, num_sources);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->Script().ExecuteScriptInIsolatedWorld(world_id, sources, 0);
+  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
+                                                                 sources, 0);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
@@ -755,8 +756,10 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
 
   TextPosition position(OrdinalNumber::FromOneBasedInt(source.start_line),
                         OrdinalNumber::First());
-  return GetFrame()->Script().ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode(source.code, source.url, position));
+  return GetFrame()
+      ->GetScriptController()
+      .ExecuteScriptInMainWorldAndReturnValue(
+          ScriptSourceCode(source.code, source.url, position));
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
@@ -799,8 +802,8 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
 
   if (results) {
     Vector<v8::Local<v8::Value>> script_results;
-    GetFrame()->Script().ExecuteScriptInIsolatedWorld(world_id, sources,
-                                                      &script_results);
+    GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
+        world_id, sources, &script_results);
     WebVector<v8::Local<v8::Value>> v8_results(script_results.size());
     for (unsigned i = 0; i < script_results.size(); i++)
       v8_results[i] =
@@ -808,7 +811,8 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
     results->Swap(v8_results);
   } else {
     v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-    GetFrame()->Script().ExecuteScriptInIsolatedWorld(world_id, sources, 0);
+    GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
+                                                                   sources, 0);
   }
 }
 
@@ -1940,7 +1944,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
       GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
-      GetFrame()->Script().ExecuteScriptInMainWorldAndReturnValue(
+      GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
           ScriptSourceCode(script));
   if (result.IsEmpty() || !result->IsString())
     return;

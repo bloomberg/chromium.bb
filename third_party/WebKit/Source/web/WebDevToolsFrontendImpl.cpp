@@ -97,7 +97,7 @@ void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameImpl* frame) {
   script_with_id.Append('(');
   script_with_id.AppendNumber(++last_script_id);
   script_with_id.Append(')');
-  frame->GetFrame()->Script().ExecuteScriptInMainWorld(
+  frame->GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       script_with_id.ToString());
 }
 

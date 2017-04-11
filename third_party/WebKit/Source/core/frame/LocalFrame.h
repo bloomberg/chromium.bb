@@ -146,7 +146,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   NavigationScheduler& GetNavigationScheduler() const;
   FrameSelection& Selection() const;
   InputMethodController& GetInputMethodController() const;
-  ScriptController& Script() const;
+  ScriptController& GetScriptController() const;
   SpellChecker& GetSpellChecker() const;
   FrameConsole& Console() const;
 
@@ -263,7 +263,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Usually 0. Non-null if this is the top frame of PagePopup.
   Member<Element> page_popup_owner_;
 
-  const Member<ScriptController> script_;
+  const Member<ScriptController> script_controller_;
   const Member<Editor> editor_;
   const Member<SpellChecker> spell_checker_;
   const Member<FrameSelection> selection_;
@@ -298,8 +298,8 @@ inline FrameView* LocalFrame::View() const {
   return view_.Get();
 }
 
-inline ScriptController& LocalFrame::Script() const {
-  return *script_;
+inline ScriptController& LocalFrame::GetScriptController() const {
+  return *script_controller_;
 }
 
 inline FrameSelection& LocalFrame::Selection() const {

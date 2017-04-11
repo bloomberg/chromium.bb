@@ -53,7 +53,7 @@ class DOMTimerTest : public RenderingTest {
   v8::Local<v8::Value> EvalExpression(const char* expr) {
     return GetDocument()
         .GetFrame()
-        ->Script()
+        ->GetScriptController()
         .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(expr));
   }
 
@@ -71,7 +71,8 @@ class DOMTimerTest : public RenderingTest {
 
   void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
     ScriptSourceCode script(script_text);
-    GetDocument().GetFrame()->Script().ExecuteScriptInMainWorld(script);
+    GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+        script);
     platform_->RunUntilIdle();
   }
 };

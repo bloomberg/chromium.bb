@@ -624,7 +624,7 @@ void InspectorOverlay::EvaluateInOverlay(const String& method,
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(protocol::StringValue::create(argument));
   ToLocalFrame(OverlayPage()->MainFrame())
-      ->Script()
+      ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->serialize() + ")",
           ScriptController::kExecuteScriptWhenScriptsDisabled);
@@ -638,7 +638,7 @@ void InspectorOverlay::EvaluateInOverlay(
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(std::move(argument));
   ToLocalFrame(OverlayPage()->MainFrame())
-      ->Script()
+      ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->serialize() + ")",
           ScriptController::kExecuteScriptWhenScriptsDisabled);
@@ -649,7 +649,7 @@ String InspectorOverlay::EvaluateInOverlayForTest(const String& script) {
   v8::HandleScope handle_scope(ToIsolate(OverlayMainFrame()));
   v8::Local<v8::Value> string =
       ToLocalFrame(OverlayPage()->MainFrame())
-          ->Script()
+          ->GetScriptController()
           .ExecuteScriptInMainWorldAndReturnValue(
               ScriptSourceCode(script),
               ScriptController::kExecuteScriptWhenScriptsDisabled);
