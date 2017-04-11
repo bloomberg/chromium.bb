@@ -163,10 +163,6 @@ crbug.com/451577 virtual/mojo-loading/http/tests/inspector/network/network-datar
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 
-# https://crbug.com/680201: referrer-policy-attribute-import-no-referrer.html fails w/ --site-per-process
-crbug.com/680201 http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
-crbug.com/680201 virtual/mojo-loading/http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
-
 # https://crbug.com/680307: blob-url-in-iframe.html is missing PASS w/ --site-per-process
 crbug.com/680307 http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
 crbug.com/680307 virtual/mojo-loading/http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
