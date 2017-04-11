@@ -718,7 +718,8 @@ static INLINE int allow_txk_type(MACROBLOCKD *xd, TX_SIZE tx_size, int plane) {
 int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                             int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                            int coeff_ctx, RD_STATS *rd_stats) {
+                            const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
+                            int use_fast_coef_costing, RD_STATS *rd_stats) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -727,6 +728,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
   int best_eob = tx_size_2d[tx_size];
+  const int coeff_ctx = combine_entropy_contexts(*a, *l);
   if (!allow_txk_type(xd, tx_size, plane)) txk_end = DCT_DCT;
   TX_TYPE tx_type;
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
@@ -739,6 +741,10 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse, 0);
+    const SCAN_ORDER *scan_order =
+        get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+    this_rd_stats.rate = av1_cost_coeffs(
+        cm, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
     int rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
     if (rd < best_rd) {
       best_rd = rd;

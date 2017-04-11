@@ -1544,12 +1544,12 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const AV1_COMP *cpi = args->cpi;
-#if !CONFIG_LV_MAP || !CONFIG_PVQ
+  ENTROPY_CONTEXT *a = args->t_above + blk_col;
+  ENTROPY_CONTEXT *l = args->t_left + blk_row;
+#if !CONFIG_LV_MAP
   const AV1_COMMON *cm = &cpi->common;
 #endif
   int64_t rd1, rd2, rd;
-  int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
-                                           *(args->t_left + blk_row));
   RD_STATS this_rd_stats;
 
   assert(tx_size == get_tx_size(plane, xd));
@@ -1565,6 +1565,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_LV_MAP
   // full forward transform and quantization
+  int coeff_ctx = combine_entropy_contexts(*a, *l);
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
   if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
@@ -1582,32 +1583,33 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                    tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
   }
-#else   // !CONFIG_LV_MAP
-  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, coeff_ctx, &this_rd_stats);
-#endif  // !CONFIG_LV_MAP
-
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
   if (args->this_rd + rd > args->best_rd) {
     args->exit_early = 1;
     return;
   }
 #if !CONFIG_PVQ
-  ENTROPY_CONTEXT *a = args->t_above + blk_col;
-  ENTROPY_CONTEXT *l = args->t_left + blk_row;
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
   this_rd_stats.rate = av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order,
                                        a, l, args->use_fast_coef_costing);
+#else   // !CONFIG_PVQ
+  this_rd_stats.rate = x->rate;
+#endif  // !CONFIG_PVQ
+#else   // !CONFIG_LV_MAP
+  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, a, l, args->use_fast_coef_costing,
+                      &this_rd_stats);
+#endif  // !CONFIG_LV_MAP
+
+#if !CONFIG_PVQ
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
-#else   // !CONFIG_PVQ
-  this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
 
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
