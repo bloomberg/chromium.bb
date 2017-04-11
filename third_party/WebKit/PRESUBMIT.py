@@ -294,43 +294,19 @@ def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
     return False
 
 
-def _AreLayoutNGDirectoriesModified(change):  # pylint: disable=C0103
-    """Checks whether CL has changes to a layout ng directory."""
-    layout_ng_paths = [
-        os.path.join('third_party', 'WebKit', 'Source', 'core', 'layout',
-                     'ng'),
-    ]
-    for affected_file in change.AffectedFiles():
-        file_path = affected_file.LocalPath()
-        if any(x in file_path for x in layout_ng_paths):
-            return True
-    return False
-
-
 def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
     """git cl upload will call this hook after the issue is created/modified.
 
     This hook adds extra try bots to the CL description in order to run slimming
-    paint v2 tests or LayoutNG tests in addition to the CQ try bots if the
-    change contains changes in a relevant direcotry (see:
-    _ArePaintOrCompositingDirectoriesModified and
-    _AreLayoutNGDirectoriesModified). For more information about
-    slimming-paint-v2 tests see https://crbug.com/601275 and for information
-    about the LayoutNG tests see https://crbug.com/706183.
+    paint v2 tests in addition to the CQ try bots if the change contains paint
+    or compositing changes (see: _ArePaintOrCompositingDirectoriesModified). For
+    more information about slimming-paint-v2 tests see https://crbug.com/601275.
     """
-    results = []
-    if _ArePaintOrCompositingDirectoriesModified(change):
-        results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
-            cl,
-            ['master.tryserver.chromium.linux:'
-             'linux_layout_tests_slimming_paint_v2'],
-            'Automatically added slimming-paint-v2 tests to run on CQ due to '
-            'changes in paint or compositing directories.'))
-    if _AreLayoutNGDirectoriesModified(change):
-        results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
-            cl,
-            ['master.tryserver.chromium.linux:'
-             'linux_layout_tests_layout_ng'],
-            'Automatically added linux_layout_tests_layout_ng to run on CQ due '
-            'to changes in LayoutNG directories.'))
-    return results
+    if not _ArePaintOrCompositingDirectoriesModified(change):
+        return []
+    return output_api.EnsureCQIncludeTrybotsAreAdded(
+        cl,
+        ['master.tryserver.chromium.linux:'
+         'linux_layout_tests_slimming_paint_v2'],
+        'Automatically added slimming-paint-v2 tests to run on CQ due to '
+        'changes in paint or compositing directories.')
