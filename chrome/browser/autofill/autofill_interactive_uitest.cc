@@ -1776,7 +1776,14 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
+#if defined(OS_WIN)
+// Flaky on Windows 7 in debug build. http://crbug.com/710436
+#define MAYBE_SimpleCrossSiteFill DISABLED_SimpleCrossSiteFill
+#else
+#define MAYBE_SimpleCrossSiteFill SimpleCrossSiteFill
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
+                       MAYBE_SimpleCrossSiteFill) {
   // Ensure that |embedded_test_server()| serves both domains used below.
   host_resolver()->AddRule("*", "127.0.0.1");
 
