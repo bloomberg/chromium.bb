@@ -127,12 +127,6 @@ class TestCopier(object):
                         continue
                 # FIXME: This block should really be a separate function, but the early-continues make that difficult.
 
-                # TODO(qyearsley): Remove the below block.
-                if filename != '.gitignore' and (filename.startswith('.') or filename.endswith('.pl')):
-                    _log.debug('Skipping: %s', path_full)
-                    _log.debug('  Reason: Hidden files and perl scripts are not necessary.')
-                    continue
-
                 if filename == 'OWNERS' or filename == 'reftest.list':
                     # See http://crbug.com/584660 and http://crbug.com/582838.
                     _log.debug('Skipping: %s', path_full)
