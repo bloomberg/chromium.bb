@@ -106,6 +106,8 @@ static void AddToSerializedList(const GURL& motivation,
 
     // ...and make it part of the serialized referral_list.
     referral_list->Append(base::WrapUnique(motivation_list));
+    // |motivation_list| is invalidated at this point, so it needs to be reset.
+    referral_list->GetList(referral_list->GetSize() - 1, &motivation_list);
   }
 
   base::ListValue* subresource_list(NULL);

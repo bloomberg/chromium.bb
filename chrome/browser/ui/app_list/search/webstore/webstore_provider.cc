@@ -139,7 +139,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
        it != result_list->end();
        ++it) {
     const base::DictionaryValue* dict;
-    if (!(*it)->GetAsDictionary(&dict))
+    if (!it->GetAsDictionary(&dict))
       continue;
 
     std::unique_ptr<SearchResult> result(CreateResult(query, *dict));

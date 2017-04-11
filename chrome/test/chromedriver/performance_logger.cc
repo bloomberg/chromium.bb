@@ -190,8 +190,8 @@ Status PerformanceLogger::HandleTraceEvents(
                     "received DevTools trace data in unexpected format");
     }
     for (const auto& trace : *traces) {
-      base::DictionaryValue* event_dict;
-      if (!trace->GetAsDictionary(&event_dict))
+      const base::DictionaryValue* event_dict;
+      if (!trace.GetAsDictionary(&event_dict))
         return Status(kUnknownError, "trace event must be a dictionary");
       AddLogEntry(client->GetId(), "Tracing.dataCollected", *event_dict);
     }

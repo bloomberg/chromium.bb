@@ -63,7 +63,7 @@ int WriteLockFile(const std::string& path, base::ListValue* contents) {
   std::string lockfile;
 
   for (const auto& elem : *contents) {
-    std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
+    std::unique_ptr<std::string> dump_info = SerializeToJson(elem);
     RCHECK(dump_info, -1, "Failed to serialize DumpInfo");
     lockfile += *dump_info;
     lockfile += "\n";  // Add line seperatators
@@ -95,7 +95,7 @@ bool FetchDumps(const std::string& lockfile_path,
   dumps->clear();
 
   for (const auto& elem : *dump_list) {
-    std::unique_ptr<DumpInfo> dump(new DumpInfo(elem.get()));
+    std::unique_ptr<DumpInfo> dump(new DumpInfo(&elem));
     RCHECK(dump->valid(), false, "Invalid DumpInfo");
     dumps->push_back(std::move(dump));
   }

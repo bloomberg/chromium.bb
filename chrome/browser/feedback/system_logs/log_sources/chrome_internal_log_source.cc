@@ -173,7 +173,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   for (base::ListValue::iterator it = details->begin();
       it != details->end(); ++it) {
     base::DictionaryValue* dict = NULL;
-    if ((*it)->GetAsDictionary(&dict)) {
+    if (it->GetAsDictionary(&dict)) {
       std::string title;
       dict->GetString("title", &title);
       if (title == syncer::sync_ui_util::kIdentityTitle) {

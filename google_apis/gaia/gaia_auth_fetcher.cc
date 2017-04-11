@@ -499,7 +499,7 @@ bool GaiaAuthFetcher::ParseListIdpSessionsResponse(const std::string& data,
        iter != sessionsList->end();
        iter++) {
     base::DictionaryValue* sessionDictionary;
-    if (!(*iter)->GetAsDictionary(&sessionDictionary))
+    if (!iter->GetAsDictionary(&sessionDictionary))
       continue;
 
     if (sessionDictionary->GetString("login_hint", login_hint))

@@ -269,7 +269,7 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver* observer) {
 
   // TODO(tommi): Consider removing all the peer_connection_data_.
   for (auto& dictionary : peer_connection_data_)
-    FreeLogList(dictionary.get());
+    FreeLogList(&dictionary);
 }
 
 void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
@@ -278,7 +278,7 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
     observer->OnUpdate("updateAllPeerConnections", &peer_connection_data_);
 
   for (const auto& request : get_user_media_requests_) {
-    observer->OnUpdate("addGetUserMedia", request.get());
+    observer->OnUpdate("addGetUserMedia", &request);
   }
 }
 

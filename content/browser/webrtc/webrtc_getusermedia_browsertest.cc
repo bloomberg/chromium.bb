@@ -250,7 +250,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;
-      ASSERT_TRUE((*it)->GetAsDictionary(&dict));
+      ASSERT_TRUE(it->GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("kind", &kind));
       ASSERT_TRUE(dict->GetString("id", &device_id));
       ASSERT_FALSE(device_id.empty());
@@ -940,7 +940,7 @@ class WebRtcGetUserMediaOldConstraintsBrowserTest
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;
-      ASSERT_TRUE((*it)->GetAsDictionary(&dict));
+      ASSERT_TRUE(it->GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("kind", &kind));
       ASSERT_TRUE(dict->GetString("id", &device_id));
       ASSERT_FALSE(device_id.empty());

@@ -25,7 +25,7 @@ bool ReadStringSet(const base::ListValue& list_value,
   DCHECK(string_set);
   for (const auto& value_value : list_value) {
     std::string value;
-    if (!value_value->GetAsString(&value)) {
+    if (!value_value.GetAsString(&value)) {
       LOG(ERROR) << "Entry::Deserialize: list member must be a string";
       return false;
     }

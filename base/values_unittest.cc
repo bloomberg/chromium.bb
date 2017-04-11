@@ -437,7 +437,7 @@ TEST(ValuesTest, List) {
   base::Value not_found_value(false);
 
   ASSERT_NE(mixed_list->end(), mixed_list->Find(sought_value));
-  ASSERT_TRUE((*mixed_list->Find(sought_value))->GetAsInteger(&int_value));
+  ASSERT_TRUE((*mixed_list->Find(sought_value)).GetAsInteger(&int_value));
   ASSERT_EQ(42, int_value);
   ASSERT_EQ(mixed_list->end(), mixed_list->Find(not_found_value));
 }
@@ -540,10 +540,10 @@ TEST(ValuesTest, ListRemoval) {
   {
     ListValue list;
     auto value = MakeUnique<Value>();
-    Value* original_value = value.get();
+    Value original_value = *value;
     list.Append(std::move(value));
     size_t index = 0;
-    list.Remove(*original_value, &index);
+    list.Remove(original_value, &index);
     EXPECT_EQ(0U, index);
     EXPECT_EQ(0U, list.GetSize());
   }

@@ -48,7 +48,7 @@ std::vector<std::string> ConvertListValues(const base::ListValue* list_values) {
   if (list_values) {
     for (const auto& entry : *list_values) {
       std::string entry_string;
-      if (!entry->GetAsString(&entry_string)) {
+      if (!entry.GetAsString(&entry_string)) {
         LOG(ERROR) << "Invalid whitelist entry";
         continue;
       }

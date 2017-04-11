@@ -87,7 +87,7 @@ class WebRtcGetMediaDevicesBrowserTest
          it != values->end(); ++it) {
       const base::DictionaryValue* dict;
       MediaDeviceInfo device;
-      ASSERT_TRUE((*it)->GetAsDictionary(&dict));
+      ASSERT_TRUE(it->GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("deviceId", &device.device_id));
       ASSERT_TRUE(dict->GetString("kind", &device.kind));
       ASSERT_TRUE(dict->GetString("label", &device.label));

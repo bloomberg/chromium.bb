@@ -114,7 +114,7 @@ bool ParseUrlHandler(const std::string& handler_id,
   for (base::ListValue::const_iterator it = manif_patterns->begin();
        it != manif_patterns->end(); ++it) {
     std::string str_pattern;
-    (*it)->GetAsString(&str_pattern);
+    it->GetAsString(&str_pattern);
     // TODO(sergeygs): Limit this to non-top-level domains.
     // TODO(sergeygs): Also add a verification to the CWS installer that the
     // URL patterns claimed here belong to the app's author verified sites.

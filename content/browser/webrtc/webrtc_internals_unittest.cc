@@ -141,7 +141,7 @@ TEST_F(WebRtcInternalsTest, EnsureNoLogWhenNoObserver) {
   ASSERT_TRUE(observer.value()->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
   base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  ASSERT_TRUE((*list->begin()).GetAsDictionary(&dict));
   base::ListValue* log = nullptr;
   ASSERT_FALSE(dict->GetList("log", &log));
 
@@ -167,7 +167,7 @@ TEST_F(WebRtcInternalsTest, EnsureLogIsRemovedWhenObserverIsRemoved) {
   ASSERT_TRUE(observer.value()->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
   base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  ASSERT_TRUE((*list->begin()).GetAsDictionary(&dict));
   base::ListValue* log = nullptr;
   ASSERT_TRUE(dict->GetList("log", &log));
 
@@ -178,7 +178,7 @@ TEST_F(WebRtcInternalsTest, EnsureLogIsRemovedWhenObserverIsRemoved) {
 
   ASSERT_TRUE(observer.value()->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
-  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  ASSERT_TRUE((*list->begin()).GetAsDictionary(&dict));
   ASSERT_FALSE(dict->GetList("log", &log));
 
   webrtc_internals.OnRemovePeerConnection(3, 4);
@@ -332,7 +332,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   EXPECT_EQ(1U, list->GetSize());
 
   base::DictionaryValue* dict = NULL;
-  EXPECT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  EXPECT_TRUE((*list->begin()).GetAsDictionary(&dict));
 
   VerifyInt(dict, "rid", rid);
   VerifyInt(dict, "pid", pid);
@@ -345,7 +345,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   ASSERT_TRUE(dict->GetList("log", &log));
   EXPECT_EQ(1U, log->GetSize());
 
-  EXPECT_TRUE((*log->begin())->GetAsDictionary(&dict));
+  EXPECT_TRUE((*log->begin()).GetAsDictionary(&dict));
   VerifyString(dict, "type", update_type);
   VerifyString(dict, "value", update_value);
   std::string time;

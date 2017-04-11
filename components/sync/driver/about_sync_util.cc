@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -76,6 +77,12 @@ base::ListValue* AddSection(base::ListValue* parent_list,
   section->SetString("title", title);
   section->Set("data", section_contents);
   section->SetBoolean("is_sensitive", false);
+  // If the following |Append| results in a reallocation, pointers to the
+  // members of |parent_list| will be invalidated. This would result in
+  // use-after-free in |*SyncStat::SetValue|. This is why the following CHECK is
+  // necessary to ensure no reallocation takes place.
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  CHECK_LT(parent_list->GetSize(), parent_list->capacity());
   parent_list->Append(std::move(section));
   return section_contents;
 }
@@ -89,6 +96,12 @@ base::ListValue* AddSensitiveSection(base::ListValue* parent_list,
   section->SetString("title", title);
   section->Set("data", section_contents);
   section->SetBoolean("is_sensitive", true);
+  // If the following |Append| results in a reallocation, pointers to
+  // |parent_list| and its members will be invalidated. This would result in
+  // use-after-free in |*SyncStat::SetValue|. This is why the following CHECK is
+  // necessary to ensure no reallocation takes place.
+  CHECK_LT(parent_list->GetSize(), parent_list->capacity());
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
   parent_list->Append(std::move(section));
   return section_contents;
 }
@@ -117,7 +130,14 @@ StringSyncStat::StringSyncStat(base::ListValue* section,
   stat_->SetString("stat_name", key);
   stat_->SetString("stat_value", "Uninitialized");
   stat_->SetBoolean("is_valid", false);
+  // |stat_| will be invalidated by |Append|, so it needs to be reset.
+  // Furthermore, if |Append| results in a reallocation, |stat_| members of
+  // other SyncStats will be invalidated. This is why the following check is
+  // necessary, so that it is guaranteed that a reallocation will not happen.
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  CHECK_LT(section->GetSize(), section->capacity());
   section->Append(base::WrapUnique(stat_));
+  section->GetDictionary(section->GetSize() - 1, &stat_);
 }
 
 void StringSyncStat::SetValue(const std::string& value) {
@@ -145,7 +165,14 @@ BoolSyncStat::BoolSyncStat(base::ListValue* section, const std::string& key) {
   stat_->SetString("stat_name", key);
   stat_->SetBoolean("stat_value", false);
   stat_->SetBoolean("is_valid", false);
+  // |stat_| will be invalidated by |Append|, so it needs to be reset.
+  // Furthermore, if |Append| results in a reallocation, |stat_| members of
+  // other SyncStats will be invalidated. This is why the following check is
+  // necessary, so that it is guaranteed that a reallocation will not happen.
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  CHECK_LT(section->GetSize(), section->capacity());
   section->Append(base::WrapUnique(stat_));
+  section->GetDictionary(section->GetSize() - 1, &stat_);
 }
 
 void BoolSyncStat::SetValue(bool value) {
@@ -168,7 +195,14 @@ IntSyncStat::IntSyncStat(base::ListValue* section, const std::string& key) {
   stat_->SetString("stat_name", key);
   stat_->SetInteger("stat_value", 0);
   stat_->SetBoolean("is_valid", false);
+  // |stat_| will be invalidated by |Append|, so it needs to be reset.
+  // Furthermore, if |Append| results in a reallocation, |stat_| members of
+  // other SyncStats will be invalidated. This is why the following check is
+  // necessary, so that it is guaranteed that a reallocation will not happen.
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  CHECK_LT(section->GetSize(), section->capacity());
   section->Append(base::WrapUnique(stat_));
+  section->GetDictionary(section->GetSize() - 1, &stat_);
 }
 
 void IntSyncStat::SetValue(int value) {
@@ -251,24 +285,34 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // 'details': A list of sections.
   base::ListValue* stats_list = new base::ListValue();
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  stats_list->Reserve(12);
 
   // The following lines define the sections and their fields.  For each field,
   // a class is instantiated, which allows us to reference the fields in
   // 'setter' code later on in this function.
   base::ListValue* section_summary = AddSection(stats_list, "Summary");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_summary->Reserve(1);
   StringSyncStat summary_string(section_summary, "Summary");
 
   base::ListValue* section_version = AddSection(stats_list, "Version Info");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_version->Reserve(2);
   StringSyncStat client_version(section_version, "Client Version");
   StringSyncStat server_url(section_version, "Server URL");
 
   base::ListValue* section_identity =
       AddSensitiveSection(stats_list, kIdentityTitle);
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_identity->Reserve(3);
   StringSyncStat sync_id(section_identity, "Sync Client ID");
   StringSyncStat invalidator_id(section_identity, "Invalidator Client ID");
   StringSyncStat username(section_identity, "Username");
 
   base::ListValue* section_credentials = AddSection(stats_list, "Credentials");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_credentials->Reserve(4);
   StringSyncStat request_token_time(section_credentials, "Requested Token");
   StringSyncStat receive_token_time(section_credentials, "Received Token");
   StringSyncStat token_request_status(section_credentials,
@@ -276,6 +320,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   StringSyncStat next_token_request(section_credentials, "Next Token Request");
 
   base::ListValue* section_local = AddSection(stats_list, "Local State");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_local->Reserve(7);
   StringSyncStat server_connection(section_local, "Server Connection");
   StringSyncStat last_synced(section_local, "Last Synced");
   BoolSyncStat is_setup_complete(section_local,
@@ -288,12 +334,16 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   StringSyncStat local_backend_path(section_local, "Local backend path");
 
   base::ListValue* section_network = AddSection(stats_list, "Network");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_network->Reserve(3);
   BoolSyncStat is_throttled(section_network, "Throttled");
   StringSyncStat retry_time(section_network, "Retry time (maybe stale)");
   BoolSyncStat are_notifications_enabled(section_network,
                                          "Notifications Enabled");
 
   base::ListValue* section_encryption = AddSection(stats_list, "Encryption");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_encryption->Reserve(9);
   BoolSyncStat is_using_explicit_passphrase(section_encryption,
                                             "Explicit Passphrase");
   BoolSyncStat is_passphrase_required(section_encryption,
@@ -311,12 +361,16 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   base::ListValue* section_last_session =
       AddSection(stats_list, "Status from Last Completed Session");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_last_session->Reserve(4);
   StringSyncStat session_source(section_last_session, "Sync Source");
   StringSyncStat get_key_result(section_last_session, "GetKey Step Result");
   StringSyncStat download_result(section_last_session, "Download Step Result");
   StringSyncStat commit_result(section_last_session, "Commit Step Result");
 
   base::ListValue* section_counters = AddSection(stats_list, "Running Totals");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_counters->Reserve(7);
   IntSyncStat notifications_received(section_counters,
                                      "Notifications Received");
   IntSyncStat updates_received(section_counters, "Updates Downloaded");
@@ -330,6 +384,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   base::ListValue* section_this_cycle =
       AddSection(stats_list, "Transient Counters (this cycle)");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_this_cycle->Reserve(4);
   IntSyncStat encryption_conflicts(section_this_cycle, "Encryption Conflicts");
   IntSyncStat hierarchy_conflicts(section_this_cycle, "Hierarchy Conflicts");
   IntSyncStat server_conflicts(section_this_cycle, "Server Conflicts");
@@ -337,12 +393,16 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   base::ListValue* section_that_cycle = AddSection(
       stats_list, "Transient Counters (last cycle of last completed session)");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_that_cycle->Reserve(3);
   IntSyncStat updates_downloaded(section_that_cycle, "Updates Downloaded");
   IntSyncStat committed_count(section_that_cycle, "Committed Count");
   IntSyncStat entries(section_that_cycle, "Entries");
 
   base::ListValue* section_nudge_info =
       AddSection(stats_list, "Nudge Source Counters");
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  section_nudge_info->Reserve(3);
   IntSyncStat nudge_source_notification(section_nudge_info,
                                         "Server Invalidations");
   IntSyncStat nudge_source_local(section_nudge_info, "Local Changes");
@@ -491,6 +551,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   // actionable_error_detected is set.
 
   base::ListValue* actionable_error = new base::ListValue();
+  // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
+  actionable_error->Reserve(4);
   about_info->Set("actionable_error", actionable_error);
 
   StringSyncStat error_type(actionable_error, "Error Type");

@@ -60,7 +60,7 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       type_ = ArgumentType::CHOICES;
       choices_.reserve(choices->GetSize());
       for (const auto& choice : *choices)
-        choices_.push_back(base::MakeUnique<ArgumentSpec>(*choice));
+        choices_.push_back(base::MakeUnique<ArgumentSpec>(choice));
       return;
     }
   }

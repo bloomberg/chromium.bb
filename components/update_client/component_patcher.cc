@@ -80,7 +80,7 @@ void ComponentPatcher::PatchNextFile() {
     return;
   }
   const base::DictionaryValue* command_args;
-  if (!(*next_command_)->GetAsDictionary(&command_args)) {
+  if (!next_command_->GetAsDictionary(&command_args)) {
     DonePatching(UnpackerError::kDeltaBadCommands, 0);
     return;
   }

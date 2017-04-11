@@ -119,7 +119,7 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
 
     for (const auto& value : *list) {
       std::unique_ptr<KioskSecondaryAppsType> app =
-          KioskSecondaryAppsType::FromValue(*value, error);
+          KioskSecondaryAppsType::FromValue(value, error);
       if (!app) {
         *error = base::ASCIIToUTF16(
             manifest_errors::kInvalidKioskSecondaryAppsBadAppId);

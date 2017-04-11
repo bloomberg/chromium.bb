@@ -127,7 +127,7 @@ void SpellcheckService::GetDictionaries(base::SupportsUserData* browser_context,
   for (const auto& value :
        *prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
     std::string dictionary;
-    if (value->GetAsString(&dictionary))
+    if (value.GetAsString(&dictionary))
       spellcheck_dictionaries.insert(dictionary);
   }
 
@@ -216,7 +216,7 @@ void SpellcheckService::LoadHunspellDictionaries() {
 
   for (const auto& dictionary_value : *dictionary_values) {
     std::string dictionary;
-    dictionary_value->GetAsString(&dictionary);
+    dictionary_value.GetAsString(&dictionary);
     hunspell_dictionaries_.push_back(
         base::MakeUnique<SpellcheckHunspellDictionary>(
             dictionary,

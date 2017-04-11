@@ -184,7 +184,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
 
   for (auto entry = list_value->begin(); entry != list_value->end(); ++entry) {
     std::string entry_value;
-    if (!(*entry)->GetAsString(&entry_value)) {
+    if (!entry->GetAsString(&entry_value)) {
       if (errors) {
         errors->AddError(policy_name(), entry - list_value->begin(),
                          IDS_POLICY_TYPE_ERROR,

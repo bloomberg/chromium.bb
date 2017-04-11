@@ -126,7 +126,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
           // CFArrayAppendValue() retains |cf_value|, so make sure the reference
           // created by ValueToProperty() is released.
           base::ScopedCFTypeRef<CFPropertyListRef> cf_value(
-              ValueToProperty(*entry));
+              ValueToProperty(entry));
           if (cf_value)
             CFArrayAppendValue(array, cf_value);
         }

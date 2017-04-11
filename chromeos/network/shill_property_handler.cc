@@ -365,7 +365,7 @@ void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
   for (base::ListValue::const_iterator iter = entries.begin();
        iter != entries.end(); ++iter) {
     std::string path;
-    (*iter)->GetAsString(&path);
+    iter->GetAsString(&path);
     if (path.empty())
       continue;
 
@@ -389,7 +389,7 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
   ShillPropertyObserverMap new_observed;
   for (const auto& entry : entries) {
     std::string path;
-    entry->GetAsString(&path);
+    entry.GetAsString(&path);
     if (path.empty())
       continue;
     auto iter = observer_map.find(path);
@@ -422,7 +422,7 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
-    (*iter)->GetAsString(&technology);
+    iter->GetAsString(&technology);
     DCHECK(!technology.empty());
     available_technologies_.insert(technology);
   }
@@ -436,7 +436,7 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
-    (*iter)->GetAsString(&technology);
+    iter->GetAsString(&technology);
     DCHECK(!technology.empty());
     enabled_technologies_.insert(technology);
     enabling_technologies_.erase(technology);
@@ -451,7 +451,7 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
-    (*iter)->GetAsString(&technology);
+    iter->GetAsString(&technology);
     DCHECK(!technology.empty());
     uninitialized_technologies_.insert(technology);
   }
@@ -549,7 +549,7 @@ void ShillPropertyHandler::RequestIPConfigsList(
     return;
   for (base::ListValue::const_iterator iter = ip_configs->begin();
        iter != ip_configs->end(); ++iter) {
-    RequestIPConfig(type, path, **iter);
+    RequestIPConfig(type, path, *iter);
   }
 }
 

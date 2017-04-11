@@ -434,7 +434,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   builder.ClearPlacements();
   for (const auto& layout : *layouts) {
     const base::DictionaryValue* dictionary;
-    if (!layout->GetAsDictionary(&dictionary)) {
+    if (!layout.GetAsDictionary(&dictionary)) {
       LOG(ERROR) << "Invalid layout dictionary: " << *dictionary;
       continue;
     }

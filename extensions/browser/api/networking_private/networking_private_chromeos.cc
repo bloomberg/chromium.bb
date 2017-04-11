@@ -512,9 +512,9 @@ void NetworkingPrivateChromeOS::GetNetworks(
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
 
-  for (const auto& value : *network_properties_list) {
+  for (auto& value : *network_properties_list) {
     base::DictionaryValue* network_dict = nullptr;
-    value->GetAsDictionary(&network_dict);
+    value.GetAsDictionary(&network_dict);
     DCHECK(network_dict);
     if (GetThirdPartyVPNDictionary(network_dict))
       AppendThirdPartyProviderName(network_dict);

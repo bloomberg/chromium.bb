@@ -621,7 +621,7 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
        iter != list->end(); ++iter) {
     // All of these calls should succeed, but preferences file can be corrupt.
     base::DictionaryValue* dict;
-    if (!(*iter)->GetAsDictionary(&dict))
+    if (!iter->GetAsDictionary(&dict))
       continue;
     std::string this_device_id;
     if (!dict->GetString(kMediaGalleriesDeviceIdKey, &this_device_id))
@@ -713,7 +713,7 @@ void MediaGalleriesPreferences::InitFromPrefs() {
     for (base::ListValue::const_iterator it = list->begin();
          it != list->end(); ++it) {
       const base::DictionaryValue* dict = NULL;
-      if (!(*it)->GetAsDictionary(&dict))
+      if (!it->GetAsDictionary(&dict))
         continue;
 
       MediaGalleryPrefInfo gallery_info;
@@ -957,13 +957,11 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
         new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
     base::ListValue* list = update->Get();
 
-    for (base::ListValue::const_iterator list_iter = list->begin();
-         list_iter != list->end();
-         ++list_iter) {
+    for (base::ListValue::iterator list_iter = list->begin();
+         list_iter != list->end(); ++list_iter) {
       base::DictionaryValue* dict;
       MediaGalleryPrefId iter_id;
-      if ((*list_iter)->GetAsDictionary(&dict) &&
-          GetPrefId(*dict, &iter_id) &&
+      if (list_iter->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
           *pref_id_it == iter_id) {
         if (update_gallery_type)
           dict->SetString(kMediaGalleriesTypeKey, TypeToStringValue(new_type));
@@ -1058,7 +1056,7 @@ void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
     base::DictionaryValue* dict;
     MediaGalleryPrefId pref_id;
 
-    if (!((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &pref_id)))
+    if (!(iter->GetAsDictionary(&dict) && GetPrefId(*dict, &pref_id)))
       continue;
 
     std::string default_gallery_type_string;
@@ -1155,7 +1153,7 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
        iter != list->end(); ++iter) {
     base::DictionaryValue* dict;
     MediaGalleryPrefId iter_id;
-    if ((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
+    if (iter->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
         id == iter_id) {
       RemoveGalleryPermissionsFromPrefs(id);
       MediaGalleryPrefInfo::Type type;
@@ -1333,7 +1331,7 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
     for (base::ListValue::iterator iter = permissions->begin();
          iter != permissions->end(); ++iter) {
       base::DictionaryValue* dict = NULL;
-      if (!(*iter)->GetAsDictionary(&dict))
+      if (!iter->GetAsDictionary(&dict))
         continue;
       MediaGalleryPermission perm;
       if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
@@ -1370,7 +1368,7 @@ bool MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
   for (base::ListValue::iterator iter = permissions->begin();
        iter != permissions->end(); ++iter) {
     const base::DictionaryValue* dict = NULL;
-    if (!(*iter)->GetAsDictionary(&dict))
+    if (!iter->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;
     if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
@@ -1397,8 +1395,8 @@ MediaGalleriesPreferences::GetGalleryPermissionsFromPrefs(
 
   for (base::ListValue::const_iterator iter = permissions->begin();
        iter != permissions->end(); ++iter) {
-    base::DictionaryValue* dict = NULL;
-    if (!(*iter)->GetAsDictionary(&dict))
+    const base::DictionaryValue* dict = NULL;
+    if (!iter->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;
     if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))

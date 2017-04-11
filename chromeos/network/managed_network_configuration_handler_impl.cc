@@ -496,8 +496,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   for (base::ListValue::const_iterator it = network_configs_onc.begin();
        it != network_configs_onc.end(); ++it) {
-    base::DictionaryValue* network = NULL;
-    (*it)->GetAsDictionary(&network);
+    const base::DictionaryValue* network = NULL;
+    it->GetAsDictionary(&network);
     DCHECK(network);
 
     std::string guid;

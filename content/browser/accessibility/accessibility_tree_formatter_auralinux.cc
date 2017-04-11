@@ -89,7 +89,7 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ToString(
   for (base::ListValue::const_iterator it = states_value->begin();
        it != states_value->end(); ++it) {
     std::string state_value;
-    if ((*it)->GetAsString(&state_value))
+    if (it->GetAsString(&state_value))
       WriteAttribute(true, state_value, &line);
   }
 

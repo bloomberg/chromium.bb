@@ -114,7 +114,7 @@ bool JoinListValuesToString(const base::DictionaryValue* dictionary,
   bool first = true;
   for (const auto& v : *list) {
     std::string value;
-    if (!v->GetAsString(&value))
+    if (!v.GetAsString(&value))
       return false;
 
     if (first)

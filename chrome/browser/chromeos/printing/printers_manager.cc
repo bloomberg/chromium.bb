@@ -180,7 +180,7 @@ void PrintersManager::UpdateRecommendedPrinters() {
   recommended_printer_ids_.clear();
   for (const auto& value : *values) {
     std::string printer_json;
-    if (!value->GetAsString(&printer_json)) {
+    if (!value.GetAsString(&printer_json)) {
       NOTREACHED();
       continue;
     }

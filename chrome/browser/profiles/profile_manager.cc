@@ -680,8 +680,7 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
     base::ListValue::const_iterator it;
     for (it = profile_list->begin(); it != profile_list->end(); ++it) {
       std::string profile_path;
-      if (!(*it)->GetAsString(&profile_path) ||
-          profile_path.empty() ||
+      if (!it->GetAsString(&profile_path) || profile_path.empty() ||
           profile_path ==
               base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
         LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
@@ -903,10 +902,10 @@ void ProfileManager::CleanUpDeletedProfiles() {
       local_state->GetList(prefs::kProfilesDeleted);
   DCHECK(deleted_profiles);
 
-  for (const std::unique_ptr<base::Value>& value : *deleted_profiles) {
+  for (const base::Value& value : *deleted_profiles) {
     base::FilePath profile_path;
     bool is_valid_profile_path =
-        base::GetValueAsFilePath(*value, &profile_path) &&
+        base::GetValueAsFilePath(value, &profile_path) &&
         profile_path.DirName() == user_data_dir();
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentially delete something else.
@@ -917,12 +916,11 @@ void ProfileManager::CleanUpDeletedProfiles() {
         BrowserThread::PostTaskAndReply(
             BrowserThread::FILE, FROM_HERE,
             base::Bind(&NukeProfileFromDisk, profile_path),
-            base::Bind(&ProfileCleanedUp, value.get()));
+            base::Bind(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
-        BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ProfileCleanedUp, value.get()));
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                base::Bind(&ProfileCleanedUp, &value));
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "

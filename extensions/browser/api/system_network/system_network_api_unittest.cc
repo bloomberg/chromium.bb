@@ -39,7 +39,7 @@ TEST_F(SystemNetworkApiUnitTest, GetNetworkInterfaces) {
 
   for (const auto& network_interface_value : *value) {
     NetworkInterface network_interface;
-    ASSERT_TRUE(NetworkInterface::Populate(*network_interface_value,
+    ASSERT_TRUE(NetworkInterface::Populate(network_interface_value,
                                            &network_interface));
 
     LOG(INFO) << "Network interface: address=" << network_interface.address

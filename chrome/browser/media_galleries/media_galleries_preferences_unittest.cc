@@ -191,7 +191,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
          ++iter) {
       base::DictionaryValue* dict;
 
-      if ((*iter)->GetAsDictionary(&dict)) {
+      if (iter->GetAsDictionary(&dict)) {
         // Setting the prefs version to 2 which is the version before
         // default_gallery_type was added.
         dict->SetInteger(kMediaGalleriesPrefsVersionKey, 2);

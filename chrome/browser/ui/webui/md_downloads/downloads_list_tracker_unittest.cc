@@ -46,7 +46,7 @@ std::vector<uint64_t> GetIds(const base::Value& value) {
   const base::ListValue* list;
   if (value.GetAsList(&list)) {
     for (const auto& list_item : *list)
-      ids.push_back(GetId(*list_item));
+      ids.push_back(GetId(list_item));
   } else {
     ids.push_back(GetId(value));
   }

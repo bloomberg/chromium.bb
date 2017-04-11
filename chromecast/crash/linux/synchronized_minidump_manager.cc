@@ -267,7 +267,7 @@ bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
   std::string lockfile;
 
   for (const auto& elem : *dumps) {
-    std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
+    std::unique_ptr<std::string> dump_info = SerializeToJson(elem);
     RCHECK(dump_info, false);
     lockfile += *dump_info;
     lockfile += "\n";  // Add line seperatators
@@ -332,7 +332,7 @@ std::vector<std::unique_ptr<DumpInfo>> SynchronizedMinidumpManager::GetDumps() {
   std::vector<std::unique_ptr<DumpInfo>> dumps;
 
   for (const auto& elem : *dumps_) {
-    dumps.push_back(std::unique_ptr<DumpInfo>(new DumpInfo(elem.get())));
+    dumps.push_back(std::unique_ptr<DumpInfo>(new DumpInfo(&elem)));
   }
 
   return dumps;

@@ -98,7 +98,7 @@ base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
   for (base::ListValue::const_iterator i = list_value->begin();
        i != list_value->end(); ++i) {
     std::string email;
-    if ((*i)->GetAsString(&email)) {
+    if (i->GetAsString(&email)) {
       // Translate email to the display email.
       const std::string display_email =
           user_manager->GetUserDisplayEmail(AccountId::FromUserEmail(email));

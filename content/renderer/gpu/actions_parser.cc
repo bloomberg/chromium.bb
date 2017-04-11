@@ -71,7 +71,7 @@ bool ActionsParser::ParsePointerActionSequence() {
 
   for (const auto& pointer_value : *pointer_list) {
     const base::DictionaryValue* pointer_actions;
-    if (!pointer_value->GetAsDictionary(&pointer_actions)) {
+    if (!pointer_value.GetAsDictionary(&pointer_actions)) {
       error_message_ =
           base::StringPrintf("pointer actions is missing or not a dictionary");
       return false;
@@ -157,7 +157,7 @@ bool ActionsParser::ParseActions(const base::ListValue& actions) {
   SyntheticPointerActionListParams::ParamList param_list;
   for (const auto& action_value : actions) {
     const base::DictionaryValue* action;
-    if (!action_value->GetAsDictionary(&action)) {
+    if (!action_value.GetAsDictionary(&action)) {
       error_message_ = base::StringPrintf(
           "actions[%d].actions is missing or not a dictionary", action_index_);
       return false;

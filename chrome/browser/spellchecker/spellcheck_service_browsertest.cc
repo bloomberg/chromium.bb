@@ -133,7 +133,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
     std::vector<base::StringPiece> dictionaries;
     for (const auto& item_value : *list_value) {
       base::StringPiece dictionary;
-      EXPECT_TRUE(item_value->GetAsString(&dictionary));
+      EXPECT_TRUE(item_value.GetAsString(&dictionary));
       dictionaries.push_back(dictionary);
     }
     return base::JoinString(dictionaries, ",");

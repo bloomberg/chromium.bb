@@ -57,12 +57,12 @@ void GinJavaMethodInvocationHelper::BuildObjectRefsFromListValue(
   const base::ListValue* list;
   list_value.GetAsList(&list);
   for (const auto& entry : *list) {
-    if (AppendObjectRef(dispatcher, *entry))
+    if (AppendObjectRef(dispatcher, entry))
       continue;
-    if (entry->IsType(base::Value::Type::LIST)) {
-      BuildObjectRefsFromListValue(dispatcher, *entry);
-    } else if (entry->IsType(base::Value::Type::DICTIONARY)) {
-      BuildObjectRefsFromDictionaryValue(dispatcher, *entry);
+    if (entry.IsType(base::Value::Type::LIST)) {
+      BuildObjectRefsFromListValue(dispatcher, entry);
+    } else if (entry.IsType(base::Value::Type::DICTIONARY)) {
+      BuildObjectRefsFromDictionaryValue(dispatcher, entry);
     }
   }
 }

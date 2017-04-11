@@ -404,7 +404,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
              it != list_value->end();
              ++it) {
           base::string16 string_value;
-          if ((*it)->GetAsString(&string_value))
+          if (it->GetAsString(&string_value))
             WriteAttribute(false, string_value, &line);
         }
         break;

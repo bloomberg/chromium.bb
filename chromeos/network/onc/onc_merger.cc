@@ -56,7 +56,7 @@ void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
   for (base::ListValue::const_iterator it = recommended_value->begin();
        it != recommended_value->end(); ++it) {
     std::string entry;
-    if ((*it)->GetAsString(&entry))
+    if (it->GetAsString(&entry))
       result->SetBooleanWithoutPathExpansion(entry, true);
   }
 }

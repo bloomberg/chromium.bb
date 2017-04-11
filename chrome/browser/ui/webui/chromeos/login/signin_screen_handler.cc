@@ -247,7 +247,7 @@ void EnforcePolicyInputMethods(std::string user_input_method) {
 
   std::string input_method;
   for (const auto& input_method_entry : *login_screen_input_methods) {
-    if (input_method_entry->GetAsString(&input_method))
+    if (input_method_entry.GetAsString(&input_method))
       allowed_input_methods.push_back(input_method);
   }
   chromeos::input_method::InputMethodManager* imm =

@@ -108,7 +108,7 @@ void AddAllStringValues(const base::ListValue& from,
   std::string as_string;
   for (base::ListValue::const_iterator it = from.begin();
        it != from.end(); ++it) {
-    if ((*it)->GetAsString(&as_string)) {
+    if (it->GetAsString(&as_string)) {
       to->push_back(as_string);
     }
   }

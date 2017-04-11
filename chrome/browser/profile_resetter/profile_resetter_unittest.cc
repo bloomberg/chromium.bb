@@ -825,7 +825,7 @@ TEST_F(ConfigParserTest, ParseConfig) {
   for (base::ListValue::iterator i = startup_list->begin();
        i != startup_list->end(); ++i) {
     std::string url;
-    EXPECT_TRUE((*i)->GetAsString(&url));
+    EXPECT_TRUE(i->GetAsString(&url));
     startup_pages.push_back(url);
   }
   ASSERT_EQ(2u, startup_pages.size());

@@ -474,7 +474,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
            entry != accounts_list->end();
            ++entry) {
         const base::DictionaryValue* entry_dict = NULL;
-        if ((*entry)->GetAsDictionary(&entry_dict)) {
+        if (entry->GetAsDictionary(&entry_dict)) {
           em::DeviceLocalAccountInfoProto* account =
               device_local_accounts->add_account();
           std::string account_id;
@@ -572,7 +572,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
            i != users->end();
            ++i) {
         std::string email;
-        if ((*i)->GetAsString(&email))
+        if (i->GetAsString(&email))
           whitelist_proto->add_user_whitelist(email);
       }
     }
@@ -604,7 +604,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
            i != flags->end();
            ++i) {
         std::string flag;
-        if ((*i)->GetAsString(&flag))
+        if (i->GetAsString(&flag))
           flags_proto->add_flags(flag);
       }
     }

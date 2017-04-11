@@ -184,7 +184,7 @@ bool EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(
        it != device_list.end();
        ++it) {
     const base::DictionaryValue* dict;
-    if (!(*it)->GetAsDictionary(&dict) || !dict)
+    if (!it->GetAsDictionary(&dict) || !dict)
       return false;
 
     EasyUnlockDeviceKeyData data;

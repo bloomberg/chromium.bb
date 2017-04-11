@@ -26,7 +26,7 @@ std::set<std::string> PrefServiceFlagsStorage::GetFlags() {
   for (base::ListValue::const_iterator it = enabled_experiments->begin();
        it != enabled_experiments->end(); ++it) {
     std::string experiment_name;
-    if (!(*it)->GetAsString(&experiment_name)) {
+    if (!it->GetAsString(&experiment_name)) {
       LOG(WARNING) << "Invalid entry in " << prefs::kEnabledLabsExperiments;
       continue;
     }

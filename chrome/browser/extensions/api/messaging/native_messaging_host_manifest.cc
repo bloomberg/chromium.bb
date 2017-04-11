@@ -112,7 +112,7 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
   for (base::ListValue::const_iterator it = allowed_origins_list->begin();
        it != allowed_origins_list->end(); ++it) {
     std::string pattern_string;
-    if (!(*it)->GetAsString(&pattern_string)) {
+    if (!it->GetAsString(&pattern_string)) {
       *error_message = "allowed_origins must be list of strings.";
       return false;
     }
