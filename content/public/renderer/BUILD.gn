@@ -60,6 +60,7 @@ target(link_target_type, "renderer_sources") {
     "render_view_visitor.h",
     "renderer_ppapi_host.h",
     "resource_fetcher.h",
+    "seccomp_sandbox_status_android.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
     "window_features_converter.cc",

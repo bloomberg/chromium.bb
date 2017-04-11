@@ -16,6 +16,7 @@
 #if BUILDFLAG(USE_SECCOMP_BPF)
 #include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/seccomp_sandbox_status_android.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
 
@@ -26,27 +27,21 @@ namespace {
 // Scoper class to record a SeccompSandboxStatus UMA value.
 class RecordSeccompStatus {
  public:
-  enum SeccompSandboxStatus {
-    NOT_SUPPORTED = 0,  // Seccomp is not supported.
-    DETECTION_FAILED,   // Run-time detection of Seccomp+TSYNC failed.
-    FEATURE_DISABLED,   // Sandbox was disabled by FeatureList.
-    FEATURE_ENABLED,    // Sandbox was enabled by FeatureList.
-    ENGAGED,            // Sandbox was enabled and successfully turned on.
-    STATUS_MAX
-    // This enum is used by an UMA histogram, so only append values.
-  };
-
-  RecordSeccompStatus() : status_(NOT_SUPPORTED) {}
-
-  ~RecordSeccompStatus() {
-    UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.RendererSandbox", status_,
-                              STATUS_MAX);
+  RecordSeccompStatus() {
+    SetSeccompSandboxStatus(SeccompSandboxStatus::NOT_SUPPORTED);
   }
 
-  void set_status(SeccompSandboxStatus status) { status_ = status; }
+  ~RecordSeccompStatus() {
+    UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.RendererSandbox",
+                              GetSeccompSandboxStatus(),
+                              SeccompSandboxStatus::STATUS_MAX);
+  }
+
+  void set_status(SeccompSandboxStatus status) {
+    SetSeccompSandboxStatus(status);
+  }
 
  private:
-  SeccompSandboxStatus status_;
   DISALLOW_COPY_AND_ASSIGN(RecordSeccompStatus);
 };
 
@@ -103,7 +98,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // Do run-time detection to ensure that support is present.
   if (!sandbox::SandboxBPF::SupportsSeccompSandbox(
           sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED)) {
-    status_uma.set_status(RecordSeccompStatus::DETECTION_FAILED);
+    status_uma.set_status(SeccompSandboxStatus::DETECTION_FAILED);
     LOG(WARNING) << "Seccomp support should be present, but detection "
         << "failed. Continuing without Seccomp-BPF.";
     return true;
@@ -111,7 +106,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
 
   // Seccomp has been detected, check if the field trial experiment should run.
   if (base::FeatureList::IsEnabled(features::kSeccompSandboxAndroid)) {
-    status_uma.set_status(RecordSeccompStatus::FEATURE_ENABLED);
+    status_uma.set_status(SeccompSandboxStatus::FEATURE_ENABLED);
 
     // TODO(rsesek): When "the thing after N" has an sdk_int(), restrict this to
     // that platform version or higher.
@@ -125,9 +120,9 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
     CHECK(sandbox.StartSandbox(
         sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
 
-    status_uma.set_status(RecordSeccompStatus::ENGAGED);
+    status_uma.set_status(SeccompSandboxStatus::ENGAGED);
   } else {
-    status_uma.set_status(RecordSeccompStatus::FEATURE_DISABLED);
+    status_uma.set_status(SeccompSandboxStatus::FEATURE_DISABLED);
   }
 #endif
   return true;

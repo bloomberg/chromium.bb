@@ -281,6 +281,9 @@ const char kChromeUIPrintHost[] = "print";
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 const char kChromeUISandboxHost[] = "sandbox";
 #endif
 
@@ -727,6 +730,8 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     kChromeUILinuxProxyConfigHost,
+#endif
+#if defined(OS_LINUX) || defined(OS_ANDROID)
     kChromeUISandboxHost,
 #endif
 #if defined(OS_WIN)

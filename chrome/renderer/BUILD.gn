@@ -71,6 +71,8 @@ static_library("renderer") {
     "prerender/prerender_helper.h",
     "prerender/prerenderer_client.cc",
     "prerender/prerenderer_client.h",
+    "sandbox_status_extension_android.cc",
+    "sandbox_status_extension_android.h",
     "searchbox/search_bouncer.cc",
     "searchbox/search_bouncer.h",
     "searchbox/searchbox.cc",

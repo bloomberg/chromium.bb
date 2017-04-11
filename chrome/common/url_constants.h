@@ -262,6 +262,9 @@ extern const char kChromeUIPrintHost[];
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern const char kChromeUILinuxProxyConfigHost[];
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 extern const char kChromeUISandboxHost[];
 #endif
 

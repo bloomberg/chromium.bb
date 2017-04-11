@@ -124,6 +124,10 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/origin.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/renderer/sandbox_status_extension_android.h"
+#endif
+
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/renderer/nacl_helper.h"
@@ -518,6 +522,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(
       render_frame, base::MakeUnique<ChromePrintWebViewHelperDelegate>());
+#endif
+
+#if defined(OS_ANDROID)
+  SandboxStatusExtension::Create(render_frame);
 #endif
 
   new NetErrorHelper(render_frame);

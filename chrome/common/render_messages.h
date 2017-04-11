@@ -190,6 +190,9 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
 // is being shown in error page.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
                     bool /* showing download button */)
+
+// Sent when navigating to chrome://sandbox to install bindings onto the WebUI.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_AddSandboxStatusExtension)
 #endif  // defined(OS_ANDROID)
 
 //-----------------------------------------------------------------------------

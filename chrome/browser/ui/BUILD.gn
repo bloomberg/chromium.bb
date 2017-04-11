@@ -647,6 +647,13 @@ split_static_library("ui") {
     defines += [ "USE_CRAS" ]
   }
 
+  if (is_android || is_linux) {
+    sources += [
+      "webui/sandbox_internals_ui.cc",
+      "webui/sandbox_internals_ui.h",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       "apps/app_info_dialog.h",

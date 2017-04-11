@@ -183,6 +183,10 @@
 #include "chrome/browser/ui/webui/welcome_win10_ui.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/sandbox_internals_ui.h"
+#endif
+
 #if (defined(USE_NSS_CERTS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
@@ -293,8 +297,7 @@ bool IsAboutUI(const GURL& url) {
           || url.host_piece() == chrome::kChromeUITermsHost
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-          || url.host_piece() == chrome::kChromeUILinuxProxyConfigHost ||
-          url.host_piece() == chrome::kChromeUISandboxHost
+          || url.host_piece() == chrome::kChromeUILinuxProxyConfigHost
 #endif
 #if defined(OS_CHROMEOS)
           || url.host_piece() == chrome::kChromeUIOSCreditsHost
@@ -634,6 +637,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<CastUI>;
   }
 #endif
+#endif
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  if (url.host_piece() == chrome::kChromeUISandboxHost) {
+    return &NewWebUI<SandboxInternalsUI>;
+  }
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;

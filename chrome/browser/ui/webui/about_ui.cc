@@ -77,11 +77,6 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "content/public/browser/zygote_host_linux.h"
-#include "content/public/common/sandbox_linux.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/win/enumerate_modules_model.h"
 #endif
@@ -655,78 +650,10 @@ std::string AboutLinuxProxyConfig() {
   data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
   AppendBody(&data);
   base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
-  data.append(l10n_util::GetStringFUTF8(
-      IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      base::ASCIIToUTF16(binary.BaseName().value())));
-  AppendFooter(&data);
-  return data;
-}
-
-void AboutSandboxRow(std::string* data, int name_id, bool good) {
-  data->append("<tr><td>");
-  data->append(l10n_util::GetStringUTF8(name_id));
-  if (good) {
-    data->append("</td><td style='color: green;'>");
-    data->append(
-        l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
-  } else {
-    data->append("</td><td style='color: red;'>");
-    data->append(
-        l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
-  }
-  data->append("</td></tr>");
-}
-
-std::string AboutSandbox() {
-  std::string data;
-  AppendHeader(&data, 0, l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
-  AppendBody(&data);
-  data.append("<h1>");
-  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
-  data.append("</h1>");
-
-  // Get expected sandboxing status of renderers.
-  const int status =
-      content::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
-
-  data.append("<table>");
-
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SUID_SANDBOX,
-                  status & content::kSandboxLinuxSUID);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_NAMESPACE_SANDBOX,
-                  status & content::kSandboxLinuxUserNS);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_PID_NAMESPACES,
-                  status & content::kSandboxLinuxPIDNS);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_NET_NAMESPACES,
-                  status & content::kSandboxLinuxNetNS);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
-                  status & content::kSandboxLinuxSeccompBPF);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC,
-                  status & content::kSandboxLinuxSeccompTSYNC);
-  AboutSandboxRow(&data, IDS_ABOUT_SANDBOX_YAMA_LSM,
-                  status & content::kSandboxLinuxYama);
-
-  data.append("</table>");
-
-  // Require either the setuid or namespace sandbox for our first-layer sandbox.
-  bool good_layer1 = (status & content::kSandboxLinuxSUID ||
-                      status & content::kSandboxLinuxUserNS) &&
-                     status & content::kSandboxLinuxPIDNS &&
-                     status & content::kSandboxLinuxNetNS;
-  // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & content::kSandboxLinuxSeccompBPF;
-  bool good = good_layer1 && good_layer2;
-
-  if (good) {
-    data.append("<p style='color: green'>");
-    data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));
-  } else {
-    data.append("<p style='color: red'>");
-    data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_BAD));
-  }
-  data.append("</p>");
-
+  data.append(
+      l10n_util::GetStringFUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                                base::ASCIIToUTF16(binary.BaseName().value())));
   AppendFooter(&data);
   return data;
 }
@@ -805,10 +732,6 @@ void AboutUIHTMLSource::StartDataRequest(
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
     ChromeOSCreditsHandler::Start(path, callback);
     return;
-#endif
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  } else if (source_name_ == chrome::kChromeUISandboxHost) {
-    response = AboutSandbox();
 #endif
 #if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
