@@ -31,7 +31,7 @@ class TaskQueueManager;
 // the wake-ups on the underlying base::MessageLoop. Various levels of de-duping
 // are employed to prevent unnecessary posting of TaskQueueManager::DoWork.
 //
-// Note the TimeDomain only knows about the first wakeup per queue, it's the
+// Note the TimeDomain only knows about the first wake-up per queue, it's the
 // responsibility of TaskQueueImpl to keep the time domain up to date if this
 // changes.
 class BLINK_PLATFORM_EXPORT TimeDomain {
@@ -92,7 +92,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
-  // registered wakeup for |queue|.
+  // registered wake-up for |queue|.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            internal::TaskQueueImpl::DelayedWakeUp wake_up,
                            base::TimeTicks now);
@@ -116,13 +116,13 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // NOTE this is only called by ScheduleDelayedWork if the scheduled runtime
   // is sooner than any previously sheduled work or if there is no other
   // scheduled work.
-  virtual void RequestWakeupAt(base::TimeTicks now,
+  virtual void RequestWakeUpAt(base::TimeTicks now,
                                base::TimeTicks run_time) = 0;
 
   // The implementation will cancel a wake up previously requested by
-  // RequestWakeupAt.  It's expected this will be a NOP for most virtual time
+  // RequestWakeUpAt.  It's expected this will be a NOP for most virtual time
   // domains.
-  virtual void CancelWakeupAt(base::TimeTicks run_time) = 0;
+  virtual void CancelWakeUpAt(base::TimeTicks run_time) = 0;
 
   // For implementation specific tracing.
   virtual void AsValueIntoInternal(
@@ -130,10 +130,10 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   // Call TaskQueueImpl::UpdateDelayedWorkQueue for each queue where the delay
   // has elapsed.
-  void WakeupReadyDelayedQueues(LazyNow* lazy_now);
+  void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
 
-  size_t NumberOfScheduledWakeups() const {
-    return delayed_wakeup_queue_.size();
+  size_t NumberOfScheduledWakeUps() const {
+    return delayed_wake_up_queue_.size();
   }
 
  private:
@@ -154,12 +154,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
       DCHECK(queue->heap_handle().IsValid());
       queue->set_heap_handle(HeapHandle());
 
-      DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
-      queue->set_scheduled_time_domain_wakeup(base::TimeTicks());
+      DCHECK_NE(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
+      queue->set_scheduled_time_domain_wake_up(base::TimeTicks());
     }
   };
 
-  IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wakeup_queue_;
+  IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
 
   Observer* const observer_;  // NOT OWNED.
 

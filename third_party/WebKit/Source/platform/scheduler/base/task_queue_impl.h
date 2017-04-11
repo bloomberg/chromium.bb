@@ -46,7 +46,7 @@ class WorkQueueSets;
 // immediate_work_queue is swapped with immediate_incoming_queue when
 // immediate_work_queue becomes empty.
 //
-// Delayed tasks are initially posted to delayed_incoming_queue and a wakeup
+// Delayed tasks are initially posted to delayed_incoming_queue and a wake-up
 // is scheduled with the TimeDomain.  When the delay has elapsed, the TimeDomain
 // calls UpdateDelayedWorkQueue and ready delayed tasks are moved into the
 // delayed_work_queue.  Note the EnqueueOrder (used for ordering) for a delayed
@@ -193,18 +193,18 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. Returns the subsequent wakeup that is required, if
+  // |delayed_work_queue|. Returns the subsequent wake-up that is required, if
   // any. Must be called from the main thread.
   base::Optional<DelayedWakeUp> WakeUpForDelayedWork(LazyNow* lazy_now);
 
-  base::TimeTicks scheduled_time_domain_wakeup() const {
-    return main_thread_only().scheduled_time_domain_wakeup;
+  base::TimeTicks scheduled_time_domain_wake_up() const {
+    return main_thread_only().scheduled_time_domain_wake_up;
   }
 
-  void set_scheduled_time_domain_wakeup(
-      base::TimeTicks scheduled_time_domain_wakeup) {
-    main_thread_only().scheduled_time_domain_wakeup =
-        scheduled_time_domain_wakeup;
+  void set_scheduled_time_domain_wake_up(
+      base::TimeTicks scheduled_time_domain_wake_up) {
+    main_thread_only().scheduled_time_domain_wake_up =
+        scheduled_time_domain_wake_up;
   }
 
   HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
@@ -277,7 +277,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     int voter_refcount;
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
-    base::TimeTicks scheduled_time_domain_wakeup;
+    base::TimeTicks scheduled_time_domain_wake_up;
   };
 
   ~TaskQueueImpl() override;

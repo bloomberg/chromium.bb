@@ -39,7 +39,7 @@ base::TimeTicks RealTimeDomain::Now() const {
   return task_queue_manager_->Delegate()->NowTicks();
 }
 
-void RealTimeDomain::RequestWakeupAt(base::TimeTicks now,
+void RealTimeDomain::RequestWakeUpAt(base::TimeTicks now,
                                      base::TimeTicks run_time) {
   // NOTE this is only called if the scheduled runtime is sooner than any
   // previously scheduled runtime, or there is no (outstanding) previously
@@ -47,7 +47,7 @@ void RealTimeDomain::RequestWakeupAt(base::TimeTicks now,
   task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, this, now, run_time);
 }
 
-void RealTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
+void RealTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
   task_queue_manager_->CancelDelayedWork(this, run_time);
 }
 

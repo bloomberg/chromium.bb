@@ -46,7 +46,7 @@ class BLINK_PLATFORM_EXPORT BudgetPoolController {
   // Deletes the budget pool.
   virtual void UnregisterBudgetPool(BudgetPool* budget_pool) = 0;
 
-  // Insert a fence to prevent tasks from running and schedule a wakeup at
+  // Insert a fence to prevent tasks from running and schedule a wake-up at
   // an appropriate time.
   virtual void BlockQueue(base::TimeTicks now, TaskQueue* queue) = 0;
 

@@ -116,11 +116,11 @@ class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   // to unblock and run tasks again. When unblocked, it still can run tasks
   // when budget is positive but less than this level until being blocked
   // until being blocked when budget reaches zero.
-  // This is needed for integration with WakeupBudgetPool to prevent a situation
-  // when wakeup happened but time budget pool allows only one task to run at
+  // This is needed for integration with WakeUpBudgetPool to prevent a situation
+  // when wake-up happened but time budget pool allows only one task to run at
   // the moment.
-  // It is recommended to use the same value for this and WakeupBudgetPool's
-  // wakeup window length.
+  // It is recommended to use the same value for this and WakeUpBudgetPool's
+  // wake-up window length.
   // NOTE: This does not have an immediate effect and does not call
   // BudgetPoolController::UnblockQueue.
   void SetMinBudgetLevelToRun(base::TimeTicks now,

@@ -281,9 +281,9 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
-  // If |pending_task| is at the head of the queue, then make sure a wakeup
+  // If |pending_task| is at the head of the queue, then make sure a wake-up
   // is requested if the queue is enabled.  Note we still want to schedule a
-  // wakeup even if blocked by a fence, because we'd break throttling logic
+  // wake-up even if blocked by a fence, because we'd break throttling logic
   // otherwise.
   base::TimeTicks next_delayed_task =
       main_thread_only().delayed_incoming_queue.top().delayed_run_time;
@@ -421,7 +421,7 @@ bool TaskQueueImpl::HasPendingImmediateWork() const {
 }
 
 base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
-  // Note we don't scheduled a wakeup for disabled queues.
+  // Note we don't scheduled a wake-up for disabled queues.
   if (main_thread_only().delayed_incoming_queue.empty() || !IsQueueEnabled())
     return base::nullopt;
 

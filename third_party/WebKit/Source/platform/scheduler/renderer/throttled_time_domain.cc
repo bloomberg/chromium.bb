@@ -17,14 +17,14 @@ const char* ThrottledTimeDomain::GetName() const {
   return "ThrottledTimeDomain";
 }
 
-void ThrottledTimeDomain::RequestWakeupAt(base::TimeTicks now,
+void ThrottledTimeDomain::RequestWakeUpAt(base::TimeTicks now,
                                           base::TimeTicks run_time) {
-  // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
+  // We assume the owner (i.e. TaskQueueThrottler) will manage wake-ups on our
   // behalf.
 }
 
-void ThrottledTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeupAt is a NOP.
+void ThrottledTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
+  // We ignore this because RequestWakeUpAt is a NOP.
 }
 
 base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
@@ -37,7 +37,7 @@ base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
   if (now >= next_run_time)
     return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 
-  // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
+  // We assume the owner (i.e. TaskQueueThrottler) will manage wake-ups on our
   // behalf.
   return base::nullopt;
 }

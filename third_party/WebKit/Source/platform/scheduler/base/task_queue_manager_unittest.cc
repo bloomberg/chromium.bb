@@ -133,8 +133,8 @@ class TaskQueueManagerTest : public testing::Test {
           manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
   }
 
-  void WakeupReadyDelayedQueues(LazyNow lazy_now) {
-    manager_->WakeupReadyDelayedQueues(&lazy_now);
+  void WakeUpReadyDelayedQueues(LazyNow lazy_now) {
+    manager_->WakeUpReadyDelayedQueues(&lazy_now);
   }
 
   using NextTaskDelay = TaskQueueManagerForTest::NextTaskDelay;
@@ -401,7 +401,7 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTask) {
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   // Move the task into the |delayed_work_queue|.
-  WakeupReadyDelayedQueues(LazyNow(now_src_.get()));
+  WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_FALSE(runners_[0]->delayed_work_queue()->Empty());
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
@@ -1163,12 +1163,12 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTasks) {
 
   // Move time forwards until just before the delayed task should run.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
-  WakeupReadyDelayedQueues(LazyNow(now_src_.get()));
+  WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 
   // Force the delayed task onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(2));
-  WakeupReadyDelayedQueues(LazyNow(now_src_.get()));
+  WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   test_task_runner_->RunUntilIdle();
@@ -1761,7 +1761,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainObserver_DelayedTask) {
   voter->SetQueueEnabled(false);
 
   // When a queue has been enabled, we may get a notification if the
-  // TimeDomain's next scheduled wakeup has changed.
+  // TimeDomain's next scheduled wake-up has changed.
   EXPECT_CALL(observer, OnTimeDomainHasDelayedWork(runners_[0].get()));
   voter->SetQueueEnabled(true);
 
@@ -2221,16 +2221,16 @@ TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasks) {
   task2.weak_factory_.InvalidateWeakPtrs();
   task3.weak_factory_.InvalidateWeakPtrs();
 
-  std::set<base::TimeTicks> wakeup_times;
+  std::set<base::TimeTicks> wake_up_times;
 
   RunUntilIdle(base::Bind(
-      [](std::set<base::TimeTicks>* wakeup_times,
+      [](std::set<base::TimeTicks>* wake_up_times,
          base::SimpleTestTickClock* clock) {
-        wakeup_times->insert(clock->NowTicks());
+        wake_up_times->insert(clock->NowTicks());
       },
-      &wakeup_times, now_src_.get()));
+      &wake_up_times, now_src_.get()));
 
-  EXPECT_THAT(wakeup_times,
+  EXPECT_THAT(wake_up_times,
               ElementsAre(start_time + delay1, start_time + delay4));
   EXPECT_THAT(run_times, ElementsAre(start_time + delay1, start_time + delay4));
 }
@@ -2269,16 +2269,16 @@ TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasksReversePostOrder) {
   task2.weak_factory_.InvalidateWeakPtrs();
   task3.weak_factory_.InvalidateWeakPtrs();
 
-  std::set<base::TimeTicks> wakeup_times;
+  std::set<base::TimeTicks> wake_up_times;
 
   RunUntilIdle(base::Bind(
-      [](std::set<base::TimeTicks>* wakeup_times,
+      [](std::set<base::TimeTicks>* wake_up_times,
          base::SimpleTestTickClock* clock) {
-        wakeup_times->insert(clock->NowTicks());
+        wake_up_times->insert(clock->NowTicks());
       },
-      &wakeup_times, now_src_.get()));
+      &wake_up_times, now_src_.get()));
 
-  EXPECT_THAT(wakeup_times,
+  EXPECT_THAT(wake_up_times,
               ElementsAre(start_time + delay1, start_time + delay4));
   EXPECT_THAT(run_times, ElementsAre(start_time + delay1, start_time + delay4));
 }
@@ -2314,7 +2314,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
                             task4.weak_factory_.GetWeakPtr(), &run_times),
       delay4);
 
-  // Post a non-canceled task with |delay3|. So we should still get a wakeup at
+  // Post a non-canceled task with |delay3|. So we should still get a wake-up at
   // |delay3| even though we cancel |task3|.
   runners_[0]->PostDelayedTask(FROM_HERE,
                                base::Bind(&CancelableTask::RecordTimeTask,
@@ -2325,16 +2325,16 @@ TEST_F(TaskQueueManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
   task3.weak_factory_.InvalidateWeakPtrs();
   task1.weak_factory_.InvalidateWeakPtrs();
 
-  std::set<base::TimeTicks> wakeup_times;
+  std::set<base::TimeTicks> wake_up_times;
 
   RunUntilIdle(base::Bind(
-      [](std::set<base::TimeTicks>* wakeup_times,
+      [](std::set<base::TimeTicks>* wake_up_times,
          base::SimpleTestTickClock* clock) {
-        wakeup_times->insert(clock->NowTicks());
+        wake_up_times->insert(clock->NowTicks());
       },
-      &wakeup_times, now_src_.get()));
+      &wake_up_times, now_src_.get()));
 
-  EXPECT_THAT(wakeup_times,
+  EXPECT_THAT(wake_up_times,
               ElementsAre(start_time + delay1, start_time + delay3,
                           start_time + delay4));
 
@@ -2839,7 +2839,7 @@ TEST_F(TaskQueueManagerTest, GetNextScheduledWakeUp) {
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay2);
   EXPECT_EQ(start_time + delay2, runners_[0]->GetNextScheduledWakeUp());
 
-  // We don't have wakeups scheduled for disabled queues.
+  // We don't have wake-ups scheduled for disabled queues.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);

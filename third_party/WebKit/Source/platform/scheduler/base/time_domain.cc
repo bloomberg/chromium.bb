@@ -38,23 +38,23 @@ void TimeDomain::ScheduleDelayedWork(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(queue->IsQueueEnabled());
-  // We only want to store a single wakeup per queue, so we need to remove any
+  // We only want to store a single wake-up per queue, so we need to remove any
   // previously registered wake up for |queue|.
   if (queue->heap_handle().IsValid()) {
-    DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
+    DCHECK_NE(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
 
     // O(log n)
-    delayed_wakeup_queue_.ChangeKey(queue->heap_handle(), {wake_up, queue});
+    delayed_wake_up_queue_.ChangeKey(queue->heap_handle(), {wake_up, queue});
   } else {
     // O(log n)
-    delayed_wakeup_queue_.insert({wake_up, queue});
+    delayed_wake_up_queue_.insert({wake_up, queue});
   }
 
-  queue->set_scheduled_time_domain_wakeup(wake_up.time);
+  queue->set_scheduled_time_domain_wake_up(wake_up.time);
 
-  // If |queue| is the first wakeup then request the wakeup.
-  if (delayed_wakeup_queue_.Min().queue == queue)
-    RequestWakeupAt(now, wake_up.time);
+  // If |queue| is the first wake-up then request the wake-up.
+  if (delayed_wake_up_queue_.Min().queue == queue)
+    RequestWakeUpAt(now, wake_up.time);
 
   if (observer_)
     observer_->OnTimeDomainHasDelayedWork(queue);
@@ -69,72 +69,73 @@ void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
 
-  // If no wakeup has been requested then bail out.
+  // If no wake-up has been requested then bail out.
   if (!queue->heap_handle().IsValid())
     return;
 
-  DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
-  DCHECK(!delayed_wakeup_queue_.empty());
-  base::TimeTicks prev_first_wakeup = delayed_wakeup_queue_.Min().wake_up.time;
+  DCHECK_NE(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
+  DCHECK(!delayed_wake_up_queue_.empty());
+  base::TimeTicks prev_first_wake_up =
+      delayed_wake_up_queue_.Min().wake_up.time;
 
   // O(log n)
-  delayed_wakeup_queue_.erase(queue->heap_handle());
+  delayed_wake_up_queue_.erase(queue->heap_handle());
 
-  if (delayed_wakeup_queue_.empty()) {
-    CancelWakeupAt(prev_first_wakeup);
-  } else if (prev_first_wakeup != delayed_wakeup_queue_.Min().wake_up.time) {
-    CancelWakeupAt(prev_first_wakeup);
-    RequestWakeupAt(Now(), delayed_wakeup_queue_.Min().wake_up.time);
+  if (delayed_wake_up_queue_.empty()) {
+    CancelWakeUpAt(prev_first_wake_up);
+  } else if (prev_first_wake_up != delayed_wake_up_queue_.Min().wake_up.time) {
+    CancelWakeUpAt(prev_first_wake_up);
+    RequestWakeUpAt(Now(), delayed_wake_up_queue_.Min().wake_up.time);
   }
 }
 
-void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
+void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Wake up any queues with pending delayed work.  Note std::multimap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
-  // queue to wakeup.
-  while (!delayed_wakeup_queue_.empty() &&
-         delayed_wakeup_queue_.Min().wake_up.time <= lazy_now->Now()) {
-    internal::TaskQueueImpl* queue = delayed_wakeup_queue_.Min().queue;
+  // queue to wake-up.
+  while (!delayed_wake_up_queue_.empty() &&
+         delayed_wake_up_queue_.Min().wake_up.time <= lazy_now->Now()) {
+    internal::TaskQueueImpl* queue = delayed_wake_up_queue_.Min().queue;
     base::Optional<internal::TaskQueueImpl::DelayedWakeUp> next_wake_up =
         queue->WakeUpForDelayedWork(lazy_now);
 
     if (next_wake_up) {
       // O(log n)
-      delayed_wakeup_queue_.ReplaceMin({*next_wake_up, queue});
-      queue->set_scheduled_time_domain_wakeup(next_wake_up->time);
+      delayed_wake_up_queue_.ReplaceMin({*next_wake_up, queue});
+      queue->set_scheduled_time_domain_wake_up(next_wake_up->time);
     } else {
       // O(log n)
-      delayed_wakeup_queue_.Pop();
-      DCHECK_EQ(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
+      delayed_wake_up_queue_.Pop();
+      DCHECK_EQ(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
     }
   }
 }
 
 bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (delayed_wakeup_queue_.empty())
+  if (delayed_wake_up_queue_.empty())
     return false;
 
-  *out_time = delayed_wakeup_queue_.Min().wake_up.time;
+  *out_time = delayed_wake_up_queue_.Min().wake_up.time;
   return true;
 }
 
 bool TimeDomain::NextScheduledTaskQueue(TaskQueue** out_task_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (delayed_wakeup_queue_.empty())
+  if (delayed_wake_up_queue_.empty())
     return false;
 
-  *out_task_queue = delayed_wakeup_queue_.Min().queue;
+  *out_task_queue = delayed_wake_up_queue_.Min().queue;
   return true;
 }
 
 void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary();
   state->SetString("name", GetName());
-  state->SetInteger("registered_delay_count", delayed_wakeup_queue_.size());
-  if (!delayed_wakeup_queue_.empty()) {
-    base::TimeDelta delay = delayed_wakeup_queue_.Min().wake_up.time - Now();
+  state->SetInteger("registered_delay_count", delayed_wake_up_queue_.size());
+  if (!delayed_wake_up_queue_.empty()) {
+    base::TimeDelta delay = delayed_wake_up_queue_.Min().wake_up.time - Now();
     state->SetDouble("next_delay_ms", delay.InMillisecondsF());
   }
   AsValueIntoInternal(state);
