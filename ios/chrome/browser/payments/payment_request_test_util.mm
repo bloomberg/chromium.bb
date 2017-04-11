@@ -43,6 +43,9 @@ web::PaymentRequest CreateTestWebPaymentRequest() {
   shipping_option2.selected = false;
   web_payment_request.details.shipping_options.push_back(shipping_option2);
   web_payment_request.options.request_shipping = true;
+  web_payment_request.options.request_payer_name = true;
+  web_payment_request.options.request_payer_email = true;
+  web_payment_request.options.request_payer_phone = true;
   return web_payment_request;
 }
 

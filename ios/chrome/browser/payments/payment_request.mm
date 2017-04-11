@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/profile_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -90,12 +91,15 @@ void PaymentRequest::PopulateProfileCache() {
   for (const auto* profile : profiles_to_suggest) {
     profile_cache_.push_back(*profile);
     shipping_profiles_.push_back(&profile_cache_.back());
-    // TODO(crbug.com/602666): Implement deduplication rules for profiles.
     contact_profiles_.push_back(&profile_cache_.back());
   }
 
-  // TODO(crbug.com/602666): Implement prioritization rules for shipping and
-  // contact profiles.
+  // TODO(crbug.com/602666): Implement deduplication and prioritization rules
+  // for shipping profiles.
+
+  contact_profiles_ = payments::profile_util::FilterProfilesForContact(
+      contact_profiles_, GetApplicationContext()->GetApplicationLocale(),
+      *this);
 
   if (!shipping_profiles_.empty())
     selected_shipping_profile_ = shipping_profiles_[0];
