@@ -4,6 +4,7 @@
 
 #include "modules/webaudio/AudioWorkletThread.h"
 
+#include <memory>
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
@@ -12,10 +13,9 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

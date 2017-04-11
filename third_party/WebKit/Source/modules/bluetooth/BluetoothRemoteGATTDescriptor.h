@@ -5,6 +5,7 @@
 #ifndef BluetoothRemoteGATTDescriptor_h
 #define BluetoothRemoteGATTDescriptor_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMDataView.h"
@@ -13,8 +14,7 @@
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

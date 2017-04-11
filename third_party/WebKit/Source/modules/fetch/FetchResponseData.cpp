@@ -9,8 +9,8 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/loader/fetch/FetchUtils.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

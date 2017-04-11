@@ -6,7 +6,7 @@
 #define WebGLSharedPlatform3DObject_h
 
 #include "modules/webgl/WebGLSharedObject.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

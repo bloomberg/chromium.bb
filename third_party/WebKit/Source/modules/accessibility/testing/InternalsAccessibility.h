@@ -5,7 +5,7 @@
 #ifndef InternalsAccessibility_h
 #define InternalsAccessibility_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

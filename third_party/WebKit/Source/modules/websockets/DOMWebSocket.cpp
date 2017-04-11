@@ -54,14 +54,14 @@
 #include "platform/network/NetworkLog.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashSet.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
 static const int32_t kBucketCountForMessageSizeHistogram = 50;

@@ -31,7 +31,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

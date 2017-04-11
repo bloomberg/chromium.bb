@@ -5,11 +5,11 @@
 #ifndef ServiceWorkerContainerClient_h
 #define ServiceWorkerContainerClient_h
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
-#include "wtf/Forward.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

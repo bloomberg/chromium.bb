@@ -26,13 +26,13 @@
 #ifndef WaveShaperProcessor_h
 #define WaveShaperProcessor_h
 
+#include <memory>
 #include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

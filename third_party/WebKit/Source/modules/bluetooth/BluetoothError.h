@@ -6,8 +6,8 @@
 #define BluetoothError_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

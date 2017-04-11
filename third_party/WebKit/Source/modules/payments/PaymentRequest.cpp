@@ -40,10 +40,10 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/HashSet.h"
 
 using payments::mojom::blink::CanMakePaymentQueryResult;
 using payments::mojom::blink::PaymentAddressPtr;

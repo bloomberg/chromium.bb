@@ -5,7 +5,7 @@
 #include "modules/payments/PaymentRequestEvent.h"
 
 #include "modules/serviceworkers/RespondWithObserver.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

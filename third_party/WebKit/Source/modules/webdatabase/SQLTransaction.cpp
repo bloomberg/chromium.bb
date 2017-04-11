@@ -44,8 +44,8 @@
 #include "modules/webdatabase/SQLTransactionClient.h"  // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/StorageLog.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

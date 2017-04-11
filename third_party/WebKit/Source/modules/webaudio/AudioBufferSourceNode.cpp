@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
+#include "modules/webaudio/AudioBufferSourceNode.h"
+#include <algorithm>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioBufferSourceOptions.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

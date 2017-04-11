@@ -4,6 +4,7 @@
 
 #include "modules/fetch/BodyStreamBuffer.h"
 
+#include <memory>
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/html/FormData.h"
@@ -14,10 +15,9 @@
 #include "platform/blob/BlobURL.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

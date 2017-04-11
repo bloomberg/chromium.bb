@@ -4,6 +4,7 @@
 
 #include "modules/fetch/Response.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
@@ -17,11 +18,10 @@
 #include "modules/fetch/FetchResponseData.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 namespace {

@@ -29,9 +29,9 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

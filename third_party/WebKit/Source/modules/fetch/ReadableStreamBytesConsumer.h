@@ -5,14 +5,14 @@
 #ifndef ReadableStreamBytesConsumer_h
 #define ReadableStreamBytesConsumer_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMTypedArray.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

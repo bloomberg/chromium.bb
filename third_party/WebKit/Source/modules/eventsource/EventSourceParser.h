@@ -5,13 +5,13 @@
 #ifndef EventSourceParser_h
 #define EventSourceParser_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextCodec.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -30,8 +30,8 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -31,19 +31,19 @@
 #ifndef WorkerWebSocketChannel_h
 #define WorkerWebSocketChannel_h
 
+#include <stdint.h>
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <stdint.h>
 
 namespace blink {
 

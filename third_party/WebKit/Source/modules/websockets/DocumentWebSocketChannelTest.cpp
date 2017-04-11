@@ -4,6 +4,8 @@
 
 #include "modules/websockets/WebSocketChannel.h"
 
+#include <stdint.h>
+#include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/Blob.h"
@@ -14,13 +16,11 @@
 #include "modules/websockets/WebSocketHandleClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <stdint.h>
 
 using testing::_;
 using testing::InSequence;

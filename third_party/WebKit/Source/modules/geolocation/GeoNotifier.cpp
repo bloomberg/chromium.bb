@@ -8,7 +8,7 @@
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Histogram.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

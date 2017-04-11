@@ -10,11 +10,11 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

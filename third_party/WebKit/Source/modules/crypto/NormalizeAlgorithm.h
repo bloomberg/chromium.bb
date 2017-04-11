@@ -33,13 +33,13 @@
 
 #include "bindings/modules/v8/DictionaryOrString.h"
 #include "modules/ModulesExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebString.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Compiler.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

@@ -4,6 +4,8 @@
 
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -14,10 +16,8 @@
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 

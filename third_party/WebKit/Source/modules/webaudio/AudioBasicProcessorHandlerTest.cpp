@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/audio/AudioProcessor.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

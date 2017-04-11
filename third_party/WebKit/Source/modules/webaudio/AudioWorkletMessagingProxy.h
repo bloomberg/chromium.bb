@@ -5,9 +5,9 @@
 #ifndef AudioWorkletMessagingProxy_h
 #define AudioWorkletMessagingProxy_h
 
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
-#include "wtf/Allocator.h"
 #include <memory>
+#include "core/workers/ThreadedWorkletMessagingProxy.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

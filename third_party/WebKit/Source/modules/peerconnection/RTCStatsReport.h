@@ -8,9 +8,9 @@
 #include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebRTCStats.h"
-#include "wtf/text/WTFString.h"
 
 #include <map>
 

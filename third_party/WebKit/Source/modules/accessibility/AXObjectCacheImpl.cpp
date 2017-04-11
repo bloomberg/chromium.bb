@@ -79,8 +79,8 @@
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableHeaderContainer.h"
 #include "modules/accessibility/AXTableRow.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

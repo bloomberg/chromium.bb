@@ -29,10 +29,10 @@
 #ifndef SQLError_h
 #define SQLError_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -34,8 +34,8 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Locker.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/Locker.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

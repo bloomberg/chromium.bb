@@ -29,16 +29,16 @@
 #ifndef DatabaseTracker_h
 #define DatabaseTracker_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Functional.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

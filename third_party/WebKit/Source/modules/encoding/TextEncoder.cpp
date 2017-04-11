@@ -33,8 +33,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/encoding/Encoding.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
 

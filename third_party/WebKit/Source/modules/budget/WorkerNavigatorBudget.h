@@ -8,7 +8,7 @@
 #include "core/workers/WorkerNavigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/GarbageCollected.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

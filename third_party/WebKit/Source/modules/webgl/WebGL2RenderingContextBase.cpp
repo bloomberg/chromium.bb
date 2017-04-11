@@ -4,6 +4,7 @@
 
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
+#include <memory>
 #include "bindings/modules/v8/WebGLAny.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -25,11 +26,10 @@
 #include "modules/webgl/WebGLTransformFeedback.h"
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 using WTF::String;
 

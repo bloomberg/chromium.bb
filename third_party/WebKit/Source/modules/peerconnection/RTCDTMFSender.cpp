@@ -25,6 +25,7 @@
 
 #include "modules/peerconnection/RTCDTMFSender.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -32,11 +33,10 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/peerconnection/RTCDTMFToneChangeEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

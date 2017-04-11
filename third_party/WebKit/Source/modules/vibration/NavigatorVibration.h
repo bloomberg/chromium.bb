@@ -26,8 +26,8 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -13,9 +13,9 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
 #include "platform/blob/BlobData.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

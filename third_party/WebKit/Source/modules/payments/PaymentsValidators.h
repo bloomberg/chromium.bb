@@ -7,8 +7,8 @@
 
 #include "components/payments/content/payment_request.mojom-blink.h"
 #include "modules/ModulesExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

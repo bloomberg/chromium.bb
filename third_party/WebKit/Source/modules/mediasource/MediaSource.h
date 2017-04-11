@@ -41,8 +41,8 @@
 #include "modules/EventTargetModules.h"
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebMediaSource.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

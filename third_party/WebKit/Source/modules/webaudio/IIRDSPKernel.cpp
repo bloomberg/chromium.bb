@@ -4,7 +4,7 @@
 
 #include "modules/webaudio/IIRDSPKernel.h"
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

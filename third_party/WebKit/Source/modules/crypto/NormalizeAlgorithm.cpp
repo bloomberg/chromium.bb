@@ -30,6 +30,8 @@
 
 #include "modules/crypto/NormalizeAlgorithm.h"
 
+#include <algorithm>
+#include <memory>
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -37,14 +39,12 @@
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMTypedArray.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

@@ -25,14 +25,14 @@
 
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 
+#include <memory>
 #include "modules/webdatabase/sqlite/SQLLog.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include <memory>
 
 // SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the
 // statement once if the database scheme has changed. We rely on this behavior.

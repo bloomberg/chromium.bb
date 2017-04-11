@@ -12,10 +12,10 @@
 #include "modules/ModulesExport.h"
 #include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

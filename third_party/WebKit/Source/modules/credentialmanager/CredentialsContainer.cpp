@@ -4,6 +4,7 @@
 
 #include "modules/credentialmanager/CredentialsContainer.h"
 
+#include <memory>
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -21,14 +22,13 @@
 #include "modules/credentialmanager/FederatedCredentialRequestOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCredential.h"
 #include "public/platform/WebCredentialManagerClient.h"
 #include "public/platform/WebCredentialManagerError.h"
 #include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebPasswordCredential.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

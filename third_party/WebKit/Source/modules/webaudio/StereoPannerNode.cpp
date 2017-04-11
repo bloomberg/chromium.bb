@@ -12,7 +12,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/StereoPannerOptions.h"
 #include "platform/audio/StereoPanner.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

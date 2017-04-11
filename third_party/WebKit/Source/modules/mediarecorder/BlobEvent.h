@@ -9,7 +9,7 @@
 #include "core/fileapi/Blob.h"
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

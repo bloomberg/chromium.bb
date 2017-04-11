@@ -5,7 +5,7 @@
 #include "modules/notifications/NotificationEvent.h"
 
 #include "modules/notifications/NotificationEventInit.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

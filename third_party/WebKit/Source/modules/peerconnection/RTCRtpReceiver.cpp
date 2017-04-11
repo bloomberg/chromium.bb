@@ -5,8 +5,8 @@
 #include "modules/peerconnection/RTCRtpReceiver.h"
 
 #include "bindings/core/v8/Microtask.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRTCRtpContributingSource.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

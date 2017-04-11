@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
+#include "modules/webaudio/DelayNode.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/DelayNode.h"
 #include "modules/webaudio/DelayOptions.h"
 #include "modules/webaudio/DelayProcessor.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

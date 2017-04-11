@@ -25,16 +25,16 @@
 #ifndef RTCDataChannel_h
 #define RTCDataChannel_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Compiler.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
-#include "wtf/Compiler.h"
-#include <memory>
 
 namespace blink {
 

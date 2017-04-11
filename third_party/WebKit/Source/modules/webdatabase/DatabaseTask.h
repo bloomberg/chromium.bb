@@ -29,17 +29,17 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
+#include <memory>
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

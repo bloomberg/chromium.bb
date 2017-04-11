@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

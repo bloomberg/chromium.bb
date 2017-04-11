@@ -31,12 +31,12 @@
 #ifndef FileSystemClient_h
 #define FileSystemClient_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "platform/FileSystemType.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

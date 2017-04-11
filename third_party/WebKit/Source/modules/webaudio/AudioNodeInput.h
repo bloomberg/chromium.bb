@@ -26,12 +26,12 @@
 #ifndef AudioNodeInput_h
 #define AudioNodeInput_h
 
+#include <memory>
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

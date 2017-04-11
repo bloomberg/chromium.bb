@@ -42,12 +42,12 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

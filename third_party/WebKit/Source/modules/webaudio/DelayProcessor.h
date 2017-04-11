@@ -26,10 +26,10 @@
 #ifndef DelayProcessor_h
 #define DelayProcessor_h
 
+#include <memory>
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "wtf/RefPtr.h"
-#include <memory>
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

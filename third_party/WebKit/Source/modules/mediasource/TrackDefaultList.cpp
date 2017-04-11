@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

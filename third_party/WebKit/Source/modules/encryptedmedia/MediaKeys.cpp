@@ -25,6 +25,7 @@
 
 #include "modules/encryptedmedia/MediaKeys.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -39,9 +40,8 @@
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebContentDecryptionModule.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 #define MEDIA_KEYS_LOG_LEVEL 3
 

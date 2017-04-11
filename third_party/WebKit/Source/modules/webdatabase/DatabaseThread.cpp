@@ -28,6 +28,7 @@
 
 #include "modules/webdatabase/DatabaseThread.h"
 
+#include <memory>
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
@@ -36,9 +37,8 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

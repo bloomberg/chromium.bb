@@ -11,6 +11,8 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -19,8 +21,6 @@
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Functional.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {

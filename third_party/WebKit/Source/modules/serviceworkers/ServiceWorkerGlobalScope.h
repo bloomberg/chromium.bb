@@ -30,14 +30,14 @@
 #ifndef ServiceWorkerGlobalScope_h
 #define ServiceWorkerGlobalScope_h
 
+#include <memory>
 #include "bindings/modules/v8/RequestOrUSVString.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

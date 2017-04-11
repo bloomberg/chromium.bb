@@ -26,17 +26,17 @@
 #ifndef IDBCursor_h
 #define IDBCursor_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "wtf/Compiler.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

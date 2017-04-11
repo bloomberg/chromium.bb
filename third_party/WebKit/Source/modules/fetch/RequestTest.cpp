@@ -4,16 +4,16 @@
 
 #include "modules/fetch/Request.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 namespace {

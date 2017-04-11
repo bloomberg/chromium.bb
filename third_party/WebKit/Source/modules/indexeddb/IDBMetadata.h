@@ -30,13 +30,13 @@
 #define IDBMetadata_h
 
 #include "modules/indexeddb/IDBKeyPath.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/indexeddb/WebIDBMetadata.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

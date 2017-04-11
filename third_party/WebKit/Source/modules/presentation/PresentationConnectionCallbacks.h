@@ -6,9 +6,9 @@
 #define PresentationConnectionCallbacks_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

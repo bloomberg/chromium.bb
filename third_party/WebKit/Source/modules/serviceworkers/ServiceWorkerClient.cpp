@@ -11,8 +11,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

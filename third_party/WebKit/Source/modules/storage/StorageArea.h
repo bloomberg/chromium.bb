@@ -26,11 +26,11 @@
 #ifndef StorageArea_h
 #define StorageArea_h
 
+#include <memory>
 #include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

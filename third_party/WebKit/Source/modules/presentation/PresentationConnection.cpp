@@ -4,6 +4,7 @@
 
 #include "modules/presentation/PresentationConnection.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
@@ -24,9 +25,8 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

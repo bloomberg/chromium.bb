@@ -31,14 +31,14 @@
 #ifndef LocalFileSystem_h
 #define LocalFileSystem_h
 
+#include <memory>
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

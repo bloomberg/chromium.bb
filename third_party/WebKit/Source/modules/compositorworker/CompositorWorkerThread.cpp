@@ -4,12 +4,12 @@
 
 #include "modules/compositorworker/CompositorWorkerThread.h"
 
+#include <memory>
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/Assertions.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

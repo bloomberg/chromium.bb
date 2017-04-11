@@ -4,8 +4,8 @@
 
 #include "modules/push_messaging/PushController.h"
 
+#include "platform/wtf/Assertions.h"
 #include "public/platform/modules/push_messaging/WebPushClient.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

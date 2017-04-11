@@ -27,7 +27,7 @@
 #define WebGLRenderbuffer_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

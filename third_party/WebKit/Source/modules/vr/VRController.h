@@ -11,7 +11,7 @@
 #include "modules/vr/VRDisplay.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Deque.h"
+#include "platform/wtf/Deque.h"
 
 #include <memory>
 

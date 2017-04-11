@@ -21,7 +21,7 @@
 #define PluginOcclusionSupport_h
 
 #include "modules/ModulesExport.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 class Element;

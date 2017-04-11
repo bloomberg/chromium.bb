@@ -24,13 +24,13 @@
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {

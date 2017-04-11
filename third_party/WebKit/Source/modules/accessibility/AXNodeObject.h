@@ -31,7 +31,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

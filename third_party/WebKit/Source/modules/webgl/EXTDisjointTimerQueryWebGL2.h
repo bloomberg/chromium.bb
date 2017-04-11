@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "modules/webgl/WebGLExtension.h"
 #include "modules/webgl/WebGLQuery.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

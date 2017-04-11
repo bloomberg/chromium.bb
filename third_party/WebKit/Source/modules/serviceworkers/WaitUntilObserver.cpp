@@ -12,10 +12,10 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

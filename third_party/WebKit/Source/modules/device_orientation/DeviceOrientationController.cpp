@@ -13,8 +13,8 @@
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

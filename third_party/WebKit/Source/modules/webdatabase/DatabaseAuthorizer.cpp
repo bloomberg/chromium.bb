@@ -28,10 +28,10 @@
 
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 
-#include "wtf/HashSet.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

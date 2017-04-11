@@ -28,9 +28,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

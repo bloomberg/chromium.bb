@@ -32,8 +32,8 @@
 #define RTCSessionDescription_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebRTCSessionDescription.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

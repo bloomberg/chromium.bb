@@ -8,10 +8,10 @@
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Deque.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

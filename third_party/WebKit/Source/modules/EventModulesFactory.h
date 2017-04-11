@@ -5,12 +5,12 @@
 #ifndef EventModulesFactory_h
 #define EventModulesFactory_h
 
+#include <memory>
 #include "core/events/EventFactory.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -4,10 +4,10 @@
 
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
-#include "public/platform/WebScheduler.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/wtf/PtrUtil.h"
+#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

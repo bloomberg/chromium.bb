@@ -5,12 +5,12 @@
 #ifndef MediaKeySystemAccess_h
 #define MediaKeySystemAccess_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebContentDecryptionModuleAccess.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

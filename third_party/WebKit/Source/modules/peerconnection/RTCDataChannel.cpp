@@ -24,6 +24,7 @@
 
 #include "modules/peerconnection/RTCDataChannel.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
@@ -33,9 +34,8 @@
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

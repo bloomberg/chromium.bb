@@ -39,7 +39,7 @@
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 #include <memory>
 

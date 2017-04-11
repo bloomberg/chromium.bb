@@ -38,7 +38,7 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

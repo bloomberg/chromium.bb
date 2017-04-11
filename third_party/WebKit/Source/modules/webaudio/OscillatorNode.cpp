@@ -24,6 +24,7 @@
  */
 
 #include "modules/webaudio/OscillatorNode.h"
+#include <algorithm>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -31,9 +32,8 @@
 #include "modules/webaudio/PeriodicWave.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include <algorithm>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

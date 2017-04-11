@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "media/capture/mojo/image_capture.mojom-blink.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

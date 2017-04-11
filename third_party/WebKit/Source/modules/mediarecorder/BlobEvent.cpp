@@ -5,7 +5,7 @@
 #include "modules/mediarecorder/BlobEvent.h"
 
 #include "modules/mediarecorder/BlobEventInit.h"
-#include "wtf/dtoa/double.h"
+#include "platform/wtf/dtoa/double.h"
 
 namespace blink {
 

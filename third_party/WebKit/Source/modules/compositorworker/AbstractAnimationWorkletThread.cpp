@@ -4,14 +4,14 @@
 
 #include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 
+#include <memory>
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkletThreadHolder.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

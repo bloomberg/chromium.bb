@@ -31,15 +31,15 @@
 #ifndef TextDecoder_h
 #define TextDecoder_h
 
+#include <memory>
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/encoding/TextDecodeOptions.h"
 #include "modules/encoding/TextDecoderOptions.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/TextEncoding.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/text/TextCodec.h"
+#include "platform/wtf/text/TextEncoding.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

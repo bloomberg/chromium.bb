@@ -10,9 +10,9 @@
 #include "core/frame/UseCounter.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/presentation/PresentationController.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

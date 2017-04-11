@@ -6,7 +6,7 @@
 #define GLStringQuery_h
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -4,9 +4,9 @@
 
 #include "modules/payments/PaymentsValidators.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 #include <ostream>  // NOLINT
+#include "platform/wtf/text/WTFString.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {

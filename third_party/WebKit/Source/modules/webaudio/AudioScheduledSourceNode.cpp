@@ -33,7 +33,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

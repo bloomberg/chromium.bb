@@ -19,11 +19,11 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Compiler.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

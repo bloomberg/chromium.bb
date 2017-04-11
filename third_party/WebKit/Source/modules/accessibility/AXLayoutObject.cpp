@@ -90,7 +90,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 using blink::WebLocalizedString;
 

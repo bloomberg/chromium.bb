@@ -8,10 +8,10 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/mediasession/MediaImage.h"
 #include "modules/mediasession/MediaMetadata.h"
+#include "platform/wtf/text/StringOperators.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/WebSize.h"
 #include "url/url_constants.h"
-#include "wtf/text/StringOperators.h"
 
 namespace blink {
 

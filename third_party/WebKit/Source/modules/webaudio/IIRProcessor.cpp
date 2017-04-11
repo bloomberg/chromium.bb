@@ -4,9 +4,9 @@
 
 #include "modules/webaudio/IIRProcessor.h"
 
-#include "modules/webaudio/IIRDSPKernel.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "modules/webaudio/IIRDSPKernel.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

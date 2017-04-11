@@ -37,8 +37,8 @@
 #include "modules/canvas2d/CanvasPattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

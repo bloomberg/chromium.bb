@@ -15,8 +15,8 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

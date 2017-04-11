@@ -26,12 +26,12 @@
 #ifndef MediaElementAudioSourceNode_h
 #define MediaElementAudioSourceNode_h
 
+#include <memory>
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

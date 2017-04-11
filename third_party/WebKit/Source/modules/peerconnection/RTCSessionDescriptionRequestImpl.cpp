@@ -36,8 +36,8 @@
 #include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 #include "modules/peerconnection/RTCSessionDescription.h"
 #include "modules/peerconnection/RTCSessionDescriptionCallback.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebRTCSessionDescription.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

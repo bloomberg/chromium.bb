@@ -24,10 +24,10 @@
  */
 
 #include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <memory>
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

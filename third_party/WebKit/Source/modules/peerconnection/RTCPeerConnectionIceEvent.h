@@ -26,7 +26,7 @@
 #define RTCPeerConnectionIceEvent_h
 
 #include "modules/EventModules.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 class RTCIceCandidate;

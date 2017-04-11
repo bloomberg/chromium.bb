@@ -40,10 +40,10 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

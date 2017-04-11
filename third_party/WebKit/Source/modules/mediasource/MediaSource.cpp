@@ -30,6 +30,7 @@
 
 #include "modules/mediasource/MediaSource.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -46,11 +47,10 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebSourceBuffer.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include <memory>
 
 #ifndef BLINK_MSLOG
 #define BLINK_MSLOG DVLOG(3)

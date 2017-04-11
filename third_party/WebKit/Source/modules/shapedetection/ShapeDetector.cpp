@@ -14,9 +14,9 @@
 #include "core/html/ImageData.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "platform/graphics/Image.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "wtf/CheckedNumeric.h"
 
 namespace blink {
 

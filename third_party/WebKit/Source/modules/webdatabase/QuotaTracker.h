@@ -32,10 +32,10 @@
 #define QuotaTracker_h
 
 #include "modules/ModulesExport.h"
-#include "wtf/HashMap.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

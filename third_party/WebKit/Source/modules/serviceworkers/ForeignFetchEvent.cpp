@@ -8,7 +8,7 @@
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

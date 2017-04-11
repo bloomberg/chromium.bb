@@ -14,7 +14,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

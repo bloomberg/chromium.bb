@@ -26,16 +26,16 @@
 #ifndef AudioNode_h
 #define AudioNode_h
 
+#include <memory>
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/build_config.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/build_config.h"
 
 #define DEBUG_AUDIONODE_REFERENCES 0
 

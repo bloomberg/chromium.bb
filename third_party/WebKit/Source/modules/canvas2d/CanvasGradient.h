@@ -31,7 +31,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

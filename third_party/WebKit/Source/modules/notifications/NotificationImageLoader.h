@@ -5,15 +5,15 @@
 #ifndef NotificationImageLoader_h
 #define NotificationImageLoader_h
 
+#include <memory>
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "wtf/Functional.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/push_messaging/PushError.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

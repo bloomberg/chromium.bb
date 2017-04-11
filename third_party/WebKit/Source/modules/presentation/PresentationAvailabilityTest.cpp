@@ -13,9 +13,9 @@
 #include "modules/presentation/PresentationRequest.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 namespace {

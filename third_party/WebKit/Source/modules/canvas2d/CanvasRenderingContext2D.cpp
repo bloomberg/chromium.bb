@@ -62,11 +62,11 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiTextRun.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

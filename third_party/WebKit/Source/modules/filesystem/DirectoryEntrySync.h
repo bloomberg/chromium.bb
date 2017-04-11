@@ -32,7 +32,7 @@
 #define DirectoryEntrySync_h
 
 #include "modules/filesystem/EntrySync.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

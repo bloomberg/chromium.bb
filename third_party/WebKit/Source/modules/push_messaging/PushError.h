@@ -7,8 +7,8 @@
 
 #include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
 #include "public/platform/modules/push_messaging/WebPushError.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

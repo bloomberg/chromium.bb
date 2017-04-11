@@ -4,13 +4,13 @@
 
 #include "modules/notifications/NotificationResourcesLoader.h"
 
+#include <cmath>
 #include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Threading.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Threading.h"
-#include <cmath>
 
 namespace blink {
 

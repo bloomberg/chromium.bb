@@ -11,11 +11,11 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/Functional.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {

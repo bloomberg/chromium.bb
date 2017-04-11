@@ -5,7 +5,7 @@
 #include "modules/payments/PaymentAddress.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

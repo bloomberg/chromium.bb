@@ -7,8 +7,8 @@
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayPiece.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebData.h"
-#include "wtf/text/WTFString.h"
 
 #include <algorithm>
 #include <limits>

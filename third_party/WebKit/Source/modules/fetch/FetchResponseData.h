@@ -5,15 +5,15 @@
 #ifndef FetchResponseData_h
 #define FetchResponseData_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 

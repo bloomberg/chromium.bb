@@ -4,6 +4,7 @@
 
 #include "modules/mediasession/MediaSession.h"
 
+#include <memory>
 #include "bindings/modules/v8/MediaSessionActionHandler.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -12,10 +13,9 @@
 #include "modules/mediasession/MediaMetadata.h"
 #include "modules/mediasession/MediaMetadataSanitizer.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "wtf/Optional.h"
-#include <memory>
 
 namespace blink {
 

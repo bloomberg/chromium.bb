@@ -42,9 +42,9 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 #include <memory>
 

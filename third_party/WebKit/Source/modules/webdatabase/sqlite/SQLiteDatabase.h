@@ -28,10 +28,10 @@
 #define SQLiteDatabase_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #if COMPILER(MSVC)
 #pragma warning(disable : 4800)

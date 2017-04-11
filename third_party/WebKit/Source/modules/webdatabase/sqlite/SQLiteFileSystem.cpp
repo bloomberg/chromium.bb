@@ -32,8 +32,8 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/wtf/text/CString.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "wtf/text/CString.h"
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the
 // platform-specific files SQLiteFileSystemChromium{Win|Posix}.cpp

@@ -5,4 +5,7 @@ include_rules = [
     "+platform",
     "+public/platform",
     "-web",
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf/",
 ]

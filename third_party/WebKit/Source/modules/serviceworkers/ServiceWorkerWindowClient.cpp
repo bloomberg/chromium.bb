@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 
+#include <memory>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -14,9 +15,8 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

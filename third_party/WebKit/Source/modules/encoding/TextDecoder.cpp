@@ -34,8 +34,8 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "modules/encoding/Encoding.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
 

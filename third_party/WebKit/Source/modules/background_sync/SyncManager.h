@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/background_sync/background_sync.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

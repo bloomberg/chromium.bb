@@ -31,7 +31,7 @@
 
 #include "core/html/HTMLElement.h"
 #include "modules/accessibility/AXLayoutObject.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

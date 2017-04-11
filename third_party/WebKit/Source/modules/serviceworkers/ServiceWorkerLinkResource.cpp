@@ -15,9 +15,9 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

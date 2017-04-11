@@ -26,9 +26,9 @@
 #ifndef SpeechRecognitionClient_h
 #define SpeechRecognitionClient_h
 
-#include "modules/ModulesExport.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "modules/ModulesExport.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

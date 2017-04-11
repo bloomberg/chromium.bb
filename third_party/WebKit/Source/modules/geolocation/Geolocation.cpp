@@ -38,10 +38,10 @@
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 namespace {

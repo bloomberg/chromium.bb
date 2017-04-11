@@ -82,6 +82,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
 #include "platform/peerconnection/RTCOfferOptionsPlatform.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebMediaStream.h"
@@ -99,8 +101,6 @@
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/platform/WebRTCVoidRequest.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

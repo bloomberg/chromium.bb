@@ -7,7 +7,7 @@
 #include "core/dom/Document.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorProxy.h"
-#include "wtf/CurrentTime.h"
+#include "platform/wtf/CurrentTime.h"
 
 using device::mojom::blink::ReportingMode;
 

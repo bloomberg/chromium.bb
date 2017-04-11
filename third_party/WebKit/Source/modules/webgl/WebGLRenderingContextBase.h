@@ -26,6 +26,8 @@
 #ifndef WebGLRenderingContextBase_h
 #define WebGLRenderingContextBase_h
 
+#include <memory>
+#include <set>
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -46,13 +48,11 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <set>
 
 namespace blink {
 class WebLayer;

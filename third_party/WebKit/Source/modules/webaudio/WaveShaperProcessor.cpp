@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/WaveShaperDSPKernel.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "modules/webaudio/WaveShaperDSPKernel.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

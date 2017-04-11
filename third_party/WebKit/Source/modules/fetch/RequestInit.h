@@ -5,13 +5,13 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
+#include <memory>
 #include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -8,7 +8,7 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

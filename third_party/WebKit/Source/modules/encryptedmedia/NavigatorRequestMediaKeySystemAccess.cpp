@@ -24,14 +24,14 @@
 #include "platform/Histogram.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/mime/ContentType.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

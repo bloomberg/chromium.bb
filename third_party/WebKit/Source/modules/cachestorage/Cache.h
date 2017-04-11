@@ -5,18 +5,18 @@
 #ifndef Cache_h
 #define Cache_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "modules/fetch/GlobalFetch.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

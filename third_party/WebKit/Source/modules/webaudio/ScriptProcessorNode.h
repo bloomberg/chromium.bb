@@ -30,10 +30,10 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

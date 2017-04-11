@@ -31,15 +31,15 @@
 #ifndef SourceBuffer_h
 #define SourceBuffer_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediasource/TrackDefaultList.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebSourceBufferClient.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

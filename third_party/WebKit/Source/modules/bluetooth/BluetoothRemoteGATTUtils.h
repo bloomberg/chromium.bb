@@ -6,7 +6,7 @@
 #define BluetoothRemoteGATTUtils_h
 
 #include "core/dom/DOMDataView.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

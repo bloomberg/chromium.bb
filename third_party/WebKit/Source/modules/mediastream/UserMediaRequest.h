@@ -36,8 +36,8 @@
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebMediaConstraints.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

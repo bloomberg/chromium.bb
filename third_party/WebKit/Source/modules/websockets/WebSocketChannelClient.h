@@ -31,12 +31,12 @@
 #ifndef WebSocketChannelClient_h
 #define WebSocketChannelClient_h
 
+#include <stdint.h>
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include <memory>
-#include <stdint.h>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

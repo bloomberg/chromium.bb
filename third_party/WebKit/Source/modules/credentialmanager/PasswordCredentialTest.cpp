@@ -4,6 +4,7 @@
 
 #include "modules/credentialmanager/PasswordCredential.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -13,9 +14,8 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

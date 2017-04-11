@@ -11,7 +11,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/IIRFilterOptions.h"
 #include "platform/Histogram.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

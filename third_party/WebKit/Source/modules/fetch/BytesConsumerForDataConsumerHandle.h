@@ -8,9 +8,9 @@
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 #include <memory>
 

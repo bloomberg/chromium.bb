@@ -5,7 +5,7 @@
 #ifndef InternalsServiceWorker_h
 #define InternalsServiceWorker_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

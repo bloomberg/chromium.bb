@@ -9,10 +9,10 @@
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
-#include "wtf/Vector.h"
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/TextEncoding.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/TextCodec.h"
+#include "platform/wtf/text/TextEncoding.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

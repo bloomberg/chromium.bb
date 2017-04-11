@@ -8,8 +8,8 @@
 #include "modules/ModulesExport.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebVector.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

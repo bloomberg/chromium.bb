@@ -24,13 +24,13 @@
  */
 
 #include "modules/webaudio/AudioParamTimeline.h"
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/CPU.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 #if CPU(X86) || CPU(X86_64)
 #include <emmintrin.h>

@@ -5,16 +5,16 @@
 #ifndef NotificationResourcesLoader_h
 #define NotificationResourcesLoader_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "modules/notifications/NotificationImageLoader.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/ThreadState.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "wtf/Functional.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

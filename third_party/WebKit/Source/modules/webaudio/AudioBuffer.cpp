@@ -36,7 +36,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/typed_arrays/Float32Array.h"
+#include "platform/wtf/typed_arrays/Float32Array.h"
 
 namespace blink {
 

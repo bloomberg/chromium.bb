@@ -30,6 +30,7 @@
 
 #include "modules/filesystem/DOMFileSystemSync.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -41,10 +42,9 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterSync.h"
 #include "platform/FileMetadata.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

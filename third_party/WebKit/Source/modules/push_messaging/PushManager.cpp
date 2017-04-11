@@ -19,12 +19,12 @@
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
-#include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 namespace {

@@ -9,9 +9,9 @@
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
-#include "wtf/Compiler.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

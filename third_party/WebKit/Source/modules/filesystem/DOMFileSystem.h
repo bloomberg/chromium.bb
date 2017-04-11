@@ -40,8 +40,8 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

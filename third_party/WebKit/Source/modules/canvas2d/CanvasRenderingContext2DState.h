@@ -10,8 +10,8 @@
 #include "platform/fonts/Font.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

@@ -29,8 +29,8 @@
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLShader.h"
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

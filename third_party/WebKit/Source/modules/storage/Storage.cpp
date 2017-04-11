@@ -26,8 +26,8 @@
 #include "modules/storage/Storage.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

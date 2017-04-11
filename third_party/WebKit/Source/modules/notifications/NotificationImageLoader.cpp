@@ -14,11 +14,11 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Threading.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "skia/ext/image_operations.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Threading.h"
 
 #define NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, type_name, value, max) \
   case NotificationImageLoader::Type::k##type_name: {                         \

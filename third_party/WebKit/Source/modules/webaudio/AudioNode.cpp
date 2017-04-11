@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioParam.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/InstanceCounters.h"
-#include "wtf/Atomics.h"
+#include "platform/wtf/Atomics.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>

@@ -5,9 +5,9 @@
 #ifndef CompositorWorkerMessagingProxy_h
 #define CompositorWorkerMessagingProxy_h
 
-#include "core/workers/InProcessWorkerMessagingProxy.h"
-#include "wtf/Allocator.h"
 #include <memory>
+#include "core/workers/InProcessWorkerMessagingProxy.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

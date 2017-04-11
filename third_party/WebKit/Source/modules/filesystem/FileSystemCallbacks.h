@@ -31,13 +31,13 @@
 #ifndef FileSystemCallbacks_h
 #define FileSystemCallbacks_h
 
+#include <memory>
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileSystemType.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -31,13 +31,13 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

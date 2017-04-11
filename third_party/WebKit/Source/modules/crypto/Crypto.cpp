@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/CryptographicallyRandomNumber.h"
+#include "platform/wtf/CryptographicallyRandomNumber.h"
 
 namespace blink {
 

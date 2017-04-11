@@ -7,8 +7,8 @@
 
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/PaintCanvas.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 class SkPath;
 

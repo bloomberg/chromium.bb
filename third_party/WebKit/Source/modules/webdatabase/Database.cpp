@@ -52,11 +52,11 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/Atomics.h"
-#include "wtf/CurrentTime.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================

@@ -6,7 +6,7 @@
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

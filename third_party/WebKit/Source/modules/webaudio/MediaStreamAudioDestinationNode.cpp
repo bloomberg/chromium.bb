@@ -32,8 +32,8 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/UUID.h"
 #include "platform/mediastream/MediaStreamCenter.h"
+#include "platform/wtf/Locker.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "wtf/Locker.h"
 
 namespace blink {
 

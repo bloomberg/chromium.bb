@@ -29,7 +29,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
-#include "wtf/Atomics.h"
+#include "platform/wtf/Atomics.h"
 
 namespace blink {
 

@@ -14,8 +14,8 @@
 #include "modules/vr/VRDisplayEvent.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebVector.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

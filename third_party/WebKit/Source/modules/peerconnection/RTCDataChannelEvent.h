@@ -28,7 +28,7 @@
 #include "modules/EventModules.h"
 #include "modules/peerconnection/RTCDataChannel.h"
 #include "modules/peerconnection/RTCDataChannelEventInit.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

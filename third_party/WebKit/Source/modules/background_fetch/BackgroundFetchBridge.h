@@ -9,10 +9,10 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
-#include "wtf/Functional.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

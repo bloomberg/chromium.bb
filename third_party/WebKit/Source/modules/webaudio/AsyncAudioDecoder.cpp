@@ -23,8 +23,8 @@
  * DAMAGE.
  */
 
-#include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "modules/webaudio/BaseAudioContext.h"
@@ -32,9 +32,9 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/threading/BackgroundTaskRunner.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

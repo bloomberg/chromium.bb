@@ -4,14 +4,14 @@
 
 #include "modules/presentation/PresentationConnectionCallbacks.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

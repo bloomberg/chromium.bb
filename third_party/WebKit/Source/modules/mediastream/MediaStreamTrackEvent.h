@@ -27,7 +27,7 @@
 
 #include "modules/EventModules.h"
 #include "modules/mediastream/MediaStreamTrackEventInit.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

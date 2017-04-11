@@ -4,10 +4,10 @@
 
 #include "modules/fetch/FetchHeaderList.h"
 
+#include <algorithm>
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

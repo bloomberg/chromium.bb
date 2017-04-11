@@ -37,11 +37,11 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

@@ -39,7 +39,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/FrameViewBase.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 // This file provides a utility function to support rendering certain elements
 // above plugins.

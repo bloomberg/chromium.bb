@@ -26,10 +26,10 @@
 #ifndef AudioBasicProcessorHandler_h
 #define AudioBasicProcessorHandler_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
-#include "wtf/Forward.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

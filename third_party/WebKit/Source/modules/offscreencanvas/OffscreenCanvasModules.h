@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/ModulesExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -27,7 +27,7 @@
 #define SQLTransactionStateMachine_h
 
 #include "modules/webdatabase/SQLTransactionState.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

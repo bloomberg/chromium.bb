@@ -30,6 +30,9 @@
 
 #include "modules/mediasource/SourceBuffer.h"
 
+#include <limits>
+#include <memory>
+#include <sstream>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -50,11 +53,8 @@
 #include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/WebSourceBuffer.h"
-#include "wtf/MathExtras.h"
-#include <limits>
-#include <memory>
-#include <sstream>
 
 #ifndef BLINK_SBLOG
 #define BLINK_SBLOG DVLOG(3)

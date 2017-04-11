@@ -6,9 +6,9 @@
 #define PushPermissionStatusCallbacks_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
-#include "wtf/Noncopyable.h"
 
 namespace WTF {
 class String;

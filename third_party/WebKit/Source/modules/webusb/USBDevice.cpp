@@ -18,8 +18,8 @@
 #include "modules/webusb/USBIsochronousOutTransferResult.h"
 #include "modules/webusb/USBOutTransferResult.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
 
 namespace usb = device::usb::blink;
 

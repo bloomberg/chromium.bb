@@ -5,10 +5,10 @@
 #include "modules/battery/BatteryDispatcher.h"
 
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "services/device/public/interfaces/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

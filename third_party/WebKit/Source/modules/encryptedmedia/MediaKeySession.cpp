@@ -25,6 +25,8 @@
 
 #include "modules/encryptedmedia/MediaKeySession.h"
 
+#include <cmath>
+#include <limits>
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -44,16 +46,14 @@
 #include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
 #include "platform/network/mime/ContentType.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebContentDecryptionModuleException.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
 #include "public/platform/WebEncryptedMediaKeyInformation.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/PtrUtil.h"
-#include <cmath>
-#include <limits>
 
 #define MEDIA_KEY_SESSION_LOG_LEVEL 3
 

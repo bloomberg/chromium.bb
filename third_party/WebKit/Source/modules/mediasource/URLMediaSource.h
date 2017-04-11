@@ -31,8 +31,8 @@
 #ifndef URLMediaSource_h
 #define URLMediaSource_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

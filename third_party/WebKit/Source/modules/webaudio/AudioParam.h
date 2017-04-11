@@ -29,15 +29,15 @@
 #ifndef AudioParam_h
 #define AudioParam_h
 
+#include <sys/types.h>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/text/WTFString.h"
-#include <sys/types.h>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

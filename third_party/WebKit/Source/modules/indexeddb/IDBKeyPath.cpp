@@ -25,10 +25,10 @@
 
 #include "modules/indexeddb/IDBKeyPath.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/dtoa.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/dtoa.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

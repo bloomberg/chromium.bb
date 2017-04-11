@@ -56,8 +56,8 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

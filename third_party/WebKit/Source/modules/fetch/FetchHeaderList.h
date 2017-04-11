@@ -5,13 +5,13 @@
 #ifndef FetchHeaderList_h
 #define FetchHeaderList_h
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
 #include <utility>
+#include "modules/ModulesExport.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

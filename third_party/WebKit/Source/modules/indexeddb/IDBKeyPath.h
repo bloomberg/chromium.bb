@@ -28,10 +28,10 @@
 
 #include "bindings/modules/v8/StringOrStringSequence.h"
 #include "modules/ModulesExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

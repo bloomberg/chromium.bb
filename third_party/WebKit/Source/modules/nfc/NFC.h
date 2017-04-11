@@ -13,7 +13,7 @@
 #include "device/nfc/nfc.mojom-blink.h"
 #include "modules/nfc/MessageCallback.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

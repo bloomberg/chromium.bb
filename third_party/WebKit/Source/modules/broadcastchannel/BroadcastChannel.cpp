@@ -9,9 +9,9 @@
 #include "core/events/EventQueue.h"
 #include "core/events/MessageEvent.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

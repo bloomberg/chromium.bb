@@ -31,8 +31,8 @@
 #ifndef InternalsVibration_h
 #define InternalsVibration_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

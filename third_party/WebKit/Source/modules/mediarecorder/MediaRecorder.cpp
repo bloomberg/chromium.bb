@@ -4,6 +4,8 @@
 
 #include "modules/mediarecorder/MediaRecorder.h"
 
+#include <algorithm>
+#include <limits>
 #include "bindings/core/v8/Dictionary.h"
 #include "core/events/Event.h"
 #include "core/fileapi/Blob.h"
@@ -12,12 +14,10 @@
 #include "modules/mediarecorder/BlobEvent.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/mime/ContentType.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <limits>
 
 namespace blink {
 

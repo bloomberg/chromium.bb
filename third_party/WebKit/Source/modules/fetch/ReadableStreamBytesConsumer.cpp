@@ -16,9 +16,9 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/streams/ReadableStreamOperations.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

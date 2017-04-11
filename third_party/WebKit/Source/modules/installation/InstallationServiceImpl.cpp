@@ -4,12 +4,12 @@
 
 #include "modules/installation/InstallationServiceImpl.h"
 
+#include <utility>
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "wtf/PtrUtil.h"
-#include <utility>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -4,6 +4,7 @@
 
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
@@ -14,11 +15,10 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Timer.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

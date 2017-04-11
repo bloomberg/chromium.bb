@@ -26,7 +26,7 @@
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
 #include "core/dom/DOMException.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 #include <memory>
 

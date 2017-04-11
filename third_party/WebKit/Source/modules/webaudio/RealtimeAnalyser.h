@@ -26,11 +26,11 @@
 #ifndef RealtimeAnalyser_h
 #define RealtimeAnalyser_h
 
+#include <memory>
 #include "core/dom/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

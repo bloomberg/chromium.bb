@@ -35,7 +35,7 @@
 #include "modules/webaudio/PannerOptions.h"
 #include "platform/Histogram.h"
 #include "platform/audio/HRTFPanner.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

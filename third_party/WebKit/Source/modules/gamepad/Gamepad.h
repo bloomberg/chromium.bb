@@ -30,9 +30,9 @@
 #include "modules/gamepad/GamepadButton.h"
 #include "modules/gamepad/GamepadPose.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebGamepad.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -25,10 +25,10 @@
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
-#include "platform/audio/AudioUtilities.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <algorithm>
+#include "platform/audio/AudioUtilities.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

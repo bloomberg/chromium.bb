@@ -11,8 +11,8 @@
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "platform/heap/Heap.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

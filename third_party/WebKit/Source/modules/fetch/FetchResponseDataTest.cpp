@@ -7,9 +7,9 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/blob/BlobData.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

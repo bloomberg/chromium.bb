@@ -28,6 +28,7 @@
 
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
+#include <memory>
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -41,9 +42,8 @@
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 // How does a SQLTransaction work?
 // ==============================

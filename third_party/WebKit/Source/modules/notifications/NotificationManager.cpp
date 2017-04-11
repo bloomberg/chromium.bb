@@ -11,11 +11,11 @@
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

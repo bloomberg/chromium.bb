@@ -96,14 +96,14 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

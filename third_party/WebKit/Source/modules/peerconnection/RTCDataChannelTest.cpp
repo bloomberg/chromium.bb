@@ -9,12 +9,12 @@
 #include "core/dom/DOMException.h"
 #include "core/events/Event.h"
 #include "platform/heap/Heap.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebVector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {

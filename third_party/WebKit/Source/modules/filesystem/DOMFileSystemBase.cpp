@@ -30,6 +30,7 @@
 
 #include "modules/filesystem/DOMFileSystemBase.h"
 
+#include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -44,12 +45,11 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 

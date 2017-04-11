@@ -10,7 +10,7 @@
 #include "core/frame/Navigator.h"
 #include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -33,8 +33,8 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaErrorState.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaConstraints.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

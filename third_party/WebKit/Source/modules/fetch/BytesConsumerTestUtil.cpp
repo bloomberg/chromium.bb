@@ -8,8 +8,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "wtf/Assertions.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

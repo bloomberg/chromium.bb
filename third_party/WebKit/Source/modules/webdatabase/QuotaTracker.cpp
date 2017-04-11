@@ -31,10 +31,10 @@
 #include "modules/webdatabase/QuotaTracker.h"
 
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Threading.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
 
 namespace blink {
 

@@ -9,13 +9,13 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"
 #include "public/platform/modules/installedapp/WebRelatedAppsFetcher.h"
 #include "public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
 #include "public/platform/modules/installedapp/related_application.mojom-blink.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 #include <memory>
 

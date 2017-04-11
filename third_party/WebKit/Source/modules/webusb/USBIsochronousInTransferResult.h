@@ -10,7 +10,7 @@
 #include "core/dom/DOMDataView.h"
 #include "modules/webusb/USBIsochronousInTransferPacket.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

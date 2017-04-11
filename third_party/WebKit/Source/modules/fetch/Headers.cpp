@@ -9,10 +9,10 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Iterator.h"
 #include "platform/loader/fetch/FetchUtils.h"
-#include "wtf/NotFound.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

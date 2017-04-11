@@ -31,9 +31,9 @@
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
-#include "wtf/AutoReset.h"
-#include "wtf/Time.h"
 
 #include <array>
 

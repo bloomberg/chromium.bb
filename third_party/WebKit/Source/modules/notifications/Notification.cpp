@@ -52,13 +52,13 @@
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
-#include "wtf/Assertions.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 namespace {

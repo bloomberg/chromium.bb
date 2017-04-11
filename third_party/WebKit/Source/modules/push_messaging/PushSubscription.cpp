@@ -4,18 +4,18 @@
 
 #include "modules/push_messaging/PushSubscription.h"
 
+#include <memory>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/Base64.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/Base64.h"
-#include <memory>
 
 namespace blink {
 

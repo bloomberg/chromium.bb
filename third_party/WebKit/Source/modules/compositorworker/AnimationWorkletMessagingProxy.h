@@ -5,10 +5,10 @@
 #ifndef AnimationWorkletMessagingProxy_h
 #define AnimationWorkletMessagingProxy_h
 
+#include <memory>
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

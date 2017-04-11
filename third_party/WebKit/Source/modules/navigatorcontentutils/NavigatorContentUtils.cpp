@@ -32,8 +32,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

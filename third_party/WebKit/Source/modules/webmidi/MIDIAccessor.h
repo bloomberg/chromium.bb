@@ -31,11 +31,11 @@
 #ifndef MIDIAccessor_h
 #define MIDIAccessor_h
 
+#include <memory>
 #include "media/midi/midi_service.mojom-blink.h"
+#include "platform/wtf/Allocator.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessorClient.h"
-#include "wtf/Allocator.h"
-#include <memory>
 
 namespace blink {
 

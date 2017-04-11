@@ -25,12 +25,12 @@
 
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
 
+#include <memory>
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/MediaStreamAudioSourceOptions.h"
-#include "wtf/Locker.h"
-#include <memory>
+#include "platform/wtf/Locker.h"
 
 namespace blink {
 

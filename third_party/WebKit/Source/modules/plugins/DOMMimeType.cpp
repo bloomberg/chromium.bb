@@ -23,7 +23,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "modules/plugins/DOMPlugin.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

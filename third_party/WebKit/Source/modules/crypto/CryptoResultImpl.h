@@ -35,8 +35,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/ModulesExport.h"
 #include "platform/CryptoResult.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebCrypto.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

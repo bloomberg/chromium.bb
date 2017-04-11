@@ -5,9 +5,9 @@
 #ifndef EncryptedMediaUtils_h
 #define EncryptedMediaUtils_h
 
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

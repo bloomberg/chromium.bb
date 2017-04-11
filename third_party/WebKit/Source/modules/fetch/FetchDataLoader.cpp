@@ -4,13 +4,13 @@
 
 #include "modules/fetch/FetchDataLoader.h"
 
+#include <memory>
 #include "core/html/parser/TextResourceDecoder.h"
 #include "modules/fetch/BytesConsumer.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/typed_arrays/ArrayBufferBuilder.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
 
 namespace blink {
 

@@ -61,9 +61,9 @@
 #include "modules/webgl/WebGLDrawBuffers.h"
 #include "modules/webgl/WebGLLoseContext.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/CheckedNumeric.h"
 
 namespace blink {
 

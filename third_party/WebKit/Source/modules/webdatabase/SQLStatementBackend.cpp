@@ -34,7 +34,7 @@
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/text/CString.h"
 
 // The Life-Cycle of a SQLStatement i.e. Who's keeping the SQLStatement alive?
 // ==========================================================================

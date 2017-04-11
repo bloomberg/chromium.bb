@@ -19,11 +19,11 @@
 #include "modules/mediastream/MediaTrackConstraints.h"
 #include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebImageCaptureFrameGrabber.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

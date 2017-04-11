@@ -5,13 +5,13 @@
 #ifndef InspectorWebSocketEvents_h
 #define InspectorWebSocketEvents_h
 
+#include <memory>
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

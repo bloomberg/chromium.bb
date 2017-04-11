@@ -8,9 +8,9 @@
 #include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebCallbacks.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

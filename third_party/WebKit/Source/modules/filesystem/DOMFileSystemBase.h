@@ -37,7 +37,7 @@
 #include "platform/FileSystemType.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 class WebFileSystem;

@@ -4,6 +4,7 @@
 
 #include "modules/fetch/Body.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -13,10 +14,9 @@
 #include "core/fileapi/Blob.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

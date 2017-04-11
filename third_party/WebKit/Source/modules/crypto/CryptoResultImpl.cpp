@@ -43,9 +43,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/wtf/Atomics.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/Atomics.h"
 
 namespace blink {
 

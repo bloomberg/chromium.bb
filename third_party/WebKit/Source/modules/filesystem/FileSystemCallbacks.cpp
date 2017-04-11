@@ -30,6 +30,7 @@
 
 #include "modules/filesystem/FileSystemCallbacks.h"
 
+#include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/BlobCallback.h"
 #include "core/fileapi/File.h"
@@ -50,9 +51,8 @@
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFileWriter.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

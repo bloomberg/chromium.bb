@@ -31,8 +31,8 @@
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Deque.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -30,7 +30,7 @@
 #define ChannelMergerNode_h
 
 #include "modules/webaudio/AudioNode.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/NetworkUtils.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define PaymentAppRequestConversion_h
 
 #include "modules/payments/PaymentAppRequest.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

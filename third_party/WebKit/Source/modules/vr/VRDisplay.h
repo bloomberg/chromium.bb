@@ -14,9 +14,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
 
 namespace gpu {
 namespace gles2 {

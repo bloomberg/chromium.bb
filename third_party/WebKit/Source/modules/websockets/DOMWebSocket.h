@@ -31,6 +31,9 @@
 #ifndef DOMWebSocket_h
 #define DOMWebSocket_h
 
+#include <stddef.h>
+#include <stdint.h>
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/SuspendableObject.h"
@@ -43,14 +46,11 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <stddef.h>
-#include <stdint.h>
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

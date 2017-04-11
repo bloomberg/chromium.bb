@@ -28,14 +28,14 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include "wtf/build_config.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

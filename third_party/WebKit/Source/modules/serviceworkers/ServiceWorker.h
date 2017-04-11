@@ -31,15 +31,15 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
 #include "modules/ModulesExport.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
-#include "wtf/PassRefPtr.h"
-#include <memory>
 
 namespace blink {
 

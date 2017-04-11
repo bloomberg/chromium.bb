@@ -10,9 +10,9 @@
 #include "core/events/EventTarget.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

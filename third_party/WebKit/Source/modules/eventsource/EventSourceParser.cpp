@@ -6,12 +6,12 @@
 
 #include "core/EventTypeNames.h"
 #include "modules/eventsource/EventSource.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/Assertions.h"
-#include "wtf/NotFound.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/TextEncoding.h"
-#include "wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/TextEncoding.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
 

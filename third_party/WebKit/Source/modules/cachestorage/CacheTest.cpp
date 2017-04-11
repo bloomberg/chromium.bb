@@ -4,6 +4,9 @@
 
 #include "modules/cachestorage/Cache.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -21,13 +24,10 @@
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
-#include <string>
 
 namespace blink {
 

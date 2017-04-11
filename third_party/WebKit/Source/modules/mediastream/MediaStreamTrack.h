@@ -34,8 +34,8 @@
 #include "modules/ModulesExport.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebMediaConstraints.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

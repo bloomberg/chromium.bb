@@ -57,9 +57,9 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "wtf/Vector.h"
 
 using blink::protocol::Array;
 using blink::protocol::IndexedDB::DatabaseWithObjectStores;

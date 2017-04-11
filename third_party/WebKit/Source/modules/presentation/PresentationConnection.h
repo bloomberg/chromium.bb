@@ -12,11 +12,11 @@
 #include "core/fileapi/FileError.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "public/platform/modules/presentation/WebPresentationController.h"
 #include "public/platform/modules/presentation/WebPresentationInfo.h"
-#include "wtf/text/WTFString.h"
 
 namespace WTF {
 class AtomicString;

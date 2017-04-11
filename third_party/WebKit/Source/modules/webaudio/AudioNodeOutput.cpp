@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <memory>
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/BaseAudioContext.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

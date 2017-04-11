@@ -8,8 +8,8 @@
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
+#include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/DynamicsCompressorOptions.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DynamicsCompressor.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;

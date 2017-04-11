@@ -8,10 +8,10 @@
 #include "core/testing/NullExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 namespace {

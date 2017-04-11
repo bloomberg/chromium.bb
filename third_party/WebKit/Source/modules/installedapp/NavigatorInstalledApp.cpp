@@ -16,8 +16,8 @@
 #include "core/frame/Navigator.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/installedapp/RelatedApplication.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

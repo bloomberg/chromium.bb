@@ -28,7 +28,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

@@ -6,10 +6,10 @@
 #define NotificationManager_h
 
 #include "core/dom/ExecutionContext.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

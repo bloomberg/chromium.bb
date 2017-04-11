@@ -26,9 +26,9 @@
 #ifndef AsyncAudioDecoder_h
 #define AsyncAudioDecoder_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/build_config.h"
 #include <memory>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

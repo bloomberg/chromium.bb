@@ -29,8 +29,8 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Assertions.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "wtf/Assertions.h"
 
 namespace gpu {
 namespace gles2 {

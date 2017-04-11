@@ -38,10 +38,10 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/mediastream/MediaTrackConstraints.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

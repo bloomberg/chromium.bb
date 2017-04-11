@@ -32,9 +32,9 @@
 #include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "wtf/Forward.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
 
 #include <tuple>
 

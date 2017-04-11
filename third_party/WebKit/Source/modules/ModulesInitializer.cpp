@@ -32,8 +32,8 @@
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceRegistry.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

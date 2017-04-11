@@ -13,8 +13,8 @@
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

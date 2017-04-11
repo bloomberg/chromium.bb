@@ -17,14 +17,14 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 using testing::_;
 using testing::AnyNumber;

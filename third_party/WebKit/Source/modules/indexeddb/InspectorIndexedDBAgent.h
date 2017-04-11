@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/IndexedDB.h"
 #include "modules/ModulesExport.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <v8-inspector.h>
 

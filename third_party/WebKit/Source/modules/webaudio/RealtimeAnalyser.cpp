@@ -24,14 +24,14 @@
  */
 
 #include "modules/webaudio/RealtimeAnalyser.h"
+#include <limits.h>
+#include <algorithm>
+#include <complex>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <complex>
-#include <limits.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

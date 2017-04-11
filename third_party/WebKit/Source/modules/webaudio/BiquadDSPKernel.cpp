@@ -24,10 +24,10 @@
  */
 
 #include "modules/webaudio/BiquadDSPKernel.h"
-#include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
 #include <limits.h>
+#include "platform/audio/AudioUtilities.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

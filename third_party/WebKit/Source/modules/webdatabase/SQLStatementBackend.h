@@ -28,12 +28,12 @@
 #ifndef SQLStatementBackend_h
 #define SQLStatementBackend_h
 
+#include <memory>
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #define WebSocketHandleClient_h
 
 #include "modules/websockets/WebSocketHandle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 class WebSocketHandshakeRequest;

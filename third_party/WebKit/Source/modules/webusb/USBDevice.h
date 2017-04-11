@@ -11,8 +11,8 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "platform/heap/Handle.h"
-#include "wtf/BitVector.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/BitVector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

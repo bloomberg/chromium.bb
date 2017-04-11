@@ -46,8 +46,8 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 typedef blink::protocol::Database::Backend::ExecuteSQLCallback
     ExecuteSQLCallback;

@@ -44,9 +44,9 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/HashSet.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 using blink::WebLocalizedString;
 

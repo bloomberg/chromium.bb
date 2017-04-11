@@ -16,10 +16,10 @@
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONParser.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

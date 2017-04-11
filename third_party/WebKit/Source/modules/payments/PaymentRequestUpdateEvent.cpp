@@ -12,8 +12,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/payments/PaymentUpdater.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {

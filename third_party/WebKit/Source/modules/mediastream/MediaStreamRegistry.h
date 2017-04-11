@@ -28,8 +28,8 @@
 #include "core/html/URLRegistry.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

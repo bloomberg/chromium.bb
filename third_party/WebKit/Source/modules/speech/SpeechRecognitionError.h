@@ -29,7 +29,7 @@
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechRecognitionErrorInit.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

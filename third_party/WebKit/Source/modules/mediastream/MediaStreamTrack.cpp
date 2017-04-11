@@ -43,8 +43,8 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

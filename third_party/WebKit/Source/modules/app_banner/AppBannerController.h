@@ -7,9 +7,9 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Persistent.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/modules/app_banner/app_banner.mojom-blink.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

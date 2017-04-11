@@ -7,8 +7,8 @@
 
 #include "core/workers/InProcessWorkerBase.h"
 #include "modules/ModulesExport.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

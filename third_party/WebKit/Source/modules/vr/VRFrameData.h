@@ -9,7 +9,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -30,11 +30,11 @@
 
 #include "modules/webmidi/MIDIAccessor.h"
 
-#include "modules/webmidi/MIDIAccessorClient.h"
-#include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "modules/webmidi/MIDIAccessorClient.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
+#include "public/platform/Platform.h"
 
 using blink::WebString;
 using midi::mojom::PortState;

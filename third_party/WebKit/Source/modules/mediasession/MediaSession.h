@@ -5,15 +5,15 @@
 #ifndef MediaSession_h
 #define MediaSession_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/mediasession/media_session.mojom-blink.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

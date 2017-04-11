@@ -14,10 +14,10 @@
 #include "modules/payments/PaymentShippingOption.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/Persistent.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

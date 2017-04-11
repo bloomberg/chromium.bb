@@ -7,8 +7,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Functional.h"
 
 #include <algorithm>
 #include <string.h>

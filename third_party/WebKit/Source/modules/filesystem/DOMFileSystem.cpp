@@ -44,12 +44,12 @@
 #include "platform/FileMetadata.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

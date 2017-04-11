@@ -13,8 +13,8 @@
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/modules/webshare/webshare.mojom-blink.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 

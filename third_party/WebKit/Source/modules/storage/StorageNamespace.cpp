@@ -25,14 +25,14 @@
 
 #include "modules/storage/StorageNamespace.h"
 
+#include <memory>
 #include "modules/storage/StorageArea.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebStorageNamespace.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

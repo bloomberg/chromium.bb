@@ -4,6 +4,8 @@
 
 #include "modules/app_banner/AppBannerController.h"
 
+#include <memory>
+#include <utility>
 #include "core/EventTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
@@ -13,10 +15,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
-#include <utility>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

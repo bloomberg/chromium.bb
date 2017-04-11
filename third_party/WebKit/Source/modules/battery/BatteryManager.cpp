@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

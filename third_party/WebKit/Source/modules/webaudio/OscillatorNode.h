@@ -30,9 +30,9 @@
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 #include "modules/webaudio/OscillatorOptions.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

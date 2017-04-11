@@ -4,6 +4,7 @@
 
 #include "modules/permissions/Permissions.h"
 
+#include <memory>
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -19,12 +20,11 @@
 #include "modules/permissions/PermissionStatus.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
-#include "wtf/NotFound.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

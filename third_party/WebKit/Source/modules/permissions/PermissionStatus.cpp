@@ -9,8 +9,8 @@
 #include "core/events/Event.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/permissions/PermissionUtils.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

@@ -31,17 +31,17 @@
 #ifndef ServiceWorkerGlobalScopeClient_h
 #define ServiceWorkerGlobalScopeClient_h
 
+#include <memory>
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

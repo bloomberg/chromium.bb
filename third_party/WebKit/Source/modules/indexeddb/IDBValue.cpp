@@ -6,10 +6,10 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
 #include "v8/include/v8.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

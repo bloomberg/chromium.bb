@@ -35,7 +35,7 @@
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/EntryBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

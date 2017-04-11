@@ -13,10 +13,10 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/heap/Persistent.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

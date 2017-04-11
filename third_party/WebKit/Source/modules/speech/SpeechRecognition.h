@@ -33,9 +33,9 @@
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebPrivatePtr.h"
-#include "wtf/Compiler.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

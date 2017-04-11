@@ -30,7 +30,7 @@
 #define AXARIAGrid_h
 
 #include "modules/accessibility/AXTable.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

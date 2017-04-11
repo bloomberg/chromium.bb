@@ -30,6 +30,7 @@
 
 #include "modules/filesystem/LocalFileSystem.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -39,10 +40,9 @@
 #include "modules/filesystem/FileSystemClient.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/ContentSettingCallbacks.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
-#include "wtf/Functional.h"
-#include <memory>
 
 namespace blink {
 

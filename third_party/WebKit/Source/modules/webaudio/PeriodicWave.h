@@ -29,12 +29,12 @@
 #ifndef PeriodicWave_h
 #define PeriodicWave_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

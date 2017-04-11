@@ -6,7 +6,7 @@
 #define TrackDefault_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

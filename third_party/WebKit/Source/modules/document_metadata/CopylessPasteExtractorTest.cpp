@@ -13,7 +13,6 @@
 #include "platform/json/JSONValues.h"
 #include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

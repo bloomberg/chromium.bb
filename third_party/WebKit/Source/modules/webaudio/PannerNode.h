@@ -26,6 +26,7 @@
 #ifndef PannerNode_h
 #define PannerNode_h
 
+#include <memory>
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
@@ -34,8 +35,7 @@
 #include "platform/audio/Distance.h"
 #include "platform/audio/Panner.h"
 #include "platform/geometry/FloatPoint3D.h"
-#include "wtf/HashMap.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

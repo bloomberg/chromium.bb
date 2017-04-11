@@ -14,10 +14,10 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/network/NetworkUtils.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

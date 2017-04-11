@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/StringImpl.h"
 
 namespace blink {
 

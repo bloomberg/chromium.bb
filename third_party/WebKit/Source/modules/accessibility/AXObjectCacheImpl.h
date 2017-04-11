@@ -29,13 +29,13 @@
 #ifndef AXObjectCacheImpl_h
 #define AXObjectCacheImpl_h
 
+#include <memory>
 #include "core/dom/AXObjectCache.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

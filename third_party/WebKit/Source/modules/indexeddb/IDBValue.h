@@ -10,8 +10,8 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebVector.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

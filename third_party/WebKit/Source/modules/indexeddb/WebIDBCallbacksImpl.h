@@ -29,10 +29,10 @@
 #ifndef WebIDBCallbacksImpl_h
 #define WebIDBCallbacksImpl_h
 
-#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 
 namespace blink {
 

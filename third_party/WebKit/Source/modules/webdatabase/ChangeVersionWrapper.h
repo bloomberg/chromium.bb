@@ -28,10 +28,10 @@
 #ifndef ChangeVersionWrapper_h
 #define ChangeVersionWrapper_h
 
+#include <memory>
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

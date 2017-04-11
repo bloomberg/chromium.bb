@@ -28,8 +28,8 @@
 
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "modules/webaudio/AudioParam.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

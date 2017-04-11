@@ -31,9 +31,9 @@
 #ifndef WebSocketHandle_h
 #define WebSocketHandle_h
 
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
 #include <stdint.h>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

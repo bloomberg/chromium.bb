@@ -8,9 +8,9 @@
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -14,9 +14,9 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

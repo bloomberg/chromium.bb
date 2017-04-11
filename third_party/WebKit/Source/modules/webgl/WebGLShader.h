@@ -27,7 +27,7 @@
 #define WebGLShader_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

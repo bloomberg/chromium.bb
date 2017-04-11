@@ -4,15 +4,15 @@
 
 #include "modules/fetch/BytesConsumer.h"
 
+#include <string.h>
+#include <algorithm>
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
-#include "wtf/Functional.h"
-#include "wtf/RefPtr.h"
-#include <algorithm>
-#include <string.h>
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

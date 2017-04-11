@@ -5,7 +5,7 @@
 #ifndef InternalsWebAudio_h
 #define InternalsWebAudio_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

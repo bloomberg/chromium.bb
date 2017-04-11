@@ -31,6 +31,7 @@
 #ifndef ServiceWorkerContainer_h
 #define ServiceWorkerContainer_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -41,10 +42,9 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
-#include "wtf/Functional.h"
 
 #include <utility>
 

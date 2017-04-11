@@ -40,12 +40,12 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/dtoa/utils.h"
 #include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/dtoa/utils.h"
 
 namespace blink {
 namespace {

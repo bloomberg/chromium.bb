@@ -43,9 +43,9 @@
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 #include "platform/Histogram.h"
+#include "platform/wtf/Atomics.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "wtf/Atomics.h"
 
 #include <limits>
 #include <memory>

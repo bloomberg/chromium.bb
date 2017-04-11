@@ -4,6 +4,7 @@
 
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 
+#include <utility>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -13,8 +14,7 @@
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
-#include "wtf/PtrUtil.h"
-#include <utility>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

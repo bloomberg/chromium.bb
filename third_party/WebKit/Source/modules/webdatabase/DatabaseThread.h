@@ -28,11 +28,11 @@
 #ifndef DatabaseThread_h
 #define DatabaseThread_h
 
+#include <memory>
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

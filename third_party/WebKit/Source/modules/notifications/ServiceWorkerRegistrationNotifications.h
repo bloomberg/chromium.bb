@@ -5,6 +5,7 @@
 #ifndef ServiceWorkerRegistrationNotifications_h
 #define ServiceWorkerRegistrationNotifications_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
@@ -12,10 +13,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/Visitor.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include <memory>
 
 namespace blink {
 

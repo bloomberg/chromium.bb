@@ -23,7 +23,7 @@
 #include "core/html/HTMLProgressElement.h"
 #include "core/layout/LayoutProgress.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

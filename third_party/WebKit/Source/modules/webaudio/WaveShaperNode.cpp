@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
+#include "modules/webaudio/WaveShaperNode.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/WaveShaperNode.h"
 #include "modules/webaudio/WaveShaperOptions.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

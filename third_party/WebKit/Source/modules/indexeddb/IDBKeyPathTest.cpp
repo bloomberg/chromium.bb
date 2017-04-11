@@ -28,8 +28,8 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/indexeddb/IDBKey.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 namespace {

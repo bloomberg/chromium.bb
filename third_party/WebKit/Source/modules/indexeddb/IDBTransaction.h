@@ -36,10 +36,10 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

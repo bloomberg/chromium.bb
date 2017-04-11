@@ -28,14 +28,14 @@
 #ifndef SQLTransactionBackend_h
 #define SQLTransactionBackend_h
 
+#include <memory>
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

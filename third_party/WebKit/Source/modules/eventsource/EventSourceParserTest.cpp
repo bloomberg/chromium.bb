@@ -5,8 +5,8 @@
 #include "modules/eventsource/EventSourceParser.h"
 
 #include "modules/eventsource/EventSource.h"
+#include "platform/wtf/text/CharacterNames.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/CharacterNames.h"
 
 #include <string.h>
 

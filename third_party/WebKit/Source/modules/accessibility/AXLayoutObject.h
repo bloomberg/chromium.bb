@@ -32,7 +32,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXNodeObject.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

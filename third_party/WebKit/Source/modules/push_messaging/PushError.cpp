@@ -6,7 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

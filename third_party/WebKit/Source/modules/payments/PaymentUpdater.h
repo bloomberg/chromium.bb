@@ -7,7 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/GarbageCollected.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

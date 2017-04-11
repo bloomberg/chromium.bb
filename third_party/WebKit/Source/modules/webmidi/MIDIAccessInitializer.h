@@ -5,6 +5,7 @@
 #ifndef MIDIAccessInitializer_h
 #define MIDIAccessInitializer_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "media/midi/midi_service.mojom-blink.h"
@@ -13,10 +14,9 @@
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

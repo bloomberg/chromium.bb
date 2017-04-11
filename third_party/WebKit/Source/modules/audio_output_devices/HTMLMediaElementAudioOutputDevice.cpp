@@ -4,6 +4,7 @@
 
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
@@ -11,9 +12,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/audio_output_devices/SetSinkIdCallbacks.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

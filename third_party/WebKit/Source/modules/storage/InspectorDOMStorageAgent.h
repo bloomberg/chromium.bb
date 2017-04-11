@@ -33,8 +33,8 @@
 #include "core/inspector/protocol/DOMStorage.h"
 #include "modules/ModulesExport.h"
 #include "modules/storage/StorageArea.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

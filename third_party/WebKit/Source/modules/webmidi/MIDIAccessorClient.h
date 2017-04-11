@@ -33,7 +33,7 @@
 
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/webmidi/MIDIAccessor.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
