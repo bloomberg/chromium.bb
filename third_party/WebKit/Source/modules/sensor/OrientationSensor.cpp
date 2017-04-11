@@ -15,10 +15,10 @@ Vector<double> OrientationSensor::quaternion(bool& is_null) {
   reading_dirty_ = false;
   is_null = !CanReturnReadings();
   return is_null ? Vector<double>()
-                 : Vector<double>({ReadingValueUnchecked(3),    // W
-                                   ReadingValueUnchecked(0),    // Vx
+                 : Vector<double>({ReadingValueUnchecked(0),    // Vx
                                    ReadingValueUnchecked(1),    // Vy
-                                   ReadingValueUnchecked(2)});  // Vz
+                                   ReadingValueUnchecked(2),    // Vz
+                                   ReadingValueUnchecked(3)});  // W
 }
 
 template <typename T>
