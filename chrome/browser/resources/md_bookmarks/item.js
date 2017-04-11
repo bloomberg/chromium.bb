@@ -61,12 +61,22 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onMenuButtonOpenClick_: function(e) {
+  onMenuButtonClick_: function(e) {
     e.stopPropagation();
+    this.dispatch(bookmarks.actions.selectItem(
+        this.itemId, false, false, this.getState()));
     this.fire('open-item-menu', {
       target: e.target,
       item: this.item_,
     });
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onMenuButtonDblClick_: function(e) {
+    e.stopPropagation();
   },
 
   /** @private */
@@ -79,7 +89,7 @@ Polymer({
 
   /** @private */
   onItemChanged_: function() {
-    this.isFolder_ = !(this.item_.url);
+    this.isFolder_ = !this.item_.url;
   },
 
   /**

@@ -9,7 +9,12 @@ suite('<bookmarks-item>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder('1', [createItem(['2'])])),
+      nodes: testTree(createFolder(
+          '1',
+          [
+            createItem(['2']),
+            createItem(['3']),
+          ])),
     });
     bookmarks.Store.instance_ = store;
 
@@ -35,5 +40,12 @@ suite('<bookmarks-item>', function() {
 
     assertFalse(item.$['folder-icon'].hidden);
     assertTrue(item.$.icon.hidden);
+  });
+
+  test('pressing the menu button selects the item', function() {
+    MockInteractions.tap(item.$$('.more-vert-button'));
+    assertDeepEquals(
+        bookmarks.actions.selectItem('2', false, false, store.data),
+        store.lastAction);
   });
 });
