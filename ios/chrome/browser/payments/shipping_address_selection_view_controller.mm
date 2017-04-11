@@ -8,6 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
@@ -35,8 +36,8 @@ namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
-using ::payment_request_util::GetShippingAddressSelectorTitle;
-using ::payment_request_util::GetShippingAddressSelectorInfoMessage;
+using ::payments::GetShippingAddressSelectorInfoMessage;
+using ::payments::GetShippingAddressSectionString;
 
 NSString* const kShippingAddressSelectionCollectionViewID =
     @"kShippingAddressSelectionCollectionViewID";
@@ -78,7 +79,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title = GetShippingAddressSelectorTitle(*paymentRequest);
+    self.title = base::SysUTF16ToNSString(
+        GetShippingAddressSectionString(paymentRequest->shipping_type()));
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
@@ -120,7 +122,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     messageItem.text = _errorMessage;
     messageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   } else {
-    messageItem.text = GetShippingAddressSelectorInfoMessage(*_paymentRequest);
+    messageItem.text =
+        base::SysUTF16ToNSString(GetShippingAddressSelectorInfoMessage(
+            _paymentRequest->shipping_type()));
   }
   [model addItem:messageItem
       toSectionWithIdentifier:SectionIdentifierShippingAddress];

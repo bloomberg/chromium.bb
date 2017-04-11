@@ -39,6 +39,26 @@ void PaymentRequest::set_payment_details(const web::PaymentDetails& details) {
   PopulateShippingOptionCache();
 }
 
+bool PaymentRequest::request_shipping() const {
+  return web_payment_request_.options.request_shipping;
+}
+
+bool PaymentRequest::request_payer_name() const {
+  return web_payment_request_.options.request_payer_name;
+}
+
+bool PaymentRequest::request_payer_phone() const {
+  return web_payment_request_.options.request_payer_phone;
+}
+
+bool PaymentRequest::request_payer_email() const {
+  return web_payment_request_.options.request_payer_email;
+}
+
+payments::PaymentShippingType PaymentRequest::shipping_type() const {
+  return web_payment_request_.options.shipping_type;
+}
+
 payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   if (!currency_formatter_) {
     currency_formatter_.reset(new payments::CurrencyFormatter(

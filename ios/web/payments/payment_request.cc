@@ -242,7 +242,7 @@ PaymentOptions::PaymentOptions()
       request_payer_email(false),
       request_payer_phone(false),
       request_shipping(false),
-      shipping_type(PaymentShippingType::SHIPPING) {}
+      shipping_type(payments::PaymentShippingType::SHIPPING) {}
 PaymentOptions::~PaymentOptions() = default;
 
 bool PaymentOptions::operator==(const PaymentOptions& other) const {
@@ -272,12 +272,12 @@ bool PaymentOptions::FromDictionaryValue(const base::DictionaryValue& value) {
   value.GetString(kPaymentOptionsShippingType, &shipping_type);
   if (shipping_type ==
       base::ASCIIToUTF16(kPaymentOptionsShippingTypeDelivery)) {
-    this->shipping_type = PaymentShippingType::DELIVERY;
+    this->shipping_type = payments::PaymentShippingType::DELIVERY;
   } else if (shipping_type ==
              base::ASCIIToUTF16(kPaymentOptionsShippingTypePickup)) {
-    this->shipping_type = PaymentShippingType::PICKUP;
+    this->shipping_type = payments::PaymentShippingType::PICKUP;
   } else {
-    this->shipping_type = PaymentShippingType::SHIPPING;
+    this->shipping_type = payments::PaymentShippingType::SHIPPING;
   }
 
   return true;

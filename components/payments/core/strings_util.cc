@@ -10,6 +10,24 @@
 
 namespace payments {
 
+base::string16 GetShippingAddressSelectorInfoMessage(
+    PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case payments::PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_SELECT_DELIVERY_ADDRESS_FOR_DELIVERY_METHODS);
+    case payments::PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_SELECT_PICKUP_ADDRESS_FOR_PICKUP_METHODS);
+    case payments::PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS);
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
 base::string16 GetShippingAddressSectionString(
     PaymentShippingType shipping_type) {
   switch (shipping_type) {

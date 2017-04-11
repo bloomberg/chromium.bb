@@ -12,6 +12,7 @@
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
+#include "components/payments/core/payment_options_provider.h"
 
 // C++ bindings for the PaymentRequest API. Conforms to the following specs:
 // https://w3c.github.io/browser-payment-api/ (18 July 2016 editor's draft)
@@ -170,14 +171,6 @@ class PaymentDetails {
   base::string16 error;
 };
 
-// Possible values for affecting the payment request user interface for
-// gathering the shipping address.
-enum class PaymentShippingType : int {
-  SHIPPING = 0,
-  DELIVERY = 1,
-  PICKUP = 2,
-};
-
 // Information describing a shipping option.
 class PaymentOptions {
  public:
@@ -216,7 +209,7 @@ class PaymentOptions {
   // If request_shipping is set to true, then this field may only be used to
   // influence the way the user agent presents the user interface for gathering
   // the shipping address.
-  PaymentShippingType shipping_type;
+  payments::PaymentShippingType shipping_type;
 };
 
 // All of the information provided by a page making a request for payment.

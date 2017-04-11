@@ -10,6 +10,11 @@
 
 namespace payments {
 
+// Gets the informational message to be displayed in the shipping address
+// selector view when there are no valid shipping options.
+base::string16 GetShippingAddressSelectorInfoMessage(
+    PaymentShippingType shipping_type);
+
 // Gets the appropriate display string for the Shipping Address string for the
 // given PaymentShippingType.
 base::string16 GetShippingAddressSectionString(

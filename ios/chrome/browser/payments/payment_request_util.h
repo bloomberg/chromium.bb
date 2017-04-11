@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/strings/string16.h"
+#include "components/payments/core/payment_options_provider.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -44,26 +45,12 @@ NSString* GetEmailLabelFromAutofillProfile(
 
 // Returns the title for the shipping section of the payment summary view given
 // the shipping type specified in |payment_request|.
-NSString* GetShippingSectionTitle(const PaymentRequest& payment_request);
-
-// Returns the title for the shipping address selection view given the shipping
-// type specified in |payment_request|.
-NSString* GetShippingAddressSelectorTitle(
-    const PaymentRequest& payment_request);
-
-// Returns the informational message to be displayed in the shipping address
-// selection view given the shipping type specified in |payment_request|.
-NSString* GetShippingAddressSelectorInfoMessage(
-    const PaymentRequest& payment_request);
+NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type);
 
 // Returns the error message to be displayed in the shipping address selection
 // view given the shipping type specified in |payment_request|.
 NSString* GetShippingAddressSelectorErrorMessage(
     const PaymentRequest& payment_request);
-
-// Returns the title for the shipping option selection view given the shipping
-// type specified in |payment_request|.
-NSString* GetShippingOptionSelectorTitle(const PaymentRequest& payment_request);
 
 // Returns the error message to be displayed in the shipping option selection
 // view given the shipping type specified in |payment_request|.

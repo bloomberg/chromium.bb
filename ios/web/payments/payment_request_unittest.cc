@@ -250,7 +250,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   PaymentOptions payment_options;
   payment_options.request_payer_phone = true;
   payment_options.request_shipping = true;
-  payment_options.shipping_type = PaymentShippingType::DELIVERY;
+  payment_options.shipping_type = payments::PaymentShippingType::DELIVERY;
   expected_request.options = payment_options;
 
   EXPECT_TRUE(output_request.FromDictionaryValue(request_dict));
@@ -544,12 +544,13 @@ TEST(PaymentRequestTest, PaymentOptionsEquality) {
   options2.request_shipping = true;
   EXPECT_EQ(options1, options2);
 
-  // PaymentShippingType::SHIPPING is the default value for shipping_type.
-  options1.shipping_type = PaymentShippingType::SHIPPING;
+  // payments::PaymentShippingType::SHIPPING is the default value for
+  // shipping_type.
+  options1.shipping_type = payments::PaymentShippingType::SHIPPING;
   EXPECT_EQ(options1, options2);
-  options1.shipping_type = PaymentShippingType::PICKUP;
+  options1.shipping_type = payments::PaymentShippingType::PICKUP;
   EXPECT_NE(options1, options2);
-  options2.shipping_type = PaymentShippingType::PICKUP;
+  options2.shipping_type = payments::PaymentShippingType::PICKUP;
   EXPECT_EQ(options1, options2);
 }
 

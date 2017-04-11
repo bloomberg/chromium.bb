@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/payments/core/payment_options_provider.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
@@ -26,12 +27,12 @@ class CurrencyFormatter;
 // |personal_data_manager| and manages shared resources and user selections for
 // the current PaymentRequest flow. It must be initialized with a non-null
 // instance of |personal_data_manager| that outlives this class.
-class PaymentRequest {
+class PaymentRequest : payments::PaymentOptionsProvider {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
                  autofill::PersonalDataManager* personal_data_manager);
-  ~PaymentRequest();
+  ~PaymentRequest() override;
 
   autofill::PersonalDataManager* GetPersonalDataManager() const {
     return personal_data_manager_;
@@ -42,15 +43,17 @@ class PaymentRequest {
     return web_payment_request_.details;
   }
 
-  // Returns the payment options from |web_payment_request_|.
-  const web::PaymentOptions& payment_options() const {
-    return web_payment_request_.options;
-  }
-
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as
   // well as the reference to the selected shipping option.
   void set_payment_details(const web::PaymentDetails& details);
+
+  // PaymentOptionsProvider:
+  bool request_shipping() const override;
+  bool request_payer_name() const override;
+  bool request_payer_phone() const override;
+  bool request_payer_email() const override;
+  payments::PaymentShippingType shipping_type() const override;
 
   // Returns the payments::CurrencyFormatter instance for this PaymentRequest.
   // Note: Having multiple currencies per PaymentRequest flow is not supported;

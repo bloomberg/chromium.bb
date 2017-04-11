@@ -224,7 +224,7 @@ class FullCardRequester
       card, cvc, _paymentRequest->billing_profiles(),
       GetApplicationContext()->GetApplicationLocale());
 
-  if (_paymentRequest->payment_options().request_shipping) {
+  if (_paymentRequest->request_shipping()) {
     autofill::AutofillProfile* shippingAddress =
         _paymentRequest->selected_shipping_profile();
     // TODO(crbug.com/602666): User should get here only if they have selected
@@ -239,7 +239,7 @@ class FullCardRequester
     paymentResponse.shipping_option = shippingOption->id;
   }
 
-  if (_paymentRequest->payment_options().request_payer_name) {
+  if (_paymentRequest->request_payer_name()) {
     autofill::AutofillProfile* contactInfo =
         _paymentRequest->selected_contact_profile();
     // TODO(crbug.com/602666): User should get here only if they have selected
@@ -250,7 +250,7 @@ class FullCardRequester
                              GetApplicationContext()->GetApplicationLocale());
   }
 
-  if (_paymentRequest->payment_options().request_payer_email) {
+  if (_paymentRequest->request_payer_email()) {
     autofill::AutofillProfile* contactInfo =
         _paymentRequest->selected_contact_profile();
     // TODO(crbug.com/602666): User should get here only if they have selected
@@ -260,7 +260,7 @@ class FullCardRequester
         contactInfo->GetRawInfo(autofill::EMAIL_ADDRESS);
   }
 
-  if (_paymentRequest->payment_options().request_payer_phone) {
+  if (_paymentRequest->request_payer_phone()) {
     autofill::AutofillProfile* contactInfo =
         _paymentRequest->selected_contact_profile();
     // TODO(crbug.com/602666): User should get here only if they have selected

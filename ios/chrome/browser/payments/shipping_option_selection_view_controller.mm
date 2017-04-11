@@ -8,10 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -32,7 +32,7 @@
 #endif
 
 namespace {
-using ::payment_request_util::GetShippingOptionSelectorTitle;
+using ::payments::GetShippingOptionSectionString;
 
 NSString* const kShippingOptionSelectionCollectionViewID =
     @"kShippingOptionSelectionCollectionViewID";
@@ -73,7 +73,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title = GetShippingOptionSelectorTitle(*paymentRequest);
+    self.title = base::SysUTF16ToNSString(
+        GetShippingOptionSectionString(paymentRequest->shipping_type()));
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =

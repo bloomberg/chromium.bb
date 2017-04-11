@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
@@ -52,8 +53,8 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 using ::payment_request_util::GetEmailLabelFromAutofillProfile;
 using ::payment_request_util::GetShippingSectionTitle;
-using ::payment_request_util::GetShippingAddressSelectorTitle;
-using ::payment_request_util::GetShippingOptionSelectorTitle;
+using ::payments::GetShippingOptionSectionString;
+using ::payments::GetShippingAddressSectionString;
 
 // String used as the "URL" to take the user to the settings page for card and
 // address options. Needs to be URL-like; otherwise, the link will not appear
@@ -243,7 +244,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewTextItem* shippingTitle =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingTitle];
-  shippingTitle.text = GetShippingSectionTitle(*_paymentRequest);
+  shippingTitle.text =
+      GetShippingSectionTitle(_paymentRequest->shipping_type());
   [model setHeader:shippingTitle
       forSectionWithIdentifier:SectionIdentifierShipping];
 
@@ -263,7 +265,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewDetailItem* addAddressItem = [[CollectionViewDetailItem alloc]
         initWithType:ItemTypeAddShippingAddress];
     shippingAddressItem = addAddressItem;
-    addAddressItem.text = GetShippingAddressSelectorTitle(*_paymentRequest);
+    addAddressItem.text = SysUTF16ToNSString(
+        GetShippingAddressSectionString(_paymentRequest->shipping_type()));
     addAddressItem.detailText = [l10n_util::GetNSString(IDS_ADD)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
     addAddressItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -294,8 +297,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[CollectionViewDetailItem alloc]
             initWithType:ItemTypeSelectShippingOption];
     shippingOptionItem = selectShippingOptionItem;
-    selectShippingOptionItem.text =
-        GetShippingOptionSelectorTitle(*_paymentRequest);
+    selectShippingOptionItem.text = base::SysUTF16ToNSString(
+        GetShippingOptionSectionString(_paymentRequest->shipping_type()));
     selectShippingOptionItem.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;
     selectShippingOptionItem.accessibilityTraits |= UIAccessibilityTraitButton;
