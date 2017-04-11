@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
@@ -35,6 +36,7 @@
 namespace favicon {
 namespace {
 
+using testing::IsEmpty;
 using testing::IsNull;
 using testing::Eq;
 using testing::NiceMock;
@@ -128,6 +130,7 @@ class LargeIconServiceTest : public testing::Test {
   NiceMock<MockImageFetcher>* mock_image_fetcher_;
   testing::NiceMock<MockFaviconService> mock_favicon_service_;
   LargeIconService large_icon_service_;
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LargeIconServiceTest);
@@ -157,6 +160,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
 
   EXPECT_CALL(callback, Run(true));
   base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      "Favicons.LargeIconService.DownloadedSize", 64, /*expected_count=*/1);
 }
 
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
@@ -225,6 +230,9 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  "Favicons.LargeIconService.DownloadedSize"),
+              IsEmpty());
 }
 
 TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
@@ -250,9 +258,12 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
+  // Verify that download failure gets recorded.
+  histogram_tester_.ExpectUniqueSample(
+      "Favicons.LargeIconService.DownloadedSize", 0, /*expected_count=*/1);
 }
 
-TEST_F(LargeIconServiceTest, ShoutNotGetFromGoogleServerIfUnavailable) {
+TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
   ON_CALL(
       mock_favicon_service_,
       WasUnableToDownloadFavicon(GURL(
@@ -274,6 +285,9 @@ TEST_F(LargeIconServiceTest, ShoutNotGetFromGoogleServerIfUnavailable) {
 
   EXPECT_CALL(callback, Run(false));
   base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  "Favicons.LargeIconService.DownloadedSize"),
+              IsEmpty());
 }
 
 class LargeIconServiceGetterTest : public LargeIconServiceTest,

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -217,6 +218,10 @@ void LargeIconWorker::OnIconProcessingComplete() {
       favicon_base::LargeIconImageResult(fallback_icon_style_.release()));
 }
 
+void ReportDownloadedSize(int size) {
+  UMA_HISTOGRAM_COUNTS_1000("Favicons.LargeIconService.DownloadedSize", size);
+}
+
 void OnFetchIconFromGoogleServerComplete(
     FaviconService* favicon_service,
     const GURL& page_url,
@@ -229,8 +234,11 @@ void OnFetchIconFromGoogleServerComplete(
     favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, false));
+    ReportDownloadedSize(0);
     return;
   }
+
+  ReportDownloadedSize(image.Width());
 
   // If given, use the original favicon URL from Content-Location http header.
   // Otherwise, use the request URL as fallback.
