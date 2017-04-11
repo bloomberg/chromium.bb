@@ -805,13 +805,18 @@ void MediaStreamManager::StopRemovedDevice(MediaDeviceType type,
           .c_str());
 }
 
-bool MediaStreamManager::PickDeviceId(const std::string& salt,
+bool MediaStreamManager::PickDeviceId(MediaStreamType type,
+                                      const std::string& salt,
                                       const url::Origin& security_origin,
                                       const TrackControls& controls,
                                       const MediaDeviceInfoArray& devices,
                                       std::string* device_id) const {
   if (controls.device_id.empty())
     return true;
+  if (type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+      media::AudioDeviceDescription::IsDefaultDevice(controls.device_id)) {
+    return true;
+  }
 
   if (!GetDeviceIDFromHMAC(salt, security_origin, controls.device_id, devices,
                            device_id)) {
@@ -827,10 +832,10 @@ bool MediaStreamManager::GetRequestedDeviceCaptureId(
     const MediaDeviceInfoArray& devices,
     std::string* device_id) const {
   if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
-    return PickDeviceId(request->salt, request->security_origin,
+    return PickDeviceId(type, request->salt, request->security_origin,
                         request->controls.audio, devices, device_id);
   } else if (type == MEDIA_DEVICE_VIDEO_CAPTURE) {
-    return PickDeviceId(request->salt, request->security_origin,
+    return PickDeviceId(type, request->salt, request->security_origin,
                         request->controls.video, devices, device_id);
   } else {
     NOTREACHED();

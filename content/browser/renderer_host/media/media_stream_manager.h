@@ -367,7 +367,8 @@ class CONTENT_EXPORT MediaStreamManager
   // valid alternate device ID.
   // Returns false if the required device ID is present and invalid.
   // Otherwise, if no valid device is found, device_id is unchanged.
-  bool PickDeviceId(const std::string& salt,
+  bool PickDeviceId(MediaStreamType type,
+                    const std::string& salt,
                     const url::Origin& security_origin,
                     const TrackControls& controls,
                     const MediaDeviceInfoArray& devices,
