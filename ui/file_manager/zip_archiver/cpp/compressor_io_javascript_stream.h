@@ -8,7 +8,6 @@
 #include <pthread.h>
 #include <string>
 
-#include "archive.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -18,6 +17,12 @@
 #include "compressor_stream.h"
 #include "javascript_compressor_requestor_interface.h"
 
+// A namespace with constants used by CompressorArchiveLibarchive.
+namespace compressor_stream_constants {
+// We need at least 256KB for MiniZip.
+const int64_t kMaximumDataChunkSize = 512 * 1024;
+}  // namespace compressor_archive_constants
+
 class CompressorIOJavaScriptStream : public CompressorStream {
  public:
   CompressorIOJavaScriptStream(
@@ -25,15 +30,21 @@ class CompressorIOJavaScriptStream : public CompressorStream {
 
   virtual ~CompressorIOJavaScriptStream();
 
-  virtual int64_t Write(int64_t bytes_to_read,
-                        const pp::VarArrayBuffer& buffer);
+  // Flushes the data in buffer_. Since minizip sends tons of write requests and
+  // communication between C++ and JS is very expensive, we need to cache data
+  // in buffer_ and send them in a lump.
+  virtual int64_t Flush();
 
-  virtual void WriteChunkDone(int64_t write_bytes);
+  virtual int64_t Write(int64_t zip_offset,
+                        int64_t zip_length,
+                        const char* zip_buffer);
+
+  virtual int64_t WriteChunkDone(int64_t write_bytes);
 
   virtual int64_t Read(int64_t bytes_to_read, char* destination_buffer);
 
-  virtual void ReadFileChunkDone(int64_t read_bytes,
-                                 pp::VarArrayBuffer* buffer);
+  virtual int64_t ReadFileChunkDone(int64_t read_bytes,
+                                    pp::VarArrayBuffer* buffer);
 
 private:
   // A requestor that makes calls to JavaScript to read and write chunks.
@@ -58,6 +69,15 @@ private:
 
   // Stores the data read from JavaScript.
   char* destination_buffer_;
+
+  // The current offset from which buffer_ has data.
+  int64_t buffer_offset_;
+
+  // The size of the data in buffer_.
+  int64_t buffer_data_length_;
+
+  // The buffer that contains cached data.
+  char* buffer_;
 };
 
 #endif  // COMPRESSOR_IO_JAVSCRIPT_STREAM_H_

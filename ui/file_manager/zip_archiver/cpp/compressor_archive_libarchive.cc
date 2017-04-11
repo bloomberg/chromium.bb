@@ -7,141 +7,237 @@
 #include <cerrno>
 #include <cstring>
 
-#include "archive_entry.h"
+#include "base/time/time.h"
 #include "ppapi/cpp/logging.h"
 
-namespace {
-  // Nothing to do here because JavaScript takes care of file open operations.
-  int CustomArchiveOpen(archive* archive_object, void* client_data) {
-    return ARCHIVE_OK;
-  }
+namespace compressor_archive_functions {
 
-  // Called when any data chunk must be written on the archive. It copies data
-  // from the given buffer processed by libarchive to an array buffer and passes
-  // it to compressor_stream.
-  ssize_t CustomArchiveWrite(archive* archive_object, void* client_data,
-      const void* buffer, size_t length) {
-    CompressorArchiveLibarchive* compressor_libarchive =
-        static_cast<CompressorArchiveLibarchive*>(client_data);
-
-    const char* char_buffer = static_cast<const char*>(buffer);
-
-    // Copy the data in buffer to array_buffer.
-    PP_DCHECK(length > 0);
-    pp::VarArrayBuffer array_buffer(length);
-    char* array_buffer_data = static_cast<char*>(array_buffer.Map());
-    memcpy(array_buffer_data, char_buffer, length);
-    array_buffer.Unmap();
-
-    ssize_t written_bytes =
-        compressor_libarchive->compressor_stream()->Write(length, array_buffer);
-
-    // Negative written_bytes represents an error.
-    if (written_bytes < 0) {
-      // When writing fails, archive_set_error() should be called and -1 should
-      // be returned.
-      archive_set_error(
-          compressor_libarchive->archive(), EIO, "Failed to write a chunk.");
-      return -1;
-    }
-    return written_bytes;
-  }
-
-  // Nothing to do here because JavaScript takes care of file close operations.
-  int CustomArchiveClose(archive* archive_object, void* client_data) {
-    return ARCHIVE_OK;
-  }
+// Called when minizip tries to open a zip archive file. We do nothing here
+// because JavaScript takes care of file opening operation.
+void* CustomArchiveOpen(void* compressor,
+                        const char* /*filename*/, int /*mode*/) {
+  return compressor;
 }
+
+// This function is not called because we don't unpack zip files here.
+uLong CustomArchiveRead(void* /*compressor*/, void* /*stream*/,
+                        void* /*buffur*/, uLong /*size*/) {
+  return 0 /* Success */;
+}
+
+// Called when data chunk must be written on the archive. It copies data
+// from the given buffer processed by minizip to an array buffer and passes
+// it to compressor_stream.
+uLong CustomArchiveWrite(void* compressor,
+                         void* /*stream*/,
+                         const void* zip_buffer,
+                         uLong zip_length) {
+  CompressorArchiveLibarchive* compressor_libarchive =
+      static_cast<CompressorArchiveLibarchive*>(compressor);
+
+  int64_t written_bytes = compressor_libarchive->compressor_stream()->Write(
+      compressor_libarchive->offset_, zip_length,
+      static_cast<const char*>(zip_buffer));
+
+  if (written_bytes != zip_length)
+    return 0 /* Error */;
+
+  // Update offset_ and length_.
+  compressor_libarchive->offset_ += written_bytes;
+  if (compressor_libarchive->offset_ > compressor_libarchive->length_)
+    compressor_libarchive->length_ = compressor_libarchive->offset_;
+  return static_cast<uLong>(written_bytes);
+}
+
+// Returns the offset from the beginning of the data.
+long CustomArchiveTell(void* compressor, void* /*stream*/) {
+  CompressorArchiveLibarchive* compressor_libarchive =
+      static_cast<CompressorArchiveLibarchive*>(compressor);
+  return static_cast<long>(compressor_libarchive->offset_);
+}
+
+// Moves the current offset to the specified position.
+long CustomArchiveSeek(void* compressor,
+                       void* /*stream*/,
+                       uLong offset,
+                       int origin) {
+  CompressorArchiveLibarchive* compressor_libarchive =
+      static_cast<CompressorArchiveLibarchive*>(compressor);
+
+  if (origin == ZLIB_FILEFUNC_SEEK_CUR) {
+    compressor_libarchive->offset_ =
+        std::min(compressor_libarchive->offset_ + static_cast<int64_t>(offset),
+                 compressor_libarchive->length_);
+    return 0 /* Success */;
+  }
+  if (origin == ZLIB_FILEFUNC_SEEK_END) {
+    compressor_libarchive->offset_ =
+        std::max(compressor_libarchive->length_ - static_cast<int64_t>(offset),
+                 0LL);
+    return 0 /* Success */;
+  }
+  if (origin == ZLIB_FILEFUNC_SEEK_SET) {
+    compressor_libarchive->offset_ =
+        std::min(static_cast<int64_t>(offset), compressor_libarchive->length_);
+    return 0 /* Success */;
+  }
+  return -1 /* Error */;
+}
+
+// Releases all used resources. compressor points to compressor_libarchive and
+// it is deleted in the destructor of Compressor, so we don't need to delete
+// it here.
+int CustomArchiveClose(void* /*compressor*/, void* /*stream*/) {
+  return 0 /* Success */;
+}
+
+// Returns the last error that happened when writing data. This function always
+// returns zero, which means there are no errors.
+int CustomArchiveError(void* /*compressor*/, void* /*stream*/) {
+  return 0 /* Success */;
+}
+
+} // compressor_archive_functions
 
 CompressorArchiveLibarchive::CompressorArchiveLibarchive(
     CompressorStream* compressor_stream)
     : CompressorArchive(compressor_stream),
-      compressor_stream_(compressor_stream) {
+      compressor_stream_(compressor_stream),
+      zip_file_(nullptr),
+      offset_(0),
+      length_(0) {
   destination_buffer_ =
-      new char[compressor_archive_constants::kMaximumDataChunkSize];
+      new char[compressor_stream_constants::kMaximumDataChunkSize];
 }
 
 CompressorArchiveLibarchive::~CompressorArchiveLibarchive() {
   delete destination_buffer_;
 }
 
-void CompressorArchiveLibarchive::CreateArchive() {
-  archive_ = archive_write_new();
-  archive_write_set_format_zip(archive_);
+bool CompressorArchiveLibarchive::CreateArchive() {
+  // Set up archive object.
+  zlib_filefunc_def zip_funcs;
+  zip_funcs.zopen_file = compressor_archive_functions::CustomArchiveOpen;
+  zip_funcs.zread_file = compressor_archive_functions::CustomArchiveRead;
+  zip_funcs.zwrite_file = compressor_archive_functions::CustomArchiveWrite;
+  zip_funcs.ztell_file = compressor_archive_functions::CustomArchiveTell;
+  zip_funcs.zseek_file = compressor_archive_functions::CustomArchiveSeek;
+  zip_funcs.zclose_file = compressor_archive_functions::CustomArchiveClose;
+  zip_funcs.zerror_file = compressor_archive_functions::CustomArchiveError;
+  zip_funcs.opaque = this;
 
-  // Passing 1 as the second argument causes the final chunk not to be padded.
-  archive_write_set_bytes_in_last_block(archive_, 1);
-  archive_write_set_bytes_per_block(
-     archive_, compressor_archive_constants::kMaximumDataChunkSize);
-  archive_write_open(archive_, this, CustomArchiveOpen,
-                     CustomArchiveWrite, CustomArchiveClose);
+  zip_file_ = zipOpen2(nullptr /* pathname */,
+                       APPEND_STATUS_CREATE,
+                       nullptr /* globalcomment */,
+                       &zip_funcs);
+  if (!zip_file_) {
+    set_error_message(compressor_archive_constants::kCreateArchiveError);
+    return false /* Error */;
+  }
+  return true /* Success */;
 }
 
-void CompressorArchiveLibarchive::AddToArchive(
-    const std::string& filename,
-    int64_t file_size,
-    time_t modification_time,
-    bool is_directory) {
-  entry = archive_entry_new();
+bool CompressorArchiveLibarchive::AddToArchive(const std::string& filename,
+                                               int64_t file_size,
+                                               int64_t modification_time,
+                                               bool is_directory) {
+  // Minizip takes filenames that end with '/' as directories.
+  std::string normalized_filename = filename;
+  if (is_directory)
+    normalized_filename += "/";
 
-  archive_entry_set_pathname(entry, filename.c_str());
-  archive_entry_set_size(entry, file_size);
-  archive_entry_set_mtime(entry, modification_time, 0 /* millisecond */);
+  // Fill zipfileMetadata with modification_time.
+  zip_fileinfo zipfileMetadata;
+  // modification_time is millisecond-based, while FromTimeT takes seconds.
+  base::Time tm = base::Time::FromTimeT((int64_t)modification_time / 1000);
+  base::Time::Exploded exploded_time = {};
+  tm.LocalExplode(&exploded_time);
+  zipfileMetadata.tmz_date.tm_sec = exploded_time.second;
+  zipfileMetadata.tmz_date.tm_min = exploded_time.minute;
+  zipfileMetadata.tmz_date.tm_hour = exploded_time.hour;
+  zipfileMetadata.tmz_date.tm_year = exploded_time.year;
+  zipfileMetadata.tmz_date.tm_mday = exploded_time.day_of_month;
+  // Convert from 1-based to 0-based.
+  zipfileMetadata.tmz_date.tm_mon = exploded_time.month - 1;
 
-  if (is_directory) {
-    archive_entry_set_filetype(entry, AE_IFDIR);
-    archive_entry_set_perm(
-        entry, compressor_archive_constants::kDirectoryPermission);
-  } else {
-    archive_entry_set_filetype(entry, AE_IFREG);
-    archive_entry_set_perm(
-        entry, compressor_archive_constants::kFilePermission);
+  // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+  // Setting the Language encoding flag so the file is told to be in utf-8.
+  const uLong LANGUAGE_ENCODING_FLAG = 0x1 << 11;
+
+  int open_result = zipOpenNewFileInZip4(zip_file_,                      // file
+                                         normalized_filename.c_str(),// filename
+                                         &zipfileMetadata,              // zipfi
+                                         nullptr,            // extrafield_local
+                                         0u,            // size_extrafield_local
+                                         nullptr,           // extrafield_global
+                                         0u,           // size_extrafield_global
+                                         nullptr,                     // comment
+                                         Z_DEFLATED,                   // method
+                                         Z_DEFAULT_COMPRESSION,         // level
+                                         0,                               // raw
+                                         -MAX_WBITS,               // windowBits
+                                         DEF_MEM_LEVEL,              // memLevel
+                                         Z_DEFAULT_STRATEGY,         // strategy
+                                         nullptr,                    // password
+                                         0,                    // crcForCrypting
+                                         0,                     // versionMadeBy
+                                         LANGUAGE_ENCODING_FLAG);    // flagBase
+  if (open_result != ZIP_OK) {
+    CloseArchive(true /* has_error */);
+    set_error_message(compressor_archive_constants::kAddToArchiveError);
+    return false /* Error */;
   }
-  archive_write_header(archive_, entry);
-  // If archive_errno() returns 0, the header was written correctly.
-  if (archive_errno(archive_) != 0) {
-    CloseArchive(true /* hasError */);
-    return;
-  }
 
+  bool has_error = false;
   if (!is_directory) {
     int64_t remaining_size = file_size;
     while (remaining_size > 0) {
       int64_t chunk_size = std::min(remaining_size,
-          compressor_archive_constants::kMaximumDataChunkSize);
+          compressor_stream_constants::kMaximumDataChunkSize);
       PP_DCHECK(chunk_size > 0);
 
       int64_t read_bytes =
           compressor_stream_->Read(chunk_size, destination_buffer_);
+
       // Negative read_bytes indicates an error occurred when reading chunks.
-      if (read_bytes < 0) {
-        CloseArchive(true /* hasError */);
+      // 0 just means there is no more data available, but here we need positive
+      // length of bytes, so this is also an error here.
+      if (read_bytes <= 0) {
+        has_error = true;
         break;
       }
 
-      int64_t written_bytes =
-          archive_write_data(archive_, destination_buffer_, read_bytes);
-      // If archive_errno() returns 0, the buffer was written correctly.
-      if (archive_errno(archive_) != 0) {
-        CloseArchive(true /* hasError */);
+      if (zipWriteInFileInZip(zip_file_, destination_buffer_, read_bytes) !=
+          ZIP_OK) {
+        has_error = true;
         break;
       }
-      PP_DCHECK(written_bytes > 0);
-
-      remaining_size -= written_bytes;
+      remaining_size -= read_bytes;
     }
   }
 
-  archive_entry_free(entry);
+  if (!has_error && zipCloseFileInZip(zip_file_) != ZIP_OK)
+    has_error = true;
+
+  if (has_error) {
+    CloseArchive(true /* has_error */);
+    set_error_message(compressor_archive_constants::kAddToArchiveError);
+    return false /* Error */;
+  }
+
+  return true /* Success */;
 }
 
-void CompressorArchiveLibarchive::CloseArchive(bool has_error) {
-  // If has_error is true, mark the archive object as being unusable and
-  // release resources without writing no more data on the archive.
-  if (has_error)
-    archive_write_fail(archive_);
-  if (archive_) {
-    archive_write_free(archive_);
-    archive_ = NULL;
+bool CompressorArchiveLibarchive::CloseArchive(bool has_error) {
+  if (zipClose(zip_file_, nullptr /* global_comment */) != ZIP_OK) {
+    set_error_message(compressor_archive_constants::kCloseArchiveError);
+    return false /* Error */;
   }
+  if (!has_error) {
+    if (compressor_stream()->Flush() < 0) {
+      set_error_message(compressor_archive_constants::kCloseArchiveError);
+      return false /* Error */;
+    }
+  }
+  return true /* Success */;
 }

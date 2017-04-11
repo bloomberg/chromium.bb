@@ -289,15 +289,13 @@ unpacker.Compressor.prototype.sendAddToArchiveRequest_ = function() {
   if (fullPath.length && fullPath[0] == '/')
     fullPath = fullPath.substring(1);
 
-  // Modification time is sent as string in a format: 'mm/dd/yy hh:mm:ss'.
-  var mt = this.metadata_[entryId].modificationTime;
-  var formattedTime = (mt.getMonth() + 1) + '/' + mt.getDate() + '/' +
-                      mt.getFullYear() + ' ' + mt.getHours() + ':' +
-                      mt.getMinutes() + ':' + mt.getSeconds();
+  // Modification time is set to the archive in local time.
+  var utc = this.metadata_[entryId].modificationTime;
+  var modificationTime = utc.getTime() - (utc.getTimezoneOffset() * 60000);
 
   var request = unpacker.request.createAddToArchiveRequest(
       this.compressorId_, entryId, fullPath,
-      this.metadata_[entryId].size, formattedTime,
+      this.metadata_[entryId].size, modificationTime,
       this.entries_[entryId].isDirectory);
   this.naclModule_.postMessage(request);
 }
@@ -395,13 +393,15 @@ unpacker.Compressor.prototype.onReadFileChunk_ = function(data) {
  * @private
  */
 unpacker.Compressor.prototype.onWriteChunk_ = function(data) {
+  var offset = Number(data[unpacker.request.Key.OFFSET]);
   var length = Number(data[unpacker.request.Key.LENGTH]);
   var buffer = data[unpacker.request.Key.CHUNK_BUFFER];
-  this.writeChunk_(length, buffer, this.sendWriteChunkDone_.bind(this));
+  this.writeChunk_(offset, length, buffer, this.sendWriteChunkDone_.bind(this));
 }
 
 /**
  * Writes buffer into the archive file (window.archiveFileEntry).
+ * @param {number} offset The offset from which date is written.
  * @param {number} length The number of bytes in the buffer to write.
  * @param {!ArrayBuffer} buffer The buffer to write in the archive.
  * @param {function(number)} callback Callback to execute at the end of the
@@ -410,7 +410,7 @@ unpacker.Compressor.prototype.onWriteChunk_ = function(data) {
  *     a negative value must be assigned to this argument.
  * @private
  */
-unpacker.Compressor.prototype.writeChunk_ = function(length, buffer,
+unpacker.Compressor.prototype.writeChunk_ = function(offset, length, buffer,
     callback) {
   // TODO(takise): Use the same instance of FileWriter over multiple calls of
   // this function instead of creating new ones.
@@ -430,7 +430,7 @@ unpacker.Compressor.prototype.writeChunk_ = function(length, buffer,
 
     // Create a new Blob and append it to the archive file.
     var blob = new Blob([buffer], {});
-    fileWriter.seek(fileWriter.length);
+    fileWriter.seek(offset);
     fileWriter.write(blob);
   }, function(event) {
     console.error('Failed to create writer for ' + this.archiveFileEntry_ +

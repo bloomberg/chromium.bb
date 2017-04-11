@@ -6,145 +6,228 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <cstring>
 #include <limits>
+#include <time.h>
 
-#include "archive_entry.h"
+#include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "ppapi/cpp/logging.h"
 
-namespace {
-
-const int64_t kArchiveReadDataError = -1;  // Negative value means error.
-
-std::string ArchiveError(const std::string& message, archive* archive_object) {
-  return message + archive_error_string(archive_object);
+namespace volume_archive_functions {
+void* CustomArchiveOpen(void* archive,
+                        const char* /* filename */,
+                        int /* mode */) {
+  return archive;
 }
 
-// Sets the libarchive internal error to a VolumeReader related error.
-// archive_error_string function must work on valid strings, but in case of
-// errors in the custom functions, libarchive API assumes the error is set by
-// us. If we don't set it, we will get a Segmentation Fault because
-// archive_error_string will work on invalid memory.
-void SetLibarchiveErrorToVolumeReaderError(archive* archive_object) {
-  archive_set_error(archive_object,
-                    EIO /* I/O error. */,
-                    "%s" /* Format string similar to printf. */,
-                    volume_archive_constants::kVolumeReaderError);
+int64_t DynamicCache(VolumeArchiveLibarchive* archive, int64_t unzip_size) {
+  int64_t offset = archive->reader()->offset();
+  if (archive->reader()->Seek(static_cast<int64_t>(offset),
+                              ZLIB_FILEFUNC_SEEK_SET) < 0) {
+    return -1 /* Error */;
+  }
+
+  int64_t bytes_to_read =
+      std::min(volume_archive_constants::kMaximumDataChunkSize,
+               archive->reader()->archive_size() - offset);
+  PP_DCHECK(bytes_to_read > 0);
+  int64_t left_length = bytes_to_read;
+  char* buffer_pointer = archive->dynamic_cache_;
+  const void* destination_buffer;
+
+  do {
+    int64_t read_bytes = archive->reader()->Read(left_length,
+                                                 &destination_buffer);
+    // End of the zip file.
+    if (read_bytes == 0)
+      break;
+    if (read_bytes < 0)
+      return -1 /* Error */;
+    memcpy(buffer_pointer, destination_buffer, read_bytes);
+    left_length -= read_bytes;
+    buffer_pointer += read_bytes;
+  } while (left_length > 0);
+
+  if (archive->reader()->Seek(static_cast<int64_t>(offset),
+                         ZLIB_FILEFUNC_SEEK_SET) < 0) {
+    return -1 /* Error */;
+  }
+  archive->dynamic_cache_size_ = bytes_to_read - left_length;
+  archive->dynamic_cache_offset_ = offset;
+
+  return unzip_size - left_length;
 }
 
-ssize_t CustomArchiveRead(archive* archive_object,
-                          void* client_data,
-                          const void** buffer) {
-  VolumeArchiveLibarchive* volume_archive =
-      static_cast<VolumeArchiveLibarchive*>(client_data);
+uLong CustomArchiveRead(void* archive,
+                        void* /* stream */,
+                        void* buffer,
+                        uLong size) {
+  VolumeArchiveLibarchive* archive_minizip =
+      static_cast<VolumeArchiveLibarchive*>(archive);
+  int64_t offset = archive_minizip->reader()->offset();
 
-  int64_t read_bytes = volume_archive->reader()->Read(
-      volume_archive->reader_data_size(), buffer);
-  if (read_bytes == ARCHIVE_FATAL)
-    SetLibarchiveErrorToVolumeReaderError(archive_object);
-  return read_bytes;
+  // When minizip requests a chunk in static_cache_.
+  if (offset >= archive_minizip->static_cache_offset_) {
+    // Relative offset in the central directory.
+    int64_t offset_in_cache = offset - archive_minizip->static_cache_offset_;
+    memcpy(buffer, archive_minizip->static_cache_ + offset_in_cache, size);
+    if (archive_minizip->reader()->Seek(static_cast<int64_t>(size),
+                                        ZLIB_FILEFUNC_SEEK_CUR) < 0) {
+      return -1 /* Error */;
+    }
+    return size;
+  }
+
+  char* unzip_buffer_pointer = static_cast<char*>(buffer);
+  int64_t left_length = static_cast<int64_t>(size);
+
+  do {
+    offset = archive_minizip->reader()->offset();
+    // If dynamic_cache_ is empty or it cannot be reused, update the cache so
+    // that it contains the chunk required by minizip.
+    if (archive_minizip->dynamic_cache_size_ == 0 ||
+        offset < archive_minizip->dynamic_cache_offset_ ||
+        archive_minizip->dynamic_cache_offset_ +
+        archive_minizip->dynamic_cache_size_ <
+        offset + size) {
+      volume_archive_functions::DynamicCache(archive_minizip, size);
+    }
+
+    // Just copy the required data from the cache.
+    int64_t offset_in_cache = offset - archive_minizip->dynamic_cache_offset_;
+    int64_t copy_length =
+        std::min(left_length,
+                 archive_minizip->dynamic_cache_size_ - offset_in_cache);
+    memcpy(unzip_buffer_pointer,
+           archive_minizip->dynamic_cache_ + offset_in_cache,
+           copy_length);
+    unzip_buffer_pointer += copy_length;
+    left_length -= copy_length;
+    if (archive_minizip->reader()->Seek(static_cast<int64_t>(copy_length),
+                                        ZLIB_FILEFUNC_SEEK_CUR) < 0) {
+      return -1 /* Error */;
+    }
+  } while (left_length > 0);
+
+  return size;
 }
 
-int64_t CustomArchiveSkip(archive* archive_object,
-                          void* client_data,
-                          int64_t request) {
-  VolumeArchiveLibarchive* volume_archive =
-      static_cast<VolumeArchiveLibarchive*>(client_data);
-  // VolumeReader::Skip returns 0 in case of failure and CustomArchiveRead is
-  // used instead, so there is no need to check for VolumeReader error.
-  return volume_archive->reader()->Skip(request);
+uLong CustomArchiveWrite(void* /*archive*/,
+                         void* /*stream*/,
+                         const void* /*buffer*/,
+                         uLong /*length*/) {
+  return 0 /* Success */;
 }
 
-int64_t CustomArchiveSeek(archive* archive_object,
-                          void* client_data,
-                          int64_t offset,
-                          int whence) {
-  VolumeArchiveLibarchive* volume_archive =
-      static_cast<VolumeArchiveLibarchive*>(client_data);
-
-  int64_t new_offset = volume_archive->reader()->Seek(offset, whence);
-  if (new_offset == ARCHIVE_FATAL)
-    SetLibarchiveErrorToVolumeReaderError(archive_object);
-
-  return new_offset;
+long CustomArchiveTell(void* archive, void* /*stream*/) {
+  VolumeArchiveLibarchive* archive_minizip =
+      static_cast<VolumeArchiveLibarchive*>(archive);
+  return static_cast<long>(archive_minizip->reader()->offset());
 }
 
-int CustomArchiveClose(archive* archive_object, void* client_data) {
-  return ARCHIVE_OK;
+long CustomArchiveSeek(void* archive,
+                       void* /*stream*/,
+                       uLong offset,
+                       int origin) {
+  VolumeArchiveLibarchive* archive_minizip =
+      static_cast<VolumeArchiveLibarchive*>(archive);
+
+  long return_value = static_cast<long>(archive_minizip->reader()->Seek(
+      static_cast<int64_t>(offset), static_cast<int64_t>(origin)));
+  if (return_value >= 0)
+    return 0 /* Success */;
+  return -1 /* Error */;
 }
 
-const char* CustomArchivePassphrase(
-    archive* archive_object, void* client_data) {
-  VolumeArchiveLibarchive* volume_archive =
-      static_cast<VolumeArchiveLibarchive*>(client_data);
-
-  return volume_archive->reader()->Passphrase();
+int CustomArchiveClose(void* /*opaque*/, void* /*stream*/) {
+  return 0;
 }
 
-}  // namespace
+int CustomArchiveError(void* /*opaque*/, void* /*stream*/) {
+  return 0;
+}
+
+const char* GetPassphrase(VolumeArchiveLibarchive* archive_minizip) {
+  const char* password = archive_minizip->reader()->Passphrase();
+  return password;
+}
+
+}  // volume_archive_functions
 
 VolumeArchiveLibarchive::VolumeArchiveLibarchive(VolumeReader* reader)
     : VolumeArchive(reader),
       reader_data_size_(volume_archive_constants::kMinimumDataChunkSize),
-      archive_(NULL),
-      current_archive_entry_(NULL),
+      zip_file_(nullptr),
+      dynamic_cache_offset_(0),
+      dynamic_cache_size_(0),
+      static_cache_offset_(0),
+      static_cache_size_(0),
       last_read_data_offset_(0),
       last_read_data_length_(0),
-      decompressed_data_(NULL),
+      decompressed_data_(nullptr),
       decompressed_data_size_(0),
-      decompressed_error_(false) {
-}
+      decompressed_error_(false) {}
 
 VolumeArchiveLibarchive::~VolumeArchiveLibarchive() {
   Cleanup();
 }
 
 bool VolumeArchiveLibarchive::Init(const std::string& encoding) {
-  archive_ = archive_read_new();
-  if (!archive_) {
-    set_error_message(volume_archive_constants::kArchiveReadNewError);
-    return false;
+  // Set up minizip object.
+  zlib_filefunc_def zip_funcs;
+  zip_funcs.zopen_file = volume_archive_functions::CustomArchiveOpen;
+  zip_funcs.zread_file = volume_archive_functions::CustomArchiveRead;
+  zip_funcs.zwrite_file = volume_archive_functions::CustomArchiveWrite;
+  zip_funcs.ztell_file = volume_archive_functions::CustomArchiveTell;
+  zip_funcs.zseek_file = volume_archive_functions::CustomArchiveSeek;
+  zip_funcs.zclose_file = volume_archive_functions::CustomArchiveClose;
+  zip_funcs.zerror_file = volume_archive_functions::CustomArchiveError;
+  zip_funcs.opaque = static_cast<void*>(this);
+
+  // Load maximum static_cache_size_ bytes from the end of the archive to
+  // static_cache_.
+  static_cache_size_ =
+      std::min(volume_archive_constants::kStaticCacheSize,
+               reader()->archive_size());
+  int64_t previous_offset = reader()->offset();
+  char* buffer_pointer = static_cache_;
+  int64_t left_length = static_cache_size_;
+  static_cache_offset_ =
+      std::max(reader()->archive_size() - static_cache_size_, 0LL);
+  if (reader()->Seek(static_cache_offset_, ZLIB_FILEFUNC_SEEK_SET) < 0) {
+    set_error_message(volume_archive_constants::kArchiveOpenError);
+    return false /* Error */;
+  }
+  do {
+    const void* destination_buffer;
+    int64_t read_bytes = reader()->Read(left_length, &destination_buffer);
+    memcpy(buffer_pointer, destination_buffer, read_bytes);
+    left_length -= read_bytes;
+    buffer_pointer += read_bytes;
+  } while (left_length > 0);
+
+  // Set the offset to the original position.
+  if (reader()->Seek(previous_offset, ZLIB_FILEFUNC_SEEK_SET) < 0) {
+    set_error_message(volume_archive_constants::kArchiveOpenError);
+    return false /* Error */;
   }
 
-  // TODO(cmihail): Once the bug mentioned at
-  // https://github.com/libarchive/libarchive/issues/373 is resolved
-  // add RAR file handler to manifest.json.
-  if (archive_read_support_format_rar(archive_) != ARCHIVE_OK ||
-      archive_read_support_format_zip_seekable(archive_) != ARCHIVE_OK) {
-    set_error_message(ArchiveError(
-        volume_archive_constants::kArchiveSupportErrorPrefix, archive_));
-    return false;
-  }
-
-  // Default encoding for file names in headers. Note, that another one may be
-  // used if specified in the archive.
-  std::string options = std::string("hdrcharset=") + encoding;
-  if (!encoding.empty() &&
-      archive_read_set_options(archive_, options.c_str()) != ARCHIVE_OK) {
-    set_error_message(ArchiveError(
-        volume_archive_constants::kArchiveSupportErrorPrefix, archive_));
-    return false;
-  }
-
-  // Set callbacks for processing the archive's data and open the archive.
-  // The callback data is the VolumeArchive itself.
-  int ok = ARCHIVE_OK;
-  if (archive_read_set_read_callback(archive_, CustomArchiveRead) != ok ||
-      archive_read_set_skip_callback(archive_, CustomArchiveSkip) != ok ||
-      archive_read_set_seek_callback(archive_, CustomArchiveSeek) != ok ||
-      archive_read_set_close_callback(archive_, CustomArchiveClose) != ok ||
-      archive_read_set_passphrase_callback(
-          archive_, this, CustomArchivePassphrase) != ok ||
-      archive_read_set_callback_data(archive_, this) != ok ||
-      archive_read_open1(archive_) != ok) {
-    set_error_message(ArchiveError(
-        volume_archive_constants::kArchiveOpenErrorPrefix, archive_));
+  zip_file_ = unzOpen2(nullptr /* filename */, &zip_funcs);
+  if (!zip_file_) {
+    set_error_message(volume_archive_constants::kArchiveOpenError);
     return false;
   }
 
   return true;
 }
 
-VolumeArchive::Result VolumeArchiveLibarchive::GetNextHeader() {
+VolumeArchive::Result VolumeArchiveLibarchive::GetCurrentFileInfo(
+    std::string* pathname,
+    int64_t* size,
+    bool* is_directory,
+    time_t* modification_time) {
+
   // Headers are being read from the central directory (in the ZIP format), so
   // use a large block size to save on IPC calls. The headers in EOCD are
   // grouped one by one.
@@ -154,45 +237,115 @@ VolumeArchive::Result VolumeArchiveLibarchive::GetNextHeader() {
   last_read_data_offset_ = 0;
   decompressed_data_size_ = 0;
 
-  // Archive data is skipped automatically by next call to
-  // archive_read_next_header.
-  switch (archive_read_next_header(archive_, &current_archive_entry_)) {
-    case ARCHIVE_EOF:
-      return RESULT_EOF;
-    case ARCHIVE_OK:
-      return RESULT_SUCCESS;
-    default:
-      set_error_message(ArchiveError(
-          volume_archive_constants::kArchiveNextHeaderErrorPrefix, archive_));
-      return RESULT_FAIL;
-  }
-}
-
-VolumeArchive::Result VolumeArchiveLibarchive::GetNextHeader(
-    const char** pathname,
-    int64_t* size,
-    bool* is_directory,
-    time_t* modification_time) {
-  Result ret = GetNextHeader();
-
-  if (ret == RESULT_SUCCESS) {
-    *pathname = archive_entry_pathname(current_archive_entry_);
-    *size = archive_entry_size(current_archive_entry_);
-    *modification_time = archive_entry_mtime(current_archive_entry_);
-    *is_directory = archive_entry_filetype(current_archive_entry_) == AE_IFDIR;
+  unz_file_pos position = {};
+  if (unzGetFilePos(zip_file_, &position) != UNZ_OK) {
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+    return VolumeArchive::RESULT_FAIL;
   }
 
-  return ret;
+  // Get the information of the opened file.
+  unz_file_info raw_file_info = {};
+  char raw_file_name_in_zip[volume_archive_constants::kZipMaxPath] = {};
+  const int result = unzGetCurrentFileInfo(zip_file_,
+                                           &raw_file_info,
+                                           raw_file_name_in_zip,
+                                           sizeof(raw_file_name_in_zip) - 1,
+                                           nullptr,  // extraField.
+                                           0,     // extraFieldBufferSize.
+                                           nullptr,  // szComment.
+                                           0);    // commentBufferSize.
+
+  if (result != UNZ_OK || raw_file_name_in_zip[0] == '\0') {
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+    return VolumeArchive::RESULT_FAIL;
+  }
+
+  *pathname = std::string(raw_file_name_in_zip);
+  *size = raw_file_info.uncompressed_size;
+  // Directory entries in zip files end with "/".
+  *is_directory = base::EndsWith(raw_file_name_in_zip, "/",
+                                 base::CompareCase::INSENSITIVE_ASCII);
+
+  // Construct the last modified time. The timezone info is not present in
+  // zip files. By default, the time is set as local time in zip format.
+  base::Time::Exploded exploded_time = {};  // Zero-clear.
+  exploded_time.year = raw_file_info.tmu_date.tm_year;
+  // The month in zip file is 0-based, whereas ours is 1-based.
+  exploded_time.month = raw_file_info.tmu_date.tm_mon + 1;
+  exploded_time.day_of_month = raw_file_info.tmu_date.tm_mday;
+  exploded_time.hour = raw_file_info.tmu_date.tm_hour;
+  exploded_time.minute = raw_file_info.tmu_date.tm_min;
+  exploded_time.second = raw_file_info.tmu_date.tm_sec;
+  exploded_time.millisecond = 0;
+
+  base::Time local_time;
+  // If the modification time is not available, we set the value to the current
+  // local time.
+  if (!base::Time::FromLocalExploded(exploded_time, &local_time))
+    local_time = base::Time::UnixEpoch();
+  *modification_time = local_time.ToTimeT();
+
+  return VolumeArchive::RESULT_SUCCESS;
 }
 
-bool VolumeArchiveLibarchive::SeekHeader(int64_t index) {
+VolumeArchive::Result VolumeArchiveLibarchive::GoToNextFile() {
+  int return_value = unzGoToNextFile(zip_file_);
+  if (return_value == UNZ_END_OF_LIST_OF_FILE) {
+    return VolumeArchive::RESULT_EOF;
+  }
+  if (return_value == UNZ_OK)
+    return VolumeArchive::RESULT_SUCCESS;
+
+  set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+  return VolumeArchive::RESULT_FAIL;
+}
+
+bool VolumeArchiveLibarchive::SeekHeader(const std::string& path_name) {
   // Reset to 0 for new VolumeArchive::ReadData operation.
   last_read_data_offset_ = 0;
   decompressed_data_size_ = 0;
 
-  if (archive_read_seek_header(archive_, index) != ARCHIVE_OK) {
-    set_error_message(ArchiveError(
-        volume_archive_constants::kArchiveNextHeaderErrorPrefix, archive_));
+  const int kDefaultCaseSensivityOfOS = 0;
+  if (unzLocateFile(zip_file_, path_name.c_str(), kDefaultCaseSensivityOfOS) !=
+      UNZ_OK) {
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+    return false;
+  }
+
+  unz_file_info raw_file_info = {};
+  char raw_file_name_in_zip[volume_archive_constants::kZipMaxPath] = {};
+  if (unzGetCurrentFileInfo(zip_file_,
+                            &raw_file_info,
+                            raw_file_name_in_zip,
+                            sizeof(raw_file_name_in_zip) - 1,
+                            nullptr,  // extraField.
+                            0,     // extraFieldBufferSize.
+                            nullptr,  // szComment.
+                            0) != UNZ_OK) {
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+    return false;
+  }
+
+  // Directory entries in zip files end with "/".
+  bool is_directory = base::EndsWith(raw_file_name_in_zip, "/",
+                                     base::CompareCase::INSENSITIVE_ASCII);
+
+  int open_result = UNZ_OK;
+  // If the archive is encrypted, the lowest bit of raw_file_info.flag is set.
+  // Directories cannot be encrypted with the basic zip encrytion algorithm.
+  if (((raw_file_info.flag & 1) != 0) && !is_directory) {
+    // Currently minizip in third_party doesn't support decryption, so we just
+    // take encrypted zip files as unsupported.
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
+    return false;
+    // const char* password = volume_archive_functions::GetPassphrase(this);
+    // open_result = unzOpenCurrentFilePassword(zip_file_, password);
+  } else {
+    open_result = unzOpenCurrentFile(zip_file_);
+  }
+
+  if (open_result != UNZ_OK) {
+    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
     return false;
   }
 
@@ -208,8 +361,7 @@ void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
   // Requests with offset smaller than last read offset are not supported.
   if (offset < last_read_data_offset_) {
     set_error_message(
-        std::string(volume_archive_constants::kArchiveReadDataErrorPrefix) +
-        "Reading backwards is not supported.");
+        std::string(volume_archive_constants::kArchiveReadDataError));
     decompressed_error_ = true;
     return;
   }
@@ -233,16 +385,14 @@ void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
     // archive_read_data receives size_t as length parameter, but we limit it to
     // volume_archive_constants::kDummyBufferSize which is positive and less
     // than size_t maximum. So conversion from int64_t to size_t is safe here.
-    size =
-        archive_read_data(archive_,
-                          dummy_buffer_,
-                          std::min(offset - last_read_data_offset_,
-                                   volume_archive_constants::kDummyBufferSize));
+    size = unzReadCurrentFile(
+        zip_file_, dummy_buffer_,
+        std::min(offset - last_read_data_offset_,
+                 volume_archive_constants::kDummyBufferSize));
     PP_DCHECK(size != 0);  // The actual read is done below. We shouldn't get to
                            // end of file here.
     if (size < 0) {        // Error.
-      set_error_message(ArchiveError(
-          volume_archive_constants::kArchiveReadDataErrorPrefix, archive_));
+      set_error_message(volume_archive_constants::kArchiveReadDataError);
       decompressed_error_ = true;
       return;
     }
@@ -270,11 +420,11 @@ void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
     // volume_archive_constants::kMinimumDataChunkSize (see left_length
     // initialization), which is positive and less than size_t maximum.
     // So conversion from int64_t to size_t is safe here.
-    size = archive_read_data(
-        archive_, decompressed_data_buffer_ + bytes_read, left_length);
+    size = unzReadCurrentFile(zip_file_,
+                              decompressed_data_buffer_ + bytes_read,
+                              left_length);
     if (size < 0) {  // Error.
-      set_error_message(ArchiveError(
-          volume_archive_constants::kArchiveReadDataErrorPrefix, archive_));
+      set_error_message(volume_archive_constants::kArchiveReadDataError);
       decompressed_error_ = true;
       return;
     }
@@ -292,13 +442,13 @@ void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
 
 bool VolumeArchiveLibarchive::Cleanup() {
   bool returnValue = true;
-  if (archive_ && archive_read_free(archive_) != ARCHIVE_OK) {
-    set_error_message(ArchiveError(
-        volume_archive_constants::kArchiveReadFreeErrorPrefix, archive_));
-    returnValue = false;  // Cleanup should release all resources even
-                          // in case of failures.
+  if (zip_file_) {
+    if (unzClose(zip_file_) != UNZ_OK) {
+      set_error_message(volume_archive_constants::kArchiveReadFreeError);
+      returnValue = false;
+    }
   }
-  archive_ = NULL;
+  zip_file_ = nullptr;
 
   CleanupReader();
 
@@ -312,12 +462,6 @@ int64_t VolumeArchiveLibarchive::ReadData(int64_t offset,
   PP_DCHECK(current_archive_entry_);  // Check that GetNextHeader was called at
                                       // least once. In case it wasn't, this is
                                       // a programmer error.
-
-  // End of archive.
-  if (archive_entry_size_is_set(current_archive_entry_) &&
-      archive_entry_size(current_archive_entry_) <= offset)
-    return 0;
-
   // In case of first read or no more available data in the internal buffer or
   // offset is different from the last_read_data_offset_, then force
   // VolumeArchiveLibarchive::DecompressData as the decompressed data is
@@ -327,8 +471,10 @@ int64_t VolumeArchiveLibarchive::ReadData(int64_t offset,
     DecompressData(offset, length);
 
   // Decompressed failed.
-  if (decompressed_error_)
-    return kArchiveReadDataError;
+  if (decompressed_error_) {
+    set_error_message(volume_archive_constants::kArchiveReadDataError);
+    return -1 /* Error */;
+  }
 
   last_read_data_length_ = length;  // Used for decompress ahead.
 

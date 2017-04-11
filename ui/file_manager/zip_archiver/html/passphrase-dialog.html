@@ -1,24 +1,31 @@
 <link rel="import" href="../third-party/polymer.html">
 
-<polymer-element name="passphrase-dialog">
+<dom-module id="passphrase-dialog">
   <template>
     <link rel="stylesheet" href="../css/passphrase-dialog.css">
-    <h3>{{ 'passphraseTitle' | i18n }}</h3>
-    <paper-input-decorator label="{{ 'passphraseInputLabel' | i18n }}">
+    <!-- TODO(takise): Translation -->
+    <h3>This file is password protected</h3>
+    <paper-input-decorator>
+      <!-- TODO(takise): Translation -->
+      Password
       <input is="core-input" type="password" id="input" autofocus>
     </paper-input-decorator>
     <div id="bar">
-      <paper-checkbox id="remember"
-          label="{{ 'passphraseRemember' | i18n }}"></paper-checkbox>
+      <paper-checkbox id="remember">
+        <!-- TODO(takise): Translation -->
+          Remember
+      </paper-checkbox>
       <div id="buttons">
-        <paper-button on-click="{{cancel}}" id="cancelButton">
-            {{ 'passphraseCancel' | i18n }}
+        <paper-button on-click="cancel" id="cancelButton">
+          <!-- TODO(takise): Translation -->
+            Cancel
         </paper-button>
-        <paper-button on-click="{{accept}}" id="acceptButton">
-            {{ 'passphraseAccept' | i18n }}
+        <paper-button on-click="accept" id="acceptButton">
+          <!-- TODO(takise): Translation --> 
+            Accept
         </paper-button>
       </div>
     </div>
   </template>
   <script src="../js/passphrase-dialog.js"></script>
-</polymer-element>
+</dom-module>

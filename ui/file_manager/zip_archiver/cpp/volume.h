@@ -7,7 +7,6 @@
 
 #include <pthread.h>
 
-#include "archive.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -33,7 +32,7 @@ class VolumeReaderFactoryInterface {
  public:
   virtual ~VolumeReaderFactoryInterface() {}
 
-  // Creates a new VolumeReader. Returns NULL if failed.
+  // Creates a new VolumeReader. Returns nullptr if failed.
   // Passes VolumeReader ownership to the implementation of
   // VolumeArchiveInterfaceInterface.
   virtual VolumeReader* Create(int64_t archive_size) = 0;
@@ -184,6 +183,9 @@ class Volume {
 
   // A factory for creating VolumeReader.
   VolumeReaderFactoryInterface* volume_reader_factory_;
+
+  // A map that converts index of file in the volume to pathname.
+  std::map<int, std::string> index_to_pathname_;
 };
 
 #endif  /// VOLUME_H_

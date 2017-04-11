@@ -57,6 +57,7 @@ class JavaScriptMessageSenderInterface {
 
   virtual void SendWriteChunk(int compressor_id,
                               const pp::VarArrayBuffer& array_buffer,
+                              int64_t offset,
                               int64_t length) = 0;
 
   virtual void SendAddToArchiveDone(int compressor_id) = 0;

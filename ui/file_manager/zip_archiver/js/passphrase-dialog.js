@@ -8,6 +8,7 @@
  */
 
 Polymer({
+  is: "passphrase-dialog",
   i18n: function(name) {
     // For tests, chrome.i18n API is not available.
     return chrome.i18n ? chrome.i18n.getMessage(name) : name;

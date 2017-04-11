@@ -31,16 +31,20 @@ class VolumeArchive {
   // archive file.
   virtual bool Init(const std::string& encoding) = 0;
 
-  // Gets the next header.  In case of failure the error message can be
-  // obtained with VolumeArchive::error_message().
-  virtual Result GetNextHeader() = 0;
-  virtual Result GetNextHeader(const char** path_name,
-                               int64_t* size,
-                               bool* is_directory,
-                               time_t* modification_time) = 0;
+  // Gets the next header. If path_name is set to nullptr, then there are no more
+  // available headers. Returns true if reading next header was successful.
+  // In case of failure the error message can be obtained with
+  // VolumeArchive::error_message().
+  virtual VolumeArchive::Result GetCurrentFileInfo(
+      std::string* path_name,
+      int64_t* size,
+      bool* is_directory,
+      time_t* modification_time) = 0;
 
-  // Seeks to the |index|-th header.
-  virtual bool SeekHeader(int64_t index) = 0;
+  virtual VolumeArchive::Result GoToNextFile() = 0;
+
+  // Seeks to the header whose pathname is path_name.
+  virtual bool SeekHeader(const std::string& path_name) = 0;
 
   // Gets data from offset to offset + length for the file reached with
   // VolumeArchive::GetNextHeader. The data is stored in an internal buffer
@@ -86,7 +90,7 @@ class VolumeArchive {
   // cannot be reinitialized.
   void CleanupReader() {
     delete reader_;
-    reader_ = NULL;
+    reader_ = nullptr;
   }
 
   void set_error_message(const std::string& error_message) {

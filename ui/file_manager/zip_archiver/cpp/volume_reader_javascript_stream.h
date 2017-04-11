@@ -7,7 +7,6 @@
 
 #include <pthread.h>
 
-#include "archive.h"
 #include "ppapi/cpp/var_array_buffer.h"
 
 #include "javascript_requestor_interface.h"
@@ -60,9 +59,6 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   virtual int64_t Read(int64_t bytes_to_read, const void** destination_buffer);
 
   // See volume_reader.h for description.
-  virtual int64_t Skip(int64_t bytes_to_skip);
-
-  // See volume_reader.h for description.
   virtual int64_t Seek(int64_t offset, int whence);
 
   // Sets the request Id to be used by the reader.
@@ -73,16 +69,18 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   // another thread.
   virtual const char* Passphrase();
 
-  int64_t offset() const { return offset_; }
+  virtual int64_t offset() { return offset_; }
+
+  int64_t archive_size() { return archive_size_; }
 
  private:
   // Request a chunk of length number of bytes from JavaScript starting from
   // offset_ member. Should be run within a lock.
   void RequestChunk(int64_t length);
 
-  std::string request_id_;  // The request id for which the reader was
-                                  // created.
-  const int64_t archive_size_;    // The archive size.
+  std::string request_id_;      // The request id for which the reader was
+                                // created.
+  const int64_t archive_size_;  // The archive size.
 
   // A requestor that makes calls to JavaScript to obtain file chunks.
   JavaScriptRequestorInterface* requestor_;

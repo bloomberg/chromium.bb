@@ -32,6 +32,10 @@ unpacker.request = {
     READ_FILE_DATA: 'read_file_data',       // Should be an ArrayBuffer.
     HAS_MORE_DATA: 'has_more_data',         // Should be a boolean.
     PASSPHRASE: 'passphrase',               // Should be a string.
+    SRC_FILE: 'src_file',                // Should be a string.
+    SRC_LINE: 'src_line',                // Should be a int.
+    SRC_FUNC: 'src_func',                // Should be a string.
+    MESSAGE: 'message',                  // Should be a string.
 
     // Mandatory keys for all packing operations.
     COMPRESSOR_ID: 'compressor_id',         // Should be an int.
@@ -51,11 +55,7 @@ unpacker.request = {
     ERROR: 'error',                // Should be a string.
     CHUNK_BUFFER: 'chunk_buffer',  // Should be an ArrayBuffer.
     OFFSET: 'offset',      // Should be a string. Same reason as ARCHIVE_SIZE.
-    LENGTH: 'length',      // Should be a string. Same reason as ARCHIVE_SIZE.
-    SRC_FILE: 'src_file',                // Should be a string.
-    SRC_LINE: 'src_line',                // Should be a int.
-    SRC_FUNC: 'src_func',                // Should be a string.
-    MESSAGE: 'message',                  // Should be a string.
+    LENGTH: 'length'       // Should be a string. Same reason as ARCHIVE_SIZE.
   },
 
   /**
@@ -67,7 +67,6 @@ unpacker.request = {
    * @enum {number}
    */
   Operation: {
-    READ_METADATA: 0,
     READ_METADATA_DONE: 1,
     READ_CHUNK: 2,
     READ_CHUNK_DONE: 3,

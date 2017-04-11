@@ -8,7 +8,6 @@
 #include <ctime>
 #include <pthread.h>
 
-#include "archive.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"

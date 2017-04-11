@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "archive.h"
+#include "third_party/zlib/contrib/minizip/unzip.h"
+#include "third_party/zlib/contrib/minizip/zip.h"
 
 #include "volume_archive.h"
 
@@ -17,12 +18,11 @@ namespace volume_archive_constants {
 const char kArchiveReadNewError[] = "Could not allocate archive.";
 const char kFileNotFound[] = "File not found for read data request.";
 const char kVolumeReaderError[] = "VolumeReader failed to retrieve data.";
-const char kArchiveSupportErrorPrefix[] = "Error at support rar/zip format: ";
-const char kArchiveOpenErrorPrefix[] = "Error at open archive: ";
-const char kArchiveNextHeaderErrorPrefix[] =
-    "Error at reading next header for metadata: ";
-const char kArchiveReadDataErrorPrefix[] = "Error at reading data: ";
-const char kArchiveReadFreeErrorPrefix[] = "Error at archive free: ";
+const char kArchiveOpenError[] = "Failed to open archive.";
+const char kArchiveNextHeaderError[] =
+    "Failed to open current file in archive.";
+const char kArchiveReadDataError[] = "Failed to read archive data.";
+const char kArchiveReadFreeError[] = "Failed to close archive.";
 
 // The size of the buffer used to skip unnecessary data.
 // Should be positive and less than size_t maximum.
@@ -40,7 +40,37 @@ const int64_t kMaximumDataChunkSize = 512 * 1024;  // 512 KB.
 // Should be positive.
 const int64_t kMinimumDataChunkSize = 32 * 1024;  // 16 KB.
 
+// Maximum length of filename in zip archive.
+const int kZipMaxPath = 256;
+
+// The size of the static cache. We need at least 64KB to cache whole
+// 'end of central directory' data.
+const int64_t kStaticCacheSize = 128 * 1024;
+
 }  // namespace volume_archive_constants
+
+class VolumeArchiveLibarchive;
+
+// A namespace with custom functions passed to minizip.
+namespace volume_archive_functions {
+
+  int64_t DynamicCache(VolumeArchiveLibarchive* archive, int64_t unz_size);
+
+  uLong CustomArchiveRead(void* archive, void* stream, void* buf, uLong size);
+
+  // Returns the offset from the beginning of the data.
+  long CustomArchiveTell(void* archive, void* stream);
+
+  // Moves the current offset to the specified position.
+  long CustomArchiveSeek(void* archive,
+                         void* stream,
+                         uLong offset,
+                         int origin);
+
+}  // compressor_archive_functions
+
+
+class VolumeArchiveLibarchive;
 
 // Defines an implementation of VolumeArchive that wraps all libarchive
 // operations.
@@ -54,19 +84,18 @@ class VolumeArchiveLibarchive : public VolumeArchive {
   virtual bool Init(const std::string& encoding);
 
   // See volume_archive_interface.h.
-  virtual Result GetNextHeader();
-  virtual Result GetNextHeader(const char** path_name,
-                               int64_t* size,
-                               bool* is_directory,
-                               time_t* modification_time);
+  virtual VolumeArchive::Result GetCurrentFileInfo(std::string* path_name,
+                                                   int64_t* size,
+                                                   bool* is_directory,
+                                                   time_t* modification_time);
+
+  virtual VolumeArchive::Result GoToNextFile();
 
   // See volume_archive_interface.h.
-  virtual bool SeekHeader(int64_t index);
+  virtual bool SeekHeader(const std::string& path_name);
 
   // See volume_archive_interface.h.
-  virtual int64_t ReadData(int64_t offset,
-                           int64_t length,
-                           const char** buffer);
+  virtual int64_t ReadData(int64_t offset, int64_t length, const char** buffer);
 
   // See volume_archive_interface.h.
   virtual void MaybeDecompressAhead();
@@ -76,6 +105,20 @@ class VolumeArchiveLibarchive : public VolumeArchive {
 
   int64_t reader_data_size() const { return reader_data_size_; }
 
+  // Custom functions need to access private variables of
+  // CompressorArchiveLibarchive frequently.
+  friend int64_t volume_archive_functions::DynamicCache(
+      VolumeArchiveLibarchive* va, int64_t unz_size);
+
+  friend uLong volume_archive_functions::CustomArchiveRead(
+      void* archive, void* stream, void* buf, uLong size);
+
+  friend long volume_archive_functions::CustomArchiveTell(
+      void* archive, void* stream);
+
+  friend long volume_archive_functions::CustomArchiveSeek(
+      void* archive, void* stream, uLong offset, int origin);
+
  private:
   // Decompress length bytes of data starting from offset.
   void DecompressData(int64_t offset, int64_t length);
@@ -83,11 +126,39 @@ class VolumeArchiveLibarchive : public VolumeArchive {
   // The size of the requested data from VolumeReader.
   int64_t reader_data_size_;
 
-  // The libarchive correspondent archive object.
-  archive* archive_;
+  // The minizip correspondent archive object.
+  zipFile zip_file_;
 
-  // The last reached entry with VolumeArchiveLibarchive::GetNextHeader.
-  archive_entry* current_archive_entry_;
+  // We use two kinds of cache strategies here: dynamic and static.
+  // Dynamic cache is a common cache strategy used in most of IO streams such as
+  // fread. When a file chunk is requested and if the size of the requested
+  // chunk is small, we load larger size of bytes from the archive and cache
+  // them in dynamic_cache_. If the range of the next requested chunk is within
+  // the cache, we don't read the archive and just return the data in the cache.
+  char dynamic_cache_[volume_archive_constants::kMaximumDataChunkSize];
+
+  // The offset from which dynamic_cache_ has the data of the archive.
+  int64_t dynamic_cache_offset_;
+
+  // The size of the data in dynamic_cache_.
+  int64_t dynamic_cache_size_;
+
+  // Although dynamic cache works in most situations, it doesn't work when
+  // MiniZip is looking for the front index of the central directory. Since
+  // MiniZip reads the data little by little backwards from the end to find the
+  // index, dynamic_cache will be reloaded every time. To avoid this, we first
+  // cache a certain length of data from the end into static_cache_. The data
+  // in this buffer is also used when the data in the central directory is
+  // requested by MiniZip later.
+  char static_cache_[volume_archive_constants::kStaticCacheSize];
+
+  // The offset from which static_cache_ has the data of the archive.
+  int64_t static_cache_offset_;
+
+  // The size of the data in static_cache_. The End Of Central Directory header
+  // is guaranteed to be in the last 64(global comment) + 1(other fields) of the
+  // file. This cache is used to store the header.
+  int64_t static_cache_size_;
 
   // The data offset, which will be offset + length after last read
   // operation, where offset and length are method parameters for

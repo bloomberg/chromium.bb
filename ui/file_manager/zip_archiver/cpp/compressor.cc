@@ -8,9 +8,9 @@
 #include <ctime>
 #include <sstream>
 
-#include "request.h"
-#include "compressor_io_javascript_stream.h"
 #include "compressor_archive_libarchive.h"
+#include "compressor_io_javascript_stream.h"
+#include "request.h"
 
 namespace {
 
@@ -20,10 +20,11 @@ class JavaScriptCompressorRequestor : public JavaScriptCompressorRequestorInterf
   explicit JavaScriptCompressorRequestor(Compressor* compressor) :
       compressor_(compressor) {}
 
-  virtual void WriteChunkRequest(int64_t length,
+  virtual void WriteChunkRequest(int64_t offset,
+                                 int64_t length,
                                  const pp::VarArrayBuffer& buffer) {
-    compressor_->message_sender()->SendWriteChunk(
-        compressor_->compressor_id(), buffer, length);
+    compressor_->message_sender()->SendWriteChunk(compressor_->compressor_id(),
+                                                  buffer, offset, length);
   }
 
   virtual void ReadFileChunkRequest(int64_t length) {
@@ -63,7 +64,12 @@ bool Compressor::Init() {
 }
 
 void Compressor::CreateArchive() {
-  compressor_archive_->CreateArchive();
+  if (!compressor_archive_->CreateArchive()) {
+    message_sender_->SendCompressorError(
+        compressor_id_,
+        compressor_archive_->error_message());
+    return;
+  }
   message_sender_->SendCreateArchiveDone(compressor_id_);
 }
 
@@ -88,14 +94,18 @@ void Compressor::AddToArchiveCallback(int32_t,
       dictionary.Get(request::key::kIsDirectory).AsBool();
 
   PP_DCHECK(dictionary.Get(request::key::kModificationTime).is_string());
-  std::string strtime =
-      dictionary.Get(request::key::kModificationTime).AsString();
-  tm tm;
-  strptime(strtime.c_str(), "%m/%d/%Y %T", &tm);
-  time_t modification_time = mktime(&tm);
+  // Since modification_time is milliseconds, we hold the value in int64_t.
+  int64_t modification_time =
+      static_cast<int64_t>(request::GetInt64FromString(dictionary,
+                                               request::key::kModificationTime));
 
-  compressor_archive_->AddToArchive(
-      pathname, file_size, modification_time, is_directory);
+  if (!compressor_archive_->AddToArchive(
+      pathname, file_size, modification_time, is_directory)) {
+    message_sender_->SendCompressorError(
+        compressor_id_,
+        compressor_archive_->error_message());
+    return;
+  }
   message_sender_->SendAddToArchiveDone(compressor_id_);
 }
 
@@ -126,7 +136,12 @@ void Compressor::CloseArchive(const pp::VarDictionary& dictionary) {
   // If an error has occurred, no more write chunk requests are sent and
   // CloseArchive() can be safely called in the main thread.
   if (has_error) {
-    compressor_archive_->CloseArchive(has_error);
+    if (!compressor_archive_->CloseArchive(has_error)) {
+      message_sender_->SendCompressorError(
+          compressor_id_,
+          compressor_archive_->error_message());
+      return;
+    }
     message_sender_->SendCloseArchiveDone(compressor_id_);
   } else {
     worker_.message_loop().PostWork(callback_factory_.NewCallback(
@@ -135,6 +150,11 @@ void Compressor::CloseArchive(const pp::VarDictionary& dictionary) {
 }
 
 void Compressor::CloseArchiveCallback(int32_t, bool has_error) {
-  compressor_archive_->CloseArchive(has_error);
+  if (!compressor_archive_->CloseArchive(has_error)) {
+    message_sender_->SendCompressorError(
+        compressor_id_,
+        compressor_archive_->error_message());
+    return;
+  }
   message_sender_->SendCloseArchiveDone(compressor_id_);
 }

@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <limits>
 
-#include "archive.h"
+#include "third_party/zlib/contrib/minizip/unzip.h"
+
 #include "ppapi/cpp/logging.h"
 
 VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
@@ -23,9 +24,9 @@ VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
                                      request from JavaScript as offset
                                      parameter is 0. */,
       read_ahead_array_buffer_ptr_(&first_array_buffer_) {
-  pthread_mutex_init(&shared_state_lock_, NULL);
-  pthread_cond_init(&available_data_cond_, NULL);
-  pthread_cond_init(&available_passphrase_cond_, NULL);
+  pthread_mutex_init(&shared_state_lock_, nullptr);
+  pthread_cond_init(&available_data_cond_, nullptr);
+  pthread_cond_init(&available_passphrase_cond_, nullptr);
 
   // Dummy Map the second buffer as first buffer is used for read ahead by
   // read_ahead_array_buffer_ptr_. This operation is required in order for Unmap
@@ -120,7 +121,7 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
   }
 
   // Call in case of first read or read after Seek and Skip.
-  if (last_read_chunk_offset_ != offset_)
+  if (last_read_chunk_offset_ != offset_ || !available_data_)
     RequestChunk(bytes_to_read);
 
   if (!available_data_) {
@@ -129,7 +130,7 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
                                 // was done outside guarded zone.
       if (read_error_) {
         pthread_mutex_unlock(&shared_state_lock_);
-        return ARCHIVE_FATAL;
+        return -1;
       }
       pthread_cond_wait(&available_data_cond_, &shared_state_lock_);
     }
@@ -137,7 +138,7 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
 
   if (read_error_) {  // Read ahead failed.
     pthread_mutex_unlock(&shared_state_lock_);
-    return ARCHIVE_FATAL;
+    return -1;
   }
 
   // Make data available for libarchive custom read. No need to lock this part.
@@ -187,48 +188,30 @@ int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset, int whence) {
 
   int64_t new_offset = offset_;
   switch (whence) {
-    case SEEK_SET:
+    case ZLIB_FILEFUNC_SEEK_SET:
       new_offset = offset;
       break;
-    case SEEK_CUR:
+    case ZLIB_FILEFUNC_SEEK_CUR:
       new_offset += offset;
       break;
-    case SEEK_END:
+    case ZLIB_FILEFUNC_SEEK_END:
       new_offset = archive_size_ + offset;
       break;
     default:
       PP_NOTREACHED();
       pthread_mutex_unlock(&shared_state_lock_);
-      return ARCHIVE_FATAL;
+      return -1;
   }
 
-  if (new_offset < 0 || new_offset > archive_size_) {
+  if (new_offset < 0) {
     pthread_mutex_unlock(&shared_state_lock_);
-    return ARCHIVE_FATAL;
+    return -1;
   }
 
   offset_ = new_offset;
   pthread_mutex_unlock(&shared_state_lock_);
 
   return new_offset;
-}
-
-int64_t VolumeReaderJavaScriptStream::Skip(int64_t bytes_to_skip) {
-  pthread_mutex_lock(&shared_state_lock_);
-  // Invalid bytes_to_skip. This "if" can be triggered for corrupted archives.
-  // We return 0 instead of ARCHIVE_FATAL in order for libarchive to use normal
-  // Read and return the correct error. In case we return ARCHIVE_FATAL here
-  // then libarchive just stops without telling us why it wasn't able to
-  // process the archive.
-  if (archive_size_ - offset_ < bytes_to_skip || bytes_to_skip < 0) {
-    pthread_mutex_unlock(&shared_state_lock_);
-    return 0;
-  }
-
-  offset_ += bytes_to_skip;
-  pthread_mutex_unlock(&shared_state_lock_);
-
-  return bytes_to_skip;
 }
 
 void VolumeReaderJavaScriptStream::SetRequestId(const std::string& request_id) {
@@ -243,7 +226,7 @@ const char* VolumeReaderJavaScriptStream::Passphrase() {
   pthread_mutex_lock(&shared_state_lock_);
   if (passphrase_error_) {
     pthread_mutex_unlock(&shared_state_lock_);
-    return NULL;
+    return nullptr;
   }
   pthread_mutex_unlock(&shared_state_lock_);
 
@@ -253,7 +236,7 @@ const char* VolumeReaderJavaScriptStream::Passphrase() {
   pthread_mutex_lock(&shared_state_lock_);
   // Wait for the passphrase from JavaScript.
   pthread_cond_wait(&available_passphrase_cond_, &shared_state_lock_);
-  const char* result = NULL;
+  const char* result = nullptr;
   if (!passphrase_error_)
     result = strdup(available_passphrase_.c_str());
   pthread_mutex_unlock(&shared_state_lock_);

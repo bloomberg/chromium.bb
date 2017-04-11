@@ -30,9 +30,10 @@ unpacker.app = {
   /**
    * The default filename for .nmf file.
    * This value must not be const because it is overwritten in tests.
+   * Since .nmf file is not available in .grd, we use .txt instead.
    * @type {string}
    */
-  DEFAULT_MODULE_NMF: 'module.nmf',
+  DEFAULT_MODULE_NMF: 'module.nmf.txt',
 
   /**
    * The default MIME type for .nmf file.

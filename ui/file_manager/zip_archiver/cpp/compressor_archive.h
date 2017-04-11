@@ -17,38 +17,46 @@ class CompressorArchive {
   virtual ~CompressorArchive() {}
 
   // Creates an archive object. This method does not call CustomArchiveWrite, so
-  // this is synchronous.
-  virtual void CreateArchive() = 0;
+  // this is synchronous. Returns true if successful. In case of failure the
+  // error message can be obtained with CompressorArchive::error_message().
+  virtual bool CreateArchive() = 0;
 
-  // Releases all resources obtained by libarchive.
+  // Releases all resources obtained by minizip.
   // This method also writes metadata about the archive itself onto the end of
   // the archive file before releasing resources if hasError is false. Since
   // writing data onto the archive is asynchronous, this function must not be
-  // called in the main thread if hasError is false.
-  virtual void CloseArchive(bool has_error) = 0;
+  // called in the main thread if hasError is false. Returns true if successful.
+  // In case of failure the error message can be obtained with
+  // CompressorArchive::error_message().
+  virtual bool CloseArchive(bool has_error) = 0;
 
   // Adds an entry to the archive. It writes the header of the entry onto the
   // archive first, and then if it is a file(not a directory), requests
   // JavaScript for file chunks, compresses and writes them onto the archive
   // until all chunks of the entry are written onto the archive. This method
   // calls IO operations, so this function must not be called in the main thread.
-  virtual void AddToArchive(const std::string& filename,
+  // Returns true if successful. In case of failure the error message can be
+  // obtained with CompressorArchive::error_message().
+  virtual bool AddToArchive(const std::string& filename,
                             int64_t file_size,
-                            time_t modification_time,
+                            int64_t modification_time,
                             bool is_directory) = 0;
-
-  // A getter function for archive_.
-  struct archive* archive() const { return archive_; }
 
   // A getter function for compressor_stream_.
   CompressorStream* compressor_stream() const { return compressor_stream_; }
 
- private:
-  // The libarchive correspondent archive object.
-  struct archive* archive_;
+  std::string error_message() const { return error_message_; }
 
+  void set_error_message(const std::string& error_message) {
+    error_message_ = error_message;
+  }
+
+ private:
   // An instance that takes care of all IO operations.
   CompressorStream* compressor_stream_;
+
+  // An error message set in case of any errors.
+  std::string error_message_;
 };
 
 #endif  // COMPRESSSOR_ARCHIVE_H_

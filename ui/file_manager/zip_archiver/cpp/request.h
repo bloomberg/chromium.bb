@@ -140,6 +140,7 @@ pp::VarDictionary CreateReadFileChunkRequest(int compressor_id,
 
 pp::VarDictionary CreateWriteChunkRequest(int compressor_id,
                                           const pp::VarArrayBuffer& array_buffer,
+                                          int64_t offset,
                                           int64_t length);
 
 pp::VarDictionary CreateAddToArchiveDoneResponse(int compressor_id);

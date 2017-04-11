@@ -182,7 +182,7 @@ struct Volume::OpenFileArgs {
 Volume::Volume(const pp::InstanceHandle& instance_handle,
                const std::string& file_system_id,
                JavaScriptMessageSenderInterface* message_sender)
-    : volume_archive_(NULL),
+    : volume_archive_(nullptr),
       file_system_id_(file_system_id),
       message_sender_(message_sender),
       worker_(instance_handle),
@@ -198,7 +198,7 @@ Volume::Volume(const pp::InstanceHandle& instance_handle,
                JavaScriptMessageSenderInterface* message_sender,
                VolumeArchiveFactoryInterface* volume_archive_factory,
                VolumeReaderFactoryInterface* volume_reader_factory)
-    : volume_archive_(NULL),
+    : volume_archive_(nullptr),
       file_system_id_(file_system_id),
       message_sender_(message_sender),
       worker_(instance_handle),
@@ -323,43 +323,62 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
         file_system_id_, request_id, volume_archive_->error_message());
     ClearJob();
     delete volume_archive_;
-    volume_archive_ = NULL;
+    volume_archive_ = nullptr;
     return;
   }
 
   // Read and construct metadata.
   pp::VarDictionary root_metadata = CreateEntry(-1, "" /* name */, true, 0, 0);
 
-  const char* path_name = NULL;
+  std::string path_name;
   int64_t size = 0;
   bool is_directory = false;
   time_t modification_time = 0;
   int64_t index = 0;
 
   for (;;) {
-    VolumeArchive::Result ret = volume_archive_->GetNextHeader(
-        &path_name, &size, &is_directory, &modification_time);
-    if (ret == VolumeArchive::RESULT_FAIL) {
-      message_sender_->SendFileSystemError(
-          file_system_id_, request_id, volume_archive_->error_message());
+    path_name.clear();
+    if (volume_archive_->GetCurrentFileInfo(
+        &path_name,
+        &size,
+        &is_directory,
+        &modification_time) == VolumeArchive::RESULT_FAIL) {
+      message_sender_->SendFileSystemError(file_system_id_, request_id,
+                                           volume_archive_->error_message());
       ClearJob();
       delete volume_archive_;
-      volume_archive_ = NULL;
+      volume_archive_ = nullptr;
       return;
-    } else if (ret == VolumeArchive::RESULT_EOF)
+    }
+
+    if (path_name.empty())  // End of archive.
       break;
 
-    ConstructMetadata(index, path_name, size, is_directory, modification_time,
-        &root_metadata);
+    ConstructMetadata(index, path_name.c_str(), size, is_directory,
+                      modification_time, &root_metadata);
+
+    index_to_pathname_[index] = path_name;
 
     ++index;
+
+    int return_value = volume_archive_->GoToNextFile();
+    if (return_value == VolumeArchive::RESULT_FAIL) {
+      message_sender_->SendFileSystemError(file_system_id_, request_id,
+                                           volume_archive_->error_message());
+      ClearJob();
+      delete volume_archive_;
+      volume_archive_ = nullptr;
+      return;
+    }
+    if (return_value == VolumeArchive::RESULT_EOF)
+      break;
   }
 
   ClearJob();
 
   // Send metadata back to JavaScript.
-  message_sender_->SendReadMetadataDone(
-      file_system_id_, request_id, root_metadata);
+  message_sender_->SendReadMetadataDone(file_system_id_, request_id,
+                                        root_metadata);
 }
 
 void Volume::OpenFileCallback(int32_t /*result*/,
@@ -379,21 +398,31 @@ void Volume::OpenFileCallback(int32_t /*result*/,
     job_lock_.Release();
     return;
   }
-  static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())->
-      SetRequestId(args.request_id);
+
+  static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
+      ->SetRequestId(args.request_id);
   reader_request_id_ = args.request_id;
   job_lock_.Release();
 
-  if (!volume_archive_->SeekHeader(args.index)) {
-    message_sender_->SendFileSystemError(
-        file_system_id_, args.request_id, volume_archive_->error_message());
+  std::string path_name = index_to_pathname_[args.index];
+  int64_t size = 0;
+  bool is_directory = false;
+  time_t modification_time = 0;
+
+  if (!volume_archive_->SeekHeader(path_name)) {
+    message_sender_->SendFileSystemError(file_system_id_, args.request_id,
+                                         volume_archive_->error_message());
     ClearJob();
     return;
   }
 
-  if (volume_archive_->GetNextHeader() == VolumeArchive::RESULT_FAIL) {
-    message_sender_->SendFileSystemError(
-        file_system_id_, args.request_id, volume_archive_->error_message());
+  if (volume_archive_->GetCurrentFileInfo(
+      &path_name,
+      &size,
+      &is_directory,
+      &modification_time) != VolumeArchive::RESULT_SUCCESS) {
+    message_sender_->SendFileSystemError(file_system_id_, args.request_id,
+                                         volume_archive_->error_message());
     ClearJob();
     return;
   }
@@ -444,7 +473,7 @@ void Volume::ReadFileCallback(int32_t /*result*/,
   // depending on how many bytes VolumeArchive::ReadData returns.
   int64_t left_length = length;
   while (left_length > 0) {
-    const char* destination_buffer = NULL;
+    const char* destination_buffer = nullptr;
     int64_t read_bytes = volume_archive_->ReadData(
         offset, left_length, &destination_buffer);
 

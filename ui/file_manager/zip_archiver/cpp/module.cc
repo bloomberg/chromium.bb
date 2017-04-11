@@ -110,10 +110,11 @@ class JavaScriptMessageSender : public JavaScriptMessageSenderInterface {
   }
 
   virtual void SendWriteChunk(int compressor_id,
-      const pp::VarArrayBuffer& array_buffer,
-      int64_t length) {
+                              const pp::VarArrayBuffer& array_buffer,
+                              int64_t offset,
+                              int64_t length) {
     JavaScriptPostMessage(request::CreateWriteChunkRequest(
-        compressor_id, array_buffer, length));
+        compressor_id, array_buffer, offset, length));
   }
 
   virtual void SendAddToArchiveDone(int compressor_id) {

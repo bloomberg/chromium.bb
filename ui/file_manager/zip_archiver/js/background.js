@@ -26,4 +26,4 @@ chrome.fileSystemProvider.onReadFileRequested.addListener(
     unpacker.app.onReadFileRequested);
 
 // Load the PNaCl module.
-unpacker.app.loadNaclModule('module.nmf', 'application/x-pnacl');
+unpacker.app.loadNaclModule('module.nmf.txt', 'application/x-pnacl');

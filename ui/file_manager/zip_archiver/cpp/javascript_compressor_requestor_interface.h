@@ -12,7 +12,8 @@ class JavaScriptCompressorRequestorInterface {
  public:
   virtual ~JavaScriptCompressorRequestorInterface() {}
 
-  virtual void WriteChunkRequest(int64_t length,
+  virtual void WriteChunkRequest(int64_t offset,
+                                 int64_t length,
                                  const pp::VarArrayBuffer& buffer) = 0;
 
   virtual void ReadFileChunkRequest(int64_t length) = 0;

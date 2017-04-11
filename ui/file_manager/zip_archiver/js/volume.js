@@ -6,11 +6,14 @@
 
 /**
  * Converts a c/c++ time_t variable to Date.
+ * The time we get from the archive is in local time.
  * @param {number} timestamp A c/c++ time_t variable.
  * @return {!Date}
  */
 function DateFromTimeT(timestamp) {
-  return new Date(1000 * timestamp);
+  var local = new Date(1000 * timestamp);
+  console.info(local.getHours())
+  return new Date( local.getTime() + (local.getTimezoneOffset() * 60000));
 }
 
 /**

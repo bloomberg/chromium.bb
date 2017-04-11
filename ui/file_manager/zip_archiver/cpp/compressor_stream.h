@@ -15,15 +15,21 @@ class CompressorStream {
  public:
   virtual ~CompressorStream() {}
 
+  // Flush the data in buffer_. This method is called when the buffer gets full
+  // or needs to have the different range of data from the current data in it.
+  // This method must not be called in the main thread.
+  virtual int64_t Flush() = 0;
+
   // Writes the given buffer onto the archive. After sending a write chunk
   // request to JavaScript, it waits until WriteChunkDone() is called in the
   // main thread. Thus, This method must not be called in the main thread.
-  virtual int64_t Write(int64_t bytes_to_write,
-                        const pp::VarArrayBuffer& buffer) = 0;
+  virtual int64_t Write(int64_t zip_offset,
+                        int64_t zip_length,
+                        const char* zip_buffer) = 0;
 
   // Called when write chunk done response arrives from JavaScript. Sends a
   // signal to invoke Write function in another thread again.
-  virtual void WriteChunkDone(int64_t write_bytes) = 0;
+  virtual int64_t WriteChunkDone(int64_t write_bytes) = 0;
 
   // Reads a file chunk from the entry that is currently being processed. After
   // sending a read file chunk request to JavaScript, it waits until
@@ -35,8 +41,8 @@ class CompressorStream {
   // the binary data in the given buffer to destination_buffer_ and Sends a
   // signal to invoke Read function in another thread again. buffer must not be
   // const because buffer.Map() and buffer.Unmap() can not be called with const.
-  virtual void ReadFileChunkDone(int64_t read_bytes,
-                                 pp::VarArrayBuffer* buffer) = 0;
+  virtual int64_t ReadFileChunkDone(int64_t read_bytes,
+                                    pp::VarArrayBuffer* buffer) = 0;
 };
 
 #endif  // COMPRESSOR_STREAM_H_

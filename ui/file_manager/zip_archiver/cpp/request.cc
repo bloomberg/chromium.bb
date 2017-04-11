@@ -115,12 +115,17 @@ pp::VarDictionary request::CreateReadFileChunkRequest(
 pp::VarDictionary request::CreateWriteChunkRequest(
     int compressor_id,
     const pp::VarArrayBuffer& array_buffer,
+    int64_t offset,
     int64_t length) {
   pp::VarDictionary request;
   request.Set(request::key::kOperation, WRITE_CHUNK);
   request.Set(request::key::kCompressorId, compressor_id);
 
   request.Set(request::key::kChunkBuffer, array_buffer);
+
+  std::stringstream ss_offset;
+  ss_offset << offset;
+  request.Set(request::key::kOffset, ss_offset.str());
   std::stringstream ss_length;
   ss_length << length;
   request.Set(request::key::kLength, ss_length.str());
