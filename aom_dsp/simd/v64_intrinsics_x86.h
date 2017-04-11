@@ -228,6 +228,14 @@ SIMD_INLINE v64 v64_unpackhi_u8_s16(v64 a) {
   return _mm_srli_si128(_mm_unpacklo_epi8(a, _mm_setzero_si128()), 8);
 }
 
+SIMD_INLINE v64 v64_unpacklo_s8_s16(v64 a) {
+  return _mm_srai_epi16(_mm_unpacklo_epi8(a, a), 8);
+}
+
+SIMD_INLINE v64 v64_unpackhi_s8_s16(v64 a) {
+  return _mm_srli_si128(_mm_srai_epi16(_mm_unpacklo_epi8(a, a), 8), 8);
+}
+
 SIMD_INLINE v64 v64_unpacklo_u16_s32(v64 a) {
   return _mm_unpacklo_epi16(a, _mm_setzero_si128());
 }

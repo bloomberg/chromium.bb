@@ -496,6 +496,20 @@ SIMD_INLINE c_v256 c_v256_unpackhi_u8_s16(c_v256 a) {
                           c_v128_unpacklo_u8_s16(a.v128[1]));
 }
 
+SIMD_INLINE c_v256 c_v256_unpack_s8_s16(c_v128 a) {
+  return c_v256_from_v128(c_v128_unpackhi_s8_s16(a), c_v128_unpacklo_s8_s16(a));
+}
+
+SIMD_INLINE c_v256 c_v256_unpacklo_s8_s16(c_v256 a) {
+  return c_v256_from_v128(c_v128_unpackhi_s8_s16(a.v128[0]),
+                          c_v128_unpacklo_s8_s16(a.v128[0]));
+}
+
+SIMD_INLINE c_v256 c_v256_unpackhi_s8_s16(c_v256 a) {
+  return c_v256_from_v128(c_v128_unpackhi_s8_s16(a.v128[1]),
+                          c_v128_unpacklo_s8_s16(a.v128[1]));
+}
+
 SIMD_INLINE c_v256 c_v256_pack_s32_s16(c_v256 a, c_v256 b) {
   return c_v256_from_v128(c_v128_pack_s32_s16(a.v128[1], a.v128[0]),
                           c_v128_pack_s32_s16(b.v128[1], b.v128[0]));

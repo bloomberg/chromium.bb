@@ -95,6 +95,8 @@ SIMD_INLINE v64 v64_unziplo_16(v64 a, v64 b) { return c_v64_unziplo_16(a, b); }
 SIMD_INLINE v64 v64_unziphi_16(v64 a, v64 b) { return c_v64_unziphi_16(a, b); }
 SIMD_INLINE v64 v64_unpacklo_u8_s16(v64 a) { return c_v64_unpacklo_u8_s16(a); }
 SIMD_INLINE v64 v64_unpackhi_u8_s16(v64 a) { return c_v64_unpackhi_u8_s16(a); }
+SIMD_INLINE v64 v64_unpacklo_s8_s16(v64 a) { return c_v64_unpacklo_s8_s16(a); }
+SIMD_INLINE v64 v64_unpackhi_s8_s16(v64 a) { return c_v64_unpackhi_s8_s16(a); }
 SIMD_INLINE v64 v64_pack_s32_s16(v64 a, v64 b) {
   return c_v64_pack_s32_s16(a, b);
 }

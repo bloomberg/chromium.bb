@@ -358,6 +358,14 @@ SIMD_INLINE v64 v64_unpackhi_u8_s16(v64 a) {
   return vreinterpret_s64_u16(vget_high_u16(vmovl_u8(vreinterpret_u8_s64(a))));
 }
 
+SIMD_INLINE v64 v64_unpacklo_s8_s16(v64 a) {
+  return vreinterpret_s64_s16(vget_low_s16(vmovl_s8(vreinterpret_s8_s64(a))));
+}
+
+SIMD_INLINE v64 v64_unpackhi_s8_s16(v64 a) {
+  return vreinterpret_s64_s16(vget_high_s16(vmovl_s8(vreinterpret_s8_s64(a))));
+}
+
 SIMD_INLINE v64 v64_pack_s32_s16(v64 x, v64 y) {
   return vreinterpret_s64_s16(vqmovn_s32(
       vcombine_s32(vreinterpret_s32_s64(y), vreinterpret_s32_s64(x))));

@@ -158,6 +158,13 @@ SIMD_INLINE v128 v128_unpacklo_u8_s16(v128 a) {
 SIMD_INLINE v128 v128_unpackhi_u8_s16(v128 a) {
   return c_v128_unpackhi_u8_s16(a);
 }
+SIMD_INLINE v128 v128_unpack_s8_s16(v64 a) { return c_v128_unpack_s8_s16(a); }
+SIMD_INLINE v128 v128_unpacklo_s8_s16(v128 a) {
+  return c_v128_unpacklo_s8_s16(a);
+}
+SIMD_INLINE v128 v128_unpackhi_s8_s16(v128 a) {
+  return c_v128_unpackhi_s8_s16(a);
+}
 SIMD_INLINE v128 v128_pack_s32_s16(v128 a, v128 b) {
   return c_v128_pack_s32_s16(a, b);
 }
