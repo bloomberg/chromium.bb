@@ -308,13 +308,19 @@ void PopulateInfoMapWithBookmarks(
                        entry.url.GetOrigin(),
                        blink::mojom::EngagementLevel::LOW);
                  });
-    std::sort(result_bookmarks.begin(), result_bookmarks.end(),
-              [&engagement_map](const BookmarkModel::URLAndTitle& a,
-                                const BookmarkModel::URLAndTitle& b) {
-                double a_score = engagement_map.at(a.url.GetOrigin());
-                double b_score = engagement_map.at(b.url.GetOrigin());
-                return a_score > b_score;
-              });
+    // TODO(dmurph): Simplify this (and probably much more) once
+    // SiteEngagementService::GetAllDetails lands (crbug/703848), as that will
+    // allow us to remove most of these lookups and merging of signals.
+    std::sort(
+        result_bookmarks.begin(), result_bookmarks.end(),
+        [&engagement_map](const BookmarkModel::URLAndTitle& a,
+                          const BookmarkModel::URLAndTitle& b) {
+          auto a_it = engagement_map.find(a.url.GetOrigin());
+          auto b_it = engagement_map.find(b.url.GetOrigin());
+          double a_score = a_it == engagement_map.end() ? 0 : a_it->second;
+          double b_score = b_it == engagement_map.end() ? 0 : b_it->second;
+          return a_score > b_score;
+        });
     if (result_bookmarks.size() > kMaxBookmarks)
       result_bookmarks.resize(kMaxBookmarks);
   } else {
