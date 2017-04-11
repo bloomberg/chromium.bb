@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <unordered_map>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -39,6 +40,7 @@ class LatencyInfo;
 namespace content {
 
 class RenderWidgetHostImpl;
+class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
@@ -92,6 +94,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       const gfx::Point& point,
       gfx::Point* transformed_point);
+
+  std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
 
  private:
   struct HittestData {

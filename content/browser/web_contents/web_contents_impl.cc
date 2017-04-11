@@ -1849,8 +1849,21 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
   if (receiving_widget != GetMainFrame()->GetRenderWidgetHost())
     return receiving_widget;
 
+  WebContentsImpl* focused_contents = GetFocusedWebContents();
+
+  // If the focused WebContents is showing an interstitial, return the
+  // interstitial's widget.
+  if (focused_contents->ShowingInterstitialPage()) {
+    return static_cast<RenderFrameHostImpl*>(
+               focused_contents->GetRenderManager()
+                   ->interstitial_page()
+                   ->GetMainFrame())
+        ->GetRenderWidgetHost();
+  }
+
   FrameTreeNode* focused_frame =
-      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
+      focused_contents->frame_tree_.GetFocusedFrame();
+
   if (!focused_frame)
     return receiving_widget;
 
@@ -1866,7 +1879,17 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
 }
 
 RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
-  return GetFocusedWebContents()->GetMainFrame()->GetRenderWidgetHost();
+  WebContentsImpl* focused_web_contents = GetFocusedWebContents();
+
+  if (focused_web_contents->ShowingInterstitialPage()) {
+    return static_cast<RenderFrameHostImpl*>(
+               focused_web_contents->GetRenderManager()
+                   ->interstitial_page()
+                   ->GetMainFrame())
+        ->GetRenderWidgetHost();
+  }
+
+  return focused_web_contents->GetMainFrame()->GetRenderWidgetHost();
 }
 
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
@@ -2673,6 +2696,19 @@ void WebContentsImpl::AttachInterstitialPage(
   // Stop the throbber if needed while the interstitial page is shown.
   if (frame_tree_.IsLoading())
     LoadingStateChanged(true, true, nullptr);
+
+  // Connect to outer WebContents if necessary.
+  if (node_.OuterContentsFrameTreeNode()) {
+    if (GetRenderManager()->GetProxyToOuterDelegate()) {
+      DCHECK(
+          static_cast<RenderWidgetHostViewBase*>(interstitial_page->GetView())
+              ->IsRenderWidgetHostViewChildFrame());
+      RenderWidgetHostViewChildFrame* view =
+          static_cast<RenderWidgetHostViewChildFrame*>(
+              interstitial_page->GetView());
+      GetRenderManager()->SetRWHViewForInnerContents(view);
+    }
+  }
 }
 
 void WebContentsImpl::DidProceedOnInterstitial() {
@@ -2686,6 +2722,19 @@ void WebContentsImpl::DidProceedOnInterstitial() {
 }
 
 void WebContentsImpl::DetachInterstitialPage() {
+  // Disconnect from outer WebContents if necessary.
+  if (node_.OuterContentsFrameTreeNode()) {
+    if (GetRenderManager()->GetProxyToOuterDelegate()) {
+      DCHECK(static_cast<RenderWidgetHostViewBase*>(
+                 GetRenderManager()->current_frame_host()->GetView())
+                 ->IsRenderWidgetHostViewChildFrame());
+      RenderWidgetHostViewChildFrame* view =
+          static_cast<RenderWidgetHostViewChildFrame*>(
+              GetRenderManager()->current_frame_host()->GetView());
+      GetRenderManager()->SetRWHViewForInnerContents(view);
+    }
+  }
+
   bool interstitial_pausing_throbber =
       ShowingInterstitialPage() &&
       GetRenderManager()->interstitial_page()->pause_throbber();
@@ -4764,7 +4813,14 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   if (GetRenderManager()->GetProxyToOuterDelegate())
     GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
 
-  GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(true);
+  if (ShowingInterstitialPage()) {
+    static_cast<RenderFrameHostImpl*>(
+        GetRenderManager()->interstitial_page()->GetMainFrame())
+        ->GetRenderWidgetHost()
+        ->SetPageFocus(true);
+  } else {
+    GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(true);
+  }
   GetOutermostWebContents()->node_.SetFocusedWebContents(this);
 }
 

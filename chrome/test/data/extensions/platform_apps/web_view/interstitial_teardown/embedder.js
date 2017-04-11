@@ -12,6 +12,9 @@ window.loadGuest = function(port) {
       'interstitial_teardown/https_page.html';
   window.console.log('guestSrcHTTPS: ' + guestSrcHTTPS);
   webview.setAttribute('src', guestSrcHTTPS);
+  webview.style.position = 'fixed';
+  webview.style.left = '0px';
+  webview.style.top = '0px';
 
   document.body.appendChild(webview);
   chrome.test.sendMessage('GuestAddedToDom');

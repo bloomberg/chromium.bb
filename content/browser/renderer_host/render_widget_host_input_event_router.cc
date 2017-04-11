@@ -831,4 +831,13 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
   touchpad_gesture_target_.target->ProcessGestureEvent(*event, latency);
 }
 
+std::vector<RenderWidgetHostView*>
+RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
+  std::vector<RenderWidgetHostView*> hosts;
+  for (auto entry : owner_map_)
+    hosts.push_back(entry.second);
+
+  return hosts;
+}
+
 }  // namespace content

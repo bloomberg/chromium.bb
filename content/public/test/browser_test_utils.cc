@@ -34,13 +34,16 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -48,6 +51,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -1187,6 +1191,51 @@ bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents) {
 
 RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetMouseLockWidget();
+}
+
+bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
+  InterstitialPageImpl* impl =
+      static_cast<InterstitialPageImpl*>(interstitial_page);
+
+  RenderWidgetHostViewBase* rwhvb =
+      static_cast<RenderWidgetHostViewBase*>(impl->GetView());
+  EXPECT_TRUE(rwhvb->IsRenderWidgetHostViewChildFrame());
+  RenderWidgetHostViewChildFrame* rwhvcf =
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhvb);
+
+  CrossProcessFrameConnector* frame_connector =
+      rwhvcf->FrameConnectorForTesting();
+
+  WebContentsImpl* inner_web_contents =
+      static_cast<WebContentsImpl*>(impl->GetWebContents());
+  FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
+      inner_web_contents->GetOuterDelegateFrameTreeNodeId());
+
+  return outer_node->current_frame_host()->GetView() ==
+         frame_connector->GetParentRenderWidgetHostView();
+}
+
+std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
+    WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->GetInputEventRouter()
+      ->GetRenderWidgetHostViewsForTests();
+}
+
+RenderWidgetHost* GetFocusedRenderWidgetHost(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  return web_contents_impl->GetFocusedRenderWidgetHost(
+      web_contents_impl->GetMainFrame()->GetRenderWidgetHost());
+}
+
+void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  web_contents_impl->GetInputEventRouter()->RouteMouseEvent(
+      static_cast<RenderWidgetHostViewBase*>(
+          web_contents_impl->GetMainFrame()->GetView()),
+      event, ui::LatencyInfo());
 }
 
 #if defined(USE_AURA)

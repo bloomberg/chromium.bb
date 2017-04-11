@@ -64,10 +64,12 @@ using test_server::EmbeddedTestServer;
 namespace content {
 
 class BrowserContext;
+class InterstitialPage;
 class MessageLoopRunner;
 class NavigationHandle;
 class RenderViewHost;
 class RenderWidgetHost;
+class RenderWidgetHostView;
 class WebContents;
 
 // Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
@@ -352,6 +354,22 @@ bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents);
 
 // Returns the RenderWidgetHost that holds the mouse lock.
 RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
+
+// Returns true if inner |interstitial_page| is connected to an outer
+// WebContents.
+bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page);
+
+// Returns all the RenderWidgetHostViews inside the |web_contents| that are
+// registered in the RenderWidgetHostInputEventRouter.
+std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
+    WebContents* web_contents);
+
+// Returns the focused RenderWidgetHost.
+RenderWidgetHost* GetFocusedRenderWidgetHost(WebContents* web_contents);
+
+// Route the |event| through the RenderWidgetHostInputEventRouter. This allows
+// correct targeting of events to out of process iframes.
+void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event);
 
 #if defined(USE_AURA)
 // The following two methods allow a test to send a touch tap sequence, and

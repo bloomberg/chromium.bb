@@ -51,7 +51,6 @@
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -81,6 +80,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/features/features.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -123,14 +123,6 @@ const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kCacheResponsePath[] = "/cache-control-response";
 const char kRedirectResponseFullPath[] =
     "/extensions/platform_apps/web_view/shim/guest_redirect.html";
-
-class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
- public:
-  TestInterstitialPageDelegate() {
-  }
-  ~TestInterstitialPageDelegate() override {}
-  std::string GetHTMLContents() override { return std::string(); }
-};
 
 class WebContentsHiddenObserver : public content::WebContentsObserver {
  public:
@@ -691,7 +683,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   }
 
   // Helper to load interstitial page in a <webview>.
-  void InterstitialTeardownTestHelper() {
+  void InterstitialTestHelper() {
     // Start a HTTPS server so we can load an interstitial page inside guest.
     net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
     https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
@@ -1697,10 +1689,109 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
              NO_TEST_SERVER);
 }
 
+// Test makes sure that interstitial pages renders in <webview>.
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
+  // This test tests that a inner WebContents' InterstitialPage is properly
+  // connected to an outer WebContents through a CrossProcessFrameConnector, it
+  // doesn't make sense for BrowserPlugin based guests.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  InterstitialTestHelper();
+
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+
+  EXPECT_TRUE(guest_web_contents->ShowingInterstitialPage());
+  EXPECT_TRUE(guest_web_contents->GetInterstitialPage()
+                  ->GetMainFrame()
+                  ->GetView()
+                  ->IsShowing());
+  EXPECT_TRUE(content::IsInnerInterstitialPageConnected(
+      guest_web_contents->GetInterstitialPage()));
+}
+
+// Test makes sure that interstitial pages are registered in the
+// RenderWidgetHostInputEventRouter when inside a <webview>.
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
+  // This test tests that a inner WebContents' InterstitialPage is properly
+  // connected to an outer WebContents through a CrossProcessFrameConnector, it
+  // doesn't make sense for BrowserPlugin based guests.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  InterstitialTestHelper();
+
+  content::WebContents* outer_web_contents = GetFirstAppWindowWebContents();
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+  content::InterstitialPage* interstitial_page =
+      guest_web_contents->GetInterstitialPage();
+
+  std::vector<content::RenderWidgetHostView*> hosts =
+      content::GetInputEventRouterRenderWidgetHostViews(outer_web_contents);
+  EXPECT_TRUE(std::find(hosts.begin(), hosts.end(),
+                        interstitial_page->GetMainFrame()->GetView()) !=
+              hosts.end());
+}
+
+// Test makes sure that interstitial pages will receive input events and can be
+// focused.
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
+  // This test tests that a inner WebContents' InterstitialPage is properly
+  // connected to an outer WebContents through a CrossProcessFrameConnector, it
+  // doesn't make sense for BrowserPlugin based guests.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  InterstitialTestHelper();
+
+  content::WebContents* outer_web_contents = GetFirstAppWindowWebContents();
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+  content::InterstitialPage* interstitial_page =
+      guest_web_contents->GetInterstitialPage();
+  content::RenderFrameHost* interstitial_main_frame =
+      interstitial_page->GetMainFrame();
+  content::RenderWidgetHost* interstitial_widget =
+      interstitial_main_frame->GetRenderViewHost()->GetWidget();
+
+  content::WaitForChildFrameSurfaceReady(interstitial_main_frame);
+
+  EXPECT_NE(interstitial_widget,
+            content::GetFocusedRenderWidgetHost(guest_web_contents));
+  EXPECT_NE(interstitial_widget,
+            content::GetFocusedRenderWidgetHost(outer_web_contents));
+
+  // Send mouse down.
+  blink::WebMouseEvent event;
+  event.button = blink::WebPointerProperties::Button::kLeft;
+  event.SetType(blink::WebInputEvent::kMouseDown);
+  event.SetPositionInWidget(10, 10);
+  content::RouteMouseEvent(outer_web_contents, &event);
+
+  // Wait a frame.
+  content::MainThreadFrameObserver observer(interstitial_widget);
+  observer.Wait();
+
+  // Send mouse up.
+  event.SetType(blink::WebInputEvent::kMouseUp);
+  event.SetPositionInWidget(10, 10);
+  content::RouteMouseEvent(outer_web_contents, &event);
+
+  // Wait another frame.
+  observer.Wait();
+
+  EXPECT_EQ(interstitial_widget,
+            content::GetFocusedRenderWidgetHost(guest_web_contents));
+  EXPECT_EQ(interstitial_widget,
+            content::GetFocusedRenderWidgetHost(outer_web_contents));
+}
+
 // This test makes sure the browser process does not crash if app is closed
 // while an interstitial page is being shown in guest.
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
-  InterstitialTeardownTestHelper();
+  InterstitialTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
   extensions::AppWindow* window = GetFirstAppWindow();
@@ -1712,7 +1803,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
 // Flaky. http://crbug.com/627962.
 IN_PROC_BROWSER_TEST_P(WebViewTest,
                        DISABLED_InterstitialTeardownOnBrowserShutdown) {
-  InterstitialTeardownTestHelper();
+  InterstitialTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
   extensions::AppWindow* window = GetFirstAppWindow();

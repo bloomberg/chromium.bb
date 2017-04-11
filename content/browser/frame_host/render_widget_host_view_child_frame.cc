@@ -85,6 +85,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
                                                         frame_sink_id_);
     }
     parent_frame_sink_id_ = cc::FrameSinkId();
+    local_surface_id_ = cc::LocalSurfaceId();
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
     UnlockMouse();

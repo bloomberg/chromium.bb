@@ -165,6 +165,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   TextInputManager* GetTextInputManager() override;
   void GetScreenInfo(content::ScreenInfo* screen_info) override;
   void UpdateDeviceScaleFactor(double device_scale_factor) override;
+  RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
 
   bool enabled() const { return enabled_; }
   WebContents* web_contents() const;

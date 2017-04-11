@@ -754,6 +754,11 @@ void InterstitialPageImpl::CreateNewWindow(
 void InterstitialPageImpl::SetFocusedFrame(FrameTreeNode* node,
                                            SiteInstance* source) {
   frame_tree_.SetFocusedFrame(node, source);
+
+  if (web_contents_) {
+    static_cast<WebContentsImpl*>(web_contents_)
+        ->SetAsFocusedWebContentsIfNecessary();
+  }
 }
 
 void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
@@ -975,6 +980,15 @@ void InterstitialPageImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
     return;
 
   web_contents_impl->UpdateDeviceScaleFactor(device_scale_factor);
+}
+
+RenderWidgetHostInputEventRouter* InterstitialPageImpl::GetInputEventRouter() {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents_);
+  if (!web_contents_impl)
+    return nullptr;
+
+  return web_contents_impl->GetInputEventRouter();
 }
 
 }  // namespace content
