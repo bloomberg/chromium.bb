@@ -14,7 +14,7 @@ header("Origin-Trial: \"AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJ
 <title>Test Sample API when trial is enabled</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/origin_trials.js"></script>
+<script src="resources/origintrials.js"></script>
 <script>
 
 // The trial is enabled by the token above in header.

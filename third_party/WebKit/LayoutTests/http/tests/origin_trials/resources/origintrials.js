@@ -100,7 +100,7 @@ test(() => {
     var testObject = window.internals.originTrialsTest();
     assert_idl_attribute(testObject, 'throwingAttribute');
     assert_true(testObject.throwingAttribute, 'Attribute should return boolean value');
-  }, 'Attribute should exist and return value');
+  }, 'Accessing attribute should return value and not throw exception');
 
 test(() => {
     assert_idl_attribute(window.internals, 'originTrialsTest');
