@@ -123,8 +123,9 @@ void DeleteDirectoryAndLogResults(const base::FilePath& path,
                             dir_status, DIRECTORY_STATUS_END);
 }
 
-void DeleteDirectoryContentAndLogResults(const base::FilePath& path,
-                                         int max_file_deleted) {
+void DeleteDirectoryContentAndLogResultsUserVisiblePriority(
+    const base::FilePath& path,
+    int max_file_deleted) {
   DirectoryStatus dir_status = NON_EXIST;
 
   // Delete the content in |path|. If |path| doesn't exist, create one.

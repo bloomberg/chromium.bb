@@ -231,10 +231,11 @@ bool UpdateJumpList(const wchar_t* app_id,
 }
 
 // Updates the jumplist, once all the data has been fetched.
-void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
-                       const std::wstring& app_id,
-                       const base::FilePath& icon_dir,
-                       base::RefCountedData<JumpListData>* ref_counted_data) {
+void RunUpdateJumpListUserVisiblePriority(
+    IncognitoModePrefs::Availability incognito_availability,
+    const std::wstring& app_id,
+    const base::FilePath& icon_dir,
+    base::RefCountedData<JumpListData>* ref_counted_data) {
   JumpListData* data = &ref_counted_data->data;
   ShellLinkItemList local_most_visited_pages;
   ShellLinkItemList local_recently_closed_pages;
@@ -284,7 +285,7 @@ JumpList::JumpList(Profile* profile)
       task_id_(base::CancelableTaskTracker::kBadTaskId),
       update_jumplisticons_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
           base::TaskTraits()
-              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithPriority(base::TaskPriority::USER_VISIBLE)
               .WithShutdownBehavior(
                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
               .MayBlock())),
@@ -507,7 +508,7 @@ void JumpList::StartLoadingFavicon() {
 
   if (!waiting_for_icons) {
     // No more favicons are needed by the application JumpList. Schedule a
-    // RunUpdateJumpList call.
+    // RunUpdateJumpListUserVisiblePriority call.
     PostRunUpdate();
     return;
   }
@@ -533,7 +534,8 @@ void JumpList::OnFaviconDataAvailable(
     JumpListData* data = &jumplist_data_->data;
     base::AutoLock auto_lock(data->list_lock_);
     // Attach the received data to the ShellLinkItem object.
-    // This data will be decoded by the RunUpdateJumpList method.
+    // This data will be decoded by the RunUpdateJumpListUserVisiblePriority
+    // method.
     if (!image_result.image.IsEmpty() && !data->icon_urls_.empty() &&
         data->icon_urls_.front().second.get()) {
       gfx::ImageSkia image_skia = image_result.image.AsImageSkia();
@@ -594,13 +596,15 @@ void JumpList::DeferredRunUpdate() {
   // Post a task to delete the content in JumpListIcons folder and log the
   // results to UMA.
   update_jumplisticons_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteDirectoryContentAndLogResults, icon_dir_,
-                            kFileDeleteLimit));
+      FROM_HERE,
+      base::Bind(&DeleteDirectoryContentAndLogResultsUserVisiblePriority,
+                 icon_dir_, kFileDeleteLimit));
 
   // Post a task to update the jumplist used by the shell.
   update_jumplisticons_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RunUpdateJumpList, incognito_availability, app_id_,
-                            icon_dir_, base::RetainedRef(jumplist_data_)));
+      FROM_HERE,
+      base::Bind(&RunUpdateJumpListUserVisiblePriority, incognito_availability,
+                 app_id_, icon_dir_, base::RetainedRef(jumplist_data_)));
 
   // Post a task to delete JumpListIconsOld folder and log the results to UMA.
   base::FilePath icon_dir_old = icon_dir_.DirName().Append(
