@@ -36,18 +36,19 @@ void TransferConsumer(
   }
 }
 
-bool RemoveConsumerFromMap(GestureConsumer* consumer,
-                           GestureRecognizerImpl::TouchIdToConsumerMap* map) {
-  bool consumer_removed = false;
+// Generic function to remove every entry from a map having the given value.
+template <class Key, class T, class Value>
+bool RemoveValueFromMap(std::map<Key, T>* map, const Value& value) {
+  bool removed = false;
   for (auto i = map->begin(); i != map->end();) {
-    if (i->second == consumer) {
+    if (i->second == value) {
       map->erase(i++);
-      consumer_removed = true;
+      removed = true;
     } else {
       ++i;
     }
   }
-  return consumer_removed;
+  return removed;
 }
 
 }  // namespace
@@ -302,12 +303,17 @@ bool GestureRecognizerImpl::CleanupStateForConsumer(
     GestureConsumer* consumer) {
   bool state_cleaned_up = false;
 
-  if (consumer_gesture_provider_.count(consumer)) {
+  auto consumer_gesture_provider_it = consumer_gesture_provider_.find(consumer);
+  if (consumer_gesture_provider_it != consumer_gesture_provider_.end()) {
+    // Remove gesture provider associated with the consumer from
+    // |event_to_gesture_provider_| map.
+    RemoveValueFromMap(&event_to_gesture_provider_,
+                       consumer_gesture_provider_it->second.get());
     state_cleaned_up = true;
-    consumer_gesture_provider_.erase(consumer);
+    consumer_gesture_provider_.erase(consumer_gesture_provider_it);
   }
 
-  state_cleaned_up |= RemoveConsumerFromMap(consumer, &touch_id_target_);
+  state_cleaned_up |= RemoveValueFromMap(&touch_id_target_, consumer);
   return state_cleaned_up;
 }
 

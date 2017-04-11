@@ -4750,5 +4750,30 @@ TEST_F(GestureRecognizerTest, TransferEventsToRoutesAckCorrectly) {
   EXPECT_TRUE(delegate_2->tap());
 }
 
+TEST_F(GestureRecognizerTest, GestureConsumerCleanupBeforeTouchAck) {
+  std::unique_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(host()->dispatcher()));
+  TimedEvents tes;
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+
+  std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->set_window(window.get());
+
+  delegate->Reset();
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(512, 512), tes.Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
+  DispatchEventUsingWindowDispatcher(&press);
+
+  window->Hide();
+
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_0_EVENTS(delegate->events());
+}
+
 }  // namespace test
 }  // namespace aura
