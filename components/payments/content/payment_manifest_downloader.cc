@@ -17,6 +17,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_constants.h"
 
@@ -62,7 +63,28 @@ void PaymentManifestDownloader::InitiateDownload(
     return;
   }
 
-  fetcher_ = net::URLFetcher::Create(0 /* id */, url, request_type, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("payment_manifest_downloader", R"(
+        semantics {
+          sender: "Web Payments"
+          description:
+            "Chromium downloads manifest files for web payments API to help "
+            "users make secure and convenient payments on the web."
+          trigger:
+            "A user that has a payment app visits a website that uses the web "
+            "payments API."
+          data: "None."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings. Users can uninstall/"
+            "disable all payment apps to stop this feature."
+          policy_exception_justification: "Not implemented."
+        })");
+  fetcher_ = net::URLFetcher::Create(0 /* id */, url, request_type, this,
+                                     traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::PAYMENTS);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
