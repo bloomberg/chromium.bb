@@ -85,7 +85,7 @@ String OscillatorHandler::GetType() const {
     case CUSTOM:
       return "custom";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "custom";
   }
 }
@@ -128,7 +128,7 @@ bool OscillatorHandler::SetType(unsigned type) {
     default:
       // Return false for invalid types, including CUSTOM since
       // setPeriodicWave() method must be called explicitly.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 

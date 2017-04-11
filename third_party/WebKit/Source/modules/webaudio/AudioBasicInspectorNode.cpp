@@ -77,7 +77,7 @@ void AudioBasicInspectorNode::disconnect(unsigned output_index,
 void AudioBasicInspectorHandler::CheckNumberOfChannelsForInput(
     AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   DCHECK_EQ(input, &this->Input(0));
   if (input != &this->Input(0))
@@ -97,7 +97,7 @@ void AudioBasicInspectorHandler::CheckNumberOfChannelsForInput(
 }
 
 void AudioBasicInspectorHandler::UpdatePullStatus() {
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   if (Output(0).IsConnected()) {
     // When an AudioBasicInspectorNode is connected to a downstream node, it

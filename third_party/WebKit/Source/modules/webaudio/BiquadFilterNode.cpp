@@ -125,7 +125,7 @@ String BiquadFilterNode::type() const {
     case BiquadProcessor::kAllpass:
       return "allpass";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "lowpass";
   }
 }

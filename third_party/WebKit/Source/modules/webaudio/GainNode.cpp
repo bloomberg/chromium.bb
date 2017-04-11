@@ -114,7 +114,7 @@ void GainHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
 // channel count.
 void GainHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   DCHECK(input);
   DCHECK_EQ(input, &this->Input(0));

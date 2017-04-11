@@ -391,7 +391,7 @@ void PeriodicWave::GenerateBasicWaveform(int shape) {
         }
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         b = 0;
         break;
     }

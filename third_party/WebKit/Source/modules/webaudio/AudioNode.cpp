@@ -93,7 +93,7 @@ void AudioHandler::ClearInternalStateWhenDisabled() {}
 
 void AudioHandler::Dispose() {
   DCHECK(IsMainThread());
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   Context()->GetDeferredTaskHandler().RemoveChangedChannelCountMode(this);
   Context()->GetDeferredTaskHandler().RemoveChangedChannelInterpretation(this);
@@ -153,7 +153,7 @@ String AudioHandler::NodeTypeName() const {
     case kNodeTypeUnknown:
     case kNodeTypeEnd:
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "UnknownNode";
   }
 }
@@ -241,7 +241,7 @@ String AudioHandler::GetChannelCountMode() {
     case kExplicit:
       return "explicit";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -259,7 +259,7 @@ void AudioHandler::SetChannelCountMode(const String& mode,
   } else if (mode == "explicit") {
     new_channel_count_mode_ = kExplicit;
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   if (new_channel_count_mode_ != old_mode)
@@ -276,7 +276,7 @@ String AudioHandler::ChannelInterpretation() {
     case AudioBus::kDiscrete:
       return "discrete";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -292,7 +292,7 @@ void AudioHandler::SetChannelInterpretation(const String& interpretation,
   } else if (interpretation == "discrete") {
     new_channel_interpretation_ = AudioBus::kDiscrete;
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   if (new_channel_interpretation_ != old_mode)
@@ -349,7 +349,7 @@ void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
 
 void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   DCHECK(inputs_.Contains(input));
   if (!inputs_.Contains(input))

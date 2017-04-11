@@ -130,7 +130,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
 
 void OfflineAudioDestinationHandler::StopRendering() {
   // offline audio rendering CANNOT BE stopped by JavaScript.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 size_t OfflineAudioDestinationHandler::CallbackBufferSize() const {

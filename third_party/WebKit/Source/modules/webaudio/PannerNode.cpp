@@ -289,7 +289,7 @@ String PannerHandler::PanningModel() const {
     case Panner::kPanningModelHRTF:
       return "HRTF";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "equalpower";
   }
 }
@@ -338,7 +338,7 @@ String PannerHandler::DistanceModel() const {
     case DistanceEffect::kModelExponential:
       return "exponential";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "inverse";
   }
 }
@@ -366,7 +366,7 @@ bool PannerHandler::SetDistanceModel(unsigned model) {
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 

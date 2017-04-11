@@ -117,7 +117,7 @@ void AudioBasicProcessorHandler::PullInputs(size_t frames_to_process) {
 void AudioBasicProcessorHandler::CheckNumberOfChannelsForInput(
     AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  ASSERT(Context()->IsGraphOwner());
+  DCHECK(Context()->IsGraphOwner());
 
   DCHECK_EQ(input, &this->Input(0));
   if (input != &this->Input(0))

@@ -289,7 +289,7 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
 }
 
 void AudioParamHandler::Connect(AudioNodeOutput& output) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (outputs_.Contains(&output))
     return;
@@ -300,7 +300,7 @@ void AudioParamHandler::Connect(AudioNodeOutput& output) {
 }
 
 void AudioParamHandler::Disconnect(AudioNodeOutput& output) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (outputs_.Contains(&output)) {
     outputs_.erase(&output);

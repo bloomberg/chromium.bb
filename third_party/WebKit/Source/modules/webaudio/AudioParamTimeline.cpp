@@ -111,7 +111,7 @@ String AudioParamTimeline::EventToString(const ParamEvent& event) {
     // Fall through; we should never have to print out the internal
     // CancelValues event.
     case ParamEvent::kLastType:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   };
 
@@ -974,7 +974,7 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
           break;
         }
         case ParamEvent::kLastType:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
           break;
       }
     }

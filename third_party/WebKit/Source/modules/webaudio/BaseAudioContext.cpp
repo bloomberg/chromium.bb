@@ -675,7 +675,7 @@ void BaseAudioContext::RemoveFinishedSourceNodesOnMainThread() {
 }
 
 bool BaseAudioContext::ReleaseFinishedSourceNodes() {
-  ASSERT(IsGraphOwner());
+  DCHECK(IsGraphOwner());
   DCHECK(IsAudioThread());
   bool did_remove = false;
   for (AudioHandler* handler : finished_source_handlers_) {
@@ -711,7 +711,7 @@ void BaseAudioContext::ReleaseActiveSourceNodes() {
 }
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
-  ASSERT(IsGraphOwner());
+  DCHECK(IsGraphOwner());
 
   // Find AudioBufferSourceNodes to see if we can stop playing them.
   for (AudioNode* node : active_source_nodes_) {
@@ -803,7 +803,7 @@ void BaseAudioContext::ResolvePromisesForResume() {
   // This runs inside the BaseAudioContext's lock when handling pre-render
   // tasks.
   DCHECK(IsAudioThread());
-  ASSERT(IsGraphOwner());
+  DCHECK(IsGraphOwner());
 
   // Resolve any pending promises created by resume(). Only do this if we
   // haven't already started resolving these promises. This gets called very

@@ -65,7 +65,7 @@ void AudioNodeOutput::Dispose() {
 
 void AudioNodeOutput::SetNumberOfChannels(unsigned number_of_channels) {
   DCHECK_LE(number_of_channels, BaseAudioContext::MaxNumberOfChannels());
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   desired_number_of_channels_ = number_of_channels;
 
@@ -97,7 +97,7 @@ void AudioNodeOutput::UpdateRenderingState() {
 
 void AudioNodeOutput::UpdateNumberOfChannels() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (number_of_channels_ != desired_number_of_channels_) {
     number_of_channels_ = desired_number_of_channels_;
@@ -108,7 +108,7 @@ void AudioNodeOutput::UpdateNumberOfChannels() {
 
 void AudioNodeOutput::PropagateChannelCount() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (IsChannelCountKnown()) {
     // Announce to any nodes we're connected to that we changed our channel
@@ -147,12 +147,12 @@ AudioBus* AudioNodeOutput::Bus() const {
 }
 
 unsigned AudioNodeOutput::FanOutCount() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   return inputs_.size();
 }
 
 unsigned AudioNodeOutput::ParamFanOutCount() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   return params_.size();
 }
 
@@ -161,19 +161,19 @@ unsigned AudioNodeOutput::RenderingFanOutCount() const {
 }
 
 void AudioNodeOutput::AddInput(AudioNodeInput& input) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   inputs_.insert(&input);
   input.Handler().MakeConnection();
 }
 
 void AudioNodeOutput::RemoveInput(AudioNodeInput& input) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   input.Handler().BreakConnection();
   inputs_.erase(&input);
 }
 
 void AudioNodeOutput::DisconnectAllInputs() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
   while (!inputs_.IsEmpty())
@@ -181,29 +181,29 @@ void AudioNodeOutput::DisconnectAllInputs() {
 }
 
 void AudioNodeOutput::DisconnectInput(AudioNodeInput& input) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   DCHECK(IsConnectedToInput(input));
   input.Disconnect(*this);
 }
 
 void AudioNodeOutput::DisconnectAudioParam(AudioParamHandler& param) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   DCHECK(IsConnectedToAudioParam(param));
   param.Disconnect(*this);
 }
 
 void AudioNodeOutput::AddParam(AudioParamHandler& param) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   params_.insert(&param);
 }
 
 void AudioNodeOutput::RemoveParam(AudioParamHandler& param) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   params_.erase(&param);
 }
 
 void AudioNodeOutput::DisconnectAllParams() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   // AudioParam::disconnect() changes m_params by calling removeParam().
   while (!params_.IsEmpty())
@@ -216,17 +216,17 @@ void AudioNodeOutput::DisconnectAll() {
 }
 
 bool AudioNodeOutput::IsConnectedToInput(AudioNodeInput& input) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   return inputs_.Contains(&input);
 }
 
 bool AudioNodeOutput::IsConnectedToAudioParam(AudioParamHandler& param) {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   return params_.Contains(&param);
 }
 
 void AudioNodeOutput::Disable() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (is_enabled_) {
     is_enabled_ = false;
@@ -236,7 +236,7 @@ void AudioNodeOutput::Disable() {
 }
 
 void AudioNodeOutput::Enable() {
-  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
 
   if (!is_enabled_) {
     is_enabled_ = true;
