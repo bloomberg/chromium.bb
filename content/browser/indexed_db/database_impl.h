@@ -9,16 +9,22 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace content {
 
 class IndexedDBConnection;
 class IndexedDBDispatcherHost;
 
+// Expected to be constructed, called, and destructed on the IO thread.
 class DatabaseImpl : public ::indexed_db::mojom::Database {
  public:
   explicit DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
                         const url::Origin& origin,
-                        scoped_refptr<IndexedDBDispatcherHost> dispatcher_host);
+                        IndexedDBDispatcherHost* dispatcher_host,
+                        scoped_refptr<base::SequencedTaskRunner> idb_runner);
   ~DatabaseImpl() override;
 
   // ::indexed_db::mojom::Database implementation
@@ -60,7 +66,7 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
   void Put(int64_t transaction_id,
            int64_t object_store_id,
-           indexed_db::mojom::ValuePtr value,
+           ::indexed_db::mojom::ValuePtr value,
            const IndexedDBKey& key,
            blink::WebIDBPutMode mode,
            const std::vector<IndexedDBIndexKeys>& index_keys,
@@ -118,9 +124,11 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
   class IDBThreadHelper;
 
   IDBThreadHelper* helper_;
-  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
+  // This raw pointer is safe because all DatabaseImpl instances are owned by
+  // an IndexedDBDispatcherHost.
+  IndexedDBDispatcherHost* dispatcher_host_;
   const url::Origin origin_;
-  scoped_refptr<base::SingleThreadTaskRunner> idb_runner_;
+  scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseImpl);
 };

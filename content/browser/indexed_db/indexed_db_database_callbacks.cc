@@ -23,6 +23,7 @@ class IndexedDBDatabaseCallbacks::IOThreadHelper {
   void SendAbort(int64_t transaction_id, const IndexedDBDatabaseError& error);
   void SendComplete(int64_t transaction_id);
   void SendChanges(::indexed_db::mojom::ObserverChangesPtr changes);
+  void OnConnectionError();
 
  private:
   ::indexed_db::mojom::DatabaseCallbacksAssociatedPtr callbacks_;
@@ -31,9 +32,9 @@ class IndexedDBDatabaseCallbacks::IOThreadHelper {
 };
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
-    scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
+    scoped_refptr<IndexedDBContextImpl> context,
     DatabaseCallbacksAssociatedPtrInfo callbacks_info)
-    : dispatcher_host_(std::move(dispatcher_host)),
+    : indexed_db_context_(std::move(context)),
       io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   thread_checker_.DetachFromThread();
@@ -45,20 +46,20 @@ IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
 
 void IndexedDBDatabaseCallbacks::OnForcedClose() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dispatcher_host_)
+  if (complete_)
     return;
 
   DCHECK(io_helper_);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&IOThreadHelper::SendForcedClose,
                                      base::Unretained(io_helper_.get())));
-  dispatcher_host_ = NULL;
+  complete_ = true;
 }
 
 void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
                                                  int64_t new_version) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dispatcher_host_)
+  if (complete_)
     return;
 
   DCHECK(io_helper_);
@@ -72,7 +73,7 @@ void IndexedDBDatabaseCallbacks::OnAbort(
     const IndexedDBTransaction& transaction,
     const IndexedDBDatabaseError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dispatcher_host_)
+  if (complete_)
     return;
 
   DCHECK(io_helper_);
@@ -85,11 +86,10 @@ void IndexedDBDatabaseCallbacks::OnAbort(
 void IndexedDBDatabaseCallbacks::OnComplete(
     const IndexedDBTransaction& transaction) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dispatcher_host_)
+  if (complete_)
     return;
 
-  dispatcher_host_->context()->TransactionComplete(
-      transaction.database()->origin());
+  indexed_db_context_->TransactionComplete(transaction.database()->origin());
   DCHECK(io_helper_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -109,35 +109,48 @@ void IndexedDBDatabaseCallbacks::OnDatabaseChange(
 
 IndexedDBDatabaseCallbacks::IOThreadHelper::IOThreadHelper(
     DatabaseCallbacksAssociatedPtrInfo callbacks_info) {
+  if (!callbacks_info.is_valid())
+    return;
   callbacks_.Bind(std::move(callbacks_info));
+  callbacks_.set_connection_error_handler(
+      base::Bind(&IOThreadHelper::OnConnectionError, base::Unretained(this)));
 }
 
 IndexedDBDatabaseCallbacks::IOThreadHelper::~IOThreadHelper() {}
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendForcedClose() {
-  callbacks_->ForcedClose();
+  if (callbacks_)
+    callbacks_->ForcedClose();
 }
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendVersionChange(
     int64_t old_version,
     int64_t new_version) {
-  callbacks_->VersionChange(old_version, new_version);
+  if (callbacks_)
+    callbacks_->VersionChange(old_version, new_version);
 }
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendAbort(
     int64_t transaction_id,
     const IndexedDBDatabaseError& error) {
-  callbacks_->Abort(transaction_id, error.code(), error.message());
+  if (callbacks_)
+    callbacks_->Abort(transaction_id, error.code(), error.message());
 }
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendComplete(
     int64_t transaction_id) {
-  callbacks_->Complete(transaction_id);
+  if (callbacks_)
+    callbacks_->Complete(transaction_id);
 }
 
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendChanges(
     ::indexed_db::mojom::ObserverChangesPtr changes) {
-  callbacks_->Changes(std::move(changes));
+  if (callbacks_)
+    callbacks_->Changes(std::move(changes));
+}
+
+void IndexedDBDatabaseCallbacks::IOThreadHelper::OnConnectionError() {
+  callbacks_.reset();
 }
 
 }  // namespace content

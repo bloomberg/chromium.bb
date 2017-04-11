@@ -8,22 +8,23 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
+class IndexedDBContextImpl;
 class IndexedDBDatabaseError;
-class IndexedDBDispatcherHost;
 class IndexedDBTransaction;
 
+// Expected to be constructed on IO thread and called/deleted from IDB thread.
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
   IndexedDBDatabaseCallbacks(
-      scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
+      scoped_refptr<IndexedDBContextImpl> context,
       ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo callbacks_info);
 
   virtual void OnForcedClose();
@@ -43,7 +44,8 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
 
   class IOThreadHelper;
 
-  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
+  bool complete_ = false;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
   base::ThreadChecker thread_checker_;
 

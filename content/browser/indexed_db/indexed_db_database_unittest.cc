@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
@@ -150,7 +151,11 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
 
 class MockCallbacks : public IndexedDBCallbacks {
  public:
-  MockCallbacks() : IndexedDBCallbacks(nullptr, url::Origin(), nullptr) {}
+  MockCallbacks()
+      : IndexedDBCallbacks(nullptr,
+                           url::Origin(),
+                           nullptr,
+                           base::ThreadTaskRunnerHandle::Get()) {}
 
   void OnBlocked(int64_t existing_version) override { blocked_called_ = true; }
   void OnSuccess(int64_t result) override { success_called_ = true; }

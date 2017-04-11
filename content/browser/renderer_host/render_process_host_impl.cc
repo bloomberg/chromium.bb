@@ -725,6 +725,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   push_messaging_manager_.reset(new PushMessagingManager(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 
+  AddObserver(indexed_db_factory_.get());
 #if defined(OS_MACOSX)
   if (BootstrapSandboxManager::ShouldEnable())
     AddObserver(BootstrapSandboxManager::GetInstance());
@@ -1192,7 +1193,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
 
   channel_->AddAssociatedInterfaceForIOThread(
-      base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
+      base::Bind(&IndexedDBDispatcherHost::AddBinding,
+                 base::Unretained(indexed_db_factory_.get())));
 
 #if defined(OS_ANDROID)
   AddUIThreadInterface(

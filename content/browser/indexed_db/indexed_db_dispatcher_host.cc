@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
@@ -34,23 +35,78 @@ bool IsValidOrigin(const url::Origin& origin) {
 
 }  // namespace
 
+class IndexedDBDispatcherHost::IDBThreadHelper {
+ public:
+  IDBThreadHelper(
+      int ipc_process_id,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<IndexedDBContextImpl> indexed_db_context)
+      : ipc_process_id_(ipc_process_id),
+        request_context_getter_(std::move(request_context_getter)),
+        indexed_db_context_(std::move(indexed_db_context)) {}
+  ~IDBThreadHelper() {}
+
+  void GetDatabaseNamesOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                   const url::Origin& origin);
+  void OpenOnIDBThread(
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+      const url::Origin& origin,
+      const base::string16& name,
+      int64_t version,
+      int64_t transaction_id);
+  void DeleteDatabaseOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                 const url::Origin& origin,
+                                 const base::string16& name,
+                                 bool force_close);
+
+ private:
+  const int ipc_process_id_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(IDBThreadHelper);
+};
+
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
-    net::URLRequestContextGetter* request_context_getter,
-    IndexedDBContextImpl* indexed_db_context,
-    ChromeBlobStorageContext* blob_storage_context)
-    : request_context_getter_(request_context_getter),
-      indexed_db_context_(indexed_db_context),
-      blob_storage_context_(blob_storage_context),
-      ipc_process_id_(ipc_process_id) {
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<IndexedDBContextImpl> indexed_db_context,
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
+    : indexed_db_context_(std::move(indexed_db_context)),
+      blob_storage_context_(std::move(blob_storage_context)),
+      idb_runner_(indexed_db_context_->TaskRunner()),
+      ipc_process_id_(ipc_process_id),
+      weak_factory_(this) {
+  // Can be null in unittests.
+  idb_helper_ = idb_runner_
+                    ? new IDBThreadHelper(ipc_process_id_,
+                                          std::move(request_context_getter),
+                                          indexed_db_context_)
+                    : nullptr;
   DCHECK(indexed_db_context_.get());
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
+  if (idb_helper_)
+    idb_runner_->DeleteSoon(FROM_HERE, idb_helper_);
+}
 
 void IndexedDBDispatcherHost::AddBinding(
     ::indexed_db::mojom::FactoryAssociatedRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+void IndexedDBDispatcherHost::AddDatabaseBinding(
+    std::unique_ptr<::indexed_db::mojom::Database> database,
+    ::indexed_db::mojom::DatabaseAssociatedRequest request) {
+  database_bindings_.AddBinding(std::move(database), std::move(request));
+}
+
+void IndexedDBDispatcherHost::AddCursorBinding(
+    std::unique_ptr<::indexed_db::mojom::Cursor> cursor,
+    ::indexed_db::mojom::CursorAssociatedRequest request) {
+  cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
 }
 
 std::string IndexedDBDispatcherHost::HoldBlobData(
@@ -95,6 +151,16 @@ void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
     --iter->second.second;
 }
 
+void IndexedDBDispatcherHost::RenderProcessExited(
+    RenderProcessHost* host,
+    base::TerminationStatus status,
+    int exit_code) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
+                 base::Unretained(this)));
+}
+
 void IndexedDBDispatcherHost::GetDatabaseNames(
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
     const url::Origin& origin) {
@@ -105,12 +171,12 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
     return;
   }
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
-  indexed_db_context_->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread, this,
-                 base::Passed(&callbacks), origin));
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
+  idb_runner_->PostTask(
+      FROM_HERE, base::Bind(&IDBThreadHelper::GetDatabaseNamesOnIDBThread,
+                            base::Unretained(idb_helper_),
+                            base::Passed(&callbacks), origin));
 }
 
 void IndexedDBDispatcherHost::Open(
@@ -128,15 +194,17 @@ void IndexedDBDispatcherHost::Open(
     return;
   }
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
-      new IndexedDBDatabaseCallbacks(this, std::move(database_callbacks_info)));
-  indexed_db_context_->TaskRunner()->PostTask(
+      new IndexedDBDatabaseCallbacks(indexed_db_context_,
+                                     std::move(database_callbacks_info)));
+  idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBDispatcherHost::OpenOnIDBThread, this,
-                 base::Passed(&callbacks), base::Passed(&database_callbacks),
-                 origin, name, version, transaction_id));
+      base::Bind(&IDBThreadHelper::OpenOnIDBThread,
+                 base::Unretained(idb_helper_), base::Passed(&callbacks),
+                 base::Passed(&database_callbacks), origin, name, version,
+                 transaction_id));
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
@@ -151,25 +219,32 @@ void IndexedDBDispatcherHost::DeleteDatabase(
     return;
   }
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
-  indexed_db_context_->TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread,
-                            this, base::Passed(&callbacks), origin, name,
-                            force_close));
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&IDBThreadHelper::DeleteDatabaseOnIDBThread,
+                 base::Unretained(idb_helper_), base::Passed(&callbacks),
+                 origin, name, force_close));
 }
 
-void IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread(
+void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
+  weak_factory_.InvalidateWeakPtrs();
+  cursor_bindings_.CloseAllBindings();
+  database_bindings_.CloseAllBindings();
+}
+
+void IndexedDBDispatcherHost::IDBThreadHelper::GetDatabaseNamesOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
-  context()->GetIDBFactory()->GetDatabaseNames(
+  indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
       callbacks, origin, indexed_db_path, request_context_getter_);
 }
 
-void IndexedDBDispatcherHost::OpenOnIDBThread(
+void IndexedDBDispatcherHost::IDBThreadHelper::OpenOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     const url::Origin& origin,
@@ -189,12 +264,12 @@ void IndexedDBDispatcherHost::OpenOnIDBThread(
           callbacks, database_callbacks, ipc_process_id_, transaction_id,
           version);
   DCHECK(request_context_getter_);
-  context()->GetIDBFactory()->Open(name, std::move(connection),
-                                   request_context_getter_, origin,
-                                   indexed_db_path);
+  indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
+                                             request_context_getter_, origin,
+                                             indexed_db_path);
 }
 
-void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
+void IndexedDBDispatcherHost::IDBThreadHelper::DeleteDatabaseOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin,
     const base::string16& name,
@@ -203,7 +278,7 @@ void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_getter_);
-  context()->GetIDBFactory()->DeleteDatabase(
+  indexed_db_context_->GetIDBFactory()->DeleteDatabase(
       name, request_context_getter_, callbacks, origin, indexed_db_path,
       force_close);
 }

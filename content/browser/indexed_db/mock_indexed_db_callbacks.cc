@@ -11,10 +11,10 @@
 namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
-    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr),
+    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr),
       expect_connection_(true) {}
 MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
-    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr),
+    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr),
       expect_connection_(expect_connection) {}
 
 MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {

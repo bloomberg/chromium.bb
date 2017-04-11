@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -129,7 +130,10 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  public:
   ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
                         const Origin& origin)
-      : IndexedDBCallbacks(nullptr, origin, nullptr),
+      : IndexedDBCallbacks(nullptr,
+                           origin,
+                           nullptr,
+                           base::ThreadTaskRunnerHandle::Get()),
         idb_context_(idb_context),
         origin_(origin) {}
 

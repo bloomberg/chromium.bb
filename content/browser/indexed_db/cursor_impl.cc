@@ -5,13 +5,14 @@
 #include "content/browser/indexed_db/cursor_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
 namespace content {
 
+// Expected to be constructed on IO thread, and used/destroyed on IDB thread.
 class CursorImpl::IDBThreadHelper {
  public:
   explicit IDBThreadHelper(std::unique_ptr<IndexedDBCursor> cursor);
@@ -25,20 +26,19 @@ class CursorImpl::IDBThreadHelper {
   void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
 
  private:
-  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   std::unique_ptr<IndexedDBCursor> cursor_;
-  const url::Origin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(IDBThreadHelper);
 };
 
 CursorImpl::CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
                        const url::Origin& origin,
-                       scoped_refptr<IndexedDBDispatcherHost> dispatcher_host)
+                       IndexedDBDispatcherHost* dispatcher_host,
+                       scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : helper_(new IDBThreadHelper(std::move(cursor))),
-      dispatcher_host_(std::move(dispatcher_host)),
+      dispatcher_host_(dispatcher_host),
       origin_(origin),
-      idb_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      idb_runner_(std::move(idb_runner)) {}
 
 CursorImpl::~CursorImpl() {
   idb_runner_->DeleteSoon(FROM_HERE, helper_);
@@ -47,8 +47,9 @@ CursorImpl::~CursorImpl() {
 void CursorImpl::Advance(
     uint32_t count,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBThreadHelper::Advance,
                                               base::Unretained(helper_), count,
                                               base::Passed(&callbacks)));
@@ -58,8 +59,9 @@ void CursorImpl::Continue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::Continue, base::Unretained(helper_), key,
@@ -69,8 +71,9 @@ void CursorImpl::Continue(
 void CursorImpl::Prefetch(
     int32_t count,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBThreadHelper::Prefetch,
                                               base::Unretained(helper_), count,
                                               base::Passed(&callbacks)));

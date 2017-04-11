@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -28,12 +30,15 @@ const char kInvalidBlobUuid[] = "Blob does not exist";
 const char kInvalidBlobFilePath[] = "Blob file path is invalid";
 }  // namespace
 
+// Expect to be created on IO thread, and called/destroyed on IDB thread.
 class DatabaseImpl::IDBThreadHelper {
  public:
   IDBThreadHelper(std::unique_ptr<IndexedDBConnection> connection,
                   const url::Origin& origin,
-                  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host);
+                  scoped_refptr<IndexedDBContextImpl> indexed_db_context);
   ~IDBThreadHelper();
+
+  void ConnectionOpened();
 
   void CreateObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
@@ -130,21 +135,26 @@ class DatabaseImpl::IDBThreadHelper {
   void AckReceivedBlobs(const std::vector<std::string>& uuids);
 
  private:
-  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   std::unique_ptr<IndexedDBConnection> connection_;
   const url::Origin origin_;
+  base::ThreadChecker idb_thread_checker_;
   base::WeakPtrFactory<IDBThreadHelper> weak_factory_;
 };
 
-DatabaseImpl::DatabaseImpl(
-    std::unique_ptr<IndexedDBConnection> connection,
-    const url::Origin& origin,
-    scoped_refptr<IndexedDBDispatcherHost> dispatcher_host)
+DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
+                           const url::Origin& origin,
+                           IndexedDBDispatcherHost* dispatcher_host,
+                           scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : dispatcher_host_(dispatcher_host),
       origin_(origin),
-      idb_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      idb_runner_(std::move(idb_runner)) {
+  DCHECK(connection);
   helper_ = new IDBThreadHelper(std::move(connection), origin,
-                                std::move(dispatcher_host));
+                                dispatcher_host->context());
+  idb_runner_->PostTask(FROM_HERE,
+                        base::Bind(&IDBThreadHelper::ConnectionOpened,
+                                   base::Unretained(helper_)));
 }
 
 DatabaseImpl::~DatabaseImpl() {
@@ -226,8 +236,9 @@ void DatabaseImpl::Get(
     const IndexedDBKeyRange& key_range,
     bool key_only,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE, base::Bind(&IDBThreadHelper::Get, base::Unretained(helper_),
                             transaction_id, object_store_id, index_id,
@@ -242,8 +253,9 @@ void DatabaseImpl::GetAll(
     bool key_only,
     int64_t max_count,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::GetAll, base::Unretained(helper_),
@@ -262,8 +274,9 @@ void DatabaseImpl::Put(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
 
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles(
       value->blob_or_file_info.size());
@@ -351,8 +364,9 @@ void DatabaseImpl::OpenCursor(
     bool key_only,
     blink::WebIDBTaskType task_type,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::OpenCursor, base::Unretained(helper_),
@@ -366,8 +380,9 @@ void DatabaseImpl::Count(
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE, base::Bind(&IDBThreadHelper::Count, base::Unretained(helper_),
                             transaction_id, object_store_id, index_id,
@@ -379,8 +394,9 @@ void DatabaseImpl::DeleteRange(
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::DeleteRange, base::Unretained(helper_),
@@ -392,8 +408,9 @@ void DatabaseImpl::Clear(
     int64_t transaction_id,
     int64_t object_store_id,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::Clear, base::Unretained(helper_),
@@ -453,18 +470,25 @@ void DatabaseImpl::AckReceivedBlobs(const std::vector<std::string>& uuids) {
 DatabaseImpl::IDBThreadHelper::IDBThreadHelper(
     std::unique_ptr<IndexedDBConnection> connection,
     const url::Origin& origin,
-    scoped_refptr<IndexedDBDispatcherHost> dispatcher_host)
-    : dispatcher_host_(std::move(dispatcher_host)),
+    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
+    : indexed_db_context_(indexed_db_context),
       connection_(std::move(connection)),
       origin_(origin),
       weak_factory_(this) {
-  dispatcher_host_->context()->ConnectionOpened(origin_, connection.get());
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  idb_thread_checker_.DetachFromThread();
 }
 
 DatabaseImpl::IDBThreadHelper::~IDBThreadHelper() {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (connection_->IsConnected())
     connection_->Close();
-  dispatcher_host_->context()->ConnectionClosed(origin_, connection_.get());
+  indexed_db_context_->ConnectionClosed(origin_, connection_.get());
+}
+
+void DatabaseImpl::IDBThreadHelper::ConnectionOpened() {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
+  indexed_db_context_->ConnectionOpened(origin_, connection_.get());
 }
 
 void DatabaseImpl::IDBThreadHelper::CreateObjectStore(
@@ -473,6 +497,7 @@ void DatabaseImpl::IDBThreadHelper::CreateObjectStore(
     const base::string16& name,
     const IndexedDBKeyPath& key_path,
     bool auto_increment) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -487,6 +512,7 @@ void DatabaseImpl::IDBThreadHelper::CreateObjectStore(
 
 void DatabaseImpl::IDBThreadHelper::DeleteObjectStore(int64_t transaction_id,
                                                       int64_t object_store_id) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -502,6 +528,7 @@ void DatabaseImpl::IDBThreadHelper::RenameObjectStore(
     int64_t transaction_id,
     int64_t object_store_id,
     const base::string16& new_name) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -518,6 +545,7 @@ void DatabaseImpl::IDBThreadHelper::CreateTransaction(
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::WebIDBTransactionMode mode) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -526,6 +554,7 @@ void DatabaseImpl::IDBThreadHelper::CreateTransaction(
 }
 
 void DatabaseImpl::IDBThreadHelper::Close() {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -533,6 +562,7 @@ void DatabaseImpl::IDBThreadHelper::Close() {
 }
 
 void DatabaseImpl::IDBThreadHelper::VersionChangeIgnored() {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -545,6 +575,7 @@ void DatabaseImpl::IDBThreadHelper::AddObserver(int64_t transaction_id,
                                                 bool no_records,
                                                 bool values,
                                                 uint16_t operation_types) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -561,6 +592,7 @@ void DatabaseImpl::IDBThreadHelper::AddObserver(int64_t transaction_id,
 
 void DatabaseImpl::IDBThreadHelper::RemoveObservers(
     const std::vector<int32_t>& observers) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -574,6 +606,7 @@ void DatabaseImpl::IDBThreadHelper::Get(
     const IndexedDBKeyRange& key_range,
     bool key_only,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -595,6 +628,7 @@ void DatabaseImpl::IDBThreadHelper::GetAll(
     bool key_only,
     int64_t max_count,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -619,6 +653,7 @@ void DatabaseImpl::IDBThreadHelper::Put(
     blink::WebIDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -645,6 +680,7 @@ void DatabaseImpl::IDBThreadHelper::SetIndexKeys(
     int64_t object_store_id,
     const IndexedDBKey& primary_key,
     const std::vector<IndexedDBIndexKeys>& index_keys) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -662,6 +698,7 @@ void DatabaseImpl::IDBThreadHelper::SetIndexesReady(
     int64_t transaction_id,
     int64_t object_store_id,
     const std::vector<int64_t>& index_ids) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -683,6 +720,7 @@ void DatabaseImpl::IDBThreadHelper::OpenCursor(
     bool key_only,
     blink::WebIDBTaskType task_type,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -703,6 +741,7 @@ void DatabaseImpl::IDBThreadHelper::Count(
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -738,6 +777,7 @@ void DatabaseImpl::IDBThreadHelper::Clear(
     int64_t transaction_id,
     int64_t object_store_id,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -757,6 +797,7 @@ void DatabaseImpl::IDBThreadHelper::CreateIndex(
     const IndexedDBKeyPath& key_path,
     bool unique,
     bool multi_entry) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -772,6 +813,7 @@ void DatabaseImpl::IDBThreadHelper::CreateIndex(
 void DatabaseImpl::IDBThreadHelper::DeleteIndex(int64_t transaction_id,
                                                 int64_t object_store_id,
                                                 int64_t index_id) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -788,6 +830,7 @@ void DatabaseImpl::IDBThreadHelper::RenameIndex(
     int64_t object_store_id,
     int64_t index_id,
     const base::string16& new_name) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -801,6 +844,7 @@ void DatabaseImpl::IDBThreadHelper::RenameIndex(
 }
 
 void DatabaseImpl::IDBThreadHelper::Abort(int64_t transaction_id) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -815,6 +859,7 @@ void DatabaseImpl::IDBThreadHelper::Abort(int64_t transaction_id) {
 void DatabaseImpl::IDBThreadHelper::AbortWithError(
     int64_t transaction_id,
     const IndexedDBDatabaseError& error) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -827,6 +872,7 @@ void DatabaseImpl::IDBThreadHelper::AbortWithError(
 }
 
 void DatabaseImpl::IDBThreadHelper::Commit(int64_t transaction_id) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   if (!connection_->IsConnected())
     return;
 
@@ -841,8 +887,8 @@ void DatabaseImpl::IDBThreadHelper::Commit(int64_t transaction_id) {
     return;
   }
 
-  dispatcher_host_->context()->quota_manager_proxy()->GetUsageAndQuota(
-      dispatcher_host_->context()->TaskRunner(), origin_.GetURL(),
+  indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
+      indexed_db_context_->TaskRunner(), origin_.GetURL(),
       storage::kStorageTypeTemporary,
       base::Bind(&IDBThreadHelper::OnGotUsageAndQuotaForCommit,
                  weak_factory_.GetWeakPtr(), transaction_id));
@@ -853,6 +899,7 @@ void DatabaseImpl::IDBThreadHelper::OnGotUsageAndQuotaForCommit(
     storage::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
+  DCHECK(idb_thread_checker_.CalledOnValidThread());
   // May have disconnected while quota check was pending.
   if (!connection_->IsConnected())
     return;

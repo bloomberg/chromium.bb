@@ -96,9 +96,10 @@ class AssociatedBinding : public AssociatedBindingBase {
 
   // Constructs an incomplete associated binding that will use the
   // implementation |impl|. It may be completed with a subsequent call to the
-  // |Bind| method. Does not take ownership of |impl|, which must outlive this
-  // object.
-  explicit AssociatedBinding(ImplPointerType impl) { stub_.set_sink(impl); }
+  // |Bind| method.
+  explicit AssociatedBinding(ImplPointerType impl) {
+    stub_.set_sink(std::move(impl));
+  }
 
   // Constructs a completed associated binding of |impl|. The output |ptr_info|
   // should be sent by another interface. |impl| must outlive this object.
