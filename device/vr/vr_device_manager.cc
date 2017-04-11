@@ -10,9 +10,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "device/vr/features.h"
 
 #if defined(OS_ANDROID)
 #include "device/vr/android/gvr/gvr_device_provider.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OPENVR)
+#include "device/vr/openvr/openvr_device_provider.h"
 #endif
 
 namespace device {
@@ -29,6 +34,10 @@ VRDeviceManager::VRDeviceManager()
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   RegisterProvider(base::MakeUnique<GvrDeviceProvider>());
+#endif
+
+#if BUILDFLAG(ENABLE_OPENVR)
+  RegisterProvider(base::MakeUnique<OpenVRDeviceProvider>());
 #endif
 }
 

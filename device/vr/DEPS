@@ -4,5 +4,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h",
   "+third_party/gvr-android-sdk/src",
+  "+third_party/openvr/src/headers/openvr.h",
   "+ui/gfx",
 ]

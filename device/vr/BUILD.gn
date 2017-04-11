@@ -13,7 +13,10 @@ if (is_android) {
 # Generate a buildflag header for compile-time checking of WebVR support.
 buildflag_header("features") {
   header = "features.h"
-  flags = [ "ENABLE_VR=$enable_vr" ]
+  flags = [
+    "ENABLE_VR=$enable_vr",
+    "ENABLE_OPENVR=$enable_openvr",
+  ]
 }
 
 component("vr") {
@@ -24,6 +27,7 @@ component("vr") {
   ]
   defines = [ "DEVICE_VR_IMPLEMENTATION" ]
   deps = [
+    ":features",
     ":mojo_bindings",
   ]
 
@@ -76,6 +80,14 @@ component("vr") {
       ldflags = [ "-landroid" ]
       libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
+    }
+
+    if (enable_openvr) {
+      deps += [ "//third_party/openvr:openvr" ]
+      sources += [
+        "openvr/openvr_device.cc",
+        "openvr/openvr_device_provider.cc",
+      ]
     }
   }
 }

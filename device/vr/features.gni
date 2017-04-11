@@ -8,4 +8,5 @@ declare_args() {
   # TODO(bshe): Enable for other architecture too. Currently we only support arm
   # and arm64.
   enable_vr = is_android && (current_cpu == "arm" || current_cpu == "arm64")
+  enable_openvr = false
 }
