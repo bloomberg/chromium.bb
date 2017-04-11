@@ -185,34 +185,33 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
   }
 }
 
-NotShared<DOMFloat32Array> AudioBuffer::getChannelData(
-    unsigned channel_index,
-    ExceptionState& exception_state) {
+DOMFloat32Array* AudioBuffer::getChannelData(unsigned channel_index,
+                                             ExceptionState& exception_state) {
   if (channel_index >= channels_.size()) {
     exception_state.ThrowDOMException(
         kIndexSizeError, "channel index (" + String::Number(channel_index) +
                              ") exceeds number of channels (" +
                              String::Number(channels_.size()) + ")");
-    return NotShared<DOMFloat32Array>(nullptr);
+    return nullptr;
   }
 
   return getChannelData(channel_index);
 }
 
-NotShared<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channel_index) {
+DOMFloat32Array* AudioBuffer::getChannelData(unsigned channel_index) {
   if (channel_index >= channels_.size())
-    return NotShared<DOMFloat32Array>(nullptr);
+    return nullptr;
 
-  return NotShared<DOMFloat32Array>(channels_[channel_index].Get());
+  return channels_[channel_index].Get();
 }
 
-void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
+void AudioBuffer::copyFromChannel(DOMFloat32Array* destination,
                                   long channel_number,
                                   ExceptionState& exception_state) {
   return copyFromChannel(destination, channel_number, 0, exception_state);
 }
 
-void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
+void AudioBuffer::copyFromChannel(DOMFloat32Array* destination,
                                   long channel_number,
                                   unsigned long start_in_channel,
                                   ExceptionState& exception_state) {
@@ -224,7 +223,6 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
                              ExceptionMessages::kInclusiveBound,
                              static_cast<long>(channels_.size() - 1),
                              ExceptionMessages::kInclusiveBound));
-
     return;
   }
 
@@ -242,10 +240,10 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
   }
 
   unsigned count = channel_data->length() - start_in_channel;
-  count = std::min(destination.View()->length(), count);
+  count = std::min(destination->length(), count);
 
   const float* src = channel_data->Data();
-  float* dst = destination.View()->Data();
+  float* dst = destination->Data();
 
   DCHECK(src);
   DCHECK(dst);
@@ -253,13 +251,13 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
   memcpy(dst, src + start_in_channel, count * sizeof(*src));
 }
 
-void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
+void AudioBuffer::copyToChannel(DOMFloat32Array* source,
                                 long channel_number,
                                 ExceptionState& exception_state) {
   return copyToChannel(source, channel_number, 0, exception_state);
 }
 
-void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
+void AudioBuffer::copyToChannel(DOMFloat32Array* source,
                                 long channel_number,
                                 unsigned long start_in_channel,
                                 ExceptionState& exception_state) {
@@ -288,9 +286,9 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
   }
 
   unsigned count = channel_data->length() - start_in_channel;
-  count = std::min(source.View()->length(), count);
+  count = std::min(source->length(), count);
 
-  const float* src = source.View()->Data();
+  const float* src = source->Data();
   float* dst = channel_data->Data();
 
   DCHECK(src);
@@ -301,8 +299,8 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
 void AudioBuffer::Zero() {
   for (unsigned i = 0; i < channels_.size(); ++i) {
-    if (NotShared<DOMFloat32Array> array = getChannelData(i)) {
-      float* data = array.View()->Data();
+    if (DOMFloat32Array* array = getChannelData(i)) {
+      float* data = array->Data();
       memset(data, 0, length() * sizeof(*data));
     }
   }

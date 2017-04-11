@@ -400,11 +400,11 @@ void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObj
 bool TestDictionary::hasUint8ArrayMember() const {
   return m_uint8ArrayMember;
 }
-NotShared<DOMUint8Array> TestDictionary::uint8ArrayMember() const {
+DOMUint8Array* TestDictionary::uint8ArrayMember() const {
   return m_uint8ArrayMember;
 }
-void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
-  m_uint8ArrayMember = value.View();
+void TestDictionary::setUint8ArrayMember(DOMUint8Array* value) {
+  m_uint8ArrayMember = value;
 }
 bool TestDictionary::hasUnionInRecordMember() const {
   return m_hasUnionInRecordMember;

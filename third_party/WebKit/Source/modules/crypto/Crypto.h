@@ -44,8 +44,7 @@ class Crypto final : public GarbageCollected<Crypto>, public ScriptWrappable {
  public:
   static Crypto* Create() { return new Crypto(); }
 
-  NotShared<DOMArrayBufferView> getRandomValues(NotShared<DOMArrayBufferView>,
-                                                ExceptionState&);
+  DOMArrayBufferView* getRandomValues(DOMArrayBufferView*, ExceptionState&);
 
   SubtleCrypto* subtle();
 

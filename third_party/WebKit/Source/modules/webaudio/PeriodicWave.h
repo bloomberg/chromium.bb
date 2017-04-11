@@ -29,13 +29,12 @@
 #ifndef PeriodicWave_h
 #define PeriodicWave_h
 
-#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "platform/audio/AudioArray.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -64,8 +63,8 @@ class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
                               ExceptionState&);
 
   static PeriodicWave* Create(BaseAudioContext&,
-                              NotShared<DOMFloat32Array> real,
-                              NotShared<DOMFloat32Array> imag,
+                              DOMFloat32Array* real,
+                              DOMFloat32Array* imag,
                               bool normalize,
                               ExceptionState&);
 

@@ -16,7 +16,7 @@ DOMArrayPiece::DOMArrayPiece(
     InitWithData(array_buffer->Data(), array_buffer->ByteLength());
   } else if (array_buffer_or_view.isArrayBufferView()) {
     DOMArrayBufferView* array_buffer_view =
-        array_buffer_or_view.getAsArrayBufferView().View();
+        array_buffer_or_view.getAsArrayBufferView();
     InitWithData(array_buffer_view->BaseAddress(),
                  array_buffer_view->byteLength());
   } else if (array_buffer_or_view.isNull() &&

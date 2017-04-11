@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/NotShared.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -1613,10 +1612,9 @@ ImageData* BaseRenderingContext2D::getImageData(
   NeedsFinalizeFrame();
 
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-  return ImageData::Create(
-      image_data_rect.size(),
-      NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
-          array_buffer, 0, array_buffer->ByteLength())));
+  return ImageData::Create(image_data_rect.size(),
+                           DOMUint8ClampedArray::Create(
+                               array_buffer, 0, array_buffer->ByteLength()));
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,

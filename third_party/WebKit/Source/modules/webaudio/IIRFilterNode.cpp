@@ -126,52 +126,49 @@ IIRProcessor* IIRFilterNode::IirProcessor() const {
       static_cast<AudioBasicProcessorHandler&>(Handler()).Processor());
 }
 
-void IIRFilterNode::getFrequencyResponse(
-    NotShared<const DOMFloat32Array> frequency_hz,
-    NotShared<DOMFloat32Array> mag_response,
-    NotShared<DOMFloat32Array> phase_response,
-    ExceptionState& exception_state) {
-  if (!frequency_hz.View()) {
+void IIRFilterNode::getFrequencyResponse(const DOMFloat32Array* frequency_hz,
+                                         DOMFloat32Array* mag_response,
+                                         DOMFloat32Array* phase_response,
+                                         ExceptionState& exception_state) {
+  if (!frequency_hz) {
     exception_state.ThrowDOMException(kNotSupportedError,
                                       "frequencyHz array cannot be null");
     return;
   }
 
-  if (!mag_response.View()) {
+  if (!mag_response) {
     exception_state.ThrowDOMException(kNotSupportedError,
                                       "magResponse array cannot be null");
     return;
   }
 
-  if (!phase_response.View()) {
+  if (!phase_response) {
     exception_state.ThrowDOMException(kNotSupportedError,
                                       "phaseResponse array cannot be null");
     return;
   }
 
-  unsigned frequency_hz_length = frequency_hz.View()->length();
+  unsigned frequency_hz_length = frequency_hz->length();
 
-  if (mag_response.View()->length() < frequency_hz_length) {
+  if (mag_response->length() < frequency_hz_length) {
     exception_state.ThrowDOMException(
         kNotSupportedError,
         ExceptionMessages::IndexExceedsMinimumBound(
-            "magResponse length", mag_response.View()->length(),
-            frequency_hz_length));
+            "magResponse length", mag_response->length(), frequency_hz_length));
     return;
   }
 
-  if (phase_response.View()->length() < frequency_hz_length) {
+  if (phase_response->length() < frequency_hz_length) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
-        ExceptionMessages::IndexExceedsMinimumBound(
-            "phaseResponse length", phase_response.View()->length(),
-            frequency_hz_length));
+        kNotSupportedError, ExceptionMessages::IndexExceedsMinimumBound(
+                                "phaseResponse length",
+                                phase_response->length(), frequency_hz_length));
     return;
   }
 
   IirProcessor()->GetFrequencyResponse(
-      frequency_hz_length, frequency_hz.View()->Data(),
-      mag_response.View()->Data(), phase_response.View()->Data());
+      frequency_hz_length, frequency_hz->Data(), mag_response->Data(),
+      phase_response->Data());
 }
 
 }  // namespace blink

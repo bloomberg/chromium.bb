@@ -27,7 +27,6 @@
 #define WaveShaperNode_h
 
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
 
@@ -47,9 +46,9 @@ class WaveShaperNode final : public AudioNode {
                                 ExceptionState&);
 
   // setCurve() is called on the main thread.
-  void setCurve(NotShared<DOMFloat32Array>, ExceptionState&);
+  void setCurve(DOMFloat32Array*, ExceptionState&);
   void setCurve(const Vector<float>&, ExceptionState&);
-  NotShared<DOMFloat32Array> curve();
+  DOMFloat32Array* curve();
 
   void setOversample(const String&);
   String oversample() const;

@@ -14,6 +14,8 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 
 namespace blink {
 
@@ -36,18 +38,18 @@ ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionar
   return container;
 }
 
-NotShared<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const {
+TestArrayBufferView* ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const {
   DCHECK(isArrayBufferView());
   return m_arrayBufferView;
 }
 
-void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(NotShared<TestArrayBufferView> value) {
+void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(TestArrayBufferView* value) {
   DCHECK(isNull());
-  m_arrayBufferView = Member<TestArrayBufferView>(value.View());
+  m_arrayBufferView = value;
   m_type = SpecificTypeArrayBufferView;
 }
 
-ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBufferView(NotShared<TestArrayBufferView> value) {
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBufferView(TestArrayBufferView* value) {
   ArrayBufferOrArrayBufferViewOrDictionary container;
   container.setArrayBufferView(value);
   return container;
@@ -93,9 +95,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
   }
 
   if (v8Value->IsArrayBufferView()) {
-    NotShared<TestArrayBufferView> cppValue = ToNotShared<NotShared<TestArrayBufferView>>(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
-      return;
+    TestArrayBufferView* cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setArrayBufferView(cppValue);
     return;
   }

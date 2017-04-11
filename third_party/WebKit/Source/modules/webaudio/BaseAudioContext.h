@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
@@ -221,11 +220,11 @@ class MODULES_EXPORT BaseAudioContext
   ChannelMergerNode* createChannelMerger(size_t number_of_inputs,
                                          ExceptionState&);
   OscillatorNode* createOscillator(ExceptionState&);
-  PeriodicWave* createPeriodicWave(NotShared<DOMFloat32Array> real,
-                                   NotShared<DOMFloat32Array> imag,
+  PeriodicWave* createPeriodicWave(DOMFloat32Array* real,
+                                   DOMFloat32Array* imag,
                                    ExceptionState&);
-  PeriodicWave* createPeriodicWave(NotShared<DOMFloat32Array> real,
-                                   NotShared<DOMFloat32Array> imag,
+  PeriodicWave* createPeriodicWave(DOMFloat32Array* real,
+                                   DOMFloat32Array* imag,
                                    const PeriodicWaveConstraints&,
                                    ExceptionState&);
 

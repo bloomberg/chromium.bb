@@ -61,7 +61,7 @@ MojoResult MojoHandle::writeMessage(
     bytes = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.getAsArrayBufferView();
     bytes = view->BaseAddress();
     num_bytes = view->byteLength();
   }
@@ -117,7 +117,7 @@ void MojoHandle::writeData(const ArrayBufferOrArrayBufferView& buffer,
     elements = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.getAsArrayBufferView();
     elements = view->BaseAddress();
     num_bytes = view->byteLength();
   }
@@ -165,7 +165,7 @@ void MojoHandle::readData(ArrayBufferOrArrayBufferView& buffer,
     elements = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.getAsArrayBufferView();
     elements = view->BaseAddress();
     num_bytes = view->byteLength();
   }

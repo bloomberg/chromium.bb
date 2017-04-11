@@ -282,14 +282,13 @@ void PresentationConnection::send(DOMArrayBuffer* array_buffer,
   HandleMessageQueue();
 }
 
-void PresentationConnection::send(
-    NotShared<DOMArrayBufferView> array_buffer_view,
-    ExceptionState& exception_state) {
-  DCHECK(array_buffer_view);
+void PresentationConnection::send(DOMArrayBufferView* array_buffer_view,
+                                  ExceptionState& exception_state) {
+  ASSERT(array_buffer_view);
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(array_buffer_view.View()->buffer()));
+  messages_.push_back(new Message(array_buffer_view->buffer()));
   HandleMessageQueue();
 }
 

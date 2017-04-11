@@ -33,7 +33,6 @@
 #include "bindings/core/v8/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "core/html/ImageDataColorSettings.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
@@ -78,14 +77,14 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   static ImageData* Create(const IntSize&,
                            const ImageDataColorSettings* = nullptr);
   static ImageData* Create(const IntSize&,
-                           NotShared<DOMArrayBufferView>,
+                           DOMArrayBufferView*,
                            const ImageDataColorSettings* = nullptr);
 
   static ImageData* Create(unsigned width, unsigned height, ExceptionState&);
-  static ImageData* Create(NotShared<DOMUint8ClampedArray>,
+  static ImageData* Create(DOMUint8ClampedArray*,
                            unsigned width,
                            ExceptionState&);
-  static ImageData* Create(NotShared<DOMUint8ClampedArray>,
+  static ImageData* Create(DOMUint8ClampedArray*,
                            unsigned width,
                            unsigned height,
                            ExceptionState&);

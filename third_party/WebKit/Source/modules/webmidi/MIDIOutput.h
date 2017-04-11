@@ -32,7 +32,6 @@
 #define MIDIOutput_h
 
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace blink {
@@ -53,11 +52,11 @@ class MIDIOutput final : public MIDIPort {
                             midi::mojom::PortState);
   ~MIDIOutput() override;
 
-  void send(NotShared<DOMUint8Array>, double timestamp, ExceptionState&);
+  void send(DOMUint8Array*, double timestamp, ExceptionState&);
   void send(Vector<unsigned>, double timestamp, ExceptionState&);
 
   // send() without optional |timestamp|.
-  void send(NotShared<DOMUint8Array>, ExceptionState&);
+  void send(DOMUint8Array*, ExceptionState&);
   void send(Vector<unsigned>, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();

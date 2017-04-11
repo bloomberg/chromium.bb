@@ -24,7 +24,6 @@ crbug.com/24182 editing/selection/modify_move/move-by-word-visually-inline-block
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-multi-space.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Slow ]
 crbug.com/24182 fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
 crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
@@ -36,7 +35,6 @@ crbug.com/24182 http/tests/cache/subresource-expiration-2.html [ Slow ]
 crbug.com/24182 virtual/mojo-loading/http/tests/cache/subresource-expiration-2.html [ Slow ]
 crbug.com/24182 [ Release Win7 ] http/tests/media/media-source/mediasource-addsourcebuffer.html [ Slow ]
 crbug.com/24182 [ Release Win7 ] virtual/mojo-loading/http/tests/media/media-source/mediasource-addsourcebuffer.html [ Slow ]
-crbug.com/24182 [ Release Win7 ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-addsourcebuffer.html [ Slow ]
 crbug.com/24182 http/tests/misc/acid3.html [ Slow ]
 crbug.com/24182 virtual/mojo-loading/http/tests/misc/acid3.html [ Slow ]
 crbug.com/24182 http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
@@ -83,13 +81,10 @@ crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Slow ]
 crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/24182 fast/css/should-not-insert-stylesheet-into-detached-document.html [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/fast/css/should-not-insert-stylesheet-into-detached-document.html [ Slow ]
 crbug.com/24182 fast/dom/shadow/svg-style-in-shadow-tree-crash.html [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/fast/dom/shadow/svg-style-in-shadow-tree-crash.html [ Slow ]
 crbug.com/24182 fast/encoding/char-encoding.html [ Slow ]
 crbug.com/24182 fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
 crbug.com/24182 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Slow ]
@@ -100,7 +95,6 @@ crbug.com/24182 svg/hixie/perf/004.xml [ Slow ]
 crbug.com/24182 svg/hixie/perf/005.xml [ Slow ]
 crbug.com/24182 svg/hixie/perf/006.xml [ Slow ]
 crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
-crbug.com/451577 [ Debug ] virtual/sharedarraybuffer/fast/dom/gc-treescope.html  [ Slow ]
 crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 crbug.com/451577 external/wpt/IndexedDB/idbindex-multientry-big.htm [ Slow ]
 crbug.com/451577 [ Mac ] inspector/extensions/extensions-reload.html [ Slow ]
@@ -226,7 +220,6 @@ crbug.com/9798 virtual/mojo-loading/http/tests/xmlhttprequest/access-control-bas
 crbug.com/24182 http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Slow ]
 crbug.com/24182 virtual/mojo-loading/http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Slow ]
 crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
-crbug.com/237270 [ Win7 ] virtual/sharedarraybuffer/fast/css/custom-font-xheight.html [ Slow ]
 crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
 crbug.com/241576 [ Win ] virtual/mojo-loading/http/tests/appcache/404-manifest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
@@ -236,7 +229,6 @@ crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 # This test takes 5+ seconds as intended because it tests connection throttling.
 crbug.com/459377 http/tests/websocket/multiple-connections-throttled.html [ Slow ]
 crbug.com/459377 virtual/mojo-loading/http/tests/websocket/multiple-connections-throttled.html [ Slow ]
-crbug.com/459377 virtual/sharedarraybuffer/http/tests/websocket/multiple-connections-throttled.html [ Slow ]
 
 # These tests are slow to measure bounding box of every single Unicode character.
 #crbug.com/492664 external/csswg-test/css-writing-modes-3/text-orientation-script-001a.html [ Slow ]
@@ -258,7 +250,6 @@ crbug.com/459377 virtual/sharedarraybuffer/http/tests/websocket/multiple-connect
 crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 crbug.com/346259 virtual/mojo-loading/http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
-crbug.com/346259 virtual/sharedarraybuffer/http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
 crbug.com/522646 http/tests/media/encrypted-media/encrypted-media-encrypted-event-different-origin.html [ Slow ]
 crbug.com/522646 virtual/mojo-loading/http/tests/media/encrypted-media/encrypted-media-encrypted-event-different-origin.html [ Slow ]
@@ -286,7 +277,6 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Slow ]
 crbug.com/548765 virtual/mojo-loading/http/tests/inspector/console-fetch-logging.html [ Slow ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Slow ]
-crbug.com/419993 [ Debug ] virtual/sharedarraybuffer/fast/css/giant-stylesheet-crash.html [ Slow ]
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
@@ -295,7 +285,6 @@ crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Sl
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
 
 crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
-crbug.com/372424 virtual/sharedarraybuffer/fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
 
 crbug.com/372424 http/tests/serviceworker/chromium/registration-stress.html [ Slow ]
 crbug.com/372424 virtual/mojo-loading/http/tests/serviceworker/chromium/registration-stress.html [ Slow ]
@@ -306,7 +295,6 @@ crbug.com/516319 [ Win ] virtual/mojo-loading/http/tests/fetch/ [ Slow ]
 
 # Most crypto/subtle tests are slow some or most of the time.
 crbug.com/459009 crypto/subtle/ [ Slow ]
-crbug.com/459009 virtual/sharedarraybuffer/crypto/subtle/ [ Slow ]
 
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
@@ -324,7 +312,6 @@ crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 crbug.com/658211 [ Win7 Debug ] fast/text/line-break-ascii.html [ Slow ]
 
 crbug.com/445194 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/445194 virtual/sharedarraybuffer/fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/backcolor.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/bold.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/createlink.html [ Slow ]
@@ -372,7 +359,6 @@ crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 crbug.com/623798 virtual/disable-spinvalidation/paint/images/animated-gif-last-frame-crash.html [ Slow ]
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
-crbug.com/606649 virtual/sharedarraybuffer/fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]

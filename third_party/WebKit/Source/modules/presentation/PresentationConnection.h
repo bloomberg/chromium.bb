@@ -7,7 +7,6 @@
 
 #include <memory>
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/NotShared.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
@@ -61,7 +60,7 @@ class PresentationConnection final : public EventTargetWithInlineData,
 
   void send(const String& message, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
-  void send(NotShared<DOMArrayBufferView>, ExceptionState&);
+  void send(DOMArrayBufferView*, ExceptionState&);
   void send(Blob*, ExceptionState&);
   void close();
   void terminate();

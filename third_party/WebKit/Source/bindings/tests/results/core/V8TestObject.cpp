@@ -61,7 +61,6 @@
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/dom/Document.h"
 #include "core/dom/FlexibleArrayBufferView.h"
-#include "core/dom/NotShared.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/frame/Deprecation.h"
@@ -1100,7 +1099,7 @@ static void float32ArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
   TestObject* impl = V8TestObject::toImpl(holder);
 
-  V8SetReturnValueFast(info, impl->float32ArrayAttribute(), impl);
+  V8SetReturnValueFast(info, WTF::GetPtr(impl->float32ArrayAttribute()), impl);
 }
 
 static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -1113,9 +1112,7 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "float32ArrayAttribute");
 
   // Prepare the value to be set.
-  NotShared<DOMFloat32Array> cppValue = ToNotShared<NotShared<DOMFloat32Array>>(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
-    return;
+  DOMFloat32Array* cppValue = v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(v8Value)) : 0;
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cppValue) {
@@ -1131,7 +1128,7 @@ static void uint8ArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
 
   TestObject* impl = V8TestObject::toImpl(holder);
 
-  V8SetReturnValueFast(info, impl->uint8ArrayAttribute(), impl);
+  V8SetReturnValueFast(info, WTF::GetPtr(impl->uint8ArrayAttribute()), impl);
 }
 
 static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -1144,9 +1141,7 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "uint8ArrayAttribute");
 
   // Prepare the value to be set.
-  NotShared<DOMUint8Array> cppValue = ToNotShared<NotShared<DOMUint8Array>>(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
-    return;
+  DOMUint8Array* cppValue = v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(v8Value)) : 0;
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cppValue) {
@@ -4668,18 +4663,6 @@ static void arrayBufferViewMethodMethod(const v8::FunctionCallbackInfo<v8::Value
   V8SetReturnValue(info, impl->arrayBufferViewMethod());
 }
 
-static void arrayBufferViewMethodRaisesExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "arrayBufferViewMethodRaisesException");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  NotShared<TestArrayBufferView> result = impl->arrayBufferViewMethodRaisesException(exceptionState);
-  if (exceptionState.HadException()) {
-    return;
-  }
-  V8SetReturnValue(info, result);
-}
-
 static void float32ArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -4726,7 +4709,7 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
   }
 
   TestArrayBuffer* arrayBufferArg;
-  arrayBufferArg = V8ArrayBuffer::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
   if (!arrayBufferArg && !IsUndefinedOrNull(info[0])) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
 
@@ -4737,21 +4720,17 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
 }
 
 static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodArrayBufferViewArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodArrayBufferViewArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
-  NotShared<TestArrayBufferView> arrayBufferViewArg;
-  arrayBufferViewArg = ToNotShared<NotShared<TestArrayBufferView>>(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
+  TestArrayBufferView* arrayBufferViewArg;
+  arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Local<v8::ArrayBufferView>::Cast(info[0])) : 0;
   if (!arrayBufferViewArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
 
     return;
   }
@@ -4760,19 +4739,17 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
 }
 
 static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodFlexibleArrayBufferViewArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
   FlexibleArrayBufferView arrayBufferViewArg;
   ToFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
   if (!arrayBufferViewArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
 
     return;
   }
@@ -4781,19 +4758,17 @@ static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbac
 }
 
 static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodFlexibleArrayBufferViewTypedArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
   FlexibleFloat32ArrayView typedArrayBufferViewArg;
   ToFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
   if (!typedArrayBufferViewArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'Float32Array'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
 
     return;
   }
@@ -4802,21 +4777,17 @@ static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCa
 }
 
 static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodFloat32ArrayArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFloat32ArrayArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
-  NotShared<DOMFloat32Array> float32ArrayArg;
-  float32ArrayArg = ToNotShared<NotShared<DOMFloat32Array>>(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
+  DOMFloat32Array* float32ArrayArg;
+  float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(info[0])) : 0;
   if (!float32ArrayArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'Float32Array'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodFloat32ArrayArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
 
     return;
   }
@@ -4825,21 +4796,17 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
 }
 
 static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodInt32ArrayArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodInt32ArrayArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
-  NotShared<DOMInt32Array> int32ArrayArg;
-  int32ArrayArg = ToNotShared<NotShared<DOMInt32Array>>(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
+  DOMInt32Array* int32ArrayArg;
+  int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Local<v8::Int32Array>::Cast(info[0])) : 0;
   if (!int32ArrayArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'Int32Array'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodInt32ArrayArg", "TestObject", "parameter 1 is not of type 'Int32Array'."));
 
     return;
   }
@@ -4848,21 +4815,17 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodUint8ArrayArg");
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodUint8ArrayArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
   }
 
-  NotShared<DOMUint8Array> uint8ArrayArg;
-  uint8ArrayArg = ToNotShared<NotShared<DOMUint8Array>>(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
+  DOMUint8Array* uint8ArrayArg;
+  uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(info[0])) : 0;
   if (!uint8ArrayArg) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'Uint8Array'.");
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodUint8ArrayArg", "TestObject", "parameter 1 is not of type 'Uint8Array'."));
 
     return;
   }
@@ -10941,10 +10904,6 @@ void V8TestObject::arrayBufferViewMethodMethodCallback(const v8::FunctionCallbac
   TestObjectV8Internal::arrayBufferViewMethodMethod(info);
 }
 
-void V8TestObject::arrayBufferViewMethodRaisesExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::arrayBufferViewMethodRaisesExceptionMethod(info);
-}
-
 void V8TestObject::float32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::float32ArrayMethodMethod(info);
 }
@@ -12051,7 +12010,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodNodeArg", V8TestObject::voidMethodNodeArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"arrayBufferMethod", V8TestObject::arrayBufferMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"arrayBufferViewMethod", V8TestObject::arrayBufferViewMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"arrayBufferViewMethodRaisesException", V8TestObject::arrayBufferViewMethodRaisesExceptionMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"float32ArrayMethod", V8TestObject::float32ArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"int32ArrayMethod", V8TestObject::int32ArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"uint8ArrayMethod", V8TestObject::uint8ArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

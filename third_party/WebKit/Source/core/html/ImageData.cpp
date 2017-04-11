@@ -229,13 +229,12 @@ ImageData* ImageData::Create(const IntSize& size,
 }
 
 ImageData* ImageData::Create(const IntSize& size,
-                             NotShared<DOMArrayBufferView> data_array,
+                             DOMArrayBufferView* data_array,
                              const ImageDataColorSettings* color_settings) {
-  if (!ImageData::ValidateConstructorArguments(kParamSize | kParamData, &size,
-                                               0, 0, data_array.View(),
-                                               color_settings))
+  if (!ImageData::ValidateConstructorArguments(
+          kParamSize | kParamData, &size, 0, 0, data_array, color_settings))
     return nullptr;
-  return new ImageData(size, data_array.View(), color_settings);
+  return new ImageData(size, data_array, color_settings);
 }
 
 ImageData* ImageData::Create(unsigned width,
@@ -252,28 +251,28 @@ ImageData* ImageData::Create(unsigned width,
                     : nullptr;
 }
 
-ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
+ImageData* ImageData::Create(DOMUint8ClampedArray* data,
                              unsigned width,
                              ExceptionState& exception_state) {
   if (!ImageData::ValidateConstructorArguments(kParamData | kParamWidth,
-                                               nullptr, width, 0, data.View(),
-                                               nullptr, &exception_state))
+                                               nullptr, width, 0, data, nullptr,
+                                               &exception_state))
     return nullptr;
 
-  unsigned height = data.View()->length() / (width * 4);
-  return new ImageData(IntSize(width, height), data.View());
+  unsigned height = data->length() / (width * 4);
+  return new ImageData(IntSize(width, height), data);
 }
 
-ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
+ImageData* ImageData::Create(DOMUint8ClampedArray* data,
                              unsigned width,
                              unsigned height,
                              ExceptionState& exception_state) {
   if (!ImageData::ValidateConstructorArguments(
-          kParamData | kParamWidth | kParamHeight, nullptr, width, height,
-          data.View(), nullptr, &exception_state))
+          kParamData | kParamWidth | kParamHeight, nullptr, width, height, data,
+          nullptr, &exception_state))
     return nullptr;
 
-  return new ImageData(IntSize(width, height), data.View());
+  return new ImageData(IntSize(width, height), data);
 }
 
 ImageData* ImageData::createImageData(
@@ -309,13 +308,13 @@ ImageData* ImageData::createImageData(ImageDataArray& data,
   String storage_format_name;
 
   if (data.isUint8ClampedArray()) {
-    buffer_view = data.getAsUint8ClampedArray().View();
+    buffer_view = data.getAsUint8ClampedArray();
     storage_format_name = kUint8ClampedArrayStorageFormatName;
   } else if (data.isUint16Array()) {
-    buffer_view = data.getAsUint16Array().View();
+    buffer_view = data.getAsUint16Array();
     storage_format_name = kUint16ArrayStorageFormatName;
   } else if (data.isFloat32Array()) {
-    buffer_view = data.getAsFloat32Array().View();
+    buffer_view = data.getAsFloat32Array();
     storage_format_name = kFloat32ArrayStorageFormatName;
   } else {
     NOTREACHED();
