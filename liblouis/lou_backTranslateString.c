@@ -413,6 +413,9 @@ handleMultind ()
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
       break;
+    case CTO_NoContractSign:
+      found = findBrailleIndicatorRule (table->noContractSign);
+      break;
     case CTO_NumberSign:
       found = findBrailleIndicatorRule (table->numberSign);
       break;
