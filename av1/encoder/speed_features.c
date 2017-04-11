@@ -448,13 +448,26 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
   RD_OPT *const rd = &cpi->rd;
   int i;
 
-  // Limit memory usage for high resolutions
+// Limit memory usage for high resolutions
+#if CONFIG_EXT_REFS
+  // TODO(zoeliu): Temporary solution to resolve the insufficient RAM issue for
+  //               ext-refs. Need to work with @yunqingwang to have a more
+  //               effective solution.
+  if (AOMMIN(cm->width, cm->height) > 720) {
+    // Turn off the use of upsampled references for HD resolution
+    sf->use_upsampled_references = 0;
+  } else if ((AOMMIN(cm->width, cm->height) > 540) &&
+             (oxcf->profile != PROFILE_0)) {
+    sf->use_upsampled_references = 0;
+  }
+#else
   if (AOMMIN(cm->width, cm->height) > 1080) {
     sf->use_upsampled_references = 0;
-  }
-  if ((AOMMIN(cm->width, cm->height) > 720) && (oxcf->profile != PROFILE_0)) {
+  } else if ((AOMMIN(cm->width, cm->height) > 720) &&
+             (oxcf->profile != PROFILE_0)) {
     sf->use_upsampled_references = 0;
   }
+#endif  // CONFIG_EXT_REFS
 
   if (oxcf->mode == REALTIME) {
     set_rt_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
