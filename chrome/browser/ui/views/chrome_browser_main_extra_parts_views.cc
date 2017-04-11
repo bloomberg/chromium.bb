@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
@@ -27,6 +29,10 @@
 #endif  // defined(USE_AURA)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "base/command_line.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/chromium_strings.h"
@@ -94,6 +100,13 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   // so that we don't destroy the profile. Now that we have some minimal ui
   // initialized, check to see if we're running as root and bail if we are.
   if (geteuid() != 0)
+    return;
+
+  // Allow running inside an unprivileged user namespace. In that case, the
+  // root directory will be owned by an unmapped UID and GID (although this
+  // may not be the case if a chroot is also being used).
+  struct stat st;
+  if (stat("/", &st) == 0 && st.st_uid != 0)
     return;
 
   const base::CommandLine& command_line =
