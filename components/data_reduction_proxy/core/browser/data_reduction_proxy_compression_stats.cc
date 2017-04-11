@@ -370,12 +370,14 @@ void DataReductionProxyCompressionStats::Init() {
           &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
           weak_factory_.GetWeakPtr()));
 
+#if defined(OS_ANDROID)
   if (!base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown)) {
     // If the user is moved out of the experiment make sure that data usage
     // reporting is not enabled and the map is cleared.
     SetDataUsageReportingEnabled(false);
     DeleteHistoricalDataUsage();
   }
+#endif
 
   if (data_usage_reporting_enabled_.GetValue()) {
     current_data_usage_load_status_ = LOADING;
