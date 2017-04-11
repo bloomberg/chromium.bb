@@ -18,5 +18,5 @@
  */
 
 partial interface Navigator {
-    GamepadList getGamepads();
+    [MeasureAs=GetGamepads] GamepadList getGamepads();
 };

@@ -1530,6 +1530,7 @@ class CORE_EXPORT UseCounter {
     kWebkitCSSMatrixConstructFromString = 1913,
     kCanRequestURLHTTPContainingNewline = 1914,
     kCanRequestURLNonHTTPContainingNewline = 1915,
+    kGetGamepads = 1916,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
