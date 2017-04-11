@@ -31,7 +31,6 @@
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/audio/audio_device_description.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -86,7 +85,7 @@ bool PickDeviceId(const blink::WebMediaConstraints& constraints,
                   const MediaDeviceInfoArray& device_infos,
                   std::string* device_id) {
   DCHECK(!constraints.IsNull());
-  DCHECK(media::AudioDeviceDescription::IsDefaultDevice(*device_id));
+  DCHECK(device_id->empty());
 
   if (constraints.Basic().device_id.Exact().size() > 1) {
     LOG(ERROR) << "Only one required device ID is supported";
@@ -399,12 +398,6 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
         current_request_info_->request().AudioConstraints(),
         &current_request_info_->stream_controls()->audio,
         &request_audio_input_devices);
-    // Explicitly initialize the requested device ID to the default.
-    if (IsDeviceSource(
-            current_request_info_->stream_controls()->audio.stream_source)) {
-      current_request_info_->stream_controls()->audio.device_id =
-          std::string(media::AudioDeviceDescription::kDefaultDeviceId);
-    }
     CopyHotwordAndLocalEchoToStreamControls(
         current_request_info_->request().AudioConstraints(),
         current_request_info_->stream_controls());

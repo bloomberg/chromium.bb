@@ -22,7 +22,6 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -901,12 +900,11 @@ TEST_F(UserMediaClientImplTest, CreateWithAllOptionalInvalidDeviceId) {
       CreateDeviceConstraints(nullptr, kInvalidDeviceId, kInvalidDeviceId);
   blink::WebMediaConstraints video_constraints =
       CreateDeviceConstraints(nullptr, kInvalidDeviceId, kInvalidDeviceId);
+  // MockMediaStreamDispatcher uses empty string as default audio device ID.
   // MockMediaDevicesDispatcher uses the first device in the enumeration as
   // default video device ID.
-  TestValidRequestWithConstraints(
-      audio_constraints, video_constraints,
-      std::string(media::AudioDeviceDescription::kDefaultDeviceId),
-      kFakeVideoInputDeviceId1);
+  TestValidRequestWithConstraints(audio_constraints, video_constraints,
+                                  std::string(), kFakeVideoInputDeviceId1);
 }
 
 TEST_F(UserMediaClientImplTest, CreateWithFacingModeUser) {
