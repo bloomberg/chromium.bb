@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pause_tabs_field_trial.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/render_messages.h"
@@ -1098,7 +1099,8 @@ bool ChromeContentRendererClient::
 #if defined(OS_ANDROID)
   return true;
 #else
-  return false;
+  // TODO(ojan): Plumb the engagement values for this feature to WebViewImpl.
+  return base::FeatureList::IsEnabled(pausetabs::kFeature);
 #endif
 }
 

@@ -2980,6 +2980,9 @@ extern const char kOmniboxEntitySuggestionsName[];
 // Description of the flag that enables entity suggestions.
 extern const char kOmniboxEntitySuggestionsDescription[];
 
+extern const char kPauseBackgroundTabsName[];
+extern const char kPauseBackgroundTabsDescription[];
+
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 

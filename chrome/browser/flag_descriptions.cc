@@ -2759,6 +2759,10 @@ const char kOmniboxEntitySuggestionsName[] = "Omnibox entity suggestions";
 const char kOmniboxEntitySuggestionsDescription[] =
     "Enable receiving entity suggestions in Omnibox.";
 
+const char kPauseBackgroundTabsName[] = "Pause background tabs";
+const char kPauseBackgroundTabsDescription[] =
+    "Pause timers in background tabs after 5 minutes on desktop.";
+
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 
