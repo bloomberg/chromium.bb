@@ -72,7 +72,8 @@ AC_ARG_ENABLE(m32,
 AC_HEADER_STDC
 AC_SYS_LARGEFILE
 AX_PTHREAD
-AC_CHECK_HEADERS([a.out.h])
+AC_CHECK_HEADERS([a.out.h sys/random.h])
+AC_CHECK_FUNCS([arc4random getrandom])
 
 AX_CXX_COMPILE_STDCXX(11, noext, mandatory)
 
