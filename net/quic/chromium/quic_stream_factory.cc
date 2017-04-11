@@ -345,6 +345,8 @@ class QuicStreamFactory::Job {
 
   const QuicSessionKey& key() const { return key_; }
 
+  const NetLogWithSource& net_log() const { return net_log_; }
+
   base::WeakPtr<Job> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
@@ -1006,7 +1008,21 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   }
 
   // Associate with active job to |server_id| if such exists.
-  if (HasActiveJob(server_id)) {
+  auto it = active_jobs_.find(server_id);
+  if (it != active_jobs_.end()) {
+    const JobSet& job_set = it->second;
+    // TODO(zhongyi): figure out how to link the NetLogs if there are more than
+    // one job serving the same server id, i.e., auxiliary job is also
+    // created.
+    if (job_set.size() == 1) {
+      const NetLogWithSource& job_net_log = job_set.begin()->first->net_log();
+      job_net_log.AddEvent(
+          NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
+          net_log.source().ToEventParametersCallback());
+      net_log.AddEvent(
+          NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
+          job_net_log.source().ToEventParametersCallback());
+    }
     job_requests_map_[server_id].insert(request);
     return ERR_IO_PENDING;
   }
