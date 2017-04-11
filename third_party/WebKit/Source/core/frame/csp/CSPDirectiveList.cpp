@@ -40,11 +40,6 @@ String GetSha256String(const String& content) {
                                   digest.size(), kBase64DoNotInsertLFs);
 }
 
-template <typename CharType>
-inline bool IsASCIIAlphanumericOrHyphen(CharType c) {
-  return IsASCIIAlphanumeric(c) || c == '-';
-}
-
 ContentSecurityPolicyHashAlgorithm ConvertHashAlgorithmToCSPHashAlgorithm(
     HashAlgorithm algorithm) {
   switch (algorithm) {
