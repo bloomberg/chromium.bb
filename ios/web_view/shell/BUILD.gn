@@ -56,6 +56,7 @@ bundle_data("resources") {
     "textfield_background@2x.png",
     "toolbar_back@2x.png",
     "toolbar_forward@2x.png",
+    "toolbar_more_horiz@2x.png",
     "toolbar_stop@2x.png",
   ]
   outputs = [

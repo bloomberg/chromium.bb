@@ -72,7 +72,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                       UIViewAutoresizingFlexibleHeight];
   [self.view addSubview:_containerView];
 
-  const int kButtonCount = 3;
+  const int kButtonCount = 4;
   const CGFloat kButtonSize = 44;
 
   // Text field.
@@ -128,9 +128,21 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                 action:@selector(stopLoading)
       forControlEvents:UIControlEventTouchUpInside];
 
+  // Menu.
+  UIButton* menu = [UIButton buttonWithType:UIButtonTypeCustom];
+  [menu setImage:[UIImage imageNamed:@"toolbar_more_horiz"]
+        forState:UIControlStateNormal];
+  [menu setFrame:CGRectMake(3 * kButtonSize, 0, kButtonSize, kButtonSize)];
+  [menu setImageEdgeInsets:insets];
+  [menu setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
+  [menu addTarget:self
+                action:@selector(showMenu)
+      forControlEvents:UIControlEventTouchUpInside];
+
   [_toolbar addSubview:back];
   [_toolbar addSubview:forward];
   [_toolbar addSubview:stop];
+  [_toolbar addSubview:menu];
   [_toolbar addSubview:_field];
 
   self.webView = [CWV webViewWithFrame:[_containerView bounds]];
@@ -169,6 +181,22 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
 - (void)stopLoading {
   [_webView stopLoading];
+}
+
+- (void)showMenu {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:@""
+                       message:@""
+                preferredStyle:UIAlertControllerStyleActionSheet];
+
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Reload"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [_webView reload];
+                                       }]];
+
+  [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)field {
