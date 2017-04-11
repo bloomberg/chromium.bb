@@ -25,7 +25,6 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -270,17 +269,6 @@ enum HeaderBehaviour {
   Overlap
 };
 
-struct HeaderDefinition {
-  // The header view.
-  base::scoped_nsobject<UIView> view;
-  // How to place the view, and its behaviour when the headers move.
-  HeaderBehaviour behaviour;
-  // Reduces the height of a header to adjust for shadows.
-  CGFloat heightAdjustement;
-  // Nudges that particular header up by this number of points.
-  CGFloat inset;
-};
-
 const CGFloat kIPadFindBarOverlap = 11;
 
 bool IsURLAllowedInIncognito(const GURL& url) {
@@ -297,6 +285,65 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
 }  // namespace
+
+#pragma mark - HeaderDefinition helper
+
+@interface HeaderDefinition : NSObject
+
+// The header view.
+@property(nonatomic, strong) UIView* view;
+// How to place the view, and its behaviour when the headers move.
+@property(nonatomic, assign) HeaderBehaviour behaviour;
+// Reduces the height of a header to adjust for shadows.
+@property(nonatomic, assign) CGFloat heightAdjustement;
+// Nudges that particular header up by this number of points.
+@property(nonatomic, assign) CGFloat inset;
+
+- (instancetype)initWithView:(UIView*)view
+             headerBehaviour:(HeaderBehaviour)behaviour
+            heightAdjustment:(CGFloat)heightAdjustment
+                       inset:(CGFloat)inset;
+
++ (instancetype)definitionWithView:(UIView*)view
+                   headerBehaviour:(HeaderBehaviour)behaviour
+                  heightAdjustment:(CGFloat)heightAdjustment
+                             inset:(CGFloat)inset;
+
+@end
+
+@implementation HeaderDefinition
+@synthesize view = _view;
+@synthesize behaviour = _behaviour;
+@synthesize heightAdjustement = _heightAdjustement;
+@synthesize inset = _inset;
+
++ (instancetype)definitionWithView:(UIView*)view
+                   headerBehaviour:(HeaderBehaviour)behaviour
+                  heightAdjustment:(CGFloat)heightAdjustment
+                             inset:(CGFloat)inset {
+  return [[self alloc] initWithView:view
+                    headerBehaviour:behaviour
+                   heightAdjustment:heightAdjustment
+                              inset:inset];
+}
+
+- (instancetype)initWithView:(UIView*)view
+             headerBehaviour:(HeaderBehaviour)behaviour
+            heightAdjustment:(CGFloat)heightAdjustment
+                       inset:(CGFloat)inset {
+  self = [super init];
+  if (self) {
+    _view = view;
+    _behaviour = behaviour;
+    _heightAdjustement = heightAdjustment;
+    _inset = inset;
+  }
+  return self;
+}
+
+@end
+
+#pragma mark - BVC
 
 @interface BrowserViewController ()<AppRatingPromptDelegate,
                                     ContextualSearchControllerDelegate,
@@ -532,6 +579,10 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // is NONE if there is no visible page or visible page is a native page.
 @property(nonatomic, assign, readonly) web::UserAgentType userAgentType;
 
+// Returns the header views, all the chrome on top of the page, including the
+// ones that cannot be scrolled off screen by full screen.
+@property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -733,15 +784,12 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // The LogoAnimationControllerOwner to be used for the next logo transition
 // animation.
 - (id<LogoAnimationControllerOwner>)currentLogoAnimationControllerOwner;
-// Returns the header views, all the chrome on top of the page, including the
-// ones that cannot be scrolled off screen by full screen.
-- (const std::vector<HeaderDefinition>)headerViews;
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
 // Returns the height of the header view for the tab model's current tab.
 - (CGFloat)headerHeight;
 // Sets the frame for the headers.
-- (void)setFramesForHeaders:(const std::vector<HeaderDefinition>)headers
+- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
 // Returns the y coordinate for the footer's frame when animating the footer
 // in/out of fullscreen.
@@ -2647,43 +2695,45 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return 0.0;
 }
 
-- (const std::vector<HeaderDefinition>)headerViews {
-  std::vector<HeaderDefinition> results;
+- (NSArray<HeaderDefinition*>*)headerViews {
+  NSMutableArray<HeaderDefinition*>* results = [[NSMutableArray alloc] init];
   if (![self isViewLoaded])
     return results;
 
   if (!IsIPadIdiom()) {
     if ([_toolbarController view]) {
-      HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([_toolbarController view]), Hideable,
-          [ToolbarController toolbarDropShadowHeight], 0.0,
-      };
-      results.push_back(header);
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_toolbarController view]
+                                headerBehaviour:Hideable
+                               heightAdjustment:[ToolbarController
+                                                    toolbarDropShadowHeight]
+                                          inset:0.0]];
     }
   } else {
     if ([_tabStripController view]) {
-      HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([_tabStripController view]), Hideable,
-          0.0, 0.0,
-      };
-      results.push_back(header);
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_tabStripController view]
+                                headerBehaviour:Hideable
+                               heightAdjustment:0.0
+                                          inset:0.0]];
     }
     if ([_toolbarController view]) {
-      HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([_toolbarController view]), Hideable,
-          [ToolbarController toolbarDropShadowHeight], 0.0,
-      };
-      results.push_back(header);
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_toolbarController view]
+                                headerBehaviour:Hideable
+                               heightAdjustment:[ToolbarController
+                                                    toolbarDropShadowHeight]
+                                          inset:0.0]];
     }
     if ([_findBarController view]) {
-      HeaderDefinition header = {
-          base::scoped_nsobject<UIView>([_findBarController view]), Overlap,
-          0.0, kIPadFindBarOverlap,
-      };
-      results.push_back(header);
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_findBarController view]
+                                headerBehaviour:Overlap
+                               heightAdjustment:0.0
+                                          inset:kIPadFindBarOverlap]];
     }
   }
-  return results;
+  return [results copy];
 }
 
 - (UIView*)footerView {
@@ -2704,10 +2754,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     return 0;
   }
 
-  const std::vector<HeaderDefinition> views = [self headerViews];
+  NSArray<HeaderDefinition*>* views = [self headerViews];
 
   CGFloat height = [self headerOffset];
-  for (const auto& header : views) {
+  for (HeaderDefinition* header in views) {
     if (header.view && header.behaviour == Hideable) {
       height += CGRectGetHeight([header.view frame]) -
                 header.heightAdjustement - header.inset;
@@ -2722,8 +2772,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (CGFloat)currentHeaderOffset {
-  const std::vector<HeaderDefinition> headers = [self headerViews];
-  if (!headers.size())
+  NSArray<HeaderDefinition*>* headers = [self headerViews];
+  if (!headers.count)
     return 0.0;
 
   // Prerender tab does not have a toolbar, return |headerHeight| as promised by
@@ -2753,10 +2803,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [controller setToolbarInsetsForHeaderOffset:offset];
 }
 
-- (void)setFramesForHeaders:(const std::vector<HeaderDefinition>)headers
+- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset {
   CGFloat height = [self headerOffset];
-  for (const auto& header : headers) {
+  for (HeaderDefinition* header in headers) {
     CGRect frame = [header.view frame];
     frame.origin.y = height - headerOffset - header.inset;
     [header.view setFrame:frame];
@@ -2780,7 +2830,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     footerFrame.origin.y = [self footerYForHeaderOffset:headerOffset];
   }
 
-  const std::vector<HeaderDefinition> headers = [self headerViews];
+  NSArray<HeaderDefinition*>* headers = [self headerViews];
   void (^block)(void) = ^{
     [self setFramesForHeaders:headers atOffset:headerOffset];
     footer.frame = footerFrame;
@@ -2820,7 +2870,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     footerFrame.origin.y = [self footerYForHeaderOffset:headerOffset];
   }
 
-  const std::vector<HeaderDefinition> headers = [self headerViews];
+  NSArray<HeaderDefinition*>* headers = [self headerViews];
   void (^block)(void) = ^{
     [self setFramesForHeaders:headers atOffset:headerOffset];
     footer.frame = footerFrame;
