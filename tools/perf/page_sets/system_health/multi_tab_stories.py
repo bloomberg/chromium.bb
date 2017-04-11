@@ -12,7 +12,7 @@ from page_sets.system_health import platforms
 from telemetry import benchmark
 
 
-class MultiTabStory(system_health_story.SystemHealthStory):
+class _MultiTabStory(system_health_story.SystemHealthStory):
   ABSTRACT_STORY = True
 
   def RunNavigateSteps(self, action_runner):
@@ -40,7 +40,7 @@ class MultiTabStory(system_health_story.SystemHealthStory):
 
 
 @benchmark.Disabled('all')  # crbug.com/704197
-class MultiTabTypical24Story(MultiTabStory):
+class MultiTabTypical24Story(_MultiTabStory):
   NAME = 'multitab:misc:typical24'
   TAGS = [story_tags.TABS_SWITCHING]
   URL_LIST = [
