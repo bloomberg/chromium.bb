@@ -39,7 +39,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           sender: "Cloud Print"
           description:
             "Registers a locally discovered Privet printer with a Cloud Print "
-            "Server.
+            "Server."
           trigger:
             "Users can select Privet printers on chrome://devices/ and "
             "register them."
@@ -61,7 +61,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           description:
             "Queries a Cloud Print Server for the list of printers."
           trigger:
-            "chrome://devices/ fetches the list when the user logs in,
+            "chrome://devices/ fetches the list when the user logs in, "
             "re-enable the Cloud Print service, or manually requests a printer "
             "list refresh."
           data: "None"
