@@ -68,7 +68,7 @@ class URLSchemesRegistry final {
   URLSchemesSet schemes_with_unique_origins;
   URLSchemesSet empty_document_schemes;
   URLSchemesSet schemes_forbidden_from_domain_relaxation;
-  URLSchemesSet not_allowing_javascript_ur_ls_schemes;
+  URLSchemesSet not_allowing_javascript_urls_schemes;
   URLSchemesSet cors_enabled_schemes;
   URLSchemesSet service_worker_schemes;
   URLSchemesSet fetch_api_schemes;
@@ -202,7 +202,7 @@ bool SchemeRegistry::CanDisplayOnlyIfCanRequest(const String& scheme) {
 void SchemeRegistry::RegisterURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.DeprecatedLower());
-  GetMutableURLSchemesRegistry().not_allowing_javascript_ur_ls_schemes.insert(
+  GetMutableURLSchemesRegistry().not_allowing_javascript_urls_schemes.insert(
       scheme);
 }
 
@@ -211,7 +211,7 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
   DCHECK_EQ(scheme, scheme.DeprecatedLower());
   if (scheme.IsEmpty())
     return false;
-  return GetURLSchemesRegistry().not_allowing_javascript_ur_ls_schemes.Contains(
+  return GetURLSchemesRegistry().not_allowing_javascript_urls_schemes.Contains(
       scheme);
 }
 

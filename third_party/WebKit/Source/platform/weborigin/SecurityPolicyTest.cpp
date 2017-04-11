@@ -182,13 +182,13 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
 }
 
 TEST(SecurityPolicyTest, TrustworthyWhiteList) {
-  const char* insecure_ur_ls[] = {
+  const char* insecure_urls[] = {
       "http://a.test/path/to/file.html", "http://b.test/path/to/file.html",
       "blob:http://c.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
       "filesystem:http://d.test/path/t/file.html",
   };
 
-  for (const char* url : insecure_ur_ls) {
+  for (const char* url : insecure_urls) {
     RefPtr<SecurityOrigin> origin = SecurityOrigin::CreateFromString(url);
     EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
     SecurityPolicy::AddOriginTrustworthyWhiteList(origin);
@@ -201,7 +201,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
     const char* url;
     const char* another_url_in_origin;
   };
-  TestCase insecure_ur_ls_with_inner_origin[] = {
+  TestCase insecure_urls_with_inner_origin[] = {
       {"blob:http://e.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
        "http://e.test/foo.html"},
       {"filesystem:http://f.test/path/t/file.html", "http://f.test/bar.html"},
@@ -209,7 +209,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
        "blob:http://g.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde"},
       {"http://h.test/bar.html", "filesystem:http://h.test/path/t/file.html"},
   };
-  for (const TestCase& test : insecure_ur_ls_with_inner_origin) {
+  for (const TestCase& test : insecure_urls_with_inner_origin) {
     // Actually origins of both URLs should be same.
     RefPtr<SecurityOrigin> origin1 = SecurityOrigin::CreateFromString(test.url);
     RefPtr<SecurityOrigin> origin2 =
