@@ -399,7 +399,7 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
           setting:
             "Users can disable this feature by signing out of Chromium, or "
             "disabling Sync or History Sync in Chromium settings under "
-            "Advanced sync settings. The feature is enabled by default.""
+            "Advanced sync settings. The feature is enabled by default."
           chrome_policy {
             SyncDisabled {
               policy_options {mode: MANDATORY}
