@@ -46,7 +46,7 @@ suite('<history-list>', function() {
       assertDeepEquals([true], element.historyData_.map(i => i.selected));
       return PolymerTest.flushTasks();
     }).then(function() {
-      MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+      toolbar.deleteSelectedItems();
       var dialog = listContainer.$.dialog.get();
       registerMessageCallback('removeVisits', this, function() {
         PolymerTest.flushTasks().then(function() {
@@ -76,7 +76,7 @@ suite('<history-list>', function() {
       assertDeepEquals([false, false, true, true],
                        element.historyData_.map(i => i.selected));
 
-      toolbar.onClearSelectionTap_();
+      toolbar.clearSelectedItems();
 
       // Make sure that clearing the selection updates both the array and
       // the actual history-items affected.
@@ -313,7 +313,7 @@ suite('<history-list>', function() {
 
       return PolymerTest.flushTasks();
     }).then(function() {
-      MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+      toolbar.deleteSelectedItems();
 
       var dialog = listContainer.$.dialog.get();
       registerMessageCallback('removeVisits', this, function() {
@@ -438,7 +438,7 @@ suite('<history-list>', function() {
       MockInteractions.tap(items[2].$.checkbox);
       return PolymerTest.flushTasks();
     }).then(function() {
-      MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+      toolbar.deleteSelectedItems();
       return PolymerTest.flushTasks();
     }).then(function() {
       // Confirmation dialog should appear.

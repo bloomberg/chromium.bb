@@ -116,13 +116,13 @@ suite('Metrics', function() {
       MockInteractions.tap(items[4].$.checkbox);
       return PolymerTest.flushTasks();
     }).then(() => {
-      MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+      app.$.toolbar.deleteSelectedItems();
       assertEquals(1, actionMap['RemoveSelected']);
       return PolymerTest.flushTasks();
     }).then(() => {
       MockInteractions.tap(app.$.history.$$('.cancel-button'));
       assertEquals(1, actionMap['CancelRemoveSelected']);
-      MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+      app.$.toolbar.deleteSelectedItems();
       return PolymerTest.flushTasks();
     }).then(() => {
       MockInteractions.tap(app.$.history.$$('.action-button'));

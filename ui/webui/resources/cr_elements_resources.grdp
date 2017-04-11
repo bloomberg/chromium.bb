@@ -161,4 +161,10 @@
   <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_SEARCH_FIELD_JS"
              file="../../webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_SELECTION_OVERLAY_HTML"
+             file="../../webui/resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_SELECTION_OVERLAY_JS"
+             file="../../webui/resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.js"
+             type="chrome_html" />
 </grit-part>

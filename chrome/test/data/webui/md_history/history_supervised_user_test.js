@@ -38,7 +38,7 @@ suite('history-list supervised-user', function() {
     });
 
     historyList.historyData_[0].selected = true;
-    toolbar.onDeleteTap_();
+    toolbar.deleteSelectedItems();
   });
 
   test('remove history menu button disabled', function() {

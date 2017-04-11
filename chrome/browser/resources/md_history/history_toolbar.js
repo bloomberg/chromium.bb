@@ -96,6 +96,14 @@ Polymer({
     this.searchField.showAndFocus();
   },
 
+  deleteSelectedItems: function() {
+    this.fire('delete-selected');
+  },
+
+  clearSelectedItems: function() {
+    this.fire('unselect-all');
+  },
+
   /**
    * Changes the toolbar background color depending on whether any history items
    * are currently selected.
@@ -166,16 +174,6 @@ Polymer({
   onDocumentKeydown_: function(e) {
     if (e.key == 'Escape')
       this.syncNoticeVisible_ = false;
-  },
-
-  /** @private */
-  onClearSelectionTap_: function() {
-    this.fire('unselect-all');
-  },
-
-  /** @private */
-  onDeleteTap_: function() {
-    this.fire('delete-selected');
   },
 
   /** @private */

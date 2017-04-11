@@ -1,49 +1,41 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/icons.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
-<!-- Lazy loaded: iron-dropdown, paper-button, paper-icon-button-light. -->
+<!-- Lazy loaded: cr-toolbar-selection-overlay. -->
 
 <dom-module id="history-toolbar">
   <template>
     <style include="shared-style">
       :host {
         color: #fff;
-        display: block;
+        display: flex;
         transition: background-color 150ms;
-        width: 100%;
       }
 
       /* General toolbar layout. */
-
-      cr-toolbar,
-      #overlay-buttons,
-      #overlay-wrapper,
-      #toolbar-container {
-        align-items: center;
-        display: flex;
-        width: 100%;
-      }
 
       :host([items-selected_]) {
         background: var(--interactive-color);
       }
 
-      #toolbar-container {
-        height: var(--toolbar-height);
-      }
-
-      cr-toolbar {
+      cr-toolbar,
+      cr-toolbar-selection-overlay {
         --cr-toolbar-field-margin: var(--side-bar-width);
+        flex: 1;
       }
 
-      :host([has-drawer]) cr-toolbar {
+      :host([has-drawer]) cr-toolbar,
+      :host([has-drawer]) cr-toolbar-selection-overlay {
         --cr-toolbar-field-margin: 0;
+      }
+
+      cr-toolbar-selection-overlay {
+        --selection-overlay-max-width: var(--card-max-width);
       }
 
       /* Info button and dropdown. */
@@ -79,83 +71,44 @@
       }
 
       :host-context([dir=rtl]) #sync-notice {
-        right: auto;
         left: 24px;
-      }
-
-      /* Selection overlay. */
-
-      :host(:not([has-drawer])) #overlay-wrapper {
-        -webkit-margin-start: var(--side-bar-width);
-      }
-
-      #overlay-buttons {
-        margin: 0 auto;
-        max-width: var(--card-max-width);
-        padding: 0 var(--card-padding-side);
-      }
-
-      paper-button {
-        font-weight: 500;
-      }
-
-      #number-selected {
-        flex: 1;
-      }
-
-      #cancel-icon-button {
-        -webkit-margin-end: 24px;
-        -webkit-margin-start: 2px;
+        right: auto;
       }
     </style>
-    <div id="toolbar-container">
-      <cr-toolbar id="main-toolbar"
-          page-name="$i18n{title}"
-          clear-label="$i18n{clearSearch}"
-          search-prompt="$i18n{searchPrompt}"
-          hidden$="[[itemsSelected_]]"
-          spinner-active="[[spinnerActive]]"
-          show-menu="[[hasDrawer]]"
-          show-menu-promo="[[showMenuPromo]]"
-          menu-label="$i18n{historyMenuButton}"
-          menu-promo="$i18n{menuPromo}"
-          close-menu-promo="$i18n{closeMenuPromo}"
-          on-search-changed="onSearchChanged_">
-        <div class="more-actions">
-          <template is="dom-if" if="[[showSyncNotice]]">
-            <button is="paper-icon-button-light" id="info-button"
-                on-click="onInfoButtonTap_"
-                aria-label="$i18n{hasSyncedResultsDescription}">
-              <iron-icon icon="history:info-outline" id="info-button-icon">
-              </iron-icon>
-            </button>
-          </template>
-        </div>
-      </cr-toolbar>
-      <div id="sync-notice" hidden="[[!syncNoticeVisible_]]">
-        $i18nRaw{hasSyncedResults}
+    <cr-toolbar id="main-toolbar"
+        page-name="$i18n{title}"
+        clear-label="$i18n{clearSearch}"
+        search-prompt="$i18n{searchPrompt}"
+        hidden$="[[itemsSelected_]]"
+        spinner-active="[[spinnerActive]]"
+        show-menu="[[hasDrawer]]"
+        show-menu-promo="[[showMenuPromo]]"
+        menu-label="$i18n{historyMenuButton}"
+        menu-promo="$i18n{menuPromo}"
+        close-menu-promo="$i18n{closeMenuPromo}"
+        on-search-changed="onSearchChanged_">
+      <div class="more-actions">
+        <template is="dom-if" if="[[showSyncNotice]]">
+          <button is="paper-icon-button-light" id="info-button"
+              on-click="onInfoButtonTap_"
+              aria-label="$i18n{hasSyncedResultsDescription}">
+            <iron-icon icon="history:info-outline" id="info-button-icon">
+            </iron-icon>
+          </button>
+        </template>
       </div>
-      <template is="dom-if" if="[[itemsSelected_]]">
-        <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
-          <div id="overlay-buttons">
-            <button is="paper-icon-button-light"
-                id="cancel-icon-button"
-                class="icon-button"
-                on-tap="onClearSelectionTap_"
-                title="$i18n{cancel}">
-              <iron-icon icon="cr:clear"></iron-icon>
-            </button>
-            <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
-            <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
-              $i18n{cancel}
-            </paper-button>
-            <paper-button id="delete-button" on-tap="onDeleteTap_">
-              $i18n{delete}
-            </paper-button>
-          </div>
-        </div>
-      </template>
+    </cr-toolbar>
+    <div id="sync-notice" hidden="[[!syncNoticeVisible_]]">
+      $i18nRaw{hasSyncedResults}
     </div>
+    <template is="dom-if" if="[[itemsSelected_]]">
+      <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
+          cancel-label="$i18n{cancel}"
+          selection-label="[[numberOfItemsSelected_(count)]]"
+          on-clear-selected-items="clearSelectedItems"
+          on-delete-selected-items="deleteSelectedItems">
+      </cr-toolbar-selection-overlay>
+    </template>
   </template>
   <script src="chrome://history/history_toolbar.js"></script>
 </dom-module>

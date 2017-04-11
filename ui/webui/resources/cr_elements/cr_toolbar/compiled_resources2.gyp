@@ -11,6 +11,10 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'cr_toolbar_selection_overlay',
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'cr_toolbar',
       'dependencies': [
         '<(EXTERNS_GYP):web_animations',
