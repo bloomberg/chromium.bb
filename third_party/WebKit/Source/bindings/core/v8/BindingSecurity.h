@@ -44,6 +44,7 @@ class Frame;
 class LocalDOMWindow;
 class Location;
 class Node;
+struct WrapperTypeInfo;
 
 class CORE_EXPORT BindingSecurity {
   STATIC_ONLY(BindingSecurity);
@@ -117,6 +118,23 @@ class CORE_EXPORT BindingSecurity {
       ExceptionState&);
 
   static void FailedAccessCheckFor(v8::Isolate*, const Frame* target);
+
+  // The following two functions were written to be called by
+  // V8WrapperInstantiationScope before entering and after exiting an object's
+  // creation context during wrapper creation.
+
+  // Returns true if the current context has access to creationContext, and
+  // throws a SecurityError if it doesn't have access.
+  static bool ShouldAllowAccessToCreationContext(
+      v8::Local<v8::Context> creation_context,
+      const WrapperTypeInfo*);
+
+  static void RethrowCrossContextException(
+      v8::Local<v8::Context> creation_context,
+      const WrapperTypeInfo*,
+      v8::Local<v8::Value> cross_context_exception);
+
+  static void InitWrapperCreationSecurityCheck();
 
  private:
   // Returns true if |accessingWindow| is allowed named access to |targetWindow|
