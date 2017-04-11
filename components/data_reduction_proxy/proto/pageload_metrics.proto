@@ -72,4 +72,7 @@ message PageloadMetrics {
   // Time to first meaningful paint. This measure is unstable and will change
   // over time.
   optional Duration experimental_time_to_first_meaningful_paint = 15;
+
+  // The unique identifier for the page load.
+  optional uint64 page_id = 16;
 }

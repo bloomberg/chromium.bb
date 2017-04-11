@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
@@ -24,6 +25,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyData : public base::SupportsUserData::Data {
  public:
   DataReductionProxyData();
+  ~DataReductionProxyData() override;
 
   // Whether the DataReductionProxy was used for this request or navigation.
   bool used_data_reduction_proxy() const { return used_data_reduction_proxy_; }
@@ -60,6 +62,11 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     effective_connection_type_ = effective_connection_type;
   }
 
+  // An identifier that is guaranteed to be unique to each page load during a
+  // data saver session. Only present on main frame requests.
+  base::Optional<uint64_t> page_id() const { return page_id_; }
+  void set_page_id(uint64_t page_id) { page_id_ = page_id; }
+
   // Removes |this| from |request|.
   static void ClearData(net::URLRequest* request);
 
@@ -95,6 +102,10 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // The EffectiveConnectionType when the request or navigation starts. This is
   // set for main frame requests only.
   net::EffectiveConnectionType effective_connection_type_;
+
+  // An identifier that is guaranteed to be unique to each page load during a
+  // data saver session. Only present on main frame requests.
+  base::Optional<uint64_t> page_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyData);
 };

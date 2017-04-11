@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -46,6 +47,7 @@ const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
 const char kExperimentsOption[] = "exp";
+const char kPageIdOption[] = "pid";
 
 // The empty version for the authentication protocol. Currently used by
 // Android webview.
@@ -74,7 +76,8 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     DataReductionProxyConfig* config)
     : client_(util::GetStringForClient(client)),
       use_assigned_credentials_(false),
-      data_reduction_proxy_config_(config) {
+      data_reduction_proxy_config_(config),
+      current_page_id_(0u) {
   DCHECK(data_reduction_proxy_config_);
   util::GetChromiumBuildAndPatch(version, &build_, &patch_);
 }
@@ -150,8 +153,10 @@ void DataReductionProxyRequestOptions::RandBytes(void* output,
 }
 
 void DataReductionProxyRequestOptions::AddRequestHeader(
-    net::HttpRequestHeaders* request_headers) {
+    net::HttpRequestHeaders* request_headers,
+    base::Optional<uint64_t> page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!page_id || page_id.value() > 0u);
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
   if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
@@ -164,6 +169,14 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
     header_value += ", ";
   }
   header_value += header_value_;
+
+  if (page_id) {
+    char page_id_buffer[16];
+    if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id.value()) > 0) {
+      header_value += ", " + FormatOption(kPageIdOption, page_id_buffer);
+    }
+  }
+
   request_headers->SetHeader(kChromeProxyHeader, header_value);
 }
 
@@ -209,6 +222,7 @@ void DataReductionProxyRequestOptions::SetSecureSession(
   session_.clear();
   credentials_.clear();
   secure_session_ = secure_session;
+  ResetPageId();
   // Force skipping of credential regeneration. It should be handled by the
   // caller.
   use_assigned_credentials_ = true;
@@ -296,6 +310,16 @@ std::string DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
     }
   }
   return "";
+}
+
+uint64_t DataReductionProxyRequestOptions::GeneratePageId() {
+  // Caller should not depend on order.
+  return ++current_page_id_;
+}
+
+void DataReductionProxyRequestOptions::ResetPageId() {
+  // Caller should not depend on reset setting the page ID to 0.
+  current_page_id_ = 0;
 }
 
 }  // namespace data_reduction_proxy

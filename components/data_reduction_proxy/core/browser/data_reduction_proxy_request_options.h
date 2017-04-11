@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -56,8 +57,10 @@ class DataReductionProxyRequestOptions {
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
-  // proxy authentication credentials.
-  void AddRequestHeader(net::HttpRequestHeaders* request_headers);
+  // proxy authentication credentials. |page_id| should only be non-empty for
+  // main frame requests.
+  void AddRequestHeader(net::HttpRequestHeaders* request_headers,
+                        base::Optional<uint64_t> page_id);
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
@@ -80,6 +83,9 @@ class DataReductionProxyRequestOptions {
   // Parses |request_headers| and returns the value of the session key.
   std::string GetSessionKeyFromRequestHeaders(
       const net::HttpRequestHeaders& request_headers) const;
+
+  // Creates and returns a new unique page ID (unique per session).
+  uint64_t GeneratePageId();
 
  protected:
   // Returns a UTF16 string that's the hash of the configured authentication
@@ -105,6 +111,11 @@ class DataReductionProxyRequestOptions {
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthHashForSalt);
+
+  // Resets the page ID for a new session.
+  // TODO(ryansturm): Create a session object to store this and other data saver
+  // session info. crbug.com/709624
+  void ResetPageId();
 
   // Updates the value of the experiments to be run and regenerate the header if
   // necessary.
@@ -151,6 +162,9 @@ class DataReductionProxyRequestOptions {
 
   // Must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;
+
+  // The page identifier that was last generated for data saver proxy server.
+  uint64_t current_page_id_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

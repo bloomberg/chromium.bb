@@ -16,6 +16,8 @@ DataReductionProxyData::DataReductionProxyData()
       lofi_requested_(false),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
+DataReductionProxyData::~DataReductionProxyData() {}
+
 std::unique_ptr<DataReductionProxyData> DataReductionProxyData::DeepCopy()
     const {
   std::unique_ptr<DataReductionProxyData> copy(new DataReductionProxyData());
@@ -24,6 +26,7 @@ std::unique_ptr<DataReductionProxyData> DataReductionProxyData::DeepCopy()
   copy->session_key_ = session_key_;
   copy->request_url_ = request_url_;
   copy->effective_connection_type_ = effective_connection_type_;
+  copy->page_id_ = page_id_;
   return copy;
 }
 

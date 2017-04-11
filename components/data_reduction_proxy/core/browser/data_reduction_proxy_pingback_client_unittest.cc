@@ -41,6 +41,7 @@ static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
 static const int64_t kBytes = 10000;
 static const int64_t kBytesOriginal = 1000000;
+static const uint64_t kPageId = 1;
 
 }  // namespace
 
@@ -124,6 +125,7 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
     request_data.set_request_url(GURL(kFakeURL));
     request_data.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    request_data.set_page_id(kPageId);
     factory()->set_remove_fetcher_on_delete(true);
     pingback_client()->SendPingback(request_data, timing_);
   }
@@ -189,6 +191,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
   EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
   EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
+  EXPECT_EQ(kPageId, pageload_metrics.page_id());
 
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
@@ -261,6 +264,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
     EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
     EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
+    EXPECT_EQ(kPageId, pageload_metrics.page_id());
     EXPECT_EQ(
         PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
         pageload_metrics.effective_connection_type());

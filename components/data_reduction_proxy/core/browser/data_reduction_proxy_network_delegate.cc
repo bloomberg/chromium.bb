@@ -218,6 +218,17 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   DCHECK(data_reduction_proxy_config_);
   DCHECK(request);
 
+  // If there was a redirect or request bypass, use the same page ID for both
+  // requests. As long as the session ID has not changed. Re-issued requests
+  // and client redirects will be assigned a new page ID as they are different
+  // URLRequests.
+  DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+  base::Optional<uint64_t> page_id;
+  if (data && data->session_key() ==
+                  data_reduction_proxy_request_options_->GetSecureSession()) {
+    page_id = data->page_id();
+  }
+
   // Reset |request|'s DataReductionProxyData.
   DataReductionProxyData::ClearData(request);
 
@@ -225,8 +236,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     if (!WasEligibleWithoutHoldback(*request, proxy_info, proxy_retry_info))
       return;
     // For the holdback field trial, still log UMA as if the proxy was used.
-    DataReductionProxyData* data =
-        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     if (data)
       data->set_used_data_reduction_proxy(true);
     VerifyHttpRequestHeaders(false, *headers);
@@ -261,8 +271,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
 
   // Retrieves DataReductionProxyData from a request, creating a new instance
   // if needed.
-  DataReductionProxyData* data =
-      DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+  data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
   if (data) {
     data->set_used_data_reduction_proxy(true);
     data->set_session_key(
@@ -289,7 +298,18 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
-  data_reduction_proxy_request_options_->AddRequestHeader(headers);
+  // Generate a page ID for main frame requests that don't already have one.
+  // TODO(ryansturm): remove LOAD_MAIN_FRAME_DEPRECATED from d_r_p.
+  // crbug.com/709621
+  if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
+    if (!page_id) {
+      page_id = data_reduction_proxy_request_options_->GeneratePageId();
+    }
+    data->set_page_id(page_id.value());
+  }
+
+  data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
+
   if (lofi_decider)
     lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
   VerifyHttpRequestHeaders(true, *headers);
@@ -299,8 +319,25 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
     net::URLRequest* request,
     const GURL& new_location) {
   // Since this is after a redirect response, reset |request|'s
-  // DataReductionProxyData.
+  // DataReductionProxyData, but keep page ID and session.
+  // TODO(ryansturm): Change ClearData logic to have persistent and
+  // non-persistent (WRT redirects) data.
+  // crbug.com/709564
+  DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+  base::Optional<uint64_t> page_id;
+  if (data && data->session_key() ==
+                  data_reduction_proxy_request_options_->GetSecureSession()) {
+    page_id = data->page_id();
+  }
+
   DataReductionProxyData::ClearData(request);
+
+  if (page_id) {
+    data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_page_id(page_id.value());
+    data->set_session_key(
+        data_reduction_proxy_request_options_->GetSecureSession());
+  }
 }
 
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(

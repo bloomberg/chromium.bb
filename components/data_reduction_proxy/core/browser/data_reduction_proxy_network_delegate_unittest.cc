@@ -263,7 +263,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       const GURL& url,
       net::HttpRequestHeaders* request_headers,
       const std::string& response_headers,
-      int64_t response_content_length) {
+      int64_t response_content_length,
+      int load_flags) {
     const std::string response_body(
         base::checked_cast<size_t>(response_content_length), ' ');
 
@@ -278,6 +279,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         context_.CreateRequest(url, net::IDLE, &delegate);
     if (request_headers)
       request->SetExtraRequestHeaders(*request_headers);
+    request->SetLoadFlags(request->load_flags() | load_flags);
 
     request->Start();
     base::RunLoop().RunUntilIdle();
@@ -430,6 +432,78 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
   }
 
+  void FetchURLRequestAndVerifyPageIdDirective(const std::string& page_id_value,
+                                               bool redirect_once) {
+    std::string response_headers =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 140\r\n"
+        "Via: 1.1 Chrome-Compression-Proxy\r\n"
+        "x-original-content-length: 200\r\n"
+        "Cache-Control: max-age=1200\r\n"
+        "Vary: accept-encoding\r\n\r\n";
+
+    GURL url(kTestURL);
+
+    int response_body_size = 140;
+    std::string response_body =
+        std::string(base::checked_cast<size_t>(response_body_size), ' ');
+
+    mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider_);
+
+    net::MockRead redirect_reads[] = {
+        net::MockRead("HTTP/1.1 302 Redirect\r\n"),
+        net::MockRead("Location: http://www.google.com/\r\n"),
+        net::MockRead("Content-Length: 0\r\n\r\n"),
+        net::MockRead(net::SYNCHRONOUS, net::OK),
+        net::MockRead(response_headers.c_str()),
+        net::MockRead(response_body.c_str()),
+        net::MockRead(net::SYNCHRONOUS, net::OK)};
+
+    net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
+                             net::MockRead(response_body.c_str()),
+                             net::MockRead(net::SYNCHRONOUS, net::OK)};
+
+    EXPECT_FALSE(
+        io_data()->test_request_options()->GetHeaderValueForTesting().empty());
+
+    std::string mock_write =
+        "GET http://www.google.com/ HTTP/1.1\r\nHost: "
+        "www.google.com\r\nProxy-Connection: "
+        "keep-alive\r\nUser-Agent:\r\nAccept-Encoding: gzip, "
+        "deflate\r\nAccept-Language: en-us,fr\r\n"
+        "Chrome-Proxy: " +
+        io_data()->test_request_options()->GetHeaderValueForTesting() +
+        (page_id_value.empty() ? "" : (", " + page_id_value)) + "\r\n\r\n";
+
+    net::MockWrite redirect_writes[] = {net::MockWrite(mock_write.c_str()),
+                                        net::MockWrite(mock_write.c_str())};
+
+    net::MockWrite writes[] = {net::MockWrite(mock_write.c_str())};
+
+    std::unique_ptr<net::StaticSocketDataProvider> socket;
+    if (!redirect_once) {
+      socket = base::MakeUnique<net::StaticSocketDataProvider>(
+          reads, arraysize(reads), writes, arraysize(writes));
+    } else {
+      socket = base::MakeUnique<net::StaticSocketDataProvider>(
+          redirect_reads, arraysize(redirect_reads), redirect_writes,
+          arraysize(redirect_writes));
+    }
+
+    mock_socket_factory_.AddSocketDataProvider(socket.get());
+
+    net::TestDelegate delegate;
+    std::unique_ptr<net::URLRequest> request =
+        context_.CreateRequest(url, net::IDLE, &delegate);
+    if (!page_id_value.empty()) {
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
+    }
+
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+  }
+
   void DelegateStageDone(int result) {}
 
   void NotifyNetworkDelegate(net::URLRequest* request,
@@ -501,7 +575,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   Init(false, false);
   std::unique_ptr<net::URLRequest> fake_request(
-      FetchURLRequest(GURL(kTestURL), nullptr, std::string(), 0));
+      FetchURLRequest(GURL(kTestURL), nullptr, std::string(), 0, 0));
 
   net::ProxyInfo data_reduction_proxy_info;
   net::ProxyRetryInfoMap proxy_retry_info;
@@ -849,7 +923,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   // DataReductionProxyData.
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   data = DataReductionProxyData::GetData(*request.get());
-  EXPECT_FALSE(data);
+  EXPECT_FALSE(data && data->used_data_reduction_proxy());
 
   // Call NotifyBeforeSendHeaders again with different proxy info to check that
   // new data isn't added. Use a new set of headers since the redirected HTTP
@@ -911,7 +985,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
 
   std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
-      GURL(kTestURL), nullptr, response_headers, kResponseContentLength));
+      GURL(kTestURL), nullptr, response_headers, kResponseContentLength, 0));
   fake_request->SetLoadFlags(fake_request->load_flags() |
                              net::LOAD_MAIN_FRAME_DEPRECATED);
 
@@ -988,7 +1062,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
         config()->ShouldEnableLoFi(*fake_request.get()));
 
     fake_request = (FetchURLRequest(GURL(kTestURL), nullptr, response_headers,
-                                    kResponseContentLength));
+                                    kResponseContentLength, 0));
     fake_request->SetLoadFlags(fake_request->load_flags() |
                                net::LOAD_MAIN_FRAME_DEPRECATED);
 
@@ -1039,7 +1113,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
       response_headers += "Chrome-Proxy-Content-Transform: empty-image\r\n";
 
     response_headers += "\r\n";
-    FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140);
+    FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
 
     VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
   }
@@ -1055,7 +1129,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   net::HttpRequestHeaders request_headers;
   request_headers.SetHeader("chrome-proxy-accept-transform", "lite-page");
   lofi_decider()->ignore_is_using_data_reduction_proxy_check();
-  FetchURLRequest(GURL(kTestURL), &request_headers, std::string(), 140);
+  FetchURLRequest(GURL(kTestURL), &request_headers, std::string(), 140, 0);
   histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
                                      NO_TRANSFORMATION_LITE_PAGE_REQUESTED, 1);
 
@@ -1068,7 +1142,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "x-original-content-length: 200\r\n";
 
   response_headers += "\r\n";
-  FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140);
+  FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
 
   histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
                                      LITE_PAGE, 1);
@@ -1113,7 +1187,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   // Use secure sockets when fetching the request since Brotli is only enabled
   // for secure connections.
   std::unique_ptr<net::URLRequest> request(
-      FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140));
+      FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0));
   EXPECT_EQ(140, request->received_response_content_length());
   EXPECT_NE(0, request->GetTotalSentBytes());
   EXPECT_NE(0, request->GetTotalReceivedBytes());
@@ -1161,6 +1235,102 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
 
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, true);
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, true, true);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, IncrementingMainFramePageId) {
+  // This is unaffacted by brotil and insecure proxy.
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  io_data()->request_options()->SetSecureSession("new-session");
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=2", false);
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=3", false);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, ResetSessionResetsId) {
+  // This is unaffacted by brotil and insecure proxy.
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  io_data()->request_options()->SetSecureSession("new-session");
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+
+  io_data()->request_options()->SetSecureSession("new-session-2");
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, SubResourceNoPageId) {
+  // This is unaffacted by brotil and insecure proxy.
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  io_data()->request_options()->SetSecureSession("new-session");
+  FetchURLRequestAndVerifyPageIdDirective(std::string(), false);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
+  // This is unaffacted by brotil and insecure proxy.
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  io_data()->request_options()->SetSecureSession("new-session");
+
+  FetchURLRequestAndVerifyPageIdDirective("pid=1", true);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       SessionChangeResetsPageIDOnRedirect) {
+  // This test calls directly into network delegate as it is difficult to mock
+  // state changing in between redirects within an URLRequest's lifetime.
+
+  // This is unaffacted by brotil and insecure proxy.
+  Init(false /* use_secure_proxy */, false /* enable_brotli_globally */);
+  net::ProxyInfo data_reduction_proxy_info;
+  std::string data_reduction_proxy;
+  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
+  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+
+  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+      GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
+  request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
+  io_data()->request_options()->SetSecureSession("fake-session");
+
+  net::HttpRequestHeaders headers;
+  net::ProxyRetryInfoMap proxy_retry_info;
+
+  // Send a request and verify the page ID is 1.
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  DataReductionProxyData* data =
+      DataReductionProxyData::GetData(*request.get());
+  EXPECT_TRUE(data_reduction_proxy_info.is_http());
+  EXPECT_EQ(1u, data->page_id().value());
+
+  // Send a second request and verify the page ID incremements.
+  request = context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
+                                     nullptr);
+  request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
+
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  data = DataReductionProxyData::GetData(*request.get());
+  EXPECT_EQ(2u, data->page_id().value());
+
+  // Verify that redirects are the same page ID.
+  network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  data = DataReductionProxyData::GetData(*request.get());
+  EXPECT_EQ(2u, data->page_id().value());
+
+  // Verify that redirects into a new session get a new page ID.
+  network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
+  io_data()->request_options()->SetSecureSession("new-session");
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  data = DataReductionProxyData::GetData(*request.get());
+  EXPECT_EQ(1u, data->page_id().value());
 }
 
 }  // namespace

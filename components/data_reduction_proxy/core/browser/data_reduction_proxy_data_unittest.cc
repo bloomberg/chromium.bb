@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/memory/ptr_util.h"
@@ -54,6 +56,10 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
             data->effective_connection_type());
+  uint64_t page_id = 1;
+  EXPECT_FALSE(data->page_id());
+  data->set_page_id(page_id);
+  EXPECT_EQ(page_id, data->page_id().value());
 }
 
 TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
@@ -101,6 +107,7 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     data->set_session_key(kSessionKey);
     data->set_request_url(kTestURL);
     data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    data->set_page_id(2u);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
     EXPECT_EQ(tests[i].lofi_on, copy->lofi_requested());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
@@ -108,6 +115,7 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     EXPECT_EQ(kTestURL, copy->request_url());
     EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
               copy->effective_connection_type());
+    EXPECT_EQ(2u, data->page_id().value());
   }
 }
 
