@@ -65,23 +65,6 @@ void ExpectOpenAndThen(OpenDeviceError expected,
   continuation.Run();
 }
 
-void ExpectDeviceInfoAndThen(const std::string& guid,
-                             uint16_t vendor_id,
-                             uint16_t product_id,
-                             const std::string& manufacturer_name,
-                             const std::string& product_name,
-                             const std::string& serial_number,
-                             const base::Closure& continuation,
-                             DeviceInfoPtr device_info) {
-  EXPECT_EQ(guid, device_info->guid);
-  EXPECT_EQ(vendor_id, device_info->vendor_id);
-  EXPECT_EQ(product_id, device_info->product_id);
-  EXPECT_EQ(manufacturer_name, device_info->manufacturer_name);
-  EXPECT_EQ(product_name, device_info->product_name);
-  EXPECT_EQ(serial_number, device_info->serial_number);
-  continuation.Run();
-}
-
 void ExpectResultAndThen(bool expected_result,
                          const base::Closure& continuation,
                          bool actual_result) {
@@ -182,7 +165,6 @@ class USBDeviceImplTest : public testing::Test {
     // Owns itself.
     new DeviceImpl(
         mock_device_,
-        DeviceInfo::From(static_cast<const UsbDevice&>(*mock_device_)),
         permission_provider_.GetWeakPtr(), mojo::MakeRequest(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
@@ -501,19 +483,6 @@ TEST_F(USBDeviceImplTest, Close) {
   }
 
   EXPECT_FALSE(is_device_open());
-}
-
-// Test that the information returned via the Device::GetDeviceInfo matches that
-// of the underlying device.
-TEST_F(USBDeviceImplTest, GetDeviceInfo) {
-  DevicePtr device =
-      GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
-
-  base::RunLoop loop;
-  device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,
-                                   mock_device().guid(), 0x1234, 0x5678, "ACME",
-                                   "Frobinator", "ABCDEF", loop.QuitClosure()));
-  loop.Run();
 }
 
 TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {

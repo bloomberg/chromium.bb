@@ -185,10 +185,6 @@ class FakeDevice {
     this.claimedInterfaces_ = new Map();
   }
 
-  getDeviceInfo() {
-    return Promise.resolve({ info: this.info_ });
-  }
-
   getConfiguration() {
     if (this.currentConfiguration_) {
       return Promise.resolve({

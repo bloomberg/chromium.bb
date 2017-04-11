@@ -133,10 +133,6 @@ struct IsochronousPacket {
 };
 
 interface Device {
-  // Retrieve a DeviceInfo struct containing metadata about the device,
-  // including the set of all available device configurations.
-  GetDeviceInfo() => (DeviceInfo? info);
-
   // Opens the device. Methods below require the device be opened first.
   Open() => (OpenDeviceError error);
 

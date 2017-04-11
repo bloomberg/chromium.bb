@@ -31,7 +31,6 @@ class PermissionProvider;
 class DeviceImpl : public Device, public device::UsbDevice::Observer {
  public:
   DeviceImpl(scoped_refptr<UsbDevice> device,
-             DeviceInfoPtr device_info,
              base::WeakPtr<PermissionProvider> permission_provider,
              DeviceRequest request);
   ~DeviceImpl() override;
@@ -52,7 +51,6 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   void OnPermissionGrantedForOpen(const OpenCallback& callback, bool granted);
 
   // Device implementation:
-  void GetDeviceInfo(const GetDeviceInfoCallback& callback) override;
   void Open(const OpenCallback& callback) override;
   void Close(const CloseCallback& callback) override;
   void SetConfiguration(uint8_t value,
@@ -99,7 +97,6 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
   const scoped_refptr<UsbDevice> device_;
-  const DeviceInfoPtr device_info_;
   base::WeakPtr<PermissionProvider> permission_provider_;
   ScopedObserver<device::UsbDevice, device::UsbDevice::Observer> observer_;
 

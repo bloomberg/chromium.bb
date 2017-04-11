@@ -95,14 +95,6 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
   continuation.Run();
 }
 
-void ExpectDeviceInfoAndThen(const std::string& expected_guid,
-                             const base::Closure& continuation,
-                             DeviceInfoPtr device_info) {
-  ASSERT_TRUE(device_info);
-  EXPECT_EQ(expected_guid, device_info->guid);
-  continuation.Run();
-}
-
 }  // namespace
 
 // Test basic GetDevices functionality to ensure that all mock devices are
@@ -152,8 +144,9 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
     base::RunLoop loop;
     DevicePtr device;
     device_manager->GetDevice(mock_device->guid(), mojo::MakeRequest(&device));
-    device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,
-                                     mock_device->guid(), loop.QuitClosure()));
+    // Close is a no-op if the device hasn't been opened but ensures that the
+    // pipe was successfully connected.
+    device->Close(loop.QuitClosure());
     loop.Run();
   }
 

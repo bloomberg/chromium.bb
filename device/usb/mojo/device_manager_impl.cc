@@ -75,8 +75,7 @@ void DeviceManagerImpl::GetDevice(
   if (permission_provider_ &&
       permission_provider_->HasDevicePermission(device)) {
     // Owns itself.
-    new DeviceImpl(device, DeviceInfo::From(*device), permission_provider_,
-                   std::move(device_request));
+    new DeviceImpl(device, permission_provider_, std::move(device_request));
   }
 }
 

@@ -100,11 +100,9 @@ void OnIsochronousTransferOut(
 }  // namespace
 
 DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
-                       DeviceInfoPtr device_info,
                        base::WeakPtr<PermissionProvider> permission_provider,
                        DeviceRequest request)
     : device_(device),
-      device_info_(std::move(device_info)),
       permission_provider_(permission_provider),
       observer_(this),
       binding_(this, std::move(request)),
@@ -197,12 +195,6 @@ void DeviceImpl::OnPermissionGrantedForOpen(const OpenCallback& callback,
   } else {
     callback.Run(OpenDeviceError::ACCESS_DENIED);
   }
-}
-
-void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
-  const UsbConfigDescriptor* config = device_->active_configuration();
-  device_info_->active_configuration = config ? config->configuration_value : 0;
-  callback.Run(device_info_->Clone());
 }
 
 void DeviceImpl::Open(const OpenCallback& callback) {
