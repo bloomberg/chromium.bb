@@ -3,14 +3,9 @@
 // found in the LICENSE file.
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_top_bar.h"
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
-
-@interface BookmarkTopBar () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkBar;
-}
-@property(nonatomic, retain) UIView* contentView;
-@end
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation BookmarkTopBar
 
@@ -23,15 +18,11 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkBar.Init(self, [BookmarkTopBar class]);
-
     self.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin |
                             UIViewAutoresizingFlexibleWidth;
 
-    base::scoped_nsobject<UIView> contentView([[UIView alloc] init]);
-    self.contentView.backgroundColor = [UIColor clearColor];
-    [self addSubview:contentView];
-    self.contentView = contentView;
+    _contentView = [[UIView alloc] init];
+    [self addSubview:_contentView];
 
     [self statelessLayoutContentView];
   }

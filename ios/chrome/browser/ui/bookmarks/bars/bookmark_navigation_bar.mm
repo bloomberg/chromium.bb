@@ -5,9 +5,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 
 #import <QuartzCore/QuartzCore.h>
-
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_extended_button.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -15,6 +12,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kButtonHeight = 24;
@@ -27,17 +28,16 @@ const CGFloat kContentHeight = 56;
 const CGFloat kInterButtonMargin = 24;
 };  // namespace
 
-@interface BookmarkNavigationBar () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkNavigationBar;
-}
-@property(nonatomic, retain) BookmarkExtendedButton* cancelButton;
+@interface BookmarkNavigationBar ()
+
+@property(nonatomic, strong) BookmarkExtendedButton* cancelButton;
 // All subviews are added to |contentView|, which allows easy repositioning of
 // the content to account for iOS 6 and iOS 7+ layout differences.
-@property(nonatomic, retain) UIView* contentView;
-@property(nonatomic, retain) BookmarkExtendedButton* backButton;
-@property(nonatomic, retain) BookmarkExtendedButton* editButton;
-@property(nonatomic, retain) BookmarkExtendedButton* menuButton;
-@property(nonatomic, retain) UILabel* titleLabel;
+@property(nonatomic, strong) UIView* contentView;
+@property(nonatomic, strong) BookmarkExtendedButton* backButton;
+@property(nonatomic, strong) BookmarkExtendedButton* editButton;
+@property(nonatomic, strong) BookmarkExtendedButton* menuButton;
+@property(nonatomic, strong) UILabel* titleLabel;
 @end
 
 @implementation BookmarkNavigationBar
@@ -51,25 +51,22 @@ const CGFloat kInterButtonMargin = 24;
 - (id)initWithFrame:(CGRect)outerFrame {
   self = [super initWithFrame:outerFrame];
   if (self) {
-    _propertyReleaser_BookmarkNavigationBar.Init(self,
-                                                 [BookmarkNavigationBar class]);
-
     self.backgroundColor = bookmark_utils_ios::mainBackgroundColor();
     self.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin |
                             UIViewAutoresizingFlexibleWidth;
 
     // Position the content view at the bottom of |self|.
     CGFloat contentY = CGRectGetHeight(outerFrame) - kContentHeight;
-    self.contentView = base::scoped_nsobject<UIView>([[UIView alloc]
+    self.contentView = [[UIView alloc]
         initWithFrame:CGRectMake(0, contentY, CGRectGetWidth(outerFrame),
-                                 kContentHeight)]);
+                                 kContentHeight)];
     [self addSubview:self.contentView];
     self.contentView.backgroundColor = [UIColor clearColor];
     self.contentView.autoresizingMask =
         UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
     CGRect contentViewBounds = self.contentView.bounds;
 
-    base::scoped_nsobject<UILabel> label([[UILabel alloc] init]);
+    UILabel* label = [[UILabel alloc] init];
     self.titleLabel = label;
     self.titleLabel.textColor = [UIColor colorWithWhite:68 / 255.0 alpha:1.0];
     self.titleLabel.backgroundColor = [UIColor clearColor];
@@ -86,8 +83,8 @@ const CGFloat kInterButtonMargin = 24;
     CGFloat buttonX = CGRectGetWidth(contentViewBounds) - buttonSideMargin;
 
     if (!IsIPadIdiom()) {
-      base::scoped_nsobject<BookmarkExtendedButton> button(
-          [[BookmarkExtendedButton alloc] initWithFrame:CGRectZero]);
+      BookmarkExtendedButton* button =
+          [[BookmarkExtendedButton alloc] initWithFrame:CGRectZero];
 
       self.cancelButton = button;
       self.cancelButton.autoresizingMask =
@@ -128,8 +125,8 @@ const CGFloat kInterButtonMargin = 24;
         UIEdgeInsetsMake(buttonVerticalMargin, kInterButtonMargin / 2.0,
                          buttonVerticalMargin, kInterButtonMargin / 2.0);
 
-    base::scoped_nsobject<BookmarkExtendedButton> editButton(
-        [[BookmarkExtendedButton alloc] initWithFrame:buttonFrame]);
+    BookmarkExtendedButton* editButton =
+        [[BookmarkExtendedButton alloc] initWithFrame:buttonFrame];
     self.editButton = editButton;
     self.editButton.extendedEdges = buttonInsets;
     self.editButton.autoresizingMask =
@@ -150,8 +147,8 @@ const CGFloat kInterButtonMargin = 24;
         UIEdgeInsetsMake(buttonVerticalMargin, buttonSideMargin,
                          buttonVerticalMargin, buttonSideMargin);
 
-    base::scoped_nsobject<BookmarkExtendedButton> menuButton(
-        [[BookmarkExtendedButton alloc] initWithFrame:leftButtonFrame]);
+    BookmarkExtendedButton* menuButton =
+        [[BookmarkExtendedButton alloc] initWithFrame:leftButtonFrame];
     self.menuButton = menuButton;
     self.menuButton.extendedEdges = leftButtonInsets;
     self.menuButton.autoresizingMask =
@@ -165,8 +162,8 @@ const CGFloat kInterButtonMargin = 24;
     self.menuButton.accessibilityIdentifier = @"Menu";
     [self.contentView addSubview:self.menuButton];
     self.menuButton.hidden = YES;
-    base::scoped_nsobject<BookmarkExtendedButton> backButton(
-        [[BookmarkExtendedButton alloc] initWithFrame:leftButtonFrame]);
+    BookmarkExtendedButton* backButton =
+        [[BookmarkExtendedButton alloc] initWithFrame:leftButtonFrame];
     self.backButton = backButton;
     self.backButton.extendedEdges = leftButtonInsets;
     self.backButton.autoresizingMask =

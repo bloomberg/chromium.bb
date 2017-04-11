@@ -5,8 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_extended_button.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -15,22 +14,25 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // The distance between buttons.
 CGFloat kInterButtonMargin = 24;
 }  // namespace
 
 @interface BookmarkEditingBar () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkEditingBar;
 }
-@property(nonatomic, retain) BookmarkExtendedButton* cancelButton;
+@property(nonatomic, strong) BookmarkExtendedButton* cancelButton;
 // This label is slightly left off center, and reflects the number of bookmarks
 // selected for editing.
-@property(nonatomic, retain) UILabel* countLabel;
-@property(nonatomic, retain) BookmarkExtendedButton* deleteButton;
-@property(nonatomic, retain) UIView* dropShadow;
-@property(nonatomic, retain) BookmarkExtendedButton* editButton;
-@property(nonatomic, retain) BookmarkExtendedButton* moveButton;
+@property(nonatomic, strong) UILabel* countLabel;
+@property(nonatomic, strong) BookmarkExtendedButton* deleteButton;
+@property(nonatomic, strong) UIView* dropShadow;
+@property(nonatomic, strong) BookmarkExtendedButton* editButton;
+@property(nonatomic, strong) BookmarkExtendedButton* moveButton;
 @end
 
 @implementation BookmarkEditingBar
@@ -44,7 +46,6 @@ CGFloat kInterButtonMargin = 24;
 - (id)initWithFrame:(CGRect)outerFrame {
   self = [super initWithFrame:outerFrame];
   if (self) {
-    _propertyReleaser_BookmarkEditingBar.Init(self, [BookmarkEditingBar class]);
     self.backgroundColor = bookmark_utils_ios::blueColor();
 
     CGRect bounds = self.contentView.bounds;
@@ -55,13 +56,12 @@ CGFloat kInterButtonMargin = 24;
     CGFloat cancelButtonY =
         floor((bounds.size.height - cancelButtonHeight) / 2);
     CGFloat cancelButtonX = cancelButtonY;
-    base::scoped_nsobject<BookmarkExtendedButton> button(
-        [[BookmarkExtendedButton alloc]
-            initWithFrame:LayoutRectGetRect(LayoutRectMake(
-                              cancelButtonX,
-                              CGRectGetWidth(self.contentView.bounds),
-                              cancelButtonY, cancelButtonWidth,
-                              cancelButtonHeight))]);
+    BookmarkExtendedButton* button = [[BookmarkExtendedButton alloc]
+        initWithFrame:LayoutRectGetRect(LayoutRectMake(
+                          cancelButtonX,
+                          CGRectGetWidth(self.contentView.bounds),
+                          cancelButtonY, cancelButtonWidth,
+                          cancelButtonHeight))];
     self.cancelButton = button;
     self.cancelButton.extendedEdges = UIEdgeInsetsMakeDirected(
         cancelButtonY, cancelButtonX, cancelButtonY, cancelButtonX);
@@ -79,10 +79,10 @@ CGFloat kInterButtonMargin = 24;
     // Add the count label to the right of the cancel button.
     CGFloat labelX = bookmark_utils_ios::titleMargin;
     CGFloat labelY = 0;
-    base::scoped_nsobject<UILabel> label([[UILabel alloc]
+    UILabel* label = [[UILabel alloc]
         initWithFrame:LayoutRectGetRect(LayoutRectMake(
                           labelX, CGRectGetWidth(self.contentView.bounds),
-                          labelY, 150, CGRectGetHeight(bounds)))]);
+                          labelY, 150, CGRectGetHeight(bounds)))];
     self.countLabel = label;
     self.countLabel.textColor = [UIColor whiteColor];
     self.countLabel.autoresizingMask =
@@ -99,10 +99,10 @@ CGFloat kInterButtonMargin = 24;
     CGFloat editButtonRightMargin = editButtonY;
     CGFloat editButtonX =
         bounds.size.width - editButtonRightMargin - editButtonWidth;
-    button.reset([[BookmarkExtendedButton alloc]
+    button = [[BookmarkExtendedButton alloc]
         initWithFrame:LayoutRectGetRect(LayoutRectMake(
                           editButtonX, CGRectGetWidth(self.contentView.bounds),
-                          editButtonY, editButtonWidth, editButtonHeight))]);
+                          editButtonY, editButtonWidth, editButtonHeight))];
     self.editButton = button;
     self.editButton.extendedEdges =
         UIEdgeInsetsMakeDirected(editButtonY, kInterButtonMargin / 2.0,
@@ -119,8 +119,8 @@ CGFloat kInterButtonMargin = 24;
     [self.contentView addSubview:self.editButton];
 
     // Add the move button to the same position as the edit button.
-    button.reset(
-        [[BookmarkExtendedButton alloc] initWithFrame:self.editButton.frame]);
+    button =
+        [[BookmarkExtendedButton alloc] initWithFrame:self.editButton.frame];
     self.moveButton = button;
     self.moveButton.extendedEdges =
         UIEdgeInsetsMakeDirected(editButtonY, kInterButtonMargin / 2.0,
@@ -145,12 +145,12 @@ CGFloat kInterButtonMargin = 24;
         CGRectGetLeadingLayoutOffsetInBoundingRect(self.editButton.frame,
                                                    self.contentView.bounds) -
         kInterButtonMargin - deleteButtonWidth;
-    button.reset([[BookmarkExtendedButton alloc]
+    button = [[BookmarkExtendedButton alloc]
         initWithFrame:LayoutRectGetRect(LayoutRectMake(
                           deleteButtonX,
                           CGRectGetWidth(self.contentView.bounds),
                           deleteButtonY, deleteButtonWidth,
-                          deleteButtonHeight))]);
+                          deleteButtonHeight))];
     self.deleteButton = button;
     self.deleteButton.extendedEdges = UIEdgeInsetsMakeDirected(
         deleteButtonY, deleteButtonY, deleteButtonY, kInterButtonMargin / 2.0);

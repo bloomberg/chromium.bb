@@ -11,7 +11,7 @@
 // All subviews should be added to |contentView|, which allows easy
 // repositioning of the content to account for iOS 6 and iOS 7+ layout
 // differences.
-@property(nonatomic, readonly) UIView* contentView;
+@property(strong, nonatomic, readonly) UIView* contentView;
 
 // The height that this view's content view will be instantiated at. This is
 // independent of the status bar.

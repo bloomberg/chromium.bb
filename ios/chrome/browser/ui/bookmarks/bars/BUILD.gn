@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("bars") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "bookmark_editing_bar.h",
     "bookmark_editing_bar.mm",
