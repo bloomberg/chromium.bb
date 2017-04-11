@@ -187,6 +187,8 @@ const IDNTestCase idn_cases[] = {
   {"xn--a-xbba.com", L"a\x0301\x0301.com", false},
   // 'a' with acuted accent + another acute accent
   {"xn--1ca20i.com", L"\x00e1\x0301.com", false},
+  // Combining mark at the beginning
+  {"xn--abc-fdc.jp", L"\x0300" L"abc.jp", false},
 
   // Mixed script confusable
   // google with Armenian Small Letter Oh(U+0585)
@@ -199,16 +201,50 @@ const IDNTestCase idn_cases[] = {
   // Hiragana HE(U+3078) mixed with Katakana
   {"xn--49jxi3as0d0fpc.com",
     L"\x30e2\x30d2\x30fc\x30c8\x3078\x30d6\x30f3.com", false},
+
+  // U+30FC should be preceded by a Hiragana/Katakana.
+  // Katakana + U+30FC + Han
+  {"xn--lck0ip02qw5ya.jp", L"\x30ab\x30fc\x91ce\x7403.jp", true},
+  // Hiragana + U+30FC + Han
+  {"xn--u8j5tr47nw5ya.jp", L"\x304b\x30fc\x91ce\x7403.jp", true},
   // U+30FC + Han
   {"xn--weka801xo02a.com", L"\x30fc\x52d5\x753b\x30fc.com", false},
   // Han + U+30FC + Han
   {"xn--wekz60nb2ay85atj0b.jp", L"\x65e5\x672c\x30fc\x91ce\x7403.jp", false},
+  // U+30FC at the beginning
+  {"xn--wek060nb2a.jp", L"\x30fc\x65e5\x672c", false},
   // Latin + U+30FC + Latin
   {"xn--abcdef-r64e.jp", L"abc\x30fc" L"def.jp", false},
+
+  // U+30FB (・) is not allowed next to Latin, but allowed otherwise.
+  // U+30FB + Han
+  {"xn--vekt920a.jp", L"\x30fb\x91ce.jp", true},
+  // Han + U+30FB + Han
+  {"xn--vek160nb2ay85atj0b.jp", L"\x65e5\x672c\x30fb\x91ce\x7403.jp", true},
   // Latin + U+30FB + Latin
   {"xn--abcdef-k64e.jp", L"abc\x30fb" L"def.jp", false},
   // U+30FB + Latin
   {"xn--abc-os4b.jp", L"\x30fb" L"abc.jp", false},
+
+  // U+30FD (ヽ) is allowed only after Katakana.
+  // Katakana + U+30FD
+  {"xn--lck2i.jp", L"\x30ab\x30fd.jp", true},
+  // Hiragana + U+30FD
+  {"xn--u8j7t.jp", L"\x304b\x30fd.jp", false},
+  // Han + U+30FD
+  {"xn--xek368f.jp", L"\x4e00\x30fd.jp", false},
+  {"xn--aa-mju.jp", L"a\x30fd.jp", false},
+  {"xn--a1-bo4a.jp", L"a1\x30fd.jp", false},
+
+  // U+30FE (ヾ) is allowed only after Katakana.
+  // Katakana + U+30FE
+  {"xn--lck4i.jp", L"\x30ab\x30fe.jp", true},
+  // Hiragana + U+30FE
+  {"xn--u8j9t.jp", L"\x304b\x30fe.jp", false},
+  // Han + U+30FE
+  {"xn--yek168f.jp", L"\x4e00\x30fe.jp", false},
+  {"xn--a-oju.jp", L"a\x30fe.jp", false},
+  {"xn--a1-eo4a.jp", L"a1\x30fe.jp", false},
 
   // Cyrillic labels made of Latin-look-alike Cyrillic letters.
   // ѕсоре.com with ѕсоре in Cyrillic

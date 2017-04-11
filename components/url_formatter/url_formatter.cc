@@ -324,8 +324,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
   non_ascii_latin_letters_.freeze();
 
   // These letters are parts of |dangerous_patterns_|.
-  kana_letters_exceptions_ = icu::UnicodeSet(UNICODE_STRING_SIMPLE(
-      "[\\u3078-\\u307a\\u30d8-\\u30da\\u30fb\\u30fc]"), status);
+  kana_letters_exceptions_ = icu::UnicodeSet(
+      UNICODE_STRING_SIMPLE("[\\u3078-\\u307a\\u30d8-\\u30da\\u30fb-\\u30fe]"),
+      status);
   kana_letters_exceptions_.freeze();
 
   // These Cyrillic letters look like Latin. A domain label entirely made of
@@ -406,6 +407,8 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label, bool is_tld_ascii) {
     // TODO(jshin): adjust the pattern once the above ICU bug is fixed.
     // - Disallow U+30FB (Katakana Middle Dot) and U+30FC (Hiragana-Katakana
     //   Prolonged Sound) used out-of-context.
+    // - Dislallow U+30FD/E (Katakana iteration mark/voiced iteration mark)
+    //   unless they're preceded by a Katakana.
     // - Disallow three Hiragana letters (U+307[8-A]) or Katakana letters
     //   (U+30D[8-A]) that look exactly like each other when they're used in a
     //   label otherwise entirely in Katakna or Hiragana.
@@ -417,15 +420,16 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label, bool is_tld_ascii) {
             "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]"
             "[\\u30ce\\u30f3\\u30bd\\u30be]"
             "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]|"
-            "[^\\p{scx=kana}\\p{scx=hira}]\\u30fc|"
-            "\\u30fc[^\\p{scx=kana}\\p{scx=hira}]|"
+            "[^\\p{scx=kana}\\p{scx=hira}]\\u30fc|^\\u30fc|"
+            "[^\\p{scx=kana}][\\u30fd\\u30fe]|^[\\u30fd\\u30fe]|"
             "^[\\p{scx=kana}]+[\\u3078-\\u307a][\\p{scx=kana}]+$|"
             "^[\\p{scx=hira}]+[\\u30d8-\\u30da][\\p{scx=hira}]+$|"
             "[a-z]\\u30fb|\\u30fb[a-z]|"
             "^[\\u0585\\u0581]+[a-z]|[a-z][\\u0585\\u0581]+$|"
             "[a-z][\\u0585\\u0581]+[a-z]|"
             "^[og]+[\\p{scx=armn}]|[\\p{scx=armn}][og]+$|"
-            "[\\p{scx=armn}][og]+[\\p{scx=armn}]", -1, US_INV),
+            "[\\p{scx=armn}][og]+[\\p{scx=armn}]",
+            -1, US_INV),
         0, status);
     tls_index.Set(dangerous_pattern);
   }
