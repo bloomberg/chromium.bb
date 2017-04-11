@@ -59,7 +59,7 @@ bool SVGAnimationElement::ParseValues(const String& value,
       if (i < last)
         goto fail;
     } else {
-      parse_list[i] = parse_list[i].StripWhiteSpace();
+      parse_list[i] = parse_list[i].StripWhiteSpace(IsHTMLSpace<UChar>);
       result.push_back(parse_list[i]);
     }
   }
