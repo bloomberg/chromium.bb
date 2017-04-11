@@ -7,10 +7,6 @@ crbug.com/700535 fast/dnd/dropEffect-for-effectAllowed.html [ Timeout ]
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
 
-# https://crbug.com/670105: uninvestigated test timeout caused by r435352.
-crbug.com/670105 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
-crbug.com/670105 virtual/mojo-loading/http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
-
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 crbug.com/669083 virtual/mojo-loading/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
@@ -89,7 +85,6 @@ crbug.com/608780 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/re
 # https://crbug.com/611232 - CSP checks from remote parent frame do not properly report violations
 crbug.com/611232 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Timeout ]
 crbug.com/611232 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Timeout ]
-crbug.com/611232 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Failure ]
 
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 # https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
