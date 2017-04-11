@@ -9,3 +9,6 @@ goog.require('__crWeb.console');
 goog.require('__crWeb.contextMenu');
 goog.require('__crWeb.core');
 goog.require('__crWeb.dialogOverrides');
+goog.require('__crWeb.form');
+goog.require('__crWeb.navigation');
+goog.require('__crWeb.scrollWorkaround');

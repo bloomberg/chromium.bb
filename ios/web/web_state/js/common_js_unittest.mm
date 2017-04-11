@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -20,6 +21,12 @@ struct TextFieldTestElement {
   const int element_index;
   // True if this is expected to be a text field.
   const bool expected_is_text_field;
+};
+
+// Struct for stringify() test data.
+struct TestScriptAndExpectedValue {
+  NSString* test_script;
+  id expected_value;
 };
 
 }  // namespace
@@ -84,6 +91,50 @@ TEST_F(CommonJsTest, IsTestField) {
     EXPECT_NSEQ(element.expected_is_text_field ? @YES : @NO, result)
         << element.element_name << " with index " << element.element_index
         << " isTextField(): " << element.expected_is_text_field;
+  }
+}
+
+// Tests __gCrWeb.stringify JavaScript API.
+TEST_F(CommonJsTest, Stringify) {
+  TestScriptAndExpectedValue test_data[] = {
+      // Stringify a string that contains various characters that must
+      // be escaped.
+      {@"__gCrWeb.stringify('a\\u000a\\t\\b\\\\\\\"Z')",
+       @"\"a\\n\\t\\b\\\\\\\"Z\""},
+      // Stringify a number.
+      {@"__gCrWeb.stringify(77.7)", @"77.7"},
+      // Stringify an array.
+      {@"__gCrWeb.stringify(['a','b'])", @"[\"a\",\"b\"]"},
+      // Stringify an object.
+      {@"__gCrWeb.stringify({'a':'b','c':'d'})", @"{\"a\":\"b\",\"c\":\"d\"}"},
+      // Stringify a hierarchy of objects and arrays.
+      {@"__gCrWeb.stringify([{'a':['b','c'],'d':'e'},'f'])",
+       @"[{\"a\":[\"b\",\"c\"],\"d\":\"e\"},\"f\"]"},
+      // Stringify null.
+      {@"__gCrWeb.stringify(null)", @"null"},
+      // Stringify an object with a toJSON function.
+      {@"temp = [1,2];"
+        "temp.toJSON = function (key) {return undefined};"
+        "__gCrWeb.stringify(temp)",
+       @"[1,2]"},
+      // Stringify an object with a toJSON property that is not a function.
+      {@"temp = [1,2];"
+        "temp.toJSON = 42;"
+        "__gCrWeb.stringify(temp)",
+       @"[1,2]"},
+      // Stringify an undefined object.
+      {@"__gCrWeb.stringify(undefined)", @"undefined"},
+  };
+
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    TestScriptAndExpectedValue& data = test_data[i];
+    // Load a sample HTML page. As a side-effect, loading HTML via
+    // |webController_| will also inject core.js.
+    LoadHtml(@"<p>");
+    id result = ExecuteJavaScript(data.test_script);
+    EXPECT_NSEQ(data.expected_value, result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.test_script);
   }
 }
 

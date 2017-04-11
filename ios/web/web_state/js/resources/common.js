@@ -26,6 +26,7 @@ __gCrWeb['common'] = __gCrWeb.common;
 
 /* Beginning of anonymous object. */
 (function() {
+
   /**
    * JSON safe object to protect against custom implementation of Object.toJSON
    * in host pages.
@@ -44,6 +45,31 @@ __gCrWeb['common'] = __gCrWeb.common;
    * impact of sites overriding it
    */
   __gCrWeb.common.JSONStringify = JSON.stringify;
+
+  /**
+   * Returns a string that is formatted according to the JSON syntax rules.
+   * This is equivalent to the built-in JSON.stringify() function, but is
+   * less likely to be overridden by the website itself.  Prefer the private
+   * {@code __gcrWeb.common.JSONStringify} whenever possible instead of using
+   * this public function. The |__gCrWeb| object itself does not use it; it uses
+   * its private counterpart instead.
+   */
+  __gCrWeb['stringify'] = function(value) {
+    if (value === null)
+      return 'null';
+    if (value === undefined)
+       return 'undefined';
+    if (typeof(value.toJSON) == 'function') {
+      // Prevents websites from changing stringify's behavior by adding the
+      // method toJSON() by temporarily removing it.
+      var originalToJSON = value.toJSON;
+      value.toJSON = undefined;
+      var stringifiedValue = __gCrWeb.common.JSONStringify(value);
+      value.toJSON = originalToJSON;
+      return stringifiedValue;
+    }
+    return __gCrWeb.common.JSONStringify(value);
+  };
 
   /**
    * Prefix used in references to form elements that have no 'id' or 'name'
@@ -689,4 +715,5 @@ __gCrWeb['common'] = __gCrWeb.common;
     }
     return false;
   };
+
 }());  // End of anonymous object
