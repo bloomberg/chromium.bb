@@ -79,17 +79,13 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
   return new ScheduledAction(script_state, handler);
 }
 
-DEFINE_TRACE(ScheduledAction) {
-  visitor->Trace(code_);
-}
-
 ScheduledAction::~ScheduledAction() {
   // Verify that owning DOMTimer has eagerly disposed.
   DCHECK(info_.IsEmpty());
 }
 
 void ScheduledAction::Dispose() {
-  code_.Dispose();
+  code_ = String();
   info_.Clear();
   function_.Clear();
   script_state_.Clear();
@@ -117,9 +113,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
 ScheduledAction::ScheduledAction(ScriptState* script_state,
                                  const ScriptValue& function,
                                  const Vector<ScriptValue>& arguments)
-    : script_state_(script_state),
-      info_(script_state->GetIsolate()),
-      code_(String(), KURL(), TextPosition::BelowRangePosition()) {
+    : script_state_(script_state), info_(script_state->GetIsolate()) {
   ASSERT(function.IsFunction());
   function_.Set(script_state->GetIsolate(),
                 v8::Local<v8::Function>::Cast(function.V8Value()));
@@ -131,12 +125,10 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
 ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
     : script_state_(script_state),
       info_(script_state->GetIsolate()),
-      code_(code, KURL()) {}
+      code_(code) {}
 
 ScheduledAction::ScheduledAction(ScriptState* script_state)
-    : script_state_(script_state),
-      info_(script_state->GetIsolate()),
-      code_(String(), KURL()) {}
+    : script_state_(script_state), info_(script_state->GetIsolate()) {}
 
 void ScheduledAction::Execute(LocalFrame* frame) {
   if (!script_state_->ContextIsValid()) {
@@ -198,7 +190,7 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
         function, worker, script_state_->GetContext()->Global(), info.size(),
         info.Data(), script_state_->GetIsolate());
   } else {
-    worker->ScriptController()->Evaluate(code_);
+    worker->ScriptController()->Evaluate(ScriptSourceCode(code_));
   }
 }
 

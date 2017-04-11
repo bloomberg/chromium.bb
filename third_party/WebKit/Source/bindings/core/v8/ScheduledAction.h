@@ -32,7 +32,6 @@
 #define ScheduledAction_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "platform/heap/Handle.h"
@@ -61,7 +60,7 @@ class ScheduledAction final
   ~ScheduledAction();
   void Dispose();
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
 
   void Execute(ExecutionContext*);
 
@@ -81,7 +80,7 @@ class ScheduledAction final
   ScriptStateProtectingContext script_state_;
   ScopedPersistent<v8::Function> function_;
   V8PersistentValueVector<v8::Value> info_;
-  ScriptSourceCode code_;
+  String code_;
 };
 
 }  // namespace blink

@@ -56,7 +56,6 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode(ScriptStreamer*, ScriptResource*);
 
   ~ScriptSourceCode();
-  void Dispose();
   DECLARE_TRACE();
 
   bool IsEmpty() const { return source_.IsEmpty(); }
