@@ -1,0 +1,16 @@
+{
+  "name": "network",
+  "display_name": "Network Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "url_loader": [
+          "content::mojom::URLLoaderFactory"
+        ]
+      },
+      "requires": {
+        "service_manager": [ "service_manager:all_users" ]
+      }
+    }
+  }
+}

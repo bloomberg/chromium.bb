@@ -419,6 +419,9 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
+// Enables the network service.
+const char kEnableNetworkService[] = "enable-network-service";
+
 // Disables the video decoder from drawing to an NV12 textures instead of ARGB.
 const char kDisableNv12DxgiVideo[] = "disable-nv12-dxgi-video";
 

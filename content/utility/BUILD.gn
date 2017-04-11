@@ -31,6 +31,7 @@ source_set("utility") {
     "//base",
     "//content:export",
     "//content/child",
+    "//content/network:lib",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//mojo/common",

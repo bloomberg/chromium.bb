@@ -1,6 +1,7 @@
 include_rules = [
   "+components/scheduler/child",
   "+content/child",
+  "+content/network",
   "+content/public/utility",
   "+services/data_decoder",
   "+services/service_manager",

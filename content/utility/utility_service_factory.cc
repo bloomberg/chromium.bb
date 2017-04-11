@@ -5,7 +5,11 @@
 #include "content/utility/utility_service_factory.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "content/network/network_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
@@ -51,6 +55,14 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   data_decoder_info.factory = base::Bind(&CreateDataDecoderService);
   services->insert(
       std::make_pair(data_decoder::mojom::kServiceName, data_decoder_info));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    ServiceInfo network_info;
+    network_info.factory = base::Bind(&NetworkService::CreateNetworkService);
+    services->insert(
+        std::make_pair(content::mojom::kNetworkServiceName, network_info));
+  }
 }
 
 void UtilityServiceFactory::OnServiceQuit() {

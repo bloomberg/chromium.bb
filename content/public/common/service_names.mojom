@@ -33,3 +33,6 @@ const string kRendererServiceName = "content_renderer";
 // them to the Service Manager. This must match the name in
 // src/content/public/app/mojo/content_utility_manifest.json.
 const string kUtilityServiceName = "content_utility";
+
+// The name for the network service running in the utility process.
+const string kNetworkServiceName = "network";

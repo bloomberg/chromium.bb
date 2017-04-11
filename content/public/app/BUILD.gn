@@ -178,6 +178,7 @@ service_manifest("packaged_services_manifest") {
   name = "content_packaged_services"
   source = "mojo/content_packaged_services_manifest.json"
   packaged_services = [
+    "//content/network:manifest",
     "//media/mojo/services:media_manifest",
     "//services/data_decoder:manifest",
     "//services/device:manifest",
