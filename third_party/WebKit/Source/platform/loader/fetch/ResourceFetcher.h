@@ -225,7 +225,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   Member<FetchContext> context_;
 
-  HashSet<String> validated_ur_ls_;
+  HashSet<String> validated_urls_;
   mutable DocumentResourceMap document_resources_;
 
   Member<HeapListHashSet<Member<Resource>>> preloads_;
@@ -261,7 +261,7 @@ class PLATFORM_EXPORT ResourceFetcher
   };
   DeadResourceStatsRecorder dead_stats_recorder_;
 
-  std::unique_ptr<HashSet<String>> preloaded_ur_ls_for_test_;
+  std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
   // 28 bits left
   bool auto_load_images_ : 1;

@@ -305,7 +305,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
                                          RevalidationPolicy policy,
                                          bool is_static_data) {
   if (policy == kUse && resource->GetStatus() == ResourceStatus::kCached &&
-      !validated_ur_ls_.Contains(resource->Url())) {
+      !validated_urls_.Contains(resource->Url())) {
     // Loaded from MemoryCache.
     DidLoadResourceFromMemoryCache(identifier, resource,
                                    request.GetResourceRequest());
@@ -315,7 +315,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     return;
 
   if (policy == kUse && !resource->StillNeedsLoad() &&
-      !validated_ur_ls_.Contains(request.GetResourceRequest().Url())) {
+      !validated_urls_.Contains(request.GetResourceRequest().Url())) {
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
@@ -329,10 +329,10 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
       resource_timing_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 
-  if (validated_ur_ls_.size() >= kMaxValidatedURLsSize) {
-    validated_ur_ls_.Clear();
+  if (validated_urls_.size() >= kMaxValidatedURLsSize) {
+    validated_urls_.Clear();
   }
-  validated_ur_ls_.insert(request.GetResourceRequest().Url());
+  validated_urls_.insert(request.GetResourceRequest().Url());
 }
 
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
@@ -968,7 +968,7 @@ ResourceFetcher::DetermineRevalidationPolicy(Resource::Type type,
   // or other factors that require separate requests.
   if (type != Resource::kRaw) {
     if (!Context().IsLoadComplete() &&
-        validated_ur_ls_.Contains(existing_resource->Url()))
+        validated_urls_.Contains(existing_resource->Url()))
       return kUse;
     if (existing_resource->IsLoading())
       return kUse;
@@ -1096,24 +1096,24 @@ void ResourceFetcher::PreloadStarted(Resource* resource) {
     preloads_ = new HeapListHashSet<Member<Resource>>;
   preloads_->insert(resource);
 
-  if (preloaded_ur_ls_for_test_)
-    preloaded_ur_ls_for_test_->insert(resource->Url().GetString());
+  if (preloaded_urls_for_test_)
+    preloaded_urls_for_test_->insert(resource->Url().GetString());
 }
 
 void ResourceFetcher::EnableIsPreloadedForTest() {
-  if (preloaded_ur_ls_for_test_)
+  if (preloaded_urls_for_test_)
     return;
-  preloaded_ur_ls_for_test_ = WTF::WrapUnique(new HashSet<String>);
+  preloaded_urls_for_test_ = WTF::WrapUnique(new HashSet<String>);
 
   if (preloads_) {
     for (const auto& resource : *preloads_)
-      preloaded_ur_ls_for_test_->insert(resource->Url().GetString());
+      preloaded_urls_for_test_->insert(resource->Url().GetString());
   }
 }
 
 bool ResourceFetcher::IsPreloadedForTest(const KURL& url) const {
-  DCHECK(preloaded_ur_ls_for_test_);
-  return preloaded_ur_ls_for_test_->Contains(url.GetString());
+  DCHECK(preloaded_urls_for_test_);
+  return preloaded_urls_for_test_->Contains(url.GetString());
 }
 
 void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
