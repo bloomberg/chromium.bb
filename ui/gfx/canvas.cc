@@ -114,10 +114,6 @@ ImageSkiaRep Canvas::ExtractImageRep() const {
   return ImageSkiaRep(bitmap_copy, image_scale_);
 }
 
-void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {
-  DrawDashedRect(RectF(rect), color);
-}
-
 void Canvas::DrawDashedRect(const RectF& rect, SkColor color) {
   if (rect.IsEmpty())
     return;
@@ -241,16 +237,8 @@ void Canvas::FillRect(const Rect& rect, SkColor color, SkBlendMode mode) {
   DrawRect(rect, flags);
 }
 
-void Canvas::DrawRect(const Rect& rect, SkColor color) {
-  DrawRect(RectF(rect), color);
-}
-
 void Canvas::DrawRect(const RectF& rect, SkColor color) {
   DrawRect(rect, color, SkBlendMode::kSrcOver);
-}
-
-void Canvas::DrawRect(const Rect& rect, SkColor color, SkBlendMode mode) {
-  DrawRect(RectF(rect), color, mode);
 }
 
 void Canvas::DrawRect(const RectF& rect, SkColor color, SkBlendMode mode) {

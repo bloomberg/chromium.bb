@@ -24,6 +24,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
@@ -127,7 +128,7 @@ TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnFrame) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a single white block in the centre.
-  gfx::Rect draw_rect(300, 200, 200, 200);
+  gfx::RectF draw_rect(300, 200, 200, 200);
   canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
 
@@ -164,7 +165,7 @@ TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a white frame drawn in the centre.
-  gfx::Rect draw_rect(100, 100, 200, 100);
+  gfx::RectF draw_rect(100, 100, 200, 100);
   gfx::Rect image_rect(0, 0, 800, 600);
   canvas.FillRect(image_rect, SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
@@ -229,8 +230,8 @@ TEST_F(ThumbnailContentAnalysisTest,
   // single-pixel vertical gap in between.
   gfx::Rect image_rect(0, 0, 800, 600);
   canvas.FillRect(image_rect, SkColorSetRGB(0, 0, 0));
-  canvas.DrawRect(gfx::Rect(300, 250, 99, 100), SkColorSetRGB(255, 255, 255));
-  canvas.DrawRect(gfx::Rect(401, 250, 99, 100), SkColorSetRGB(255, 255, 255));
+  canvas.DrawRect(gfx::RectF(300, 250, 99, 100), SkColorSetRGB(255, 255, 255));
+  canvas.DrawRect(gfx::RectF(401, 250, 99, 100), SkColorSetRGB(255, 255, 255));
 
   SkBitmap source = canvas.GetBitmap();
   SkBitmap reduced_color;
@@ -621,7 +622,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
     for (int x = footer_rect.x() + fine_print;
          x < footer_rect.right() - fine_print;
          x += 2 * fine_print) {
-      canvas.DrawRect(gfx::Rect(x, y, fine_print, fine_print),  print_color);
+      canvas.DrawRect(gfx::RectF(x, y, fine_print, fine_print), print_color);
     }
   }
 
@@ -649,7 +650,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
     for (int x = body_rect.x() + fine_print;
          x < body_rect.right() - fine_print;
          x += 2 * fine_print) {
-      canvas.DrawRect(gfx::Rect(x, y, fine_print, fine_print),  print_color);
+      canvas.DrawRect(gfx::RectF(x, y, fine_print, fine_print), print_color);
     }
   }
 
@@ -659,11 +660,10 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
         body_rect.height() / 3 * line + margin_vertical;
     const int x = body_rect.x() +
         alignment * body_rect.width() / 2 + margin_vertical;
-    gfx::Rect pict_rect(x, y,
-                        body_rect.width() / 2 - 2 * margin_vertical,
+    gfx::Rect pict_rect(x, y, body_rect.width() / 2 - 2 * margin_vertical,
                         body_rect.height() / 3 - 2 * margin_vertical);
     canvas.FillRect(pict_rect, SkColorSetRGB(255, 255, 255));
-    canvas.DrawRect(pict_rect, SkColorSetRGB(0, 0, 0));
+    canvas.DrawRect(gfx::RectF(pict_rect), SkColorSetRGB(0, 0, 0));
   }
 
   SkBitmap source = canvas.GetBitmap();

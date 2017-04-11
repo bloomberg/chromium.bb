@@ -151,11 +151,6 @@ class GFX_EXPORT Canvas {
   ImageSkiaRep ExtractImageRep() const;
 
   // Draws a dashed rectangle of the specified color.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawDashedRect(const Rect& rect, SkColor color);
-
-  // Draws a dashed rectangle of the specified color.
   void DrawDashedRect(const RectF& rect, SkColor color);
 
   // Unscales by the image scale factor (aka device scale factor), and returns
@@ -220,23 +215,7 @@ class GFX_EXPORT Canvas {
   // color, using a transfer mode of SkBlendMode::kSrcOver.
   //
   // NOTE: if you need a single pixel line, use DrawLine.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawRect(const Rect& rect, SkColor color);
-
-  // Draws a single pixel rect in the specified region with the specified
-  // color, using a transfer mode of SkBlendMode::kSrcOver.
-  //
-  // NOTE: if you need a single pixel line, use DrawLine.
   void DrawRect(const RectF& rect, SkColor color);
-
-  // Draws a single pixel rect in the specified region with the specified
-  // color and transfer mode.
-  //
-  // NOTE: if you need a single pixel line, use DrawLine.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawRect(const Rect& rect, SkColor color, SkBlendMode mode);
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
