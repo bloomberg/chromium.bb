@@ -7,20 +7,22 @@ import("//build/config/chromecast_build.gni")
 assert(is_chromecast)
 
 config("static_config") {
-  ldflags = [
-    # Don't allow visible symbols from libraries that contain
-    # assembly code with symbols that aren't hidden properly.
-    # http://b/26390825
-    "-Wl,--exclude-libs=libffmpeg.a",
-  ]
-
-  if (!is_android) {
-    ldflags += [
-      # We want to statically link libstdc++/libgcc on Linux.
-      # (On Android, libstdc++ and libgcc aren't used.)
-      "-static-libstdc++",
-      "-static-libgcc",
+  if (!is_clang) {
+    ldflags = [
+      # Don't allow visible symbols from libraries that contain
+      # assembly code with symbols that aren't hidden properly.
+      # http://b/26390825
+      "-Wl,--exclude-libs=libffmpeg.a",
     ]
+
+    if (!is_android) {
+      ldflags += [
+        # We want to statically link libstdc++/libgcc on Linux.
+        # (On Android, libstdc++ and libgcc aren't used.)
+        "-static-libstdc++",
+        "-static-libgcc",
+      ]
+    }
   }
 }
 
@@ -75,7 +77,7 @@ config("executable_config") {
 
 config("shared_library_config") {
   configs = [ ":ldconfig" ]
-  if (!is_clang && current_cpu == "arm") {
+  if (current_cpu == "arm") {
     configs += [ ":static_config" ]
   }
 }
