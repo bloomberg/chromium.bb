@@ -29,9 +29,7 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
 
   OwnedLayerImplMap old_layer_map;
   for (auto& it : *old_layers) {
-    // TODO(ajuma): Remove this once we've figured out what's causing
-    // crbug.com/701279.
-    CHECK(it);
+    DCHECK(it);
     old_layer_map[it->id()] = std::move(it);
   }
 
