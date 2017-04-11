@@ -338,7 +338,7 @@ static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
          !backwards_iterator.AtEnd(); backwards_iterator.Advance()) {
       BackwardsTextBuffer characters;
       backwards_iterator.CopyTextTo(&characters);
-      buffer.PrependContext(characters.Data(), characters.size());
+      buffer.PrependContext(characters.Data(), characters.Size());
       if (!buffer.NeedsMoreContext())
         break;
     }
@@ -348,7 +348,7 @@ static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
     // TODO(xiaochengh): Should allow copying text to SearchBuffer directly
     ForwardsTextBuffer characters;
     it.CopyTextTo(&characters);
-    buffer.Append(characters.Data(), characters.size());
+    buffer.Append(characters.Data(), characters.Size());
     it.Advance(buffer.NumberOfCharactersJustAppended());
   tryAgain:
     size_t match_start_offset;

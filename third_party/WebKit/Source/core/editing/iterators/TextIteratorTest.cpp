@@ -488,17 +488,17 @@ TEST_F(TextIteratorTest, copyTextTo) {
                                                range1.EndPosition());
   ForwardsTextBuffer output1;
   iter1.CopyTextTo(&output1, 0, 2);
-  EXPECT_EQ("on", String(output1.Data(), output1.size()))
+  EXPECT_EQ("on", String(output1.Data(), output1.Size()))
       << String::Format(message, 1, "on").Utf8().Data();
   iter1.CopyTextTo(&output1, 2, 1);
-  EXPECT_EQ("one", String(output1.Data(), output1.size()))
+  EXPECT_EQ("one", String(output1.Data(), output1.Size()))
       << String::Format(message, 1, "one").Utf8().Data();
   iter1.Advance();
   iter1.CopyTextTo(&output1, 0, 1);
-  EXPECT_EQ("onet", String(output1.Data(), output1.size()))
+  EXPECT_EQ("onet", String(output1.Data(), output1.Size()))
       << String::Format(message, 1, "onet").Utf8().Data();
   iter1.CopyTextTo(&output1, 1, 2);
-  EXPECT_EQ("onetwo", String(output1.Data(), output1.size()))
+  EXPECT_EQ("onetwo", String(output1.Data(), output1.Size()))
       << String::Format(message, 1, "onetwo").Utf8().Data();
 
   EphemeralRangeTemplate<EditingInFlatTreeStrategy> range2(
@@ -508,35 +508,35 @@ TEST_F(TextIteratorTest, copyTextTo) {
                                                          range2.EndPosition());
   ForwardsTextBuffer output2;
   iter2.CopyTextTo(&output2, 0, 3);
-  EXPECT_EQ("thr", String(output2.Data(), output2.size()))
+  EXPECT_EQ("thr", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "thr").Utf8().Data();
   iter2.CopyTextTo(&output2, 3, 3);
-  EXPECT_EQ("three ", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three ", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three ").Utf8().Data();
   iter2.Advance();
   iter2.CopyTextTo(&output2, 0, 2);
-  EXPECT_EQ("three tw", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three tw", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three tw").Utf8().Data();
   iter2.CopyTextTo(&output2, 2, 1);
-  EXPECT_EQ("three two", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two").Utf8().Data();
   iter2.Advance();
   iter2.CopyTextTo(&output2, 0, 1);
-  EXPECT_EQ("three two ", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two ", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two ").Utf8().Data();
   iter2.Advance();
   iter2.CopyTextTo(&output2, 0, 1);
-  EXPECT_EQ("three two o", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two o", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two o").Utf8().Data();
   iter2.CopyTextTo(&output2, 1, 2);
-  EXPECT_EQ("three two one", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two one", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two one").Utf8().Data();
   iter2.Advance();
   iter2.CopyTextTo(&output2, 0, 2);
-  EXPECT_EQ("three two one z", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two one z", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two one z").Utf8().Data();
   iter2.CopyTextTo(&output2, 2, 3);
-  EXPECT_EQ("three two one zero", String(output2.Data(), output2.size()))
+  EXPECT_EQ("three two one zero", String(output2.Data(), output2.Size()))
       << String::Format(message, 2, "three two one zero").Utf8().Data();
 }
 

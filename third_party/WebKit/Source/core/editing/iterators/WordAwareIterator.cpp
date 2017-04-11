@@ -84,7 +84,7 @@ void WordAwareIterator::Advance() {
 
 int WordAwareIterator::length() const {
   if (!buffer_.IsEmpty())
-    return buffer_.size();
+    return buffer_.Size();
   return text_iterator_.length();
 }
 

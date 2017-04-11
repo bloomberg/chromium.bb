@@ -127,7 +127,7 @@ static NSAttributedString* attributedSubstringFromRange(
     it.CopyTextTo(&characters);
     NSString* substring =
         [[[NSString alloc] initWithCharacters:characters.Data()
-                                       length:characters.size()] autorelease];
+                                       length:characters.Size()] autorelease];
     [string replaceCharactersInRange:NSMakeRange(position, 0)
                           withString:substring];
     [string setAttributes:attrs range:NSMakeRange(position, numCharacters)];

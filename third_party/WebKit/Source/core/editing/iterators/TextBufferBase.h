@@ -17,7 +17,7 @@ class CORE_EXPORT TextBufferBase {
 
  public:
   void Clear() { size_ = 0; }
-  size_t size() const { return size_; }
+  size_t Size() const { return size_; }
   bool IsEmpty() const { return size_ == 0; }
   size_t Capacity() const { return buffer_.Capacity(); }
   const UChar& operator[](size_t index) const {

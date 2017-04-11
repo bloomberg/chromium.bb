@@ -839,7 +839,7 @@ static PositionTemplate<Strategy> PreviousBoundary(
     while (!forwards_iterator.AtEnd()) {
       forwards_iterator.CopyTextTo(&suffix_string);
       int context_end_index = EndOfFirstWordBoundaryContext(
-          suffix_string.Data() + suffix_string.size() -
+          suffix_string.Data() + suffix_string.Size() -
               forwards_iterator.length(),
           forwards_iterator.length());
       if (context_end_index < forwards_iterator.length()) {
@@ -850,9 +850,9 @@ static PositionTemplate<Strategy> PreviousBoundary(
     }
   }
 
-  unsigned suffix_length = suffix_string.size();
+  unsigned suffix_length = suffix_string.Size();
   BackwardsTextBuffer string;
-  string.PushRange(suffix_string.Data(), suffix_string.size());
+  string.PushRange(suffix_string.Data(), suffix_string.Size());
 
   SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(start, end);
   int remaining_length = 0;
@@ -869,8 +869,8 @@ static PositionTemplate<Strategy> PreviousBoundary(
         // TODO(xiaochengh): The following line takes O(string.size()) time,
         // which makes quadratic overall running time in the worst case.
         // Should improve it in some way.
-        next = search_function(string.Data(), string.size(),
-                               string.size() - suffix_length,
+        next = search_function(string.Data(), string.Size(),
+                               string.Size() - suffix_length,
                                kMayHaveMoreContext, need_more_context);
       } while (!next && run_offset < it.length());
       if (next) {
@@ -890,8 +890,8 @@ static PositionTemplate<Strategy> PreviousBoundary(
     // more context, but there is no earlier text. Force a search with
     // what's available.
     // TODO(xiaochengh): Do we have to search the whole string?
-    next = search_function(string.Data(), string.size(),
-                           string.size() - suffix_length, kDontHaveMoreContext,
+    next = search_function(string.Data(), string.Size(),
+                           string.Size() - suffix_length, kDontHaveMoreContext,
                            need_more_context);
     DCHECK(!need_more_context);
   }
@@ -909,7 +909,7 @@ static PositionTemplate<Strategy> PreviousBoundary(
   // Use the character iterator to translate the next value into a DOM
   // position.
   BackwardsCharacterIteratorAlgorithm<Strategy> char_it(start, end);
-  char_it.Advance(string.size() - suffix_length - next);
+  char_it.Advance(string.Size() - suffix_length - next);
   // TODO(yosin) charIt can get out of shadow host.
   return char_it.EndPosition();
 }
@@ -943,9 +943,9 @@ static PositionTemplate<Strategy> NextBoundary(
     }
   }
 
-  unsigned prefix_length = prefix_string.size();
+  unsigned prefix_length = prefix_string.Size();
   ForwardsTextBuffer string;
-  string.PushRange(prefix_string.Data(), prefix_string.size());
+  string.PushRange(prefix_string.Data(), prefix_string.Size());
 
   const PositionTemplate<Strategy> search_start =
       PositionTemplate<Strategy>::EditingPositionOf(
@@ -970,22 +970,22 @@ static PositionTemplate<Strategy> NextBoundary(
       int run_offset = 0;
       do {
         run_offset += it.CopyTextTo(&string, run_offset, string.Capacity());
-        next = search_function(string.Data(), string.size(), offset,
+        next = search_function(string.Data(), string.Size(), offset,
                                kMayHaveMoreContext, need_more_context);
         if (!need_more_context) {
           // When the search does not need more context, skip all examined
           // characters except the last one, in case it is a boundary.
-          offset = string.size();
+          offset = string.Size();
           U16_BACK_1(string.Data(), 0, offset);
         }
-      } while (next == string.size() && run_offset < it.length());
-      if (next != string.size())
+      } while (next == string.Size() && run_offset < it.length());
+      if (next != string.Size())
         break;
     } else {
       // Treat bullets used in the text security mode as regular
       // characters when looking for boundaries
       string.PushCharacters('x', it.length());
-      next = string.size();
+      next = string.Size();
     }
     it.Advance();
   }
@@ -994,12 +994,12 @@ static PositionTemplate<Strategy> NextBoundary(
     // context, but there is no further text. Force a search with what's
     // available.
     // TODO(xiaochengh): Do we still have to search the whole string?
-    next = search_function(string.Data(), string.size(), prefix_length,
+    next = search_function(string.Data(), string.Size(), prefix_length,
                            kDontHaveMoreContext, need_more_context);
     DCHECK(!need_more_context);
   }
 
-  if (it.AtEnd() && next == string.size()) {
+  if (it.AtEnd() && next == string.Size()) {
     pos = it.StartPositionInCurrentContainer();
   } else if (next != kInvalidOffset && next != prefix_length) {
     // Use the character iterator to translate the next value into a DOM

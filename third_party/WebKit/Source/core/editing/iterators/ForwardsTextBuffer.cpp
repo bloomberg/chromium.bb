@@ -11,8 +11,8 @@ const UChar* ForwardsTextBuffer::Data() const {
 }
 
 UChar* ForwardsTextBuffer::CalcDestination(size_t length) {
-  DCHECK_LE(size() + length, Capacity());
-  return BufferBegin() + size();
+  DCHECK_LE(Size() + length, Capacity());
+  return BufferBegin() + Size();
 }
 
 }  // namespace blink
