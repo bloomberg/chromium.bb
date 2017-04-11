@@ -82,8 +82,6 @@ class BleScanner : public device::BluetoothAdapter::Observer {
              const LocalDeviceDataProvider* local_device_data_provider);
 
   void UpdateDiscoveryStatus();
-  void InitializeBluetoothAdapter();
-  void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
   void StartDiscoverySession();
   void OnDiscoverySessionStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
