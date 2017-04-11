@@ -23,12 +23,6 @@ namespace edk {
 
 namespace {
 
-template <typename T>
-T Align(T t) {
-  const auto k = kChannelMessageAlignment;
-  return t + (k - (t % k)) % k;
-}
-
 // NOTE: Please ONLY append messages to the end of this enum.
 enum class MessageType : uint32_t {
   ACCEPT_CHILD,
