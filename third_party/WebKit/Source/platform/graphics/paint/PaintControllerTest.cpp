@@ -2113,6 +2113,8 @@ class PaintControllerUnderInvalidationTest
   }
 
   void TestNoopPairsInSubsequence() {
+    EXPECT_FALSE(GetPaintController().LastDisplayItemIsSubsequenceEnd());
+
     FakeDisplayItemClient container("container");
     GraphicsContext context(GetPaintController());
 
@@ -2140,6 +2142,8 @@ class PaintControllerUnderInvalidationTest
       DrawRect(context, container, kBackgroundDrawingType,
                FloatRect(100, 100, 100, 100));
     }
+    EXPECT_TRUE(GetPaintController().LastDisplayItemIsSubsequenceEnd());
+
     GetPaintController().CommitNewDisplayItems();
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

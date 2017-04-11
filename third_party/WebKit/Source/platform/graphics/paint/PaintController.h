@@ -209,6 +209,8 @@ class PLATFORM_EXPORT PaintController {
   void EndSubsequence() { current_subsequence_clients_.pop_back(); }
 #endif
 
+  bool LastDisplayItemIsSubsequenceEnd() const;
+
  protected:
   PaintController()
       : new_display_item_list_(0),
@@ -226,7 +228,8 @@ class PLATFORM_EXPORT PaintController {
         num_indexed_items_(0),
 #endif
         under_invalidation_checking_begin_(0),
-        under_invalidation_checking_end_(0) {
+        under_invalidation_checking_end_(0),
+        last_cached_subsequence_end_(0) {
     ResetCurrentListIndices();
     SetTracksRasterInvalidations(
         RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled());
@@ -419,6 +422,7 @@ class PLATFORM_EXPORT PaintController {
       CachedSubsequenceMap;
   CachedSubsequenceMap current_cached_subsequences_;
   CachedSubsequenceMap new_cached_subsequences_;
+  size_t last_cached_subsequence_end_;
 
   FRIEND_TEST_ALL_PREFIXES(PaintControllerTest, CachedSubsequenceSwapOrder);
   FRIEND_TEST_ALL_PREFIXES(PaintControllerTest, CachedNestedSubsequenceUpdate);

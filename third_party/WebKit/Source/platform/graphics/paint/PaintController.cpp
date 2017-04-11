@@ -163,6 +163,7 @@ void PaintController::AddCachedSubsequence(const DisplayItemClient& client,
          new_cached_subsequences_.end());
 
   new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
+  last_cached_subsequence_end_ = end;
 }
 
 bool PaintController::LastDisplayItemIsNoopBegin() const {
@@ -171,6 +172,11 @@ bool PaintController::LastDisplayItemIsNoopBegin() const {
 
   const auto& last_display_item = new_display_item_list_.Last();
   return last_display_item.IsBegin() && !last_display_item.DrawsContent();
+}
+
+bool PaintController::LastDisplayItemIsSubsequenceEnd() const {
+  return !new_cached_subsequences_.IsEmpty() &&
+         last_cached_subsequence_end_ == new_display_item_list_.size() - 1;
 }
 
 void PaintController::RemoveLastDisplayItem() {
@@ -536,6 +542,7 @@ void PaintController::CommitNewDisplayItems(
 
   new_cached_subsequences_.Swap(current_cached_subsequences_);
   new_cached_subsequences_.Clear();
+  last_cached_subsequence_end_ = 0;
   for (auto& item : current_cached_subsequences_) {
     item.key->SetDisplayItemsCached(current_cache_generation_);
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

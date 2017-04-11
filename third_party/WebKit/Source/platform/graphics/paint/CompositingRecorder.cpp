@@ -40,10 +40,13 @@ CompositingRecorder::~CompositingRecorder() {
   const DisplayItem* last_display_item = paint_controller.LastDisplayItem(0);
   const DisplayItem* second_to_last_display_item =
       paint_controller.LastDisplayItem(1);
+  // TODO(chrishtr): remove the call to LastDisplayItemIsSubsequenceEnd when
+  // https://codereview.chromium.org/2768143002 lands.
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && last_display_item &&
       second_to_last_display_item && last_display_item->DrawsContent() &&
       second_to_last_display_item->GetType() ==
-          DisplayItem::kBeginCompositing) {
+          DisplayItem::kBeginCompositing &&
+      !paint_controller.LastDisplayItemIsSubsequenceEnd()) {
     FloatRect cull_rect(
         ((DrawingDisplayItem*)last_display_item)->GetPaintRecord()->cullRect());
     const DisplayItemClient& display_item_client = last_display_item->Client();
