@@ -390,15 +390,20 @@ void MediaStreamVideoTrack::Stop() {
 
 void MediaStreamVideoTrack::GetSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (width_ && height_) {
+    settings.width = width_;
+    settings.height = height_;
+  }
+
+  if (!source_)
+    return;
+
   base::Optional<media::VideoCaptureFormat> format =
       source_->GetCurrentFormat();
   if (format) {
     settings.frame_rate = format->frame_rate;
     settings.video_kind = GetVideoKindForFormat(*format);
-  }
-  if (width_ && height_) {
-    settings.width = width_;
-    settings.height = height_;
   }
   switch (source_->device_info().device.video_facing) {
     case media::MEDIA_VIDEO_FACING_NONE:
