@@ -2427,13 +2427,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if gerrit_auth == git_auth:
         return
       print((
-          'WARNING: you have different credentials for Gerrit and git hosts.\n'
-          '         Check your %s or %s file for credentials of hosts:\n'
+          'WARNING: you have different credentials for Gerrit and git hosts:\n'
           '           %s\n'
           '           %s\n'
-          '         %s') %
-          (cookie_auth.get_gitcookies_path(), cookie_auth.get_netrc_path(),
-           git_host, self._gerrit_host,
+          '        Consider running the following command:\n'
+          '          git cl creds-check\n'
+          '        New credentials can be obtained by visiting %s') %
+          (git_host, self._gerrit_host,
            cookie_auth.get_new_password_message(git_host)))
       if not force:
         confirm_or_exit('If you know what you are doing', action='continue')
