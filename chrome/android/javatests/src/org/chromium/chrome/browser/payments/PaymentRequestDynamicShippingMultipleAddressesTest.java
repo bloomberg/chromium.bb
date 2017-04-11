@@ -204,7 +204,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
 
         assertEquals(4, getNumberOfShippingAddressSuggestions());
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));
-        assertTrue(getShippingAddressSuggestionLabel(1).contains("Invalid address"));
+        assertTrue(getShippingAddressSuggestionLabel(1).contains("Enter a valid address"));
         assertTrue(getShippingAddressSuggestionLabel(2).contains("Name required"));
         assertTrue(getShippingAddressSuggestionLabel(3).contains("More information required"));
     }

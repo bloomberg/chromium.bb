@@ -321,8 +321,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                            .endsWith("Name required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 5).endsWith("More information required"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                6).endsWith("Invalid address"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
+                           .endsWith("Enter a valid address"));
 
         // Selects the fourth billing addresss that misses recipient name brings up the address
         // editor.
@@ -356,8 +356,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                            .endsWith("Name required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 5).endsWith("More information required"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                6).endsWith("Invalid address"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
+                           .endsWith("Enter a valid address"));
 
         // Selects the fifth billing addresss that misses recipient name brings up the address
         // editor.
