@@ -78,7 +78,7 @@ void StubNotificationDisplayService::Close(
 }
 
 void StubNotificationDisplayService::GetDisplayed(
-    const DisplayedNotificationsCallback& callback) const {
+    const DisplayedNotificationsCallback& callback) {
   std::unique_ptr<std::set<std::string>> notifications =
       base::MakeUnique<std::set<std::string>>();
 

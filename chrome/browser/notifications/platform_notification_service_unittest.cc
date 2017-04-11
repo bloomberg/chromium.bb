@@ -113,7 +113,7 @@ class PlatformNotificationServiceTest : public testing::Test {
 
   void DidGetDisplayedNotifications(
       std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization) const {
+      bool supports_synchronization) {
     displayed_notifications_ = std::move(displayed_notifications);
   }
 
@@ -152,7 +152,7 @@ class PlatformNotificationServiceTest : public testing::Test {
   // Returns the Profile to be used for these tests.
   Profile* profile() const { return profile_; }
 
-  size_t GetNotificationCount() const {
+  size_t GetNotificationCount() {
     display_service()->GetDisplayed(base::Bind(
         &PlatformNotificationServiceTest::DidGetDisplayedNotifications,
         base::Unretained(this)));
@@ -182,7 +182,7 @@ class PlatformNotificationServiceTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   content::TestBrowserThreadBundle thread_bundle_;
-  mutable std::unique_ptr<std::set<std::string>> displayed_notifications_;
+  std::unique_ptr<std::set<std::string>> displayed_notifications_;
 };
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {

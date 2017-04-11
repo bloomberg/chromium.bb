@@ -42,8 +42,7 @@ class NotificationDisplayService : public KeyedService {
 
   // Writes the ids of all currently displaying notifications and
   // invokes |callback| with the result once known.
-  virtual void GetDisplayed(
-      const DisplayedNotificationsCallback& callback) const = 0;
+  virtual void GetDisplayed(const DisplayedNotificationsCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayService);

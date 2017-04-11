@@ -80,7 +80,7 @@ void NativeNotificationDisplayService::Close(
 }
 
 void NativeNotificationDisplayService::GetDisplayed(
-    const DisplayedNotificationsCallback& callback) const {
+    const DisplayedNotificationsCallback& callback) {
   return notification_bridge_->GetDisplayed(
       GetProfileId(profile_), profile_->IsOffTheRecord(), callback);
 }

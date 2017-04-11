@@ -42,8 +42,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
                const Notification& notification) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
-  void GetDisplayed(
-      const DisplayedNotificationsCallback& callback) const override;
+  void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 
  private:
   // Data to store for a notification that's being shown through this service.

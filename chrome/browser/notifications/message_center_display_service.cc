@@ -37,7 +37,7 @@ void MessageCenterDisplayService::Close(
 }
 
 void MessageCenterDisplayService::GetDisplayed(
-    const DisplayedNotificationsCallback& callback) const {
+    const DisplayedNotificationsCallback& callback) {
   auto displayed_notifications =
       base::MakeUnique<std::set<std::string>>(ui_manager_->GetAllIdsByProfile(
           NotificationUIManager::GetProfileID(profile_)));

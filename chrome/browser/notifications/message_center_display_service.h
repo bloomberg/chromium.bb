@@ -27,8 +27,7 @@ class MessageCenterDisplayService : public NotificationDisplayService {
                const Notification& notification) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
-  void GetDisplayed(
-      const DisplayedNotificationsCallback& callback) const override;
+  void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 
  private:
   Profile* profile_;
