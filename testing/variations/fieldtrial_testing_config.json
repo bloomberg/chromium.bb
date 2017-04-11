@@ -2554,7 +2554,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnableNewShow3Each1Day",
+                    "name": "EnableExperiment",
                     "enable_features": [
                         "ConsistentOmniboxGeolocation"
                     ]
