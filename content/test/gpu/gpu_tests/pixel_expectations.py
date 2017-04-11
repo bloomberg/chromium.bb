@@ -53,17 +53,17 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(jbauman): Re-enable when references images created.
     self.Fail('Pixel_DirectComposition_Video_*', ['win'], bug=704389)
 
-    # TODO(xlai): Remove this after test dimension is shrunk
-    # Intended to skip only Nexus 5
-    self.Skip('Pixel_OffscreenCanvasAccelerated2D',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-    self.Skip('Pixel_OffscreenCanvasAccelerated2DWorker',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-    self.Skip('Pixel_OffscreenCanvasWebGLDefault',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-    self.Skip('Pixel_OffscreenCanvasWebGLDefaultWorker',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    # TODO(xlai): Remove this after verifying reference images.
+    self.Fail('Pixel_OffscreenCanvasAccelerated2D', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+        bug=706647)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+        bug=706647)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=706647)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
+        bug=706647)

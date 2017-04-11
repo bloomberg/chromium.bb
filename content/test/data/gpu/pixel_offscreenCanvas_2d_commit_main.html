@@ -16,11 +16,11 @@ that the baseline images are regenerated on the next run.
 </style>
 </head>
 <body onload="main()">
-<div style="position:relative; width:400px; height:200px; background-color:white">
+<div style="position:relative; width:360px; height:200px; background-color:white">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">
-<canvas id="canvas1" width="200" height="200" class="nomargin"></canvas>
-<canvas id="canvas2" width="200" height="200" class="nomargin"></canvas>
+<canvas id="canvas1" width="180" height="200" class="nomargin"></canvas>
+<canvas id="canvas2" width="180" height="200" class="nomargin"></canvas>
 </div>
 <script>
 /* This pixel test checks the following:
@@ -47,12 +47,12 @@ function startTest() {
   var ctx2 = getOffscreenContext("canvas2");
 
   ctx1.fillStyle = "green";
-  ctx1.fillRect(0, 0, 200, 200);
+  ctx1.fillRect(0, 0, 180, 200);
   // The promise returned by this ctx1.commit() must be resolved at
   // about the same time as the other ctx2.commit() below as they are in the
   // same JS task.
   ctx1.commit().then(function() {
-    ctx2.fillRect(0, 0, 200, 200);
+    ctx2.fillRect(0, 0, 180, 200);
     // This ctx2.commit() must happen after the other ctx2.commit() below.
     ctx2.commit();
     if (--g_asyncCallbackNumber == 0) waitForFinish();
@@ -88,18 +88,18 @@ function startTest() {
 
   // Do something complex to ctx2.
   ctx2.fillStyle = "blue";
-  ctx2.fillRect(0, 0, 200, 200);
-  drawStar(ctx2, 100, 100, 25, 60, 40);
+  ctx2.fillRect(0, 0, 180, 200);
+  drawStar(ctx2, 90, 100, 25, 60, 40);
   // This ctx2.commit() must be resolved at about the same time as the first
   // ctx1.commit() above because they are in the same JS task, no matter how
   // complex the drawing operation is.
   ctx2.commit().then(function() {
-    drawStar(ctx1, 80, 80, 7, 60, 30);
+    drawStar(ctx1, 70, 80, 7, 60, 30);
     ctx1.commit();
 
     // The following fill is never committed
     ctx1.fillStyle = "red";
-    ctx1.fillRect(0, 0, 200, 200);
+    ctx1.fillRect(0, 0, 180, 200);
     if (--g_asyncCallbackNumber == 0) waitForFinish();
   });
 
