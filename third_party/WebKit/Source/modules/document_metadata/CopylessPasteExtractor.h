@@ -6,7 +6,7 @@
 #define CopylessPasteExtractor_h
 
 #include "modules/ModulesExport.h"
-#include "wtf/text/WTFString.h"
+#include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
 
 namespace blink {
 
@@ -17,7 +17,7 @@ class Document;
 // has finished parsing.
 class MODULES_EXPORT CopylessPasteExtractor final {
  public:
-  static String Extract(Document&);
+  static mojom::document_metadata::blink::WebPagePtr extract(const Document&);
 };
 
 }  // namespace blink
