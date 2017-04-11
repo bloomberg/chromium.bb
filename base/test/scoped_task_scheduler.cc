@@ -236,8 +236,9 @@ bool TestTaskScheduler::PostTask(std::unique_ptr<internal::Task> task,
     return false;
   internal::Task* const task_ptr = task.get();
   return MessageLoopTaskRunner()->PostDelayedTask(
-      task_ptr->posted_from, Bind(&TestTaskScheduler::RunTask, Unretained(this),
-                                  Passed(&task), sequence_token),
+      task_ptr->posted_from,
+      BindOnce(&TestTaskScheduler::RunTask, Unretained(this), Passed(&task),
+               sequence_token),
       task_ptr->delay);
 }
 

@@ -90,9 +90,9 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   Closure untrack_closure =
       Bind(&CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id);
   bool success = task_runner->PostTaskAndReply(
-      from_here, Bind(&RunIfNotCanceled, flag, std::move(task)),
-      Bind(&RunIfNotCanceledThenUntrack, base::Owned(flag), std::move(reply),
-           std::move(untrack_closure)));
+      from_here, BindOnce(&RunIfNotCanceled, flag, std::move(task)),
+      BindOnce(&RunIfNotCanceledThenUntrack, base::Owned(flag),
+               std::move(reply), std::move(untrack_closure)));
 
   if (!success)
     return kBadTaskId;

@@ -118,7 +118,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
     loop_ = new MessageLoop();  // Fire up a message loop.
     loop_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
     RunLoop().Run();
     delete loop_;
     loop_ = reinterpret_cast<MessageLoop*>(0xdeadbeef);
@@ -146,7 +146,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
 
     loop_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
   }
 
   void Quit() {

@@ -242,8 +242,8 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelay) {
                          WaitableEvent::InitialState::NOT_SIGNALED);
   scheduler_->PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
-      Bind(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
-           Unretained(&task_ran)),
+      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
+               Unretained(&task_ran)),
       TimeDelta());
   task_ran.Wait();
 }
@@ -257,9 +257,9 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelay) {
                          WaitableEvent::InitialState::NOT_SIGNALED);
   scheduler_->PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
-      Bind(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-           TimeTicks::Now() + TestTimeouts::tiny_timeout(),
-           Unretained(&task_ran)),
+      BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
+               TimeTicks::Now() + TestTimeouts::tiny_timeout(),
+               Unretained(&task_ran)),
       TestTimeouts::tiny_timeout());
   task_ran.Wait();
 }
@@ -338,7 +338,7 @@ TEST_F(TaskSchedulerImplTest, SequencedRunsTasksOnCurrentThread) {
                          WaitableEvent::InitialState::NOT_SIGNALED);
   single_thread_task_runner->PostTask(
       FROM_HERE,
-      Bind(
+      BindOnce(
           [](scoped_refptr<TaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(sequenced_task_runner->RunsTasksOnCurrentThread());
@@ -360,7 +360,7 @@ TEST_F(TaskSchedulerImplTest, SingleThreadRunsTasksOnCurrentThread) {
                          WaitableEvent::InitialState::NOT_SIGNALED);
   sequenced_task_runner->PostTask(
       FROM_HERE,
-      Bind(
+      BindOnce(
           [](scoped_refptr<TaskRunner> single_thread_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(single_thread_task_runner->RunsTasksOnCurrentThread());

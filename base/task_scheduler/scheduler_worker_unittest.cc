@@ -172,10 +172,11 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       // Create a Sequence with TasksPerSequence() Tasks.
       scoped_refptr<Sequence> sequence(new Sequence);
       for (size_t i = 0; i < outer_->TasksPerSequence(); ++i) {
-        std::unique_ptr<Task> task(new Task(
-            FROM_HERE, Bind(&TaskSchedulerWorkerTest::RunTaskCallback,
-                            Unretained(outer_)),
-            TaskTraits(), TimeDelta()));
+        std::unique_ptr<Task> task(
+            new Task(FROM_HERE,
+                     BindOnce(&TaskSchedulerWorkerTest::RunTaskCallback,
+                              Unretained(outer_)),
+                     TaskTraits(), TimeDelta()));
         EXPECT_TRUE(outer_->task_tracker_.WillPostTask(task.get()));
         sequence->PushTask(std::move(task));
       }
@@ -434,7 +435,7 @@ class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
     scoped_refptr<Sequence> sequence(new Sequence);
     std::unique_ptr<Task> task(new Task(
         FROM_HERE,
-        Bind(
+        BindOnce(
             [](WaitableEvent* work_processed, WaitableEvent* work_running) {
               work_processed->Signal();
               work_running->Wait();

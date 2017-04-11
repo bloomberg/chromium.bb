@@ -142,8 +142,8 @@ class ObserverListThreadSafe
     for (const auto& observer : observers_) {
       observer.second->PostTask(
           from_here,
-          Bind(&ObserverListThreadSafe<ObserverType>::NotifyWrapper, this,
-               observer.first, NotificationData(from_here, method)));
+          BindOnce(&ObserverListThreadSafe<ObserverType>::NotifyWrapper, this,
+                   observer.first, NotificationData(from_here, method)));
     }
   }
 

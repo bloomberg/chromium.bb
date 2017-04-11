@@ -349,8 +349,9 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     // after the OnTraceLogEnabled()
     if (options.is_fast_polling_supported && dump_thread_) {
       dump_thread_->task_runner()->PostTask(
-          FROM_HERE, Bind(&MemoryDumpManager::RegisterPollingMDPOnDumpThread,
-                          Unretained(this), mdpinfo));
+          FROM_HERE,
+          BindOnce(&MemoryDumpManager::RegisterPollingMDPOnDumpThread,
+                   Unretained(this), mdpinfo));
     }
   }
 
@@ -420,8 +421,9 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   if ((*mdp_iter)->options.is_fast_polling_supported && dump_thread_) {
     DCHECK(take_mdp_ownership_and_delete_async);
     dump_thread_->task_runner()->PostTask(
-        FROM_HERE, Bind(&MemoryDumpManager::UnregisterPollingMDPOnDumpThread,
-                        Unretained(this), *mdp_iter));
+        FROM_HERE,
+        BindOnce(&MemoryDumpManager::UnregisterPollingMDPOnDumpThread,
+                 Unretained(this), *mdp_iter));
   }
 
   // The MDPInfo instance can still be referenced by the
@@ -616,8 +618,8 @@ void MemoryDumpManager::SetupNextMemoryDump(
   }
 
   bool did_post_task = task_runner->PostTask(
-      FROM_HERE, Bind(&MemoryDumpManager::InvokeOnMemoryDump, Unretained(this),
-                      Unretained(pmd_async_state.get())));
+      FROM_HERE, BindOnce(&MemoryDumpManager::InvokeOnMemoryDump,
+                          Unretained(this), Unretained(pmd_async_state.get())));
 
   if (did_post_task) {
     // Ownership is tranferred to InvokeOnMemoryDump().
@@ -761,8 +763,8 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     scoped_refptr<SingleThreadTaskRunner> callback_task_runner =
         pmd_async_state->callback_task_runner;
     callback_task_runner->PostTask(
-        FROM_HERE, Bind(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
-                        Passed(&pmd_async_state)));
+        FROM_HERE, BindOnce(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
+                            Passed(&pmd_async_state)));
     return;
   }
 

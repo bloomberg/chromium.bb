@@ -109,8 +109,8 @@ void PostTaskAndWait(const tracked_objects::Location& from_here,
   base::WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
                             WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner->PostTask(from_here, std::move(task));
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(&WaitableEvent::Signal, base::Unretained(&event)));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&WaitableEvent::Signal,
+                                                  base::Unretained(&event)));
   // The SequencedTaskRunner guarantees that |event| will only be signaled after
   // |task| is executed.
   event.Wait();
@@ -734,10 +734,10 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
         threads[other_idx]->task_runner();
     MockMemoryDumpProvider* other_mdp = mdps[other_idx].get();
     auto on_dump = [this, other_runner, other_mdp, &on_memory_dump_call_count](
-        const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
+                       const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
       PostTaskAndWait(FROM_HERE, other_runner.get(),
-                      base::Bind(&MemoryDumpManager::UnregisterDumpProvider,
-                                 base::Unretained(&*mdm_), other_mdp));
+                      base::BindOnce(&MemoryDumpManager::UnregisterDumpProvider,
+                                     base::Unretained(&*mdm_), other_mdp));
       on_memory_dump_call_count++;
       return true;
     };
@@ -855,10 +855,10 @@ TEST_F(MemoryDumpManagerTest, TearDownThreadWhileDumping) {
     scoped_refptr<SequencedTaskRunner> main_runner =
         SequencedTaskRunnerHandle::Get();
     auto on_dump = [other_thread, main_runner, &on_memory_dump_call_count](
-        const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
+                       const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
       PostTaskAndWait(
           FROM_HERE, main_runner.get(),
-          base::Bind(&TestIOThread::Stop, base::Unretained(other_thread)));
+          base::BindOnce(&TestIOThread::Stop, base::Unretained(other_thread)));
       on_memory_dump_call_count++;
       return true;
     };
@@ -1210,7 +1210,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoonDuringDump) {
     TestIOThread thread_for_unregistration(TestIOThread::kAutoStart);
     PostTaskAndWait(
         FROM_HERE, thread_for_unregistration.task_runner().get(),
-        base::Bind(
+        base::BindOnce(
             &MemoryDumpManager::UnregisterAndDeleteDumpProviderSoon,
             base::Unretained(MemoryDumpManager::GetInstance()),
             base::Passed(std::unique_ptr<MemoryDumpProvider>(std::move(mdp)))));

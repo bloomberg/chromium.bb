@@ -34,7 +34,8 @@ void DelayedTaskManager::AddDelayedTask(
   // TODO(fdoray): Use |task->delayed_run_time| on the service thread
   // MessageLoop rather than recomputing it from |delay|.
   service_thread_task_runner_->PostDelayedTask(
-      FROM_HERE, Bind(post_task_now_callback, Passed(std::move(task))), delay);
+      FROM_HERE, BindOnce(post_task_now_callback, Passed(std::move(task))),
+      delay);
 }
 
 }  // namespace internal

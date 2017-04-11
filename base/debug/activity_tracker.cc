@@ -1463,8 +1463,8 @@ void GlobalActivityTracker::RecordProcessExit(ProcessId process_id,
   if (task_runner && !task_runner->RunsTasksOnCurrentThread()) {
     task_runner->PostTask(
         FROM_HERE,
-        Bind(&GlobalActivityTracker::CleanupAfterProcess, Unretained(this), pid,
-             now_stamp, exit_code, Passed(&command_line)));
+        BindOnce(&GlobalActivityTracker::CleanupAfterProcess, Unretained(this),
+                 pid, now_stamp, exit_code, Passed(&command_line)));
     return;
   }
 

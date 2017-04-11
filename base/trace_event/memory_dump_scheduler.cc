@@ -105,8 +105,8 @@ void MemoryDumpScheduler::EnablePollingIfNeeded() {
   polling_state_->ResetTotals();
 
   polling_task_runner_->PostTask(
-      FROM_HERE,
-      Bind(&MemoryDumpScheduler::PollMemoryOnPollingThread, Unretained(this)));
+      FROM_HERE, BindOnce(&MemoryDumpScheduler::PollMemoryOnPollingThread,
+                          Unretained(this)));
 }
 
 void MemoryDumpScheduler::NotifyDumpTriggered() {
@@ -114,7 +114,7 @@ void MemoryDumpScheduler::NotifyDumpTriggered() {
       !polling_task_runner_->RunsTasksOnCurrentThread()) {
     polling_task_runner_->PostTask(
         FROM_HERE,
-        Bind(&MemoryDumpScheduler::NotifyDumpTriggered, Unretained(this)));
+        BindOnce(&MemoryDumpScheduler::NotifyDumpTriggered, Unretained(this)));
     return;
   }
 
@@ -136,8 +136,8 @@ void MemoryDumpScheduler::DisableAllTriggers() {
   if (polling_task_runner_) {
     DCHECK(polling_state_);
     polling_task_runner_->PostTask(
-        FROM_HERE, Bind(&MemoryDumpScheduler::DisablePollingOnPollingThread,
-                        Unretained(this)));
+        FROM_HERE, BindOnce(&MemoryDumpScheduler::DisablePollingOnPollingThread,
+                            Unretained(this)));
     polling_task_runner_ = nullptr;
   }
   is_setup_ = false;
@@ -197,7 +197,8 @@ void MemoryDumpScheduler::PollMemoryOnPollingThread() {
   // TODO(ssid): Use RequestSchedulerCallback, crbug.com/607533.
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      Bind(&MemoryDumpScheduler::PollMemoryOnPollingThread, Unretained(this)),
+      BindOnce(&MemoryDumpScheduler::PollMemoryOnPollingThread,
+               Unretained(this)),
       TimeDelta::FromMilliseconds(polling_state_->polling_interval_ms));
 }
 

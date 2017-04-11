@@ -327,7 +327,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTaskAfterShutdown) {
   auto task_runner =
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
   task_tracker_.Shutdown();
-  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRun)));
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
 // Verify that a Task runs shortly after its delay expires.
@@ -338,9 +338,10 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
   EXPECT_TRUE(CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam())
-                  ->PostDelayedTask(FROM_HERE, Bind(&WaitableEvent::Signal,
-                                                    Unretained(&task_ran)),
-                                    TestTimeouts::tiny_timeout()));
+                  ->PostDelayedTask(
+                      FROM_HERE,
+                      BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
+                      TestTimeouts::tiny_timeout()));
 
   // Wait until the task runs.
   task_ran.Wait();
@@ -368,7 +369,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
                          WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner->PostTask(
       FROM_HERE,
-      Bind(
+      BindOnce(
           [](scoped_refptr<TaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(sequenced_task_runner->RunsTasksOnCurrentThread());
@@ -579,13 +580,13 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
 
   // Post a task.
   task_runner->PostTask(FROM_HERE,
-                        Bind(&WaitableEvent::Wait, Unretained(&event)));
+                        BindOnce(&WaitableEvent::Wait, Unretained(&event)));
 
   // Post 2 more tasks while the first task hasn't completed its execution. It
   // is guaranteed that these tasks will run immediately after the first task,
   // without allowing the worker to sleep.
-  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
-  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
 
   // Allow tasks to run and wait until the SchedulerWorker is idle.
   event.Signal();
@@ -594,7 +595,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
   // Wake up the SchedulerWorker that just became idle by posting a task and
   // wait until it becomes idle again. The SchedulerWorker should record the
   // TaskScheduler.NumTasksBetweenWaits.* histogram on wake up.
-  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
   worker_pool_->WaitForAllWorkersIdleForTesting();
 
   // Verify that counts were recorded to the histogram as expected.
@@ -627,10 +628,10 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
     task_started_events.push_back(
         MakeUnique<WaitableEvent>(WaitableEvent::ResetPolicy::MANUAL,
                                   WaitableEvent::InitialState::NOT_SIGNALED));
-    task_runner->PostTask(
-        FROM_HERE,
-        Bind(&SignalAndWaitEvent, Unretained(task_started_events.back().get()),
-             Unretained(&tasks_can_exit_event)));
+    task_runner->PostTask(FROM_HERE,
+                          BindOnce(&SignalAndWaitEvent,
+                                   Unretained(task_started_events.back().get()),
+                                   Unretained(&tasks_can_exit_event)));
   }
   for (const auto& task_started_event : task_started_events)
     task_started_event->Wait();
@@ -649,10 +650,10 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
     task_started_events.push_back(
         MakeUnique<WaitableEvent>(WaitableEvent::ResetPolicy::MANUAL,
                                   WaitableEvent::InitialState::NOT_SIGNALED));
-    task_runner->PostTask(
-        FROM_HERE,
-        Bind(&SignalAndWaitEvent, Unretained(task_started_events.back().get()),
-             Unretained(&tasks_can_exit_event)));
+    task_runner->PostTask(FROM_HERE,
+                          BindOnce(&SignalAndWaitEvent,
+                                   Unretained(task_started_events.back().get()),
+                                   Unretained(&tasks_can_exit_event)));
   }
   for (const auto& task_started_event : task_started_events)
     task_started_event->Wait();
@@ -690,14 +691,14 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   // thread for each of its tasks.
   PlatformThreadRef thread_ref;
   histogrammed_thread_task_runner->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](PlatformThreadRef* thread_ref) {
                        ASSERT_TRUE(thread_ref);
                        *thread_ref = PlatformThread::CurrentRef();
                      },
                      Unretained(&thread_ref)));
   histogrammed_thread_task_runner->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](PlatformThreadRef* thread_ref) {
                        ASSERT_FALSE(thread_ref->is_null());
                        EXPECT_EQ(*thread_ref, PlatformThread::CurrentRef());
@@ -712,7 +713,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
       WaitableEvent::InitialState::NOT_SIGNALED);
   histogrammed_thread_task_runner->PostTask(
       FROM_HERE,
-      Bind(
+      BindOnce(
           [](PlatformThreadRef* thread_ref,
              WaitableEvent* detach_thread_running,
              WaitableEvent* detach_thread_continue) {
@@ -743,7 +744,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
       worker_pool_->CreateSequencedTaskRunnerWithTraits(
           TaskTraits().WithBaseSyncPrimitives());
   task_runner_for_top_idle->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](PlatformThreadRef thread_ref,
                         WaitableEvent* top_idle_thread_running,
                         WaitableEvent* top_idle_thread_continue) {

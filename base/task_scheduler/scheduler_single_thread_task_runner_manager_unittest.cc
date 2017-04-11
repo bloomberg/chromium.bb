@@ -124,9 +124,11 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
                   TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
   PlatformThreadRef thread_ref_1;
-  task_runner_1->PostTask(FROM_HERE, Bind(&CaptureThreadRef, &thread_ref_1));
+  task_runner_1->PostTask(FROM_HERE,
+                          BindOnce(&CaptureThreadRef, &thread_ref_1));
   PlatformThreadRef thread_ref_2;
-  task_runner_2->PostTask(FROM_HERE, Bind(&CaptureThreadRef, &thread_ref_2));
+  task_runner_2->PostTask(FROM_HERE,
+                          BindOnce(&CaptureThreadRef, &thread_ref_2));
 
   task_tracker_.Shutdown();
 
@@ -156,33 +158,35 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PrioritySetCorrectly) {
 
   ThreadPriority thread_priority_background;
   task_runner_background->PostTask(
-      FROM_HERE, Bind(&CaptureThreadPriority, &thread_priority_background));
+      FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_background));
   WaitableEvent waitable_event_background(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_background->PostTask(
       FROM_HERE,
-      Bind(&WaitableEvent::Signal, Unretained(&waitable_event_background)));
+      BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_background)));
 
   ThreadPriority thread_priority_user_visible;
   task_runner_user_visible->PostTask(
-      FROM_HERE, Bind(&CaptureThreadPriority, &thread_priority_user_visible));
+      FROM_HERE,
+      BindOnce(&CaptureThreadPriority, &thread_priority_user_visible));
   WaitableEvent waitable_event_user_visible(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_user_visible->PostTask(
-      FROM_HERE,
-      Bind(&WaitableEvent::Signal, Unretained(&waitable_event_user_visible)));
+      FROM_HERE, BindOnce(&WaitableEvent::Signal,
+                          Unretained(&waitable_event_user_visible)));
 
   ThreadPriority thread_priority_user_blocking;
   task_runner_user_blocking->PostTask(
-      FROM_HERE, Bind(&CaptureThreadPriority, &thread_priority_user_blocking));
+      FROM_HERE,
+      BindOnce(&CaptureThreadPriority, &thread_priority_user_blocking));
   WaitableEvent waitable_event_user_blocking(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_user_blocking->PostTask(
-      FROM_HERE,
-      Bind(&WaitableEvent::Signal, Unretained(&waitable_event_user_blocking)));
+      FROM_HERE, BindOnce(&WaitableEvent::Signal,
+                          Unretained(&waitable_event_user_blocking)));
 
   waitable_event_background.Wait();
   waitable_event_user_visible.Wait();
@@ -200,7 +204,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PostTaskAfterShutdown) {
   auto task_runner = single_thread_task_runner_manager_
                          ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
   task_tracker_.Shutdown();
-  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRun)));
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
 // Verify that a Task runs shortly after its delay expires.
@@ -213,7 +217,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest, PostDelayedTask) {
   auto task_runner = single_thread_task_runner_manager_
                          ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
   EXPECT_TRUE(task_runner->PostDelayedTask(
-      FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&task_ran)),
+      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
       TestTimeouts::tiny_timeout()));
 
   // Wait until the task runs.
@@ -244,7 +248,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
   EXPECT_FALSE(task_runner_2->RunsTasksOnCurrentThread());
 
   task_runner_1->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](scoped_refptr<SingleThreadTaskRunner> task_runner_1,
                         scoped_refptr<SingleThreadTaskRunner> task_runner_2) {
                        EXPECT_TRUE(task_runner_1->RunsTasksOnCurrentThread());
@@ -253,7 +257,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
                      task_runner_1, task_runner_2));
 
   task_runner_2->PostTask(
-      FROM_HERE, Bind(
+      FROM_HERE, BindOnce(
                      [](scoped_refptr<SingleThreadTaskRunner> task_runner_1,
                         scoped_refptr<SingleThreadTaskRunner> task_runner_2) {
                        EXPECT_FALSE(task_runner_1->RunsTasksOnCurrentThread());
@@ -322,9 +326,10 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
                            ->CreateSingleThreadTaskRunnerWithTraits(
                                TaskTraits().WithBaseSyncPrimitives());
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&task_running))));
+        FROM_HERE,
+        BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&task_blocking))));
+        FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&task_blocking))));
   }
 
   task_running.Wait();
@@ -350,10 +355,11 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest,
                            ->CreateSingleThreadTaskRunnerWithTraits(
                                TaskTraits().WithBaseSyncPrimitives());
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&task_running))));
+        FROM_HERE,
+        BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&task_blocking))));
-    EXPECT_TRUE(task_runner->PostTask(FROM_HERE, Bind(&DoNothing)));
+        FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&task_blocking))));
+    EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
   }
 
   task_running.Wait();
