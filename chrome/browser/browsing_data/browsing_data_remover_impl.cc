@@ -48,18 +48,6 @@ using content::DOMStorageContext;
 
 namespace {
 
-template <typename T>
-void IgnoreArgumentHelper(const base::Closure& callback, T unused_argument) {
-  callback.Run();
-}
-
-// Another convenience method to turn a callback without arguments into one that
-// accepts (and ignores) a single argument.
-template <typename T>
-base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
-  return base::Bind(&IgnoreArgumentHelper<T>, callback);
-}
-
 // Returns whether |origin| matches |origin_type_mask| given the special
 // storage |policy|; and if |predicate| is not null, then also whether
 // it matches |predicate|. If |origin_type_mask| contains embedder-specific
