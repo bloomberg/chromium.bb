@@ -621,6 +621,18 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * Get the URI for a downloaded file.
+     *
+     * @param file A downloaded file.
+     * @return URI for |file|.
+     */
+    public static Uri getUriForDownloadedFile(File file) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                ? FileUtils.getUriForFile(file)
+                : Uri.fromFile(file);
+    }
+
+    /**
      * @see android.view.Window#FEATURE_INDETERMINATE_PROGRESS
      */
     public static void setWindowIndeterminateProgress(Window window) {

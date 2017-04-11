@@ -23,8 +23,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -459,22 +459,14 @@ public class DownloadUtils {
     public static Uri getUriForItem(File file) {
         Uri uri = null;
 
-        // #getContentUriFromFile causes a disk read when it calls into FileProvider#getUriForFile.
-        // Obtaining a content URI is on the critical path for creating a share intent after the
-        // user taps on the share button, so even if we were to run this method on a background
-        // thread we would have to wait. As it depends on user-selected items, we cannot
-        // know/preload which URIs we need until the user presses share.
+        // FileUtils.getUriForFile() causes a disk read when it calls into
+        // FileProvider#getUriForFile. Obtaining a content URI is on the critical path for creating
+        // a share intent after the user taps on the share button, so even if we were to run this
+        // method on a background thread we would have to wait. As it depends on user-selected
+        // items, we cannot know/preload which URIs we need until the user presses share.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            // Try to obtain a content:// URI, which is preferred to a file:// URI so that
-            // receiving apps don't attempt to determine the file's mime type (which often fails).
-            uri = ContentUriUtils.getContentUriFromFile(file);
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Could not create content uri: " + e);
-        }
+        uri = FileUtils.getUriForFile(file);
         StrictMode.setThreadPolicy(oldPolicy);
-
-        if (uri == null) uri = Uri.fromFile(file);
 
         return uri;
     }
@@ -509,7 +501,11 @@ public class DownloadUtils {
 
         // Check if any apps can open the file.
         try {
-            Intent viewIntent = createViewIntentForDownloadItem(getUriForItem(file), mimeType);
+            // TODO(qinmin): Move this to an AsyncTask so we don't need to temper with strict mode.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            Uri uri = ApiCompatibilityUtils.getUriForDownloadedFile(file);
+            StrictMode.setThreadPolicy(oldPolicy);
+            Intent viewIntent = createViewIntentForDownloadItem(uri, mimeType);
             context.startActivity(viewIntent);
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
