@@ -202,8 +202,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return clip_children_.get();
   }
 
-  // TODO(enne): Fix style here (and everywhere) once LayerImpl does the same.
-  gfx::Transform screen_space_transform() const;
+  gfx::Transform ScreenSpaceTransform() const;
 
   void set_num_unclipped_descendants(size_t descendants) {
     num_unclipped_descendants_ = descendants;

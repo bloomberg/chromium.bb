@@ -167,7 +167,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneChunkWithAnOffset) {
   EXPECT_THAT(
       child->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
-  EXPECT_EQ(Translation(50, -50), child->screen_space_transform());
+  EXPECT_EQ(Translation(50, -50), child->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Size(100, 100), child->bounds());
 }
 
@@ -206,7 +206,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneTransform) {
     EXPECT_THAT(layer->GetPicture(),
                 Pointee(DrawsRectangles(rects_with_color)));
     gfx::RectF mapped_rect(0, 0, 100, 100);
-    layer->screen_space_transform().TransformRect(&mapped_rect);
+    layer->ScreenSpaceTransform().TransformRect(&mapped_rect);
     EXPECT_EQ(gfx::RectF(100, 0, 100, 100), mapped_rect);
   }
   {
@@ -214,7 +214,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneTransform) {
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
-    EXPECT_EQ(gfx::Transform(), layer->screen_space_transform());
+    EXPECT_EQ(gfx::Transform(), layer->ScreenSpaceTransform());
   }
 }
 
@@ -247,7 +247,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining) {
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kWhite)));
     gfx::RectF mapped_rect(0, 0, 300, 200);
-    layer->screen_space_transform().TransformRect(&mapped_rect);
+    layer->ScreenSpaceTransform().TransformRect(&mapped_rect);
     EXPECT_EQ(gfx::RectF(-10, -10, 600, 400), mapped_rect);
   }
   {
@@ -256,7 +256,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining) {
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kBlack)));
     gfx::RectF mapped_rect(0, 0, 300, 200);
-    layer->screen_space_transform().TransformRect(&mapped_rect);
+    layer->ScreenSpaceTransform().TransformRect(&mapped_rect);
     EXPECT_EQ(gfx::RectF(0, 0, 600, 400), mapped_rect);
   }
   EXPECT_NE(ContentLayerAt(0)->transform_tree_index(),
@@ -313,7 +313,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
     // empty rectangle (as the total 90 degree rotation makes it
     // perpendicular to the viewport).
     gfx::RectF rect(0, 0, 100, 100);
-    layer->screen_space_transform().TransformRect(&rect);
+    layer->ScreenSpaceTransform().TransformRect(&rect);
     if (transform_is_flattened)
       EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 100), rect);
     else
@@ -424,7 +424,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneClip) {
   EXPECT_THAT(
       layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kBlack)));
-  EXPECT_EQ(Translation(220, 80), layer->screen_space_transform());
+  EXPECT_EQ(Translation(220, 80), layer->ScreenSpaceTransform());
 
   const cc::ClipNode* clip_node =
       GetPropertyTrees().clip_tree.Node(layer->clip_tree_index());
@@ -467,25 +467,25 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedClips) {
   EXPECT_THAT(
       white_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
-  EXPECT_EQ(Translation(300, 350), white_layer->screen_space_transform());
+  EXPECT_EQ(Translation(300, 350), white_layer->ScreenSpaceTransform());
 
   const cc::Layer* light_gray_layer = ContentLayerAt(1);
   EXPECT_THAT(
       light_gray_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kLightGray)));
-  EXPECT_EQ(Translation(300, 350), light_gray_layer->screen_space_transform());
+  EXPECT_EQ(Translation(300, 350), light_gray_layer->ScreenSpaceTransform());
 
   const cc::Layer* dark_gray_layer = ContentLayerAt(2);
   EXPECT_THAT(
       dark_gray_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kDarkGray)));
-  EXPECT_EQ(Translation(300, 350), dark_gray_layer->screen_space_transform());
+  EXPECT_EQ(Translation(300, 350), dark_gray_layer->ScreenSpaceTransform());
 
   const cc::Layer* black_layer = ContentLayerAt(3);
   EXPECT_THAT(
       black_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kBlack)));
-  EXPECT_EQ(Translation(300, 350), black_layer->screen_space_transform());
+  EXPECT_EQ(Translation(300, 350), black_layer->ScreenSpaceTransform());
 
   EXPECT_EQ(white_layer->clip_tree_index(), dark_gray_layer->clip_tree_index());
   const cc::ClipNode* outer_clip =
@@ -524,7 +524,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips) {
   EXPECT_THAT(
       drawing_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 200, 200), Color::kWhite)));
-  EXPECT_EQ(gfx::Transform(), drawing_layer->screen_space_transform());
+  EXPECT_EQ(gfx::Transform(), drawing_layer->ScreenSpaceTransform());
 
   // Check the clip nodes.
   const cc::ClipNode* clip_node =
@@ -564,7 +564,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
   EXPECT_THAT(
       white_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 640, 480), Color::kWhite)));
-  EXPECT_EQ(gfx::Transform(), white_layer->screen_space_transform());
+  EXPECT_EQ(gfx::Transform(), white_layer->ScreenSpaceTransform());
   const cc::ClipNode* white_clip =
       GetPropertyTrees().clip_tree.Node(white_layer->clip_tree_index());
   EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, white_clip->clip_type);
@@ -574,7 +574,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
   EXPECT_THAT(
       black_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 640, 480), Color::kBlack)));
-  EXPECT_EQ(gfx::Transform(), black_layer->screen_space_transform());
+  EXPECT_EQ(gfx::Transform(), black_layer->ScreenSpaceTransform());
   const cc::ClipNode* black_clip =
       GetPropertyTrees().clip_tree.Node(black_layer->clip_tree_index());
   EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, black_clip->clip_type);
@@ -611,7 +611,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   ASSERT_EQ(3u, ContentLayerCount());
   EXPECT_EQ(layer, ContentLayerAt(1));
   EXPECT_EQ(gfx::Size(400, 300), layer->bounds());
-  EXPECT_EQ(Translation(50, 60), layer->screen_space_transform());
+  EXPECT_EQ(Translation(50, 60), layer->ScreenSpaceTransform());
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
@@ -1719,7 +1719,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
   const cc::Layer* masked_layer = ContentLayerAt(0);
   EXPECT_THAT(masked_layer->GetPicture(),
               Pointee(DrawsRectangle(FloatRect(0, 0, 200, 200), Color::kGray)));
-  EXPECT_EQ(Translation(100, 100), masked_layer->screen_space_transform());
+  EXPECT_EQ(Translation(100, 100), masked_layer->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Size(200, 200), masked_layer->bounds());
   const cc::EffectNode* masked_group =
       GetPropertyTrees().effect_tree.Node(masked_layer->effect_tree_index());
@@ -1729,7 +1729,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
   EXPECT_THAT(
       masking_layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
-  EXPECT_EQ(Translation(150, 150), masking_layer->screen_space_transform());
+  EXPECT_EQ(Translation(150, 150), masking_layer->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Size(100, 100), masking_layer->bounds());
   const cc::EffectNode* masking_group =
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());

@@ -72,7 +72,7 @@ void InvalidationBenchmark::DidUpdateLayers(LayerTreeHost* layer_tree_host) {
 void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
   gfx::Rect visible_layer_rect = gfx::Rect(layer->bounds());
   gfx::Transform from_screen;
-  bool invertible = layer->screen_space_transform().GetInverse(&from_screen);
+  bool invertible = layer->ScreenSpaceTransform().GetInverse(&from_screen);
   if (!invertible)
     from_screen = gfx::Transform();
   gfx::Rect viewport_rect = MathUtil::ProjectEnclosingClippedRect(

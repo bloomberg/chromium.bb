@@ -1443,7 +1443,7 @@ int Layer::num_copy_requests_in_target_subtree() {
       ->num_copy_requests_in_subtree;
 }
 
-gfx::Transform Layer::screen_space_transform() const {
+gfx::Transform Layer::ScreenSpaceTransform() const {
   DCHECK_NE(transform_tree_index_, TransformTree::kInvalidNodeId);
   return draw_property_utils::ScreenSpaceTransform(
       this, layer_tree_host_->property_trees()->transform_tree);

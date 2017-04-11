@@ -70,10 +70,10 @@ TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
 
 void ExpectEqualLayerRectsInTarget(cc::Layer* layer1, cc::Layer* layer2) {
   gfx::RectF layer1_rect_in_target(gfx::SizeF(layer1->bounds()));
-  layer1->screen_space_transform().TransformRect(&layer1_rect_in_target);
+  layer1->ScreenSpaceTransform().TransformRect(&layer1_rect_in_target);
 
   gfx::RectF layer2_rect_in_target(gfx::SizeF(layer2->bounds()));
-  layer2->screen_space_transform().TransformRect(&layer2_rect_in_target);
+  layer2->ScreenSpaceTransform().TransformRect(&layer2_rect_in_target);
 
   EXPECT_FLOAT_RECT_EQ(layer1_rect_in_target, layer2_rect_in_target);
 }
