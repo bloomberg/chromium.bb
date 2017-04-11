@@ -151,7 +151,7 @@ class CORE_EXPORT ImageBitmap final
   ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(PassRefPtr<StaticBitmapImage>);
-  ImageBitmap(PassRefPtr<StaticBitmapImage>,
+  ImageBitmap(RefPtr<StaticBitmapImage>,
               Optional<IntRect>,
               const ImageBitmapOptions&);
   ImageBitmap(const void* pixel_data,

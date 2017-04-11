@@ -428,7 +428,7 @@ DEFINE_TRACE(WorkerThreadableLoader) {
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
     WorkerThreadableLoader* worker_loader,
-    PassRefPtr<WorkerLoaderProxy> pass_loader_proxy,
+    RefPtr<WorkerLoaderProxy> loader_proxy,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     std::unique_ptr<CrossThreadResourceRequestData> request,
     const ThreadableLoaderOptions& options,
@@ -436,7 +436,6 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
     PassRefPtr<WaitableEventWithTasks> event_with_tasks) {
   DCHECK(IsMainThread());
   TaskForwarder* forwarder;
-  RefPtr<WorkerLoaderProxy> loader_proxy = pass_loader_proxy;
   ThreadableLoadingContext* loading_context =
       loader_proxy->GetThreadableLoadingContext();
   if (!loading_context)
@@ -444,7 +443,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
   if (event_with_tasks)
     forwarder = new SyncTaskForwarder(std::move(event_with_tasks));
   else
-    forwarder = new AsyncTaskForwarder(loader_proxy);
+    forwarder = new AsyncTaskForwarder(std::move(loader_proxy));
 
   MainThreadLoaderHolder* main_thread_loader_holder =
       new MainThreadLoaderHolder(forwarder, worker_thread_lifecycle_context);

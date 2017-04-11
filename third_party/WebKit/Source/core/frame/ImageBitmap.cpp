@@ -964,18 +964,17 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
   image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
-ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image,
+ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image,
                          Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   bool origin_clean = image->OriginClean();
-  RefPtr<Image> input = image;
   ParsedOptions parsed_options =
-      ParseOptions(options, crop_rect, input->size());
+      ParseOptions(options, crop_rect, image->size());
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
   image_ = CropImageAndApplyColorSpaceConversion(
-      input.Get(), parsed_options, kPremultiplyAlpha,
+      image.Get(), parsed_options, kPremultiplyAlpha,
       ColorBehavior::TransformToGlobalTarget());
   if (!image_)
     return;

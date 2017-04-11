@@ -141,7 +141,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
-                               PassRefPtr<WorkerLoaderProxy>,
+                               RefPtr<WorkerLoaderProxy>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,

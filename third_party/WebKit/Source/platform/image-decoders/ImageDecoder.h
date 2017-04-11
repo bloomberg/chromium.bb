@@ -93,7 +93,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // we can't sniff a supported type from the provided data (possibly
   // because there isn't enough data yet).
   // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-  static std::unique_ptr<ImageDecoder> Create(PassRefPtr<SegmentReader> data,
+  static std::unique_ptr<ImageDecoder> Create(RefPtr<SegmentReader> data,
                                               bool data_complete,
                                               AlphaOption,
                                               const ColorBehavior&);

@@ -74,7 +74,7 @@ class PLATFORM_EXPORT ImageSource final {
 
   PassRefPtr<SharedBuffer> Data();
   // Returns false when the decoder layer rejects the data.
-  bool SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
+  bool SetData(RefPtr<SharedBuffer> data, bool all_data_received);
   String FilenameExtension() const;
 
   bool IsSizeAvailable();

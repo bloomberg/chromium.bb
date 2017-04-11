@@ -472,7 +472,7 @@ void CrossOriginAccessControl::RedirectErrorString(
 }
 
 bool CrossOriginAccessControl::HandleRedirect(
-    PassRefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> current_security_origin,
     ResourceRequest& new_request,
     const ResourceResponse& redirect_response,
     StoredCredentials with_credentials,
@@ -481,8 +481,6 @@ bool CrossOriginAccessControl::HandleRedirect(
   // http://www.w3.org/TR/cors/#redirect-steps terminology:
   const KURL& last_url = redirect_response.Url();
   const KURL& new_url = new_request.Url();
-
-  RefPtr<SecurityOrigin> current_security_origin = security_origin;
 
   RefPtr<SecurityOrigin> new_security_origin = current_security_origin;
 

@@ -49,11 +49,10 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   USING_FAST_MALLOC(DeferredImageDecoder);
 
  public:
-  static std::unique_ptr<DeferredImageDecoder> Create(
-      PassRefPtr<SharedBuffer> data,
-      bool data_complete,
-      ImageDecoder::AlphaOption,
-      const ColorBehavior&);
+  static std::unique_ptr<DeferredImageDecoder> Create(RefPtr<SharedBuffer> data,
+                                                      bool data_complete,
+                                                      ImageDecoder::AlphaOption,
+                                                      const ColorBehavior&);
 
   static std::unique_ptr<DeferredImageDecoder> CreateForTesting(
       std::unique_ptr<ImageDecoder>);
@@ -92,7 +91,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   sk_sp<SkImage> CreateFrameImageAtIndex(size_t index, bool known_to_be_opaque);
 
-  void SetDataInternal(PassRefPtr<SharedBuffer> data,
+  void SetDataInternal(RefPtr<SharedBuffer> data,
                        bool all_data_received,
                        bool push_data_to_decoder);
 

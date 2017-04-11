@@ -58,12 +58,10 @@ struct DeferredFrameData {
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
-    PassRefPtr<SharedBuffer> pass_data,
+    RefPtr<SharedBuffer> data,
     bool data_complete,
     ImageDecoder::AlphaOption alpha_option,
     const ColorBehavior& color_behavior) {
-  RefPtr<SharedBuffer> data = pass_data;
-
   std::unique_ptr<ImageDecoder> actual_decoder =
       ImageDecoder::Create(data, data_complete, alpha_option, color_behavior);
   if (!actual_decoder)
@@ -146,10 +144,9 @@ void DeferredImageDecoder::SetData(PassRefPtr<SharedBuffer> data,
   SetDataInternal(std::move(data), all_data_received, true);
 }
 
-void DeferredImageDecoder::SetDataInternal(PassRefPtr<SharedBuffer> pass_data,
+void DeferredImageDecoder::SetDataInternal(RefPtr<SharedBuffer> data,
                                            bool all_data_received,
                                            bool push_data_to_decoder) {
-  RefPtr<SharedBuffer> data = pass_data;
   if (actual_decoder_) {
     all_data_received_ = all_data_received;
     if (push_data_to_decoder)

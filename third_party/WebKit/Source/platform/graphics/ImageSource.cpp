@@ -46,9 +46,7 @@ PassRefPtr<SharedBuffer> ImageSource::Data() {
   return decoder_ ? decoder_->Data() : nullptr;
 }
 
-bool ImageSource::SetData(PassRefPtr<SharedBuffer> pass_data,
-                          bool all_data_received) {
-  RefPtr<SharedBuffer> data = pass_data;
+bool ImageSource::SetData(RefPtr<SharedBuffer> data, bool all_data_received) {
   all_data_received_ = all_data_received;
 
   if (decoder_) {

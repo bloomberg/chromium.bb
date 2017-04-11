@@ -166,7 +166,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   void NotifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
   void NotifyObserversOnTaskRunner(ObserverListMap*,
                                    ObserverType,
-                                   PassRefPtr<WebTaskRunner>,
+                                   RefPtr<WebTaskRunner>,
                                    const NetworkState&);
 
   void AddObserver(ObserverListMap&,
@@ -174,7 +174,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
                    PassRefPtr<WebTaskRunner>);
   void RemoveObserver(ObserverListMap&,
                       NetworkStateObserver*,
-                      PassRefPtr<WebTaskRunner>);
+                      RefPtr<WebTaskRunner>);
 
   ObserverList* LockAndFindObserverList(ObserverListMap&,
                                         PassRefPtr<WebTaskRunner>);

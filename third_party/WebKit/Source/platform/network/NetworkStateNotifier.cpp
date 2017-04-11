@@ -158,9 +158,8 @@ void NetworkStateNotifier::NotifyObservers(ObserverListMap& map,
 void NetworkStateNotifier::NotifyObserversOnTaskRunner(
     ObserverListMap* map,
     ObserverType type,
-    PassRefPtr<WebTaskRunner> pass_task_runner,
+    RefPtr<WebTaskRunner> task_runner,
     const NetworkState& state) {
-  RefPtr<WebTaskRunner> task_runner = pass_task_runner;
   ObserverList* observer_list = LockAndFindObserverList(*map, task_runner);
 
   // The context could have been removed before the notification task got to
@@ -191,7 +190,7 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
   observer_list->iterating = false;
 
   if (!observer_list->zeroed_observers.IsEmpty())
-    CollectZeroedObservers(*map, observer_list, task_runner);
+    CollectZeroedObservers(*map, observer_list, std::move(task_runner));
 }
 
 void NetworkStateNotifier::AddObserver(ObserverListMap& map,
@@ -210,11 +209,9 @@ void NetworkStateNotifier::AddObserver(ObserverListMap& map,
   result.stored_value->value->observers.push_back(observer);
 }
 
-void NetworkStateNotifier::RemoveObserver(
-    ObserverListMap& map,
-    NetworkStateObserver* observer,
-    PassRefPtr<WebTaskRunner> pass_task_runner) {
-  RefPtr<WebTaskRunner> task_runner = pass_task_runner;
+void NetworkStateNotifier::RemoveObserver(ObserverListMap& map,
+                                          NetworkStateObserver* observer,
+                                          RefPtr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
   DCHECK(observer);
 
@@ -230,7 +227,7 @@ void NetworkStateNotifier::RemoveObserver(
   }
 
   if (!observer_list->iterating && !observer_list->zeroed_observers.IsEmpty())
-    CollectZeroedObservers(map, observer_list, task_runner);
+    CollectZeroedObservers(map, observer_list, std::move(task_runner));
 }
 
 NetworkStateNotifier::ObserverList*

@@ -119,7 +119,7 @@ class PLATFORM_EXPORT CrossOriginAccessControl {
   // message for any of the error conditions.
   static RedirectStatus CheckRedirectLocation(const KURL&);
 
-  static bool HandleRedirect(PassRefPtr<SecurityOrigin>,
+  static bool HandleRedirect(RefPtr<SecurityOrigin>,
                              ResourceRequest&,
                              const ResourceResponse&,
                              StoredCredentials,
