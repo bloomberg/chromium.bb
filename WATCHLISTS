@@ -2199,6 +2199,7 @@
     'tether': ['jlklein+watch-tether@chromium.org',
                     'khorimoto+watch-tether@chromium.org',
                     'hansberry+watch-tether@chromium.org',
+                    'lesliewatkins+watch-tether@chromium.org',
                     'tengs+watch-tether@chromium.org',
                     'jhawkins+watch-tether@chromium.org'],
     'textinput': ['nona+watch@chromium.org',
