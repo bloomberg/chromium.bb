@@ -344,7 +344,7 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
     return nullptr;
   }
 
-  std::vector<Value::DictStorage::value_type> dict_storage;
+  std::unique_ptr<DictionaryValue> dict(new DictionaryValue);
 
   NextChar();
   Token token = GetNextToken();
@@ -376,7 +376,7 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
       return nullptr;
     }
 
-    dict_storage.emplace_back(key.DestructiveAsString(), std::move(value));
+    dict->SetWithoutPathExpansion(key.AsStringPiece(), std::move(value));
 
     NextChar();
     token = GetNextToken();
@@ -393,8 +393,7 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
     }
   }
 
-  return MakeUnique<Value>(
-      Value::DictStorage(std::move(dict_storage), KEEP_LAST_OF_DUPES));
+  return std::move(dict);
 }
 
 std::unique_ptr<Value> JSONParser::ConsumeList() {

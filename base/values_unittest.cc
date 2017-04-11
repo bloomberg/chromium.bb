@@ -1521,7 +1521,8 @@ TEST(ValuesTest, GetWithNullOutValue) {
 
 TEST(ValuesTest, SelfSwap) {
   base::Value test(1);
-  std::swap(test, test);
+  using namespace std;
+  swap(test, test);
   EXPECT_TRUE(test.GetInt() == 1);
 }
 

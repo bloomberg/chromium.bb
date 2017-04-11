@@ -167,10 +167,6 @@ Value::Value(std::vector<char>&& in_blob) noexcept : type_(Type::BINARY) {
   binary_value_.Init(std::move(in_blob));
 }
 
-Value::Value(DictStorage&& in_dict) noexcept : type_(Type::DICTIONARY) {
-  dict_ptr_.Init(MakeUnique<DictStorage>(std::move(in_dict)));
-}
-
 Value& Value::operator=(const Value& that) {
   if (type_ == that.type_) {
     InternalCopyAssignFromSameType(that);
