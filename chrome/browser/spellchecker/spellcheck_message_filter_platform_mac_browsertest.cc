@@ -56,17 +56,16 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterPlatformMacBrowserTest,
   target->OnMessageReceived(to_be_received);
 
   run_loop.Run();
-  EXPECT_EQ(1U, target->sent_messages_.size());
+  ASSERT_EQ(1U, target->sent_messages_.size());
 
   SpellCheckMsg_RespondTextCheck::Param params;
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
       target->sent_messages_[0].get(), &params);
-  std::vector<SpellCheckResult> sent_results = std::get<2>(params);
-
   EXPECT_TRUE(ok);
-  EXPECT_EQ(1U, sent_results.size());
+
+  std::vector<SpellCheckResult> sent_results = std::get<2>(params);
+  ASSERT_EQ(1U, sent_results.size());
   EXPECT_EQ(sent_results[0].location, 0);
   EXPECT_EQ(sent_results[0].length, 2);
-  EXPECT_EQ(sent_results[0].decoration,
-            SpellCheckResult::SPELLING);
+  EXPECT_EQ(sent_results[0].decoration, SpellCheckResult::SPELLING);
 }
