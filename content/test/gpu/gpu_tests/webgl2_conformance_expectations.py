@@ -48,6 +48,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
               bug=701060)
 
+    # canvas.commit() promise synchronization isn't fully reliable yet.
+    self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
+              bug=709484)
+
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',

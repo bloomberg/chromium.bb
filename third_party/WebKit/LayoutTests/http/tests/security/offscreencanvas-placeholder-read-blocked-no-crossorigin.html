@@ -16,20 +16,28 @@ async_test(t => {
     t.step(function() {
       canvas.toDataURL(); // Succeeds by not throwing
     });
-    setTimeout(function() { // sync barrier for commit() propagation
-      t.step(function() {
-        assert_throws("SecurityError", function() {
-          canvas.toDataURL();
-        }, "Check toDataURL blocked.");
-      });
-      ctx.commit(); // Second frame does not reset origin-clean flag.
-      setTimeout(function() { // sync barrier for commit() propagation
+    // TODO(junov): Use the Promise returned by commit to schedule after the
+    // commit. (crbug.com/709484)
+    setTimeout(function() {
+      setTimeout(function() {
         t.step(function() {
           assert_throws("SecurityError", function() {
             canvas.toDataURL();
-          });
+          }, "Check toDataURL blocked.");
         });
-        t.done();
+        ctx.commit(); // Second frame does not reset origin-clean flag.
+        // TODO(junov): Use the Promise returned by commit to schedule after the
+        // commit. (crbug.com/709484)
+        setTimeout(function() {
+          setTimeout(function() {
+            t.step(function() {
+              assert_throws("SecurityError", function() {
+                canvas.toDataURL();
+              });
+            });
+            t.done();
+          }, 0);
+        }, 0);
       }, 0);
     }, 0);
   }

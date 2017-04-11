@@ -105,6 +105,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
               bug=701060)
 
+    # canvas.commit() promise synchronization isn't fully reliable yet.
+    self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
+              bug=709484)
+
     # Passthrough command decoder
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['passthrough'], bug=679696)

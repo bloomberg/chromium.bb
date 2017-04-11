@@ -41,13 +41,17 @@ async_test(function(t) {
   c.width = 50;
   c.height = 50;
   var ctx2 = c.getContext("2d");
+  // TODO(junov): Use the Promise returned by commit to schedule after the
+  // commit. (crbug.com/709484)
   setTimeout(function() {
-    ctx2.drawImage(canvas, 0, 0);
-    var pixels = ctx2.getImageData(0, 0, 1, 1).data;
-    t.step(function() {
-      assert_array_equals(pixels, [0, 0, 255, 255]);
-    });
-    t.done();
+    setTimeout(function() {
+      ctx2.drawImage(canvas, 0, 0);
+      var pixels = ctx2.getImageData(0, 0, 1, 1).data;
+      t.step(function() {
+        assert_array_equals(pixels, [0, 0, 255, 255]);
+      });
+      t.done();
+    }, 0);
   }, 0);
 }, "Verify that the placeholder canvas can be used as an image source");
 </script>

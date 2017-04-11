@@ -25,18 +25,20 @@ async_test(function(t) {
       assert_array_equals(pixel, expectedValue, "Verify that commit() is not synchronous.");
     });
 
-    // The call to setTimeout acts as a synchronization barrier to guarantee that
-    // the commit has propagated.
+    // TODO(junov): Use the Promise returned by commit to schedule after the
+    // commit. (crbug.com/709484)
     setTimeout(function() {
-      createImageBitmap(canvas).then(image => {
-        testCtx.drawImage(image, 0, 0);
-        t.step( function() {
-          var pixel = testCtx.getImageData(0, 0, 1, 1).data;
-          var expectedValue = [0, 255, 0, 255];
-          assert_array_equals(pixel, expectedValue, "Verify that async update of placeholder propagated through createImageData");
+      setTimeout(function() {
+        createImageBitmap(canvas).then(image => {
+          testCtx.drawImage(image, 0, 0);
+          t.step( function() {
+            var pixel = testCtx.getImageData(0, 0, 1, 1).data;
+            var expectedValue = [0, 255, 0, 255];
+            assert_array_equals(pixel, expectedValue, "Verify that async update of placeholder propagated through createImageData");
+          });
+          t.done();
         });
-        t.done();
-      });
+      }, 0);
     }, 0);
   });
 }, "Test whether createImageBitmap on a placeholder canvas captures the image committed to the associated OffscreenCanvas.");

@@ -16,23 +16,24 @@ ctx.fillRect(0, 0, 100, 100);
 ctx.commit();
 verifyImage(canvas, [0, 0, 0, 0], "Verify that OffscreenCanvas.commit() does not propagate the image synchronously to the placeholder canvas.");
 
+// TODO(junov): Use the Promise returned by commit to schedule after the
+// commit. (crbug.com/709484)
 setTimeout(function() {
-  // setTimeout is a synchronization barrier that guarantees
-  // that the offscreen commit has been processed by the event loop,
-  // as long as the timeout event is queued after the call to commit().
-  var green = [0, 255, 0, 255];
-  verifyImage(canvas, green, "verify that drawImage works with placeholder canvas as a source.");
-  var testImage = new Image();
-  testImage.src = canvas.toDataURL();
-  testImage.onload = function() {
-    verifyImage(canvas, green, "verify that toDataURL works on placeholder canvas.");
-    canvas.toBlob(blob => {
-      createImageBitmap(blob).then(image => {
-      	verifyImage(image, green, "verify that toBlob works on placeholder canvas.");
-      	t.done();
-      })
-    });
-  }
+  setTimeout(function() {
+    var green = [0, 255, 0, 255];
+    verifyImage(canvas, green, "verify that drawImage works with placeholder canvas as a source.");
+    var testImage = new Image();
+    testImage.src = canvas.toDataURL();
+    testImage.onload = function() {
+      verifyImage(canvas, green, "verify that toDataURL works on placeholder canvas.");
+      canvas.toBlob(blob => {
+        createImageBitmap(blob).then(image => {
+          verifyImage(image, green, "verify that toBlob works on placeholder canvas.");
+          t.done();
+        })
+      });
+    }
+  }, 0);
 }, 0);
 
 function verifyImage(image, expectedColor, description) {

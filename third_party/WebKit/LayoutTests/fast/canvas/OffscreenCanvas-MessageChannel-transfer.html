@@ -12,16 +12,20 @@ async_test(t => {
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 10, 10);
     ctx.commit();
-    setTimeout(function() { // synchronization barrier to allow commit to propagate
-      var canvas2 = document.createElement('canvas');
-      canvas2.width = canvas2.height = 10;
-      var ctx2 = canvas2.getContext('2d');
-      ctx2.drawImage(canvas, 0, 0);
-      var pixel = ctx2.getImageData(0, 0, 1, 1).data;
-      t.step(function() {
-        assert_array_equals(pixel, [0, 255, 0, 255]);
-      });
-      t.done();
+    // TODO(junov): Use the Promise returned by commit to schedule after the
+    // commit. (crbug.com/709484)
+    setTimeout(function() {
+      setTimeout(function() {
+        var canvas2 = document.createElement('canvas');
+        canvas2.width = canvas2.height = 10;
+        var ctx2 = canvas2.getContext('2d');
+        ctx2.drawImage(canvas, 0, 0);
+        var pixel = ctx2.getImageData(0, 0, 1, 1).data;
+        t.step(function() {
+          assert_array_equals(pixel, [0, 255, 0, 255]);
+        });
+        t.done();
+      }, 0);
     }, 0);
   }
   channel.port1.postMessage(offscreen, [offscreen]);

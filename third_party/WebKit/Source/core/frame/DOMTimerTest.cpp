@@ -23,6 +23,8 @@ namespace blink {
 
 namespace {
 
+const double kThreshold = 0.000001;
+
 class DOMTimerTest : public RenderingTest {
  public:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
@@ -32,9 +34,9 @@ class DOMTimerTest : public RenderingTest {
   // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minumum clamp of 4m
   // is applied from the 5th iteration onwards.
   const std::vector<Matcher<double>> kExpectedTimings = {
-      DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
-      DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
-      DoubleNear(4., 0.000001), DoubleNear(4., 0.000001),
+      DoubleNear(1., kThreshold), DoubleNear(1., kThreshold),
+      DoubleNear(1., kThreshold), DoubleNear(1., kThreshold),
+      DoubleNear(4., kThreshold), DoubleNear(4., kThreshold),
   };
 
   void SetUp() override {
@@ -62,6 +64,11 @@ class DOMTimerTest : public RenderingTest {
                                        exception_state);
   }
 
+  double ToDoubleValue(v8::Local<v8::Value> value, v8::HandleScope& scope) {
+    NonThrowableExceptionState exceptionState;
+    return ToDouble(scope.GetIsolate(), value, exceptionState);
+  }
+
   void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
     ScriptSourceCode script(script_text);
     GetDocument().GetFrame()->Script().ExecuteScriptInMainWorld(script);
@@ -69,8 +76,27 @@ class DOMTimerTest : public RenderingTest {
   }
 };
 
-const char* g_k_set_timeout_script_text =
-    "var id;"
+const char* const kSetTimeout0ScriptText =
+    "var last = performance.now();"
+    "var elapsed;"
+    "function setTimeoutCallback() {"
+    "  var current = performance.now();"
+    "  elapsed = current - last;"
+    "  times.push(elapsed);"
+    "}"
+    "setTimeout(setTimeoutCallback, 0);";
+
+TEST_F(DOMTimerTest, setTimeout_ZeroIsNotClampedToOne) {
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+  ExecuteScriptAndWaitUntilIdle(kSetTimeout0ScriptText);
+
+  double time = ToDoubleValue(EvalExpression("elapsed"), scope);
+
+  EXPECT_THAT(time, DoubleNear(0., kThreshold));
+}
+
+const char* const kSetTimeoutNestedScriptText =
     "var last = performance.now();"
     "var times = [];"
     "function nestSetTimeouts() {"
@@ -87,14 +113,14 @@ const char* g_k_set_timeout_script_text =
 TEST_F(DOMTimerTest, setTimeout_ClampsAfter4Nestings) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(g_k_set_timeout_script_text);
+  ExecuteScriptAndWaitUntilIdle(kSetTimeoutNestedScriptText);
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
   EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
 }
 
-const char* g_k_set_interval_script_text =
+const char* const kSetIntervalScriptText =
     "var last = performance.now();"
     "var times = [];"
     "var id = setInterval(function() {"
@@ -110,7 +136,7 @@ const char* g_k_set_interval_script_text =
 TEST_F(DOMTimerTest, setInterval_ClampsAfter4Iterations) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
+  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
@@ -120,12 +146,12 @@ TEST_F(DOMTimerTest, setInterval_ClampsAfter4Iterations) {
 TEST_F(DOMTimerTest, setInterval_NestingResetsForLaterCalls) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
+  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
 
   // Run the setIntervalScript again to verify that the clamp imposed for
   // nesting beyond 4 levels is reset when setInterval is called again in the
   // original scope but after the original setInterval has completed.
-  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
+  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
 
   auto times(ToDoubleArray(EvalExpression("times"), scope));
 
