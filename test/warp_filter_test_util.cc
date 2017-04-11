@@ -80,8 +80,8 @@ void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
                   (1 << WARPEDMODEL_PREC_BITS),
               INT16_MIN, INT16_MAX);
 
-    if ((4 * abs(*alpha) + 7 * abs(*beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(*gamma) + 4 * abs(*delta) > (1 << WARPEDMODEL_PREC_BITS)))
+    if ((4 * abs(*alpha) + 7 * abs(*beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
+        (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
       continue;
 
     // We have a valid model, so finish
@@ -196,8 +196,8 @@ void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
                   (1 << WARPEDMODEL_PREC_BITS),
               INT16_MIN, INT16_MAX);
 
-    if ((4 * abs(*alpha) + 7 * abs(*beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(*gamma) + 4 * abs(*delta) > (1 << WARPEDMODEL_PREC_BITS)))
+    if ((4 * abs(*alpha) + 7 * abs(*beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
+        (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
       continue;
 
     // We have a valid model, so finish
