@@ -577,10 +577,16 @@ class SimulatorTestRunner(TestRunner):
     ]
 
     if test_filter:
-      kif_filter = get_kif_test_filter(test_filter, invert=invert)
-      gtest_filter = get_gtest_filter(test_filter, invert=invert)
-      cmd.extend(['-e', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
-      cmd.extend(['-c', '--gtest_filter=%s' % gtest_filter])
+      if self.xctest_path:
+        # iossim doesn't support inverted filters for XCTests.
+        if not invert:
+          for test in test_filter:
+            cmd.extend(['-o', test])
+      else:
+        kif_filter = get_kif_test_filter(test_filter, invert=invert)
+        gtest_filter = get_gtest_filter(test_filter, invert=invert)
+        cmd.extend(['-e', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
+        cmd.extend(['-c', '--gtest_filter=%s' % gtest_filter])
 
     for env_var in self.env_vars:
       cmd.extend(['-e', env_var])
