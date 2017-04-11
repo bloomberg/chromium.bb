@@ -28,6 +28,7 @@ class WPTExpectationsUpdater(object):
 
     def __init__(self, host):
         self.host = host
+        self.port = self.host.port_factory.get()
         self.finder = WebKitFinder(self.host.filesystem)
         self.port = self.host.port_factory.get()
 
@@ -255,7 +256,7 @@ class WPTExpectationsUpdater(object):
         """
         line_list = []
         for test_name, port_results in sorted(merged_results.iteritems()):
-            if not test_name.startswith('external'):
+            if not self.port.is_wpt_test(test_name):
                 continue
             for port_names, results in sorted(port_results.iteritems()):
                 line_list.append(self._create_line(test_name, port_names, results))

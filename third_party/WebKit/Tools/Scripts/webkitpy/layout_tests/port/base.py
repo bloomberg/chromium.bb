@@ -1140,12 +1140,12 @@ class Port(object):
         self._websocket_server = server
 
     @staticmethod
-    def is_wptserve_test(test):
-        """Whether wptserve should be used for a given test if enabled."""
+    def is_wpt_test(test):
+        """Whether a test is considered a web-platform-tests test."""
         return re.match(r'(virtual/[^/]+/)?external/wpt/', test)
 
     def should_use_wptserve(self, test):
-        return self.is_wptserve_test(test)
+        return self.is_wpt_test(test)
 
     def start_wptserve(self):
         """Starts a WPT web server.

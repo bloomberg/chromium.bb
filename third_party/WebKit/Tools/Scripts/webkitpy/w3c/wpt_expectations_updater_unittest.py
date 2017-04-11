@@ -198,24 +198,27 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(updater.create_line_list(results), [])
 
     def test_create_line_list_new_tests(self):
-        # In this example, there are three unexpected results. The new
-        # test expectation lines are sorted by test, and then specifier.
+        # In this example, there are three unexpected results for wpt tests.
+        # The new test expectation lines are sorted by test, and then specifier.
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
             'external/wpt/test/zzzz.html': {
                 'test-mac-mac10.10': {'expected': 'PASS', 'actual': 'TEXT', 'bug': 'crbug.com/test'},
             },
-            'external/wpt/test/path.html': {
+            'virtual/foo/external/wpt/test/zzzz.html': {
                 'test-linux-trusty': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
                 'test-mac-mac10.11': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/test'},
+            },
+            'unrelated/test.html': {
+                'test-linux-trusty': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
             },
         }
         self.assertEqual(
             updater.create_line_list(results),
             [
-                'crbug.com/test [ Trusty ] external/wpt/test/path.html [ Pass ]',
-                'crbug.com/test [ Mac10.11 ] external/wpt/test/path.html [ Timeout ]',
                 'crbug.com/test [ Mac10.10 ] external/wpt/test/zzzz.html [ Failure ]',
+                'crbug.com/test [ Trusty ] virtual/foo/external/wpt/test/zzzz.html [ Pass ]',
+                'crbug.com/test [ Mac10.11 ] virtual/foo/external/wpt/test/zzzz.html [ Timeout ]',
             ])
 
     def test_specifier_part(self):
