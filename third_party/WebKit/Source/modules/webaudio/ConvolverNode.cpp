@@ -131,7 +131,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   RefPtr<AudioBus> buffer_bus =
       AudioBus::Create(number_of_channels, buffer_length, false);
   for (unsigned i = 0; i < number_of_channels; ++i)
-    buffer_bus->SetChannelMemory(i, buffer->getChannelData(i)->Data(),
+    buffer_bus->SetChannelMemory(i, buffer->getChannelData(i).View()->Data(),
                                  buffer_length);
 
   buffer_bus->SetSampleRate(buffer->sampleRate());

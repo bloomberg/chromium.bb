@@ -115,27 +115,31 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(Vector<double> sequence,
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat32Array(
-    DOMFloat32Array* float32_array,
+    NotShared<DOMFloat32Array> float32_array,
     ExceptionState& exception_state) {
-  if (float32_array->length() != 6 && float32_array->length() != 16) {
+  if (float32_array.View()->length() != 6 &&
+      float32_array.View()->length() != 16) {
     exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements a "
         "for 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float32_array->Data(), float32_array->length());
+  return new DOMMatrixReadOnly(float32_array.View()->Data(),
+                               float32_array.View()->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
-    DOMFloat64Array* float64_array,
+    NotShared<DOMFloat64Array> float64_array,
     ExceptionState& exception_state) {
-  if (float64_array->length() != 6 && float64_array->length() != 16) {
+  if (float64_array.View()->length() != 6 &&
+      float64_array.View()->length() != 16) {
     exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements "
         "for a 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float64_array->Data(), float64_array->length());
+  return new DOMMatrixReadOnly(float64_array.View()->Data(),
+                               float64_array.View()->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
@@ -275,7 +279,7 @@ DOMMatrixReadOnly::DOMMatrixReadOnly(const TransformationMatrix& matrix,
   is2d_ = is2d;
 }
 
-DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const {
+NotShared<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const {
   float array[] = {
       static_cast<float>(matrix_->M11()), static_cast<float>(matrix_->M12()),
       static_cast<float>(matrix_->M13()), static_cast<float>(matrix_->M14()),
@@ -286,17 +290,17 @@ DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const {
       static_cast<float>(matrix_->M41()), static_cast<float>(matrix_->M42()),
       static_cast<float>(matrix_->M43()), static_cast<float>(matrix_->M44())};
 
-  return DOMFloat32Array::Create(array, 16);
+  return NotShared<DOMFloat32Array>(DOMFloat32Array::Create(array, 16));
 }
 
-DOMFloat64Array* DOMMatrixReadOnly::toFloat64Array() const {
+NotShared<DOMFloat64Array> DOMMatrixReadOnly::toFloat64Array() const {
   double array[] = {
       matrix_->M11(), matrix_->M12(), matrix_->M13(), matrix_->M14(),
       matrix_->M21(), matrix_->M22(), matrix_->M23(), matrix_->M24(),
       matrix_->M31(), matrix_->M32(), matrix_->M33(), matrix_->M34(),
       matrix_->M41(), matrix_->M42(), matrix_->M43(), matrix_->M44()};
 
-  return DOMFloat64Array::Create(array, 16);
+  return NotShared<DOMFloat64Array>(DOMFloat64Array::Create(array, 16));
 }
 
 const String DOMMatrixReadOnly::toString() const {

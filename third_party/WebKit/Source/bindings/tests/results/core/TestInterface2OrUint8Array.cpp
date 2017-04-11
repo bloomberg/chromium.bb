@@ -35,18 +35,18 @@ TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(TestIn
   return container;
 }
 
-DOMUint8Array* TestInterface2OrUint8Array::getAsUint8Array() const {
+NotShared<DOMUint8Array> TestInterface2OrUint8Array::getAsUint8Array() const {
   DCHECK(isUint8Array());
   return m_uint8Array;
 }
 
-void TestInterface2OrUint8Array::setUint8Array(DOMUint8Array* value) {
+void TestInterface2OrUint8Array::setUint8Array(NotShared<DOMUint8Array> value) {
   DCHECK(isNull());
-  m_uint8Array = value;
+  m_uint8Array = Member<DOMUint8Array>(value.View());
   m_type = SpecificTypeUint8Array;
 }
 
-TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(DOMUint8Array* value) {
+TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(NotShared<DOMUint8Array> value) {
   TestInterface2OrUint8Array container;
   container.setUint8Array(value);
   return container;
@@ -75,7 +75,9 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
   }
 
   if (v8Value->IsUint8Array()) {
-    DOMUint8Array* cppValue = V8Uint8Array::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    NotShared<DOMUint8Array> cppValue = ToNotShared<NotShared<DOMUint8Array>>(isolate, v8Value, exceptionState);
+    if (exceptionState.HadException())
+      return;
     impl.setUint8Array(cppValue);
     return;
   }

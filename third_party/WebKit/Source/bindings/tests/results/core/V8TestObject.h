@@ -425,6 +425,7 @@ class V8TestObject {
   CORE_EXPORT static void voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void arrayBufferMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void arrayBufferViewMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void arrayBufferViewMethodRaisesExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void float32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void int32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void uint8ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

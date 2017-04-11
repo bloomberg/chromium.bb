@@ -31,9 +31,11 @@ String BufferSourceToString(
     length = application_server_key.getAsArrayBuffer()->ByteLength();
   } else if (application_server_key.isArrayBufferView()) {
     input = static_cast<unsigned char*>(
-        application_server_key.getAsArrayBufferView()->buffer()->Data());
-    length =
-        application_server_key.getAsArrayBufferView()->buffer()->ByteLength();
+        application_server_key.getAsArrayBufferView().View()->buffer()->Data());
+    length = application_server_key.getAsArrayBufferView()
+                 .View()
+                 ->buffer()
+                 ->ByteLength();
   } else {
     NOTREACHED();
     return String();

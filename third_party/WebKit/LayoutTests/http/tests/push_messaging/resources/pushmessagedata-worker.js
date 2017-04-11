@@ -108,3 +108,11 @@ test(function() {
     assert_equals(data.text(), s, 'String should not be NFC-normalized.');
 
 }, 'PushEventInit data is not normalized');
+
+if (self.SharedArrayBuffer) {
+    test(function() {
+        assert_throws(null, () => {
+            createPushMessageData(new Uint8Array(new SharedArrayBuffer(16)));
+        });
+    }, 'PushMessageData throws when passed SharedArrayBuffer view.');
+}

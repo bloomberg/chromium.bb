@@ -32,6 +32,7 @@
 #include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
@@ -63,8 +64,8 @@ class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
                               ExceptionState&);
 
   static PeriodicWave* Create(BaseAudioContext&,
-                              DOMFloat32Array* real,
-                              DOMFloat32Array* imag,
+                              NotShared<DOMFloat32Array> real,
+                              NotShared<DOMFloat32Array> imag,
                               bool normalize,
                               ExceptionState&);
 

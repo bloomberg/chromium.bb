@@ -231,6 +231,10 @@ def member_impl_context(member, interfaces_info, header_includes,
     else:
         header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
 
+    setter_value = 'value'
+    if idl_type.is_array_buffer_view_or_typed_array:
+        setter_value += '.View()'
+
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
@@ -245,4 +249,5 @@ def member_impl_context(member, interfaces_info, header_includes,
         'nullable_indicator_name': nullable_indicator_name,
         'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'setter_name': setter_name_for_dictionary_member(member),
+        'setter_value': setter_value,
     }

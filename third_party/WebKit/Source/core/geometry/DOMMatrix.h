@@ -6,6 +6,7 @@
 #define DOMMatrix_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/NotShared.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
 
@@ -21,8 +22,10 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   static DOMMatrix* Create(const SkMatrix44&, ExceptionState&);
   static DOMMatrix* Create(const String&, ExceptionState&);
   static DOMMatrix* Create(Vector<double>, ExceptionState&);
-  static DOMMatrix* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
-  static DOMMatrix* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
+  static DOMMatrix* fromFloat32Array(NotShared<DOMFloat32Array>,
+                                     ExceptionState&);
+  static DOMMatrix* fromFloat64Array(NotShared<DOMFloat64Array>,
+                                     ExceptionState&);
   static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
 
   void setA(double value) { matrix_->SetM11(value); }

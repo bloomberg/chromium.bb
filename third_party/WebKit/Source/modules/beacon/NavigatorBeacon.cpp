@@ -118,7 +118,7 @@ bool NavigatorBeacon::SendBeaconImpl(
   if (data.isArrayBufferView()) {
     allowed =
         PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance, url,
-                               data.getAsArrayBufferView(), beacon_size);
+                               data.getAsArrayBufferView().View(), beacon_size);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
     if (!FetchUtils::IsSimpleContentType(AtomicString(blob->type()))) {

@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "core/dom/NotShared.h"
 #include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediasource/TrackDefaultList.h"
@@ -78,7 +79,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   double timestampOffset() const;
   void setTimestampOffset(double, ExceptionState&);
   void appendBuffer(DOMArrayBuffer* data, ExceptionState&);
-  void appendBuffer(DOMArrayBufferView* data, ExceptionState&);
+  void appendBuffer(NotShared<DOMArrayBufferView> data, ExceptionState&);
   void abort(ExceptionState&);
   void remove(double start, double end, ExceptionState&);
   double appendWindowStart() const;

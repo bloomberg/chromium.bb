@@ -360,13 +360,15 @@ void SourceBuffer::appendBuffer(DOMArrayBuffer* data,
                        data->ByteLength(), exception_state);
 }
 
-void SourceBuffer::appendBuffer(DOMArrayBufferView* data,
+void SourceBuffer::appendBuffer(NotShared<DOMArrayBufferView> data,
                                 ExceptionState& exception_state) {
-  BLINK_SBLOG << __func__ << " this=" << this << " size=" << data->byteLength();
+  BLINK_SBLOG << __func__ << " this=" << this
+              << " size=" << data.View()->byteLength();
   // Section 3.2 appendBuffer()
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
-  AppendBufferInternal(static_cast<const unsigned char*>(data->BaseAddress()),
-                       data->byteLength(), exception_state);
+  AppendBufferInternal(
+      static_cast<const unsigned char*>(data.View()->BaseAddress()),
+      data.View()->byteLength(), exception_state);
 }
 
 void SourceBuffer::abort(ExceptionState& exception_state) {

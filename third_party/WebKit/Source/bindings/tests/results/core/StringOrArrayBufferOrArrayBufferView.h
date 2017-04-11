@@ -15,14 +15,16 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/NativeValueTraits.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
+#include "core/dom/FlexibleArrayBufferView.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class TestArrayBuffer;
-class TestArrayBufferView;
 
 class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -36,9 +38,9 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   static StringOrArrayBufferOrArrayBufferView fromArrayBuffer(TestArrayBuffer*);
 
   bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
-  TestArrayBufferView* getAsArrayBufferView() const;
-  void setArrayBufferView(TestArrayBufferView*);
-  static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(TestArrayBufferView*);
+  NotShared<TestArrayBufferView> getAsArrayBufferView() const;
+  void setArrayBufferView(NotShared<TestArrayBufferView>);
+  static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(NotShared<TestArrayBufferView>);
 
   bool isString() const { return m_type == SpecificTypeString; }
   String getAsString() const;

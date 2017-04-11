@@ -22,6 +22,7 @@
 #include "bindings/tests/idls/core/TestInterface2.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -186,8 +187,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setTestObjectSequenceMember(const HeapVector<Member<TestObject>>&);
 
   bool hasUint8ArrayMember() const;
-  DOMUint8Array* uint8ArrayMember() const;
-  void setUint8ArrayMember(DOMUint8Array*);
+  NotShared<DOMUint8Array> uint8ArrayMember() const;
+  void setUint8ArrayMember(NotShared<DOMUint8Array>);
 
   bool hasUnionInRecordMember() const;
   const HeapVector<std::pair<String, LongOrBoolean>>& unionInRecordMember() const;

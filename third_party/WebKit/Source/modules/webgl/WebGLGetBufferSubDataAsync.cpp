@@ -36,7 +36,7 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
     ScriptState* script_state,
     GLenum target,
     GLintptr src_byte_offset,
-    DOMArrayBufferView* dst_data,
+    NotShared<DOMArrayBufferView> dst_data,
     GLuint dst_offset,
     GLuint length) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -61,8 +61,8 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
   void* destination_data_ptr = nullptr;
   long long destination_byte_length = 0;
   const char* message = context->ValidateGetBufferSubData(
-      __FUNCTION__, target, src_byte_offset, dst_data, dst_offset, length,
-      &source_buffer, &destination_data_ptr, &destination_byte_length);
+      __FUNCTION__, target, src_byte_offset, dst_data.View(), dst_offset,
+      length, &source_buffer, &destination_data_ptr, &destination_byte_length);
   if (message) {
     // If there was a GL error, it was already synthesized in
     // validateGetBufferSubData, so it's not done here.
@@ -83,7 +83,7 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
 
   // If the length of the copy is zero, this is a no-op.
   if (!destination_byte_length) {
-    resolver->Resolve(dst_data);
+    resolver->Resolve(dst_data.View());
     return promise;
   }
 
@@ -101,8 +101,8 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
   }
 
   auto callback_object = new WebGLGetBufferSubDataAsyncCallback(
-      context, resolver, mapped_data, query_id, dst_data, destination_data_ptr,
-      destination_byte_length);
+      context, resolver, mapped_data, query_id, dst_data.View(),
+      destination_data_ptr, destination_byte_length);
   context->RegisterGetBufferSubDataAsyncCallback(callback_object);
   auto callback = WTF::Bind(&WebGLGetBufferSubDataAsyncCallback::Resolve,
                             WrapPersistent(callback_object));

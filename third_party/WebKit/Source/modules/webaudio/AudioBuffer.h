@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -74,15 +75,20 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
 
   // Channel data access
   unsigned numberOfChannels() const { return channels_.size(); }
-  DOMFloat32Array* getChannelData(unsigned channel_index, ExceptionState&);
-  DOMFloat32Array* getChannelData(unsigned channel_index);
-  void copyFromChannel(DOMFloat32Array*, long channel_number, ExceptionState&);
-  void copyFromChannel(DOMFloat32Array*,
+  NotShared<DOMFloat32Array> getChannelData(unsigned channel_index,
+                                            ExceptionState&);
+  NotShared<DOMFloat32Array> getChannelData(unsigned channel_index);
+  void copyFromChannel(NotShared<DOMFloat32Array>,
+                       long channel_number,
+                       ExceptionState&);
+  void copyFromChannel(NotShared<DOMFloat32Array>,
                        long channel_number,
                        unsigned long start_in_channel,
                        ExceptionState&);
-  void copyToChannel(DOMFloat32Array*, long channel_number, ExceptionState&);
-  void copyToChannel(DOMFloat32Array*,
+  void copyToChannel(NotShared<DOMFloat32Array>,
+                     long channel_number,
+                     ExceptionState&);
+  void copyToChannel(NotShared<DOMFloat32Array>,
                      long channel_number,
                      unsigned long start_in_channel,
                      ExceptionState&);

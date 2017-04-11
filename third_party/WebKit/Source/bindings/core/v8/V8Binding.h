@@ -47,6 +47,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringView.h"
@@ -216,6 +217,12 @@ inline void V8SetReturnValue(const CallbackInfo& callback_info,
   V8SetReturnValue(callback_info, impl.Get());
 }
 
+template <typename CallbackInfo, typename T>
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo,
+                             NotShared<T> notShared) {
+  V8SetReturnValue(callbackInfo, notShared.View());
+}
+
 template <typename CallbackInfo>
 inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
                                          ScriptWrappable* impl) {
@@ -332,6 +339,13 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
                                  const v8::Local<T> handle,
                                  const ScriptWrappable*) {
   V8SetReturnValue(callback_info, handle);
+}
+
+template <typename CallbackInfo, typename T>
+inline void V8SetReturnValueFast(const CallbackInfo& callbackInfo,
+                                 NotShared<T> notShared,
+                                 const ScriptWrappable* wrappable) {
+  V8SetReturnValueFast(callbackInfo, notShared.View(), wrappable);
 }
 
 // Convert v8::String to a WTF::String. If the V8 string is not already
@@ -1163,6 +1177,25 @@ CORE_EXPORT v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value>,
 CORE_EXPORT v8::Local<v8::Value> FromJSONString(v8::Isolate*,
                                                 const String& stringified_json,
                                                 ExceptionState&);
+
+// Ensure that a typed array value is not backed by a SharedArrayBuffer. If it
+// is, an exception will be thrown. The return value will use the NotShared
+// wrapper type.
+template <typename NotSharedType>
+NotSharedType ToNotShared(v8::Isolate* isolate,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+  using DOMTypedArray = typename NotSharedType::TypedArrayType;
+  DOMTypedArray* dom_typed_array =
+      V8TypeOf<DOMTypedArray>::Type::toImplWithTypeCheck(isolate, value);
+  if (dom_typed_array && dom_typed_array->IsShared()) {
+    exception_state.ThrowTypeError(
+        "The provided ArrayBufferView value must not be shared.");
+    return NotSharedType();
+  }
+  return NotSharedType(dom_typed_array);
+}
+
 }  // namespace blink
 
 #endif  // V8Binding_h

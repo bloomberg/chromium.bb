@@ -27,6 +27,7 @@
 #define AnalyserNode_h
 
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "modules/webaudio/RealtimeAnalyser.h"
 
@@ -111,10 +112,10 @@ class AnalyserNode final : public AudioBasicInspectorNode {
   double maxDecibels() const;
   void setSmoothingTimeConstant(double, ExceptionState&);
   double smoothingTimeConstant() const;
-  void getFloatFrequencyData(DOMFloat32Array*);
-  void getByteFrequencyData(DOMUint8Array*);
-  void getFloatTimeDomainData(DOMFloat32Array*);
-  void getByteTimeDomainData(DOMUint8Array*);
+  void getFloatFrequencyData(NotShared<DOMFloat32Array>);
+  void getByteFrequencyData(NotShared<DOMUint8Array>);
+  void getFloatTimeDomainData(NotShared<DOMFloat32Array>);
+  void getByteTimeDomainData(NotShared<DOMUint8Array>);
 
  private:
   AnalyserNode(BaseAudioContext&);

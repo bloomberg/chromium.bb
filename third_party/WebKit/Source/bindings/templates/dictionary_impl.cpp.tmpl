@@ -33,7 +33,7 @@ bool {{cpp_class}}::{{member.has_method_name}}() const {
   return {{member.getter_expression}};
 }
 void {{cpp_class}}::{{member.setter_name}}({{member.rvalue_cpp_type}} value) {
-  m_{{member.cpp_name}} = value;
+  m_{{member.cpp_name}} = {{member.setter_value}};
   {% if member.nullable_indicator_name %}
   {{member.nullable_indicator_name}} = true;
   {% endif %}

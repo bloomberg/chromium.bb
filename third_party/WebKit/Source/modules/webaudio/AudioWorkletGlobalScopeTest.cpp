@@ -218,10 +218,12 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
         AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
     AudioBuffer* output_buffer =
         AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
-    DOMFloat32Array* input_channel_data = input_buffer->getChannelData(0);
+    DOMFloat32Array* input_channel_data =
+        input_buffer->getChannelData(0).View();
     float* input_array_data = input_channel_data->Data();
     EXPECT_TRUE(input_array_data);
-    DOMFloat32Array* output_channel_data = output_buffer->getChannelData(0);
+    DOMFloat32Array* output_channel_data =
+        output_buffer->getChannelData(0).View();
     float* output_array_data = output_channel_data->Data();
     EXPECT_TRUE(output_array_data);
 

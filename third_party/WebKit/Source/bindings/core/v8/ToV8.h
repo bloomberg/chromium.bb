@@ -17,6 +17,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "v8/include/v8.h"
@@ -273,6 +274,13 @@ inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
       return v8::Local<v8::Value>();
   }
   return object;
+}
+
+template <typename T>
+inline v8::Local<v8::Value> ToV8(NotShared<T> value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  return ToV8(value.View(), creation_context, isolate);
 }
 
 template <typename Sequence>

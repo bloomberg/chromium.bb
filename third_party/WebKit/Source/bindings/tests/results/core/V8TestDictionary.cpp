@@ -26,6 +26,7 @@
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/FlexibleArrayBufferView.h"
+#include "core/dom/NotShared.h"
 #include "core/frame/Deprecation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -643,7 +644,9 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (uint8ArrayMemberValue.IsEmpty() || uint8ArrayMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    DOMUint8Array* uint8ArrayMember = uint8ArrayMemberValue->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(uint8ArrayMemberValue)) : 0;
+    NotShared<DOMUint8Array> uint8ArrayMember = ToNotShared<NotShared<DOMUint8Array>>(isolate, uint8ArrayMemberValue, exceptionState);
+    if (exceptionState.HadException())
+      return;
     if (!uint8ArrayMember) {
       exceptionState.ThrowTypeError("member uint8ArrayMember is not of type Uint8Array.");
       return;

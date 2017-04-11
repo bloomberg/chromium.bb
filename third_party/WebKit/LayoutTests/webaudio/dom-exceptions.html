@@ -2,7 +2,7 @@
 <html>
 <head>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script> 
+<script src="../resources/testharnessreport.js"></script>
 <script src="resources/audit-util.js"></script>
 <script src="resources/audit.js"></script>
 <script src="resources/biquad-testing.js"></script>
@@ -197,6 +197,20 @@ audit.define('createPeriodicWave', (task, should) => {
       'context.createPeriodicWave(new Float32Array(10), new Float32Array(7))')
       .throw('IndexSizeError');
 
+  if (window.SharedArrayBuffer) {
+    let shared_view = new Float32Array(new SharedArrayBuffer(4100 * 4));
+    let nonshared_view = new Float32Array(4100);
+    should(
+        () => context.createPeriodicWave(shared_view, nonshared_view),
+        'context.createPeriodicWave(shared_view, nonshared_view)')
+        .throw('TypeError');
+
+    should(
+        () => context.createPeriodicWave(nonshared_view, shared_view),
+        'context.createPeriodicWave(nonshared_view, shared_view)')
+        .throw('TypeError');
+  }
+
   task.done();
 });
 
@@ -233,6 +247,25 @@ audit.define('createAnalyser', (task, should) => {
       () => node.getByteTimeDomainData(null),
       node.constructor.name + '.getByteTimeDomainData(null)')
       .throw();
+
+  if (window.SharedArrayBuffer) {
+    should(
+        () => node.getFloatFrequencyData(new Float32Array(new SharedArrayBuffer(16))),
+        'AnalyserNode.getFloatFrequencyData(SharedArrayBuffer view)')
+        .throw();
+    should(
+        () => node.getByteFrequencyData(new Uint8Array(new SharedArrayBuffer(16))),
+        node.constructor.name + '.getByteFrequencyData(SharedArrayBuffer view)')
+        .throw();
+    should(
+        () => node.getFloatTimeDomainData(new Float32Array(new SharedArrayBuffer(16))),
+        node.constructor.name + '.getFloatTimeDomainData(SharedArrayBuffer view)')
+        .throw();
+    should(
+        () => node.getByteTimeDomainData(new Uint8Array(new SharedArrayBuffer(16))),
+        node.constructor.name + '.getByteTimeDomainData(SharedArrayBuffer view)')
+        .throw();
+  }
 
   // AudioBuffers
   node = context.createBuffer(1, 1, context.sampleRate);
@@ -336,6 +369,13 @@ audit.define('audioparam', (task, should) => {
       'param.setValueCurveAtTime(null, 0, 0)')
       .throw();
 
+  if (window.SharedArrayBuffer) {
+    should(
+        () => param.setValueCurveAtTime(new Float32Array(new SharedArrayBuffer(16)), 0, 0),
+        'param.setValueCurveAtTime(SharedArrayBuffer view, 0, 0)')
+        .throw();
+  }
+
   // exponentialRampToValue should throw only for "zero" target values.
   should(
       () => node.gain.exponentialRampToValueAtTime(-1, 0.1),
@@ -395,6 +435,24 @@ audit.define('biquad', (task, should) => {
           new Float32Array(1), new Float32Array(1), null),
       'node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)')
       .throw();
+
+  if (window.SharedArrayBuffer) {
+    let shared_view = new Float32Array(new SharedArrayBuffer(4));
+    let nonshared_view = new Float32Array(1);
+
+    should(
+        () => node.getFrequencyResponse(shared_view, nonshared_view, nonshared_view),
+        'node.getFrequencyResponse(shared_view, nonshared_view, nonshared_view)')
+        .throw();
+    should(
+        () => node.getFrequencyResponse(nonshared_view, shared_view, nonshared_view),
+        'node.getFrequencyResponse(nonshared_view, shared_view, nonshared_view)')
+        .throw();
+    should(
+        () => node.getFrequencyResponse(nonshared_view, nonshared_view, shared_view),
+        'node.getFrequencyResponse(nonshared_view, nonshared_view, shared_view)')
+        .throw();
+  }
 
   task.done();
 });

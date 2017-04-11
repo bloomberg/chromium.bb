@@ -285,6 +285,7 @@ interface TestObject {
     // Typed arrays
     ArrayBuffer arrayBufferMethod();
     ArrayBufferView arrayBufferViewMethod();
+    [RaisesException] ArrayBufferView arrayBufferViewMethodRaisesException();
     Float32Array float32ArrayMethod();
     Int32Array int32ArrayMethod();
     Uint8Array uint8ArrayMethod();

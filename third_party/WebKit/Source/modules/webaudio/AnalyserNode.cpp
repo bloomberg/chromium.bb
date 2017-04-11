@@ -265,20 +265,22 @@ double AnalyserNode::smoothingTimeConstant() const {
   return GetAnalyserHandler().SmoothingTimeConstant();
 }
 
-void AnalyserNode::getFloatFrequencyData(DOMFloat32Array* array) {
-  GetAnalyserHandler().GetFloatFrequencyData(array, context()->currentTime());
+void AnalyserNode::getFloatFrequencyData(NotShared<DOMFloat32Array> array) {
+  GetAnalyserHandler().GetFloatFrequencyData(array.View(),
+                                             context()->currentTime());
 }
 
-void AnalyserNode::getByteFrequencyData(DOMUint8Array* array) {
-  GetAnalyserHandler().GetByteFrequencyData(array, context()->currentTime());
+void AnalyserNode::getByteFrequencyData(NotShared<DOMUint8Array> array) {
+  GetAnalyserHandler().GetByteFrequencyData(array.View(),
+                                            context()->currentTime());
 }
 
-void AnalyserNode::getFloatTimeDomainData(DOMFloat32Array* array) {
-  GetAnalyserHandler().GetFloatTimeDomainData(array);
+void AnalyserNode::getFloatTimeDomainData(NotShared<DOMFloat32Array> array) {
+  GetAnalyserHandler().GetFloatTimeDomainData(array.View());
 }
 
-void AnalyserNode::getByteTimeDomainData(DOMUint8Array* array) {
-  GetAnalyserHandler().GetByteTimeDomainData(array);
+void AnalyserNode::getByteTimeDomainData(NotShared<DOMUint8Array> array) {
+  GetAnalyserHandler().GetByteTimeDomainData(array.View());
 }
 
 }  // namespace blink

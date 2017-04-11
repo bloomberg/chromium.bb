@@ -498,7 +498,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   unsigned char data_buffer[4] = {255, 0, 0, 255};
   DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
-  ImageData* image_data = ImageData::Create(IntSize(1, 1), data);
+  ImageData* image_data =
+      ImageData::Create(IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data));
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]());
   memcpy(src_pixel.get(), image_data->data()->Data(), 4);
 

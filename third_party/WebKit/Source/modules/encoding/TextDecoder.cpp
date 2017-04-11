@@ -81,9 +81,9 @@ String TextDecoder::decode(const BufferSource& input,
                            ExceptionState& exception_state) {
   ASSERT(!input.isNull());
   if (input.isArrayBufferView()) {
-    const char* start =
-        static_cast<const char*>(input.getAsArrayBufferView()->BaseAddress());
-    size_t length = input.getAsArrayBufferView()->byteLength();
+    const char* start = static_cast<const char*>(
+        input.getAsArrayBufferView().View()->BaseAddress());
+    size_t length = input.getAsArrayBufferView().View()->byteLength();
     return decode(start, length, options, exception_state);
   }
   ASSERT(input.isArrayBuffer());

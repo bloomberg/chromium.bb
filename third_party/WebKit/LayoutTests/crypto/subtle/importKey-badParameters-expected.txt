@@ -11,6 +11,7 @@ error is: TypeError: Invalid keyUsages argument
 error is: TypeError: Invalid keyFormat argument
 error is: TypeError: HmacImportParams: hash: Missing or not an AlgorithmIdentifier
 error is: NotSupportedError: SHA-1: Unsupported operation: importKey
+error is: SharedArrayBuffers not enabled.
 PASS successfullyParsed is true
 
 TEST COMPLETE

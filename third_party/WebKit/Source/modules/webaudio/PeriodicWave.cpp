@@ -83,14 +83,15 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
 }
 
 PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
-                                   DOMFloat32Array* real,
-                                   DOMFloat32Array* imag,
+                                   NotShared<DOMFloat32Array> real,
+                                   NotShared<DOMFloat32Array> imag,
                                    bool disable_normalization,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  return Create(context, real->length(), real->Data(), imag->length(),
-                imag->Data(), disable_normalization, exception_state);
+  return Create(context, real.View()->length(), real.View()->Data(),
+                imag.View()->length(), imag.View()->Data(),
+                disable_normalization, exception_state);
 }
 
 PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,

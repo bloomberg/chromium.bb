@@ -286,8 +286,13 @@ def getter_context(interface, attribute, context):
             cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
             for_main_world=for_main_world, is_static=attribute.is_static)
 
+    cpp_value_to_script_wrappable = cpp_value
+    if idl_type.is_array_buffer_view_or_typed_array:
+        cpp_value_to_script_wrappable += '.View()'
+
     context.update({
         'cpp_value': cpp_value,
+        'cpp_value_to_script_wrappable': cpp_value_to_script_wrappable,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
             cpp_value=cpp_value, creation_context='holder',
             extended_attributes=extended_attributes),
@@ -318,7 +323,8 @@ def getter_expression(interface, attribute, context):
     expression = '%s(%s)' % (getter_name, ', '.join(arguments))
     # Needed to handle getter expressions returning Type& as the
     # use site for |expression| expects Type*.
-    if attribute.idl_type.is_interface_type and len(arguments) == 0:
+    if (attribute.idl_type.is_interface_type and len(arguments) == 0 and
+            not attribute.idl_type.is_array_buffer_view_or_typed_array):
         return 'WTF::GetPtr(%s)' % expression
     return expression
 

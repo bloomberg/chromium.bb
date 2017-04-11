@@ -174,17 +174,21 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
 
   for (unsigned i = 0; i < number_of_input_channels; ++i)
     internal_input_bus_->SetChannelMemory(
-        i, input_buffer->getChannelData(i)->Data() + buffer_read_write_index_,
+        i,
+        input_buffer->getChannelData(i).View()->Data() +
+            buffer_read_write_index_,
         frames_to_process);
 
   if (number_of_input_channels)
     internal_input_bus_->CopyFrom(*input_bus);
 
   // Copy from the output buffer to the output.
-  for (unsigned i = 0; i < number_of_output_channels; ++i)
+  for (unsigned i = 0; i < number_of_output_channels; ++i) {
     memcpy(output_bus->Channel(i)->MutableData(),
-           output_buffer->getChannelData(i)->Data() + buffer_read_write_index_,
+           output_buffer->getChannelData(i).View()->Data() +
+               buffer_read_write_index_,
            sizeof(float) * frames_to_process);
+  }
 
   // Update the buffering index.
   buffer_read_write_index_ =

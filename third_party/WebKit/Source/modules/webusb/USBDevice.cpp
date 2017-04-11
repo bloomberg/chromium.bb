@@ -85,9 +85,9 @@ Vector<uint8_t> ConvertBufferSource(
     vector.Append(static_cast<uint8_t*>(buffer.getAsArrayBuffer()->Data()),
                   buffer.getAsArrayBuffer()->ByteLength());
   else
-    vector.Append(
-        static_cast<uint8_t*>(buffer.getAsArrayBufferView()->BaseAddress()),
-        buffer.getAsArrayBufferView()->byteLength());
+    vector.Append(static_cast<uint8_t*>(
+                      buffer.getAsArrayBufferView().View()->BaseAddress()),
+                  buffer.getAsArrayBufferView().View()->byteLength());
   return vector;
 }
 

@@ -107,9 +107,9 @@ void OrientationSensor::populateMatrix(
     Float32ArrayOrFloat64ArrayOrDOMMatrix& matrix,
     ExceptionState& exception_state) {
   if (matrix.isFloat32Array())
-    PopulateMatrixInternal(matrix.getAsFloat32Array(), exception_state);
+    PopulateMatrixInternal(matrix.getAsFloat32Array().View(), exception_state);
   else if (matrix.isFloat64Array())
-    PopulateMatrixInternal(matrix.getAsFloat64Array(), exception_state);
+    PopulateMatrixInternal(matrix.getAsFloat64Array().View(), exception_state);
   else if (matrix.isDOMMatrix())
     PopulateMatrixInternal(matrix.getAsDOMMatrix(), exception_state);
   else

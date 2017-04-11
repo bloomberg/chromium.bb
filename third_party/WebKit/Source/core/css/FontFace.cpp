@@ -82,8 +82,10 @@ FontFace* FontFace::Create(ExecutionContext* context,
     return Create(context, family, source.getAsString(), descriptors);
   if (source.isArrayBuffer())
     return Create(context, family, source.getAsArrayBuffer(), descriptors);
-  if (source.isArrayBufferView())
-    return Create(context, family, source.getAsArrayBufferView(), descriptors);
+  if (source.isArrayBufferView()) {
+    return Create(context, family, source.getAsArrayBufferView().View(),
+                  descriptors);
+  }
   NOTREACHED();
   return nullptr;
 }

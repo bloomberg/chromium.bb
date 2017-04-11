@@ -6,6 +6,7 @@
 #define WebGLGetBufferSubDataAsync_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/NotShared.h"
 #include "modules/webgl/WebGLExtension.h"
 
 namespace blink {
@@ -25,7 +26,7 @@ class WebGLGetBufferSubDataAsync final : public WebGLExtension {
   ScriptPromise getBufferSubDataAsync(ScriptState*,
                                       GLenum target,
                                       GLintptr src_byte_offset,
-                                      DOMArrayBufferView*,
+                                      NotShared<DOMArrayBufferView>,
                                       GLuint dst_offset,
                                       GLuint length);
 

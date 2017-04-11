@@ -12,7 +12,7 @@ MIDIMessageEvent::MIDIMessageEvent(const AtomicString& type,
                                    const MIDIMessageEventInit& initializer)
     : Event(type, initializer) {
   if (initializer.hasData())
-    data_ = initializer.data();
+    data_ = initializer.data().View();
 }
 
 }  // namespace blink

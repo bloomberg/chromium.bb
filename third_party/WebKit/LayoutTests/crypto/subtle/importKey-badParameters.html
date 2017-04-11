@@ -62,6 +62,16 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey('raw', new Uint8Array(20), {name: 'sha-1'}, extractable, ['sign']);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
+
+    // SharedArrayBuffer-backed view is not allowed.
+    if (window.SharedArrayBuffer) {
+        var bytes = new Uint8Array(new SharedArrayBuffer(16));
+        return crypto.subtle.importKey('raw', bytes, aesCbc, extractable, ['encrypt']);
+    } else {
+        return Promise.reject('SharedArrayBuffers not enabled.');
+    }
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

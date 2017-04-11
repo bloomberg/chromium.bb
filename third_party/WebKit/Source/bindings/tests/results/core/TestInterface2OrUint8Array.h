@@ -20,6 +20,7 @@
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/CoreExport.h"
 #include "core/dom/FlexibleArrayBufferView.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -38,9 +39,9 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
 
   bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
-  DOMUint8Array* getAsUint8Array() const;
-  void setUint8Array(DOMUint8Array*);
-  static TestInterface2OrUint8Array fromUint8Array(DOMUint8Array*);
+  NotShared<DOMUint8Array> getAsUint8Array() const;
+  void setUint8Array(NotShared<DOMUint8Array>);
+  static TestInterface2OrUint8Array fromUint8Array(NotShared<DOMUint8Array>);
 
   TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
   ~TestInterface2OrUint8Array();
