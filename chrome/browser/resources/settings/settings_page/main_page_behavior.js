@@ -80,9 +80,10 @@ var MainPageBehaviorImpl = {
 
     // Scroll to the section except for back/forward. Also scroll for any
     // in-page back/forward navigations (from a section or the root page).
-    var scrollToSection =
-        !settings.lastRouteChangeWasPopstate() || oldRouteWasSection ||
-        oldRoute == settings.Route.BASIC;
+    // Also always scroll when coming from either the About or root page.
+    var scrollToSection = !settings.lastRouteChangeWasPopstate() ||
+        oldRouteWasSection || oldRoute == settings.Route.BASIC ||
+        oldRoute == settings.Route.ABOUT;
 
     if (oldRoute && (oldRoute.isSubpage() || newRoute.isSubpage()))
       this.isSubpageAnimating = true;
