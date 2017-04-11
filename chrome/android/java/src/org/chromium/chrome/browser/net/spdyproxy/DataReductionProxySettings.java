@@ -204,6 +204,15 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Returns the content length saved for the number of days shown in the history summary.
+     * @return The content length saved.
+     */
+    public long getContentLengthSavedInHistorySummary() {
+        ContentLengths length = getContentLengths();
+        return Math.max(length.getOriginal() - length.getReceived(), 0);
+    }
+
+    /**
      * Returns the total HTTP content length saved.
      * @return The HTTP content length saved.
      */

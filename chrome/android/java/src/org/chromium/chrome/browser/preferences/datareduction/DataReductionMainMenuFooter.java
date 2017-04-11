@@ -47,7 +47,8 @@ public class DataReductionMainMenuFooter extends FrameLayout implements View.OnC
 
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
             String dataSaved = Formatter.formatShortFileSize(getContext(),
-                    DataReductionProxySettings.getInstance().getTotalHttpContentLengthSaved());
+                    DataReductionProxySettings.getInstance()
+                            .getContentLengthSavedInHistorySummary());
 
             long millisSinceEpoch =
                     DataReductionProxySettings.getInstance().getDataReductionLastUpdateTime()
