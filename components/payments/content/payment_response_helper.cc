@@ -8,10 +8,32 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/payments/content/payment_request_spec.h"
 
 namespace payments {
 
-PaymentResponseHelper::PaymentResponseHelper(){};
+PaymentResponseHelper::PaymentResponseHelper(
+    const std::string& app_locale,
+    PaymentRequestSpec* spec,
+    PaymentInstrument* selected_instrument,
+    autofill::AutofillProfile* selected_shipping_profile,
+    autofill::AutofillProfile* selected_contact_profile,
+    Delegate* delegate)
+    : app_locale_(app_locale),
+      spec_(spec),
+      delegate_(delegate),
+      selected_instrument_(selected_instrument),
+      selected_shipping_profile_(selected_shipping_profile),
+      selected_contact_profile_(selected_contact_profile) {
+  DCHECK(spec_);
+  DCHECK(selected_instrument_);
+  DCHECK(delegate_);
+
+  // Start to get the instrument details. Will call back into
+  // OnInstrumentDetailsReady.
+  selected_instrument_->InvokePaymentApp(this);
+};
+
 PaymentResponseHelper::~PaymentResponseHelper(){};
 
 // static
@@ -49,6 +71,54 @@ PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
       base::UTF16ToUTF8(profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
 
   return payment_address;
+}
+
+void PaymentResponseHelper::OnInstrumentDetailsReady(
+    const std::string& method_name,
+    const std::string& stringified_details) {
+  mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
+
+  // Make sure that we return the method name that the merchant specified for
+  // this instrument: cards can be either specified through their name (e.g.,
+  // "visa") or through basic-card's supportedNetworks.
+  payment_response->method_name =
+      spec_->IsMethodSupportedThroughBasicCard(method_name)
+          ? kBasicCardMethodName
+          : method_name;
+  payment_response->stringified_details = stringified_details;
+
+  // Shipping Address section
+  if (spec_->request_shipping()) {
+    DCHECK(selected_shipping_profile_);
+    payment_response->shipping_address =
+        GetMojomPaymentAddressFromAutofillProfile(selected_shipping_profile_,
+                                                  app_locale_);
+
+    DCHECK(spec_->selected_shipping_option());
+    payment_response->shipping_option = spec_->selected_shipping_option()->id;
+  }
+
+  // Contact Details section.
+  if (spec_->request_payer_name()) {
+    DCHECK(selected_contact_profile_);
+    payment_response->payer_name =
+        base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
+            autofill::AutofillType(autofill::NAME_FULL), app_locale_));
+  }
+  if (spec_->request_payer_email()) {
+    DCHECK(selected_contact_profile_);
+    payment_response->payer_email = base::UTF16ToUTF8(
+        selected_contact_profile_->GetRawInfo(autofill::EMAIL_ADDRESS));
+  }
+  if (spec_->request_payer_phone()) {
+    DCHECK(selected_contact_profile_);
+    // TODO(crbug.com/705945): Format phone number according to spec.
+    payment_response->payer_phone =
+        base::UTF16ToUTF8(selected_contact_profile_->GetRawInfo(
+            autofill::PHONE_HOME_WHOLE_NUMBER));
+  }
+
+  delegate_->OnPaymentResponseReady(std::move(payment_response));
 }
 
 }  // namespace payments

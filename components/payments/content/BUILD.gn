@@ -97,6 +97,7 @@ source_set("unit_tests") {
     "payment_manifest_downloader_unittest.cc",
     "payment_request_spec_unittest.cc",
     "payment_request_state_unittest.cc",
+    "payment_response_helper_unittest.cc",
     "payments_validators_unittest.cc",
   ]
 

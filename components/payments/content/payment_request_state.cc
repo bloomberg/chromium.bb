@@ -14,6 +14,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/payments/core/profile_util.h"
 
@@ -39,6 +40,11 @@ PaymentRequestState::PaymentRequestState(
 }
 PaymentRequestState::~PaymentRequestState() {}
 
+void PaymentRequestState::OnPaymentResponseReady(
+    mojom::PaymentResponsePtr payment_response) {
+  delegate_->OnPaymentResponseAvailable(std::move(payment_response));
+}
+
 bool PaymentRequestState::CanMakePayment() const {
   for (const std::unique_ptr<PaymentInstrument>& instrument :
        available_instruments_) {
@@ -60,60 +66,13 @@ void PaymentRequestState::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// TODO(sebsg): Move this to the PaymentResponseHelper.
-void PaymentRequestState::OnInstrumentDetailsReady(
-    const std::string& method_name,
-    const std::string& stringified_details) {
-  mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
-
-  // Make sure that we return the method name that the merchant specified for
-  // this instrument: cards can be either specified through their name (e.g.,
-  // "visa") or through basic-card's supportedNetworks.
-  payment_response->method_name =
-      spec_->IsMethodSupportedThroughBasicCard(method_name)
-          ? kBasicCardMethodName
-          : method_name;
-  payment_response->stringified_details = stringified_details;
-
-  // Shipping Address section
-  if (spec_->request_shipping()) {
-    DCHECK(selected_shipping_profile_);
-    payment_response->shipping_address =
-        PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
-            selected_shipping_profile_, app_locale_);
-
-    DCHECK(spec_->selected_shipping_option());
-    payment_response->shipping_option = spec_->selected_shipping_option()->id;
-  }
-
-  // Contact Details section.
-  if (spec_->request_payer_name()) {
-    DCHECK(selected_contact_profile_);
-    payment_response->payer_name =
-        base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
-            autofill::AutofillType(autofill::NAME_FULL), app_locale_));
-  }
-  if (spec_->request_payer_email()) {
-    DCHECK(selected_contact_profile_);
-    payment_response->payer_email = base::UTF16ToUTF8(
-        selected_contact_profile_->GetRawInfo(autofill::EMAIL_ADDRESS));
-  }
-  if (spec_->request_payer_phone()) {
-    DCHECK(selected_contact_profile_);
-    // TODO(crbug.com/705945): Format phone number according to spec.
-    payment_response->payer_phone =
-        base::UTF16ToUTF8(selected_contact_profile_->GetRawInfo(
-            autofill::PHONE_HOME_WHOLE_NUMBER));
-  }
-
-  delegate_->OnPaymentResponseAvailable(std::move(payment_response));
-}
-
 void PaymentRequestState::GeneratePaymentResponse() {
   DCHECK(is_ready_to_pay());
-  // Fetch the instrument details, will call back into
-  // PaymentRequest::OnInstrumentDetailsReady.
-  selected_instrument_->InvokePaymentApp(this);
+
+  // Once the response is ready, will call back into OnPaymentResponseReady.
+  response_helper_ = base::MakeUnique<PaymentResponseHelper>(
+      app_locale_, spec_, selected_instrument_, selected_shipping_profile_,
+      selected_contact_profile_, this);
 }
 
 void PaymentRequestState::SetSelectedShippingOption(

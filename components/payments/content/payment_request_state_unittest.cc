@@ -14,43 +14,9 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_request_spec.h"
-#include "components/payments/core/payment_request_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
-
-class FakePaymentRequestDelegate : public PaymentRequestDelegate {
- public:
-  FakePaymentRequestDelegate(
-      autofill::PersonalDataManager* personal_data_manager)
-      : personal_data_manager_(personal_data_manager), locale_("en-US") {}
-  void ShowDialog(PaymentRequest* request) override {}
-
-  void CloseDialog() override {}
-
-  void ShowErrorMessage() override {}
-
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return personal_data_manager_;
-  }
-
-  const std::string& GetApplicationLocale() const override { return locale_; }
-
-  bool IsIncognito() const override { return false; }
-
-  void DoFullCardRequest(
-      const autofill::CreditCard& credit_card,
-      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
-          result_delegate) override {
-    result_delegate->OnFullCardRequestSucceeded(credit_card,
-                                                base::ASCIIToUTF16("123"));
-  }
-
- private:
-  autofill::PersonalDataManager* personal_data_manager_;
-  std::string locale_;
-  DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
-};
 
 class PaymentRequestStateTest : public testing::Test,
                                 public PaymentRequestState::Observer,
@@ -58,24 +24,12 @@ class PaymentRequestStateTest : public testing::Test,
  protected:
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
-        payment_request_delegate_(
-            new FakePaymentRequestDelegate(&test_personal_data_manager_)),
         address_(autofill::test::GetFullProfile()),
-        credit_card_visa_(autofill::test::GetCreditCard()),
-        credit_card_amex_(autofill::test::GetCreditCard2()) {
+        credit_card_visa_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.AddTestingProfile(&address_);
     credit_card_visa_.set_billing_address_id(address_.guid());
     credit_card_visa_.set_use_count(5u);
     test_personal_data_manager_.AddTestingCreditCard(&credit_card_visa_);
-    credit_card_amex_.set_billing_address_id(address_.guid());
-    credit_card_amex_.set_use_count(1u);
-    test_personal_data_manager_.AddTestingCreditCard(&credit_card_amex_);
-    // Add an expired JCB card here.
-    credit_card_jcb_ = autofill::test::GetCreditCard();
-    credit_card_jcb_.SetNumber(base::ASCIIToUTF16("3530111333300000"));
-    credit_card_jcb_.set_billing_address_id(address_.guid());
-    credit_card_jcb_.set_use_count(1u);
-    credit_card_jcb_.SetExpirationDateFromString(base::ASCIIToUTF16("01/17"));
   }
   ~PaymentRequestStateTest() override {}
 
@@ -100,8 +54,7 @@ class PaymentRequestStateTest : public testing::Test,
         std::move(options), std::move(details), std::move(method_data), nullptr,
         "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
-        spec_.get(), this, "en-US", &test_personal_data_manager_,
-        payment_request_delegate_.get());
+        spec_.get(), this, "en-US", &test_personal_data_manager_, nullptr);
     state_->AddObserver(this);
   }
 
@@ -144,13 +97,10 @@ class PaymentRequestStateTest : public testing::Test,
   int num_on_selected_information_changed_called_;
   mojom::PaymentResponsePtr payment_response_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
-  std::unique_ptr<FakePaymentRequestDelegate> payment_request_delegate_;
 
   // Test data.
   autofill::AutofillProfile address_;
   autofill::CreditCard credit_card_visa_;
-  autofill::CreditCard credit_card_amex_;
-  autofill::CreditCard credit_card_jcb_;
 };
 
 TEST_F(PaymentRequestStateTest, CanMakePayment) {
@@ -295,144 +245,6 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_ContactInfo) {
 
   // Ready to pay!
   EXPECT_TRUE(state()->is_ready_to_pay());
-}
-
-// Test generating a PaymentResponse.
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_SupportedMethod) {
-  // Default options (no shipping, no contact info).
-  RecreateStateWithOptions(mojom::PaymentOptions::New());
-  state()->SetSelectedInstrument(state()->available_instruments()[0].get());
-  EXPECT_EQ(1, num_on_selected_information_changed_called());
-  EXPECT_TRUE(state()->is_ready_to_pay());
-
-  // TODO(mathp): Currently synchronous, when async will need a RunLoop.
-  // "visa" is specified directly in the supportedMethods so it is returned
-  // as the method name.
-  state()->GeneratePaymentResponse();
-  EXPECT_EQ("visa", response()->method_name);
-  EXPECT_EQ(
-      "{\"billingAddress\":"
-      "{\"addressLine\":[\"666 Erebus St.\",\"Apt 8\"],"
-      "\"city\":\"Elysium\","
-      "\"country\":\"US\","
-      "\"organization\":\"Underworld\","
-      "\"phone\":\"16502111111\","
-      "\"postalCode\":\"91111\","
-      "\"recipient\":\"John H. Doe\","
-      "\"region\":\"CA\"},"
-      "\"cardNumber\":\"4111111111111111\","
-      "\"cardSecurityCode\":\"123\","
-      "\"cardholderName\":\"Test User\","
-      "\"expiryMonth\":\"11\","
-      "\"expiryYear\":\"2022\"}",
-      response()->stringified_details);
-}
-
-// Test generating a PaymentResponse when the method is specified through
-// "basic-card".
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_BasicCard) {
-  // The method data supports visa through basic-card.
-  mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
-  entry->supported_methods.push_back("basic-card");
-  entry->supported_networks.push_back(mojom::BasicCardNetwork::VISA);
-  std::vector<mojom::PaymentMethodDataPtr> method_data;
-  method_data.push_back(std::move(entry));
-  RecreateStateWithOptionsAndDetails(mojom::PaymentOptions::New(),
-                                     mojom::PaymentDetails::New(),
-                                     std::move(method_data));
-
-  EXPECT_TRUE(state()->is_ready_to_pay());
-
-  // TODO(mathp): Currently synchronous, when async will need a RunLoop.
-  // "basic-card" is specified so it is returned as the method name.
-  state()->GeneratePaymentResponse();
-  EXPECT_EQ("basic-card", response()->method_name);
-  EXPECT_EQ(
-      "{\"billingAddress\":"
-      "{\"addressLine\":[\"666 Erebus St.\",\"Apt 8\"],"
-      "\"city\":\"Elysium\","
-      "\"country\":\"US\","
-      "\"organization\":\"Underworld\","
-      "\"phone\":\"16502111111\","
-      "\"postalCode\":\"91111\","
-      "\"recipient\":\"John H. Doe\","
-      "\"region\":\"CA\"},"
-      "\"cardNumber\":\"4111111111111111\","
-      "\"cardSecurityCode\":\"123\","
-      "\"cardholderName\":\"Test User\","
-      "\"expiryMonth\":\"11\","
-      "\"expiryYear\":\"2022\"}",
-      response()->stringified_details);
-}
-
-// Tests the the generated PaymentResponse has the correct values for the
-// shipping address.
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ShippingAddress) {
-  // Setup so that a shipping address is requested.
-  std::vector<mojom::PaymentShippingOptionPtr> shipping_options;
-  mojom::PaymentShippingOptionPtr option = mojom::PaymentShippingOption::New();
-  option->id = "option:1";
-  option->selected = true;
-  shipping_options.push_back(std::move(option));
-  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
-  details->shipping_options = std::move(shipping_options);
-  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
-  options->request_shipping = true;
-  RecreateStateWithOptionsAndDetails(std::move(options), std::move(details),
-                                     GetMethodDataForVisa());
-
-  EXPECT_TRUE(state()->is_ready_to_pay());
-  state()->GeneratePaymentResponse();
-
-  // Check that all the expected values were set.
-  EXPECT_EQ("US", response()->shipping_address->country);
-  EXPECT_EQ("666 Erebus St.", response()->shipping_address->address_line[0]);
-  EXPECT_EQ("Apt 8", response()->shipping_address->address_line[1]);
-  EXPECT_EQ("CA", response()->shipping_address->region);
-  EXPECT_EQ("Elysium", response()->shipping_address->city);
-  EXPECT_EQ("", response()->shipping_address->dependent_locality);
-  EXPECT_EQ("91111", response()->shipping_address->postal_code);
-  EXPECT_EQ("", response()->shipping_address->sorting_code);
-  EXPECT_EQ("", response()->shipping_address->language_code);
-  EXPECT_EQ("Underworld", response()->shipping_address->organization);
-  EXPECT_EQ("John H. Doe", response()->shipping_address->recipient);
-  EXPECT_EQ("16502111111", response()->shipping_address->phone);
-}
-
-// Tests the the generated PaymentResponse has the correct values for the
-// contact details when all values are requested.
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ContactDetails_All) {
-  // Request all contact detail values.
-  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
-  options->request_payer_name = true;
-  options->request_payer_phone = true;
-  options->request_payer_email = true;
-  RecreateStateWithOptions(std::move(options));
-
-  EXPECT_TRUE(state()->is_ready_to_pay());
-  state()->GeneratePaymentResponse();
-
-  // Check that all the expected values were set.
-  EXPECT_EQ("John H. Doe", response()->payer_name.value());
-  EXPECT_EQ("16502111111", response()->payer_phone.value());
-  EXPECT_EQ("johndoe@hades.com", response()->payer_email.value());
-}
-
-// Tests the the generated PaymentResponse has the correct values for the
-// contact details when all values are requested.
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ContactDetails_Some) {
-  // Request one contact detail value.
-  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
-  options->request_payer_name = true;
-  RecreateStateWithOptions(std::move(options));
-
-  EXPECT_TRUE(state()->is_ready_to_pay());
-  state()->GeneratePaymentResponse();
-
-  // Check that the name was set, but not the other values.
-  EXPECT_EQ("John H. Doe", response()->payer_name.value());
-  EXPECT_FALSE(response()->payer_phone.has_value());
-  EXPECT_FALSE(response()->payer_email.has_value());
 }
 
 }  // namespace payments

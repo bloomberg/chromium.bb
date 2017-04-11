@@ -11,8 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
-#include "components/payments/core/autofill_payment_instrument.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/content/payment_response_helper.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -21,6 +20,7 @@ class PersonalDataManager;
 
 namespace payments {
 
+class PaymentInstrument;
 class PaymentRequestDelegate;
 class PaymentRequestSpec;
 
@@ -28,7 +28,7 @@ class PaymentRequestSpec;
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
 // what the merchant has specified, as input into the "is ready to pay"
 // computation.
-class PaymentRequestState : public PaymentInstrument::Delegate {
+class PaymentRequestState : public PaymentResponseHelper::Delegate {
  public:
   // Any class call add itself as Observer via AddObserver() and receive
   // notification about the state changing.
@@ -66,17 +66,15 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
                       PaymentRequestDelegate* payment_request_delegate);
   ~PaymentRequestState() override;
 
+  // PaymentResponseHelper::Delegate
+  void OnPaymentResponseReady(
+      mojom::PaymentResponsePtr payment_response) override;
+
   // Returns whether the user has at least one instrument that satisfies the
   // specified supported payment methods.
   bool CanMakePayment() const;
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // PaymentInstrument::Delegate:
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override {}
 
   // Initiates the generation of the PaymentResponse. Callers should check
   // |is_ready_to_pay|, which is inexpensive.
@@ -173,6 +171,8 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
   PaymentRequestDelegate* payment_request_delegate_;
+
+  std::unique_ptr<PaymentResponseHelper> response_helper_;
 
   base::ObserverList<Observer> observers_;
 
