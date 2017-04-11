@@ -86,7 +86,9 @@ SQLiteStatement::~SQLiteStatement() {
 }
 
 int SQLiteStatement::Prepare() {
-  ASSERT(!is_prepared_);
+#if DCHECK_IS_ON()
+  DCHECK(!is_prepared_);
+#endif
 
   CString query = query_.StripWhiteSpace().Utf8();
 
@@ -156,7 +158,9 @@ int SQLiteStatement::Finalize() {
 bool SQLiteStatement::ExecuteCommand() {
   if (!statement_ && Prepare() != SQLITE_OK)
     return false;
-  ASSERT(is_prepared_);
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
   if (Step() != SQLITE_DONE) {
     Finalize();
     return false;
@@ -166,9 +170,11 @@ bool SQLiteStatement::ExecuteCommand() {
 }
 
 int SQLiteStatement::BindText(int index, const String& text) {
-  ASSERT(is_prepared_);
-  ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
+  DCHECK_GT(index, 0);
+  DCHECK_LE(static_cast<unsigned>(index), BindParameterCount());
 
   String text16(text);
   text16.Ensure16Bit();
@@ -178,17 +184,21 @@ int SQLiteStatement::BindText(int index, const String& text) {
 }
 
 int SQLiteStatement::BindDouble(int index, double number) {
-  ASSERT(is_prepared_);
-  ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
+  DCHECK_GT(index, 0);
+  DCHECK_LE(static_cast<unsigned>(index), BindParameterCount());
 
   return restrictError(sqlite3_bind_double(statement_, index, number));
 }
 
 int SQLiteStatement::BindNull(int index) {
-  ASSERT(is_prepared_);
-  ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
+  DCHECK_GT(index, 0);
+  DCHECK_LE(static_cast<unsigned>(index), BindParameterCount());
 
   return restrictError(sqlite3_bind_null(statement_, index));
 }
@@ -203,26 +213,30 @@ int SQLiteStatement::BindValue(int index, const SQLValue& value) {
       return BindNull(index);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SQLITE_ERROR;
 }
 
 unsigned SQLiteStatement::BindParameterCount() const {
-  ASSERT(is_prepared_);
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
   if (!statement_)
     return 0;
   return sqlite3_bind_parameter_count(statement_);
 }
 
 int SQLiteStatement::ColumnCount() {
-  ASSERT(is_prepared_);
+#if DCHECK_IS_ON()
+  DCHECK(is_prepared_);
+#endif
   if (!statement_)
     return 0;
   return sqlite3_data_count(statement_);
 }
 
 String SQLiteStatement::GetColumnName(int col) {
-  ASSERT(col >= 0);
+  DCHECK_GE(col, 0);
   if (!statement_)
     if (PrepareAndStep() != SQLITE_ROW)
       return String();
@@ -233,7 +247,7 @@ String SQLiteStatement::GetColumnName(int col) {
 }
 
 SQLValue SQLiteStatement::GetColumnValue(int col) {
-  ASSERT(col >= 0);
+  DCHECK_GE(col, 0);
   if (!statement_)
     if (PrepareAndStep() != SQLITE_ROW)
       return SQLValue();
@@ -261,12 +275,12 @@ SQLValue SQLiteStatement::GetColumnValue(int col) {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SQLValue();
 }
 
 String SQLiteStatement::GetColumnText(int col) {
-  ASSERT(col >= 0);
+  DCHECK_GE(col, 0);
   if (!statement_)
     if (PrepareAndStep() != SQLITE_ROW)
       return String();
@@ -279,7 +293,7 @@ String SQLiteStatement::GetColumnText(int col) {
 }
 
 int SQLiteStatement::GetColumnInt(int col) {
-  ASSERT(col >= 0);
+  DCHECK_GE(col, 0);
   if (!statement_)
     if (PrepareAndStep() != SQLITE_ROW)
       return 0;
@@ -289,7 +303,7 @@ int SQLiteStatement::GetColumnInt(int col) {
 }
 
 int64_t SQLiteStatement::GetColumnInt64(int col) {
-  ASSERT(col >= 0);
+  DCHECK_GE(col, 0);
   if (!statement_)
     if (PrepareAndStep() != SQLITE_ROW)
       return 0;

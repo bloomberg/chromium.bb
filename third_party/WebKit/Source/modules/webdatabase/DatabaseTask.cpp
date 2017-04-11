@@ -55,7 +55,7 @@ void DatabaseTask::Run() {
 // Database tasks are meant to be used only once, so make sure this one hasn't
 // been performed before.
 #if DCHECK_IS_ON()
-  ASSERT(!complete_);
+  DCHECK(!complete_);
 #endif
 
   if (!complete_event_ &&

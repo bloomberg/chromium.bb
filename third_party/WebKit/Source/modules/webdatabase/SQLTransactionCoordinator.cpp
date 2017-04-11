@@ -38,7 +38,7 @@ namespace blink {
 
 static String GetDatabaseIdentifier(SQLTransactionBackend* transaction) {
   Database* database = transaction->GetDatabase();
-  ASSERT(database);
+  DCHECK(database);
   return database->StringIdentifier();
 }
 
@@ -70,7 +70,7 @@ void SQLTransactionCoordinator::ProcessPendingTransactions(
 
 void SQLTransactionCoordinator::AcquireLock(
     SQLTransactionBackend* transaction) {
-  ASSERT(!is_shutting_down_);
+  DCHECK(!is_shutting_down_);
 
   String db_identifier = GetDatabaseIdentifier(transaction);
 
@@ -103,10 +103,10 @@ void SQLTransactionCoordinator::ReleaseLock(
   CoordinationInfo& info = coordination_info_iterator->value;
 
   if (transaction->IsReadOnly()) {
-    ASSERT(info.active_read_transactions.Contains(transaction));
+    DCHECK(info.active_read_transactions.Contains(transaction));
     info.active_read_transactions.erase(transaction);
   } else {
-    ASSERT(info.active_write_transaction == transaction);
+    DCHECK_EQ(info.active_write_transaction, transaction);
     info.active_write_transaction = nullptr;
   }
 

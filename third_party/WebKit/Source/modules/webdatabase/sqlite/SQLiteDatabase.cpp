@@ -121,7 +121,7 @@ void SQLiteDatabase::SetMaximumSize(int64_t size) {
 
   int current_page_size = PageSize();
 
-  ASSERT(current_page_size || !db_);
+  DCHECK(current_page_size || !db_);
   int64_t new_max_page_count = current_page_size ? size / current_page_size : 0;
 
   MutexLocker locker(authorizer_lock_);
@@ -261,7 +261,7 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
                                        const char* /*databaseName*/,
                                        const char* /*trigger_or_view*/) {
   DatabaseAuthorizer* auth = static_cast<DatabaseAuthorizer*>(user_data);
-  ASSERT(auth);
+  DCHECK(auth);
 
   switch (action_code) {
     case SQLITE_CREATE_INDEX:
@@ -329,7 +329,7 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
       return auth->AllowFunction(parameter2);
 #endif
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return kSQLAuthDeny;
   }
 }

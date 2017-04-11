@@ -50,14 +50,14 @@ DatabaseThread::DatabaseThread()
 }
 
 DatabaseThread::~DatabaseThread() {
-  ASSERT(open_database_set_.IsEmpty());
-  ASSERT(!thread_);
+  DCHECK(open_database_set_.IsEmpty());
+  DCHECK(!thread_);
 }
 
 DEFINE_TRACE(DatabaseThread) {}
 
 void DatabaseThread::Start() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   if (thread_)
     return;
   thread_ = WebThreadSupportingGC::Create("WebCore: Database");
@@ -72,11 +72,11 @@ void DatabaseThread::SetupDatabaseThread() {
 }
 
 void DatabaseThread::Terminate() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   WaitableEvent sync;
   {
     MutexLocker lock(termination_requested_mutex_);
-    ASSERT(!termination_requested_);
+    DCHECK(!termination_requested_);
     termination_requested_ = true;
     cleanup_sync_ = &sync;
     STORAGE_DVLOG(1) << "DatabaseThread " << this << " was asked to terminate";
@@ -128,29 +128,29 @@ void DatabaseThread::CleanupDatabaseThreadCompleted() {
 }
 
 void DatabaseThread::RecordDatabaseOpen(Database* database) {
-  ASSERT(IsDatabaseThread());
-  ASSERT(database);
-  ASSERT(!open_database_set_.Contains(database));
+  DCHECK(IsDatabaseThread());
+  DCHECK(database);
+  DCHECK(!open_database_set_.Contains(database));
   MutexLocker lock(termination_requested_mutex_);
   if (!termination_requested_)
     open_database_set_.insert(database);
 }
 
 void DatabaseThread::RecordDatabaseClosed(Database* database) {
-  ASSERT(IsDatabaseThread());
-  ASSERT(database);
+  DCHECK(IsDatabaseThread());
+  DCHECK(database);
 #if DCHECK_IS_ON()
   {
     MutexLocker lock(termination_requested_mutex_);
-    ASSERT(termination_requested_ || open_database_set_.Contains(database));
+    DCHECK(termination_requested_ || open_database_set_.Contains(database));
   }
 #endif
   open_database_set_.erase(database);
 }
 
 bool DatabaseThread::IsDatabaseOpen(Database* database) {
-  ASSERT(IsDatabaseThread());
-  ASSERT(database);
+  DCHECK(IsDatabaseThread());
+  DCHECK(database);
   MutexLocker lock(termination_requested_mutex_);
   return !termination_requested_ && open_database_set_.Contains(database);
 }
@@ -162,11 +162,11 @@ bool DatabaseThread::IsDatabaseThread() const {
 }
 
 void DatabaseThread::ScheduleTask(std::unique_ptr<DatabaseTask> task) {
-  ASSERT(thread_);
+  DCHECK(thread_);
 #if DCHECK_IS_ON()
   {
     MutexLocker lock(termination_requested_mutex_);
-    ASSERT(!termination_requested_);
+    DCHECK(!termination_requested_);
   }
 #endif
   // WebThread takes ownership of the task.

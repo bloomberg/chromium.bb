@@ -389,13 +389,13 @@ SQLTransactionBackend::SQLTransactionBackend(Database* db,
       read_only_(read_only),
       has_version_mismatch_(false) {
   DCHECK(IsMainThread());
-  ASSERT(database_);
+  DCHECK(database_);
   frontend_->SetBackend(this);
   requested_state_ = SQLTransactionState::kAcquireLock;
 }
 
 SQLTransactionBackend::~SQLTransactionBackend() {
-  ASSERT(!sqlite_transaction_);
+  DCHECK(!sqlite_transaction_);
 }
 
 DEFINE_TRACE(SQLTransactionBackend) {
@@ -409,7 +409,7 @@ void SQLTransactionBackend::DoCleanup() {
   // Break the reference cycle. See comment about the life-cycle above.
   frontend_ = nullptr;
 
-  ASSERT(GetDatabase()
+  DCHECK(GetDatabase()
              ->GetDatabaseContext()
              ->GetDatabaseThread()
              ->IsDatabaseThread());
@@ -465,7 +465,7 @@ SQLErrorData* SQLTransactionBackend::TransactionError() {
 }
 
 void SQLTransactionBackend::SetShouldRetryCurrentStatement(bool should_retry) {
-  ASSERT(!should_retry_current_statement_);
+  DCHECK(!should_retry_current_statement_);
   should_retry_current_statement_ = should_retry;
 }
 
@@ -492,9 +492,9 @@ SQLTransactionBackend::StateFunction SQLTransactionBackend::StateFunctionFor(
       &SQLTransactionBackend::SendToFrontendState,
   };
 
-  ASSERT(WTF_ARRAY_LENGTH(kStateFunctions) ==
+  DCHECK(WTF_ARRAY_LENGTH(kStateFunctions) ==
          static_cast<int>(SQLTransactionState::kNumberOfStates));
-  ASSERT(state < SQLTransactionState::kNumberOfStates);
+  DCHECK_LT(state, SQLTransactionState::kNumberOfStates);
 
   return kStateFunctions[static_cast<int>(state)];
 }
@@ -515,7 +515,7 @@ void SQLTransactionBackend::ComputeNextStateAndCleanupIfNeeded() {
   // cleaning up and shutting down:
   if (database_->Opened()) {
     SetStateToRequestedState();
-    ASSERT(next_state_ == SQLTransactionState::kAcquireLock ||
+    DCHECK(next_state_ == SQLTransactionState::kAcquireLock ||
            next_state_ == SQLTransactionState::kOpenTransactionAndPreflight ||
            next_state_ == SQLTransactionState::kRunStatements ||
            next_state_ == SQLTransactionState::kPostflightAndCommit ||
@@ -567,7 +567,7 @@ void SQLTransactionBackend::ExecuteSQL(SQLStatement* statement,
 }
 
 void SQLTransactionBackend::NotifyDatabaseThreadIsShuttingDown() {
-  ASSERT(GetDatabase()
+  DCHECK(GetDatabase()
              ->GetDatabaseContext()
              ->GetDatabaseThread()
              ->IsDatabaseThread());
@@ -595,8 +595,8 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
              ->GetDatabaseContext()
              ->GetDatabaseThread()
              ->IsDatabaseThread());
-  ASSERT(!database_->SqliteDatabase().TransactionInProgress());
-  ASSERT(lock_acquired_);
+  DCHECK(!database_->SqliteDatabase().TransactionInProgress());
+  DCHECK(lock_acquired_);
 
   STORAGE_DVLOG(1) << "Opening and preflighting transaction " << this;
 
@@ -605,7 +605,7 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
   if (!read_only_)
     database_->SqliteDatabase().SetMaximumSize(database_->MaximumSize());
 
-  ASSERT(!sqlite_transaction_);
+  DCHECK(!sqlite_transaction_);
   sqlite_transaction_ = WTF::WrapUnique(
       new SQLiteTransaction(database_->SqliteDatabase(), read_only_));
 
@@ -617,7 +617,7 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
   // Spec 4.3.2.1+2: Open a transaction to the database, jumping to the error
   // callback if that fails.
   if (!sqlite_transaction_->InProgress()) {
-    ASSERT(!database_->SqliteDatabase().TransactionInProgress());
+    DCHECK(!database_->SqliteDatabase().TransactionInProgress());
     database_->ReportStartTransactionResult(
         2, SQLError::kDatabaseErr, database_->SqliteDatabase().LastError());
     transaction_error_ = SQLErrorData::Create(
@@ -679,7 +679,7 @@ SQLTransactionState SQLTransactionBackend::RunStatements() {
              ->GetDatabaseContext()
              ->GetDatabaseThread()
              ->IsDatabaseThread());
-  ASSERT(lock_acquired_);
+  DCHECK(lock_acquired_);
   SQLTransactionState next_state;
 
   // If there is a series of statements queued up that are all successful and
@@ -784,7 +784,7 @@ SQLTransactionState SQLTransactionBackend::NextStateForCurrentStatementError() {
 }
 
 SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
-  ASSERT(lock_acquired_);
+  DCHECK(lock_acquired_);
 
   // Spec 4.3.2.7: Perform postflight steps, jumping to the error callback if
   // they fail.
@@ -802,7 +802,7 @@ SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
 
   // Spec 4.3.2.7: Commit the transaction, jumping to the error callback if that
   // fails.
-  ASSERT(sqlite_transaction_);
+  DCHECK(sqlite_transaction_);
 
   database_->DisableAuthorizer();
   sqlite_transaction_->Commit();
@@ -837,11 +837,11 @@ SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
 }
 
 SQLTransactionState SQLTransactionBackend::CleanupAndTerminate() {
-  ASSERT(lock_acquired_);
+  DCHECK(lock_acquired_);
 
   // Spec 4.3.2.9: End transaction steps. There is no next step.
   STORAGE_DVLOG(1) << "Transaction " << this << " is complete";
-  ASSERT(!database_->SqliteDatabase().TransactionInProgress());
+  DCHECK(!database_->SqliteDatabase().TransactionInProgress());
 
   // Phase 5 cleanup. See comment on the SQLTransaction life-cycle above.
   DoCleanup();
@@ -850,7 +850,7 @@ SQLTransactionState SQLTransactionBackend::CleanupAndTerminate() {
 }
 
 SQLTransactionState SQLTransactionBackend::NextStateForTransactionError() {
-  ASSERT(transaction_error_);
+  DCHECK(transaction_error_);
   if (has_error_callback_)
     return SQLTransactionState::kDeliverTransactionErrorCallback;
 
@@ -861,7 +861,7 @@ SQLTransactionState SQLTransactionBackend::NextStateForTransactionError() {
 
 SQLTransactionState
 SQLTransactionBackend::CleanupAfterTransactionErrorCallback() {
-  ASSERT(lock_acquired_);
+  DCHECK(lock_acquired_);
 
   STORAGE_DVLOG(1) << "Transaction " << this << " is complete with an error";
   database_->DisableAuthorizer();
@@ -869,12 +869,12 @@ SQLTransactionBackend::CleanupAfterTransactionErrorCallback() {
     // Spec 4.3.2.10: Rollback the transaction.
     sqlite_transaction_->Rollback();
 
-    ASSERT(!database_->SqliteDatabase().TransactionInProgress());
+    DCHECK(!database_->SqliteDatabase().TransactionInProgress());
     sqlite_transaction_.reset();
   }
   database_->EnableAuthorizer();
 
-  ASSERT(!database_->SqliteDatabase().TransactionInProgress());
+  DCHECK(!database_->SqliteDatabase().TransactionInProgress());
 
   return SQLTransactionState::kCleanupAndTerminate;
 }
@@ -889,7 +889,7 @@ void SQLTransactionBackend::RequestTransitToState(
                    << " for transaction " << this;
 #endif
   requested_state_ = next_state;
-  ASSERT(requested_state_ != SQLTransactionState::kEnd);
+  DCHECK_NE(requested_state_, SQLTransactionState::kEnd);
   database_->ScheduleTransactionStep(this);
 }
 
@@ -897,12 +897,12 @@ void SQLTransactionBackend::RequestTransitToState(
 // in the state dispatch table. They are unimplemented because they should
 // never be reached in the course of correct execution.
 SQLTransactionState SQLTransactionBackend::UnreachableState() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SQLTransactionState::kEnd;
 }
 
 SQLTransactionState SQLTransactionBackend::SendToFrontendState() {
-  ASSERT(next_state_ != SQLTransactionState::kIdle);
+  DCHECK_NE(next_state_, SQLTransactionState::kIdle);
   frontend_->RequestTransitToState(next_state_);
   return SQLTransactionState::kIdle;
 }

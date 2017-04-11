@@ -140,7 +140,7 @@ DatabaseThread* DatabaseContext::GetDatabaseThread() {
     // termination because we're still using it to execute the closing
     // of the database. However, it is NOT OK to create a new thread
     // after we've requested termination.
-    ASSERT(!has_requested_termination_);
+    DCHECK(!has_requested_termination_);
 
     // Create the database thread on first request - but not if at least one
     // database was already opened, because in that case we already had a

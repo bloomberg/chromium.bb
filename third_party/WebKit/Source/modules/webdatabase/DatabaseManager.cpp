@@ -69,10 +69,12 @@ static void DatabaseCallbackHandleEvent(DatabaseCallback* callback,
 
 DatabaseContext* DatabaseManager::ExistingDatabaseContextFor(
     ExecutionContext* context) {
-  ASSERT(database_context_registered_count_ >= 0);
-  ASSERT(database_context_instance_count_ >= 0);
-  ASSERT(database_context_registered_count_ <=
-         database_context_instance_count_);
+#if DCHECK_IS_ON()
+  DCHECK_GE(database_context_registered_count_, 0);
+  DCHECK_GE(database_context_instance_count_, 0);
+  DCHECK_LE(database_context_registered_count_,
+            database_context_instance_count_);
+#endif
   return context_map_.at(context);
 }
 
@@ -95,7 +97,7 @@ void DatabaseManager::RegisterDatabaseContext(
 void DatabaseManager::UnregisterDatabaseContext(
     DatabaseContext* database_context) {
   ExecutionContext* context = database_context->GetExecutionContext();
-  ASSERT(context_map_.at(context));
+  DCHECK(context_map_.at(context));
 #if DCHECK_IS_ON()
   database_context_registered_count_--;
 #endif
@@ -109,8 +111,8 @@ void DatabaseManager::DidConstructDatabaseContext() {
 
 void DatabaseManager::DidDestructDatabaseContext() {
   database_context_instance_count_--;
-  ASSERT(database_context_registered_count_ <=
-         database_context_instance_count_);
+  DCHECK_LE(database_context_registered_count_,
+            database_context_instance_count_);
 }
 #endif
 
@@ -128,7 +130,7 @@ void DatabaseManager::ThrowExceptionForDatabaseError(
       exception_state.ThrowDOMException(kInvalidStateError, error_message);
       return;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -148,7 +150,7 @@ Database* DatabaseManager::OpenDatabaseInternal(
     bool set_version_in_new_database,
     DatabaseError& error,
     String& error_message) {
-  ASSERT(error == DatabaseError::kNone);
+  DCHECK_EQ(error, DatabaseError::kNone);
 
   DatabaseContext* backend_context = DatabaseContextFor(context)->Backend();
   if (DatabaseTracker::Tracker().CanEstablishDatabase(
@@ -160,7 +162,7 @@ Database* DatabaseManager::OpenDatabaseInternal(
       return backend;
   }
 
-  ASSERT(error != DatabaseError::kNone);
+  DCHECK_NE(error, DatabaseError::kNone);
   switch (error) {
     case DatabaseError::kGenericSecurityError:
       LogOpenDatabaseError(context, name);
@@ -171,7 +173,7 @@ Database* DatabaseManager::OpenDatabaseInternal(
       return nullptr;
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return nullptr;
 }
@@ -184,7 +186,7 @@ Database* DatabaseManager::OpenDatabase(ExecutionContext* context,
                                         DatabaseCallback* creation_callback,
                                         DatabaseError& error,
                                         String& error_message) {
-  ASSERT(error == DatabaseError::kNone);
+  DCHECK_EQ(error, DatabaseError::kNone);
 
   bool set_version_in_new_database = !creation_callback;
   Database* database = OpenDatabaseInternal(
@@ -209,7 +211,7 @@ Database* DatabaseManager::OpenDatabase(ExecutionContext* context,
                                               WrapPersistent(database)));
   }
 
-  ASSERT(database);
+  DCHECK(database);
   return database;
 }
 

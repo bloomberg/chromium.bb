@@ -39,7 +39,8 @@ ChangeVersionWrapper::ChangeVersionWrapper(const String& old_version,
 
 bool ChangeVersionWrapper::PerformPreflight(
     SQLTransactionBackend* transaction) {
-  ASSERT(transaction && transaction->GetDatabase());
+  DCHECK(transaction);
+  DCHECK(transaction->GetDatabase());
 
   Database* database = transaction->GetDatabase();
 
@@ -66,7 +67,8 @@ bool ChangeVersionWrapper::PerformPreflight(
 
 bool ChangeVersionWrapper::PerformPostflight(
     SQLTransactionBackend* transaction) {
-  ASSERT(transaction && transaction->GetDatabase());
+  DCHECK(transaction);
+  DCHECK(transaction->GetDatabase());
 
   Database* database = transaction->GetDatabase();
 

@@ -341,9 +341,9 @@ void SQLiteFileSystem::RegisterSQLiteVFS() {
 
   // These are implemented by delegating to |wrappedVfs|.
   // TODO(shess): Implement local versions.
-  ASSERT(wrapped_vfs->xRandomness);
-  ASSERT(wrapped_vfs->xSleep);
-  ASSERT(wrapped_vfs->xCurrentTime);
+  DCHECK(wrapped_vfs->xRandomness);
+  DCHECK(wrapped_vfs->xSleep);
+  DCHECK(wrapped_vfs->xCurrentTime);
 
   static sqlite3_vfs chromium_vfs = {1,
                                      sizeof(chromiumVfsFile),

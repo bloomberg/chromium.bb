@@ -36,14 +36,14 @@ SQLValue::SQLValue(const SQLValue& val)
       string_(val.string_.IsolatedCopy()) {}
 
 String SQLValue::GetString() const {
-  ASSERT(type_ == kStringValue);
+  DCHECK_EQ(type_, kStringValue);
 
   // Must return a copy since ref-shared Strings are not thread safe
   return string_.IsolatedCopy();
 }
 
 double SQLValue::Number() const {
-  ASSERT(type_ == kNumberValue);
+  DCHECK_EQ(type_, kNumberValue);
 
   return number_;
 }

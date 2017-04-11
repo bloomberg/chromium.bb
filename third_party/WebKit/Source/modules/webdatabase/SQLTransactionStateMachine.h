@@ -75,19 +75,19 @@ SQLTransactionStateMachine<T>::SQLTransactionStateMachine()
 
 template <typename T>
 void SQLTransactionStateMachine<T>::SetStateToRequestedState() {
-  ASSERT(next_state_ == SQLTransactionState::kIdle);
-  ASSERT(requested_state_ != SQLTransactionState::kIdle);
+  DCHECK_EQ(next_state_, SQLTransactionState::kIdle);
+  DCHECK_NE(requested_state_, SQLTransactionState::kIdle);
   next_state_ = requested_state_;
   requested_state_ = SQLTransactionState::kIdle;
 }
 
 template <typename T>
 void SQLTransactionStateMachine<T>::RunStateMachine() {
-  ASSERT(SQLTransactionState::kEnd < SQLTransactionState::kIdle);
+  DCHECK_LT(SQLTransactionState::kEnd, SQLTransactionState::kIdle);
   while (next_state_ > SQLTransactionState::kIdle) {
-    ASSERT(next_state_ < SQLTransactionState::kNumberOfStates);
+    DCHECK_LT(next_state_, SQLTransactionState::kNumberOfStates);
     StateFunction state_function = StateFunctionFor(next_state_);
-    ASSERT(state_function);
+    DCHECK(state_function);
 
 #if DCHECK_IS_ON()
     state_audit_trail_[next_state_audit_entry_] = next_state_;

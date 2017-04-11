@@ -71,7 +71,7 @@ SQLTransaction::SQLTransaction(Database* db,
       execute_sql_allowed_(false),
       read_only_(read_only) {
   DCHECK(IsMainThread());
-  ASSERT(database_);
+  DCHECK(database_);
   probe::AsyncTaskScheduled(db->GetExecutionContext(), "SQLTransaction", this);
 }
 
@@ -98,7 +98,7 @@ bool SQLTransaction::HasErrorCallback() const {
 }
 
 void SQLTransaction::SetBackend(SQLTransactionBackend* backend) {
-  ASSERT(!backend_);
+  DCHECK(!backend_);
   backend_ = backend;
 }
 
@@ -121,9 +121,9 @@ SQLTransaction::StateFunction SQLTransaction::StateFunctionFor(
       &SQLTransaction::DeliverSuccessCallback            // 12.
   };
 
-  ASSERT(WTF_ARRAY_LENGTH(kStateFunctions) ==
+  DCHECK(WTF_ARRAY_LENGTH(kStateFunctions) ==
          static_cast<int>(SQLTransactionState::kNumberOfStates));
-  ASSERT(state < SQLTransactionState::kNumberOfStates);
+  DCHECK(state < SQLTransactionState::kNumberOfStates);
 
   return kStateFunctions[static_cast<int>(state)];
 }
@@ -141,7 +141,7 @@ void SQLTransaction::RequestTransitToState(SQLTransactionState next_state) {
 }
 
 SQLTransactionState SQLTransaction::NextStateForTransactionError() {
-  ASSERT(transaction_error_);
+  DCHECK(transaction_error_);
   if (HasErrorCallback())
     return SQLTransactionState::kDeliverTransactionErrorCallback;
 
@@ -188,10 +188,10 @@ SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
     // Hence, it's thread safe to fetch the backend transactionError without
     // a lock.
     if (!transaction_error_) {
-      ASSERT(backend_->TransactionError());
+      DCHECK(backend_->TransactionError());
       transaction_error_ = SQLErrorData::Create(*backend_->TransactionError());
     }
-    ASSERT(transaction_error_);
+    DCHECK(transaction_error_);
     error_callback->handleEvent(SQLError::Create(*transaction_error_));
 
     transaction_error_ = nullptr;
@@ -211,7 +211,7 @@ SQLTransactionState SQLTransaction::DeliverStatementCallback() {
   execute_sql_allowed_ = true;
 
   SQLStatement* current_statement = backend_->CurrentStatement();
-  ASSERT(current_statement);
+  DCHECK(current_statement);
 
   bool result = current_statement->PerformCallback(this);
 
@@ -230,7 +230,7 @@ SQLTransactionState SQLTransaction::DeliverStatementCallback() {
 
 SQLTransactionState SQLTransaction::DeliverQuotaIncreaseCallback() {
   DCHECK(IsMainThread());
-  ASSERT(backend_->CurrentStatement());
+  DCHECK(backend_->CurrentStatement());
 
   bool should_retry_current_statement =
       database_->TransactionClient()->DidExceedQuota(GetDatabase());
@@ -258,12 +258,12 @@ SQLTransactionState SQLTransaction::DeliverSuccessCallback() {
 // in the state dispatch table. They are unimplemented because they should
 // never be reached in the course of correct execution.
 SQLTransactionState SQLTransaction::UnreachableState() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SQLTransactionState::kEnd;
 }
 
 SQLTransactionState SQLTransaction::SendToBackendState() {
-  ASSERT(next_state_ != SQLTransactionState::kIdle);
+  DCHECK_NE(next_state_, SQLTransactionState::kIdle);
   backend_->RequestTransitToState(next_state_);
   return SQLTransactionState::kIdle;
 }
@@ -329,7 +329,7 @@ bool SQLTransaction::ComputeNextStateAndCleanupIfNeeded() {
   // cleaning up and shutting down:
   if (database_->Opened()) {
     SetStateToRequestedState();
-    ASSERT(next_state_ == SQLTransactionState::kEnd ||
+    DCHECK(next_state_ == SQLTransactionState::kEnd ||
            next_state_ == SQLTransactionState::kDeliverTransactionCallback ||
            next_state_ ==
                SQLTransactionState::kDeliverTransactionErrorCallback ||

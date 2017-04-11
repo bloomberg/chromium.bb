@@ -95,7 +95,7 @@ class SQLiteDatabase {
   const char* LastErrorMsg();
 
   sqlite3* Sqlite3Handle() const {
-    ASSERT(sharable_ || CurrentThread() == opening_thread_ || !db_);
+    DCHECK_EQ(sharable_ || CurrentThread(), opening_thread_ || !db_);
     return db_;
   }
 

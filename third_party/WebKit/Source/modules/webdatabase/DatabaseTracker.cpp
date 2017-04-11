@@ -118,7 +118,7 @@ void DatabaseTracker::RemoveOpenDatabase(Database* database) {
   {
     MutexLocker open_database_map_lock(open_database_map_guard_);
     String origin_string = database->GetSecurityOrigin()->ToRawString();
-    ASSERT(open_database_map_);
+    DCHECK(open_database_map_);
     DatabaseNameMap* name_map = open_database_map_->at(origin_string);
     if (!name_map)
       return;
@@ -146,7 +146,7 @@ void DatabaseTracker::RemoveOpenDatabase(Database* database) {
 }
 
 void DatabaseTracker::PrepareToOpenDatabase(Database* database) {
-  ASSERT(
+  DCHECK(
       database->GetDatabaseContext()->GetExecutionContext()->IsContextThread());
   if (Platform::Current()->DatabaseObserver()) {
     Platform::Current()->DatabaseObserver()->DatabaseOpened(
@@ -205,7 +205,7 @@ void DatabaseTracker::ForEachOpenDatabaseInPage(
     for (auto& name_database_set : *origin_map.value) {
       for (Database* database : *name_database_set.value) {
         ExecutionContext* context = database->GetExecutionContext();
-        ASSERT(context->IsDocument());
+        DCHECK(context->IsDocument());
         if (ToDocument(context)->GetFrame()->GetPage() == page)
           (*callback)(database);
       }

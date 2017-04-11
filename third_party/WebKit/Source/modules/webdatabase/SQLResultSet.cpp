@@ -68,7 +68,7 @@ SQLResultSetRowList* SQLResultSet::rows() const {
 }
 
 void SQLResultSet::SetInsertId(int64_t id) {
-  ASSERT(!insert_id_set_);
+  DCHECK(!insert_id_set_);
 
   insert_id_ = id;
   insert_id_set_ = true;

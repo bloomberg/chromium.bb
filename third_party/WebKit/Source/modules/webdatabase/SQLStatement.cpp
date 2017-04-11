@@ -79,8 +79,8 @@ bool SQLStatement::HasErrorCallback() {
 }
 
 bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
-  ASSERT(transaction);
-  ASSERT(backend_);
+  DCHECK(transaction);
+  DCHECK(backend_);
 
   bool callback_error = false;
 

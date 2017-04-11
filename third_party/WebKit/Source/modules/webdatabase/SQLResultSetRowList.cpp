@@ -39,7 +39,7 @@ unsigned SQLResultSetRowList::length() const {
   if (result_.size() == 0)
     return 0;
 
-  ASSERT(result_.size() % columns_.size() == 0);
+  DCHECK_EQ(result_.size() % columns_.size(), 0u);
 
   return result_.size() / columns_.size();
 }

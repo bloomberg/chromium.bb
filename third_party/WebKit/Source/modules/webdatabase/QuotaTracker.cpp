@@ -51,10 +51,10 @@ void QuotaTracker::GetDatabaseSizeAndSpaceAvailableToOrigin(
   // Extra scope to unlock prior to potentially calling Platform.
   {
     MutexLocker lock_data(data_guard_);
-    ASSERT(database_sizes_.Contains(origin->ToRawString()));
+    DCHECK(database_sizes_.Contains(origin->ToRawString()));
     HashMap<String, SizeMap>::const_iterator it =
         database_sizes_.Find(origin->ToRawString());
-    ASSERT(it->value.Contains(database_name));
+    DCHECK(it->value.Contains(database_name));
     *database_size = it->value.at(database_name);
 
     if (space_available_to_origins_.Contains(origin->ToRawString())) {

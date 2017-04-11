@@ -124,7 +124,7 @@ SQLResultSet* SQLStatementBackend::SqlResultSet() const {
 }
 
 bool SQLStatementBackend::Execute(Database* db) {
-  ASSERT(!result_set_->IsValid());
+  DCHECK(!result_set_->IsValid());
 
   // If we're re-running this statement after a quota violation, we need to
   // clear that error now
@@ -247,7 +247,8 @@ bool SQLStatementBackend::Execute(Database* db) {
 }
 
 void SQLStatementBackend::SetVersionMismatchedError(Database* database) {
-  ASSERT(!error_ && !result_set_->IsValid());
+  DCHECK(!error_);
+  DCHECK(!result_set_->IsValid());
   database->ReportExecuteStatementResult(7, SQLError::kVersionErr, 0);
   error_ = SQLErrorData::Create(
       SQLError::kVersionErr,
@@ -255,7 +256,8 @@ void SQLStatementBackend::SetVersionMismatchedError(Database* database) {
 }
 
 void SQLStatementBackend::SetFailureDueToQuota(Database* database) {
-  ASSERT(!error_ && !result_set_->IsValid());
+  DCHECK(!error_);
+  DCHECK(!result_set_->IsValid());
   database->ReportExecuteStatementResult(8, SQLError::kQuotaErr, 0);
   error_ = SQLErrorData::Create(SQLError::kQuotaErr,
                                 "there was not enough remaining storage "

@@ -92,9 +92,14 @@ namespace blink {
 // Defines static local variable after making sure that guid lock is held.
 // (We can't use DEFINE_STATIC_LOCAL for this because it asserts thread
 // safety, which is externally guaranteed by the guideMutex lock)
+#if DCHECK_IS_ON()
 #define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
-  ASSERT(GuidMutex().Locked());                              \
+  DCHECK(GuidMutex().Locked());                              \
   static type& name = *new type arguments
+#else
+#define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
+  static type& name = *new type arguments
+#endif
 
 static const char kVersionKey[] = "WebKitDatabaseVersionKey";
 static const char kInfoTableName[] = "__WebKitDatabaseInfoTable__";
@@ -173,7 +178,9 @@ static GuidVersionMap& GuidToVersionMap() {
 // NOTE: Caller must lock guidMutex().
 static inline void UpdateGuidVersionMap(DatabaseGuid guid, String new_version) {
   // Ensure the the mutex is locked.
-  ASSERT(GuidMutex().Locked());
+#if DCHECK_IS_ON()
+  DCHECK(GuidMutex().Locked());
+#endif
 
   // Note: It is not safe to put an empty string into the guidToVersionMap()
   // map. That's because the map is cross-thread, but empty strings are
@@ -195,7 +202,9 @@ static HashCountedSet<DatabaseGuid>& GuidCount() {
 static DatabaseGuid GuidForOriginAndName(const String& origin,
                                          const String& name) {
   // Ensure the the mutex is locked.
-  ASSERT(GuidMutex().Locked());
+#if DCHECK_IS_ON()
+  DCHECK(GuidMutex().Locked());
+#endif
 
   String string_id = origin + "/" + name;
 
@@ -246,8 +255,8 @@ Database::Database(DatabaseContext* database_context,
 
   database_thread_security_origin_ =
       context_thread_security_origin_->IsolatedCopy();
-  ASSERT(database_context_->GetDatabaseThread());
-  ASSERT(database_context_->IsContextThread());
+  DCHECK(database_context_->GetDatabaseThread());
+  DCHECK(database_context_->IsContextThread());
   database_task_runner_ =
       TaskRunnerHelper::Get(TaskType::kDatabaseAccess, GetExecutionContext());
 }
@@ -262,7 +271,7 @@ Database::~Database() {
   // DatabaseContext::stopDatabases()). By the time we get here, the SQLite
   // database should have already been closed.
 
-  ASSERT(!opened_);
+  DCHECK(!opened_);
 }
 
 DEFINE_TRACE(Database) {
@@ -289,8 +298,8 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
 }
 
 void Database::Close() {
-  ASSERT(GetDatabaseContext()->GetDatabaseThread());
-  ASSERT(GetDatabaseContext()->GetDatabaseThread()->IsDatabaseThread());
+  DCHECK(GetDatabaseContext()->GetDatabaseThread());
+  DCHECK(GetDatabaseContext()->GetDatabaseThread()->IsDatabaseThread());
 
   {
     MutexLocker locker(transaction_in_progress_mutex_);
@@ -340,7 +349,7 @@ void Database::InProgressTransactionCompleted() {
 }
 
 void Database::ScheduleTransaction() {
-  ASSERT(!transaction_in_progress_mutex_.TryLock());  // Locked by caller.
+  DCHECK(!transaction_in_progress_mutex_.TryLock());  // Locked by caller.
   SQLTransactionBackend* transaction = nullptr;
 
   if (is_transaction_queue_enabled_ && !transaction_queue_.IsEmpty())
@@ -393,7 +402,7 @@ void Database::CloseDatabase() {
   {
     MutexLocker locker(GuidMutex());
 
-    ASSERT(GuidCount().Contains(guid_));
+    DCHECK(GuidCount().Contains(guid_));
     if (GuidCount().erase(guid_)) {
       GuidToVersionMap().erase(guid_);
     }
@@ -431,8 +440,9 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                                     String& error_message) {
   double call_start_time = WTF::MonotonicallyIncreasingTime();
   DoneCreatingDatabaseOnExitCaller on_exit_caller(this);
-  ASSERT(error_message.IsEmpty());
-  ASSERT(error == DatabaseError::kNone);  // Better not have any errors already.
+  DCHECK(error_message.IsEmpty());
+  DCHECK_EQ(error,
+            DatabaseError::kNone);  // Better not have any errors already.
   // Presumed failure. We'll clear it if we succeed below.
   error = DatabaseError::kInvalidDatabaseState;
 
@@ -575,7 +585,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
     return false;
   }
 
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   sqlite_database_.SetAuthorizer(database_authorizer_.Get());
 
   // See comment at the top this file regarding calling addOpenDatabase().
@@ -681,44 +691,44 @@ void Database::SetCachedVersion(const String& actual_version) {
 }
 
 bool Database::GetActualVersionForTransaction(String& actual_version) {
-  ASSERT(sqlite_database_.TransactionInProgress());
+  DCHECK(sqlite_database_.TransactionInProgress());
   // Note: In multi-process browsers the cached value may be inaccurate. So we
   // retrieve the value from the database and update the cached value here.
   return GetVersionFromDatabase(actual_version, true);
 }
 
 void Database::DisableAuthorizer() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   database_authorizer_->Disable();
 }
 
 void Database::EnableAuthorizer() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   database_authorizer_->Enable();
 }
 
 void Database::SetAuthorizerPermissions(int permissions) {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   database_authorizer_->SetPermissions(permissions);
 }
 
 bool Database::LastActionChangedDatabase() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   return database_authorizer_->LastActionChangedDatabase();
 }
 
 bool Database::LastActionWasInsert() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   return database_authorizer_->LastActionWasInsert();
 }
 
 void Database::ResetDeletes() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   database_authorizer_->ResetDeletes();
 }
 
 bool Database::HadDeletes() {
-  ASSERT(database_authorizer_);
+  DCHECK(database_authorizer_);
   return database_authorizer_->HadDeletes();
 }
 
@@ -814,7 +824,7 @@ ExecutionContext* Database::GetExecutionContext() const {
 }
 
 void Database::CloseImmediately() {
-  ASSERT(GetExecutionContext()->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   if (GetDatabaseContext()->DatabaseThreadAvailable() && Opened()) {
     LogErrorMessage("forcibly closing database");
     GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(
@@ -857,7 +867,7 @@ void Database::RunTransaction(SQLTransactionCallback* callback,
   if (!GetExecutionContext())
     return;
 
-  ASSERT(GetExecutionContext()->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
 // FIXME: Rather than passing errorCallback to SQLTransaction and then
 // sometimes firing it ourselves, this code should probably be pushed down
 // into Database so that we only create the SQLTransaction if we're
@@ -871,7 +881,9 @@ void Database::RunTransaction(SQLTransactionCallback* callback,
       RunTransaction(transaction, read_only, change_version_data);
   if (!transaction_backend) {
     SQLTransactionErrorCallback* callback = transaction->ReleaseErrorCallback();
-    ASSERT(callback == original_error_callback);
+#if DCHECK_IS_ON()
+    DCHECK_EQ(callback, original_error_callback);
+#endif
     if (callback) {
       std::unique_ptr<SQLErrorData> error = SQLErrorData::Create(
           SQLError::kUnknownErr, "database has been closed");

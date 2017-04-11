@@ -252,7 +252,8 @@ void InspectorDatabaseAgent::DidOpenDatabase(blink::Database* database,
       InspectorDatabaseResource::Create(database, domain, name, version);
   resources_.Set(resource->Id(), resource);
   // Resources are only bound while visible.
-  ASSERT(enabled_ && GetFrontend());
+  DCHECK(enabled_);
+  DCHECK(GetFrontend());
   resource->Bind(GetFrontend());
 }
 
