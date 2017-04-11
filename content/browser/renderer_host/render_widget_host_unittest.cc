@@ -34,7 +34,9 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -562,6 +564,18 @@ class RenderWidgetHostTest : public testing::Test {
     SetInitialRenderSizeParams();
     host_->Init();
     host_->DisableGestureDebounce();
+
+    cc::mojom::MojoCompositorFrameSinkPtr sink;
+    cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+        mojo::MakeRequest(&sink);
+    cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    renderer_compositor_frame_sink_ =
+        base::MakeUnique<FakeRendererCompositorFrameSink>(
+            std::move(sink), std::move(client_request));
+    host_->RequestMojoCompositorFrameSink(
+        std::move(sink_request),
+        std::move(renderer_compositor_frame_sink_ptr_));
   }
 
   void TearDown() override {
@@ -730,12 +744,16 @@ class RenderWidgetHostTest : public testing::Test {
   double last_simulated_event_time_seconds_;
   double simulated_event_time_delta_seconds_;
   IPC::TestSink* sink_;
+  std::unique_ptr<FakeRendererCompositorFrameSink>
+      renderer_compositor_frame_sink_;
 
  private:
   SyntheticWebTouchEvent touch_event_;
 
   TestBrowserThreadBundle thread_bundle_;
   base::test::ScopedFeatureList feature_list_;
+  cc::mojom::MojoCompositorFrameSinkClientPtr
+      renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -1928,56 +1946,6 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
   SimulateWheelEventWithLatencyInfo(-5, 0, 0, true, ui::LatencyInfo());
 
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
-}
-
-// Checks whether RWHI properly keeps track of the last compositor_frame_sink_id
-// and notifies the view_ when it changes.
-TEST_F(RenderWidgetHostTest, CompositorFrameSinkIdChanges) {
-  const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
-
-  // Ignore any IPC message sent so far.
-  sink_->ClearMessages();
-
-  // Submit a frame with compositor_frame_sink_id=1
-  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  host_->OnMessageReceived(
-      ViewHostMsg_SwapCompositorFrame(0, 1, local_surface_id, frame));
-
-  // Send an ack. The right compositor_frame_sink_id must be sent.
-  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
-                                        cc::ReturnedResourceArray());
-  ASSERT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));  // compositor_frame_sink_id
-  }
-  sink_->ClearMessages();
-
-  // Submit a frame with compositor_frame_sink_id=2. Verify that view_ is
-  // notified of the change in id.
-  view_->reset_did_change_compositor_frame_sink();
-  frame = MakeCompositorFrame(1.f, frame_size);
-  host_->OnMessageReceived(
-      ViewHostMsg_SwapCompositorFrame(2, 2, local_surface_id, frame));
-  EXPECT_TRUE(view_->did_change_compositor_frame_sink());
-
-  // Send an ack. The right compositor_frame_sink_id must be sent.
-  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
-                                        cc::ReturnedResourceArray());
-  ASSERT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(2u, std::get<0>(params));  // compositor_frame_sink_id
-  }
-  sink_->ClearMessages();
 }
 
 // Check that if messages of a frame arrive earlier than the frame itself, we

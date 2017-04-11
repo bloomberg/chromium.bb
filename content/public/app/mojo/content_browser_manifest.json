@@ -28,6 +28,7 @@
           "content::mojom::FieldTrialRecorder",
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
+          "content::mojom::FrameSinkProvider",
           "content::mojom::ServiceWorkerDispatcherHost",
           "content::mojom::StoragePartitionService",
           "content::mojom::URLLoaderFactory",

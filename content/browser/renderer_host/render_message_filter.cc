@@ -160,17 +160,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
 #if defined(OS_MACOSX)
-    // On Mac, the IPCs ViewHostMsg_SwapCompositorFrame, ViewHostMsg_UpdateRect,
-    // and GpuCommandBufferMsg_SwapBuffersCompleted need to be handled in a
-    // nested message loop during resize.
-    IPC_MESSAGE_HANDLER_GENERIC(
-        ViewHostMsg_SwapCompositorFrame,
-        ResizeHelperPostMsgToUIThread(render_process_id_, message))
+    // On Mac, ViewHostMsg_UpdateRect needs to be handled in a nested message
+    // loop during resize.
     IPC_MESSAGE_HANDLER_GENERIC(
         ViewHostMsg_UpdateRect,
-        ResizeHelperPostMsgToUIThread(render_process_id_, message))
-    IPC_MESSAGE_HANDLER_GENERIC(
-        ViewHostMsg_SetNeedsBeginFrames,
         ResizeHelperPostMsgToUIThread(render_process_id_, message))
 #endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_HasGpuProcess,

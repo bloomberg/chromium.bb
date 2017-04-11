@@ -296,6 +296,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       current_content_source_id_(0),
       monitoring_composition_info_(false),
+      compositor_frame_sink_binding_(this),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -411,6 +412,10 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   if (view) {
     view_ = view->GetWeakPtr();
+    if (renderer_compositor_frame_sink_.is_bound()) {
+      view->DidCreateNewRendererCompositorFrameSink(
+          renderer_compositor_frame_sink_.get());
+    }
     // Views start out not needing begin frames, so only update its state
     // if the value has changed.
     if (needs_begin_frames_)
@@ -556,10 +561,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-                                OnSwapCompositorFrame(msg))
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginFrameDidNotSwap,
-                        OnBeginFrameDidNotSwap)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginFrameDidNotSwap, BeginFrameDidNotSwap)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -866,6 +868,9 @@ bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
 
   // Do not pause if there is not a paint or resize already coming.
   if (!repaint_ack_pending_ && !resize_ack_pending_)
+    return false;
+
+  if (!renderer_compositor_frame_sink_.is_bound())
     return false;
 
   return true;
@@ -1899,32 +1904,7 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
   }
 }
 
-bool RenderWidgetHostImpl::OnSwapCompositorFrame(
-    const IPC::Message& message) {
-  // This trace event is used in
-  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
-  TRACE_EVENT0("test_fps,benchmark", "OnSwapCompositorFrame");
-
-  ViewHostMsg_SwapCompositorFrame::Param param;
-  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
-    return false;
-  uint32_t compositor_frame_sink_id = std::get<0>(param);
-  cc::LocalSurfaceId local_surface_id = std::get<1>(param);
-  cc::CompositorFrame frame(std::move(std::get<2>(param)));
-
-  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
-    if (view_)
-      view_->DidCreateNewRendererCompositorFrameSink();
-    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
-  }
-
-  SubmitCompositorFrame(local_surface_id, std::move(frame));
-
-  return true;
-}
-
-void RenderWidgetHostImpl::OnBeginFrameDidNotSwap(
-    const cc::BeginFrameAck& ack) {
+void RenderWidgetHostImpl::BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {
   if (ack.sequence_number < cc::BeginFrameArgs::kStartingFrameNumber) {
     // Received an invalid ack, renderer misbehaved.
     bad_message::ReceivedBadMessage(
@@ -2367,13 +2347,6 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   return true;
 }
 
-void RenderWidgetHostImpl::SendReclaimCompositorResources(
-    bool is_swap_ack,
-    const cc::ReturnedResourceArray& resources) {
-  Send(new ViewMsg_ReclaimCompositorResources(
-      routing_id_, last_compositor_frame_sink_id_, is_swap_ack, resources));
-}
-
 void RenderWidgetHostImpl::DelayedAutoResized() {
   gfx::Size new_size = new_auto_size_;
   // Clear the new_auto_size_ since the empty value is used as a flag to
@@ -2609,6 +2582,31 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
                                               monitor_updates));
 }
 
+void RenderWidgetHostImpl::RequestMojoCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+  if (compositor_frame_sink_binding_.is_bound())
+    compositor_frame_sink_binding_.Close();
+#if defined(OS_MACOSX)
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ui::WindowResizeHelperMac::Get()->task_runner();
+  // In tests, task_runner might not be initialized.
+  if (task_runner)
+    compositor_frame_sink_binding_.Bind(std::move(request), task_runner);
+  else
+    compositor_frame_sink_binding_.Bind(std::move(request));
+#else
+  compositor_frame_sink_binding_.Bind(std::move(request));
+#endif
+  if (view_)
+    view_->DidCreateNewRendererCompositorFrameSink(client.get());
+  renderer_compositor_frame_sink_ = std::move(client);
+}
+
+void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
+  OnSetNeedsBeginFrames(needs_begin_frame);
+}
+
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
@@ -2679,7 +2677,7 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   } else {
     cc::ReturnedResourceArray resources;
     cc::TransferableResource::ReturnResources(frame.resource_list, &resources);
-    SendReclaimCompositorResources(true /* is_swap_ack */, resources);
+    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
   }
 
   // After navigation, if a frame belonging to the new page is received, stop

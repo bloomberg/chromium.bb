@@ -703,6 +703,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
+      frame_sink_provider_(id_),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -1243,6 +1244,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
+                       base::Bind(&RenderProcessHostImpl::BindFrameSinkProvider,
+                                  base::Unretained(this)));
+
+  AddUIThreadInterface(registry.get(),
                        base::Bind(&OffscreenCanvasSurfaceFactoryImpl::Create));
   AddUIThreadInterface(
       registry.get(),
@@ -1367,6 +1372,11 @@ void RenderProcessHostImpl::CreateOffscreenCanvasCompositorFrameSinkProvider(
         new OffscreenCanvasCompositorFrameSinkProviderImpl());
   }
   offscreen_canvas_provider_->Add(std::move(request));
+}
+
+void RenderProcessHostImpl::BindFrameSinkProvider(
+    mojom::FrameSinkProviderRequest request) {
+  frame_sink_provider_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -2757,6 +2767,11 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // this object to be no longer needed.
   if (delayed_cleanup_needed_)
     Cleanup();
+
+  // If RenderProcessHostImpl is reused, the next renderer will send a new
+  // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
+  // for that.
+  frame_sink_provider_.Unbind();
 
   // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up

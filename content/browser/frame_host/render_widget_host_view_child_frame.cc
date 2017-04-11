@@ -349,13 +349,13 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
 
 void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
-  if (!host_)
-    return;
-  host_->SendReclaimCompositorResources(true /* is_swap_ack */, resources);
+  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
-void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink() {
+void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();
+  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   CreateCompositorFrameSinkSupport();
   has_frame_ = false;
 }
@@ -624,9 +624,7 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
 
 void RenderWidgetHostViewChildFrame::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
-  if (!host_)
-    return;
-  host_->SendReclaimCompositorResources(false /* is_swap_ack */, resources);
+  renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(

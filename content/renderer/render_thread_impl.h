@@ -32,6 +32,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
+#include "content/common/frame_sink_provider.mojom.h"
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -504,6 +505,10 @@ class CONTENT_EXPORT RenderThreadImpl
     return needs_to_record_first_active_paint_;
   }
 
+  mojom::FrameSinkProvider* GetFrameSinkProvider() {
+    return frame_sink_provider_.get();
+  }
+
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
@@ -785,6 +790,8 @@ class CONTENT_EXPORT RenderThreadImpl
   int32_t client_id_;
 
   variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
+
+  mojom::FrameSinkProviderPtr frame_sink_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

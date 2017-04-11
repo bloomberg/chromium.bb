@@ -596,14 +596,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateBrowserControlsState,
 
 #endif
 
-// Sent by browser to tell renderer compositor that some resources that were
-// given to the browser in a swap are not being used anymore.
-// If this message is in response to a swap then is_swap_ack is set.
-IPC_MESSAGE_ROUTED3(ViewMsg_ReclaimCompositorResources,
-                    uint32_t /* compositor_frame_sink_id */,
-                    bool /* is_swap_ack */,
-                    cc::ReturnedResourceArray /* resources */)
-
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw. Robust to events that can
@@ -803,11 +795,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorChanged,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
                     int /* maximum_percent */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SwapCompositorFrame,
-                    uint32_t /* compositor_frame_sink_id */,
-                    cc::LocalSurfaceId /* local_surface_id */,
-                    cc::CompositorFrame /* frame */)
 
 IPC_MESSAGE_ROUTED2(ViewHostMsg_FrameSwapMessages,
                     uint32_t /* frame_token */,

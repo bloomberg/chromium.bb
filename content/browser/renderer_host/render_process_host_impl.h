@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/renderer_host/frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interfaces.mojom.h"
@@ -347,6 +348,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateMusGpuRequest(ui::mojom::GpuRequest request);
   void CreateOffscreenCanvasCompositorFrameSinkProvider(
       blink::mojom::OffscreenCanvasCompositorFrameSinkProviderRequest request);
+  void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void CreateStoragePartitionService(
       mojo::InterfaceRequest<mojom::StoragePartitionService> request);
 
@@ -617,6 +619,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // WeakPtrs which are invalidated any time the RPHI is recycled.
   std::unique_ptr<base::WeakPtrFactory<RenderProcessHostImpl>>
       instance_weak_factory_;
+
+  FrameSinkProviderImpl frame_sink_provider_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

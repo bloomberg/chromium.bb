@@ -890,9 +890,13 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 }
 #endif
 
-void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->DidCreateNewRendererCompositorFrameSink();
+void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
+  if (delegated_frame_host_) {
+    delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
+        renderer_compositor_frame_sink_);
+  }
 }
 
 void RenderWidgetHostViewAura::SubmitCompositorFrame(
@@ -1938,6 +1942,10 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   }
   delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
       frame_sink_id, delegated_frame_host_client_.get());
+  if (renderer_compositor_frame_sink_) {
+    delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
+        renderer_compositor_frame_sink_);
+  }
   UpdateNeedsBeginFramesInternal();
 
   // Let the page-level input event router know about our surface ID

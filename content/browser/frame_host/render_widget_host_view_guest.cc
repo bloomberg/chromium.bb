@@ -443,6 +443,14 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
   return platform_view_->UnlockMouse();
 }
 
+void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+  RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
+      renderer_compositor_frame_sink);
+  platform_view_->DidCreateNewRendererCompositorFrameSink(
+      renderer_compositor_frame_sink);
+}
+
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);

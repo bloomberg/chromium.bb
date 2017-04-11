@@ -49,7 +49,6 @@ bool CompositorForwardingMessageFilter::OnMessageReceived(
   switch (message.type()) {
     case ViewMsg_SetBeginFramePaused::ID:
     case ViewMsg_BeginFrame::ID:
-    case ViewMsg_ReclaimCompositorResources::ID:
       break;
     default:
       return false;

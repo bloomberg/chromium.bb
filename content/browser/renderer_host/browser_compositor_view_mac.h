@@ -26,9 +26,6 @@ class BrowserCompositorMacClient {
  public:
   virtual NSView* BrowserCompositorMacGetNSView() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
-  virtual void BrowserCompositorMacSendReclaimCompositorResources(
-      bool is_swap_ack,
-      const cc::ReturnedResourceArray& resources) = 0;
   virtual void BrowserCompositorMacSendBeginFrame(
       const cc::BeginFrameArgs& args) = 0;
 };
@@ -59,7 +56,8 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   // ui::Compositor.
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
 
-  void DidCreateNewRendererCompositorFrameSink();
+  void DidCreateNewRendererCompositorFrameSink(
+      cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
@@ -105,9 +103,6 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   bool DelegatedFrameCanCreateResizeLock() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
-  void DelegatedFrameHostSendReclaimCompositorResources(
-      bool is_swap_ack,
-      const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   bool IsAutoResizeEnabled() const override;
 
@@ -169,6 +164,8 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   std::unique_ptr<ui::Layer> root_layer_;
 
   bool has_transparent_background_ = false;
+  cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink_ =
+      nullptr;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };

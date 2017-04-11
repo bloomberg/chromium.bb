@@ -70,10 +70,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual std::unique_ptr<CompositorResizeLock>
   DelegatedFrameHostCreateResizeLock() = 0;
 
-  virtual void DelegatedFrameHostSendReclaimCompositorResources(
-      bool is_swap_ack,
-      const cc::ReturnedResourceArray& resources) = 0;
-
   virtual void OnBeginFrame(const cc::BeginFrameArgs& args) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
 };
@@ -121,7 +117,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Public interface exposed to RenderWidgetHostView.
 
-  void DidCreateNewRendererCompositorFrameSink();
+  void DidCreateNewRendererCompositorFrameSink(
+      cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void ClearDelegatedFrame();
@@ -323,6 +320,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       cc::BeginFrameArgs::kInvalidFrameNumber;
 
   bool has_frame_ = false;
+  cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink_ =
+      nullptr;
 
   std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 };

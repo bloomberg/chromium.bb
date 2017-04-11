@@ -26,6 +26,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -168,6 +169,16 @@ class RenderWidgetHostViewGuestSurfaceTest
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, browser_plugin_guest_,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
+    cc::mojom::MojoCompositorFrameSinkPtr sink;
+    cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+        mojo::MakeRequest(&sink);
+    cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    renderer_compositor_frame_sink_ =
+        base::MakeUnique<FakeRendererCompositorFrameSink>(
+            std::move(sink), std::move(client_request));
+    view_->DidCreateNewRendererCompositorFrameSink(
+        renderer_compositor_frame_sink_ptr_.get());
   }
 
   void TearDown() override {
@@ -205,8 +216,12 @@ class RenderWidgetHostViewGuestSurfaceTest
   // destruction.
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewGuest* view_;
+  std::unique_ptr<FakeRendererCompositorFrameSink>
+      renderer_compositor_frame_sink_;
 
  private:
+  cc::mojom::MojoCompositorFrameSinkClientPtr
+      renderer_compositor_frame_sink_ptr_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestSurfaceTest);
 };
 

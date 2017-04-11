@@ -377,8 +377,10 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 }
 
-void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink() {
+void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();
+  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   CreateCompositorFrameSinkSupport();
   has_frame_ = false;
 }
@@ -413,8 +415,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                       frame.metadata.latency_info.begin(),
                                       frame.metadata.latency_info.end());
 
-    client_->DelegatedFrameHostSendReclaimCompositorResources(
-        true /* is_swap_ack*/, resources);
+    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
+
     skipped_frames_ = true;
     BeginFrameDidNotSwap(ack);
     return;
@@ -494,14 +496,12 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
 
 void DelegatedFrameHost::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
-  client_->DelegatedFrameHostSendReclaimCompositorResources(
-      true /* is_swap_ack */, resources);
+  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
 void DelegatedFrameHost::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
-  client_->DelegatedFrameHostSendReclaimCompositorResources(
-      false /* is_swap_ack */, resources);
+  renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 
 void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,

@@ -585,6 +585,7 @@ mojom("mojo_bindings") {
     "child_memory_coordinator.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
+    "frame_sink_provider.mojom",
     "host_zoom.mojom",
     "image_downloader/image_downloader.mojom",
     "indexed_db/indexed_db.mojom",

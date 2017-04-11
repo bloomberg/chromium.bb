@@ -250,8 +250,10 @@ const double kThrottledResourceRequestFlushPeriodS = 1. / 60.;
 // allocation that exceeds this limit.
 const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 
+#if defined(OS_ANDROID)
 // Unique identifier for each output surface created.
 uint32_t g_next_compositor_frame_sink_id = 1;
+#endif
 
 // An implementation of mojom::RenderMessageFilter which can be mocked out
 // for tests which may indirectly send messages over this interface.
@@ -892,6 +894,9 @@ void RenderThreadImpl::Init(
   // redirection experiment concludes https://crbug.com/622400.
   if (!command_line.HasSwitch(switches::kSingleProcess))
     base::SequencedWorkerPool::EnableForProcess();
+
+  GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                mojo::MakeRequest(&frame_sink_provider_));
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1895,16 +1900,13 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
   }
 #endif
 
-  uint32_t compositor_frame_sink_id = g_next_compositor_frame_sink_id++;
-
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
         cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
       callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
-          routing_id, compositor_frame_sink_id,
-          std::move(synthetic_begin_frame_source),
+          routing_id, std::move(synthetic_begin_frame_source),
           std::move(vulkan_context_provider),
           std::move(frame_swap_message_queue)));
       return;
@@ -1930,9 +1932,8 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
   if (use_software) {
     DCHECK(!layout_test_mode());
     callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
-        routing_id, compositor_frame_sink_id,
-        std::move(synthetic_begin_frame_source), nullptr, nullptr, nullptr,
-        shared_bitmap_manager(), std::move(frame_swap_message_queue)));
+        routing_id, std::move(synthetic_begin_frame_source), nullptr, nullptr,
+        nullptr, shared_bitmap_manager(), std::move(frame_swap_message_queue)));
     return;
   }
 
@@ -1993,16 +1994,16 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     callback.Run(base::MakeUnique<SynchronousCompositorFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
         GetGpuMemoryBufferManager(), shared_bitmap_manager(), routing_id,
-        compositor_frame_sink_id, std::move(begin_frame_source),
+        g_next_compositor_frame_sink_id++, std::move(begin_frame_source),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue)));
     return;
   }
 #endif
   callback.Run(base::WrapUnique(new RendererCompositorFrameSink(
-      routing_id, compositor_frame_sink_id,
-      std::move(synthetic_begin_frame_source), std::move(context_provider),
-      std::move(worker_context_provider), GetGpuMemoryBufferManager(), nullptr,
+      routing_id, std::move(synthetic_begin_frame_source),
+      std::move(context_provider), std::move(worker_context_provider),
+      GetGpuMemoryBufferManager(), nullptr,
       std::move(frame_swap_message_queue))));
 }
 

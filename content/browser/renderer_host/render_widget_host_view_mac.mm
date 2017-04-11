@@ -400,13 +400,6 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
   return color;
 }
 
-void RenderWidgetHostViewMac::
-    BrowserCompositorMacSendReclaimCompositorResources(
-        bool is_swap_ack,
-        const cc::ReturnedResourceArray& resources) {
-  render_widget_host_->SendReclaimCompositorResources(is_swap_ack, resources);
-}
-
 void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
   needs_flush_input_ = false;
@@ -1425,8 +1418,10 @@ void RenderWidgetHostViewMac::FocusedNodeChanged(
   }
 }
 
-void RenderWidgetHostViewMac::DidCreateNewRendererCompositorFrameSink() {
-  browser_compositor_->DidCreateNewRendererCompositorFrameSink();
+void RenderWidgetHostViewMac::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+  browser_compositor_->DidCreateNewRendererCompositorFrameSink(
+      renderer_compositor_frame_sink);
 }
 
 void RenderWidgetHostViewMac::SubmitCompositorFrame(

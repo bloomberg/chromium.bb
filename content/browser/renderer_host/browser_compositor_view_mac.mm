@@ -268,8 +268,11 @@ void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
       src_subrect, std::move(target), callback_with_decrement);
 }
 
-void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink() {
-  delegated_frame_host_->DidCreateNewRendererCompositorFrameSink();
+void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
+  delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
+      renderer_compositor_frame_sink_);
 }
 
 void BrowserCompositorMac::SubmitCompositorFrame(
@@ -430,13 +433,6 @@ std::unique_ptr<CompositorResizeLock>
 BrowserCompositorMac::DelegatedFrameHostCreateResizeLock() {
   NOTREACHED();
   return nullptr;
-}
-
-void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
-    bool is_swap_ack,
-    const cc::ReturnedResourceArray& resources) {
-  client_->BrowserCompositorMacSendReclaimCompositorResources(is_swap_ack,
-                                                              resources);
 }
 
 void BrowserCompositorMac::OnBeginFrame(const cc::BeginFrameArgs& args) {

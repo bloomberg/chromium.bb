@@ -61,6 +61,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "ipc/ipc_message.h"
@@ -412,9 +413,23 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
             new FakeDelegatedFrameHostClientAura(this)) {
     InstallDelegatedFrameHostClient(
         this, base::WrapUnique(delegated_frame_host_client_));
+    CreateNewRendererCompositorFrameSink();
   }
 
   ~FakeRenderWidgetHostViewAura() override {}
+
+  void CreateNewRendererCompositorFrameSink() {
+    cc::mojom::MojoCompositorFrameSinkPtr sink;
+    cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+        mojo::MakeRequest(&sink);
+    cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    renderer_compositor_frame_sink_ =
+        base::MakeUnique<FakeRendererCompositorFrameSink>(
+            std::move(sink), std::move(client_request));
+    DidCreateNewRendererCompositorFrameSink(
+        renderer_compositor_frame_sink_ptr_.get());
+  }
 
   void DisableResizeLock() {
     delegated_frame_host_client_->DisableResizeLock();
@@ -477,9 +492,13 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   gfx::Size last_frame_size_;
   std::unique_ptr<cc::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
+  std::unique_ptr<FakeRendererCompositorFrameSink>
+      renderer_compositor_frame_sink_;
 
  private:
   FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
+  cc::mojom::MojoCompositorFrameSinkClientPtr
+      renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHostViewAura);
 };
@@ -2044,15 +2063,13 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   cc::ReturnedResource resource;
   resource.id = 1;
   resources.push_back(resource);
+  view_->renderer_compositor_frame_sink_->Reset();
   view_->ReclaimResources(resources);
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_FALSE(std::get<1>(params));   // is_swap_ack
-  }
+  view_->renderer_compositor_frame_sink_->Flush();
+  EXPECT_FALSE(view_->renderer_compositor_frame_sink_->did_receive_ack());
+  EXPECT_FALSE(
+      view_->renderer_compositor_frame_sink_->last_reclaimed_resources()
+          .empty());
 }
 
 // This test verifies that when the compositor_frame_sink_id changes, the old
@@ -2084,7 +2101,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   EXPECT_EQ(0u, sink_->message_count());
 
   // Signal that a new RendererCompositorFrameSink was created by the renderer.
-  view_->DidCreateNewRendererCompositorFrameSink();
+  view_->CreateNewRendererCompositorFrameSink();
 
   // Submit another frame. The resources for the previous frame belong to the
   // old RendererCompositorFrameSink and should not be returned.
@@ -2093,17 +2110,12 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   EXPECT_EQ(0u, sink_->message_count());
 
   // Report that the surface is drawn to trigger an ACK.
+  view_->renderer_compositor_frame_sink_->Reset();
   cc::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
   EXPECT_TRUE(surface);
   surface->RunDrawCallbacks();
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(true, std::get<1>(params));  // is_swap_ack
-  }
+  view_->renderer_compositor_frame_sink_->Flush();
+  EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
 
   manager->RemoveObserver(&manager_observer);
 }
@@ -2336,28 +2348,29 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
 
   // Receive a frame of the new size, should be skipped and not produce a Resize
   // message.
+  view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)));
+  view_->renderer_compositor_frame_sink_->Flush();
   // Expect the frame ack;
-  EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID,
-            sink_->GetMessageAt(0)->type());
-  sink_->ClearMessages();
+  EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
   EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
 
   // Receive a frame of the correct size, should not be skipped and, and should
   // produce a Resize message after the commit.
+  view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
+  view_->renderer_compositor_frame_sink_->Flush();
   cc::SurfaceId surface_id = view_->surface_id();
   if (!surface_id.is_valid()) {
     // No frame ack yet.
-    EXPECT_EQ(0u, sink_->message_count());
+    EXPECT_FALSE(view_->renderer_compositor_frame_sink_->did_receive_ack());
   } else {
     // Frame isn't desired size, so early ack.
-    EXPECT_EQ(1u, sink_->message_count());
+    EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
   }
   EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
 
@@ -2382,8 +2395,6 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
         EXPECT_EQ(blink::WebInputEvent::kMouseMove, event->GetType());
         break;
       }
-      case ViewMsg_ReclaimCompositorResources::ID:
-        break;
       case ViewMsg_Resize::ID: {
         EXPECT_FALSE(has_resize);
         ViewMsg_Resize::Param params;
@@ -2623,7 +2634,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 
   // Signal that a new RendererCompositorFrameSink was created.
-  view_->DidCreateNewRendererCompositorFrameSink();
+  view_->CreateNewRendererCompositorFrameSink();
 
   // Submit a frame from the new RendererCompositorFrameSink.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
@@ -2633,7 +2644,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 
   // Signal that a new RendererCompositorFrameSink was created.
-  view_->DidCreateNewRendererCompositorFrameSink();
+  view_->CreateNewRendererCompositorFrameSink();
 
   // Submit a frame from the new RendererCompositorFrameSink.
   view_->SubmitCompositorFrame(
@@ -2643,7 +2654,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 
   // Signal that a new RendererCompositorFrameSink was created.
-  view_->DidCreateNewRendererCompositorFrameSink();
+  view_->CreateNewRendererCompositorFrameSink();
 
   // Swap another frame, with a different surface id.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));

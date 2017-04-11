@@ -1,0 +1,10 @@
+module content.mojom;
+
+import "cc/ipc/mojo_compositor_frame_sink.mojom";
+
+// This interface provides MojoCompositorFrameSink for the renderer.
+interface FrameSinkProvider {
+  CreateForWidget(
+      int32 widget_id, cc.mojom.MojoCompositorFrameSink& request,
+      cc.mojom.MojoCompositorFrameSinkClient client);
+};

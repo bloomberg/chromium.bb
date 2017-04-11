@@ -28,7 +28,6 @@ namespace content {
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
     int32_t routing_id,
-    uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
@@ -39,7 +38,6 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
                           std::move(worker_context_provider),
                           gpu_memory_buffer_manager,
                           shared_bitmap_manager),
-      compositor_frame_sink_id_(compositor_frame_sink_id),
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
@@ -49,21 +47,21 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
           synthetic_begin_frame_source_
               ? nullptr
               : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
-      routing_id_(routing_id) {
+      routing_id_(routing_id),
+      sink_client_binding_(this) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   thread_checker_.DetachFromThread();
+  EstablishMojoConnection();
 }
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
     int32_t routing_id,
-    uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(vulkan_context_provider)),
-      compositor_frame_sink_id_(compositor_frame_sink_id),
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
@@ -73,11 +71,13 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
           synthetic_begin_frame_source_
               ? nullptr
               : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
-      routing_id_(routing_id) {
+      routing_id_(routing_id),
+      sink_client_binding_(this) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   thread_checker_.DetachFromThread();
+  EstablishMojoConnection();
 }
 
 RendererCompositorFrameSink::~RendererCompositorFrameSink() {
@@ -92,6 +92,9 @@ bool RendererCompositorFrameSink::BindToClient(
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
+  sink_.Bind(std::move(sink_ptr_info_));
+  sink_client_binding_.Bind(std::move(sink_client_request_));
+
   if (synthetic_begin_frame_source_)
     client_->SetBeginFrameSource(synthetic_begin_frame_source_.get());
   else
@@ -103,6 +106,7 @@ bool RendererCompositorFrameSink::BindToClient(
                  compositor_frame_sink_proxy_);
   compositor_frame_sink_filter_->AddHandlerOnCompositorThread(
       routing_id_, compositor_frame_sink_filter_handler_);
+
   bound_ = true;
   return true;
 }
@@ -117,7 +121,8 @@ void RendererCompositorFrameSink::DetachFromClient() {
   compositor_frame_sink_proxy_->ClearCompositorFrameSink();
   compositor_frame_sink_filter_->RemoveHandlerOnCompositorThread(
       routing_id_, compositor_frame_sink_filter_handler_);
-
+  sink_.reset();
+  sink_client_binding_.Close();
   cc::CompositorFrameSink::DetachFromClient();
   bound_ = false;
 }
@@ -143,11 +148,10 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
     if (!messages_to_send.empty())
       frame_token = frame_swap_message_queue_->AllocateFrameToken();
     frame.metadata.frame_token = frame_token;
-    Send(new ViewHostMsg_SwapCompositorFrame(
-        routing_id_, compositor_frame_sink_id_, local_surface_id_, frame));
+    sink_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
     if (frame_token) {
-      Send(new ViewHostMsg_FrameSwapMessages(routing_id_, frame_token,
-                                             messages_to_send));
+      message_sender_->Send(new ViewHostMsg_FrameSwapMessages(
+          routing_id_, frame_token, messages_to_send));
     }
     // ~send_message_scope.
   }
@@ -157,39 +161,14 @@ void RendererCompositorFrameSink::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(RendererCompositorFrameSink, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
-                        OnReclaimCompositorResources)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBeginFramePaused,
-                        OnSetBeginFrameSourcePaused)
-    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame)
+    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrameIPC)
   IPC_END_MESSAGE_MAP()
 }
 
-void RendererCompositorFrameSink::OnReclaimCompositorResources(
-    uint32_t compositor_frame_sink_id,
-    bool is_swap_ack,
-    const cc::ReturnedResourceArray& resources) {
-  // Ignore message if it's a stale one coming from a different output surface
-  // (e.g. after a lost context).
-  if (compositor_frame_sink_id != compositor_frame_sink_id_)
-    return;
-  client_->ReclaimResources(resources);
-  if (is_swap_ack)
-    client_->DidReceiveCompositorFrameAck();
-}
-
-void RendererCompositorFrameSink::OnSetBeginFrameSourcePaused(bool paused) {
-  if (external_begin_frame_source_)
-    external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
-}
-
-void RendererCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void RendererCompositorFrameSink::OnBeginFrameIPC(
+    const cc::BeginFrameArgs& args) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnBeginFrame(args);
-}
-
-bool RendererCompositorFrameSink::Send(IPC::Message* message) {
-  return message_sender_->Send(message);
 }
 
 bool RendererCompositorFrameSink::ShouldAllocateNewLocalSurfaceId(
@@ -239,8 +218,24 @@ void RendererCompositorFrameSink::UpdateFrameData(
 #endif
 }
 
+void RendererCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
+  client_->DidReceiveCompositorFrameAck();
+}
+
+void RendererCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  // See crbug.com/709689.
+  NOTREACHED() << "BeginFrames are delivered using Chrome IPC.";
+}
+
+void RendererCompositorFrameSink::ReclaimResources(
+    const cc::ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
+}
+
 void RendererCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
-  Send(new ViewHostMsg_SetNeedsBeginFrames(routing_id_, needs_begin_frames));
+  sink_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void RendererCompositorFrameSink::OnDidFinishFrame(
@@ -248,7 +243,18 @@ void RendererCompositorFrameSink::OnDidFinishFrame(
   DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   // If there was damage, ViewHostMsg_SwapCompositorFrame includes the ack.
   if (!ack.has_damage)
-    Send(new ViewHostMsg_BeginFrameDidNotSwap(routing_id_, ack));
+    sink_->BeginFrameDidNotSwap(ack);
+}
+
+void RendererCompositorFrameSink::EstablishMojoConnection() {
+  cc::mojom::MojoCompositorFrameSinkPtr sink;
+  cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+      mojo::MakeRequest(&sink);
+  cc::mojom::MojoCompositorFrameSinkClientPtr sink_client;
+  sink_client_request_ = mojo::MakeRequest(&sink_client);
+  RenderThreadImpl::current()->GetFrameSinkProvider()->CreateForWidget(
+      routing_id_, std::move(sink_request), std::move(sink_client));
+  sink_ptr_info_ = sink.PassInterface();
 }
 
 }  // namespace content

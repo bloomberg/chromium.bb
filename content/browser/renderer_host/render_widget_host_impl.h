@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -43,6 +44,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -93,11 +95,13 @@ struct TextInputState;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
-class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
-                                            public InputRouterClient,
-                                            public InputAckHandler,
-                                            public TouchEmulatorClient,
-                                            public IPC::Listener {
+class CONTENT_EXPORT RenderWidgetHostImpl
+    : public RenderWidgetHost,
+      public InputRouterClient,
+      public InputAckHandler,
+      public TouchEmulatorClient,
+      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
+      public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -453,11 +457,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
-  // Called by the view in response to OnSwapCompositorFrame.
-  void SendReclaimCompositorResources(
-      bool is_swap_ack,
-      const cc::ReturnedResourceArray& resources);
-
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
   }
@@ -572,13 +571,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // renderer unless it is for an immediate request.
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
 
-  // Submits the frame received from RenderWidget.
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame);
+  void RequestMojoCompositorFrameSink(
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   const cc::CompositorFrameMetadata& last_frame_metadata() {
     return last_frame_metadata_;
   }
+
+  // cc::mojom::MojoCompositorFrameSink implementation.
+  void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame) override;
+  void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
+  void EvictFrame() override {}
 
  protected:
   // ---------------------------------------------------------------------------
@@ -638,7 +644,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnRequestMove(const gfx::Rect& pos);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
-  bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
@@ -958,10 +963,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   gfx::Size last_frame_size_;
   float last_device_scale_factor_;
 
-  // Each instance of RendererCompositorFrameSink has an ID that we keep track
-  // of so we can tell when a new instance has been created for the purpose of
-  // not returning stale resources.
-  uint32_t last_compositor_frame_sink_id_ = 0;
+  mojo::Binding<cc::mojom::MojoCompositorFrameSink>
+      compositor_frame_sink_binding_;
+  cc::mojom::MojoCompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
   cc::CompositorFrameMetadata last_frame_metadata_;
 
