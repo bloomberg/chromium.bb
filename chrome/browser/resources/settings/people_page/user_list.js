@@ -100,8 +100,11 @@ Polymer({
     return disabled || isUserOwner;
   },
 
-  /** @private */
-  getProfilePictureUrl_: function(username) {
-    return 'chrome://userimage/' + username + '?id=' + Date.now();
+  /**
+   * @param {chrome.usersPrivate.User} user
+   * @private
+   */
+  getProfilePictureUrl_: function(user) {
+    return 'chrome://userimage/' + user.email + '?id=' + Date.now();
   }
 });

@@ -66,6 +66,8 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
           ui::SCALE_FACTOR_100P);
     }
     NOTREACHED() << "User with custom image missing data bytes";
+  } else {
+    LOG(ERROR) << "User not found: " << account_id.GetUserEmail();
   }
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_LOGIN_DEFAULT_USER, ui::SCALE_FACTOR_100P);

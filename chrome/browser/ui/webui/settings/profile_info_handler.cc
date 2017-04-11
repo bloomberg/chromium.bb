@@ -194,17 +194,11 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   DCHECK(user);
   name = base::UTF16ToUTF8(user->GetDisplayName());
-  std::string user_email = profile_->GetProfileUserName();
-  if (user_email.empty()) {
-    // User is not associated with a gaia account.
-    user_email = user->GetAccountId().GetUserEmail();
-  }
 
   // Get image as data URL instead of using chrome://userimage source to avoid
   // issues with caching.
-  const AccountId account_id(AccountId::FromUserEmail(user_email));
   scoped_refptr<base::RefCountedMemory> image =
-      chromeos::options::UserImageSource::GetUserImage(account_id);
+      chromeos::options::UserImageSource::GetUserImage(user->GetAccountId());
   icon_url = webui::GetPngDataUrl(image->front(), image->size());
 #else   // !defined(OS_CHROMEOS)
   ProfileAttributesEntry* entry;

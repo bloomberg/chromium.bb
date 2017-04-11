@@ -36,7 +36,7 @@
     <div class="user-list">
       <template is="dom-repeat" items="[[users_]]">
         <div class="user layout horizontal center two-line">
-          <img class="user-icon" src="[[getProfilePictureUrl_(item.name)]]">
+          <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
           <div class="flex user-info">
             <div>[[getUserName_(item)]]</div>
             <div class="secondary">[[item.email]]</div>
