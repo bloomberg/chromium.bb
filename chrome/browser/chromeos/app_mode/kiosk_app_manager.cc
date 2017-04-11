@@ -163,7 +163,6 @@ std::string GetSwitchString(const std::string& flag_name) {
 
 // static
 const char KioskAppManager::kKioskDictionaryName[] = "kiosk";
-const char KioskAppManager::kKeyApps[] = "apps";
 const char KioskAppManager::kKeyAutoLoginState[] = "auto_login_state";
 const char KioskAppManager::kIconCacheDir[] = "kiosk/icon";
 const char KioskAppManager::kCrxCacheDir[] = "kiosk/crx";

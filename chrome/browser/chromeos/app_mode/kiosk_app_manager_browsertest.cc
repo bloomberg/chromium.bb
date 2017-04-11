@@ -325,7 +325,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     PrefService* local_state = g_browser_process->local_state();
     DictionaryPrefUpdate dict_update(local_state,
                                      KioskAppManager::kKioskDictionaryName);
-    dict_update->Set(KioskAppManager::kKeyApps, std::move(apps_dict));
+    dict_update->Set(KioskAppDataBase::kKeyApps, std::move(apps_dict));
 
     // Make the app appear in device settings.
     base::ListValue device_local_accounts;
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, ClearAppData) {
   const base::DictionaryValue* dict =
       local_state->GetDictionary(KioskAppManager::kKioskDictionaryName);
   const base::DictionaryValue* apps_dict;
-  EXPECT_TRUE(dict->GetDictionary(KioskAppManager::kKeyApps, &apps_dict));
+  EXPECT_TRUE(dict->GetDictionary(KioskAppDataBase::kKeyApps, &apps_dict));
   EXPECT_TRUE(apps_dict->HasKey("app_1"));
 
   manager()->ClearAppData("app_1");

@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,7 +36,8 @@ class ArcKioskAppService
       public ArcAppListPrefs::Observer,
       public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public arc::ArcKioskBridge::Delegate,
-      public ArcKioskAppLauncher::Delegate {
+      public ArcKioskAppLauncher::Delegate,
+      public ArcAppIcon::Observer {
  public:
   class Delegate {
    public:
@@ -79,6 +81,9 @@ class ArcKioskAppService
   // ArcKioskAppLauncher::Delegate overrides
   void OnAppWindowLaunched() override;
 
+  // ArcAppIcon::Observer overrides
+  void OnIconUpdated(ArcAppIcon* icon) override;
+
  private:
   explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;
@@ -86,6 +91,8 @@ class ArcKioskAppService
   std::string GetAppId();
   // Called when app should be started or stopped.
   void PreconditionsChanged();
+  // Updates local cache with proper name and icon.
+  void RequestNameAndIconUpdate();
 
   Profile* const profile_;
   bool maintenance_session_running_ = false;
@@ -93,6 +100,7 @@ class ArcKioskAppService
   ArcKioskAppManager* app_manager_;
   std::string app_id_;
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_;
+  std::unique_ptr<ArcAppIcon> app_icon_;
   int32_t task_id_ = -1;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   // Keeps track whether the app is already launched
