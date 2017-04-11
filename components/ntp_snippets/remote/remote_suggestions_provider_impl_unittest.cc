@@ -89,10 +89,6 @@ MATCHER_P(IdWithinCategoryEq, expected_id, "") {
   return arg.id().id_within_category() == expected_id;
 }
 
-MATCHER_P(IsCategory, id, "") {
-  return arg.id() == static_cast<int>(id);
-}
-
 MATCHER_P(HasCode, code, "") {
   return arg.code == code;
 }
