@@ -20,10 +20,11 @@
         android:requiresFadingEdge="horizontal"
         android:fadingEdgeLength="@dimen/infobar_translate_fade_edge_length"
         app:tabIndicatorColor="@color/infobar_accent_blue"
+        app:tabSelectedTextColor="@color/infobar_accent_blue"
         app:tabGravity="fill"
         app:tabMode="scrollable" />
 
-    <ImageButton
+    <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/translate_infobar_menu_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,5 +33,6 @@
         android:scaleType="center"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@null"
-        android:src="@drawable/btn_menu" />
+        android:src="@drawable/btn_menu"
+        app:tint="@color/dark_mode_tint" />
 </LinearLayout>
