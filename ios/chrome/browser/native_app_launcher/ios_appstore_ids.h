@@ -15,7 +15,6 @@ extern const char kIOSAppStoreGooglePlayMusic[];
 extern const char kIOSAppStoreGooglePlus[];
 extern const char kIOSAppStoreGoogleSheets[];
 extern const char kIOSAppStoreGoogleSlides[];
-extern const char kIOSAppStoreSpaces[];
 extern const char kIOSAppStoreTestFlight[];
 extern const char kIOSAppStoreYouTube[];
 
