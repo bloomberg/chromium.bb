@@ -553,6 +553,10 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   if (watch_time_reporter_)
     watch_time_reporter_->OnSeeking();
 
+  // Clear any new frame processed callbacks on seek; otherwise we'll end up
+  // logging a time long after the seek completes.
+  frame_time_report_cb_.Cancel();
+
   // TODO(sandersd): Move |seeking_| to PipelineController.
   // TODO(sandersd): Do we want to reset the idle timer here?
   delegate_->SetIdle(delegate_id_, false);
@@ -1232,6 +1236,10 @@ void WebMediaPlayerImpl::OnEnded() {
   ended_ = true;
   client_->TimeChanged();
 
+  // Clear any new frame processed callbacks on end; otherwise we'll end up
+  // logging a time long after playback ends.
+  frame_time_report_cb_.Cancel();
+
   // We don't actually want this to run until |client_| calls seek() or pause(),
   // but that should have already happened in timeChanged() and so this is
   // expected to be a no-op.
@@ -1462,14 +1470,14 @@ void WebMediaPlayerImpl::OnFrameShown() {
   // for.
   if ((!paused_ && IsBackgroundOptimizationCandidate()) ||
       paused_when_hidden_) {
-    VideoFrameCompositor::OnNewProcessedFrameCB new_processed_frame_cb =
-        BindToCurrentLoop(base::Bind(
-            &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame,
-            AsWeakPtr(), base::TimeTicks::Now()));
+    frame_time_report_cb_.Reset(
+        base::Bind(&WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame,
+                   AsWeakPtr(), base::TimeTicks::Now()));
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
-                   base::Unretained(compositor_), new_processed_frame_cb));
+                   base::Unretained(compositor_),
+                   BindToCurrentLoop(frame_time_report_cb_.callback())));
   }
 
   EnableVideoTrackIfNeeded();

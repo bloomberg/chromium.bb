@@ -712,6 +712,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   gfx::Size last_uploaded_frame_size_;
   base::TimeDelta last_uploaded_frame_timestamp_;
 
+  base::CancelableCallback<void(base::TimeTicks)> frame_time_report_cb_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
