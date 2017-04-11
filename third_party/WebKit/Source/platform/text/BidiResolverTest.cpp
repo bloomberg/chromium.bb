@@ -216,7 +216,7 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
     // Blink's UBA just makes runs, the actual ordering of the display of
     // characters is handled later in our pipeline, so we fake it here:
     bool reversed = run->Reversed(false);
-    ASSERT(run->Stop() >= run->Start());
+    DCHECK_GE(run->Stop(), run->Start());
     size_t length = run->Stop() - run->Start();
     for (size_t i = 0; i < length; i++) {
       int input_index = reversed ? run->Stop() - i - 1 : run->Start() + i;

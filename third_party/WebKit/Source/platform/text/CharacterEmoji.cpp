@@ -189,7 +189,7 @@ static void applyPatternAndFreeze(icu::UnicodeSet* unicodeSet,
   // Use ICU's invariant-character initialization method.
   unicodeSet->applyPattern(icu::UnicodeString(pattern, -1, US_INV), err);
   unicodeSet->freeze();
-  ASSERT(err == U_ZERO_ERROR);
+  DCHECK_EQ(err, U_ZERO_ERROR);
 }
 
 bool Character::isEmoji(UChar32 ch) {

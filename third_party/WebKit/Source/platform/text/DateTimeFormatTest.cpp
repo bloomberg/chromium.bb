@@ -42,7 +42,7 @@ class DateTimeFormatTest : public ::testing::Test {
 
     Token(FieldType field_type, int count = 1)
         : count(count), field_type(field_type) {
-      ASSERT(field_type != DateTimeFormat::kFieldTypeLiteral);
+      DCHECK_NE(field_type, DateTimeFormat::kFieldTypeLiteral);
     }
 
     Token(const String& string)

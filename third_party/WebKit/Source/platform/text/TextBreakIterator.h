@@ -151,7 +151,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   // primary breaking context and using previously stored prior context if
   // non-empty.
   TextBreakIterator* Get(unsigned prior_context_length) {
-    ASSERT(prior_context_length <= kPriorContextCapacity);
+    DCHECK(prior_context_length <= kPriorContextCapacity);
     const UChar* prior_context =
         prior_context_length
             ? &prior_context_[kPriorContextCapacity - prior_context_length]
@@ -247,19 +247,19 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
   void CreateIteratorForBuffer(const UChar*, unsigned length);
 
   unsigned ClusterLengthStartingAt(unsigned offset) const {
-    ASSERT(is8_bit_);
+    DCHECK(is8_bit_);
     // The only Latin-1 Extended Grapheme Cluster is CR LF
     return IsCRBeforeLF(offset) ? 2 : 1;
   }
 
   bool IsCRBeforeLF(unsigned offset) const {
-    ASSERT(is8_bit_);
+    DCHECK(is8_bit_);
     return charaters8_[offset] == '\r' && offset + 1 < length_ &&
            charaters8_[offset + 1] == '\n';
   }
 
   bool IsLFAfterCR(unsigned offset) const {
-    ASSERT(is8_bit_);
+    DCHECK(is8_bit_);
     return charaters8_[offset] == '\n' && offset >= 1 &&
            charaters8_[offset - 1] == '\r';
   }

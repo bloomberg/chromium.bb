@@ -84,7 +84,7 @@ static UTrie2* CreateTrie() {
   UTrie2* trie = utrie2_openFromSerialized(
       UTrie2ValueBits::UTRIE2_16_VALUE_BITS, kSerializedCharacterData,
       kSerializedCharacterDataSize, nullptr, &error);
-  ASSERT(error == U_ZERO_ERROR);
+  DCHECK_EQ(error, U_ZERO_ERROR);
   return trie;
 }
 

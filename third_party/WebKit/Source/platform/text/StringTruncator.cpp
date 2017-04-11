@@ -65,8 +65,8 @@ static unsigned CenterTruncateToBuffer(const String& string,
                                        unsigned length,
                                        unsigned keep_count,
                                        UChar* buffer) {
-  ASSERT(keep_count < length);
-  ASSERT(keep_count < STRING_BUFFER_SIZE);
+  DCHECK_LT(keep_count, length);
+  DCHECK(keep_count < STRING_BUFFER_SIZE);
 
   unsigned omit_start = (keep_count + 1) / 2;
   NonSharedCharacterBreakIterator it(string);
@@ -75,7 +75,7 @@ static unsigned CenterTruncateToBuffer(const String& string,
   omit_start = TextBreakAtOrPreceding(it, omit_start);
 
   unsigned truncated_length = omit_start + 1 + (length - omit_end);
-  ASSERT(truncated_length <= length);
+  DCHECK_LE(truncated_length, length);
 
   string.CopyTo(buffer, 0, omit_start);
   buffer[omit_start] = kHorizontalEllipsisCharacter;
@@ -88,8 +88,8 @@ static unsigned RightTruncateToBuffer(const String& string,
                                       unsigned length,
                                       unsigned keep_count,
                                       UChar* buffer) {
-  ASSERT(keep_count < length);
-  ASSERT(keep_count < STRING_BUFFER_SIZE);
+  DCHECK_LT(keep_count, length);
+  DCHECK(keep_count < STRING_BUFFER_SIZE);
 
   NonSharedCharacterBreakIterator it(string);
   unsigned keep_length = TextBreakAtOrPreceding(it, keep_count);
@@ -120,7 +120,7 @@ static String TruncateString(const String& string,
   if (string.IsEmpty())
     return string;
 
-  ASSERT(max_width >= 0);
+  DCHECK_GE(max_width, 0);
 
   float current_ellipsis_width =
       StringWidth(font, &kHorizontalEllipsisCharacter, 1);
@@ -157,8 +157,8 @@ static String TruncateString(const String& string,
 
   while (keep_count_for_largest_known_to_fit + 1 <
          keep_count_for_smallest_known_to_not_fit) {
-    ASSERT(width_for_largest_known_to_fit <= max_width);
-    ASSERT(width_for_smallest_known_to_not_fit > max_width);
+    DCHECK_LE(width_for_largest_known_to_fit, max_width);
+    DCHECK_GT(width_for_smallest_known_to_not_fit, max_width);
 
     float ratio =
         (keep_count_for_smallest_known_to_not_fit -
@@ -172,10 +172,10 @@ static String TruncateString(const String& string,
       keep_count = keep_count_for_smallest_known_to_not_fit - 1;
     }
 
-    ASSERT(keep_count < length);
-    ASSERT(keep_count > 0);
-    ASSERT(keep_count < keep_count_for_smallest_known_to_not_fit);
-    ASSERT(keep_count > keep_count_for_largest_known_to_fit);
+    DCHECK_LT(keep_count, length);
+    DCHECK_GT(keep_count, 0u);
+    DCHECK_LT(keep_count, keep_count_for_smallest_known_to_not_fit);
+    DCHECK_GT(keep_count, keep_count_for_largest_known_to_fit);
 
     truncated_length =
         truncate_to_buffer(string, length, keep_count, string_buffer);

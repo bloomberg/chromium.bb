@@ -179,9 +179,9 @@ bool DateTimeFormat::Parse(const String& source, TokenHandler& token_handler) {
         break;
 
       case kStateSymbol: {
-        ASSERT(field_type != kFieldTypeInvalid);
-        ASSERT(field_type != kFieldTypeLiteral);
-        ASSERT(literal_buffer.IsEmpty());
+        DCHECK_NE(field_type, kFieldTypeInvalid);
+        DCHECK_NE(field_type, kFieldTypeLiteral);
+        DCHECK(literal_buffer.IsEmpty());
 
         FieldType field_type2 = MapCharacterToFieldType(ch);
         if (field_type2 == kFieldTypeInvalid)
@@ -211,7 +211,7 @@ bool DateTimeFormat::Parse(const String& source, TokenHandler& token_handler) {
     }
   }
 
-  ASSERT(field_type != kFieldTypeInvalid);
+  DCHECK_NE(field_type, kFieldTypeInvalid);
 
   switch (state) {
     case kStateLiteral:
@@ -227,13 +227,13 @@ bool DateTimeFormat::Parse(const String& source, TokenHandler& token_handler) {
       return false;
 
     case kStateSymbol:
-      ASSERT(field_type != kFieldTypeLiteral);
-      ASSERT(!literal_buffer.length());
+      DCHECK_NE(field_type, kFieldTypeLiteral);
+      DCHECK(!literal_buffer.length());
       token_handler.VisitField(field_type, field_counter);
       return true;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

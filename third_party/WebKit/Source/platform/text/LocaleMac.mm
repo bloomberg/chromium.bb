@@ -316,11 +316,11 @@ void LocaleMac::InitializeLocaleData() {
   Vector<String, kDecimalSymbolsSize> symbols;
   for (unsigned i = 0; i < 10; ++i)
     symbols.push_back(nine_to_zero.Substring(9 - i, 1));
-  ASSERT(symbols.size() == kDecimalSeparatorIndex);
+  DCHECK(symbols.size() == kDecimalSeparatorIndex);
   symbols.push_back([formatter.Get() decimalSeparator]);
-  ASSERT(symbols.size() == kGroupSeparatorIndex);
+  DCHECK(symbols.size() == kGroupSeparatorIndex);
   symbols.push_back([formatter.Get() groupingSeparator]);
-  ASSERT(symbols.size() == kDecimalSymbolsSize);
+  DCHECK(symbols.size() == kDecimalSymbolsSize);
 
   String positive_prefix([formatter.Get() positivePrefix]);
   String positive_suffix([formatter.Get() positiveSuffix]);

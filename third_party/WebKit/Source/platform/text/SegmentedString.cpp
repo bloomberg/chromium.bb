@@ -57,7 +57,7 @@ void SegmentedString::Clear() {
 }
 
 void SegmentedString::Append(const SegmentedSubstring& s) {
-  ASSERT(!closed_);
+  DCHECK(!closed_);
   if (!s.length())
     return;
 
@@ -73,7 +73,7 @@ void SegmentedString::Append(const SegmentedSubstring& s) {
 }
 
 void SegmentedString::Push(UChar c) {
-  ASSERT(c);
+  DCHECK(c);
 
   // pushIfPossible attempts to rewind the pointer in the SegmentedSubstring,
   // however it will fail if the SegmentedSubstring is empty, or
@@ -88,7 +88,7 @@ void SegmentedString::Push(UChar c) {
 }
 
 void SegmentedString::Prepend(const SegmentedSubstring& s, PrependType type) {
-  ASSERT(!s.NumberOfCharactersConsumed());
+  DCHECK(!s.NumberOfCharactersConsumed());
   if (!s.length())
     return;
 
@@ -113,12 +113,12 @@ void SegmentedString::Prepend(const SegmentedSubstring& s, PrependType type) {
 
 void SegmentedString::Close() {
   // Closing a stream twice is likely a coding mistake.
-  ASSERT(!closed_);
+  DCHECK(!closed_);
   closed_ = true;
 }
 
 void SegmentedString::Append(const SegmentedString& s) {
-  ASSERT(!closed_);
+  DCHECK(!closed_);
 
   Append(s.current_string_);
   if (s.IsComposite()) {
@@ -195,7 +195,7 @@ void SegmentedString::Advance16() {
 }
 
 void SegmentedString::AdvanceAndUpdateLineNumber8() {
-  ASSERT(current_string_.GetCurrentChar() == current_char_);
+  DCHECK_EQ(current_string_.GetCurrentChar(), current_char_);
   if (current_char_ == '\n') {
     ++current_line_;
     number_of_characters_consumed_prior_to_current_line_ =
@@ -206,7 +206,7 @@ void SegmentedString::AdvanceAndUpdateLineNumber8() {
 }
 
 void SegmentedString::AdvanceAndUpdateLineNumber16() {
-  ASSERT(current_string_.GetCurrentChar() == current_char_);
+  DCHECK_EQ(current_string_.GetCurrentChar(), current_char_);
   if (current_char_ == '\n') {
     ++current_line_;
     number_of_characters_consumed_prior_to_current_line_ =
@@ -260,7 +260,8 @@ void SegmentedString::AdvanceAndUpdateLineNumberSlowCase() {
 }
 
 void SegmentedString::AdvanceEmpty() {
-  ASSERT(!current_string_.length() && !IsComposite());
+  DCHECK(!current_string_.length());
+  DCHECK(!IsComposite());
   current_char_ = 0;
 }
 

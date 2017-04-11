@@ -39,7 +39,7 @@ struct BidiCharacterRun {
         next_(0),
         start_(start),
         stop_(stop) {
-    ASSERT(start_ <= stop_);
+    DCHECK_LE(start_, stop_);
     if (dir == WTF::Unicode::kOtherNeutral)
       dir = override_dir;
 

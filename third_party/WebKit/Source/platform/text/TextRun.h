@@ -144,7 +144,7 @@ class PLATFORM_EXPORT TextRun final {
   }
 
   TextRun SubRun(unsigned start_offset, unsigned length) const {
-    ASSERT(start_offset < len_);
+    DCHECK_LT(start_offset, len_);
 
     TextRun result = *this;
 
@@ -162,21 +162,21 @@ class PLATFORM_EXPORT TextRun final {
   }
   const LChar* Data8(unsigned i) const {
     SECURITY_DCHECK(i < len_);
-    ASSERT(Is8Bit());
+    DCHECK(Is8Bit());
     return &data_.characters8[i];
   }
   const UChar* Data16(unsigned i) const {
     SECURITY_DCHECK(i < len_);
-    ASSERT(!Is8Bit());
+    DCHECK(!Is8Bit());
     return &data_.characters16[i];
   }
 
   const LChar* Characters8() const {
-    ASSERT(Is8Bit());
+    DCHECK(Is8Bit());
     return data_.characters8;
   }
   const UChar* Characters16() const {
-    ASSERT(!Is8Bit());
+    DCHECK(!Is8Bit());
     return data_.characters16;
   }
 

@@ -118,12 +118,12 @@ class PLATFORM_EXPORT SegmentedSubstring {
   }
 
   UChar IncrementAndGetCurrentChar8() {
-    ASSERT(data_.string8_ptr);
+    DCHECK(data_.string8_ptr);
     return *++data_.string8_ptr;
   }
 
   UChar IncrementAndGetCurrentChar16() {
-    ASSERT(data_.string16_ptr);
+    DCHECK(data_.string16_ptr);
     return *++data_.string16_ptr;
   }
 
@@ -133,14 +133,14 @@ class PLATFORM_EXPORT SegmentedSubstring {
   }
 
   ALWAYS_INLINE UChar GetCurrentChar() {
-    ASSERT(length_);
+    DCHECK(length_);
     if (Is8Bit())
       return GetCurrentChar8();
     return GetCurrentChar16();
   }
 
   ALWAYS_INLINE UChar IncrementAndGetCurrentChar() {
-    ASSERT(length_);
+    DCHECK(length_);
     if (Is8Bit())
       return IncrementAndGetCurrentChar8();
     return IncrementAndGetCurrentChar16();
@@ -270,12 +270,12 @@ class PLATFORM_EXPORT SegmentedString {
   }
 
   void AdvancePastNonNewline() {
-    ASSERT(CurrentChar() != '\n');
+    DCHECK_NE(CurrentChar(), '\n');
     Advance();
   }
 
   void AdvancePastNewlineAndUpdateLineNumber() {
-    ASSERT(CurrentChar() == '\n');
+    DCHECK_EQ(CurrentChar(), '\n');
     if (current_string_.length() > 1) {
       int new_line_flag = current_string_.DoNotExcludeLineNumbers();
       current_line_ += new_line_flag;
@@ -336,7 +336,7 @@ class PLATFORM_EXPORT SegmentedString {
   void UpdateSlowCaseFunctionPointers();
 
   void DecrementAndCheckLength() {
-    ASSERT(current_string_.length() > 1);
+    DCHECK_GT(current_string_.length(), 1);
     current_string_.DecrementLength();
     if (current_string_.HaveOneCharacterLeft())
       UpdateSlowCaseFunctionPointers();

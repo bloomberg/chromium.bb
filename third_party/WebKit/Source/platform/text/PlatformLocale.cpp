@@ -167,7 +167,7 @@ void DateTimeStringBuilder::VisitField(DateTimeFormat::FieldType field_type,
 }
 
 void DateTimeStringBuilder::VisitLiteral(const String& text) {
-  ASSERT(text.length());
+  DCHECK(text.length());
   builder_.Append(text);
 }
 
@@ -177,7 +177,7 @@ String DateTimeStringBuilder::ToString() {
 
 Locale& Locale::DefaultLocale() {
   static Locale* locale = Locale::Create(DefaultLanguage()).release();
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   return *locale;
 }
 
@@ -250,14 +250,14 @@ void Locale::SetLocaleData(const Vector<String, kDecimalSymbolsSize>& symbols,
                            const String& negative_prefix,
                            const String& negative_suffix) {
   for (size_t i = 0; i < symbols.size(); ++i) {
-    ASSERT(!symbols[i].IsEmpty());
+    DCHECK(!symbols[i].IsEmpty());
     decimal_symbols_[i] = symbols[i];
   }
   positive_prefix_ = positive_prefix;
   positive_suffix_ = positive_suffix;
   negative_prefix_ = negative_prefix;
   negative_suffix_ = negative_suffix;
-  ASSERT(!positive_prefix_.IsEmpty() || !positive_suffix_.IsEmpty() ||
+  DCHECK(!positive_prefix_.IsEmpty() || !positive_suffix_.IsEmpty() ||
          !negative_prefix_.IsEmpty() || !negative_suffix_.IsEmpty());
   has_locale_data_ = true;
 
@@ -310,7 +310,7 @@ String Locale::ConvertToLocalizedNumber(const String& input) {
         builder.Append(decimal_symbols_[kDecimalSeparatorIndex]);
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 
@@ -465,7 +465,7 @@ String Locale::FormatDateTime(const DateComponents& date,
                         : DateTimeFormatWithSeconds());
       break;
     case DateComponents::kInvalid:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return builder.ToString();

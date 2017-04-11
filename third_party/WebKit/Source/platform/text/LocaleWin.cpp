@@ -208,7 +208,7 @@ static String ConvertWindowsDateTimeFormat(const String& format) {
     if (in_quote) {
       if (ch == '\'') {
         in_quote = false;
-        ASSERT(i);
+        DCHECK(i);
         if (last_quote_can_be_literal && format[i - 1] == '\'') {
           literal_buffer.Append('\'');
           last_quote_can_be_literal = false;
@@ -452,15 +452,15 @@ void LocaleWin::InitializeLocaleData() {
     symbols.push_back("9");
   } else {
     String digits = GetLocaleInfoString(LOCALE_SNATIVEDIGITS);
-    ASSERT(digits.length() >= 10);
+    DCHECK_GE(digits.length(), 10u);
     for (unsigned i = 0; i < 10; ++i)
       symbols.push_back(digits.Substring(i, 1));
   }
-  ASSERT(symbols.size() == kDecimalSeparatorIndex);
+  DCHECK(symbols.size() == kDecimalSeparatorIndex);
   symbols.push_back(GetLocaleInfoString(LOCALE_SDECIMAL));
-  ASSERT(symbols.size() == kGroupSeparatorIndex);
+  DCHECK(symbols.size() == kGroupSeparatorIndex);
   symbols.push_back(GetLocaleInfoString(LOCALE_STHOUSAND));
-  ASSERT(symbols.size() == kDecimalSymbolsSize);
+  DCHECK(symbols.size() == kDecimalSymbolsSize);
 
   String negative_sign = GetLocaleInfoString(LOCALE_SNEGATIVESIGN);
   enum NegativeFormat {

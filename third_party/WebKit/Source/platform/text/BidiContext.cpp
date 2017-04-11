@@ -51,12 +51,12 @@ PassRefPtr<BidiContext> BidiContext::Create(unsigned char level,
                                             bool override,
                                             BidiEmbeddingSource source,
                                             BidiContext* parent) {
-  ASSERT(direction == (level % 2 ? kRightToLeft : kLeftToRight));
+  DCHECK_EQ(direction, (level % 2 ? kRightToLeft : kLeftToRight));
 
   if (parent || level >= 2)
     return CreateUncached(level, direction, override, source, parent);
 
-  ASSERT(level <= 1);
+  DCHECK_LE(level, 1);
   if (!level) {
     if (!override) {
       DEFINE_STATIC_REF(
@@ -87,7 +87,7 @@ PassRefPtr<BidiContext> BidiContext::Create(unsigned char level,
 static inline PassRefPtr<BidiContext> CopyContextAndRebaselineLevel(
     BidiContext* context,
     BidiContext* parent) {
-  ASSERT(context);
+  DCHECK(context);
   unsigned char new_level = parent ? parent->Level() : 0;
   if (context->Dir() == kRightToLeft)
     new_level = NextGreaterOddLevel(new_level);
@@ -108,7 +108,7 @@ BidiContext::CopyStackRemovingUnicodeEmbeddingContexts() {
     if (iter->Source() != kFromUnicode)
       contexts.push_back(iter);
   }
-  ASSERT(contexts.size());
+  DCHECK(contexts.size());
 
   RefPtr<BidiContext> top_context =
       CopyContextAndRebaselineLevel(contexts.back(), 0);

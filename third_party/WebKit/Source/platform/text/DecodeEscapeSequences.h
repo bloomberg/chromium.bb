@@ -139,8 +139,8 @@ struct URLEscapeSequence {
         run += 1;
       }
     }
-    ASSERT(
-        buffer.size() >=
+    DCHECK_GE(
+        buffer.size(),
         static_cast<size_t>(p - buffer.Data()));  // Prove buffer not overrun.
     return (encoding.IsValid() ? encoding : UTF8Encoding())
         .Decode(buffer.Data(), p - buffer.Data());

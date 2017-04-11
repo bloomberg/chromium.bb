@@ -104,7 +104,7 @@ class SuffixTree {
       Node* current = &root_;
       unsigned limit = std::min(base + depth_, text.length());
       for (unsigned offset = 0; base + offset < limit; ++offset) {
-        ASSERT(current != &leaf_);
+        DCHECK_NE(current, &leaf_);
         Node*& child = current->at(Codebook::CodeWord(text[base + offset]));
         if (!child)
           child = base + offset + 1 == limit ? &leaf_ : new Node();

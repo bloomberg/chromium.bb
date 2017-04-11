@@ -83,7 +83,7 @@ class LineBreakIteratorPool final {
       }
     }
 
-    ASSERT(!vended_iterators_.Contains(iterator));
+    DCHECK(!vended_iterators_.Contains(iterator));
     vended_iterators_.Set(iterator, locale);
     return iterator;
   }
@@ -176,7 +176,7 @@ static UText* TextClone(UText* destination,
   TextFixPointer(source, destination, destination->context);
   TextFixPointer(source, destination, destination->p);
   TextFixPointer(source, destination, destination->q);
-  ASSERT(!destination->r);
+  DCHECK(!destination->r);
   const void* chunk_contents =
       static_cast<const void*>(destination->chunkContents);
   TextFixPointer(source, destination, chunk_contents);
@@ -192,7 +192,7 @@ static int32_t TextExtract(UText*,
                            UErrorCode* error_code) {
   // In the present context, this text provider is used only with ICU functions
   // that do not perform an extract operation.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   *error_code = U_UNSUPPORTED_ERROR;
   return 0;
 }
@@ -221,15 +221,17 @@ static void TextLatin1MoveInPrimaryContext(UText* text,
                                            int64_t native_index,
                                            int64_t native_length,
                                            UBool forward) {
-  ASSERT(text->chunkContents == text->pExtra);
+  DCHECK_EQ(text->chunkContents, text->pExtra);
   if (forward) {
-    ASSERT(native_index >= text->b && native_index < native_length);
+    DCHECK_GE(native_index, text->b);
+    DCHECK_LT(native_index, native_length);
     text->chunkNativeStart = native_index;
     text->chunkNativeLimit = native_index + text->extraSize / sizeof(UChar);
     if (text->chunkNativeLimit > native_length)
       text->chunkNativeLimit = native_length;
   } else {
-    ASSERT(native_index > text->b && native_index <= native_length);
+    DCHECK_GT(native_index, text->b);
+    DCHECK_LE(native_index, native_length);
     text->chunkNativeLimit = native_index;
     text->chunkNativeStart = native_index - text->extraSize / sizeof(UChar);
     if (text->chunkNativeStart < text->b)
@@ -238,7 +240,7 @@ static void TextLatin1MoveInPrimaryContext(UText* text,
   int64_t length = text->chunkNativeLimit - text->chunkNativeStart;
   // Ensure chunk length is well defined if computed length exceeds int32_t
   // range.
-  ASSERT(length <= std::numeric_limits<int32_t>::max());
+  DCHECK_LE(length, std::numeric_limits<int32_t>::max());
   text->chunkLength = length <= std::numeric_limits<int32_t>::max()
                           ? static_cast<int32_t>(length)
                           : 0;
@@ -254,7 +256,7 @@ static void TextLatin1SwitchToPrimaryContext(UText* text,
                                              int64_t native_index,
                                              int64_t native_length,
                                              UBool forward) {
-  ASSERT(!text->chunkContents || text->chunkContents == text->q);
+  DCHECK(!text->chunkContents || text->chunkContents == text->q);
   text->chunkContents = static_cast<const UChar*>(text->pExtra);
   TextLatin1MoveInPrimaryContext(text, native_index, native_length, forward);
 }
@@ -263,8 +265,8 @@ static void TextLatin1MoveInPriorContext(UText* text,
                                          int64_t native_index,
                                          int64_t native_length,
                                          UBool forward) {
-  ASSERT(text->chunkContents == text->q);
-  ASSERT(forward ? native_index < text->b : native_index <= text->b);
+  DCHECK_EQ(text->chunkContents, text->q);
+  DCHECK(forward ? native_index < text->b : native_index <= text->b);
   DCHECK(forward ? native_index < native_length
                  : native_index <= native_length);
   DCHECK(forward ? native_index < native_length
@@ -276,7 +278,7 @@ static void TextLatin1MoveInPriorContext(UText* text,
   int64_t offset = native_index - text->chunkNativeStart;
   // Ensure chunk offset is well defined if computed offset exceeds int32_t
   // range or chunk length.
-  ASSERT(offset <= std::numeric_limits<int32_t>::max());
+  DCHECK_LE(offset, std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
                                    : 0,
@@ -287,7 +289,7 @@ static void TextLatin1SwitchToPriorContext(UText* text,
                                            int64_t native_index,
                                            int64_t native_length,
                                            UBool forward) {
-  ASSERT(!text->chunkContents || text->chunkContents == text->pExtra);
+  DCHECK(!text->chunkContents || text->chunkContents == text->pExtra);
   text->chunkContents = static_cast<const UChar*>(text->q);
   TextLatin1MoveInPriorContext(text, native_index, native_length, forward);
 }
@@ -303,7 +305,7 @@ static inline bool TextInChunkOrOutOfRange(UText* text,
       int64_t offset = native_index - text->chunkNativeStart;
       // Ensure chunk offset is well formed if computed offset exceeds int32_t
       // range.
-      ASSERT(offset <= std::numeric_limits<int32_t>::max());
+      DCHECK_LE(offset, std::numeric_limits<int32_t>::max());
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
                               : 0;
@@ -322,7 +324,7 @@ static inline bool TextInChunkOrOutOfRange(UText* text,
       int64_t offset = native_index - text->chunkNativeStart;
       // Ensure chunk offset is well formed if computed offset exceeds int32_t
       // range.
-      ASSERT(offset <= std::numeric_limits<int32_t>::max());
+      DCHECK_LE(offset, std::numeric_limits<int32_t>::max());
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
                               : 0;
@@ -351,7 +353,7 @@ static UBool TextLatin1Access(UText* text,
   native_index = TextPinIndex(native_index, native_length - 1);
   TextContext current_context = TextLatin1GetCurrentContext(text);
   TextContext new_context = TextGetContext(text, native_index, forward);
-  ASSERT(new_context != kNoContext);
+  DCHECK_NE(new_context, kNoContext);
   if (new_context == current_context) {
     if (current_context == kPrimaryContext) {
       TextLatin1MoveInPrimaryContext(text, native_index, native_length,
@@ -363,7 +365,7 @@ static UBool TextLatin1Access(UText* text,
     TextLatin1SwitchToPrimaryContext(text, native_index, native_length,
                                      forward);
   } else {
-    ASSERT(new_context == kPriorContext);
+    DCHECK_EQ(new_context, kPriorContext);
     TextLatin1SwitchToPriorContext(text, native_index, native_length, forward);
   }
   return TRUE;
@@ -407,7 +409,7 @@ static UText* TextOpenLatin1(UTextWithBuffer* ut_with_buffer,
   UText* text = utext_setup(&ut_with_buffer->text,
                             sizeof(ut_with_buffer->buffer), status);
   if (U_FAILURE(*status)) {
-    ASSERT(!text);
+    DCHECK(!text);
     return 0;
   }
   TextInit(text, &kTextLatin1Funcs, string, length, prior_context,
@@ -425,7 +427,7 @@ static void TextUTF16MoveInPrimaryContext(UText* text,
                                           int64_t native_index,
                                           int64_t native_length,
                                           UBool forward) {
-  ASSERT(text->chunkContents == text->p);
+  DCHECK_EQ(text->chunkContents, text->p);
   DCHECK(forward ? native_index >= text->b : native_index > text->b);
   DCHECK(forward ? native_index < native_length
                  : native_index <= native_length);
@@ -434,7 +436,7 @@ static void TextUTF16MoveInPrimaryContext(UText* text,
   int64_t length = text->chunkNativeLimit - text->chunkNativeStart;
   // Ensure chunk length is well defined if computed length exceeds int32_t
   // range.
-  ASSERT(length <= std::numeric_limits<int32_t>::max());
+  DCHECK_LE(length, std::numeric_limits<int32_t>::max());
   text->chunkLength = length <= std::numeric_limits<int32_t>::max()
                           ? static_cast<int32_t>(length)
                           : 0;
@@ -442,7 +444,7 @@ static void TextUTF16MoveInPrimaryContext(UText* text,
   int64_t offset = native_index - text->chunkNativeStart;
   // Ensure chunk offset is well defined if computed offset exceeds int32_t
   // range or chunk length.
-  ASSERT(offset <= std::numeric_limits<int32_t>::max());
+  DCHECK_LE(offset, std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
                                    : 0,
@@ -453,7 +455,7 @@ static void TextUTF16SwitchToPrimaryContext(UText* text,
                                             int64_t native_index,
                                             int64_t native_length,
                                             UBool forward) {
-  ASSERT(!text->chunkContents || text->chunkContents == text->q);
+  DCHECK(!text->chunkContents || text->chunkContents == text->q);
   text->chunkContents = static_cast<const UChar*>(text->p);
   TextUTF16MoveInPrimaryContext(text, native_index, native_length, forward);
 }
@@ -462,8 +464,8 @@ static void TextUTF16MoveInPriorContext(UText* text,
                                         int64_t native_index,
                                         int64_t native_length,
                                         UBool forward) {
-  ASSERT(text->chunkContents == text->q);
-  ASSERT(forward ? native_index < text->b : native_index <= text->b);
+  DCHECK_EQ(text->chunkContents, text->q);
+  DCHECK(forward ? native_index < text->b : native_index <= text->b);
   DCHECK(forward ? native_index < native_length
                  : native_index <= native_length);
   DCHECK(forward ? native_index < native_length
@@ -475,7 +477,7 @@ static void TextUTF16MoveInPriorContext(UText* text,
   int64_t offset = native_index - text->chunkNativeStart;
   // Ensure chunk offset is well defined if computed offset exceeds int32_t
   // range or chunk length.
-  ASSERT(offset <= std::numeric_limits<int32_t>::max());
+  DCHECK_LE(offset, std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
                                    : 0,
@@ -486,7 +488,7 @@ static void TextUTF16SwitchToPriorContext(UText* text,
                                           int64_t native_index,
                                           int64_t native_length,
                                           UBool forward) {
-  ASSERT(!text->chunkContents || text->chunkContents == text->p);
+  DCHECK(!text->chunkContents || text->chunkContents == text->p);
   text->chunkContents = static_cast<const UChar*>(text->q);
   TextUTF16MoveInPriorContext(text, native_index, native_length, forward);
 }
@@ -502,7 +504,7 @@ static UBool TextUTF16Access(UText* text, int64_t native_index, UBool forward) {
   native_index = TextPinIndex(native_index, native_length - 1);
   TextContext current_context = TextUTF16GetCurrentContext(text);
   TextContext new_context = TextGetContext(text, native_index, forward);
-  ASSERT(new_context != kNoContext);
+  DCHECK_NE(new_context, kNoContext);
   if (new_context == current_context) {
     if (current_context == kPrimaryContext) {
       TextUTF16MoveInPrimaryContext(text, native_index, native_length, forward);
@@ -512,7 +514,7 @@ static UBool TextUTF16Access(UText* text, int64_t native_index, UBool forward) {
   } else if (new_context == kPrimaryContext) {
     TextUTF16SwitchToPrimaryContext(text, native_index, native_length, forward);
   } else {
-    ASSERT(new_context == kPriorContext);
+    DCHECK_EQ(new_context, kPriorContext);
     TextUTF16SwitchToPriorContext(text, native_index, native_length, forward);
   }
   return TRUE;
@@ -541,7 +543,7 @@ static UText* TextOpenUTF16(UText* text,
 
   text = utext_setup(text, 0, status);
   if (U_FAILURE(*status)) {
-    ASSERT(!text);
+    DCHECK(!text);
     return 0;
   }
   TextInit(text, &kTextUTF16Funcs, string, length, prior_context,

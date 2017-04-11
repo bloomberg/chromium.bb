@@ -81,7 +81,7 @@ inline void BidiRunList<Run>::AddRun(Run* run) {
 
 template <class Run>
 inline void BidiRunList<Run>::PrependRun(Run* run) {
-  ASSERT(!run->next_);
+  DCHECK(!run->next_);
 
   if (!last_run_)
     last_run_ = run;
@@ -93,9 +93,9 @@ inline void BidiRunList<Run>::PrependRun(Run* run) {
 
 template <class Run>
 inline void BidiRunList<Run>::MoveRunToEnd(Run* run) {
-  ASSERT(first_run_);
-  ASSERT(last_run_);
-  ASSERT(run->next_);
+  DCHECK(first_run_);
+  DCHECK(last_run_);
+  DCHECK(run->next_);
 
   Run* current = 0;
   Run* next = first_run_;
@@ -116,9 +116,9 @@ inline void BidiRunList<Run>::MoveRunToEnd(Run* run) {
 
 template <class Run>
 inline void BidiRunList<Run>::MoveRunToBeginning(Run* run) {
-  ASSERT(first_run_);
-  ASSERT(last_run_);
-  ASSERT(run != first_run_);
+  DCHECK(first_run_);
+  DCHECK(last_run_);
+  DCHECK_NE(run, first_run_);
 
   Run* current = first_run_;
   Run* next = current->Next();
@@ -138,9 +138,9 @@ inline void BidiRunList<Run>::MoveRunToBeginning(Run* run) {
 template <class Run>
 void BidiRunList<Run>::ReplaceRunWithRuns(Run* to_replace,
                                           BidiRunList<Run>& new_runs) {
-  ASSERT(new_runs.RunCount());
-  ASSERT(first_run_);
-  ASSERT(to_replace);
+  DCHECK(new_runs.RunCount());
+  DCHECK(first_run_);
+  DCHECK(to_replace);
 
   if (first_run_ == to_replace) {
     first_run_ = new_runs.FirstRun();
@@ -149,7 +149,7 @@ void BidiRunList<Run>::ReplaceRunWithRuns(Run* to_replace,
     Run* previous_run = first_run_;
     while (previous_run->Next() != to_replace)
       previous_run = previous_run->Next();
-    ASSERT(previous_run);
+    DCHECK(previous_run);
     previous_run->SetNext(new_runs.FirstRun());
   }
 
@@ -192,11 +192,11 @@ void BidiRunList<Run>::DeleteRuns() {
 
 template <class Run>
 void BidiRunList<Run>::ReverseRuns(unsigned start, unsigned end) {
-  ASSERT(run_count_);
+  DCHECK(run_count_);
   if (start >= end)
     return;
 
-  ASSERT(end < run_count_);
+  DCHECK_LT(end, run_count_);
 
   // Get the item before the start of the runs to reverse and put it in
   // |beforeStart|. |curr| should point to the first run to reverse.

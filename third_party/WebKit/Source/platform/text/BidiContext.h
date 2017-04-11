@@ -71,7 +71,7 @@ class PLATFORM_EXPORT BidiContext : public RefCounted<BidiContext> {
         override_(override),
         source_(source),
         parent_(parent) {
-    ASSERT(level <= kMaxLevel);
+    DCHECK(level <= kMaxLevel);
   }
 
   static PassRefPtr<BidiContext> CreateUncached(unsigned char level,

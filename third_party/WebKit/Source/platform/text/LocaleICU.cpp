@@ -73,7 +73,7 @@ std::unique_ptr<LocaleICU> LocaleICU::Create(const char* locale_string) {
 String LocaleICU::DecimalSymbol(UNumberFormatSymbol symbol) {
   UErrorCode status = U_ZERO_ERROR;
   int32_t buffer_length = unum_getSymbol(number_format_, symbol, 0, 0, &status);
-  ASSERT(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
+  DCHECK(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
   if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
     return String();
   StringBuffer<UChar> buffer(buffer_length);
@@ -89,14 +89,14 @@ String LocaleICU::DecimalTextAttribute(UNumberFormatTextAttribute tag) {
   UErrorCode status = U_ZERO_ERROR;
   int32_t buffer_length =
       unum_getTextAttribute(number_format_, tag, 0, 0, &status);
-  ASSERT(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
+  DCHECK(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
   if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
     return String();
   StringBuffer<UChar> buffer(buffer_length);
   status = U_ZERO_ERROR;
   unum_getTextAttribute(number_format_, tag, buffer.Characters(), buffer_length,
                         &status);
-  ASSERT(U_SUCCESS(status));
+  DCHECK(U_SUCCESS(status));
   if (U_FAILURE(status))
     return String();
   return String::Adopt(buffer);
@@ -124,7 +124,7 @@ void LocaleICU::InitializeLocaleData() {
   symbols.push_back(DecimalSymbol(UNUM_NINE_DIGIT_SYMBOL));
   symbols.push_back(DecimalSymbol(UNUM_DECIMAL_SEPARATOR_SYMBOL));
   symbols.push_back(DecimalSymbol(UNUM_GROUPING_SEPARATOR_SYMBOL));
-  ASSERT(symbols.size() == kDecimalSymbolsSize);
+  DCHECK_EQ(symbols.size(), kDecimalSymbolsSize);
   SetLocaleData(symbols, DecimalTextAttribute(UNUM_POSITIVE_PREFIX),
                 DecimalTextAttribute(UNUM_POSITIVE_SUFFIX),
                 DecimalTextAttribute(UNUM_NEGATIVE_PREFIX),
@@ -160,7 +160,7 @@ UDateFormat* LocaleICU::OpenDateFormatForStandAloneMonthLabels(
       udat_open(UDAT_PATTERN, UDAT_PATTERN, locale_.Data(), 0, -1,
                 kMonthPattern, is_short ? 3 : 4, &status);
   udat_setContext(formatter, UDISPCTX_CAPITALIZATION_FOR_STANDALONE, &status);
-  ASSERT(U_SUCCESS(status));
+  DCHECK(U_SUCCESS(status));
   return formatter;
 }
 

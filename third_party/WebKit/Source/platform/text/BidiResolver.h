@@ -48,12 +48,12 @@ class MidpointState final {
   }
 
   void StartIgnoringSpaces(const Iterator& midpoint) {
-    ASSERT(!(num_midpoints_ % 2));
+    DCHECK(!(num_midpoints_ % 2));
     AddMidpoint(midpoint);
   }
 
   void StopIgnoringSpaces(const Iterator& midpoint) {
-    ASSERT(num_midpoints_ % 2);
+    DCHECK(num_midpoints_ % 2);
     AddMidpoint(midpoint);
   }
 
@@ -256,7 +256,7 @@ class BidiResolver final {
 
   const BidiStatus& Status() const { return status_; }
   void SetStatus(const BidiStatus s) {
-    ASSERT(s.context);
+    DCHECK(s.context);
     status_ = s;
     paragraph_directionality_ = s.context->Dir() == WTF::Unicode::kLeftToRight
                                     ? TextDirection::kLtr
@@ -270,7 +270,7 @@ class BidiResolver final {
   // ignore) all child isolated spans.
   void EnterIsolate() { nested_isolate_count_++; }
   void ExitIsolate() {
-    ASSERT(nested_isolate_count_ >= 1);
+    DCHECK_GE(nested_isolate_count_, 1u);
     nested_isolate_count_--;
   }
   bool InIsolate() const { return nested_isolate_count_; }
@@ -385,8 +385,8 @@ class BidiResolver final {
 template <class Iterator, class Run, class IsolatedRun>
 BidiResolver<Iterator, Run, IsolatedRun>::~BidiResolver() {
   // The owner of this resolver should have handled the isolated runs.
-  ASSERT(isolated_runs_.IsEmpty());
-  ASSERT(!runs_.RunCount());
+  DCHECK(isolated_runs_.IsEmpty());
+  DCHECK(!runs_.RunCount());
 }
 #endif
 
@@ -434,10 +434,10 @@ void BidiResolver<Iterator, Run, IsolatedRun>::Embed(
     BidiEmbeddingSource source) {
   // Isolated spans compute base directionality during their own UBA run.
   // Do not insert fake embed characters once we enter an isolated span.
-  ASSERT(!InIsolate());
+  DCHECK(!InIsolate());
   using namespace WTF::Unicode;
 
-  ASSERT(dir == kPopDirectionalFormat || dir == kLeftToRightEmbedding ||
+  DCHECK(dir == kPopDirectionalFormat || dir == kLeftToRightEmbedding ||
          dir == kLeftToRightOverride || dir == kRightToLeftEmbedding ||
          dir == kRightToLeftOverride);
   current_explicit_embedding_sequence_.push_back(BidiEmbedding(dir, source));
@@ -448,13 +448,14 @@ void BidiResolver<Iterator, Run, IsolatedRun>::
     CheckDirectionInLowerRaiseEmbeddingLevel() {
   using namespace WTF::Unicode;
 
-  ASSERT(status_.eor != kOtherNeutral || eor_.AtEnd());
-  ASSERT(status_.last != kNonSpacingMark && status_.last != kBoundaryNeutral &&
-         status_.last != kRightToLeftEmbedding &&
-         status_.last != kLeftToRightEmbedding &&
-         status_.last != kRightToLeftOverride &&
-         status_.last != kLeftToRightOverride &&
-         status_.last != kPopDirectionalFormat);
+  DCHECK(status_.eor != kOtherNeutral || eor_.AtEnd());
+  DCHECK_NE(status_.last, kNonSpacingMark);
+  DCHECK_NE(status_.last, kBoundaryNeutral);
+  DCHECK_NE(status_.last, kRightToLeftEmbedding);
+  DCHECK_NE(status_.last, kLeftToRightEmbedding);
+  DCHECK_NE(status_.last, kRightToLeftOverride);
+  DCHECK_NE(status_.last, kLeftToRightOverride);
+  DCHECK_NE(status_.last, kPopDirectionalFormat);
   if (direction_ == kOtherNeutral)
     direction_ =
         status_.last_strong == kLeftToRight ? kLeftToRight : kRightToLeft;
@@ -549,7 +550,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::RaiseExplicitEmbeddingLevel(
 template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::ComputeTrailingSpace(
     BidiRunList<Run>& runs) {
-  ASSERT(runs.RunCount());
+  DCHECK(runs.RunCount());
 
   Run* trailing_space_run = runs.LogicallyLastRun();
 
@@ -569,7 +570,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::ComputeTrailingSpace(
     trailing_space_run_ = AddTrailingRun(
         runs, first_space, trailing_space_run->stop_, trailing_space_run,
         base_context, paragraph_directionality_);
-    ASSERT(trailing_space_run_);
+    DCHECK(trailing_space_run_);
     trailing_space_run->stop_ = first_space;
     return;
   }
@@ -596,7 +597,7 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
   // ignores (skips over) the isolated content, including embedding levels.
   // We should never accrue embedding levels while skipping over isolated
   // content.
-  ASSERT(!InIsolate() || current_explicit_embedding_sequence_.IsEmpty());
+  DCHECK(!InIsolate() || current_explicit_embedding_sequence_.IsEmpty());
 
   using namespace WTF::Unicode;
 
@@ -791,7 +792,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
     bool reorder_runs) {
   using namespace WTF::Unicode;
 
-  ASSERT(direction_ == kOtherNeutral);
+  DCHECK_EQ(direction_, kOtherNeutral);
   trailing_space_run_ = 0;
 
   end_of_line_ = end;
@@ -877,7 +878,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
     if (InIsolate())
       dir_current = kOtherNeutral;
 
-    ASSERT(status_.eor != kOtherNeutral || eor_.AtEnd());
+    DCHECK(status_.eor != kOtherNeutral || eor_.AtEnd());
     switch (dir_current) {
       // embedding and overrides (X1-X9 in the Bidi specs)
       case kRightToLeftEmbedding:
@@ -1160,7 +1161,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
                                                              : kEuropeanNumber;
             break;
           default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         AppendRun(runs_);
       }
@@ -1217,7 +1218,7 @@ template <class Iterator, class Run, class IsolatedRun>
 void BidiResolver<Iterator, Run, IsolatedRun>::SetMidpointStateForIsolatedRun(
     Run& run,
     const MidpointState<Iterator>& midpoint) {
-  ASSERT(!midpoint_state_for_isolated_run_.Contains(&run));
+  DCHECK(!midpoint_state_for_isolated_run_.Contains(&run));
   midpoint_state_for_isolated_run_.insert(&run, midpoint);
 }
 

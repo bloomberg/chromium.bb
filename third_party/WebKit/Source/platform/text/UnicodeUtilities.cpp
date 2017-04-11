@@ -151,7 +151,7 @@ bool IsKanaLetter(UChar character) {
 }
 
 bool IsSmallKanaLetter(UChar character) {
-  ASSERT(IsKanaLetter(character));
+  DCHECK(IsKanaLetter(character));
 
   switch (character) {
     case 0x3041:  // HIRAGANA LETTER SMALL A
@@ -209,7 +209,7 @@ bool IsSmallKanaLetter(UChar character) {
 }
 
 static inline VoicedSoundMarkType ComposedVoicedSoundMark(UChar character) {
-  ASSERT(IsKanaLetter(character));
+  DCHECK(IsKanaLetter(character));
 
   switch (character) {
     case 0x304C:  // HIRAGANA LETTER GA
@@ -295,16 +295,16 @@ bool ContainsKanaLetters(const String& pattern) {
 void NormalizeCharactersIntoNFCForm(const UChar* characters,
                                     unsigned length,
                                     Vector<UChar>& buffer) {
-  ASSERT(length);
+  DCHECK(length);
 
   buffer.Resize(length);
 
   UErrorCode status = U_ZERO_ERROR;
   size_t buffer_size = unorm_normalize(characters, length, UNORM_NFC, 0,
                                        buffer.Data(), length, &status);
-  ASSERT(status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING ||
+  DCHECK(status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING ||
          status == U_BUFFER_OVERFLOW_ERROR);
-  ASSERT(buffer_size);
+  DCHECK(buffer_size);
 
   buffer.Resize(buffer_size);
 
@@ -314,7 +314,7 @@ void NormalizeCharactersIntoNFCForm(const UChar* characters,
   status = U_ZERO_ERROR;
   unorm_normalize(characters, length, UNORM_NFC, 0, buffer.Data(), buffer_size,
                   &status);
-  ASSERT(status == U_STRING_NOT_TERMINATED_WARNING);
+  DCHECK_EQ(status, U_STRING_NOT_TERMINATED_WARNING);
 }
 
 // This function returns kNotFound if |first| and |second| contain different
