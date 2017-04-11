@@ -200,6 +200,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Mediator to configure the sign-in promo cell. Also used to received
   // identity update notifications.
   base::scoped_nsobject<SigninPromoViewMediator> _signinPromoViewMediator;
+  // Item in the Sign-in section. Either CollectionViewAccountItem,
+  // AccountSignInItem or SigninPromoItem.
+  CollectionViewItem* _signinSectionItem;
 
   // Cached resized profile image.
   base::scoped_nsobject<UIImage> _resizedImage;
@@ -311,6 +314,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self updateSearchCell];
+  // Sign-in section should not be reloaded while the controller is overlaid. So
+  // this section has to be reloaded before reappearing.
+  // See -[SettingsCollectionViewController onSignInStateChanged].
+  [self reloadSigninSectionWithAnimation:NO];
 }
 
 #pragma mark SettingsRootCollectionViewController
@@ -322,27 +329,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Sign in/Account section
   [model addSectionWithIdentifier:SectionIdentifierSignIn];
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(_mainBrowserState);
-  if (!authService->IsAuthenticated()) {
-    if (!_hasRecordedSigninImpression) {
-      // Once the Settings are open, this button impression will at most be
-      // recorded once until they are closed.
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromSettings"));
-      _hasRecordedSigninImpression = YES;
-    }
-    if (experimental_flags::IsSigninPromoEnabled()) {
-      _signinPromoViewMediator.reset([[SigninPromoViewMediator alloc] init]);
-      _signinPromoViewMediator.get().consumer = self;
-    }
-    [model addItem:[self signInTextItem]
-        toSectionWithIdentifier:SectionIdentifierSignIn];
-  } else {
-    _signinPromoViewMediator.reset(nil);
-    [model addItem:[self accountCellItem]
-        toSectionWithIdentifier:SectionIdentifierSignIn];
-  }
+  [model addItem:[self signinSectionItem]
+      toSectionWithIdentifier:SectionIdentifierSignIn];
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
@@ -411,6 +399,29 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   [model addItem:[self materialCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+}
+
+- (CollectionViewItem*)signinSectionItem {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(_mainBrowserState);
+  if (!authService->IsAuthenticated()) {
+    if (!_hasRecordedSigninImpression) {
+      // Once the Settings are open, this button impression will at most be
+      // recorded once until they are closed.
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromSettings"));
+      _hasRecordedSigninImpression = YES;
+    }
+    if (experimental_flags::IsSigninPromoEnabled()) {
+      _signinPromoViewMediator.reset([[SigninPromoViewMediator alloc] init]);
+      _signinPromoViewMediator.get().consumer = self;
+    }
+    _signinSectionItem = [self signInTextItem];
+  } else {
+    _signinPromoViewMediator.reset(nil);
+    _signinSectionItem = [self accountCellItem];
+  }
+  return _signinSectionItem;
 }
 
 #pragma mark - Model Items
@@ -591,6 +602,24 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _defaultSearchEngineItem.get().detailText = defaultSearchEngineName;
   [self reconfigureCellsForItems:@[ _defaultSearchEngineItem ]
          inSectionWithIdentifier:SectionIdentifierBasics];
+}
+
+- (void)reloadSigninSectionWithAnimation:(BOOL)animation {
+  CollectionViewModel* model = self.collectionViewModel;
+  NSIndexPath* indexPath = [model indexPathForItem:_signinSectionItem
+                           inSectionWithIdentifier:SectionIdentifierSignIn];
+  [model removeItemWithType:_signinSectionItem.type
+      fromSectionWithIdentifier:SectionIdentifierSignIn];
+  [model addItem:[self signinSectionItem]
+      toSectionWithIdentifier:SectionIdentifierSignIn];
+  void (^reloadItemsBlock)(void) = ^{
+    [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+  };
+  if (animation) {
+    reloadItemsBlock();
+  } else {
+    [UIView performWithoutAnimation:reloadItemsBlock];
+  }
 }
 
 #pragma mark Item Constructors
@@ -1022,9 +1051,17 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #pragma mark NotificationBridgeDelegate
 
 - (void)onSignInStateChanged {
-  // Sign in state changes are rare. Just reload the entire collection when this
-  // happens.
-  [self reloadData];
+  // Sign-in section should only be reloaded when
+  // SettingsCollectionViewController is not overlaid.
+  // When clicking on "CONTINUE AS xxx" button, SigninInteractionController
+  // presents a signed-in view and sign-in the user at the same time.
+  // So to avoid having two animations, the sign-in section should only be
+  // reloaded when the settings controler is not overlaid.
+  // The sign-in section will be reloaded when
+  // -[SettingsCollectionViewController viewWillAppear:] is called.
+  if (!self.presentedViewController) {
+    [self reloadSigninSectionWithAnimation:YES];
+  }
 }
 
 #pragma mark SettingsControllerProtocol
