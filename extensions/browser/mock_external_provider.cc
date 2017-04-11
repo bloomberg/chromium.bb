@@ -18,9 +18,19 @@ MockExternalProvider::MockExternalProvider(VisitorInterface* visitor,
 MockExternalProvider::~MockExternalProvider() {}
 
 void MockExternalProvider::UpdateOrAddExtension(const ExtensionId& id,
-                                                const std::string& version,
+                                                const std::string& version_str,
                                                 const base::FilePath& path) {
-  extension_map_[id] = std::make_pair(version, path);
+  auto version = base::MakeUnique<base::Version>(version_str);
+  auto info = base::MakeUnique<ExternalInstallInfoFile>(
+      id, std::move(version), path, location_, Extension::NO_FLAGS, false,
+      false);
+  extension_map_[id] = std::move(info);
+}
+
+void MockExternalProvider::UpdateOrAddExtension(
+    std::unique_ptr<ExternalInstallInfoFile> info) {
+  std::string id = info->extension_id;
+  extension_map_[id] = std::move(info);
 }
 
 void MockExternalProvider::RemoveExtension(const ExtensionId& id) {
@@ -29,15 +39,8 @@ void MockExternalProvider::RemoveExtension(const ExtensionId& id) {
 
 void MockExternalProvider::VisitRegisteredExtension() {
   visit_count_++;
-  for (const auto& extension_kv : extension_map_) {
-    std::unique_ptr<base::Version> version =
-        base::MakeUnique<base::Version>(extension_kv.second.first);
-    std::unique_ptr<ExternalInstallInfoFile> info =
-        base::MakeUnique<ExternalInstallInfoFile>(
-            extension_kv.first, std::move(version), extension_kv.second.second,
-            location_, Extension::NO_FLAGS, false, false);
-    visitor_->OnExternalExtensionFileFound(*info);
-  }
+  for (const auto& extension_kv : extension_map_)
+    visitor_->OnExternalExtensionFileFound(*extension_kv.second);
   visitor_->OnExternalProviderReady(this);
 }
 
@@ -54,7 +57,7 @@ bool MockExternalProvider::GetExtensionDetails(
     return false;
 
   if (version)
-    version->reset(new base::Version(it->second.first));
+    version->reset(new base::Version(it->second->version->GetString()));
 
   if (location)
     *location = location_;
