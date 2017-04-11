@@ -227,10 +227,11 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
   }
 }
 
-void RTCDataChannel::send(DOMArrayBufferView* data,
+void RTCDataChannel::send(NotShared<DOMArrayBufferView> data,
                           ExceptionState& exception_state) {
-  if (!handler_->SendRawData(static_cast<const char*>(data->BaseAddress()),
-                             data->byteLength())) {
+  if (!handler_->SendRawData(
+          static_cast<const char*>(data.View()->BaseAddress()),
+          data.View()->byteLength())) {
     // FIXME: This should not throw an exception but instead forcefully close
     // the data channel.
     ThrowCouldNotSendDataException(exception_state);

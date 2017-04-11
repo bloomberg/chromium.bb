@@ -32,9 +32,10 @@ PushMessageData* PushMessageData::Create(const String& message_string) {
 PushMessageData* PushMessageData::Create(
     const ArrayBufferOrArrayBufferViewOrUSVString& message_data) {
   if (message_data.isArrayBuffer() || message_data.isArrayBufferView()) {
-    DOMArrayBuffer* buffer = message_data.isArrayBufferView()
-                                 ? message_data.getAsArrayBufferView()->buffer()
-                                 : message_data.getAsArrayBuffer();
+    DOMArrayBuffer* buffer =
+        message_data.isArrayBufferView()
+            ? message_data.getAsArrayBufferView().View()->buffer()
+            : message_data.getAsArrayBuffer();
 
     return new PushMessageData(static_cast<const char*>(buffer->Data()),
                                buffer->ByteLength());

@@ -31,8 +31,12 @@
 #ifndef DOMWebSocket_h
 #define DOMWebSocket_h
 
+#include <stddef.h>
+#include <stdint.h>
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/NotShared.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -48,9 +52,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
-#include <stddef.h>
-#include <stdint.h>
 
 namespace blink {
 
@@ -90,7 +91,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
   void send(const String& message, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
-  void send(DOMArrayBufferView*, ExceptionState&);
+  void send(NotShared<DOMArrayBufferView>, ExceptionState&);
   void send(Blob*, ExceptionState&);
 
   // To distinguish close method call with the code parameter from one

@@ -132,7 +132,8 @@ void Blob::PopulateBlobData(
       DOMArrayBuffer* array_buffer = item.getAsArrayBuffer();
       blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
     } else if (item.isArrayBufferView()) {
-      DOMArrayBufferView* array_buffer_view = item.getAsArrayBufferView();
+      DOMArrayBufferView* array_buffer_view =
+          item.getAsArrayBufferView().View();
       blob_data->AppendBytes(array_buffer_view->BaseAddress(),
                              array_buffer_view->byteLength());
     } else if (item.isBlob()) {

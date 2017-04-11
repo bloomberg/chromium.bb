@@ -25,8 +25,10 @@
 #ifndef RTCDataChannel_h
 #define RTCDataChannel_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "core/dom/NotShared.h"
 #include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
@@ -34,7 +36,6 @@
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
 #include "wtf/Compiler.h"
-#include <memory>
 
 namespace blink {
 
@@ -89,7 +90,7 @@ class MODULES_EXPORT RTCDataChannel final
 
   void send(const String&, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
-  void send(DOMArrayBufferView*, ExceptionState&);
+  void send(NotShared<DOMArrayBufferView>, ExceptionState&);
   void send(Blob*, ExceptionState&);
 
   void close();

@@ -201,7 +201,7 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
          ++channel_index) {
       const float* source = render_bus_->Channel(channel_index)->Data();
       float* destination =
-          render_target_->getChannelData(channel_index)->Data();
+          render_target_->getChannelData(channel_index).View()->Data();
       memcpy(destination + frames_processed_, source,
              sizeof(float) * frames_available_to_copy);
     }

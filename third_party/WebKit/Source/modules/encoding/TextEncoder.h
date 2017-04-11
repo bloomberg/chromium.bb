@@ -31,13 +31,14 @@
 #ifndef TextEncoder_h
 #define TextEncoder_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -54,7 +55,7 @@ class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
 
   // Implement the IDL
   String encoding() const;
-  DOMUint8Array* encode(const String&);
+  NotShared<DOMUint8Array> encode(const String&);
 
   DEFINE_INLINE_TRACE() {}
 

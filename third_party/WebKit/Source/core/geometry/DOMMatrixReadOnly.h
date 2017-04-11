@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
 
@@ -28,8 +29,10 @@ class CORE_EXPORT DOMMatrixReadOnly
   static DOMMatrixReadOnly* Create(ExceptionState&);
   static DOMMatrixReadOnly* Create(const String&, ExceptionState&);
   static DOMMatrixReadOnly* Create(Vector<double>, ExceptionState&);
-  static DOMMatrixReadOnly* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
-  static DOMMatrixReadOnly* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
+  static DOMMatrixReadOnly* fromFloat32Array(NotShared<DOMFloat32Array>,
+                                             ExceptionState&);
+  static DOMMatrixReadOnly* fromFloat64Array(NotShared<DOMFloat64Array>,
+                                             ExceptionState&);
   static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
   virtual ~DOMMatrixReadOnly();
 
@@ -89,8 +92,8 @@ class CORE_EXPORT DOMMatrixReadOnly
 
   DOMPoint* transformPoint(const DOMPointInit&);
 
-  DOMFloat32Array* toFloat32Array() const;
-  DOMFloat64Array* toFloat64Array() const;
+  NotShared<DOMFloat32Array> toFloat32Array() const;
+  NotShared<DOMFloat64Array> toFloat64Array() const;
 
   const String toString() const;
 

@@ -58,7 +58,7 @@ String TextEncoder::encoding() const {
   return name;
 }
 
-DOMUint8Array* TextEncoder::encode(const String& input) {
+NotShared<DOMUint8Array> TextEncoder::encode(const String& input) {
   CString result;
   if (input.Is8Bit())
     result = codec_->Encode(input.Characters8(), input.length(),
@@ -71,7 +71,8 @@ DOMUint8Array* TextEncoder::encode(const String& input) {
   const unsigned char* unsigned_buffer =
       reinterpret_cast<const unsigned char*>(buffer);
 
-  return DOMUint8Array::Create(unsigned_buffer, result.length());
+  return NotShared<DOMUint8Array>(
+      DOMUint8Array::Create(unsigned_buffer, result.length()));
 }
 
 }  // namespace blink

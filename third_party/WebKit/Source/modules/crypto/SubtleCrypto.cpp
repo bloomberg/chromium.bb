@@ -457,7 +457,7 @@ ScriptPromise SubtleCrypto::importKey(
       if (raw_key_data.isArrayBuffer()) {
         key_data = CopyBytes(raw_key_data.getAsArrayBuffer());
       } else if (raw_key_data.isArrayBufferView()) {
-        key_data = CopyBytes(raw_key_data.getAsArrayBufferView());
+        key_data = CopyBytes(raw_key_data.getAsArrayBufferView().View());
       } else {
         result->CompleteWithError(
             kWebCryptoErrorTypeType,

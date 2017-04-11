@@ -523,8 +523,8 @@ OscillatorNode* BaseAudioContext::createOscillator(
 }
 
 PeriodicWave* BaseAudioContext::createPeriodicWave(
-    DOMFloat32Array* real,
-    DOMFloat32Array* imag,
+    NotShared<DOMFloat32Array> real,
+    NotShared<DOMFloat32Array> imag,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -532,8 +532,8 @@ PeriodicWave* BaseAudioContext::createPeriodicWave(
 }
 
 PeriodicWave* BaseAudioContext::createPeriodicWave(
-    DOMFloat32Array* real,
-    DOMFloat32Array* imag,
+    NotShared<DOMFloat32Array> real,
+    NotShared<DOMFloat32Array> imag,
     const PeriodicWaveConstraints& options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());

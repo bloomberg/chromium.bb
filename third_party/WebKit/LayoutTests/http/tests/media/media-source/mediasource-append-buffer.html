@@ -550,6 +550,22 @@
               test.done();
           }, 'Test appending null.');
 
+          if (window.SharedArrayBuffer) {
+              mediasource_test(function(test, mediaElement, mediaSource)
+              {
+                  var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.VIDEO_ONLY_TYPE);
+
+                  test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
+                  test.expectEvent(sourceBuffer, 'update', 'Append success.');
+                  test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
+
+                  assert_throws( { name: 'TypeError'} ,
+                      function() { sourceBuffer.appendBuffer(new Uint8Array(new SharedArrayBuffer(16))); },
+                      'appendBuffer() of SharedArrayBuffer view throws an exception.');
+                  test.done();
+              }, 'Test appending SharedArrayBuffer view.');
+          }
+
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               mediaSource.removeSourceBuffer(sourceBuffer);

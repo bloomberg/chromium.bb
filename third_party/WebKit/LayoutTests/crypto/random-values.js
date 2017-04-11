@@ -37,4 +37,8 @@ try {
     debug(ex);
 }
 
+if (self.SharedArrayBuffer) {
+    shouldThrow("crypto.getRandomValues(new Uint8Array(new SharedArrayBuffer(100)))");
+}
+
 finishJSTest();

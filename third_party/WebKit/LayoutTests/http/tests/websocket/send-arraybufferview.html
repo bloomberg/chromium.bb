@@ -40,6 +40,11 @@ function createArrayBufferViewContainingAllDistinctBytes()
     return array;
 }
 
+function createSharedArrayBufferView()
+{
+    return new Uint8Array(new SharedArrayBuffer(16));
+}
+
 var url = "ws://127.0.0.1:8880/check-binary-messages";
 var ws = new WebSocket(url);
 var closeEvent;
@@ -49,6 +54,10 @@ ws.onopen = function()
     ws.send(createArrayBufferViewContainingHelloWorld());
     ws.send(createEmptyArrayBufferView());
     ws.send(createArrayBufferViewContainingAllDistinctBytes());
+
+    if (window.SharedArrayBuffer) {
+        shouldThrow("ws.send(createSharedArrayBufferView())");
+    }
 };
 
 ws.onmessage = function(event)

@@ -177,6 +177,15 @@ test(() => {
     "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements");
 }, "DOMMatrixReadOnly fromFloat*Array - invalid array size");
 
+if (window.SharedArrayBuffer) {
+  test(() => {
+    assert_throws(new TypeError(), () => { DOMMatrixReadOnly.fromFloat32Array(new Float32Array(new SharedArrayBuffer(24))); },
+      "");
+    assert_throws(new TypeError(), () => { DOMMatrixReadOnly.fromFloat64Array(new Float64Array(new SharedArrayBuffer(32))); },
+      "");
+  }, "DOMMatrixReadOnly fromFloat*Array - can't use SharedArrayBuffer view");
+}
+
 test(() => {
   var matrix = DOMMatrixReadOnly.fromMatrix();
   assert_identity_2d_matrix(matrix);

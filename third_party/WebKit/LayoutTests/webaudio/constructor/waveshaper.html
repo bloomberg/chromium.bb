@@ -96,6 +96,17 @@
         taskDone();
       });
 
+      if (window.SharedArrayBuffer) {
+        audit.defineTask("invalid setCurve", function (taskDone) {
+          var node = new WaveShaperNode(context);
+
+          Should("WaveShaper.curve = SharedArrayBuffer view", function () {
+              node.curve = new Float32Array(new SharedArrayBuffer(16));
+            }).throw("TypeError");
+          taskDone();
+        });
+      }
+
       audit.runTasks();
     </script>
   </body>

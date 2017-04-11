@@ -129,7 +129,7 @@ def _update_includes_and_forward_decls(member, info_provider):
         cpp_includes.update(interface_info.get(
             'dependencies_include_paths', []))
         # We need complete types for IDL dictionaries in union containers.
-        if member.is_dictionary or member.is_typed_array:
+        if member.is_dictionary or member.is_array_buffer_view_or_typed_array:
             header_includes.update(member.includes_for_type())
         else:
             cpp_includes.update(member.includes_for_type())
@@ -161,6 +161,7 @@ def member_context(member, info_provider):
             creation_context='creationContext'),
         'enum_values': member.enum_values,
         'is_array_buffer_or_view_type': member.is_array_buffer_or_view,
+        'is_array_buffer_view_or_typed_array': member.is_array_buffer_view_or_typed_array,
         'is_traceable': member.is_traceable,
         'rvalue_cpp_type': member.cpp_type_args(used_as_rvalue_type=True),
         'specific_type_enum': 'SpecificType' + member.name,

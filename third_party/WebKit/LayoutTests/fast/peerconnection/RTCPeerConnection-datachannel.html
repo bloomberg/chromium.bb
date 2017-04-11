@@ -19,6 +19,15 @@ function dc_onclose() {
     finishJSTest();
 }
 
+function dc_onmessage_sharedarraybuffer_view() {
+    if (window.SharedArrayBuffer) {
+        shouldThrow("dc.send(new Uint8Array(new SharedArrayBuffer(16)));");
+    }
+
+    dc.onclose = dc_onclose;
+    dc.close();
+}
+
 function dc_onmessage_dataview(e) {
     testPassed("dc_onmessage_dataview was called");
     data = e.data;
@@ -27,8 +36,7 @@ function dc_onmessage_dataview(e) {
     shouldBe("array[0]", "1");
     shouldBe("array[9]", "10");
 
-    dc.onclose = dc_onclose;
-    dc.close();
+    dc_onmessage_sharedarraybuffer_view();
 }
 
 function dc_onmessage_arraybuffer(e) {

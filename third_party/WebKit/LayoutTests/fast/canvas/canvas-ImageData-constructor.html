@@ -74,6 +74,10 @@ test(function(t) {
     assert_array_equals(getRGBA(imageDataFromData.data, 2), getRGBA(data, 2));
     setRGBA(imageDataFromData.data, 2, testColor);
     assert_array_equals(getRGBA(imageDataFromData.data, 2), getRGBA(data, 2));
+
+    if (window.SharedArrayBuffer) {
+        assert_throws(null, function() {new ImageData(new Uint16Array(new SharedArrayBuffer(32)), 4, 2)});
+    }
         
 }, 'Test ImageData constructor');
 </script>

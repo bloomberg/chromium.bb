@@ -425,7 +425,7 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
     destination_channels_ = WrapArrayUnique(new float*[number_of_channels]);
 
     for (unsigned i = 0; i < number_of_channels; ++i)
-      source_channels_[i] = buffer->getChannelData(i)->Data();
+      source_channels_[i] = buffer->getChannelData(i).View()->Data();
 
     // If this is a grain (as set by a previous call to start()), validate the
     // grain parameters now since it wasn't validated when start was called

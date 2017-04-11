@@ -714,7 +714,7 @@ void XMLHttpRequest::send(
   }
 
   if (body.isArrayBufferView()) {
-    send(body.getAsArrayBufferView(), exception_state);
+    send(body.getAsArrayBufferView().View(), exception_state);
     return;
   }
 

@@ -27,6 +27,7 @@
 #define BiquadFilterNode_h
 
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/BiquadProcessor.h"
 
@@ -70,9 +71,9 @@ class BiquadFilterNode final : public AudioNode {
 
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.
-  void getFrequencyResponse(const DOMFloat32Array* frequency_hz,
-                            DOMFloat32Array* mag_response,
-                            DOMFloat32Array* phase_response);
+  void getFrequencyResponse(NotShared<const DOMFloat32Array> frequency_hz,
+                            NotShared<DOMFloat32Array> mag_response,
+                            NotShared<DOMFloat32Array> phase_response);
 
  private:
   BiquadFilterNode(BaseAudioContext&);

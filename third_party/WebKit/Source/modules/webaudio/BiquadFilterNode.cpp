@@ -172,18 +172,22 @@ bool BiquadFilterNode::setType(unsigned type) {
   return true;
 }
 
-void BiquadFilterNode::getFrequencyResponse(const DOMFloat32Array* frequency_hz,
-                                            DOMFloat32Array* mag_response,
-                                            DOMFloat32Array* phase_response) {
+void BiquadFilterNode::getFrequencyResponse(
+    NotShared<const DOMFloat32Array> frequency_hz,
+    NotShared<DOMFloat32Array> mag_response,
+    NotShared<DOMFloat32Array> phase_response) {
   DCHECK(frequency_hz);
   DCHECK(mag_response);
   DCHECK(phase_response);
 
-  int n = std::min(frequency_hz->length(),
-                   std::min(mag_response->length(), phase_response->length()));
-  if (n)
-    GetBiquadProcessor()->GetFrequencyResponse(
-        n, frequency_hz->Data(), mag_response->Data(), phase_response->Data());
+  int n = std::min(
+      frequency_hz.View()->length(),
+      std::min(mag_response.View()->length(), phase_response.View()->length()));
+  if (n) {
+    GetBiquadProcessor()->GetFrequencyResponse(n, frequency_hz.View()->Data(),
+                                               mag_response.View()->Data(),
+                                               phase_response.View()->Data());
+  }
 }
 
 }  // namespace blink

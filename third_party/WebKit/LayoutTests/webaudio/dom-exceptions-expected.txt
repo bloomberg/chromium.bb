@@ -1,8 +1,8 @@
-CONSOLE WARNING: line 308: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 314: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 444: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 659: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 688: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 341: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 347: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
+CONSOLE WARNING: line 502: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 717: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 746: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [initialize] Initialize contexts for testing 

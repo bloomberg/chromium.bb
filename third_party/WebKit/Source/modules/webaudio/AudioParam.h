@@ -29,15 +29,16 @@
 #ifndef AudioParam_h
 #define AudioParam_h
 
+#include <sys/types.h>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/NotShared.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
-#include <sys/types.h>
 
 namespace blink {
 
@@ -246,7 +247,7 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
                               double time,
                               double time_constant,
                               ExceptionState&);
-  AudioParam* setValueCurveAtTime(DOMFloat32Array* curve,
+  AudioParam* setValueCurveAtTime(NotShared<DOMFloat32Array> curve,
                                   double time,
                                   double duration,
                                   ExceptionState&);

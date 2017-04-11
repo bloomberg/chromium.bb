@@ -31,21 +31,35 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   void DestroyContext() override;
 
   /* Buffer objects */
-  void bufferData(GLenum, DOMArrayBufferView*, GLenum, GLuint, GLuint);
-  void bufferSubData(GLenum, GLintptr, DOMArrayBufferView*, GLuint, GLuint);
+  void bufferData(GLenum,
+                  NotShared<DOMArrayBufferView>,
+                  GLenum,
+                  GLuint,
+                  GLuint);
+  void bufferSubData(GLenum,
+                     GLintptr,
+                     NotShared<DOMArrayBufferView>,
+                     GLuint,
+                     GLuint);
   // Have to re-declare/re-define the following buffer{Sub}Data functions from
   // base class.  This is because the above buffer{Sub}Data() hides the name
   // from base class.
   void bufferData(GLenum target, long long size, GLenum usage);
   void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
-  void bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage);
+  void bufferData(GLenum target,
+                  NotShared<DOMArrayBufferView> data,
+                  GLenum usage);
   void bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data);
   void bufferSubData(GLenum target,
                      long long offset,
                      const FlexibleArrayBufferView& data);
 
   void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
-  void getBufferSubData(GLenum, long long, DOMArrayBufferView*, GLuint, GLuint);
+  void getBufferSubData(GLenum,
+                        long long,
+                        NotShared<DOMArrayBufferView>,
+                        GLuint,
+                        GLuint);
 
   void RegisterGetBufferSubDataAsyncCallback(
       WebGLGetBufferSubDataAsyncCallback*);
@@ -149,7 +163,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLint,
                   GLenum,
                   GLenum,
-                  DOMArrayBufferView*,
+                  NotShared<DOMArrayBufferView>,
                   GLuint);
 
   void texSubImage2D(GLenum,
@@ -218,7 +232,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLsizei,
                      GLenum,
                      GLenum,
-                     DOMArrayBufferView*,
+                     NotShared<DOMArrayBufferView>,
                      GLuint);
 
   // Have to re-declare/re-define the following tex{Sub}Image2D functions from
@@ -298,7 +312,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLint,
                   GLenum,
                   GLenum,
-                  DOMArrayBufferView*);
+                  NotShared<DOMArrayBufferView>);
   void texImage3D(GLenum,
                   GLint,
                   GLint,
@@ -308,7 +322,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLint,
                   GLenum,
                   GLenum,
-                  DOMArrayBufferView*,
+                  NotShared<DOMArrayBufferView>,
                   GLuint);
   void texImage3D(GLenum,
                   GLint,
@@ -384,7 +398,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLsizei,
                      GLenum,
                      GLenum,
-                     DOMArrayBufferView*,
+                     NotShared<DOMArrayBufferView>,
                      GLuint);
   void texSubImage3D(GLenum,
                      GLint,
@@ -465,7 +479,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLint,
                   GLenum,
                   GLenum,
-                  DOMArrayBufferView*);
+                  NotShared<DOMArrayBufferView>);
   void texSubImage2D(GLenum,
                      GLint,
                      GLint,
@@ -474,7 +488,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLsizei,
                      GLenum,
                      GLenum,
-                     DOMArrayBufferView*);
+                     NotShared<DOMArrayBufferView>);
 
   void copyTexSubImage3D(GLenum,
                          GLint,
@@ -492,7 +506,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei width,
                             GLsizei height,
                             GLint border,
-                            DOMArrayBufferView* data,
+                            NotShared<DOMArrayBufferView> data,
                             GLuint src_offset,
                             GLuint src_length_override);
   void compressedTexSubImage2D(GLenum target,
@@ -502,7 +516,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei width,
                                GLsizei height,
                                GLenum format,
-                               DOMArrayBufferView* data,
+                               NotShared<DOMArrayBufferView> data,
                                GLuint src_offset,
                                GLuint src_length_override);
   void compressedTexImage3D(GLenum,
@@ -512,7 +526,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei,
                             GLsizei,
                             GLint,
-                            DOMArrayBufferView*,
+                            NotShared<DOMArrayBufferView>,
                             GLuint,
                             GLuint);
   void compressedTexSubImage3D(GLenum,
@@ -524,7 +538,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei,
                                GLsizei,
                                GLenum,
-                               DOMArrayBufferView*,
+                               NotShared<DOMArrayBufferView>,
                                GLuint,
                                GLuint);
   void compressedTexImage2D(GLenum target,
@@ -574,7 +588,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei width,
                             GLsizei height,
                             GLint border,
-                            DOMArrayBufferView* data);
+                            NotShared<DOMArrayBufferView> data);
   void compressedTexSubImage2D(GLenum target,
                                GLint level,
                                GLint xoffset,
@@ -582,7 +596,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei width,
                                GLsizei height,
                                GLenum format,
-                               DOMArrayBufferView* data);
+                               NotShared<DOMArrayBufferView> data);
 
   /* Programs and shaders */
   GLint getFragDataLocation(WebGLProgram*, const String&);
@@ -678,7 +692,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                    GLuint);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean,
-                        DOMFloat32Array*,
+                        NotShared<DOMFloat32Array>,
                         GLuint,
                         GLuint);
   void uniformMatrix2fv(const WebGLUniformLocation*,
@@ -688,7 +702,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                         GLuint);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean,
-                        DOMFloat32Array*,
+                        NotShared<DOMFloat32Array>,
                         GLuint,
                         GLuint);
   void uniformMatrix3fv(const WebGLUniformLocation*,
@@ -698,7 +712,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                         GLuint);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean,
-                        DOMFloat32Array*,
+                        NotShared<DOMFloat32Array>,
                         GLuint,
                         GLuint);
   void uniformMatrix4fv(const WebGLUniformLocation*,
@@ -708,7 +722,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                         GLuint);
   void uniformMatrix2x3fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix2x3fv(const WebGLUniformLocation*,
@@ -718,7 +732,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLuint);
   void uniformMatrix3x2fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix3x2fv(const WebGLUniformLocation*,
@@ -728,7 +742,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLuint);
   void uniformMatrix2x4fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix2x4fv(const WebGLUniformLocation*,
@@ -738,7 +752,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLuint);
   void uniformMatrix4x2fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix4x2fv(const WebGLUniformLocation*,
@@ -748,7 +762,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLuint);
   void uniformMatrix3x4fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix3x4fv(const WebGLUniformLocation*,
@@ -758,7 +772,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLuint);
   void uniformMatrix4x3fv(const WebGLUniformLocation*,
                           GLboolean,
-                          DOMFloat32Array*,
+                          NotShared<DOMFloat32Array>,
                           GLuint,
                           GLuint);
   void uniformMatrix4x3fv(const WebGLUniformLocation*,
@@ -787,28 +801,28 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        DOMFloat32Array* value);
+                        NotShared<DOMFloat32Array> value);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        DOMFloat32Array* value);
+                        NotShared<DOMFloat32Array> value);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        DOMFloat32Array* value);
+                        NotShared<DOMFloat32Array> value);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
 
   void vertexAttribI4i(GLuint, GLint, GLint, GLint, GLint);
-  void vertexAttribI4iv(GLuint, const DOMInt32Array*);
+  void vertexAttribI4iv(GLuint, NotShared<const DOMInt32Array>);
   void vertexAttribI4iv(GLuint, const Vector<GLint>&);
   void vertexAttribI4ui(GLuint, GLuint, GLuint, GLuint, GLuint);
-  void vertexAttribI4uiv(GLuint, const DOMUint32Array*);
+  void vertexAttribI4uiv(GLuint, NotShared<const DOMUint32Array>);
   void vertexAttribI4uiv(GLuint, const Vector<GLuint>&);
   void vertexAttribIPointer(GLuint index,
                             GLint size,
@@ -829,11 +843,11 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   /* Multiple Render Targets */
   void drawBuffers(const Vector<GLenum>&);
-  void clearBufferiv(GLenum, GLint, DOMInt32Array*);
+  void clearBufferiv(GLenum, GLint, NotShared<DOMInt32Array>);
   void clearBufferiv(GLenum, GLint, const Vector<GLint>&);
-  void clearBufferuiv(GLenum, GLint, DOMUint32Array*);
+  void clearBufferuiv(GLenum, GLint, NotShared<DOMUint32Array>);
   void clearBufferuiv(GLenum, GLint, const Vector<GLuint>&);
-  void clearBufferfv(GLenum, GLint, DOMFloat32Array*);
+  void clearBufferfv(GLenum, GLint, NotShared<DOMFloat32Array>);
   void clearBufferfv(GLenum, GLint, const Vector<GLfloat>&);
   void clearBufferfi(GLenum, GLint, GLfloat, GLint);
 
@@ -908,7 +922,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLsizei height,
                   GLenum format,
                   GLenum type,
-                  DOMArrayBufferView* pixels,
+                  NotShared<DOMArrayBufferView> pixels,
                   GLuint offset);
   void readPixels(GLint x,
                   GLint y,
@@ -937,7 +951,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLsizei height,
                   GLenum format,
                   GLenum type,
-                  DOMArrayBufferView* pixels) override;
+                  NotShared<DOMArrayBufferView> pixels) override;
   void RestoreCurrentFramebuffer() override;
 
   DECLARE_VIRTUAL_TRACE();

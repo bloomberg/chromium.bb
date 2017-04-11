@@ -74,6 +74,9 @@ TYPED_ARRAY_TYPES = frozenset([
     'Uint16Array',
     'Uint32Array',
 ])
+ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
+    'ArrayBufferView'
+]))
 ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
     'ArrayBuffer',
     'ArrayBufferView',
@@ -84,6 +87,9 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
 
 IdlType.is_array_buffer_or_view = property(
     lambda self: self.base_type in ARRAY_BUFFER_AND_VIEW_TYPES)
+
+IdlType.is_array_buffer_view_or_typed_array = property(
+    lambda self: self.base_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES)
 
 IdlType.is_typed_array = property(
     lambda self: self.base_type in TYPED_ARRAY_TYPES)
@@ -202,6 +208,9 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return 'FlexibleArrayBufferView'
     if base_idl_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
         return 'Flexible' + base_idl_type + 'View'
+    if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
+        if not used_in_cpp_sequence:
+            return cpp_template_type('NotShared', idl_type.implemented_as)
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
         if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected) or not used_in_cpp_sequence:
@@ -343,6 +352,7 @@ IdlRecordType.is_traceable = property(
 INCLUDES_FOR_TYPE = {
     'object': set(),
     'ArrayBufferView': set(['bindings/core/v8/V8ArrayBufferView.h',
+                            'core/dom/NotShared.h',
                             'core/dom/FlexibleArrayBufferView.h']),
     'Dictionary': set(['bindings/core/v8/Dictionary.h']),
     'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
@@ -459,8 +469,8 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add(interface_info['include_path'])
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
-    if idl_type.is_typed_array:
-        return set(['core/dom/DOMTypedArray.h'])
+    if idl_type.is_array_buffer_view_or_typed_array:
+        return set(['core/dom/DOMTypedArray.h', 'core/dom/NotShared.h'])
     return includes_for_type
 
 
@@ -519,6 +529,7 @@ def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
             idl_type.is_enum or
             idl_type.is_dictionary or
+            idl_type.is_array_buffer_view_or_typed_array or
             idl_type.name in ('Boolean', 'ByteString', 'Date', 'Dictionary', 'USVString', 'SerializedScriptValue'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
@@ -581,7 +592,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     base_idl_type = idl_type.as_union_type.name if idl_type.is_union_type else idl_type.base_type
 
     if 'FlexibleArrayBufferView' in extended_attributes:
-        if base_idl_type not in TYPED_ARRAY_TYPES.union(set(['ArrayBufferView'])):
+        if base_idl_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
             raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
         base_idl_type = 'FlexibleArrayBufferView'
 
@@ -599,10 +610,13 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
-    elif idl_type.is_array_buffer_or_view:
+    elif idl_type.name == 'ArrayBuffer':
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Local<v8::{idl_type}>::Cast({v8_value})) : 0')
+    elif idl_type.is_array_buffer_view_or_typed_array:
+        this_cpp_type = idl_type.cpp_type
+        cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
     elif idl_type.is_union_type:
         nullable = 'UnionTypeConversionMode::kNullable' if idl_type.includes_nullable_type \
             else 'UnionTypeConversionMode::kNotNullable'
@@ -677,7 +691,11 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     # meaningful if 'check_expression' is not None.
     return_expression = bailout_return_value
 
-    if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
+    if 'FlexibleArrayBufferView' in extended_attributes:
+        if idl_type.base_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
+            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
+        set_expression = cpp_value
+    elif idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types for which conversion can fail and that need error handling.
 
         check_expression = 'exceptionState.HadException()'
@@ -699,10 +717,6 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         return {
             'error_message': 'no V8 -> C++ conversion for IDL type: %s' % idl_type.name
         }
-    elif 'FlexibleArrayBufferView' in extended_attributes:
-        if idl_type.base_type not in TYPED_ARRAY_TYPES.union(set(['ArrayBufferView'])):
-            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
-        set_expression = cpp_value
     else:
         assign_expression = cpp_value
 

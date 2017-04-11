@@ -50,27 +50,29 @@ bool IsIntegerArray(DOMArrayBufferView* array) {
 
 }  // namespace
 
-DOMArrayBufferView* Crypto::getRandomValues(DOMArrayBufferView* array,
-                                            ExceptionState& exception_state) {
-  ASSERT(array);
-  if (!IsIntegerArray(array)) {
+NotShared<DOMArrayBufferView> Crypto::getRandomValues(
+    NotShared<DOMArrayBufferView> array,
+    ExceptionState& exception_state) {
+  DCHECK(array);
+  if (!IsIntegerArray(array.View())) {
     exception_state.ThrowDOMException(
         kTypeMismatchError,
         String::Format("The provided ArrayBufferView is of type '%s', which is "
                        "not an integer array type.",
-                       array->TypeName()));
-    return nullptr;
+                       array.View()->TypeName()));
+    return NotShared<DOMArrayBufferView>(nullptr);
   }
-  if (array->byteLength() > 65536) {
+  if (array.View()->byteLength() > 65536) {
     exception_state.ThrowDOMException(
         kQuotaExceededError,
         String::Format("The ArrayBufferView's byte length (%u) exceeds the "
                        "number of bytes of entropy available via this API "
                        "(65536).",
-                       array->byteLength()));
-    return nullptr;
+                       array.View()->byteLength()));
+    return NotShared<DOMArrayBufferView>(nullptr);
   }
-  CryptographicallyRandomValues(array->BaseAddress(), array->byteLength());
+  CryptographicallyRandomValues(array.View()->BaseAddress(),
+                                array.View()->byteLength());
   return array;
 }
 

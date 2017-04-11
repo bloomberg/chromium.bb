@@ -8,4 +8,9 @@ shouldBeEqualToString("typeof navigator.sendBeacon", "function");
 shouldThrow("navigator.sendBeacon()");
 shouldThrow("navigator.sendBeacon('http:')");
 shouldThrow("navigator.sendBeacon('javascript:alert(1);')");
+
+if (window.SharedArrayBuffer) {
+  shouldThrow("navigator.sendBeacon('https:', new Uint8Array(new SharedArrayBuffer(10)))");
+}
+
 </script>

@@ -92,12 +92,12 @@ void WaveShaperNode::SetCurveImpl(const float* curve_data,
   GetWaveShaperProcessor()->SetCurve(curve_data, curve_length);
 }
 
-void WaveShaperNode::setCurve(DOMFloat32Array* curve,
+void WaveShaperNode::setCurve(NotShared<DOMFloat32Array> curve,
                               ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   if (curve)
-    SetCurveImpl(curve->Data(), curve->length(), exception_state);
+    SetCurveImpl(curve.View()->Data(), curve.View()->length(), exception_state);
   else
     SetCurveImpl(nullptr, 0, exception_state);
 }
@@ -109,17 +109,18 @@ void WaveShaperNode::setCurve(const Vector<float>& curve,
   SetCurveImpl(curve.Data(), curve.size(), exception_state);
 }
 
-DOMFloat32Array* WaveShaperNode::curve() {
+NotShared<DOMFloat32Array> WaveShaperNode::curve() {
   Vector<float>* curve = GetWaveShaperProcessor()->Curve();
   if (!curve)
-    return nullptr;
+    return NotShared<DOMFloat32Array>(nullptr);
 
   unsigned size = curve->size();
   RefPtr<WTF::Float32Array> new_curve = WTF::Float32Array::Create(size);
 
   memcpy(new_curve->Data(), curve->Data(), sizeof(float) * size);
 
-  return DOMFloat32Array::Create(new_curve.Release());
+  return NotShared<DOMFloat32Array>(
+      DOMFloat32Array::Create(new_curve.Release()));
 }
 
 void WaveShaperNode::setOversample(const String& type) {

@@ -98,6 +98,11 @@ Promise.all([PermissionsHelper.setPermission('midi', 'granted'),
     shouldThrow('output.send(new Uint8Array(), NaN)');
     shouldThrow('output.send(new Uint8Array(), Infinity)');
 
+    if (window.SharedArrayBuffer) {
+        shouldThrow('output.send(new Uint8Array(new SharedArrayBuffer(4)))');
+        shouldThrow('output.send(new Uint8Array(new SharedArrayBuffer(4), 0))');
+    }
+
     finishJSTest();
 }).catch(function () {
     testFailed("requestMIDIAccess() return an error.");

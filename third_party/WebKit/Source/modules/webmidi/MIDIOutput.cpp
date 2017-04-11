@@ -221,7 +221,7 @@ MIDIOutput::MIDIOutput(MIDIAccess* access,
 
 MIDIOutput::~MIDIOutput() {}
 
-void MIDIOutput::send(DOMUint8Array* array,
+void MIDIOutput::send(NotShared<DOMUint8Array> array,
                       double timestamp,
                       ExceptionState& exception_state) {
   DCHECK(array);
@@ -233,10 +233,11 @@ void MIDIOutput::send(DOMUint8Array* array,
   // This should be performed even if |array| is invalid.
   open();
 
-  if (MessageValidator::Validate(array, exception_state,
-                                 midiAccess()->sysexEnabled()))
-    midiAccess()->SendMIDIData(port_index_, array->Data(), array->length(),
-                               timestamp);
+  if (MessageValidator::Validate(array.View(), exception_state,
+                                 midiAccess()->sysexEnabled())) {
+    midiAccess()->SendMIDIData(port_index_, array.View()->Data(),
+                               array.View()->length(), timestamp);
+  }
 }
 
 void MIDIOutput::send(Vector<unsigned> unsigned_data,
@@ -260,10 +261,11 @@ void MIDIOutput::send(Vector<unsigned> unsigned_data,
       array_data[i] = unsigned_data[i] & 0xff;
   }
 
-  send(array, timestamp, exception_state);
+  send(NotShared<DOMUint8Array>(array), timestamp, exception_state);
 }
 
-void MIDIOutput::send(DOMUint8Array* data, ExceptionState& exception_state) {
+void MIDIOutput::send(NotShared<DOMUint8Array> data,
+                      ExceptionState& exception_state) {
   DCHECK(data);
   send(data, 0.0, exception_state);
 }

@@ -7,7 +7,13 @@ if (v8Value->Is{{member.type_name}}()) {
 {% else %}
 if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
 {% endif %}
+{% if member.is_array_buffer_view_or_typed_array %}
+  {{member.cpp_local_type}} cppValue = ToNotShared<{{member.cpp_local_type}}>(isolate, v8Value, exceptionState);
+  if (exceptionState.HadException())
+    return;
+{% else %}
   {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+{% endif %}
   impl.set{{member.type_name}}(cppValue);
   return;
 }
@@ -41,7 +47,11 @@ void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
     return;
   }
   {% endif %}
+  {% if member.is_array_buffer_view_or_typed_array %}
+  m_{{member.cpp_name}} = {{member.cpp_type}}(value.View());
+  {% else %}
   m_{{member.cpp_name}} = value;
+  {% endif %}
   m_type = {{member.specific_type_enum}};
 }
 
