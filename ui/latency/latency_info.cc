@@ -37,7 +37,7 @@ const char* GetComponentName(ui::LatencyComponentType type) {
     CASE_TYPE(TAB_SHOW_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT);
+    CASE_TYPE(DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT);
     CASE_TYPE(INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL);
     CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT);
@@ -353,6 +353,20 @@ bool LatencyInfo::FindLatency(LatencyComponentType type,
   if (output)
     *output = it->second;
   return true;
+}
+
+bool LatencyInfo::FindLatency(LatencyComponentType type,
+                              LatencyComponent* output) const {
+  LatencyMap::const_iterator it = latency_components_.begin();
+  while (it != latency_components_.end()) {
+    if (it->first.first == type) {
+      if (output)
+        *output = it->second;
+      return true;
+    }
+    ++it;
+  }
+  return false;
 }
 
 void LatencyInfo::RemoveLatency(LatencyComponentType type) {

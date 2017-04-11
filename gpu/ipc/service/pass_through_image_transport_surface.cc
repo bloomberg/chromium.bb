@@ -26,7 +26,7 @@ bool PassThroughImageTransportSurface::Initialize(
     gl::GLSurfaceFormat format) {
   // The surface is assumed to have already been initialized.
   delegate_->SetLatencyInfoCallback(
-      base::Bind(&PassThroughImageTransportSurface::SetLatencyInfo,
+      base::Bind(&PassThroughImageTransportSurface::AddLatencyInfo,
                  base::Unretained(this)));
   return true;
 }
@@ -129,7 +129,7 @@ PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
   }
 }
 
-void PassThroughImageTransportSurface::SetLatencyInfo(
+void PassThroughImageTransportSurface::AddLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
   latency_info_.insert(latency_info_.end(), latency_info.begin(),
                        latency_info.end());

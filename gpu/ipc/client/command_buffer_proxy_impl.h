@@ -140,7 +140,7 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
 
-  void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
+  void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   using SwapBuffersCompletionCallback = base::Callback<void(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,

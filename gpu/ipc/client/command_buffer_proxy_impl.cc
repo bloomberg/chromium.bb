@@ -318,7 +318,7 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
   }
 }
 
-void CommandBufferProxyImpl::SetLatencyInfo(
+void CommandBufferProxyImpl::AddLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
   CheckLock();
   for (size_t i = 0; i < latency_info.size(); i++)

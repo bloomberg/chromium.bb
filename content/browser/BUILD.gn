@@ -152,6 +152,7 @@ source_set("browser") {
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
     "//ui/gl:gl_features",
+    "//ui/latency",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/shell_dialogs",

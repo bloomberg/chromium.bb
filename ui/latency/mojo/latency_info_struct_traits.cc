@@ -53,9 +53,9 @@ ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
     case ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
-    case ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT:
+    case ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
       return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT;
+          DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
     case ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
@@ -125,8 +125,8 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
         INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
     case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT:
-      return ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT;
+        DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
+      return ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
       return ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
     case ui::mojom::LatencyComponentType::

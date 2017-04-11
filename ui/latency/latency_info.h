@@ -75,9 +75,10 @@ enum LatencyComponentType {
   TAB_SHOW_COMPONENT,
   // Timestamp when the frame is swapped in renderer.
   INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-  // Timestamp of when the browser process receives a buffer swap notification
-  // from the renderer.
-  INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT,
+  // Timestamp of when the display compositor receives a compositor frame from
+  // the renderer.
+  // Display compositor can be either in the browser process or in Mus.
+  DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
   // Timestamp of when the gpu service began swap buffers, unlike
   // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measures after.
   INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
@@ -192,6 +193,12 @@ class LatencyInfo {
   bool FindLatency(LatencyComponentType type,
                    int64_t id,
                    LatencyComponent* output) const;
+
+  // Returns true if a component with |type| is found in the latency component.
+  // The first such component (when iterating over latency_components_) is
+  // stored to |output| if |output| is not NULL. Returns false if no such
+  // component is found.
+  bool FindLatency(LatencyComponentType type, LatencyComponent* output) const;
 
   void RemoveLatency(LatencyComponentType type);
 

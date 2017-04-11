@@ -4,6 +4,7 @@ include_rules = [
   "+components/variations",
   "+services/ui/public",
   "+third_party/zlib",
+  "+ui/latency",
 
   # The renderer_host files should only call upwards in the layering via the
   # delegate interfaces.

@@ -45,9 +45,9 @@ enum LatencyComponentType {
   TAB_SHOW_COMPONENT,
   // Timestamp when the frame is swapped in renderer.
   INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-  // Timestamp of when the browser process receives a buffer swap notification
-  // from the renderer.
-  INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT,
+  // Timestamp of when the display compositor receives a compositor frame.
+  // Display compositor can be either in the browser process or in Mus.
+  DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
   // Timestamp of when the gpu service began swap buffers, unlike
   // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measures after.
   INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
