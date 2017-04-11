@@ -599,9 +599,6 @@ id<GREYMatcher> GoButtonMatcher() {
   [[GREYConfiguration sharedInstance]
           setValue:@YES
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-
-  // Ensure that the new page loaded before continuing.
-  [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
 // Tests that submitting a POST-based form by tapping the 'Go' button on the
@@ -634,11 +631,15 @@ id<GREYMatcher> GoButtonMatcher() {
   [self submitFormUsingKeyboardGoButtonWithInputID:"textfield"];
 
   // Verify that the browser navigates to the expected URL.
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("baz!")]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify that the browser navigates to the original URL.
   [self goBack];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("hello!")]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
