@@ -52,16 +52,6 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
   return buffer;
 }
 
-// Use anonymous namespace here to prevent the actions to be defined multiple
-// times across multiple test files. Sadly we can't use static for them.
-namespace {
-
-ACTION_P(ReturnBuffer, buffer) {
-  return buffer;
-}
-
-}  // namespace
-
 class DecryptingAudioDecoderTest : public testing::Test {
  public:
   DecryptingAudioDecoderTest()
