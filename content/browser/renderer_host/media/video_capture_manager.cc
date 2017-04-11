@@ -535,23 +535,22 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
     return false;
   DVLOG(1) << "GetDeviceFormatsInUse for device: " << it->second.name;
 
-  return GetDeviceFormatsInUse(it->second.type, it->second.id, formats_in_use);
+  base::Optional<media::VideoCaptureFormat> format =
+      GetDeviceFormatInUse(it->second.type, it->second.id);
+  if (format.has_value())
+    formats_in_use->push_back(format.value());
+
+  return true;
 }
 
-bool VideoCaptureManager::GetDeviceFormatsInUse(
-    MediaStreamType stream_type,
-    const std::string& device_id,
-    media::VideoCaptureFormats* formats_in_use) {
+base::Optional<media::VideoCaptureFormat>
+VideoCaptureManager::GetDeviceFormatInUse(MediaStreamType stream_type,
+                                          const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(formats_in_use->empty());
-  // Return the currently in-use format(s) of the device, if it's started.
+  // Return the currently in-use format of the device, if it's started.
   VideoCaptureController* device_in_use =
       LookupControllerByMediaTypeAndDeviceId(stream_type, device_id);
-  if (device_in_use) {
-    // Currently only one format-in-use is supported at the VCC level.
-    formats_in_use->push_back(device_in_use->GetVideoCaptureFormat());
-  }
-  return true;
+  return device_in_use ? device_in_use->GetVideoCaptureFormat() : base::nullopt;
 }
 
 void VideoCaptureManager::SetDesktopCaptureWindowId(

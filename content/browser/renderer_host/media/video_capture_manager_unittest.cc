@@ -608,34 +608,27 @@ TEST_F(VideoCaptureManagerTest,
   base::RunLoop().RunUntilIdle();
 
   // Right after opening the device, we should see no format in use.
-  media::VideoCaptureFormats formats_in_use;
-  EXPECT_TRUE(vcm_->GetDeviceFormatsInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id,
-                                          &formats_in_use));
-  EXPECT_TRUE(formats_in_use.empty());
+  EXPECT_EQ(base::nullopt,
+            vcm_->GetDeviceFormatInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id));
 
   EXPECT_CALL(*frame_observer_, OnStarted(_));
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
-  // After StartClient(), |formats_in_use| should contain one valid format.
-  EXPECT_TRUE(vcm_->GetDeviceFormatsInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id,
-                                          &formats_in_use));
-  EXPECT_EQ(formats_in_use.size(), 1u);
-  if (formats_in_use.size()) {
-    media::VideoCaptureFormat& format_in_use = formats_in_use.front();
-    EXPECT_TRUE(format_in_use.IsValid());
-    EXPECT_GT(format_in_use.frame_size.width(), 1);
-    EXPECT_GT(format_in_use.frame_size.height(), 1);
-    EXPECT_GT(format_in_use.frame_rate, 1);
-  }
-  formats_in_use.clear();
+  // After StartClient(), device's format in use should be valid.
+  base::Optional<media::VideoCaptureFormat> format_in_use =
+      vcm_->GetDeviceFormatInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
+  EXPECT_TRUE(format_in_use.has_value());
+  EXPECT_TRUE(format_in_use->IsValid());
+  EXPECT_GT(format_in_use->frame_size.width(), 1);
+  EXPECT_GT(format_in_use->frame_size.height(), 1);
+  EXPECT_GT(format_in_use->frame_rate, 1);
 
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   StopClient(client_id);
   base::RunLoop().RunUntilIdle();
-  // After StopClient(), the device's formats in use should be empty again.
-  EXPECT_TRUE(vcm_->GetDeviceFormatsInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id,
-                                          &formats_in_use));
-  EXPECT_TRUE(formats_in_use.empty());
+  // After StopClient(), the device's format in use should be empty again.
+  EXPECT_EQ(base::nullopt,
+            vcm_->GetDeviceFormatInUse(MEDIA_DEVICE_VIDEO_CAPTURE, device_id));
 
   vcm_->Close(video_session_id);
   base::RunLoop().RunUntilIdle();

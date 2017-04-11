@@ -371,8 +371,8 @@ void VideoCaptureController::ReturnBuffer(
                                   consumer_resource_utilization);
 }
 
-const media::VideoCaptureFormat& VideoCaptureController::GetVideoCaptureFormat()
-    const {
+const base::Optional<media::VideoCaptureFormat>
+VideoCaptureController::GetVideoCaptureFormat() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return video_capture_format_;
 }
@@ -449,10 +449,12 @@ void VideoCaptureController::OnFrameReadyInBuffer(
                                frame_info->coded_size.width(),
                                frame_info->coded_size.height());
     double frame_rate = 0.0f;
-    media::VideoFrameMetadata metadata;
-    metadata.MergeInternalValuesFrom(*frame_info->metadata);
-    if (!metadata.GetDouble(VideoFrameMetadata::FRAME_RATE, &frame_rate)) {
-      frame_rate = video_capture_format_.frame_rate;
+    if (video_capture_format_) {
+      media::VideoFrameMetadata metadata;
+      metadata.MergeInternalValuesFrom(*frame_info->metadata);
+      if (!metadata.GetDouble(VideoFrameMetadata::FRAME_RATE, &frame_rate)) {
+        frame_rate = video_capture_format_->frame_rate;
+      }
     }
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
     has_received_frames_ = true;

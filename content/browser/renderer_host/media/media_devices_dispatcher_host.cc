@@ -407,10 +407,13 @@ media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
     const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::VideoCaptureFormats formats;
-  media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
-      MEDIA_DEVICE_VIDEO_CAPTURE, device_id, &formats);
-  if (!formats.empty())
+  base::Optional<media::VideoCaptureFormat> format =
+      media_stream_manager_->video_capture_manager()->GetDeviceFormatInUse(
+          MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
+  if (format.has_value()) {
+    formats.push_back(format.value());
     return formats;
+  }
 
   media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
       device_id, &formats);

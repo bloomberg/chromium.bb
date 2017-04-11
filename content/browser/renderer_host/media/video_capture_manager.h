@@ -149,13 +149,12 @@ class CONTENT_EXPORT VideoCaptureManager
   // otherwise. |formats_in_use| is empty if the device is not in use.
   bool GetDeviceFormatsInUse(media::VideoCaptureSessionId capture_session_id,
                              media::VideoCaptureFormats* formats_in_use);
-  // Retrieves the format(s) currently in use.  Returns false if the
-  // |stream_type|, |device_id| pair is not found. Returns true and
-  // |formats_in_use| otherwise. |formats_in_use| is empty if the device is not
-  // in use.
-  bool GetDeviceFormatsInUse(MediaStreamType stream_type,
-                             const std::string& device_id,
-                             media::VideoCaptureFormats* supported_formats);
+  // Retrieves the format currently in use.  Returns base::nullopt if the
+  // |stream_type|, |device_id| pair is not found. Returns in-use format of the
+  // device otherwise.
+  base::Optional<media::VideoCaptureFormat> GetDeviceFormatInUse(
+      MediaStreamType stream_type,
+      const std::string& device_id);
 
   // Sets the platform-dependent window ID for the desktop capture notification
   // UI for the given session.

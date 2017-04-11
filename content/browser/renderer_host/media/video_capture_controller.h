@@ -97,7 +97,7 @@ class CONTENT_EXPORT VideoCaptureController
                     int buffer_id,
                     double consumer_resource_utilization);
 
-  const media::VideoCaptureFormat& GetVideoCaptureFormat() const;
+  const base::Optional<media::VideoCaptureFormat> GetVideoCaptureFormat() const;
 
   bool has_received_frames() const { return has_received_frames_; }
 
@@ -241,7 +241,7 @@ class CONTENT_EXPORT VideoCaptureController
   // True if the controller has received a video frame from the device.
   bool has_received_frames_;
 
-  media::VideoCaptureFormat video_capture_format_;
+  base::Optional<media::VideoCaptureFormat> video_capture_format_;
 
   base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_;
 
