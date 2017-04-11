@@ -6,26 +6,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_id.h"
-#include "components/infobars/core/infobar.h"
-#include "content/public/browser/web_contents.h"
 
 PermissionPromptAndroid::PermissionPromptAndroid(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), delegate_(nullptr), infobar_(nullptr) {
+    : web_contents_(web_contents), delegate_(nullptr) {
   DCHECK(web_contents);
 }
 
-PermissionPromptAndroid::~PermissionPromptAndroid() {
-  if (infobar_) {
-    GroupedPermissionInfoBarDelegate* infobar_delegate =
-        static_cast<GroupedPermissionInfoBarDelegate*>(infobar_->delegate());
-    infobar_delegate->PermissionPromptDestroyed();
-  }
-}
+PermissionPromptAndroid::~PermissionPromptAndroid() {}
 
 void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
@@ -40,25 +30,26 @@ void PermissionPromptAndroid::Show(
     return;
 
   requests_ = requests;
-  infobar_ = GroupedPermissionInfoBarDelegate::Create(this, infobar_service,
-                                                      requests[0]->GetOrigin());
+  GroupedPermissionInfoBarDelegate::Create(this, infobar_service,
+                                           requests[0]->GetOrigin());
 }
 
 bool PermissionPromptAndroid::CanAcceptRequestUpdate() {
   return false;
 }
 
+bool PermissionPromptAndroid::HidesAutomatically() {
+  return true;
+}
+
 void PermissionPromptAndroid::Hide() {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  if (infobar_ && infobar_service) {
-    infobar_service->RemoveInfoBar(infobar_);
-  }
-  infobar_ = nullptr;
+  // Hide() is only called if HidesAutomatically() returns false or
+  // CanAcceptRequestUpdate() return true.
+  NOTREACHED();
 }
 
 bool PermissionPromptAndroid::IsVisible() {
-  return infobar_ != nullptr;
+  return !requests_.empty();
 }
 
 void PermissionPromptAndroid::UpdateAnchorPosition() {

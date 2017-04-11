@@ -27,6 +27,10 @@ bool MockPermissionPrompt::CanAcceptRequestUpdate() {
   return can_update_ui_;
 }
 
+bool MockPermissionPrompt::HidesAutomatically() {
+  return false;
+}
+
 void MockPermissionPrompt::Hide() {
   if (is_visible_ && factory_)
     factory_->HideView(this);

@@ -438,6 +438,10 @@ bool PermissionPromptImpl::CanAcceptRequestUpdate() {
   return !(bubble_delegate_ && bubble_delegate_->IsMouseHovered());
 }
 
+bool PermissionPromptImpl::HidesAutomatically() {
+  return false;
+}
+
 void PermissionPromptImpl::Hide() {
   if (bubble_delegate_) {
     bubble_delegate_->CloseBubble();

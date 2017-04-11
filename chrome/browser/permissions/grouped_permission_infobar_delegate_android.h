@@ -50,8 +50,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Cancel() override;
   void InfoBarDismissed() override;
 
-  void PermissionPromptDestroyed();
-
  protected:
   bool GetAcceptState(size_t position);
 
@@ -64,6 +62,9 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   Type GetInfoBarType() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
+
+  // InfoBarDelegate:
+  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
   const GURL requesting_origin_;
   // Whether the accept/deny decision is persisted.

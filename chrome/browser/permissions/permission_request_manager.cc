@@ -229,19 +229,14 @@ void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
 }
 
 void PermissionRequestManager::HideBubble() {
-#if defined(ANDROID)
-  // The infobar system manages infobar lifetime and visibility so don't delete
-  // the PermissionPromptAndroid.
-  NOTREACHED();
-#else
-  // Disengage from the existing view if there is one.
-  if (!view_)
+  // Disengage from the existing view if there is one and it doesn't manage
+  // its own visibility.
+  if (!view_ || view_->HidesAutomatically())
     return;
 
   view_->SetDelegate(nullptr);
   view_->Hide();
   view_.reset();
-#endif
 }
 
 void PermissionRequestManager::DisplayPendingRequests() {
@@ -412,7 +407,7 @@ void PermissionRequestManager::TriggerShowBubble() {
 }
 
 void PermissionRequestManager::FinalizeBubble() {
-  if (view_)
+  if (view_ && !view_->HidesAutomatically())
     view_->Hide();
 
   std::vector<PermissionRequest*>::iterator requests_iter;

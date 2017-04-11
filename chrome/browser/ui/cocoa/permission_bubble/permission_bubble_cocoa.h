@@ -30,6 +30,7 @@ class PermissionBubbleCocoa : public PermissionPrompt {
   bool IsVisible() override;
   void SetDelegate(Delegate* delegate) override;
   bool CanAcceptRequestUpdate() override;
+  bool HidesAutomatically() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 

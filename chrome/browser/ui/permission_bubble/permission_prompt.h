@@ -62,6 +62,10 @@ class PermissionPrompt {
   // is being shown and the mouse is not over the view area (!IsMouseHovered).
   virtual bool CanAcceptRequestUpdate() = 0;
 
+  // Returns true if the prompt UI will manage hiding itself when the user
+  // resolves the prompt, on page navigation/destruction, and on tab switching.
+  virtual bool HidesAutomatically() = 0;
+
   // Hides the permission prompt.
   virtual void Hide() = 0;
 

@@ -83,10 +83,6 @@ void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
     permission_prompt_->Closing();
 }
 
-void GroupedPermissionInfoBarDelegate::PermissionPromptDestroyed() {
-  permission_prompt_ = nullptr;
-}
-
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     PermissionPromptAndroid* permission_prompt,
     const GURL& requesting_origin)
@@ -123,4 +119,11 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
 
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_PERMISSION_ALLOW
                                                          : IDS_PERMISSION_DENY);
+}
+
+bool GroupedPermissionInfoBarDelegate::EqualsDelegate(
+    infobars::InfoBarDelegate* delegate) const {
+  // The PermissionRequestManager doesn't create duplicate infobars so a pointer
+  // equality check is sufficient.
+  return this == delegate;
 }

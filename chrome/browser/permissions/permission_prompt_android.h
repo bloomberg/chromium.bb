@@ -17,10 +17,6 @@ namespace content {
 class WebContents;
 }
 
-namespace infobars {
-class InfoBar;
-}
-
 class PermissionPromptAndroid : public PermissionPrompt {
  public:
   explicit PermissionPromptAndroid(content::WebContents* web_contents);
@@ -31,6 +27,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
   void Show(const std::vector<PermissionRequest*>& requests,
             const std::vector<bool>& accept_state) override;
   bool CanAcceptRequestUpdate() override;
+  bool HidesAutomatically() override;
   void Hide() override;
   bool IsVisible() override;
   void UpdateAnchorPosition() override;
@@ -53,9 +50,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
   content::WebContents* web_contents_;
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
-  // |infobar_| is owned by the InfoBarService; we keep a pointer here so we can
-  // ask the service to remove the infobar after it is added.
-  infobars::InfoBar* infobar_;
   // The current request being displayed (if any).
   std::vector<PermissionRequest*> requests_;
 

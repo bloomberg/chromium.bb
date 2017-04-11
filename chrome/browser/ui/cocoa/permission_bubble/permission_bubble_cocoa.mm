@@ -51,6 +51,10 @@ bool PermissionBubbleCocoa::CanAcceptRequestUpdate() {
   return ![[[bubbleController_ window] contentView] cr_isMouseInView];
 }
 
+bool PermissionBubbleCocoa::HidesAutomatically() {
+  return false;
+}
+
 void PermissionBubbleCocoa::UpdateAnchorPosition() {
   [bubbleController_ updateAnchorPosition];
 }
