@@ -587,6 +587,7 @@ class BuildSpecsManager(object):
     Returns:
       A build_config name-> status dictionary of build statuses.
     """
+    logging.info('Getting slave BuilderStatuses for %s', master_build_id)
     start_time = datetime.datetime.now()
 
     def _PrintRemainingTime(remaining):

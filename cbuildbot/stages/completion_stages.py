@@ -192,6 +192,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       build_id, db = self._run.GetCIDBHandle()
       if db:
         timeout = db.GetTimeToDeadline(build_id)
+        logging.info('Got timeout for build_id %s', build_id)
       if timeout is None:
         # Catch-all: This could happen if cidb is not setup, or the deadline
         # query fails.

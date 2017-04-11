@@ -79,9 +79,11 @@ class SlaveStatus(object):
     self.dependency_map = None
 
     if self.pool is not None:
+      logging.info('Computing dependency map for changes.')
       # Pre-compute dependency map for applied changes.
       self.dependency_map = self.pool.GetDependMapForChanges(
           self.pool.applied, self.pool.GetAppliedPatches())
+      logging.info('Got dependency map: %s ', self.dependency_map)
 
     self.UpdateSlaveStatus()
 
@@ -127,6 +129,7 @@ class SlaveStatus(object):
 
   def UpdateSlaveStatus(self):
     """Update slave statuses by querying CIDB and Buildbucket(if supported)."""
+    logging.info('Updating slave status...')
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):

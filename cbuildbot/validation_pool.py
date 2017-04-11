@@ -905,6 +905,7 @@ class ValidationPool(object):
     for change in changes:
       # Update dependency_map to map each change to all changes directly or
       # indirectly depending on it.
+      logging.info('Update dependency_map for change %s', change.patch_number)
       self._UpdateDependencyMap(dependency_map, change, visiting, visited)
 
     return dependency_map
