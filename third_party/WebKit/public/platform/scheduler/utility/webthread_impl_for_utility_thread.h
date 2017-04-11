@@ -26,6 +26,7 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForUtilityThread
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* GetTaskRunner() const override;
   scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
+  void Init() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

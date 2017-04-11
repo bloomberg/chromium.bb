@@ -156,7 +156,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/scheduler/child/compositor_worker_scheduler.h"
-#include "third_party/WebKit/public/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -226,7 +226,6 @@ using blink::WebScriptController;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebView;
-using blink::scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -289,25 +288,6 @@ static_assert(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
         blink::kWebMemoryPressureLevelCritical,
     "blink::WebMemoryPressureLevelCritical not align");
-
-class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
- public:
-  explicit WebThreadForCompositor(base::Thread::Options options)
-      : WebThreadImplForWorkerScheduler("Compositor", options) {
-    Init();
-  }
-  ~WebThreadForCompositor() override {}
-
- private:
-  // WebThreadImplForWorkerScheduler:
-  std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
-      override {
-    return base::MakeUnique<blink::scheduler::CompositorWorkerScheduler>(
-        GetThread());
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
-};
 
 void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
@@ -1087,7 +1067,8 @@ void RenderThreadImpl::InitializeCompositorThread() {
 #if defined(OS_ANDROID)
   options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  compositor_thread_.reset(new WebThreadForCompositor(options));
+  compositor_thread_ =
+      blink::scheduler::WebThreadBase::CreateCompositorThread(options);
   blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
   compositor_task_runner_ = compositor_thread_->GetTaskRunner();
   compositor_task_runner_->PostTask(

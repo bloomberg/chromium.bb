@@ -12,8 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/scheduler/child/compositor_worker_scheduler.h"
+#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace blink {
 namespace scheduler {
@@ -98,6 +100,39 @@ void WebThreadBase::PostIdleTask(const blink::WebTraceLocation& location,
 
 bool WebThreadBase::IsCurrentThread() const {
   return GetTaskRunner()->BelongsToCurrentThread();
+}
+
+namespace {
+
+class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
+ public:
+  explicit WebThreadForCompositor(base::Thread::Options options)
+      : WebThreadImplForWorkerScheduler("Compositor", options) {
+    Init();
+  }
+  ~WebThreadForCompositor() override {}
+
+ private:
+  // WebThreadImplForWorkerScheduler:
+  std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
+      override {
+    return base::MakeUnique<CompositorWorkerScheduler>(GetThread());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
+};
+
+}  // namespace
+
+std::unique_ptr<WebThreadBase> WebThreadBase::CreateWorkerThread(
+    const char* name,
+    base::Thread::Options options) {
+  return base::MakeUnique<WebThreadImplForWorkerScheduler>(name, options);
+}
+
+std::unique_ptr<WebThreadBase> WebThreadBase::CreateCompositorThread(
+    base::Thread::Options options) {
+  return base::MakeUnique<WebThreadForCompositor>(options);
 }
 
 }  // namespace scheduler

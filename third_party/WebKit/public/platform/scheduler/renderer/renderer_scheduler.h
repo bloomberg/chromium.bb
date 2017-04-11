@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "public/platform/scheduler/child/child_scheduler.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
-#include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
+#include "base/threading/thread.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebScheduler.h"
+#include "public/platform/scheduler/child/child_scheduler.h"
+#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
 #include "v8/include/v8.h"
 
 namespace base {

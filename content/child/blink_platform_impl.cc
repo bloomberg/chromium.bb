@@ -55,7 +55,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
@@ -69,7 +69,6 @@ using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
-using blink::scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -400,8 +399,9 @@ WebURLError BlinkPlatformImpl::CancelledError(
 }
 
 blink::WebThread* BlinkPlatformImpl::CreateThread(const char* name) {
-  std::unique_ptr<WebThreadImplForWorkerScheduler> thread(
-      new WebThreadImplForWorkerScheduler(name));
+  std::unique_ptr<blink::scheduler::WebThreadBase> thread =
+      blink::scheduler::WebThreadBase::CreateWorkerThread(
+          name, base::Thread::Options());
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
   return thread.release();

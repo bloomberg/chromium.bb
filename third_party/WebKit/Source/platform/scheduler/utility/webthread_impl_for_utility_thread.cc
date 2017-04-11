@@ -35,5 +35,7 @@ WebThreadImplForUtilityThread::GetIdleTaskRunner() const {
   return nullptr;
 }
 
+void WebThreadImplForUtilityThread::Init() {}
+
 }  // namespace scheduler
 }  // namespace blink

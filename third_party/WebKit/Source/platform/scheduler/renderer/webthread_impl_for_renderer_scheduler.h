@@ -32,6 +32,7 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForRendererScheduler
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* GetTaskRunner() const override;
   SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
+  void Init() override;
 
  private:
   void AddTaskObserverInternal(
