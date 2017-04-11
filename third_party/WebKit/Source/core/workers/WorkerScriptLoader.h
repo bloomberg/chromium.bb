@@ -77,7 +77,7 @@ class CORE_EXPORT WorkerScriptLoader final
   // is in progress.
   void Cancel();
 
-  String Script();
+  String SourceText();
   const KURL& Url() const { return url_; }
   const KURL& ResponseURL() const;
   bool Failed() const { return failed_; }
@@ -140,7 +140,7 @@ class CORE_EXPORT WorkerScriptLoader final
   Persistent<ThreadableLoader> threadable_loader_;
   String response_encoding_;
   std::unique_ptr<TextResourceDecoder> decoder_;
-  StringBuilder script_;
+  StringBuilder source_text_;
   KURL url_;
   KURL response_url_;
 

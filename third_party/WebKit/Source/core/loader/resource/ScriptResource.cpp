@@ -77,26 +77,26 @@ void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
   Resource::OnMemoryDump(level_of_detail, memory_dump);
   const String name = GetMemoryDumpName() + "/decoded_script";
   auto dump = memory_dump->CreateMemoryAllocatorDump(name);
-  dump->AddScalar("size", "bytes", script_.CharactersSizeInBytes());
+  dump->AddScalar("size", "bytes", source_text_.CharactersSizeInBytes());
   memory_dump->AddSuballocation(
       dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-const String& ScriptResource::Script() {
+const String& ScriptResource::SourceText() {
   DCHECK(IsLoaded());
 
-  if (script_.IsNull() && Data()) {
-    String script = DecodedText();
+  if (source_text_.IsNull() && Data()) {
+    String source_text = DecodedText();
     ClearData();
-    SetDecodedSize(script.CharactersSizeInBytes());
-    script_ = AtomicString(script);
+    SetDecodedSize(source_text.CharactersSizeInBytes());
+    source_text_ = AtomicString(source_text);
   }
 
-  return script_;
+  return source_text_;
 }
 
 void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
-  script_ = AtomicString();
+  source_text_ = AtomicString();
 }
 
 // static

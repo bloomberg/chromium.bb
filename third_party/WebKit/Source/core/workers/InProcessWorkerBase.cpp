@@ -96,9 +96,9 @@ void InProcessWorkerBase::OnFinished() {
   } else {
     context_proxy_->StartWorkerGlobalScope(
         script_loader_->Url(), GetExecutionContext()->UserAgent(),
-        script_loader_->Script(), script_loader_->GetReferrerPolicy());
+        script_loader_->SourceText(), script_loader_->GetReferrerPolicy());
     probe::scriptImported(GetExecutionContext(), script_loader_->Identifier(),
-                          script_loader_->Script());
+                          script_loader_->SourceText());
   }
   script_loader_ = nullptr;
 }

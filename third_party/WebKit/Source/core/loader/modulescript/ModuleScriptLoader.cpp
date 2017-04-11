@@ -198,7 +198,7 @@ void ModuleScriptLoader::NotifyFinished(Resource*) {
   }
 
   // Step 8. Let source text be the result of UTF-8 decoding response's body.
-  String source_text = GetResource()->Script();
+  String source_text = GetResource()->SourceText();
 
   AccessControlStatus access_control_status =
       GetResource()->CalculateAccessControlStatus(

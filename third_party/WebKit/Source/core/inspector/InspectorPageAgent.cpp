@@ -245,7 +245,7 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
       MaybeEncodeTextContent(
           cached_resource->ResourceBuffer()
               ? ToScriptResource(cached_resource)->DecodedText()
-              : ToScriptResource(cached_resource)->Script(),
+              : ToScriptResource(cached_resource)->SourceText(),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     default:

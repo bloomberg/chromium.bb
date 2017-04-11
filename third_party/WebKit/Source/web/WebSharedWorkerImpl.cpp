@@ -347,8 +347,8 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
   std::unique_ptr<WorkerThreadStartupData> startup_data =
       WorkerThreadStartupData::Create(
-          url_, loading_document_->UserAgent(), main_script_loader_->Script(),
-          nullptr, start_mode,
+          url_, loading_document_->UserAgent(),
+          main_script_loader_->SourceText(), nullptr, start_mode,
           content_security_policy ? content_security_policy->Headers().get()
                                   : nullptr,
           main_script_loader_->GetReferrerPolicy(), starter_origin,
@@ -370,7 +370,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   worker_thread_ =
       SharedWorkerThread::Create(name_, loader_proxy_, *reporting_proxy_);
   probe::scriptImported(loading_document_, main_script_loader_->Identifier(),
-                        main_script_loader_->Script());
+                        main_script_loader_->SourceText());
   main_script_loader_.Clear();
 
   GetWorkerThread()->Start(std::move(startup_data),

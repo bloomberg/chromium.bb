@@ -395,7 +395,7 @@ void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, script_size_histogram,
                       ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
-  script_size_histogram.Count(main_script_loader_->Script().length());
+  script_size_histogram.Count(main_script_loader_->SourceText().length());
   if (main_script_loader_->CachedMetadata()) {
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, script_cached_metadata_size_histogram,
@@ -455,7 +455,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   std::unique_ptr<WorkerThreadStartupData> startup_data =
       WorkerThreadStartupData::Create(
           script_url, worker_start_data_.user_agent,
-          main_script_loader_->Script(),
+          main_script_loader_->SourceText(),
           main_script_loader_->ReleaseCachedMetadata(), start_mode,
           document->GetContentSecurityPolicy()->Headers().get(),
           main_script_loader_->GetReferrerPolicy(), starter_origin,

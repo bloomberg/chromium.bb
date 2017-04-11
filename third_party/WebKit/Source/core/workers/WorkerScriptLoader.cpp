@@ -189,7 +189,7 @@ void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
   if (!len)
     return;
 
-  script_.Append(decoder_->Decode(data, len));
+  source_text_.Append(decoder_->Decode(data, len));
 }
 
 void WorkerScriptLoader::DidReceiveCachedMetadata(const char* data, int size) {
@@ -200,7 +200,7 @@ void WorkerScriptLoader::DidReceiveCachedMetadata(const char* data, int size) {
 void WorkerScriptLoader::DidFinishLoading(unsigned long identifier, double) {
   need_to_cancel_ = false;
   if (!failed_ && decoder_)
-    script_.Append(decoder_->Flush());
+    source_text_.Append(decoder_->Flush());
 
   NotifyFinished();
 }
@@ -223,8 +223,8 @@ void WorkerScriptLoader::Cancel() {
     threadable_loader_->Cancel();
 }
 
-String WorkerScriptLoader::Script() {
-  return script_.ToString();
+String WorkerScriptLoader::SourceText() {
+  return source_text_.ToString();
 }
 
 void WorkerScriptLoader::NotifyError() {

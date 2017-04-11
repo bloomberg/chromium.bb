@@ -72,7 +72,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void DestroyDecodedDataForFailedRevalidation() override;
 
-  const String& Script();
+  const String& SourceText();
 
   static bool MimeTypeAllowedByNosniff(const ResourceResponse&);
 
@@ -94,7 +94,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                  const ResourceLoaderOptions&,
                  const String& charset);
 
-  AtomicString script_;
+  AtomicString source_text_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

@@ -210,7 +210,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     }
 
     probe::scriptImported(&execution_context, script_loader->Identifier(),
-                          script_loader->Script());
+                          script_loader->SourceText());
 
     ErrorEvent* error_event = nullptr;
     std::unique_ptr<Vector<char>> cached_meta_data(
@@ -218,13 +218,13 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     CachedMetadataHandler* handler(CreateWorkerScriptCachedMetadataHandler(
         complete_url, cached_meta_data.get()));
     GetThread()->GetWorkerReportingProxy().WillEvaluateImportedScript(
-        script_loader->Script().length(),
+        script_loader->SourceText().length(),
         script_loader->CachedMetadata()
             ? script_loader->CachedMetadata()->size()
             : 0);
-    script_controller_->Evaluate(
-        ScriptSourceCode(script_loader->Script(), script_loader->ResponseURL()),
-        &error_event, handler, v8_cache_options_);
+    script_controller_->Evaluate(ScriptSourceCode(script_loader->SourceText(),
+                                                  script_loader->ResponseURL()),
+                                 &error_event, handler, v8_cache_options_);
     if (error_event) {
       script_controller_->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);
