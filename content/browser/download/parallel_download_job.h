@@ -40,6 +40,7 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;
   virtual int64_t GetMinSliceSize() const;
+  virtual int GetMinRemainingTimeInSeconds() const;
 
   using WorkerMap =
       std::unordered_map<int64_t, std::unique_ptr<DownloadWorker>>;

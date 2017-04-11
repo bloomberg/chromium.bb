@@ -174,6 +174,9 @@ enum class ParallelDownloadCreationEvent {
   // The HTTP connection type does not meet the requirement.
   FALLBACK_REASON_CONNECTION_TYPE,
 
+  // The remaining time does not meet the requirement.
+  FALLBACK_REASON_REMAINING_TIME,
+
   // Last entry of the enum.
   COUNT,
 };

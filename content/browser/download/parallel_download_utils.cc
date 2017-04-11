@@ -33,6 +33,15 @@ const int kParallelRequestCount = 2;
 // parallel requests after response of the original request is handled.
 const char kParallelRequestDelayFinchKey[] = "parallel_request_delay";
 
+// Finch parameter key value for the remaining time in seconds that is required
+// to send parallel requests.
+const char kParallelRequestRemainingTimeFinchKey[] =
+    "parallel_request_remaining_time";
+
+// The default remaining download time in seconds required for parallel request
+// creation.
+const int kDefaultRemainingTimeInSeconds = 10;
+
 // TODO(qinmin): replace this with a comparator operator in
 // DownloadItem::ReceivedSlice.
 bool compareReceivedSlices(const DownloadItem::ReceivedSlice& lhs,
@@ -139,6 +148,15 @@ base::TimeDelta GetParallelRequestDelayConfig() {
   return base::StringToInt64(finch_value, &time_ms)
              ? base::TimeDelta::FromMilliseconds(time_ms)
              : base::TimeDelta::FromMilliseconds(0);
+}
+
+base::TimeDelta GetParallelRequestRemainingTimeConfig() {
+  std::string finch_value = base::GetFieldTrialParamValueByFeature(
+      features::kParallelDownloading, kParallelRequestRemainingTimeFinchKey);
+  int time_in_seconds = 0;
+  return base::StringToInt(finch_value, &time_in_seconds)
+             ? base::TimeDelta::FromSeconds(time_in_seconds)
+             : base::TimeDelta::FromSeconds(kDefaultRemainingTimeInSeconds);
 }
 
 void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices) {

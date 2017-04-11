@@ -51,6 +51,9 @@ CONTENT_EXPORT int GetParallelRequestCountConfig();
 // request is handled.
 CONTENT_EXPORT base::TimeDelta GetParallelRequestDelayConfig();
 
+// Get the required remaining time before creating parallel requests.
+CONTENT_EXPORT base::TimeDelta GetParallelRequestRemainingTimeConfig();
+
 // Print the states of received slices for debugging.
 CONTENT_EXPORT void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices);
 
