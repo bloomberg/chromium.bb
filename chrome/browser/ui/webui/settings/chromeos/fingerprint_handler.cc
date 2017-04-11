@@ -27,7 +27,8 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
   auto response = base::MakeUnique<base::DictionaryValue>();
   auto fingerprints = base::MakeUnique<base::ListValue>();
 
-  DCHECK(int{fingerprints_list.size()} <= kMaxAllowedFingerprints);
+  DCHECK_LE(static_cast<int>(fingerprints_list.size()),
+            kMaxAllowedFingerprints);
   for (auto& fingerprint_name: fingerprints_list) {
     std::unique_ptr<base::Value> str =
         base::MakeUnique<base::Value>(fingerprint_name);
@@ -35,8 +36,8 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
   }
 
   response->Set("fingerprintsList", std::move(fingerprints));
-  response->SetBoolean(
-      "isMaxed", int{fingerprints_list.size()} >= kMaxAllowedFingerprints);
+  response->SetBoolean("isMaxed", static_cast<int>(fingerprints_list.size()) >=
+                                      kMaxAllowedFingerprints);
   return response;
 }
 
@@ -113,8 +114,9 @@ void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(int{fingerprints_list_.size()}));
+  ResolveJavascriptCallback(
+      base::Value(callback_id),
+      base::Value(static_cast<int>(fingerprints_list_.size())));
 }
 
 void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
@@ -133,7 +135,7 @@ void FingerprintHandler::HandleGetEnrollmentLabel(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetInteger(1, &index));
 
-  DCHECK(index < int{fingerprints_list_.size()});
+  DCHECK_LT(index, static_cast<int>(fingerprints_list_.size()));
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(fingerprints_list_[index]));
 }
@@ -147,7 +149,7 @@ void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetInteger(1, &index));
 
-  DCHECK(index < int{fingerprints_list_.size()});
+  DCHECK_LT(index, static_cast<int>(fingerprints_list_.size()));
   bool deleteSucessful = true;
   fingerprints_list_.erase(fingerprints_list_.begin() + index);
   ResolveJavascriptCallback(base::Value(callback_id),
@@ -175,7 +177,8 @@ void FingerprintHandler::HandleEndCurrentAuthentication(
 
 void FingerprintHandler::HandleFakeScanComplete(
     const base::ListValue* args) {
-  DCHECK(int{fingerprints_list_.size()} < kMaxAllowedFingerprints);
+  DCHECK_LT(static_cast<int>(fingerprints_list_.size()),
+            kMaxAllowedFingerprints);
   // Determines what the newly added fingerprint's name should be.
   for (int i = 1; i <= kMaxAllowedFingerprints; ++i) {
     std::string fingerprint_name = l10n_util::GetStringFUTF8(
@@ -204,7 +207,8 @@ void FingerprintHandler::OnAttemptReceived(int result,
     auto label_it = std::find(fingerprints_list_.begin(),
                               fingerprints_list_.end(), matched_label);
     DCHECK(label_it != fingerprints_list_.end());
-    user_ids->AppendInteger(int{label_it - fingerprints_list_.begin()});
+    user_ids->AppendInteger(
+        static_cast<int>(label_it - fingerprints_list_.begin()));
   }
 
   fingerprint_attempt->SetInteger("result", result);

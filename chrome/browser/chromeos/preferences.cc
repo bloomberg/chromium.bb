@@ -195,8 +195,8 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kAccessibilityAutoclickDelayMs,
-      int{ash::AutoclickController::GetDefaultAutoclickDelay()
-              .InMilliseconds()},
+      static_cast<int>(ash::AutoclickController::GetDefaultAutoclickDelay()
+                           .InMilliseconds()),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityVirtualKeyboardEnabled,

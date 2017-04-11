@@ -172,7 +172,7 @@ class BiodClientTest : public testing::Test {
     dbus::Signal signal(kInterface,
                         biod::kBiometricsManagerEnrollScanDoneSignal);
     dbus::MessageWriter writer(&signal);
-    writer.AppendUint32(uint32_t{scan_result});
+    writer.AppendUint32(static_cast<uint32_t>(scan_result));
     writer.AppendBool(enroll_session_complete);
     EmitSignal(&signal);
   }
@@ -182,7 +182,7 @@ class BiodClientTest : public testing::Test {
                               const AuthScanMatches& matches) {
     dbus::Signal signal(kInterface, biod::kBiometricsManagerAuthScanDoneSignal);
     dbus::MessageWriter writer(&signal);
-    writer.AppendUint32(uint32_t{scan_result});
+    writer.AppendUint32(static_cast<uint32_t>(scan_result));
 
     dbus::MessageWriter array_writer(nullptr);
     writer.OpenArray("{sx}", &array_writer);

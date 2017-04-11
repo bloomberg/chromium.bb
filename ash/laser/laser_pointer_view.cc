@@ -522,8 +522,8 @@ void LaserPointerView::UpdateBuffer() {
       // Set the radius and opacity based on the distance.
       float current_radius = LinearInterpolate(
           kPointInitialRadius, kPointFinalRadius, current_point.age);
-      current_opacity = int{LinearInterpolate(
-          kPointInitialOpacity, kPointFinalOpacity, current_point.age)};
+      current_opacity = static_cast<int>(LinearInterpolate(
+          kPointInitialOpacity, kPointFinalOpacity, current_point.age));
 
       // If we draw laser_points_ that are within a stroke width of each other,
       // the result will be very jagged, unless we are on the last point, then

@@ -108,7 +108,7 @@ bool IsPinLengthValid(const std::string& pin,
   GetSanitizedPolicyPinMinMaxLength(pref_service, &min_length, &max_length);
 
   // Check if the PIN is shorter than the minimum specified length.
-  if (int{pin.size()} < min_length) {
+  if (static_cast<int>(pin.size()) < min_length) {
     if (length_problem)
       *length_problem = CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT;
     return false;
@@ -116,7 +116,7 @@ bool IsPinLengthValid(const std::string& pin,
 
   // If the maximum specified length is zero, there is no maximum length.
   // Otherwise check if the PIN is longer than the maximum specified length.
-  if (max_length != 0 && int{pin.size()} > max_length) {
+  if (max_length != 0 && static_cast<int>(pin.size()) > max_length) {
     if (length_problem)
       *length_problem = CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG;
     return false;
@@ -135,7 +135,7 @@ bool IsPinLengthValid(const std::string& pin,
 bool IsPinDifficultEnough(const std::string& pin) {
   // If the pin length is |kMinLengthForNonWeakPin| or less, there is no need to
   // check for same character and increasing pin.
-  if (int{pin.size()} <= kMinLengthForNonWeakPin)
+  if (static_cast<int>(pin.size()) <= kMinLengthForNonWeakPin)
     return true;
 
   // Check if it is on the list of most common PINs.
@@ -149,7 +149,7 @@ bool IsPinDifficultEnough(const std::string& pin) {
   // TODO(sammiequon): Should longer PINs (5+) be still subjected to this?
   bool is_increasing = true;
   bool is_decreasing = true;
-  for (int i = 1; i < int{pin.length()}; ++i) {
+  for (int i = 1; i < static_cast<int>(pin.length()); ++i) {
     const char previous = pin[i - 1];
     const char current = pin[i];
 
