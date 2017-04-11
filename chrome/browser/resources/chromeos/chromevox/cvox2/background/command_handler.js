@@ -860,4 +860,36 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
   }
 };
 
+/**
+ * Performs global initialization.
+ * @private
+ */
+CommandHandler.init_ = function() {
+  var firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
+  chrome.runtime.onMessageExternal.addListener(
+      function(request, sender, sendResponse) {
+        if (sender.id != firstRunId)
+          return;
+
+        if (request.openTutorial) {
+          var launchTutorial = function(desktop, evt) {
+            desktop.removeEventListener(
+                chrome.automation.EventType.FOCUS, launchTutorial, true);
+            CommandHandler.onCommand('help');
+          };
+
+          // Since we get this command early on ChromeVox launch, the first run
+          // UI is not yet shown. Monitor for when first run gets focused, and
+          // show our tutorial.
+          chrome.automation.getDesktop(function(desktop) {
+            launchTutorial = launchTutorial.bind(this, desktop);
+            desktop.addEventListener(
+                chrome.automation.EventType.FOCUS, launchTutorial, true);
+          });
+        }
+      });
+};
+
+CommandHandler.init_();
+
 }); //  goog.scope

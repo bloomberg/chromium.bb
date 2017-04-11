@@ -63,6 +63,9 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "transitionsEnabled",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableFirstRunUITransitions));
+  localized_strings->SetString(
+      "accessibleTitle",
+      l10n_util::GetStringUTF16(IDS_FIRST_RUN_STEP_ACCESSIBLE_TITLE));
   ash::WmShelf* shelf =
       ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
   std::string shelf_alignment;
@@ -109,4 +112,3 @@ FirstRunUI::FirstRunUI(content::WebUI* web_ui)
 }
 
 }  // namespace chromeos
-

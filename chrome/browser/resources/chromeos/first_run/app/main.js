@@ -31,6 +31,14 @@ function init() {
     appWindow.close();
     e.stopPropagation();
   });
+
+  // If spoken feedback is enabled, also show its tutorial.
+  chrome.accessibilityFeatures.spokenFeedback.get({}, function(details) {
+    if (details.value) {
+      var chromeVoxId = 'mndnfokpggljbaajbnioimlmbfngpief';
+      chrome.runtime.sendMessage(chromeVoxId, {openTutorial: true});
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);

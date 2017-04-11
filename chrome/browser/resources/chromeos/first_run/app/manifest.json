@@ -20,6 +20,7 @@
     "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources; style-src 'self' blob: filesystem: 'unsafe-inline' chrome://resources; img-src 'self' blob: filesystem: chrome://theme chrome://resources"
   },
   "permissions": [
+    "accessibilityFeatures.read",
     "firstRunPrivate",
     "chrome://theme/",
     "chrome://resources/"

@@ -53,6 +53,9 @@ FirstRunPrivateGetLocalizedStringsFunction::Run() {
   localized_strings->SetString(
       "closeButton",
       l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString(
+      "accessibleTitle",
+      l10n_util::GetStringUTF16(IDS_FIRST_RUN_ACCESSIBLE_TITLE));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());

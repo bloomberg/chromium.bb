@@ -29,7 +29,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
@@ -138,12 +137,6 @@ static const int kFlagsFetchingLoginTimeoutMs = 1000;
 // The maximum ammount of time that we are willing to delay a browser restart
 // for, waiting for a session restore to finish.
 static const int kMaxRestartDelaySeconds = 10;
-
-// ChromeVox tutorial URL (used in place of "getting started" url when
-// accessibility is enabled).
-const char kChromeVoxTutorialURLPattern[] =
-    "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/"
-    "cvox2/background/panel.html?tutorial";
 
 void InitLocaleAndInputMethodsForNewUser(
     UserSessionManager* session_manager,
@@ -1312,15 +1305,6 @@ void UserSessionManager::InitializeStartUrls() const {
 
   bool can_show_getstarted_guide = user_manager->GetActiveUser()->GetType() ==
                                    user_manager::USER_TYPE_REGULAR;
-
-  // Skip the default first-run behavior for public accounts.
-  if (!user_manager->IsLoggedInAsPublicAccount()) {
-    if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
-      const char* url = kChromeVoxTutorialURLPattern;
-      start_urls.push_back(url);
-      can_show_getstarted_guide = false;
-    }
-  }
 
   // Only show getting started guide for a new user.
   const bool should_show_getstarted_guide = user_manager->IsCurrentUserNew();
