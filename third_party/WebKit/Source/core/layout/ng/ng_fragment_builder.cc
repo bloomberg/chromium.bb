@@ -35,8 +35,8 @@ NGFragmentBuilder& NGFragmentBuilder::SetDirection(TextDirection direction) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetInlineSize(LayoutUnit size) {
-  size_.inline_size = size;
+NGFragmentBuilder& NGFragmentBuilder::SetSize(const NGLogicalSize& size) {
+  size_ = size;
   return *this;
 }
 
@@ -45,8 +45,9 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockSize(LayoutUnit size) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetInlineOverflow(LayoutUnit size) {
-  overflow_.inline_size = size;
+NGFragmentBuilder& NGFragmentBuilder::SetOverflowSize(
+    const NGLogicalSize& size) {
+  overflow_ = size;
   return *this;
 }
 

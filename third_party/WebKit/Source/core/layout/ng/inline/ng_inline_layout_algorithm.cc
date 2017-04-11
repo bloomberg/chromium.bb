@@ -549,10 +549,8 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
-  container_builder_.SetInlineSize(max_inline_size_)
-      .SetInlineOverflow(max_inline_size_)
-      .SetBlockSize(content_size_)
-      .SetBlockOverflow(content_size_);
+  NGLogicalSize size(max_inline_size_, content_size_);
+  container_builder_.SetSize(size).SetOverflowSize(size);
 
   return container_builder_.ToBoxFragment();
 }

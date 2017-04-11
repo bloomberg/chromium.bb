@@ -354,17 +354,18 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
   } else {
     layout_box_->ForceLayout();
   }
-  LayoutRect overflow = layout_box_->LayoutOverflowRect();
+  NGLogicalSize box_size(layout_box_->LogicalWidth(),
+                         layout_box_->LogicalHeight());
   // TODO(layout-ng): This does not handle writing modes correctly (for
-  // overflow)
+  // overflow).
+  NGLogicalSize overflow_size(layout_box_->LayoutOverflowRect().Width(),
+                              layout_box_->LayoutOverflowRect().Height());
   NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, this);
-  builder.SetInlineSize(layout_box_->LogicalWidth())
-      .SetBlockSize(layout_box_->LogicalHeight())
+  builder.SetSize(box_size)
       .SetDirection(layout_box_->StyleRef().Direction())
       .SetWritingMode(
           FromPlatformWritingMode(layout_box_->StyleRef().GetWritingMode()))
-      .SetInlineOverflow(overflow.Width())
-      .SetBlockOverflow(overflow.Height());
+      .SetOverflowSize(overflow_size);
   return builder.ToBoxFragment();
 }
 

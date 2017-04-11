@@ -160,7 +160,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   builder_.SetDirection(constraint_space_->Direction());
   builder_.SetWritingMode(constraint_space_->WritingMode());
-  builder_.SetInlineSize(size.inline_size).SetBlockSize(size.block_size);
+  builder_.SetSize(size);
 
   NGBlockChildIterator child_iterator(Node()->FirstChild(), BreakToken());
   NGBlockChildIterator::Entry entry = child_iterator.NextChild();
@@ -262,7 +262,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   }
   builder_.SetEndMarginStrut(curr_margin_strut_);
 
-  builder_.SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
+  builder_.SetOverflowSize(NGLogicalSize(max_inline_size_, content_size_));
 
   if (ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();

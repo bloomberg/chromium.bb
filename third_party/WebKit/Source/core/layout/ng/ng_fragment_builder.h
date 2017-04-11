@@ -27,11 +27,11 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
   NGFragmentBuilder& SetDirection(TextDirection);
 
-  NGFragmentBuilder& SetInlineSize(LayoutUnit);
+  NGFragmentBuilder& SetSize(const NGLogicalSize&);
   NGFragmentBuilder& SetBlockSize(LayoutUnit);
   NGLogicalSize Size() const { return size_; }
 
-  NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
+  NGFragmentBuilder& SetOverflowSize(const NGLogicalSize&);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
   NGFragmentBuilder& AddChild(RefPtr<NGLayoutResult>, const NGLogicalOffset&);
@@ -64,7 +64,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   //     builder->AddChild(fragment)
   // end
   //
-  // builder->SetInlineSize/SetBlockSize
+  // builder->SetSize
   //
   // Part 2: Out-of-flow layout part positions out-of-flow descendants.
   //
