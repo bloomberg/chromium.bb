@@ -518,12 +518,18 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_PVQ
                                         tran_low_t *pvq_ref_coeff,
 #endif
+#if CONFIG_CFL
+                                        CFL_CTX *cfl,
+#endif
                                         tran_low_t *dqcoeff) {
   int i;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
 #if CONFIG_PVQ
     xd->plane[i].pvq_ref_coeff = pvq_ref_coeff;
+#endif
+#if CONFIG_CFL
+    xd->cfl = cfl;
 #endif
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {

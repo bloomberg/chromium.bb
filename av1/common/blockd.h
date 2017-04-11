@@ -516,6 +516,14 @@ typedef struct RefBuffer {
 } RefBuffer;
 
 typedef int16_t EobThresholdMD[TX_SIZES_ALL][TX_TYPES];
+
+#if CONFIG_CFL
+typedef struct {
+  // CfL Performs its own block level DC_PRED for each chromatic plane
+  int dc_pred[2];
+} CFL_CTX;
+#endif
+
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
   uint8_t bmode_blocks_wl;
@@ -603,6 +611,10 @@ typedef struct macroblockd {
 #endif
 #if CONFIG_ADAPT_SCAN
   const EobThresholdMD *eob_threshold_md;
+#endif
+
+#if CONFIG_CFL
+  CFL_CTX *cfl;
 #endif
 } MACROBLOCKD;
 

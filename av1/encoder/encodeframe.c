@@ -5017,6 +5017,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 #endif  // #if CONFIG_EC_ADAPT
 
+#if CONFIG_CFL
+  td->mb.e_mbd.cfl = &this_tile->cfl;
+#endif
+
 #if CONFIG_PVQ
   td->mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
 #endif  // CONFIG_PVQ

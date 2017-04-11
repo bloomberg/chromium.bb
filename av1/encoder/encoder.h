@@ -286,6 +286,9 @@ typedef struct TileDataEnc {
 #if CONFIG_PVQ
   PVQ_QUEUE pvq_q;
 #endif
+#if CONFIG_CFL
+  CFL_CTX cfl;
+#endif
 #if CONFIG_EC_ADAPT
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
 #endif

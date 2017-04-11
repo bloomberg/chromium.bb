@@ -24,6 +24,9 @@
 #include "aom_ports/aom_once.h"
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 
 enum {
   NEED_LEFT = 1 << 1,
@@ -2159,8 +2162,16 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   // predict
   if (mode == DC_PRED) {
-    dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride,
-                                                  const_above_row, left_col);
+#if CONFIG_CFL
+    // CFL predict its own DC_PRED for Chromatic planes
+    if (plane == AOM_PLANE_Y) {
+#endif
+      dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride,
+                                                    const_above_row, left_col);
+#if CONFIG_CFL
+    }
+#endif
+
   } else {
     pred[mode][tx_size](dst, dst_stride, const_above_row, left_col);
   }
@@ -2288,6 +2299,19 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
   av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
                           mode, dst, dst_stride, dst, dst_stride, blk_col,
                           blk_row, plane);
+#if CONFIG_CFL
+  if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
+    if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
+      // Compute the block-level DC_PRED for both chromatic planes prior to
+      // processing the first chromatic plane in order to compute alpha_cb and
+      // alpha_cr. Note: This is not required on the decoder side because alpha
+      // is signaled.
+      cfl_dc_pred(xd, get_plane_block_size(block_idx, pd), tx_size);
+    }
+    cfl_predict_block(dst, pd->dst.stride, tx_size,
+                      xd->cfl->dc_pred[plane - 1]);
+  }
+#endif
 }
 
 void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,

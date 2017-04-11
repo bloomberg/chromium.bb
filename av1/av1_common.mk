@@ -109,6 +109,11 @@ endif
 AV1_COMMON_SRCS-yes += common/odintrin.c
 AV1_COMMON_SRCS-yes += common/odintrin.h
 
+ifeq ($(CONFIG_CFL),yes)
+AV1_COMMON_SRCS-yes += common/cfl.h
+AV1_COMMON_SRCS-yes += common/cfl.c
+endif
+
 ifeq ($(CONFIG_PVQ),yes)
 # PVQ from daala
 AV1_COMMON_SRCS-yes += common/pvq.c

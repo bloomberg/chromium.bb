@@ -290,6 +290,7 @@ EXPERIMENT_LIST="
     rawbits
     ec_smallmul
     pvq
+    cfl
     xiphrc
     cb4x4
     chroma_2x2
