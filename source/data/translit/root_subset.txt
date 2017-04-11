@@ -7,5 +7,10 @@
 // releases.
 //
 // Currently no rule sets in use.
+// Note that RuleBasedTransliteratorIDs block has to be present. Otherwise,
+// built-in transforms such as NFD/NFC would fail.
 
-root { }
+root {
+    RuleBasedTransliteratorIDs {
+    }
+}
