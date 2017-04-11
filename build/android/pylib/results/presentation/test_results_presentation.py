@@ -78,6 +78,22 @@ def links_cell(links, html_class='center', rowspan=None):
   }
 
 
+def action_cell(action, data, html_class):
+  """Formats table cell with javascript actions.
+
+  Args:
+    action: Javscript action.
+    data: Data in cell.
+    class: Class for table cell.
+  """
+  return {
+    'cell_type': 'action',
+    'action': action,
+    'data': data,
+    'class': html_class,
+  }
+
+
 def logs_cell(result):
   """Formats result logs data for processing in jinja template."""
   link_list = []
@@ -165,13 +181,11 @@ def create_suite_table(results_dict):
   ]
 
   footer_row = [
-    links_cell(
-        links=[
-            link(href=('?suite=%s' % 'TOTAL'),
-                 target=LinkTarget.CURRENT_TAB,
-                 data='TOTAL')
-        ],
-    ),             # suite_name
+    action_cell(
+          'showTestsOfOneSuiteOnlyWithNewState("TOTAL")',
+          'TOTAL',
+          'center'
+        ),         # TOTAL
     cell(data=0),  # number_success_tests
     cell(data=0),  # number_fail_tests
     cell(data=0),  # all_tests
@@ -191,12 +205,10 @@ def create_suite_table(results_dict):
       suite_row = suite_row_dict[suite_name]
     else:
       suite_row = [
-        links_cell(
-            links=[
-                link(href=('?suite=%s' % suite_name),
-                     target=LinkTarget.CURRENT_TAB,
-                     data=suite_name)],
-            html_class='left'
+        action_cell(
+          'showTestsOfOneSuiteOnlyWithNewState("%s")' % suite_name,
+          suite_name,
+          'left'
         ),             # suite_name
         cell(data=0),  # number_success_tests
         cell(data=0),  # number_fail_tests
@@ -299,13 +311,13 @@ def main():
   parser.add_argument('--json-file', help='Path of json file.', required=True)
   parser.add_argument('--cs-base-url', help='Base url for code search.',
                       default='http://cs.chromium.org')
-  parser.add_argument('--bucket', default='chromium-result-details')
+  parser.add_argument('--bucket', help='Google storage bucket.', required=True)
   parser.add_argument('--builder-name', help='Builder name.', required=True)
   parser.add_argument('--build-number', help='Build number.', required=True)
   parser.add_argument('--test-name', help='The name of the test.',
                       required=True)
   parser.add_argument('--server-url', help='The url of the server.',
-                      default='https://storage.googleapis.com')
+                      default='https://storage.cloud.google.com')
   parser.add_argument(
       '--content-type',
       help=('Content type, which is used to determine '
