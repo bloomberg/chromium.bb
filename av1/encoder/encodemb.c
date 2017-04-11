@@ -940,11 +940,14 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
-    if (!is_chroma_reference(mi_row, mi_col, bsize,
-                             xd->plane[plane].subsampling_x,
-                             xd->plane[plane].subsampling_y))
+    const int subsampling_x = xd->plane[plane].subsampling_x;
+    const int subsampling_y = xd->plane[plane].subsampling_y;
+
+    if (!is_chroma_reference(mi_row, mi_col, bsize, subsampling_x,
+                             subsampling_y))
       continue;
-    if (plane) bsize = AOMMAX(bsize, BLOCK_8X8);
+
+    bsize = scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
 #else
     (void)mi_row;
     (void)mi_col;

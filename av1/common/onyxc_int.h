@@ -739,6 +739,23 @@ static INLINE int is_chroma_reference(const int mi_row, const int mi_col,
 
   return ref_pos;
 }
+
+static INLINE BLOCK_SIZE scale_chroma_bsize(const BLOCK_SIZE bsize,
+                                            const int subsampling_x,
+                                            const int subsampling_y) {
+  BLOCK_SIZE bs = bsize;
+
+  if (bs < BLOCK_8X8) {
+    if (subsampling_x == 1 && subsampling_y == 1)
+      bs = BLOCK_8X8;
+    else if (subsampling_x == 1)
+      bs = BLOCK_8X4;
+    else if (subsampling_y == 1)
+      bs = BLOCK_4X8;
+  }
+
+  return bs;
+}
 #endif
 
 #if CONFIG_EXT_PARTITION_TYPES
