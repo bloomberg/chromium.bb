@@ -3946,10 +3946,9 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
 
-void RenderFrameImpl::RunScriptsAtDocumentIdle(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::RunScriptsAtDocumentIdle() {
   GetContentClient()->renderer()->RunScriptsAtDocumentIdle(this);
-  // ContentClient might have deleted |frame| and |this| by now!
+  // ContentClient might have deleted |this| by now!
 }
 
 void RenderFrameImpl::DidHandleOnloadEvents() {

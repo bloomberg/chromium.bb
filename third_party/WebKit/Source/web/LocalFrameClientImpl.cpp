@@ -190,7 +190,7 @@ void LocalFrameClientImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
 
 void LocalFrameClientImpl::RunScriptsAtDocumentIdle() {
   if (web_frame_->Client())
-    web_frame_->Client()->RunScriptsAtDocumentIdle(web_frame_);
+    web_frame_->Client()->RunScriptsAtDocumentIdle();
   // The callback might have deleted the frame, do not use |this|!
 }
 

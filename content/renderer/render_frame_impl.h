@@ -578,7 +578,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
   void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
   void RunScriptsAtDocumentReady(bool document_is_empty) override;
-  void RunScriptsAtDocumentIdle(blink::WebLocalFrame* frame) override;
+  void RunScriptsAtDocumentIdle() override;
   void DidHandleOnloadEvents() override;
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
