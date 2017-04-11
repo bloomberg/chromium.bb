@@ -4523,7 +4523,7 @@ Event* Document::createEvent(ScriptState* script_state,
                              const String& event_type,
                              ExceptionState& exception_state) {
   Event* event = nullptr;
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   for (const auto& factory : EventFactories()) {
     event = factory->Create(execution_context, event_type);
     if (event) {

@@ -31,6 +31,7 @@
 #include "core/html/FormData.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/frame/UseCounter.h"
@@ -106,7 +107,7 @@ void FormData::append(ScriptState* script_state,
                       Blob* blob,
                       const String& filename) {
   if (!blob) {
-    UseCounter::Count(script_state->GetExecutionContext(),
+    UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kFormDataAppendNull);
   }
   append(name, blob, filename);

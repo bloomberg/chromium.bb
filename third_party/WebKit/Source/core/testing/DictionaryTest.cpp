@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/testing/InternalDictionary.h"
 #include "core/testing/InternalDictionaryDerived.h"
 #include "core/testing/InternalDictionaryDerivedDerived.h"
@@ -173,7 +174,7 @@ String DictionaryTest::stringFromIterable(
     Dictionary iterable,
     ExceptionState& exception_state) const {
   StringBuilder result;
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DictionaryIterator iterator = iterable.GetIterator(execution_context);
   if (iterator.IsNull())
     return g_empty_string;

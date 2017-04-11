@@ -19,7 +19,7 @@ String URLFileAPI::createObjectURL(ScriptState* script_state,
                                    Blob* blob,
                                    ExceptionState& exception_state) {
   DCHECK(blob);
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
   if (blob->isClosed()) {
@@ -38,7 +38,7 @@ String URLFileAPI::createObjectURL(ScriptState* script_state,
 // static
 void URLFileAPI::revokeObjectURL(ScriptState* script_state,
                                  const String& url_string) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
   KURL url(KURL(), url_string);

@@ -60,7 +60,7 @@ SharedWorkerPerformance& SharedWorkerPerformance::From(
 double SharedWorkerPerformance::workerStart(ScriptState* script_state,
                                             SharedWorker& shared_worker) {
   return SharedWorkerPerformance::From(shared_worker)
-      .GetWorkerStart(script_state->GetExecutionContext(), shared_worker);
+      .GetWorkerStart(ExecutionContext::From(script_state), shared_worker);
 }
 
 double SharedWorkerPerformance::GetWorkerStart(ExecutionContext* context,

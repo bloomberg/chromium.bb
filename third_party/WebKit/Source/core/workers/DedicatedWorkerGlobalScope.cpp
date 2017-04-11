@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/DedicatedWorkerThread.h"
@@ -92,7 +93,7 @@ void DedicatedWorkerGlobalScope::postMessage(
     ExceptionState& exception_state) {
   // Disentangle the port in preparation for sending it to the remote context.
   MessagePortChannelArray channels = MessagePort::DisentanglePorts(
-      script_state->GetExecutionContext(), ports, exception_state);
+      ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
   WorkerObjectProxy().PostMessageToWorkerObject(std::move(message),

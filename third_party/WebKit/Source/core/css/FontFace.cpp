@@ -53,6 +53,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
@@ -415,7 +416,7 @@ void FontFace::SetError(DOMException* error) {
 
 ScriptPromise FontFace::FontStatusPromise(ScriptState* script_state) {
   if (!loaded_property_) {
-    loaded_property_ = new LoadedProperty(script_state->GetExecutionContext(),
+    loaded_property_ = new LoadedProperty(ExecutionContext::From(script_state),
                                           this, LoadedProperty::kLoaded);
     if (status_ == kLoaded)
       loaded_property_->Resolve(this);

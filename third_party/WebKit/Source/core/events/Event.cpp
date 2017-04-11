@@ -23,6 +23,7 @@
 #include "core/events/Event.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventTarget.h"
@@ -138,10 +139,10 @@ void Event::initEvent(const AtomicString& event_type_arg,
 bool Event::legacyReturnValue(ScriptState* script_state) const {
   bool return_value = !defaultPrevented();
   if (return_value) {
-    UseCounter::Count(script_state->GetExecutionContext(),
+    UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEventGetReturnValueTrue);
   } else {
-    UseCounter::Count(script_state->GetExecutionContext(),
+    UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEventGetReturnValueFalse);
   }
   return return_value;
@@ -149,10 +150,10 @@ bool Event::legacyReturnValue(ScriptState* script_state) const {
 
 void Event::setLegacyReturnValue(ScriptState* script_state, bool return_value) {
   if (return_value) {
-    UseCounter::Count(script_state->GetExecutionContext(),
+    UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEventSetReturnValueTrue);
   } else {
-    UseCounter::Count(script_state->GetExecutionContext(),
+    UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEventSetReturnValueFalse);
   }
   SetDefaultPrevented(!return_value);

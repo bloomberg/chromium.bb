@@ -78,7 +78,7 @@ void MessagePort::postMessage(ScriptState* script_state,
     }
   }
   MessagePortChannelArray channels = MessagePort::DisentanglePorts(
-      script_state->GetExecutionContext(), ports, exception_state);
+      ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
 

@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/loader/DocumentLoader.h"
@@ -136,7 +137,7 @@ void History::go(ScriptState* script_state, int delta) {
     return;
 
   DCHECK(IsMainThread());
-  Document* active_document = ToDocument(script_state->GetExecutionContext());
+  Document* active_document = ToDocument(ExecutionContext::From(script_state));
   if (!active_document)
     return;
 

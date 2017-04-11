@@ -12,6 +12,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 
@@ -50,7 +51,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* script_state)
-      : ContextLifecycleObserver(script_state->GetExecutionContext()) {}
+      : ContextLifecycleObserver(ExecutionContext::From(script_state)) {}
 
   ReadableStreamController* Controller() const { return controller_; }
 

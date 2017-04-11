@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
@@ -46,8 +47,8 @@ class PerformanceBaseTest : public ::testing::Test {
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
     base_ = new TestPerformanceBase(script_state);
     cb_ = PerformanceObserverCallback::Create(script_state, callback);
-    observer_ = PerformanceObserver::Create(script_state->GetExecutionContext(),
-                                            base_, cb_);
+    observer_ = PerformanceObserver::Create(
+        ExecutionContext::From(script_state), base_, cb_);
   }
 
   void SetUp() override {

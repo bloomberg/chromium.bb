@@ -42,6 +42,7 @@
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Allocator.h"
 
@@ -57,7 +58,7 @@ class ElementAnimation {
                             double duration,
                             ExceptionState& exception_state) {
     EffectModel* effect = EffectInput::Convert(
-        &element, effect_input, script_state->GetExecutionContext(),
+        &element, effect_input, ExecutionContext::From(script_state),
         exception_state);
     if (exception_state.HadException())
       return nullptr;
@@ -75,7 +76,7 @@ class ElementAnimation {
                             const KeyframeEffectOptions& options,
                             ExceptionState& exception_state) {
     EffectModel* effect = EffectInput::Convert(
-        &element, effect_input, script_state->GetExecutionContext(),
+        &element, effect_input, ExecutionContext::From(script_state),
         exception_state);
     if (exception_state.HadException())
       return nullptr;
@@ -95,7 +96,7 @@ class ElementAnimation {
                             const DictionarySequenceOrDictionary& effect_input,
                             ExceptionState& exception_state) {
     EffectModel* effect = EffectInput::Convert(
-        &element, effect_input, script_state->GetExecutionContext(),
+        &element, effect_input, ExecutionContext::From(script_state),
         exception_state);
     if (exception_state.HadException())
       return nullptr;

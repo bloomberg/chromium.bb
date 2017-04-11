@@ -37,6 +37,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/AnimationPlaybackEvent.h"
@@ -629,8 +630,9 @@ void Animation::finish(ExceptionState& exception_state) {
 
 ScriptPromise Animation::finished(ScriptState* script_state) {
   if (!finished_promise_) {
-    finished_promise_ = new AnimationPromise(
-        script_state->GetExecutionContext(), this, AnimationPromise::kFinished);
+    finished_promise_ =
+        new AnimationPromise(ExecutionContext::From(script_state), this,
+                             AnimationPromise::kFinished);
     if (PlayStateInternal() == kFinished)
       finished_promise_->Resolve(this);
   }
@@ -639,7 +641,7 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
 
 ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
-    ready_promise_ = new AnimationPromise(script_state->GetExecutionContext(),
+    ready_promise_ = new AnimationPromise(ExecutionContext::From(script_state),
                                           this, AnimationPromise::kReady);
     if (PlayStateInternal() != kPending)
       ready_promise_->Resolve(this);

@@ -203,7 +203,7 @@ class XMLHttpRequest::BlobLoader final
 };
 
 XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   DOMWrapperWorld& world = script_state->World();
   if (!world.IsIsolatedWorld())
     return Create(context);

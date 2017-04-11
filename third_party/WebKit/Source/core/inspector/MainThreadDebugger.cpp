@@ -161,8 +161,8 @@ void MainThreadDebugger::ContextCreated(ScriptState* script_state,
   context_info.origin = ToV8InspectorStringView(origin_string);
   context_info.auxData = ToV8InspectorStringView(aux_data);
   context_info.hasMemoryOnConsole =
-      script_state->GetExecutionContext() &&
-      script_state->GetExecutionContext()->IsDocument();
+      ExecutionContext::From(script_state) &&
+      ExecutionContext::From(script_state)->IsDocument();
   GetV8Inspector()->contextCreated(context_info);
 }
 

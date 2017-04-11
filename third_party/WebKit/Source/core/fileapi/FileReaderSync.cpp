@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -75,7 +76,7 @@ DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, nullptr);
-  StartLoading(script_state->GetExecutionContext(), *loader, *blob,
+  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
                exception_state);
 
   return loader->ArrayBufferResult();
@@ -88,7 +89,7 @@ String FileReaderSync::readAsBinaryString(ScriptState* script_state,
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsBinaryString, nullptr);
-  StartLoading(script_state->GetExecutionContext(), *loader, *blob,
+  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
                exception_state);
   return loader->StringResult();
 }
@@ -102,7 +103,7 @@ String FileReaderSync::readAsText(ScriptState* script_state,
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsText, nullptr);
   loader->SetEncoding(encoding);
-  StartLoading(script_state->GetExecutionContext(), *loader, *blob,
+  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
                exception_state);
   return loader->StringResult();
 }
@@ -115,7 +116,7 @@ String FileReaderSync::readAsDataURL(ScriptState* script_state,
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsDataURL, nullptr);
   loader->SetDataType(blob->type());
-  StartLoading(script_state->GetExecutionContext(), *loader, *blob,
+  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
                exception_state);
   return loader->StringResult();
 }

@@ -5,6 +5,7 @@
 #include "core/testing/WorkerInternals.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/testing/OriginTrialsTest.h"
@@ -21,13 +22,13 @@ OriginTrialsTest* WorkerInternals::originTrialsTest() const {
 
 void WorkerInternals::countFeature(ScriptState* script_state,
                                    uint32_t feature) {
-  UseCounter::Count(script_state->GetExecutionContext(),
+  UseCounter::Count(ExecutionContext::From(script_state),
                     static_cast<UseCounter::Feature>(feature));
 }
 
 void WorkerInternals::countDeprecation(ScriptState* script_state,
                                        uint32_t feature) {
-  Deprecation::CountDeprecation(script_state->GetExecutionContext(),
+  Deprecation::CountDeprecation(ExecutionContext::From(script_state),
                                 static_cast<UseCounter::Feature>(feature));
 }
 

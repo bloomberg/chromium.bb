@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
@@ -337,8 +338,8 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   Document* document =
-      script_state->GetExecutionContext()->IsDocument()
-          ? static_cast<Document*>(script_state->GetExecutionContext())
+      ExecutionContext::From(script_state)->IsDocument()
+          ? static_cast<Document*>(ExecutionContext::From(script_state))
           : nullptr;
 
   CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(

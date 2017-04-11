@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/mojo/MojoCreateSharedBufferResult.h"
 #include "core/mojo/MojoDiscardDataOptions.h"
 #include "core/mojo/MojoDuplicateBufferHandleOptions.h"
@@ -42,7 +43,7 @@ MojoWatcher* MojoHandle::watch(ScriptState* script_state,
                                const MojoHandleSignals& signals,
                                MojoWatchCallback* callback) {
   return MojoWatcher::Create(handle_.get(), signals, callback,
-                             script_state->GetExecutionContext());
+                             ExecutionContext::From(script_state));
 }
 
 MojoResult MojoHandle::writeMessage(

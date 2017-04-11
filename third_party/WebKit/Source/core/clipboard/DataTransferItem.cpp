@@ -33,6 +33,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/StringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/probe/CoreProbes.h"
@@ -83,7 +84,7 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)
     return;
 
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
   TaskRunnerHelper::Get(TaskType::kUserInteraction, script_state)
       ->PostTask(BLINK_FROM_HERE,

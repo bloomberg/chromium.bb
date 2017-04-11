@@ -7,6 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
@@ -32,7 +33,7 @@ void InProcessWorkerBase::postMessage(ScriptState* script_state,
   DCHECK(context_proxy_);
   // Disentangle the port in preparation for sending it to the remote context.
   MessagePortChannelArray channels = MessagePort::DisentanglePorts(
-      script_state->GetExecutionContext(), ports, exception_state);
+      ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
   context_proxy_->PostMessageToWorkerGlobalScope(std::move(message),

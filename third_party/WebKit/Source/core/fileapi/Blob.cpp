@@ -201,7 +201,7 @@ void Blob::close(ScriptState* script_state, ExceptionState& exception_state) {
   // Dereferencing a Blob that has been closed should result in
   // a network error. Revoke URLs registered against it through
   // its UUID.
-  DOMURL::RevokeObjectUUID(script_state->GetExecutionContext(), Uuid());
+  DOMURL::RevokeObjectUUID(ExecutionContext::From(script_state), Uuid());
 
   // A Blob enters a 'readability state' of closed, where it will report its
   // size as zero. Blob and FileReader operations now throws on

@@ -5,6 +5,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/WebTaskRunner.h"
@@ -72,7 +73,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
                                             ScriptState* script_state) {
   return Get(type,
-             script_state ? script_state->GetExecutionContext() : nullptr);
+             script_state ? ExecutionContext::From(script_state) : nullptr);
 }
 
 }  // namespace blink
