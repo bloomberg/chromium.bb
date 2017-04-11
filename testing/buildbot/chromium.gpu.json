@@ -1989,9 +1989,11 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2331,9 +2333,11 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

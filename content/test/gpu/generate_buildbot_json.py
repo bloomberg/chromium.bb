@@ -1474,23 +1474,48 @@ COMMON_GTESTS = {
       'tab_capture_end2end_tests_run',
     ],
   },
-  'video_decode_accelerator_unittest': {
+  'video_decode_accelerator_d3d11_unittest': {
     'tester_configs': [
       {
         'os_types': ['win']
       },
     ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux ChromiumOS Ozone (Intel)',
-        ],
-      },
-    ],
     'args': [
+      '--use-angle=d3d11',
       '--use-test-data-path',
       '--test_video_data=test-25fps.h264:320:240:250:258:::1',
     ],
+    'test': 'video_decode_accelerator_unittest',
+  },
+  'video_decode_accelerator_d3d9_unittest': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall and optional tryservers.
+        'predicate': Predicates.FYI_ONLY,
+        'os_types': ['win']
+      },
+    ],
+    'args': [
+      '--use-angle=d3d9',
+      '--use-test-data-path',
+      '--test_video_data=test-25fps.h264:320:240:250:258:::1',
+    ],
+    'test': 'video_decode_accelerator_unittest',
+  },
+  'video_decode_accelerator_gl_unittest': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall and optional tryservers.
+        'predicate': Predicates.FYI_ONLY,
+        'os_types': ['win']
+      },
+    ],
+    'args': [
+      '--use-angle=gl',
+      '--use-test-data-path',
+      '--test_video_data=test-25fps.h264:320:240:250:258:::1',
+    ],
+    'test': 'video_decode_accelerator_unittest',
   },
 }
 

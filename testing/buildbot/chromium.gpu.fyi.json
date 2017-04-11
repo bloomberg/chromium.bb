@@ -11954,9 +11954,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": false,
           "dimension_sets": [
@@ -12464,9 +12504,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12987,9 +13067,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": false,
           "dimension_sets": [
@@ -13536,9 +13656,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": false,
           "dimension_sets": [
@@ -14088,9 +14248,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14624,9 +14824,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15111,9 +15351,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15672,9 +15952,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": false,
           "dimension_sets": [
@@ -16239,9 +16559,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16860,9 +17220,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17438,9 +17838,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17999,9 +18439,49 @@
       },
       {
         "args": [
+          "--use-angle=d3d11",
           "--use-test-data-path",
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
+        "name": "video_decode_accelerator_d3d11_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=d3d9",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_d3d9_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "video_decode_accelerator_unittest",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
