@@ -499,6 +499,10 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   // tile.
   FloatRect image_tile;
   if (info.should_paint_image) {
+    // Avoid image shaders when printing (poorly supported in PDF).
+    if (info.is_rounded_fill && paint_info.IsPrinting())
+      return false;
+
     DCHECK(!geometry);
     geometry.emplace();
     geometry->Calculate(obj, background_object, paint_info.PaintContainer(),
