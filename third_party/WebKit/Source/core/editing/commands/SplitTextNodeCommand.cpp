@@ -58,8 +58,7 @@ void SplitTextNodeCommand::DoApply(EditingState*) {
 
   text1_ = Text::Create(GetDocument(), prefix_text);
   DCHECK(text1_);
-  GetDocument().Markers().CopyMarkers(text2_.Get(), 0, offset_, text1_.Get(),
-                                      0);
+  GetDocument().Markers().MoveMarkers(text2_.Get(), offset_, text1_.Get());
 
   InsertText1AndTrimText2();
 }
@@ -75,8 +74,8 @@ void SplitTextNodeCommand::DoUnapply() {
   text2_->insertData(0, prefix_text, ASSERT_NO_EXCEPTION);
   GetDocument().UpdateStyleAndLayout();
 
-  GetDocument().Markers().CopyMarkers(text1_.Get(), 0, prefix_text.length(),
-                                      text2_.Get(), 0);
+  GetDocument().Markers().MoveMarkers(text1_.Get(), prefix_text.length(),
+                                      text2_.Get());
   text1_->remove(ASSERT_NO_EXCEPTION);
 }
 
@@ -87,6 +86,8 @@ void SplitTextNodeCommand::DoReapply() {
   ContainerNode* parent = text2_->parentNode();
   if (!parent || !HasEditableStyle(*parent))
     return;
+
+  GetDocument().Markers().MoveMarkers(text2_.Get(), offset_, text1_.Get());
 
   InsertText1AndTrimText2();
 }

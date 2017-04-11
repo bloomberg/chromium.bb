@@ -73,11 +73,7 @@ class CORE_EXPORT DocumentMarkerController final
                             bool thick,
                             Color background_color);
 
-  void CopyMarkers(Node* src_node,
-                   unsigned start_offset,
-                   int length,
-                   Node* dst_node,
-                   int delta);
+  void MoveMarkers(Node* src_node, int length, Node* dst_node);
 
   void PrepareForDestruction();
   // When a marker partially overlaps with range, if

@@ -199,11 +199,6 @@ static bool DoesNotOverlap(const Member<RenderedDocumentMarker>& lhv,
   return lhv->EndOffset() < rhv->StartOffset();
 }
 
-static bool DoesNotInclude(const Member<RenderedDocumentMarker>& marker,
-                           size_t start_offset) {
-  return marker->EndOffset() < start_offset;
-}
-
 static void UpdateMarkerRenderedRect(const Node& node,
                                      RenderedDocumentMarker& marker) {
   Range* range = Range::Create(node.GetDocument());
@@ -291,14 +286,11 @@ void DocumentMarkerController::MergeOverlapping(
   }
 }
 
-// copies markers from srcNode to dstNode, applying the specified shift delta to
-// the copies. The shift is useful if, e.g., the caller has created the dstNode
-// from a non-prefix substring of the srcNode.
-void DocumentMarkerController::CopyMarkers(Node* src_node,
-                                           unsigned start_offset,
+// Moves markers from src_node to dst_node. Markers are moved if their start
+// offset is less than length. Markers that run past that point are truncated.
+void DocumentMarkerController::MoveMarkers(Node* src_node,
                                            int length,
-                                           Node* dst_node,
-                                           int delta) {
+                                           Node* dst_node) {
   if (length <= 0)
     return;
 
@@ -318,26 +310,25 @@ void DocumentMarkerController::CopyMarkers(Node* src_node,
     if (!list)
       continue;
 
-    unsigned end_offset = start_offset + length - 1;
-    MarkerList::iterator start_pos = std::lower_bound(
-        list->begin(), list->end(), start_offset, DoesNotInclude);
-    for (MarkerList::iterator i = start_pos; i != list->end(); ++i) {
-      DocumentMarker* marker = i->Get();
+    unsigned end_offset = length - 1;
+    MarkerList::iterator it;
+    for (it = list->begin(); it != list->end(); ++it) {
+      DocumentMarker* marker = it->Get();
 
       // stop if we are now past the specified range
       if (marker->StartOffset() > end_offset)
         break;
 
-      // pin the marker to the specified range and apply the shift delta
+      // pin the marker to the specified range
       doc_dirty = true;
-      if (marker->StartOffset() < start_offset)
-        marker->SetStartOffset(start_offset);
       if (marker->EndOffset() > end_offset)
         marker->SetEndOffset(end_offset);
-      marker->ShiftOffsets(delta);
 
       AddMarker(dst_node, *marker);
     }
+
+    // Remove the range of markers that were moved to dstNode
+    list->erase(0, it - list->begin());
   }
 
   // repaint the affected node
