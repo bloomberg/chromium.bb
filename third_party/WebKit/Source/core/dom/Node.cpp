@@ -1288,7 +1288,7 @@ const AtomicString& Node::lookupNamespaceURI(
   }
 }
 
-String Node::textContent(bool convert_b_rs_to_newlines) const {
+String Node::textContent(bool convert_brs_to_newlines) const {
   // This covers ProcessingInstruction and Comment that should return their
   // value when .textContent is accessed on them, but should be ignored when
   // iterated over as a descendant of a ContainerNode.
@@ -1306,7 +1306,7 @@ String Node::textContent(bool convert_b_rs_to_newlines) const {
 
   StringBuilder content;
   for (const Node& node : NodeTraversal::InclusiveDescendantsOf(*this)) {
-    if (isHTMLBRElement(node) && convert_b_rs_to_newlines) {
+    if (isHTMLBRElement(node) && convert_brs_to_newlines) {
       content.Append('\n');
     } else if (node.IsTextNode()) {
       content.Append(ToText(node).data());

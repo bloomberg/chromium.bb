@@ -233,7 +233,7 @@ class CORE_EXPORT Node : public EventTarget {
   const AtomicString& lookupPrefix(const AtomicString& namespace_uri) const;
   const AtomicString& lookupNamespaceURI(const String& prefix) const;
 
-  String textContent(bool convert_b_rs_to_newlines = false) const;
+  String textContent(bool convert_brs_to_newlines = false) const;
   void setTextContent(const String&);
 
   bool SupportsAltText();
