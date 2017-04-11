@@ -17,6 +17,9 @@
 #include "net/base/network_change_notifier.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+class ForceSigninVerifier;
+#endif
 class Profile;
 
 class ChromeSigninClient
@@ -107,6 +110,7 @@ class ChromeSigninClient
 
  private:
   void MaybeFetchSigninTokenHandle();
+  void VerifySyncToken();
   void OnCloseBrowsersSuccess(
       const base::Callback<void()>& sign_out,
       const signin_metrics::ProfileSignout signout_source_metric,
@@ -120,8 +124,10 @@ class ChromeSigninClient
   std::list<base::Closure> delayed_callbacks_;
 #endif
 
-  bool is_force_signin_enabled_;
   bool should_display_user_manager_ = true;
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  std::unique_ptr<ForceSigninVerifier> force_signin_verifier_;
+#endif
 
   std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
   std::unique_ptr<OAuth2TokenService::Request> oauth_request_;

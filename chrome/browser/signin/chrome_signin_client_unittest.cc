@@ -10,15 +10,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -153,11 +152,7 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    prefs_.reset(new TestingPrefServiceSimple());
-    chrome::RegisterLocalState(prefs_->registry());
-    TestingBrowserProcess::GetGlobal()->SetLocalState(prefs_.get());
-    prefs_->SetBoolean(prefs::kForceBrowserSignin, true);
-
+    signin_util::SetForceSigninForTesting(true);
     CreateClient(browser()->profile());
     manager_.reset(new MockSigninManager(client_.get()));
   }
@@ -176,7 +171,6 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   std::unique_ptr<SigninErrorController> fake_controller_;
   std::unique_ptr<MockChromeSigninClient> client_;
   std::unique_ptr<MockSigninManager> manager_;
-  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 };
 
 TEST_F(ChromeSigninClientSignoutTest, SignOut) {
@@ -221,7 +215,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
 }
 
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
-  prefs_->SetBoolean(prefs::kForceBrowserSignin, false);
+  signin_util::SetForceSigninForTesting(false);
   CreateClient(browser()->profile());
   manager_.reset(new MockSigninManager(client_.get()));
 
