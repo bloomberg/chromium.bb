@@ -277,6 +277,7 @@ source_set("unit_tests") {
     "commands/InsertListCommandTest.cpp",
     "commands/ReplaceSelectionCommandTest.cpp",
     "commands/SetCharacterDataCommandTest.cpp",
+    "commands/SplitTextNodeCommandTest.cpp",
     "commands/TypingCommandTest.cpp",
     "iterators/BackwardsTextBufferTest.cpp",
     "iterators/CharacterIteratorTest.cpp",

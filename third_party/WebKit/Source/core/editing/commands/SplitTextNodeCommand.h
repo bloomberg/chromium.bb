@@ -32,7 +32,7 @@ namespace blink {
 
 class Text;
 
-class SplitTextNodeCommand final : public SimpleEditCommand {
+class CORE_EXPORT SplitTextNodeCommand final : public SimpleEditCommand {
  public:
   static SplitTextNodeCommand* Create(Text* node, int offset) {
     return new SplitTextNodeCommand(node, offset);
