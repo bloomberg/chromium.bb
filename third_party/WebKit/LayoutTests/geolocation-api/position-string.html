@@ -27,7 +27,7 @@ geolocationServiceMock.then(mock => {
         shouldBe('position.coords.latitude', 'mockLatitude');
         shouldBe('position.coords.longitude', 'mockLongitude');
         shouldBe('position.coords.accuracy', 'mockAccuracy');
-        shouldBe('position.toString()', '"[object Geoposition]"');
+        shouldBe('position.toString()', '"[object Position]"');
         shouldBe('position.coords.toString()', '"[object Coordinates]"');
         finishJSTest();
     }, function(e) {

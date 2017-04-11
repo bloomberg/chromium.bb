@@ -56,7 +56,7 @@ void GeoNotifier::SetUseCachedPosition() {
   timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void GeoNotifier::RunSuccessCallback(Geoposition* position) {
+void GeoNotifier::RunSuccessCallback(Position* position) {
   success_callback_->handleEvent(position);
 }
 
