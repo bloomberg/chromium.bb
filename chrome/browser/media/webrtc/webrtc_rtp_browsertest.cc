@@ -19,9 +19,6 @@ class WebRtcRtpBrowserTest : public WebRtcTestBase {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "RTCRtpReceiver");
   }
 
  protected:

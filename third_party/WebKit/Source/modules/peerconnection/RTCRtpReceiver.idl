@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
-[
-    RuntimeEnabled=RTCRtpReceiver,
-] interface RTCRtpReceiver {
+interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
     sequence<RTCRtpContributingSource> getContributingSources();
 

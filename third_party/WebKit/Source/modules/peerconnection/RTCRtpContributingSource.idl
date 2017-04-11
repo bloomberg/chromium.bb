@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource
-[
-    RuntimeEnabled=RTCRtpReceiver,
-] interface RTCRtpContributingSource {
+interface RTCRtpContributingSource {
     readonly attribute DOMHighResTimeStamp timestamp;
     readonly attribute unsigned long       source;
 

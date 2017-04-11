@@ -113,7 +113,7 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
 
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getreceivers
-    [RuntimeEnabled=RTCRtpReceiver] sequence<RTCRtpReceiver> getReceivers();
+    sequence<RTCRtpReceiver> getReceivers();
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]
