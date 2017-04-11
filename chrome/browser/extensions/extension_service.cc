@@ -442,9 +442,12 @@ void ExtensionService::Init() {
 
   component_loader_->LoadAll();
   bool load_saved_extensions = true;
+  bool load_command_line_extensions = extensions_enabled_;
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
     load_saved_extensions = false;
+    load_command_line_extensions = false;
+  }
 #endif
   if (load_saved_extensions) {
     extensions::InstalledLoader(this).LoadAllExtensions();
@@ -457,7 +460,7 @@ void ExtensionService::Init() {
     OnLoadedInstalledExtensions();
   }
   LoadExtensionsFromCommandLineFlag(switches::kDisableExtensionsExcept);
-  if (extensions_enabled_)
+  if (load_command_line_extensions)
     LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
   // ChromeDriver has no way of determining the Chrome version until after
   // launch, so it needs to continue passing load-component-extension until it

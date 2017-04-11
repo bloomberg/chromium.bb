@@ -40,7 +40,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "net/base/filename_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
 
 using extensions::FeatureSwitch;
 using extensions::ExtensionRegistry;
@@ -121,24 +126,23 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     InProcessBrowserTest::TearDown();
   }
 
+  static int GetNonComponentEnabledExtensionCount(Profile* profile) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    int found_extensions = 0;
+    for (const auto& extension : registry->enabled_extensions()) {
+      if (!extensions::Manifest::IsComponentLocation(extension->location()))
+        ++found_extensions;
+    }
+    return found_extensions;
+  }
+
   void WaitForServicesToStart(int num_expected_extensions,
                               bool expect_extensions_enabled) {
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(browser()->profile());
-
-    // Count the number of non-component extensions.
-    int found_extensions = 0;
-    for (const scoped_refptr<const extensions::Extension>& extension :
-         registry->enabled_extensions()) {
-      if (extension->location() != extensions::Manifest::COMPONENT)
-        found_extensions++;
-    }
-
     if (!unauthenticated_load_allowed_)
       num_expected_extensions = 0;
-
-    ASSERT_EQ(static_cast<uint32_t>(num_expected_extensions),
-              static_cast<uint32_t>(found_extensions));
+    ASSERT_EQ(num_expected_extensions,
+              GetNonComponentEnabledExtensionCount(browser()->profile()));
 
     ExtensionService* service =
         extensions::ExtensionSystem::Get(browser()->profile())
@@ -266,6 +270,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
   WaitForServicesToStart(1, true);
   TestInjection(true, true);
 }
+
+#if defined(OS_CHROMEOS)
+
+class ExtensionsLoadTestWithLoginScreenApps : public ExtensionsLoadTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionsLoadTest::SetUpCommandLine(command_line);
+    // TODO(emaxx): Remove this test fixture class once the
+    // EnableLoginScreenApps command line flag becomes on by default.
+    // crbug.com/576464
+    command_line->AppendSwitch(switches::kEnableLoginScreenApps);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadTestWithLoginScreenApps,
+                       CommandLineExtensionsDontLoad) {
+  // The --load-extension command line flag should not be applied to the sign-in
+  // profile.
+  EXPECT_EQ(0, GetNonComponentEnabledExtensionCount(
+                   chromeos::ProfileHelper::GetSigninProfile()));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 // ExtensionsLoadMultipleTest
 // Ensures that we can startup the browser with multiple extensions
