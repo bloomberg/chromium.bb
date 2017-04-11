@@ -40,10 +40,6 @@ const int kMessageSize = 1024;
 const int kMessages = 100;
 const char kChannelName[] = "test_channel";
 
-ACTION_P(QuitRunLoop, run_loop) {
-  run_loop->Quit();
-}
-
 ACTION_P2(QuitRunLoopOnCounter, run_loop, counter) {
   --(*counter);
   EXPECT_GE(*counter, 0);
