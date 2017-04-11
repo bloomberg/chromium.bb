@@ -9,7 +9,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Region;
+import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -17,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -29,6 +32,7 @@ import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -402,6 +406,32 @@ public class BottomSheet
     }
 
     /**
+     * Set the window's status bar color. On Android M and above, this will set the status bar color
+     * to the default theme color with dark icons except in the case of the tab switcher and
+     * incognito NTP. On Android versions < M, the status bar will always be black.
+     * @param window The Android window.
+     */
+    public void setStatusBarColor(Window window) {
+        Tab tab = getActiveTab();
+        boolean isInOverviewMode = tab != null && tab.getActivity().isInOverviewMode();
+        boolean isIncognitoNtp =
+                tab != null && NewTabPage.isNTPUrl(tab.getUrl()) && tab.isIncognito();
+        boolean isValidAndroidVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+
+        int color = ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
+        setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+        // Special case the incognito NTP and the tab switcher.
+        if (!isValidAndroidVersion || isIncognitoNtp || isInOverviewMode) {
+            color = Color.BLACK;
+            // The light status bar flag is always set above, meaning XORing that value with the
+            // current flags will remove it.
+            setSystemUiVisibility(getSystemUiVisibility() ^ View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+        ApiCompatibilityUtils.setStatusBarColor(window, color);
+    }
+
+    /**
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
     private boolean isToolbarAndroidViewHidden() {
@@ -508,7 +538,7 @@ public class BottomSheet
 
     @Override
     public Tab getActiveTab() {
-        return mTabModelSelector.getCurrentTab();
+        return mTabModelSelector == null ? null : mTabModelSelector.getCurrentTab();
     }
 
     @Override
