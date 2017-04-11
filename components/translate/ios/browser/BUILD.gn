@@ -43,6 +43,7 @@ js_compile_checked("injected_js") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "js_translate_manager_unittest.mm",

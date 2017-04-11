@@ -4,7 +4,6 @@
 
 #import "components/translate/ios/browser/js_translate_manager.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_resources.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
@@ -12,6 +11,10 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface JsTranslateManager (Testing)
 - (double)performanceNow;
@@ -28,8 +31,8 @@
 class JsTranslateManagerTest : public PlatformTest {
  protected:
   JsTranslateManagerTest() {
-    receiver_.reset([[CRWTestJSInjectionReceiver alloc] init]);
-    manager_.reset([[JsTranslateManager alloc] initWithReceiver:receiver_]);
+    receiver_ = [[CRWTestJSInjectionReceiver alloc] init];
+    manager_ = [[JsTranslateManager alloc] initWithReceiver:receiver_];
     base::StringPiece script =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_TRANSLATE_JS);
@@ -43,8 +46,8 @@ class JsTranslateManagerTest : public PlatformTest {
     return [web::ExecuteJavaScript(receiver_, script) boolValue];
   }
 
-  base::scoped_nsobject<CRWTestJSInjectionReceiver> receiver_;
-  base::scoped_nsobject<JsTranslateManager> manager_;
+  CRWTestJSInjectionReceiver* receiver_;
+  JsTranslateManager* manager_;
 };
 
 // TODO(crbug.com/658619#c47): Test reported as flaky.

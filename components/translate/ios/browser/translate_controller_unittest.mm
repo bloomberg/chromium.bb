@@ -6,12 +6,17 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace translate {
 
@@ -26,10 +31,10 @@ class TranslateControllerTest : public PlatformTest,
         translation_time_(0),
         on_script_ready_called_(false),
         on_translate_complete_called_(false) {
-    mock_js_translate_manager_.reset(
-        [[OCMockObject niceMockForClass:[JsTranslateManager class]] retain]);
-    translate_controller_.reset(new TranslateController(
-        test_web_state_.get(), mock_js_translate_manager_));
+    mock_js_translate_manager_ =
+        [OCMockObject niceMockForClass:[JsTranslateManager class]];
+    translate_controller_ = base::MakeUnique<TranslateController>(
+        test_web_state_.get(), mock_js_translate_manager_);
     translate_controller_->set_observer(this);
   }
 
@@ -53,7 +58,7 @@ class TranslateControllerTest : public PlatformTest,
   }
 
   std::unique_ptr<web::TestWebState> test_web_state_;
-  base::scoped_nsobject<id> mock_js_translate_manager_;
+  id mock_js_translate_manager_;
   std::unique_ptr<TranslateController> translate_controller_;
   bool success_;
   double ready_time_;
