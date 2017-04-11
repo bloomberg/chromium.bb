@@ -22,7 +22,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/safe_browsing/srt_chrome_prompt_impl.h"
 #include "chrome/browser/safe_browsing/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/srt_global_error_win.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -44,12 +44,17 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/component_updater/pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/edk/embedder/connection_params.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -69,6 +74,11 @@ const wchar_t kCleanerSubKey[] = L"Cleaner";
 
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kStartTimeValueName[] = L"StartTime";
+
+const base::Feature kInBrowserCleanerUIFeature{
+    "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kChromeMojoPipeTokenSwitch[] = "chrome-mojo-pipe-token";
 
 namespace {
 
@@ -553,19 +563,83 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
     global_error->ShowBubbleView(browser);
 }
 
-// This function is called from a worker thread to launch the SwReporter and
-// wait for termination to collect its exit code. This task could be
-// interrupted by a shutdown at any time, so it shouldn't depend on anything
-// external that could be shut down beforehand.
-int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
-  if (g_testing_delegate_)
-    return g_testing_delegate_->LaunchReporter(invocation);
+// Class responsible for launching the reporter process and waiting for its
+// completion. If feature InBrowserCleanerUI is enabled, this object will also
+// be responsible for starting the ChromePromptImpl object on the IO thread and
+// controlling its lifetime.
+//
+// Expected lifecycle of a SwReporterProcess:
+//  - created on the UI thread before the reporter process launch is posted
+//    (method ScheduleNextInvocation);
+//  - deleted on the UI thread once ReporterDone() finishes (the method is
+//    called after the reporter process exits).
+//
+// If feature InBrowserCleanerUI feature is enabled, the following tasks will
+// be posted in sequence to the IO Thread and will retain the SwReporterProcess
+// object:
+//  - creation of a ChromePromptImpl object right after the reporter process is
+//    launched (that object will be responsible for handling IPC requests from
+//    the reporter process);
+//  - deletion of the ChromePromptImpl object on ReporterDone().
+// As a consequence, the SwReporterProcess object can outlive ReporterDone()
+// and will only be deleted after the ChromePromptImpl object is released on
+// the IO thread.
+class SwReporterProcess : public base::RefCountedThreadSafe<SwReporterProcess> {
+ public:
+  explicit SwReporterProcess(const SwReporterInvocation& invocation)
+      : invocation_(invocation) {}
+
+  // This function is called from a worker thread to launch the SwReporter and
+  // wait for termination to collect its exit code. This task could be
+  // interrupted by a shutdown at any time, so it shouldn't depend on anything
+  // external that could be shut down beforehand.
+  int LaunchAndWaitForExitOnBackgroundThread();
+
+  // Schedules to release the instance of ChromePromptImpl on the IO thread.
+  void OnReporterDone();
+
+  const SwReporterInvocation& invocation() const { return invocation_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<SwReporterProcess>;
+  ~SwReporterProcess() = default;
+
+  // Starts a new IPC service implementing the ChromePrompt interface and
+  // launches a new reporter process that can connect to the IPC.
+  base::Process LaunchConnectedReporterProcess();
+
+  // Starts a new instance of ChromePromptImpl to receive requests from the
+  // reporter. Must be run on the IO thread.
+  void CreateChromePromptImpl(
+      chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request);
+
+  // Releases the instance of ChromePromptImpl. Must be run on the IO thread.
+  void ReleaseChromePromptImpl();
+
+  // Launches a new process with the command line in the invocation and
+  // provided launch options. Uses g_testing_delegate_ if not null.
+  base::Process LaunchReporterProcess(
+      const SwReporterInvocation& invocation,
+      const base::LaunchOptions& launch_options);
+
+  // The invocation for the current reporter process.
+  SwReporterInvocation invocation_;
+
+  // Implementation of the ChromePrompt service to be used by the current
+  // reporter process. Can only be accessed on the IO thread.
+  std::unique_ptr<ChromePromptImpl> chrome_prompt_impl_;
+};
+
+int SwReporterProcess::LaunchAndWaitForExitOnBackgroundThread() {
   base::Process reporter_process =
-      base::LaunchProcess(invocation.command_line, base::LaunchOptions());
+      base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature)
+          ? LaunchConnectedReporterProcess()
+          : LaunchReporterProcess(invocation_, base::LaunchOptions());
+
   // This exit code is used to identify that a reporter run didn't happen, so
   // the result should be ignored and a rerun scheduled for the usual delay.
   int exit_code = kReporterFailureExitCode;
-  UMAHistogramReporter uma(invocation.suffix);
+  UMAHistogramReporter uma(invocation_.suffix);
   if (reporter_process.IsValid()) {
     uma.RecordReporterStep(SW_REPORTER_START_EXECUTION);
     bool success = reporter_process.WaitForExit(&exit_code);
@@ -574,6 +648,81 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
     uma.RecordReporterStep(SW_REPORTER_FAILED_TO_START);
   }
   return exit_code;
+}
+
+void SwReporterProcess::OnReporterDone() {
+  if (base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature)) {
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+        ->PostTask(FROM_HERE,
+                   base::Bind(&SwReporterProcess::ReleaseChromePromptImpl,
+                              base::RetainedRef(this)));
+  }
+}
+
+base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
+  DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
+
+  mojo::edk::PendingProcessConnection pending_process_connection;
+  std::string mojo_pipe_token;
+  mojo::ScopedMessagePipeHandle mojo_pipe =
+      pending_process_connection.CreateMessagePipe(&mojo_pipe_token);
+  invocation_.command_line.AppendSwitchASCII(kChromeMojoPipeTokenSwitch,
+                                             mojo_pipe_token);
+
+  mojo::edk::PlatformChannelPair channel;
+  base::HandlesToInheritVector handles_to_inherit;
+  channel.PrepareToPassClientHandleToChildProcess(&invocation_.command_line,
+                                                  &handles_to_inherit);
+
+  base::LaunchOptions launch_options;
+  launch_options.handles_to_inherit = &handles_to_inherit;
+  base::Process reporter_process =
+      LaunchReporterProcess(invocation_, launch_options);
+
+  if (!reporter_process.IsValid())
+    return reporter_process;
+
+  pending_process_connection.Connect(
+      reporter_process.Handle(),
+      mojo::edk::ConnectionParams(channel.PassServerHandle()));
+
+  chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request;
+  chrome_prompt_request.Bind(std::move(mojo_pipe));
+
+  // ChromePromptImpl tasks will need to run on the IO thread. There is no
+  // need to synchronize its creation, since the client end will wait for this
+  // initialization to be done before sending requests.
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&SwReporterProcess::CreateChromePromptImpl,
+                                base::RetainedRef(this),
+                                std::move(chrome_prompt_request)));
+
+  return reporter_process;
+}
+
+base::Process SwReporterProcess::LaunchReporterProcess(
+    const SwReporterInvocation& invocation,
+    const base::LaunchOptions& launch_options) {
+  return g_testing_delegate_
+             ? g_testing_delegate_->LaunchReporter(invocation, launch_options)
+             : base::LaunchProcess(invocation.command_line, launch_options);
+}
+
+void SwReporterProcess::CreateChromePromptImpl(
+    chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
+
+  chrome_prompt_impl_ =
+      base::MakeUnique<ChromePromptImpl>(std::move(chrome_prompt_request));
+}
+
+void SwReporterProcess::ReleaseChromePromptImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
+
+  chrome_prompt_impl_.release();
 }
 
 }  // namespace
@@ -771,11 +920,17 @@ class ReporterRunner : public chrome::BrowserListObserver {
     base::TaskRunner* task_runner =
         g_testing_delegate_ ? g_testing_delegate_->BlockingTaskRunner()
                             : blocking_task_runner_.get();
-    base::PostTaskAndReplyWithResult(
-        task_runner, FROM_HERE,
-        base::Bind(&LaunchAndWaitForExit, next_invocation),
+    auto sw_reporter_process =
+        make_scoped_refptr(new SwReporterProcess(next_invocation));
+    auto launch_and_wait =
+        base::Bind(&SwReporterProcess::LaunchAndWaitForExitOnBackgroundThread,
+                   sw_reporter_process);
+    auto reporter_done =
         base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this), Now(),
-                   version_, next_invocation));
+                   version_, std::move(sw_reporter_process));
+    base::PostTaskAndReplyWithResult(task_runner, FROM_HERE,
+                                     std::move(launch_and_wait),
+                                     std::move(reporter_done));
   }
 
   // This method is called on the UI thread when an invocation of the reporter
@@ -783,9 +938,11 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // thread so should be resilient to unexpected shutdown.
   void ReporterDone(const base::Time& reporter_start_time,
                     const base::Version& version,
-                    const SwReporterInvocation& finished_invocation,
+                    scoped_refptr<SwReporterProcess> sw_reporter_process,
                     int exit_code) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    sw_reporter_process->OnReporterDone();
 
     base::Time now = Now();
     base::TimeDelta reporter_running_time = now - reporter_start_time;
@@ -809,10 +966,12 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
     // If the reporter failed to launch, do not process the results. (The exit
     // code itself doesn't need to be logged in this case because
-    // SW_REPORTER_FAILED_TO_START is logged in |LaunchAndWaitForExit|.)
+    // SW_REPORTER_FAILED_TO_START is logged in
+    // |LaunchAndWaitForExitOnBackgroundThread|.)
     if (exit_code == kReporterFailureExitCode)
       return;
 
+    const auto& finished_invocation = sw_reporter_process->invocation();
     UMAHistogramReporter uma(finished_invocation.suffix);
     uma.ReportVersion(version);
     uma.ReportExitCode(exit_code);
@@ -993,8 +1152,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_ =
       base::CreateTaskRunnerWithTraits(
-          // LaunchAndWaitForExit() creates (MayBlock()) and joins
-          // (WithBaseSyncPrimitives()) a process.
+          // LaunchAndWaitForExitOnBackgroundThread() creates (MayBlock()) and
+          // joins (WithBaseSyncPrimitives()) a process.
           base::TaskTraits()
               .WithShutdownBehavior(
                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)

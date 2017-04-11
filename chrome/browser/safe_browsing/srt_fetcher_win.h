@@ -12,6 +12,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -43,6 +46,15 @@ const int kDaysBetweenSuccessfulSwReporterRuns = 7;
 const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 // The number of days to wait before sending out reporter logs.
 const int kDaysBetweenReporterLogsSent = 7;
+
+// When enabled, moves all user interaction with the Software Reporter and the
+// Chrome Cleanup tool to Chrome.
+extern const base::Feature kInBrowserCleanerUIFeature;
+
+// The switch to be passed to the Software Reporter process with the Mojo pipe
+// token for the IPC communication with Chrome.
+// TODO(crbug/709035) Move this to //components/chrome_cleaner.
+extern const char kChromeMojoPipeTokenSwitch[];
 
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {
@@ -113,7 +125,9 @@ class SwReporterTestingDelegate {
   virtual ~SwReporterTestingDelegate() {}
 
   // Test mock for launching the reporter.
-  virtual int LaunchReporter(const SwReporterInvocation& invocation) = 0;
+  virtual base::Process LaunchReporter(
+      const SwReporterInvocation& invocation,
+      const base::LaunchOptions& launch_options) = 0;
 
   // Test mock for showing the prompt.
   virtual void TriggerPrompt(Browser* browser,
