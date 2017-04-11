@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -243,8 +242,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ForwardsBeginFrameAcks) {
   // Replace BeginFrameSource so that we can observe acknowledgments.
   cc::FakeExternalBeginFrameSource source(0.f, false);
   uint32_t source_id = source.source_id();
-  static_cast<cc::SurfaceFactoryClient*>(view_->support_.get())
-      ->SetBeginFrameSource(&source);
+  view_->support_->SetBeginFrameSource(&source);
   view_->SetNeedsBeginFrames(true);
 
   {

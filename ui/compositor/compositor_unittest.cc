@@ -10,8 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

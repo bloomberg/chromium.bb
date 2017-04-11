@@ -47,6 +47,16 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     return reference_tracker_;
   }
 
+  // SurfaceFactoryClient implementation.
+  void ReferencedSurfacesChanged(
+      const LocalSurfaceId& local_surface_id,
+      const std::vector<SurfaceId>* active_referenced_surfaces,
+      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
+  void ReturnResources(const ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
+
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void BeginFrameDidNotSwap(const BeginFrameAck& ack);
@@ -68,16 +78,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RemoveTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
-
-  // SurfaceFactoryClient implementation.
-  void ReferencedSurfacesChanged(
-      const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
-  void ReturnResources(const ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
 
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;

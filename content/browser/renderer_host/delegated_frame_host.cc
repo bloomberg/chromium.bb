@@ -20,7 +20,6 @@
 #include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 #include "components/display_compositor/gl_helper.h"

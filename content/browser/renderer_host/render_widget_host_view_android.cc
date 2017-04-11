@@ -33,7 +33,6 @@
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"

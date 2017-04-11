@@ -58,6 +58,57 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
+void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
+    const LocalSurfaceId& local_surface_id,
+    const std::vector<SurfaceId>* active_referenced_surfaces,
+    const std::vector<SurfaceId>* pending_referenced_surfaces) {
+  if (!surface_manager_->using_surface_references())
+    return;
+
+  SurfaceId last_surface_id = reference_tracker_.current_surface_id();
+
+  // Populate list of surface references to add and remove based on reference
+  // surfaces in current frame compared with the last frame. The list of
+  // surface references includes references from both the pending and active
+  // frame if any.
+  reference_tracker_.UpdateReferences(local_surface_id,
+                                      active_referenced_surfaces,
+                                      pending_referenced_surfaces);
+
+  UpdateSurfaceReferences(last_surface_id, local_surface_id);
+}
+
+void CompositorFrameSinkSupport::ReturnResources(
+    const ReturnedResourceArray& resources) {
+  if (resources.empty())
+    return;
+
+  if (!ack_pending_count_ && client_) {
+    client_->ReclaimResources(resources);
+    return;
+  }
+
+  std::copy(resources.begin(), resources.end(),
+            std::back_inserter(surface_returned_resources_));
+}
+
+void CompositorFrameSinkSupport::SetBeginFrameSource(
+    BeginFrameSource* begin_frame_source) {
+  if (begin_frame_source_ && added_frame_observer_) {
+    begin_frame_source_->RemoveObserver(this);
+    added_frame_observer_ = false;
+  }
+  begin_frame_source_ = begin_frame_source;
+  UpdateNeedsBeginFramesInternal();
+}
+
+void CompositorFrameSinkSupport::WillDrawSurface(
+    const LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {
+  if (client_)
+    client_->WillDrawSurface(local_surface_id, damage_rect);
+}
+
 void CompositorFrameSinkSupport::EvictFrame() {
   surface_factory_.EvictSurface();
 }
@@ -181,57 +232,6 @@ void CompositorFrameSinkSupport::ForceReclaimResources() {
 void CompositorFrameSinkSupport::ClaimTemporaryReference(
     const SurfaceId& surface_id) {
   surface_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);
-}
-
-void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
-    const LocalSurfaceId& local_surface_id,
-    const std::vector<SurfaceId>* active_referenced_surfaces,
-    const std::vector<SurfaceId>* pending_referenced_surfaces) {
-  if (!surface_manager_->using_surface_references())
-    return;
-
-  SurfaceId last_surface_id = reference_tracker_.current_surface_id();
-
-  // Populate list of surface references to add and remove based on reference
-  // surfaces in current frame compared with the last frame. The list of
-  // surface references includes references from both the pending and active
-  // frame if any.
-  reference_tracker_.UpdateReferences(local_surface_id,
-                                      active_referenced_surfaces,
-                                      pending_referenced_surfaces);
-
-  UpdateSurfaceReferences(last_surface_id, local_surface_id);
-}
-
-void CompositorFrameSinkSupport::ReturnResources(
-    const ReturnedResourceArray& resources) {
-  if (resources.empty())
-    return;
-
-  if (!ack_pending_count_ && client_) {
-    client_->ReclaimResources(resources);
-    return;
-  }
-
-  std::copy(resources.begin(), resources.end(),
-            std::back_inserter(surface_returned_resources_));
-}
-
-void CompositorFrameSinkSupport::SetBeginFrameSource(
-    BeginFrameSource* begin_frame_source) {
-  if (begin_frame_source_ && added_frame_observer_) {
-    begin_frame_source_->RemoveObserver(this);
-    added_frame_observer_ = false;
-  }
-  begin_frame_source_ = begin_frame_source;
-  UpdateNeedsBeginFramesInternal();
-}
-
-void CompositorFrameSinkSupport::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  if (client_)
-    client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
