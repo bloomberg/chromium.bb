@@ -41,6 +41,9 @@ public class InstantAppsHandler {
     private static final String INSTANT_APP_START_TIME_EXTRA =
             "org.chromium.chrome.INSTANT_APP_START_TIME";
 
+    // TODO(mariakhomenko): Use system once we roll to O SDK.
+    private static final int FLAG_DO_NOT_LAUNCH = 0x00000200;
+
     // TODO(mariakhomenko): Depend directly on the constants once we roll to v8 libraries.
     private static final String DO_NOT_LAUNCH_EXTRA =
             "com.google.android.gms.instantapps.DO_NOT_LAUNCH_INSTANT_APP";
@@ -221,7 +224,8 @@ public class InstantAppsHandler {
             return false;
         }
 
-        if (IntentUtils.safeGetBooleanExtra(intent, DO_NOT_LAUNCH_EXTRA, false)) {
+        if (IntentUtils.safeGetBooleanExtra(intent, DO_NOT_LAUNCH_EXTRA, false)
+                || ((intent.getFlags() & FLAG_DO_NOT_LAUNCH) != 0)) {
             maybeRecordFallbackStats(intent);
             Log.i(TAG, "Not handling with Instant Apps (DO_NOT_LAUNCH_EXTRA)");
             return false;
