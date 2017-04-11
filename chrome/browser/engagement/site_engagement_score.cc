@@ -46,7 +46,7 @@ std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
           origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-          std::string(), NULL));
+          content_settings::ResourceIdentifier(), NULL));
 
   if (value.get())
     return value;
@@ -270,8 +270,20 @@ void SiteEngagementScore::AddPoints(double points) {
   last_engagement_time_ = now;
 }
 
-double SiteEngagementScore::GetScore() const {
-  return std::min(DecayedScore() + BonusScore(), kMaxPoints);
+double SiteEngagementScore::GetTotalScore() const {
+  return std::min(
+      DecayedScore() + BonusIfShortcutLaunched() + BonusIfHasNotifications(),
+      kMaxPoints);
+}
+
+mojom::SiteEngagementDetails SiteEngagementScore::GetDetails() const {
+  mojom::SiteEngagementDetails engagement;
+  engagement.origin = origin_;
+  engagement.base_score = DecayedScore();
+  engagement.installed_bonus = BonusIfShortcutLaunched();
+  engagement.notifications_bonus = BonusIfHasNotifications();
+  engagement.total_score = GetTotalScore();
+  return engagement;
 }
 
 void SiteEngagementScore::Commit() {
@@ -280,14 +292,14 @@ void SiteEngagementScore::Commit() {
     return;
 
   settings_map_->SetWebsiteSettingDefaultScope(
-      origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      std::move(score_dict_));
+      origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+      content_settings::ResourceIdentifier(), std::move(score_dict_));
 }
 
 blink::mojom::EngagementLevel SiteEngagementScore::GetEngagementLevel() const {
   DCHECK_LT(GetMediumEngagementBoundary(), GetHighEngagementBoundary());
 
-  double score = GetScore();
+  double score = GetTotalScore();
   if (score == 0)
     return blink::mojom::EngagementLevel::NONE;
 
@@ -400,20 +412,23 @@ double SiteEngagementScore::DecayedScore() const {
                            periods * GetDecayPoints());
 }
 
-double SiteEngagementScore::BonusScore() const {
-  double bonus = 0;
+double SiteEngagementScore::BonusIfShortcutLaunched() const {
   int days_since_shortcut_launch =
       (clock_->Now() - last_shortcut_launch_time_).InDays();
   if (days_since_shortcut_launch <= kMaxDaysSinceShortcutLaunch)
-    bonus += GetWebAppInstalledPoints();
+    return GetWebAppInstalledPoints();
+  return 0;
+}
 
+double SiteEngagementScore::BonusIfHasNotifications() const {
   // TODO(dominickn, raymes): call PermissionManager::GetPermissionStatus when
   // the PermissionManager is thread-safe.
-  if (settings_map_ && settings_map_->GetContentSetting(
-                           origin_, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                           std::string()) == CONTENT_SETTING_ALLOW) {
-    bonus += GetNotificationPermissionPoints();
+  if (settings_map_ &&
+      settings_map_->GetContentSetting(
+          origin_, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+          content_settings::ResourceIdentifier()) == CONTENT_SETTING_ALLOW) {
+    return GetNotificationPermissionPoints();
   }
 
-  return bonus;
+  return 0;
 }

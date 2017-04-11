@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -52,13 +51,36 @@ bool g_updated_from_variations = false;
 // Length of time between metrics logging.
 const int kMetricsIntervalInMinutes = 60;
 
-std::unique_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
-    HostContentSettingsMap* settings_map) {
-  std::unique_ptr<ContentSettingsForOneType> engagement_settings(
-      new ContentSettingsForOneType);
-  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                      std::string(), engagement_settings.get());
-  return engagement_settings;
+// Helper for fetching content settings for one type.
+ContentSettingsForOneType GetContentSettingsFromProfile(
+    Profile* profile,
+    ContentSettingsType type) {
+  ContentSettingsForOneType content_settings;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      type, content_settings::ResourceIdentifier(), &content_settings);
+  return content_settings;
+}
+
+// Returns the combined list of origins which either have site engagement
+// data stored, or have other settings that would provide a score bonus.
+std::set<GURL> GetEngagementOriginsFromContentSettings(Profile* profile) {
+  std::set<GURL> urls;
+
+  // Fetch URLs of sites with engagement details stored.
+  for (const auto& site : GetContentSettingsFromProfile(
+           profile, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
+    urls.insert(GURL(site.primary_pattern.ToString()));
+  }
+
+  // Fetch URLs of sites for which notifications are allowed.
+  for (const auto& site : GetContentSettingsFromProfile(
+           profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
+    if (site.setting != CONTENT_SETTING_ALLOW)
+      continue;
+    urls.insert(GURL(site.primary_pattern.ToString()));
+  }
+
+  return urls;
 }
 
 // Only accept a navigation event for engagement if it is one of:
@@ -104,8 +126,7 @@ double SiteEngagementService::GetScoreFromSettings(
     HostContentSettingsMap* settings,
     const GURL& origin) {
   auto clock = base::MakeUnique<base::DefaultClock>();
-  return SiteEngagementScore(clock.get(), origin, settings)
-      .GetScore();
+  return SiteEngagementScore(clock.get(), origin, settings).GetTotalScore();
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
@@ -139,21 +160,28 @@ SiteEngagementService::GetEngagementLevel(const GURL& url) const {
   return CreateEngagementScore(url).GetEngagementLevel();
 }
 
-std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
-      GetEngagementContentSettings(settings_map);
+std::vector<mojom::SiteEngagementDetails> SiteEngagementService::GetAllDetails()
+    const {
+  std::set<GURL> origins = GetEngagementOriginsFromContentSettings(profile_);
 
-  std::map<GURL, double> score_map;
-  for (const auto& site : *engagement_settings) {
-    GURL origin(site.primary_pattern.ToString());
+  std::vector<mojom::SiteEngagementDetails> details;
+  details.reserve(origins.size());
+  for (const GURL& origin : origins) {
     if (!origin.is_valid())
       continue;
-
-    score_map[origin] = GetScore(origin);
+    details.push_back(GetDetails(origin));
   }
 
+  return details;
+}
+
+std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
+  std::map<GURL, double> score_map;
+  for (const GURL& origin : GetEngagementOriginsFromContentSettings(profile_)) {
+    if (!origin.is_valid())
+      continue;
+    score_map[origin] = GetScore(origin);
+  }
   return score_map;
 }
 
@@ -244,12 +272,17 @@ void SiteEngagementService::HelperDeleted(
 }
 
 double SiteEngagementService::GetScore(const GURL& url) const {
+  return GetDetails(url).total_score;
+}
+
+mojom::SiteEngagementDetails SiteEngagementService::GetDetails(
+    const GURL& url) const {
   // Ensure that if engagement is stale, we clean things up before fetching the
   // score.
   if (IsLastEngagementStale())
     CleanupEngagementScores(true);
 
-  return CreateEngagementScore(url).GetScore();
+  return CreateEngagementScore(url).GetDetails();
 }
 
 double SiteEngagementService::GetTotalEngagementPoints() const {
@@ -317,11 +350,6 @@ void SiteEngagementService::AfterStartupTask() {
 
 void SiteEngagementService::CleanupEngagementScores(
     bool update_last_engagement_time) const {
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
-      GetEngagementContentSettings(settings_map);
-
   // We want to rebase last engagement times relative to MaxDecaysPerScore
   // periods of decay in the past.
   base::Time now = clock_->Now();
@@ -341,7 +369,10 @@ void SiteEngagementService::CleanupEngagementScores(
   if (last_engagement_time > now)
     last_engagement_time = now;
 
-  for (const auto& site : *engagement_settings) {
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  for (const auto& site : GetContentSettingsFromProfile(
+           profile_, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
     GURL origin(site.primary_pattern.ToString());
 
     if (origin.is_valid()) {
@@ -376,14 +407,15 @@ void SiteEngagementService::CleanupEngagementScores(
         score.Commit();
       }
 
-      if (score.GetScore() > SiteEngagementScore::GetScoreCleanupThreshold())
+      if (score.GetTotalScore() >
+          SiteEngagementScore::GetScoreCleanupThreshold())
         continue;
     }
 
     // This origin has a score of 0. Wipe it from content settings.
     settings_map->SetWebsiteSettingDefaultScope(
-        origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-        nullptr);
+        origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+        content_settings::ResourceIdentifier(), nullptr);
   }
 
   // Set the last engagement time to be consistent with the scores. This will
@@ -577,16 +609,13 @@ SiteEngagementScore SiteEngagementService::CreateEngagementScore(
 }
 
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
-      GetEngagementContentSettings(settings_map);
-
   int total_origins = 0;
 
   // We cannot call GetScoreMap as we need the score objects, not raw scores.
-  for (const auto& site : *engagement_settings) {
+  for (const auto& site : GetContentSettingsFromProfile(
+           profile_, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
     GURL origin(site.primary_pattern.ToString());
+
     if (!origin.is_valid())
       continue;
 
@@ -653,9 +682,11 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     // engagement is next accessed, it will decay back to the proportionally
     // reduced value rather than being decayed once here, and then once again
     // when it is next accessed.
+    // TODO(703848): Move the proportional decay logic into SiteEngagementScore,
+    // so it can decay raw_score_ directly, without the double-decay issue.
     SiteEngagementScore engagement_score = CreateEngagementScore(origin);
 
-    double new_score = proportion_remaining * engagement_score.GetScore();
+    double new_score = proportion_remaining * engagement_score.GetTotalScore();
     int hours_since_engagement = (now - last_visit).InHours();
     int periods =
         hours_since_engagement / SiteEngagementScore::GetDecayPeriodInHours();

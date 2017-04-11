@@ -548,16 +548,16 @@ TEST_F(SiteEngagementServiceTest, NotificationPermission) {
       HostContentSettingsMapFactory::GetForProfile(profile());
 
   settings_map->SetContentSettingDefaultScope(
-      url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      CONTENT_SETTING_ALLOW);
+      url1, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
 
   settings_map->SetContentSettingDefaultScope(
-      url2, url2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      CONTENT_SETTING_BLOCK);
+      url2, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
 
   settings_map->SetContentSettingDefaultScope(
-      url3, url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      CONTENT_SETTING_ASK);
+      url3, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_ASK);
 
   EXPECT_EQ(5, service_->GetScore(url1));
   EXPECT_EQ(0, service_->GetScore(url2));
@@ -569,8 +569,8 @@ TEST_F(SiteEngagementServiceTest, NotificationPermission) {
   EXPECT_EQ(3, service_->GetScore(url2));
 
   settings_map->SetContentSettingDefaultScope(
-      url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      CONTENT_SETTING_BLOCK);
+      url1, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
 
   EXPECT_EQ(1, service_->GetScore(url1));
 }
@@ -1834,4 +1834,38 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
                                               incognito_settings_map, url1));
   EXPECT_EQ(3, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
                                               incognito_settings_map, url2));
+}
+
+TEST_F(SiteEngagementServiceTest, GetAllDetailsIncludesBonusOnlyScores) {
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+  GURL url3("https://drive.google.com/");
+  GURL url4("https://nothing.google.com/");
+
+  std::vector<mojom::SiteEngagementDetails> details = service_->GetAllDetails();
+  EXPECT_EQ(0u, details.size());
+
+  // Add a single site score via explicitly resetting the engagement score.
+  service_->ResetBaseScoreForURL(url1, 5);
+
+  // Add a second site indirectly, via notifications permissions.
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  settings_map->SetContentSettingDefaultScope(
+      url2, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
+
+  // Add third and fourth sites with notifications permission explicitly denied,
+  // to verify that they are not included.
+  settings_map->SetContentSettingDefaultScope(
+      url3, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
+  settings_map->SetContentSettingDefaultScope(
+      url4, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
+
+  // Verify that the URLs with engagement, and with notifications permission
+  // boosted engagement total, are included.
+  details = service_->GetAllDetails();
+  EXPECT_EQ(2u, details.size());
 }

@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -116,7 +118,13 @@ class SiteEngagementService : public KeyedService,
   // Returns the engagement level of |url|.
   blink::mojom::EngagementLevel GetEngagementLevel(const GURL& url) const;
 
+  // Returns an array of engagement score details for all origins which have
+  // a score, whether due to direct engagement, or other factors that cause
+  // an engagement bonus to be applied.
+  std::vector<mojom::SiteEngagementDetails> GetAllDetails() const;
+
   // Returns a map of all stored origins and their engagement scores.
+  // TODO(703848): Migrate important sites impl off this and remove it
   std::map<GURL, double> GetScoreMap() const;
 
   // Update the engagement score of |url| for a notification interaction.
@@ -142,6 +150,9 @@ class SiteEngagementService : public KeyedService,
 
   void HelperCreated(SiteEngagementService::Helper* helper);
   void HelperDeleted(SiteEngagementService::Helper* helper);
+
+  // Returns the site engagement details for the specified |url|.
+  mojom::SiteEngagementDetails GetDetails(const GURL& url) const;
 
   // Overridden from SiteEngagementScoreProvider.
   double GetScore(const GURL& url) const override;

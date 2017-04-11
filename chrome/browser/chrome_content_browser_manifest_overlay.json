@@ -55,7 +55,7 @@
           // TODO(beng): These should be moved to a separate capability.
           "mojom::OmniboxPageHandler",
           "mojom::PluginsPageHandler",
-          "mojom::SiteEngagementUIHandler",
+          "mojom::SiteEngagementDetailsProvider",
           "mojom::UsbInternalsPageHandler"
         ]
       }

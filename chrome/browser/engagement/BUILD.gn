@@ -6,7 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_bindings") {
   sources = [
-    "site_engagement.mojom",
+    "site_engagement_details.mojom",
   ]
 
   public_deps = [

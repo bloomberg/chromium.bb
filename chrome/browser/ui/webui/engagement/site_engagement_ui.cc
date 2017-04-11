@@ -20,42 +20,41 @@
 
 namespace {
 
-// Implementation of mojom::SiteEngagementUIHandler that gets information from
-// the
-// SiteEngagementService to provide data for the WebUI.
-class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
+// Implementation of mojom::SiteEngagementDetailsProvider that gets information
+// from the SiteEngagementService to provide data for the WebUI.
+class SiteEngagementDetailsProviderImpl
+    : public mojom::SiteEngagementDetailsProvider {
  public:
-  // SiteEngagementUIHandlerImpl is deleted when the supplied pipe is destroyed.
-  SiteEngagementUIHandlerImpl(
+  // Instance is deleted when the supplied pipe is destroyed.
+  SiteEngagementDetailsProviderImpl(
       Profile* profile,
-      mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request)
+      mojo::InterfaceRequest<mojom::SiteEngagementDetailsProvider> request)
       : profile_(profile), binding_(this, std::move(request)) {
     DCHECK(profile_);
   }
 
-  ~SiteEngagementUIHandlerImpl() override {}
+  ~SiteEngagementDetailsProviderImpl() override {}
 
-  // mojom::SiteEngagementUIHandler overrides:
-  void GetSiteEngagementInfo(
-      const GetSiteEngagementInfoCallback& callback) override {
+  // mojom::SiteEngagementDetailsProvider overrides:
+  void GetSiteEngagementDetails(
+      const GetSiteEngagementDetailsCallback& callback) override {
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::vector<mojom::SiteEngagementDetails> scores = service->GetAllDetails();
 
-    std::vector<mojom::SiteEngagementInfoPtr> engagement_info;
-    engagement_info.reserve(score_map.size());
-    for (const auto& info : score_map) {
-      mojom::SiteEngagementInfoPtr origin_info(
-          mojom::SiteEngagementInfo::New());
-      origin_info->origin = info.first;
-      origin_info->score = info.second;
+    std::vector<mojom::SiteEngagementDetailsPtr> engagement_info;
+    engagement_info.reserve(scores.size());
+    for (const auto& info : scores) {
+      mojom::SiteEngagementDetailsPtr origin_info(
+          mojom::SiteEngagementDetails::New());
+      *origin_info = std::move(info);
       engagement_info.push_back(std::move(origin_info));
     }
 
     callback.Run(std::move(engagement_info));
   }
 
-  void SetSiteEngagementScoreForOrigin(const GURL& origin,
-                                       double score) override {
+  void SetSiteEngagementBaseScoreForUrl(const GURL& origin,
+                                        double score) override {
     if (!origin.is_valid() || score < 0 ||
         score > SiteEngagementService::GetMaxPoints() || std::isnan(score)) {
       return;
@@ -69,21 +68,22 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::Binding<mojom::SiteEngagementUIHandler> binding_;
+  mojo::Binding<mojom::SiteEngagementDetailsProvider> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(SiteEngagementUIHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SiteEngagementDetailsProviderImpl);
 };
 
 }  // namespace
 
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
-    : MojoWebUIController<mojom::SiteEngagementUIHandler>(web_ui) {
+    : MojoWebUIController<mojom::SiteEngagementDetailsProvider>(web_ui) {
   // Set up the chrome://site-engagement/ source.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
   source->AddResourcePath("site_engagement.js", IDR_SITE_ENGAGEMENT_JS);
-  source->AddResourcePath("chrome/browser/engagement/site_engagement.mojom",
-                          IDR_SITE_ENGAGEMENT_MOJO_JS);
+  source->AddResourcePath(
+      "chrome/browser/engagement/site_engagement_details.mojom",
+      IDR_SITE_ENGAGEMENT_MOJO_JS);
   source->AddResourcePath("url/mojo/url.mojom", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
   source->UseGzip(std::unordered_set<std::string>());
@@ -93,7 +93,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
 SiteEngagementUI::~SiteEngagementUI() {}
 
 void SiteEngagementUI::BindUIHandler(
-    mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request) {
-  ui_handler_.reset(new SiteEngagementUIHandlerImpl(
+    mojo::InterfaceRequest<mojom::SiteEngagementDetailsProvider> request) {
+  ui_handler_.reset(new SiteEngagementDetailsProviderImpl(
       Profile::FromWebUI(web_ui()), std::move(request)));
 }

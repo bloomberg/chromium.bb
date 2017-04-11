@@ -66,25 +66,50 @@ class SiteEngagementUiBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(page_is_populated_);
   }
 
-  // Verifies that a row exists for the specified site URL.
-  void ExpectPageContainsUrl(const GURL& url) {
-    ASSERT_TRUE(page_is_populated_);
+  // Expects that there will be the specified number of rows.
+  int NumberOfRows() {
+    EXPECT_TRUE(page_is_populated_);
 
-    bool found_url = false;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+    int number_of_rows = -1;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::JoinString(
-            {"var origin_cells = "
-             "    Array.from(document.getElementsByClassName('origin-cell'));"
-             "window.domAutomationController.send(origin_cells.reduce("
-             "    (found, element) => {"
-             "      return found || (element.innerHTML == '",
-             url.spec(),
-             "');"
-             "    }, false));"},
-            ""),
-        &found_url));
-    EXPECT_TRUE(found_url);
+        "window.domAutomationController.send("
+        "    document.getElementsByClassName('origin-cell').length);",
+        &number_of_rows));
+
+    return number_of_rows;
+  }
+
+  // Returns the origin URL at the specified zero-based row index.
+  std::string OriginUrlAtRow(int index) {
+    EXPECT_TRUE(page_is_populated_);
+
+    std::string origin_url;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::JoinString({"window.domAutomationController.send("
+                          "    document.getElementsByClassName('origin-cell')[",
+                          base::IntToString(index), "].innerHTML);"},
+                         ""),
+        &origin_url));
+
+    return origin_url;
+  }
+
+  // Returns the stringified score at the specified zero-based row index.
+  std::string ScoreAtRow(int index) {
+    EXPECT_TRUE(page_is_populated_);
+
+    std::string score_string;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::JoinString({"window.domAutomationController.send("
+                          "    document.getElementsByClassName('score-input')[",
+                          base::IntToString(index), "].value);"},
+                         ""),
+        &score_string));
+
+    return score_string;
   }
 
  private:
@@ -98,5 +123,17 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementUiBrowserTest, Basic) {
   NavigateToWebUi();
   WaitUntilPagePopulated();
 
-  ExpectPageContainsUrl(kExampleUrl);
+  EXPECT_EQ(1, NumberOfRows());
+  EXPECT_EQ(kExampleUrl, OriginUrlAtRow(0));
+}
+
+IN_PROC_BROWSER_TEST_F(SiteEngagementUiBrowserTest,
+                       ScoresHaveTwoDecimalPlaces) {
+  ResetBaseScore(kExampleUrl, 3.14159);
+
+  NavigateToWebUi();
+  WaitUntilPagePopulated();
+
+  EXPECT_EQ(1, NumberOfRows());
+  EXPECT_EQ("3.14", ScoreAtRow(0));
 }
