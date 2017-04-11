@@ -1104,8 +1104,7 @@ public class LocationBarLayout extends FrameLayout
         mHasStartedNewOmniboxEditSession = false;
         mNewOmniboxEditSessionTimestamp = -1;
         Tab currentTab = getCurrentTab();
-        if (mNativeInitialized && mBottomSheet == null && mUrlHasFocus && currentTab != null
-                && !currentTab.isIncognito()) {
+        if (mNativeInitialized && mBottomSheet == null && mUrlHasFocus && currentTab != null) {
             mAutocomplete.startZeroSuggest(currentTab.getProfile(), mUrlBar.getQueryText(),
                     mToolbarDataProvider.getCurrentUrl(), mUrlFocusedFromFakebox);
         }
