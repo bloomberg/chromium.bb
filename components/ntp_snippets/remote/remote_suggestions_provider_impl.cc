@@ -1191,29 +1191,29 @@ void RemoteSuggestionsProviderImpl::RestoreCategoriesFromPrefs() {
 
   const base::ListValue* list =
       pref_service_->GetList(prefs::kRemoteSuggestionCategories);
-  for (const base::Value& entry : *list) {
+  for (const std::unique_ptr<base::Value>& entry : *list) {
     const base::DictionaryValue* dict = nullptr;
-    if (!entry.GetAsDictionary(&dict)) {
-      DLOG(WARNING) << "Invalid category pref value: " << entry;
+    if (!entry->GetAsDictionary(&dict)) {
+      DLOG(WARNING) << "Invalid category pref value: " << *entry;
       continue;
     }
     int id = 0;
     if (!dict->GetInteger(kCategoryContentId, &id)) {
       DLOG(WARNING) << "Invalid category pref value, missing '"
-                    << kCategoryContentId << "': " << entry;
+                    << kCategoryContentId << "': " << *entry;
       continue;
     }
     base::string16 title;
     if (!dict->GetString(kCategoryContentTitle, &title)) {
       DLOG(WARNING) << "Invalid category pref value, missing '"
-                    << kCategoryContentTitle << "': " << entry;
+                    << kCategoryContentTitle << "': " << *entry;
       continue;
     }
     bool included_in_last_server_response = false;
     if (!dict->GetBoolean(kCategoryContentProvidedByServer,
                           &included_in_last_server_response)) {
       DLOG(WARNING) << "Invalid category pref value, missing '"
-                    << kCategoryContentProvidedByServer << "': " << entry;
+                    << kCategoryContentProvidedByServer << "': " << *entry;
       continue;
     }
     bool allow_fetching_more_results = false;

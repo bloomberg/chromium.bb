@@ -268,8 +268,8 @@ bool FamilyInfoFetcher::ParseMembers(const base::ListValue* list,
        it != list->end();
        it++) {
     FamilyMember member;
-    const base::DictionaryValue* dict = NULL;
-    if (!it->GetAsDictionary(&dict) || !ParseMember(dict, &member)) {
+    base::DictionaryValue* dict = NULL;
+    if (!(*it)->GetAsDictionary(&dict) || !ParseMember(dict, &member)) {
       return false;
     }
     members->push_back(member);

@@ -17,7 +17,7 @@ namespace mojo {
 
 template <>
 struct ArrayTraits<base::ListValue> {
-  using Element = base::Value;
+  using Element = std::unique_ptr<base::Value>;
   using ConstIterator = base::ListValue::const_iterator;
 
   static size_t GetSize(const base::ListValue& input) {

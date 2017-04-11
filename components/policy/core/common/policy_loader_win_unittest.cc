@@ -398,7 +398,7 @@ void RegistryTestHarness::InstallStringListPolicy(
        element != policy_value->end();
        ++element) {
     std::string element_value;
-    if (!element->GetAsString(&element_value))
+    if (!(*element)->GetAsString(&element_value))
       continue;
     std::string name(base::IntToString(index++));
     key.WriteValue(UTF8ToUTF16(name).c_str(),

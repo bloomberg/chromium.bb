@@ -483,8 +483,8 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedPages(
   base::ListValue* list_value;
   if (value && value->GetAsList(&list_value)) {
     for (const auto& page_value : *list_value) {
-      const base::DictionaryValue* dict;
-      if (page_value.GetAsDictionary(&dict))
+      base::DictionaryValue* dict;
+      if (page_value->GetAsDictionary(&dict))
         browser->pages_.push_back(
             new RemotePage(device, browser->browser_id_, *dict));
     }

@@ -1305,7 +1305,7 @@ bool HttpResponseHeaders::FromNetLogParam(
        it != header_list->end();
        ++it) {
     std::string header_line;
-    if (!it->GetAsString(&header_line))
+    if (!(*it)->GetAsString(&header_line))
       return false;
 
     raw_headers.append(header_line);

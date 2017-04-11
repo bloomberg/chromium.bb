@@ -1803,7 +1803,7 @@ bool ExtensionPrefs::GetUserExtensionPrefIntoContainer(
   std::string extension_id;
   for (base::ListValue::const_iterator value_it = user_pref_as_list->begin();
        value_it != user_pref_as_list->end(); ++value_it) {
-    if (!value_it->GetAsString(&extension_id)) {
+    if (!(*value_it)->GetAsString(&extension_id)) {
       NOTREACHED();
       continue;
     }

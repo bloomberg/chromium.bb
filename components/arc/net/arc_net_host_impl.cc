@@ -374,8 +374,8 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   for (const auto& value : *network_properties_list) {
     mojom::WifiConfigurationPtr wc = mojom::WifiConfiguration::New();
 
-    const base::DictionaryValue* network_dict = nullptr;
-    value.GetAsDictionary(&network_dict);
+    base::DictionaryValue* network_dict = nullptr;
+    value->GetAsDictionary(&network_dict);
     DCHECK(network_dict);
 
     // kName is a post-processed version of kHexSSID.
@@ -389,7 +389,7 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
     DCHECK(!tmp.empty());
     wc->guid = tmp;
 
-    const base::DictionaryValue* wifi_dict = nullptr;
+    base::DictionaryValue* wifi_dict = nullptr;
     network_dict->GetDictionary(onc::network_config::kWiFi, &wifi_dict);
     DCHECK(wifi_dict);
 

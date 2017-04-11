@@ -307,7 +307,7 @@ void GetPolicyAllowedUrls(
   std::vector<ContentSettingsPattern> patterns;
   for (const auto& entry : *policy_urls) {
     std::string url;
-    bool valid_string = entry.GetAsString(&url);
+    bool valid_string = entry->GetAsString(&url);
     if (!valid_string)
       continue;
 

@@ -606,10 +606,10 @@ void ContentSuggestionsService::RestoreDismissedCategoriesFromPrefs() {
 
   const base::ListValue* list =
       pref_service_->GetList(prefs::kDismissedCategories);
-  for (const base::Value& entry : *list) {
+  for (const std::unique_ptr<base::Value>& entry : *list) {
     int id = 0;
-    if (!entry.GetAsInteger(&id)) {
-      DLOG(WARNING) << "Invalid category pref value: " << entry;
+    if (!entry->GetAsInteger(&id)) {
+      DLOG(WARNING) << "Invalid category pref value: " << *entry;
       continue;
     }
 

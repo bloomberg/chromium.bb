@@ -234,7 +234,7 @@ APISignature::APISignature(const base::ListValue& specification) {
   signature_.reserve(specification.GetSize());
   for (const auto& value : specification) {
     const base::DictionaryValue* param = nullptr;
-    CHECK(value.GetAsDictionary(&param));
+    CHECK(value->GetAsDictionary(&param));
     signature_.push_back(base::MakeUnique<ArgumentSpec>(*param));
   }
 }

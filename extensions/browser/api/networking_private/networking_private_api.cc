@@ -476,7 +476,7 @@ NetworkingPrivateGetEnabledNetworkTypesFunction::Run() {
   for (base::ListValue::iterator iter = enabled_networks_onc_types->begin();
        iter != enabled_networks_onc_types->end(); ++iter) {
     std::string type;
-    if (!iter->GetAsString(&type))
+    if (!(*iter)->GetAsString(&type))
       NOTREACHED();
     if (type == ::onc::network_type::kEthernet) {
       enabled_networks_list->AppendString(

@@ -282,7 +282,7 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
       dbus::MessageWriter array_writer(NULL);
       writer->OpenArray("v", &array_writer);
       for (const auto& value : *list) {
-        AppendValueDataAsVariant(&array_writer, value);
+        AppendValueDataAsVariant(&array_writer, *value);
       }
       writer->CloseContainer(&array_writer);
       break;

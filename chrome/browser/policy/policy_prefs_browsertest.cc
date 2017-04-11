@@ -452,7 +452,7 @@ void VerifyControlledSettingIndicators(Browser* browser,
   for (base::ListValue::const_iterator indicator = indicators->begin();
        indicator != indicators->end(); ++indicator) {
     const base::DictionaryValue* properties = NULL;
-    ASSERT_TRUE(indicator->GetAsDictionary(&properties));
+    ASSERT_TRUE((*indicator)->GetAsDictionary(&properties));
     std::string indicator_value;
     std::string indicator_controlled_by;
     bool indicator_readonly;

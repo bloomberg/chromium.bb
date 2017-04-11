@@ -206,7 +206,7 @@ bool GltfParser::SetMeshes(const base::DictionaryValue& dict) {
     if (mesh_dict->GetList("primitives", &list)) {
       for (const auto& primitive_value : *list) {
         const base::DictionaryValue* primitive_dict;
-        if (!primitive_value.GetAsDictionary(&primitive_dict))
+        if (!primitive_value->GetAsDictionary(&primitive_dict))
           return false;
 
         auto primitive = ProcessPrimitive(*primitive_dict);
@@ -261,7 +261,7 @@ bool GltfParser::SetNodes(const base::DictionaryValue& dict) {
     if (node_dict->GetList("meshes", &list)) {
       std::string mesh_key;
       for (const auto& mesh_value : *list) {
-        if (!mesh_value.GetAsString(&mesh_key))
+        if (!mesh_value->GetAsString(&mesh_key))
           return false;
         auto mesh_it = mesh_ids_.find(mesh_key);
         if (mesh_it == mesh_ids_.end())
@@ -284,7 +284,7 @@ bool GltfParser::SetNodes(const base::DictionaryValue& dict) {
     if (node_dict->GetList("children", &list)) {
       std::string node_key;
       for (const auto& mesh_value : *list) {
-        if (!mesh_value.GetAsString(&node_key))
+        if (!mesh_value->GetAsString(&node_key))
           return false;
         auto node_it = nodes.find(node_key);
         if (node_it == nodes.end())
@@ -308,7 +308,7 @@ bool GltfParser::SetScenes(const base::DictionaryValue& dict) {
     if (scene_dict->GetList("nodes", &list)) {
       std::string node_key;
       for (const auto& node_value : *list) {
-        if (!node_value.GetAsString(&node_key))
+        if (!node_value->GetAsString(&node_key))
           return false;
         auto node_it = node_ids_.find(node_key);
         if (node_it == node_ids_.end())

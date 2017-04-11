@@ -162,13 +162,13 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
   // Parse iceServers list and store them in |ice_config|.
   bool errors_found = false;
   for (const auto& server : *ice_servers_list) {
-    const base::DictionaryValue* server_dict;
-    if (!server.GetAsDictionary(&server_dict)) {
+    base::DictionaryValue* server_dict;
+    if (!server->GetAsDictionary(&server_dict)) {
       errors_found = true;
       continue;
     }
 
-    const base::ListValue* urls_list = nullptr;
+    base::ListValue* urls_list = nullptr;
     if (!server_dict->GetList("urls", &urls_list)) {
       errors_found = true;
       continue;
@@ -182,7 +182,7 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
 
     for (const auto& url : *urls_list) {
       std::string url_str;
-      if (!url.GetAsString(&url_str)) {
+      if (!url->GetAsString(&url_str)) {
         errors_found = true;
         continue;
       }

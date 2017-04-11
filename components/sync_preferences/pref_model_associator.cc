@@ -291,7 +291,7 @@ base::Value* PrefModelAssociator::MergeListValues(const base::Value& from_value,
   base::ListValue* result = to_list_value.DeepCopy();
 
   for (const auto& value : from_list_value) {
-    result->AppendIfNotPresent(value.CreateDeepCopy());
+    result->AppendIfNotPresent(value->CreateDeepCopy());
   }
   return result;
 }

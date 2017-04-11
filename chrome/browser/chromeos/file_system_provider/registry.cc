@@ -228,7 +228,7 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
         restored_watcher.last_tag = last_tag;
         for (const auto& persistent_origin : *persistent_origins) {
           std::string origin;
-          if (persistent_origin.GetAsString(&origin)) {
+          if (persistent_origin->GetAsString(&origin)) {
             LOG(ERROR) << "Malformed subscriber information in preferences.";
             continue;
           }

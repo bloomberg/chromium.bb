@@ -49,7 +49,7 @@ class Value;
 class BASE_EXPORT Value {
  public:
   using DictStorage = base::flat_map<std::string, std::unique_ptr<Value>>;
-  using ListStorage = std::vector<Value>;
+  using ListStorage = std::vector<std::unique_ptr<Value>>;
 
   enum class Type {
     NONE = 0,
@@ -390,14 +390,8 @@ class BASE_EXPORT ListValue : public Value {
   // Returns the number of Values in this list.
   size_t GetSize() const { return list_->size(); }
 
-  // Returns the capacity of storage for Values in this list.
-  size_t capacity() const { return list_->capacity(); }
-
   // Returns whether the list is empty.
   bool empty() const { return list_->empty(); }
-
-  // Reserves storage for at least |n| values.
-  void Reserve(size_t n);
 
   // Sets the list item at the given index to be the Value specified by
   // the value given.  If the index beyond the current end of the list, null

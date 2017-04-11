@@ -233,7 +233,7 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(
 
   for (const auto& it : *configs_list) {
     const base::DictionaryValue* config_dict = nullptr;
-    if (!it.GetAsDictionary(&config_dict))
+    if (!it->GetAsDictionary(&config_dict))
       return nullptr;
 
     config->AddPreemptiveRule(config_dict);
@@ -259,7 +259,7 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
 
   for (const auto& it : *configs_list) {
     const base::DictionaryValue* config_dict = nullptr;
-    if (!it.GetAsDictionary(&config_dict))
+    if (!it->GetAsDictionary(&config_dict))
       return nullptr;
 
     std::string category_preset_string;

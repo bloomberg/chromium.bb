@@ -855,7 +855,7 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
       std::vector<base::StringPiece> disabled_features;
       base::StringPiece disabled_feature;
       for (const auto& item : *override_disabled_feature_list) {
-        if (item.GetAsString(&disabled_feature)) {
+        if (item->GetAsString(&disabled_feature)) {
           disabled_features.push_back(disabled_feature);
         }
       }
@@ -874,7 +874,7 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
       std::vector<base::StringPiece> disabled_tokens;
       base::StringPiece disabled_token;
       for (const auto& item : *disabled_token_list) {
-        if (item.GetAsString(&disabled_token)) {
+        if (item->GetAsString(&disabled_token)) {
           disabled_tokens.push_back(disabled_token);
         }
       }

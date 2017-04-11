@@ -364,13 +364,14 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   items_to_remove.reserve(args->GetSize());
   for (base::ListValue::const_iterator it = args->begin();
        it != args->end(); ++it) {
-    const base::DictionaryValue* deletion = NULL;
+    base::DictionaryValue* deletion = NULL;
     base::string16 url;
-    const base::ListValue* timestamps = NULL;
+    base::ListValue* timestamps = NULL;
 
     // Each argument is a dictionary with properties "url" and "timestamps".
-    if (!(it->GetAsDictionary(&deletion) && deletion->GetString("url", &url) &&
-          deletion->GetList("timestamps", &timestamps))) {
+    if (!((*it)->GetAsDictionary(&deletion) &&
+        deletion->GetString("url", &url) &&
+        deletion->GetList("timestamps", &timestamps))) {
       NOTREACHED() << "Unable to extract arguments";
       return;
     }
@@ -383,7 +384,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
     double timestamp;
     for (base::ListValue::const_iterator ts_iterator = timestamps->begin();
          ts_iterator != timestamps->end(); ++ts_iterator) {
-      if (!ts_iterator->GetAsDouble(&timestamp)) {
+      if (!(*ts_iterator)->GetAsDouble(&timestamp)) {
         NOTREACHED() << "Unable to extract visit timestamp.";
         continue;
       }

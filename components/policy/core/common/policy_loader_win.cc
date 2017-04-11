@@ -113,7 +113,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
     std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
     for (const auto& list_entry : *policy_list_value) {
       std::string entry;
-      if (!list_entry.GetAsString(&entry))
+      if (!list_entry->GetAsString(&entry))
         continue;
       size_t pos = entry.find(';');
       if (pos == std::string::npos)

@@ -57,7 +57,7 @@ class TestCommandLinePrefStore : public ChromeCommandLinePrefStore {
     std::string cipher_string;
     for (base::ListValue::const_iterator it = list_value->begin();
          it != list_value->end(); ++it, ++ciphers) {
-      ASSERT_TRUE(it->GetAsString(&cipher_string));
+      ASSERT_TRUE((*it)->GetAsString(&cipher_string));
       EXPECT_EQ(*ciphers, cipher_string);
     }
   }

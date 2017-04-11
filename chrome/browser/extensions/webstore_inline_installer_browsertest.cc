@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerRedirectTest,
   int i = 0;
   for (const auto& value : *redirect_list) {
     std::string value_string;
-    ASSERT_TRUE(value.GetAsString(&value_string));
+    ASSERT_TRUE(value->GetAsString(&value_string));
     GURL redirect_url(value_string);
     EXPECT_EQ(expected_redirect_domains[i++], redirect_url.host());
   }

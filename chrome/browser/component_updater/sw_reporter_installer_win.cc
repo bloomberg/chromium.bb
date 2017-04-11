@@ -209,7 +209,7 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
   safe_browsing::SwReporterQueue invocations;
   for (const auto& iter : *parameter_list) {
     const base::DictionaryValue* invocation_params = nullptr;
-    if (!iter.GetAsDictionary(&invocation_params)) {
+    if (!iter->GetAsDictionary(&invocation_params)) {
       ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
       return;
     }
@@ -240,7 +240,7 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     std::vector<base::string16> argv = {exe_path.value()};
     for (const auto& value : *arguments) {
       base::string16 argument;
-      if (!value.GetAsString(&argument)) {
+      if (!value->GetAsString(&argument)) {
         ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
         return;
       }

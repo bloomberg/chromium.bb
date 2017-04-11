@@ -80,7 +80,7 @@ void LoadMimeTypes(bool matching_mime_types,
   for (base::ListValue::const_iterator mime_type_it = mime_types->begin();
        mime_type_it != mime_types->end(); ++mime_type_it) {
     std::string mime_type_str;
-    success = mime_type_it->GetAsString(&mime_type_str);
+    success = (*mime_type_it)->GetAsString(&mime_type_str);
     DCHECK(success);
     if (matching_mime_types) {
       plugin->AddMatchingMimeType(mime_type_str);
@@ -115,8 +115,8 @@ std::unique_ptr<PluginMetadata> CreatePluginMetadata(
   if (plugin_dict->GetList("versions", &versions)) {
     for (base::ListValue::const_iterator it = versions->begin();
          it != versions->end(); ++it) {
-      const base::DictionaryValue* version_dict = NULL;
-      if (!it->GetAsDictionary(&version_dict)) {
+      base::DictionaryValue* version_dict = NULL;
+      if (!(*it)->GetAsDictionary(&version_dict)) {
         NOTREACHED();
         continue;
       }

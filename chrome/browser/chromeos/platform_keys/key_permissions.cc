@@ -247,15 +247,20 @@ void KeyPermissions::PermissionsForExtension::KeyEntriesFromState(
     return;
   }
   for (const auto& entry : *entries) {
+    if (!entry) {
+      LOG(ERROR) << "Found invalid NULL entry in PlatformKeys state store.";
+      continue;
+    }
+
     std::string spki_b64;
     const base::DictionaryValue* dict_entry = nullptr;
-    if (entry.GetAsString(&spki_b64)) {
+    if (entry->GetAsString(&spki_b64)) {
       // This handles the case that the store contained a plain list of base64
       // and DER-encoded SPKIs from an older version of ChromeOS.
       KeyEntry new_entry(spki_b64);
       new_entry.sign_once = true;
       state_store_entries_.push_back(new_entry);
-    } else if (entry.GetAsDictionary(&dict_entry)) {
+    } else if (entry->GetAsDictionary(&dict_entry)) {
       dict_entry->GetStringWithoutPathExpansion(kStateStoreSPKI, &spki_b64);
       KeyEntry new_entry(spki_b64);
       dict_entry->GetBooleanWithoutPathExpansion(kStateStoreSignOnce,
@@ -264,7 +269,7 @@ void KeyPermissions::PermissionsForExtension::KeyEntriesFromState(
                                                  &new_entry.sign_unlimited);
       state_store_entries_.push_back(new_entry);
     } else {
-      LOG(ERROR) << "Found invalid entry of type " << entry.GetType()
+      LOG(ERROR) << "Found invalid entry of type " << entry->GetType()
                  << " in PlatformKeys state store.";
       continue;
     }

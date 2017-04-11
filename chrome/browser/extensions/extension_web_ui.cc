@@ -67,17 +67,17 @@ const char kActive[] = "active";
 void InitializeOverridesList(base::ListValue* list) {
   base::ListValue migrated;
   std::set<std::string> seen_entries;
-  for (auto& val : *list) {
+  for (const auto& val : *list) {
     std::unique_ptr<base::DictionaryValue> new_dict(
         new base::DictionaryValue());
     std::string entry_name;
     base::DictionaryValue* existing_dict = nullptr;
-    if (val.GetAsDictionary(&existing_dict)) {
+    if (val->GetAsDictionary(&existing_dict)) {
       bool success = existing_dict->GetString(kEntry, &entry_name);
       if (!success)  // See comment about CHECK(success) in ForEachOverrideList.
         continue;
       new_dict->Swap(existing_dict);
-    } else if (val.GetAsString(&entry_name)) {
+    } else if (val->GetAsString(&entry_name)) {
       new_dict->SetString(kEntry, entry_name);
       new_dict->SetBoolean(kActive, true);
     } else {
@@ -98,10 +98,10 @@ void InitializeOverridesList(base::ListValue* list) {
 // marks it as active.
 void AddOverridesToList(base::ListValue* list,
                         const std::string& override) {
-  for (auto& val : *list) {
+  for (const auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
-    if (!val.GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
+    if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
       NOTREACHED();
       continue;
     }
@@ -123,10 +123,10 @@ void AddOverridesToList(base::ListValue* list,
 void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
                            base::ListValue* list) {
   base::ListValue migrated;
-  for (auto& val : *list) {
+  for (const auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
-    if (!val.GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
+    if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
       NOTREACHED();
       continue;
     }
@@ -177,19 +177,20 @@ enum UpdateBehavior {
 bool UpdateOverridesList(base::ListValue* overrides_list,
                          const std::string& override_url,
                          UpdateBehavior behavior) {
-  base::ListValue::iterator iter = std::find_if(
-      overrides_list->begin(), overrides_list->end(),
-      [&override_url](const base::Value& value) {
-        std::string entry;
-        const base::DictionaryValue* dict = nullptr;
-        return value.GetAsDictionary(&dict) &&
-               dict->GetString(kEntry, &entry) && entry == override_url;
-      });
+  base::ListValue::iterator iter =
+      std::find_if(overrides_list->begin(), overrides_list->end(),
+                   [&override_url](const std::unique_ptr<base::Value>& value) {
+                     std::string entry;
+                     const base::DictionaryValue* dict = nullptr;
+                     return value->GetAsDictionary(&dict) &&
+                            dict->GetString(kEntry, &entry) &&
+                            entry == override_url;
+                   });
   if (iter != overrides_list->end()) {
     switch (behavior) {
       case UPDATE_DEACTIVATE: {
         base::DictionaryValue* dict = nullptr;
-        bool success = iter->GetAsDictionary(&dict);
+        bool success = (*iter)->GetAsDictionary(&dict);
         // See comment about CHECK(success) in ForEachOverrideList.
         if (success) {
           dict->SetBoolean(kActive, false);
@@ -427,7 +428,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     for (base::ListValue::const_iterator list_iter = url_list->begin();
          list_iter != url_list->end(); ++list_iter) {
       const base::DictionaryValue* dict = nullptr;
-      if (!list_iter->GetAsDictionary(&dict))
+      if (!(*list_iter)->GetAsDictionary(&dict))
         continue;
       std::string override;
       if (!dict->GetString(kEntry, &override))

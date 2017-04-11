@@ -625,6 +625,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   if (item->type() == MenuItem::RADIO)
     RadioItemSelected(item);
 
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
 
   std::unique_ptr<base::DictionaryValue> properties(
       new base::DictionaryValue());
@@ -663,14 +664,8 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
                            webview_guest->view_instance_id());
   }
 
-  auto args = base::MakeUnique<base::ListValue>();
-  args->Reserve(2);
+  base::DictionaryValue* raw_properties = properties.get();
   args->Append(std::move(properties));
-  // |properties| is invalidated at this time, which is why |args| needs to be
-  // queried for the pointer. The obtained pointer is guaranteed to stay valid
-  // even after further Appends, because enough storage was reserved above.
-  base::DictionaryValue* raw_properties = nullptr;
-  args->GetDictionary(0, &raw_properties);
 
   // Add the tab info to the argument list.
   // No tab info in a platform app.

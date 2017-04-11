@@ -167,7 +167,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     for (base::ListValue::const_iterator it = trust_list->begin();
          it != trust_list->end(); ++it) {
       std::string trust_type;
-      if (!it->GetAsString(&trust_type))
+      if (!(*it)->GetAsString(&trust_type))
         NOTREACHED();
 
       if (trust_type == ::onc::certificate::kWeb) {

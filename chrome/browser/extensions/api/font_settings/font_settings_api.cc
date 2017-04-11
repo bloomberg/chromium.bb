@@ -301,7 +301,7 @@ bool FontSettingsGetFontListFunction::CopyFontsToResult(
   for (base::ListValue::iterator it = fonts->begin();
        it != fonts->end(); ++it) {
     base::ListValue* font_list_value;
-    if (!it->GetAsList(&font_list_value)) {
+    if (!(*it)->GetAsList(&font_list_value)) {
       NOTREACHED();
       return false;
     }

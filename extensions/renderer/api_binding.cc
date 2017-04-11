@@ -180,7 +180,7 @@ APIBinding::APIBinding(const std::string& api_name,
   if (function_definitions) {
     for (const auto& func : *function_definitions) {
       const base::DictionaryValue* func_dict = nullptr;
-      CHECK(func.GetAsDictionary(&func_dict));
+      CHECK(func->GetAsDictionary(&func_dict));
       std::string name;
       CHECK(func_dict->GetString("name", &name));
 
@@ -197,7 +197,7 @@ APIBinding::APIBinding(const std::string& api_name,
   if (type_definitions) {
     for (const auto& type : *type_definitions) {
       const base::DictionaryValue* type_dict = nullptr;
-      CHECK(type.GetAsDictionary(&type_dict));
+      CHECK(type->GetAsDictionary(&type_dict));
       std::string id;
       CHECK(type_dict->GetString("id", &id));
       auto argument_spec = base::MakeUnique<ArgumentSpec>(*type_dict);
@@ -222,7 +222,7 @@ APIBinding::APIBinding(const std::string& api_name,
       if (type_dict->GetList("functions", &type_functions)) {
         for (const auto& func : *type_functions) {
           const base::DictionaryValue* func_dict = nullptr;
-          CHECK(func.GetAsDictionary(&func_dict));
+          CHECK(func->GetAsDictionary(&func_dict));
           std::string function_name;
           CHECK(func_dict->GetString("name", &function_name));
 
@@ -240,7 +240,7 @@ APIBinding::APIBinding(const std::string& api_name,
     events_.reserve(event_definitions->GetSize());
     for (const auto& event : *event_definitions) {
       const base::DictionaryValue* event_dict = nullptr;
-      CHECK(event.GetAsDictionary(&event_dict));
+      CHECK(event->GetAsDictionary(&event_dict));
       std::string name;
       CHECK(event_dict->GetString("name", &name));
       std::string full_name =
@@ -265,8 +265,8 @@ APIBinding::APIBinding(const std::string& api_name,
           const base::ListValue* list = nullptr;
           CHECK(options->GetList(name, &list));
           for (const auto& entry : *list) {
-            DCHECK(entry.is_string());
-            out_value->push_back(entry.GetString());
+            DCHECK(entry->is_string());
+            out_value->push_back(entry->GetString());
           }
         };
         get_values("actions", &rule_actions);

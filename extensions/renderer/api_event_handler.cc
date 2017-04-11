@@ -220,7 +220,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
     std::vector<v8::Local<v8::Value>> v8_args;
     v8_args.reserve(args.GetSize());
     for (const auto& arg : args)
-      v8_args.push_back(converter->ToV8Value(&arg, context));
+      v8_args.push_back(converter->ToV8Value(arg.get(), context));
     emitter->Fire(context, &v8_args, &filter);
   } else {
     v8::Isolate* isolate = context->GetIsolate();

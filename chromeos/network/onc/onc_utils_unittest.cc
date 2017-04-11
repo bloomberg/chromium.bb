@@ -179,7 +179,7 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
   test_data->GetAsList(&tests2);
   ASSERT_TRUE(tests2);
   for (auto iter1 = tests2->begin(); iter1 != tests2->end(); ++iter1)
-    list_of_tests->Append(iter1->CreateDeepCopy());
+    list_of_tests->Append((*iter1)->CreateDeepCopy());
 
   int index = 0;
   for (auto iter2 = list_of_tests->begin(); iter2 != list_of_tests->end();
@@ -187,7 +187,7 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
     SCOPED_TRACE("Test case #" + base::IntToString(index));
 
     base::DictionaryValue* test_case = nullptr;
-    iter2->GetAsDictionary(&test_case);
+    (*iter2)->GetAsDictionary(&test_case);
     ASSERT_TRUE(test_case);
 
     base::DictionaryValue* onc_proxy_settings;
@@ -216,7 +216,7 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
     SCOPED_TRACE("Test case #" + base::IntToString(index));
 
     base::DictionaryValue* test_case;
-    it->GetAsDictionary(&test_case);
+    (*it)->GetAsDictionary(&test_case);
 
     base::DictionaryValue* shill_proxy_config;
     test_case->GetDictionary("ProxyConfig", &shill_proxy_config);

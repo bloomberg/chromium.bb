@@ -35,7 +35,7 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node);
 std::unique_ptr<ListValue> CopyListWithoutEmptyChildren(const ListValue& list) {
   std::unique_ptr<ListValue> copy;
   for (const auto& entry : list) {
-    std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(entry);
+    std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(*entry);
     if (child_copy) {
       if (!copy)
         copy.reset(new ListValue);
@@ -375,7 +375,12 @@ bool operator==(const Value& lhs, const Value& rhs) {
                                  std::tie(v.first, *v.second);
                         });
     case Value::Type::LIST:
-      return *lhs.list_ == *rhs.list_;
+      if (lhs.list_->size() != rhs.list_->size())
+        return false;
+      return std::equal(
+          std::begin(*lhs.list_), std::end(*lhs.list_), std::begin(*rhs.list_),
+          [](const Value::ListStorage::value_type& u,
+             const Value::ListStorage::value_type& v) { return *u == *v; });
   }
 
   NOTREACHED();
@@ -414,7 +419,11 @@ bool operator<(const Value& lhs, const Value& rhs) {
             return std::tie(u.first, *u.second) < std::tie(v.first, *v.second);
           });
     case Value::Type::LIST:
-      return *lhs.list_ < *rhs.list_;
+      return std::lexicographical_compare(
+          std::begin(*lhs.list_), std::end(*lhs.list_), std::begin(*rhs.list_),
+          std::end(*rhs.list_),
+          [](const Value::ListStorage::value_type& u,
+             const Value::ListStorage::value_type& v) { return *u < *v; });
   }
 
   NOTREACHED();
@@ -485,10 +494,11 @@ void Value::InternalCopyConstructFrom(const Value& that) {
     case Type::BINARY:
       binary_value_.Init(*that.binary_value_);
       return;
-    // DictStorage is a move-only type due to the presence of unique_ptrs. This
-    // is why the explicit copy of every element is necessary here.
-    // TODO(crbug.com/646113): Clean this up when DictStorage can be copied
-    // directly.
+    // DictStorage and ListStorage are move-only types due to the presence of
+    // unique_ptrs. This is why the explicit copy of every element is necessary
+    // here.
+    // TODO(crbug.com/646113): Clean this up when DictStorage and ListStorage
+    // can be copied directly.
     case Type::DICTIONARY:
       dict_ptr_.Init(MakeUnique<DictStorage>());
       for (const auto& it : **that.dict_ptr_) {
@@ -498,7 +508,10 @@ void Value::InternalCopyConstructFrom(const Value& that) {
       }
       return;
     case Type::LIST:
-      list_.Init(*that.list_);
+      list_.Init();
+      list_->reserve(that.list_->size());
+      for (const auto& it : *that.list_)
+        list_->push_back(MakeUnique<Value>(*it));
       return;
   }
 }
@@ -548,17 +561,16 @@ void Value::InternalCopyAssignFromSameType(const Value& that) {
     case Type::BINARY:
       *binary_value_ = *that.binary_value_;
       return;
-    // DictStorage is a move-only type due to the presence of unique_ptrs. This
-    // is why the explicit call to the copy constructor is necessary here.
-    // TODO(crbug.com/646113): Clean this up when DictStorage can be copied
-    // directly.
-    case Type::DICTIONARY: {
-      Value copy = that;
-      *dict_ptr_ = std::move(*copy.dict_ptr_);
+    // DictStorage and ListStorage are move-only types due to the presence of
+    // unique_ptrs. This is why the explicit call to the copy constructor is
+    // necessary here.
+    // TODO(crbug.com/646113): Clean this up when DictStorage and ListStorage
+    // can be copied directly.
+    case Type::DICTIONARY:
+      *dict_ptr_ = std::move(*Value(that).dict_ptr_);
       return;
-    }
     case Type::LIST:
-      *list_ = *that.list_;
+      *list_ = std::move(*Value(that).list_);
       return;
   }
 }
@@ -1065,10 +1077,6 @@ void ListValue::Clear() {
   list_->clear();
 }
 
-void ListValue::Reserve(size_t n) {
-  list_->reserve(n);
-}
-
 bool ListValue::Set(size_t index, Value* in_value) {
   return Set(index, WrapUnique(in_value));
 }
@@ -1083,7 +1091,9 @@ bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
       Append(MakeUnique<Value>());
     Append(std::move(in_value));
   } else {
-    (*list_)[index] = std::move(*in_value);
+    // TODO(dcheng): remove this DCHECK once the raw pointer version is removed?
+    DCHECK((*list_)[index] != in_value);
+    (*list_)[index] = std::move(in_value);
   }
   return true;
 }
@@ -1093,7 +1103,7 @@ bool ListValue::Get(size_t index, const Value** out_value) const {
     return false;
 
   if (out_value)
-    *out_value = &(*list_)[index];
+    *out_value = (*list_)[index].get();
 
   return true;
 }
@@ -1203,35 +1213,36 @@ bool ListValue::Remove(size_t index, std::unique_ptr<Value>* out_value) {
     return false;
 
   if (out_value)
-    *out_value = MakeUnique<Value>(std::move((*list_)[index]));
+    *out_value = std::move((*list_)[index]);
 
   list_->erase(list_->begin() + index);
   return true;
 }
 
 bool ListValue::Remove(const Value& value, size_t* index) {
-  auto it = std::find(list_->begin(), list_->end(), value);
+  for (auto it = list_->begin(); it != list_->end(); ++it) {
+    if (**it == value) {
+      size_t previous_index = it - list_->begin();
+      list_->erase(it);
 
-  if (it == list_->end())
-    return false;
-
-  if (index)
-    *index = std::distance(list_->begin(), it);
-
-  list_->erase(it);
-  return true;
+      if (index)
+        *index = previous_index;
+      return true;
+    }
+  }
+  return false;
 }
 
 ListValue::iterator ListValue::Erase(iterator iter,
                                      std::unique_ptr<Value>* out_value) {
   if (out_value)
-    *out_value = MakeUnique<Value>(std::move(*iter));
+    *out_value = std::move(*ListStorage::iterator(iter));
 
   return list_->erase(iter);
 }
 
 void ListValue::Append(std::unique_ptr<Value> in_value) {
-  list_->push_back(std::move(*in_value));
+  list_->push_back(std::move(in_value));
 }
 
 #if !defined(OS_LINUX)
@@ -1277,10 +1288,11 @@ void ListValue::AppendStrings(const std::vector<string16>& in_values) {
 
 bool ListValue::AppendIfNotPresent(std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
-  if (std::find(list_->begin(), list_->end(), *in_value) != list_->end())
-    return false;
-
-  list_->push_back(std::move(*in_value));
+  for (const auto& entry : *list_) {
+    if (*entry == *in_value)
+      return false;
+  }
+  list_->push_back(std::move(in_value));
   return true;
 }
 
@@ -1289,12 +1301,15 @@ bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
   if (index > list_->size())
     return false;
 
-  list_->insert(list_->begin() + index, std::move(*in_value));
+  list_->insert(list_->begin() + index, std::move(in_value));
   return true;
 }
 
 ListValue::const_iterator ListValue::Find(const Value& value) const {
-  return std::find(list_->begin(), list_->end(), value);
+  return std::find_if(list_->begin(), list_->end(),
+                      [&value](const std::unique_ptr<Value>& entry) {
+                        return *entry == value;
+                      });
 }
 
 void ListValue::Swap(ListValue* other) {

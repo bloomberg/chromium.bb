@@ -428,9 +428,8 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   manifest.SetString(keys::kDescription, "__MSG_description__");
   base::ListValue* handlers = new base::ListValue();
   manifest.Set(keys::kFileBrowserHandlers, handlers);
-  handlers->Append(base::MakeUnique<base::DictionaryValue>());
-  base::DictionaryValue* handler = nullptr;
-  handlers->GetDictionary(0, &handler);
+  base::DictionaryValue* handler = new base::DictionaryValue();
+  handlers->Append(base::WrapUnique(handler));
   handler->SetString(keys::kPageActionDefaultTitle,
                      "__MSG_file_handler_title__");
 

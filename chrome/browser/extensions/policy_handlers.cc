@@ -78,7 +78,7 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string id;
-    if (!entry->GetAsString(&id)) {
+    if (!(*entry)->GetAsString(&id)) {
       errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(base::Value::Type::STRING));
@@ -143,7 +143,7 @@ bool ExtensionInstallListPolicyHandler::ParseList(
   for (base::ListValue::const_iterator entry(policy_list_value->begin());
        entry != policy_list_value->end(); ++entry) {
     std::string entry_string;
-    if (!entry->GetAsString(&entry_string)) {
+    if (!(*entry)->GetAsString(&entry_string)) {
       if (errors) {
         errors->AddError(policy_name(), entry - policy_list_value->begin(),
                          IDS_POLICY_TYPE_ERROR,
@@ -230,7 +230,7 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string url_pattern_string;
-    if (!entry->GetAsString(&url_pattern_string)) {
+    if (!(*entry)->GetAsString(&url_pattern_string)) {
       errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(base::Value::Type::STRING));

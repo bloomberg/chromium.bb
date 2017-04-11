@@ -105,7 +105,7 @@ void TraceEventMemoryOverhead::AddValue(const Value& value) {
       value.GetAsList(&list_value);
       Add("ListValue", sizeof(ListValue));
       for (const auto& v : *list_value)
-        AddValue(v);
+        AddValue(*v);
     } break;
 
     default:

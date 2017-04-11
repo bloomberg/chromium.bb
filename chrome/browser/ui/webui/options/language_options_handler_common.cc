@@ -266,7 +266,7 @@ void LanguageOptionsHandlerCommon::UpdateLanguageListCallback(
   for (base::ListValue::const_iterator it = language_list->begin();
        it != language_list->end(); ++it) {
     std::string lang;
-    it->GetAsString(&lang);
+    (*it)->GetAsString(&lang);
     languages.push_back(lang);
   }
 

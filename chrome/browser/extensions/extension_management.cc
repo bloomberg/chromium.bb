@@ -299,7 +299,7 @@ void ExtensionManagement::Refresh() {
   if (allowed_list_pref) {
     for (base::ListValue::const_iterator it = allowed_list_pref->begin();
          it != allowed_list_pref->end(); ++it) {
-      if (it->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
+      if ((*it)->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
         AccessById(id)->installation_mode = INSTALLATION_ALLOWED;
     }
   }
@@ -307,7 +307,7 @@ void ExtensionManagement::Refresh() {
   if (denied_list_pref) {
     for (base::ListValue::const_iterator it = denied_list_pref->begin();
          it != denied_list_pref->end(); ++it) {
-      if (it->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
+      if ((*it)->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
         AccessById(id)->installation_mode = INSTALLATION_BLOCKED;
     }
   }
@@ -320,7 +320,7 @@ void ExtensionManagement::Refresh() {
     for (base::ListValue::const_iterator it = install_sources_pref->begin();
          it != install_sources_pref->end(); ++it) {
       std::string url_pattern;
-      if (it->GetAsString(&url_pattern)) {
+      if ((*it)->GetAsString(&url_pattern)) {
         URLPattern entry(URLPattern::SCHEME_ALL);
         if (entry.Parse(url_pattern) == URLPattern::PARSE_SUCCESS) {
           global_settings_->install_sources.AddPattern(entry);
@@ -339,11 +339,11 @@ void ExtensionManagement::Refresh() {
          it != allowed_types_pref->end(); ++it) {
       int int_value;
       std::string string_value;
-      if (it->GetAsInteger(&int_value) && int_value >= 0 &&
+      if ((*it)->GetAsInteger(&int_value) && int_value >= 0 &&
           int_value < Manifest::Type::NUM_LOAD_TYPES) {
         global_settings_->allowed_types.push_back(
             static_cast<Manifest::Type>(int_value));
-      } else if (it->GetAsString(&string_value)) {
+      } else if ((*it)->GetAsString(&string_value)) {
         Manifest::Type manifest_type =
             schema_constants::GetManifestType(string_value);
         if (manifest_type != Manifest::TYPE_UNKNOWN)

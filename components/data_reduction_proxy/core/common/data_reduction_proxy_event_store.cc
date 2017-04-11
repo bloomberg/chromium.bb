@@ -55,7 +55,7 @@ std::string JoinListValueStrings(base::ListValue* list_value) {
   std::vector<base::StringPiece> values;
   for (const auto& value : *list_value) {
     base::StringPiece value_string;
-    if (!value.GetAsString(&value_string))
+    if (!value->GetAsString(&value_string))
       return std::string();
 
     values.push_back(value_string);

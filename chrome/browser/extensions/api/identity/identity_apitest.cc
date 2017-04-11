@@ -422,7 +422,7 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
          it != results->end();
          ++it) {
       std::unique_ptr<api::identity::AccountInfo> info =
-          api::identity::AccountInfo::FromValue(*it);
+          api::identity::AccountInfo::FromValue(**it);
       if (info.get())
         result_ids.insert(info->id);
       else
@@ -454,11 +454,11 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
     } else {
       for (const auto& result : *results) {
         std::unique_ptr<api::identity::AccountInfo> info =
-            api::identity::AccountInfo::FromValue(result);
+            api::identity::AccountInfo::FromValue(*result);
         if (info.get())
           msg << info->id << " ";
         else
-          msg << result << "<-" << result.GetType() << " ";
+          msg << *result << "<-" << result->GetType() << " ";
       }
     }
 

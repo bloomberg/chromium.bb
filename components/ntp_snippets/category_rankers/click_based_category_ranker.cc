@@ -413,9 +413,9 @@ bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
     return false;
   }
 
-  for (const base::Value& value : *list) {
-    const base::DictionaryValue* dictionary;
-    if (!value.GetAsDictionary(&dictionary)) {
+  for (const std::unique_ptr<base::Value>& value : *list) {
+    base::DictionaryValue* dictionary;
+    if (!value->GetAsDictionary(&dictionary)) {
       LOG(DFATAL) << "Failed to parse category data from prefs param "
                   << prefs::kClickBasedCategoryRankerOrderWithClicks
                   << " into dictionary.";

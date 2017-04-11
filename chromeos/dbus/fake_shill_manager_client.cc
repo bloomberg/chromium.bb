@@ -67,7 +67,7 @@ void AppendServicesForType(
   for (base::ListValue::const_iterator iter = service_list_in->begin();
        iter != service_list_in->end(); ++iter) {
     std::string service_path;
-    if (!iter->GetAsString(&service_path))
+    if (!(*iter)->GetAsString(&service_path))
       continue;
     const base::DictionaryValue* properties =
         service_client->GetServiceProperties(service_path);
@@ -1027,7 +1027,7 @@ base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
     for (base::ListValue::const_iterator iter = service_list->begin();
          iter != service_list->end(); ++iter) {
       std::string service_path;
-      if (!iter->GetAsString(&service_path))
+      if (!(*iter)->GetAsString(&service_path))
         continue;
       const base::DictionaryValue* properties =
           service_client->GetServiceProperties(service_path);
@@ -1038,7 +1038,7 @@ base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
       std::string type;
       properties->GetString(shill::kTypeProperty, &type);
       if (TechnologyEnabled(type))
-        new_service_list->Append(iter->CreateDeepCopy());
+        new_service_list->Append((*iter)->CreateDeepCopy());
     }
   }
   return new_service_list;

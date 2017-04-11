@@ -55,7 +55,7 @@ std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
        it != parsed_list->end();
        ++it) {
     const base::DictionaryValue* dict;
-    CHECK(it->GetAsDictionary(&dict));
+    CHECK((*it)->GetAsDictionary(&dict));
     actions.push_back(dict->CreateDeepCopy());
   }
 

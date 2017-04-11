@@ -616,7 +616,8 @@ double TranslatePrefs::GetReadingFromUserLanguageProfile(
     const base::DictionaryValue* item = nullptr;
     std::string language;
     double probability = 0.0;
-    if (entry.GetAsDictionary(&item) && item->GetString(kLanguage, &language) &&
+    if (entry->GetAsDictionary(&item) &&
+        item->GetString(kLanguage, &language) &&
         item->GetDouble(kProbability, &probability)) {
       // Normalize the the language code known and supported by
       // Translate.

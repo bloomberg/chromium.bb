@@ -41,7 +41,7 @@ std::vector<std::string> ListValueToStringVector(const base::ListValue* value) {
   std::string s;
   for (base::ListValue::const_iterator it = value->begin(); it != value->end();
        ++it) {
-    if (!it->GetAsString(&s))
+    if (!(*it)->GetAsString(&s))
       continue;
     results.push_back(s);
   }

@@ -62,7 +62,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       for (base::ListValue::const_iterator entry(list->begin());
            entry != list->end(); ++entry) {
         std::unique_ptr<base::Value> converted =
-            ConvertValue(*entry, schema.GetItems());
+            ConvertValue(**entry, schema.GetItems());
         if (converted)
           result->Append(std::move(converted));
       }

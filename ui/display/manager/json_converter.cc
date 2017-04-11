@@ -125,7 +125,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
   output->reserve(list->GetSize());
   for (const auto& list_item : *list) {
     const base::DictionaryValue* item_values = nullptr;
-    if (!list_item.GetAsDictionary(&item_values))
+    if (!list_item->GetAsDictionary(&item_values))
       return false;
 
     DisplayPlacement item;

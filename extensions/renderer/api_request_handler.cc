@@ -127,7 +127,7 @@ void APIRequestHandler::CompleteRequest(int request_id,
   for (const auto& arg : pending_request.callback_arguments)
     args.push_back(arg.Get(isolate));
   for (const auto& arg : response_args)
-    args.push_back(converter->ToV8Value(&arg, context));
+    args.push_back(converter->ToV8Value(arg.get(), context));
 
   blink::WebScopedUserGesture user_gesture(pending_request.user_gesture_token);
   if (!error.empty())

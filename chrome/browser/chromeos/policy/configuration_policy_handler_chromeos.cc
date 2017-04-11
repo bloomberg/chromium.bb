@@ -324,7 +324,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
     for (base::ListValue::const_iterator entry(policy_list->begin());
          entry != policy_list->end(); ++entry) {
       std::string id;
-      if (entry->GetAsString(&id)) {
+      if ((*entry)->GetAsString(&id)) {
         auto app_dict = base::MakeUnique<base::DictionaryValue>();
         app_dict->SetString(ash::launcher::kPinnedAppsPrefAppIDPath, id);
         pinned_apps_list->Append(std::move(app_dict));

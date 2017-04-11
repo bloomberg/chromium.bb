@@ -290,7 +290,7 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
                              const base::TimeTicks& time) {
   for (auto& item : *commands) {
     base::DictionaryValue* dict;
-    CHECK(item.GetAsDictionary(&dict));
+    CHECK(item->GetAsDictionary(&dict));
 
     Command type;
     base::DictionaryValue* data;

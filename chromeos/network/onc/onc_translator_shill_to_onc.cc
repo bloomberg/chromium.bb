@@ -683,7 +683,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
   for (base::ListValue::const_iterator it = list.begin(); it != list.end();
        ++it) {
     const base::DictionaryValue* shill_value = NULL;
-    if (!it->GetAsDictionary(&shill_value))
+    if (!(*it)->GetAsDictionary(&shill_value))
       continue;
     ShillToONCTranslator nested_translator(
         *shill_value, onc_source_,

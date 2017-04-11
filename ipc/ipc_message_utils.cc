@@ -128,7 +128,7 @@ void GetValueSize(base::PickleSizer* sizer,
       sizer->AddInt();
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
       for (const auto& entry : *list) {
-        GetValueSize(sizer, &entry, recursion + 1);
+        GetValueSize(sizer, entry.get(), recursion + 1);
       }
       break;
     }
@@ -198,7 +198,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
       WriteParam(m, static_cast<int>(list->GetSize()));
       for (const auto& entry : *list) {
-        WriteValue(m, &entry, recursion + 1);
+        WriteValue(m, entry.get(), recursion + 1);
       }
       break;
     }

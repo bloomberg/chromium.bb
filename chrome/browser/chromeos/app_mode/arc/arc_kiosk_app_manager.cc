@@ -79,7 +79,7 @@ void PerformDelayedCryptohomeRemovals(bool service_is_available) {
   for (base::ListValue::const_iterator it = list->begin(); it != list->end();
        ++it) {
     std::string entry;
-    if (!it->GetAsString(&entry)) {
+    if (!(*it)->GetAsString(&entry)) {
       LOG(ERROR) << "List of cryptohome ids is broken";
       continue;
     }

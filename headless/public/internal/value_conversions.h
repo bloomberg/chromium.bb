@@ -151,7 +151,7 @@ struct FromValue<std::vector<T>> {
     }
     errors->Push();
     for (const auto& item : *list)
-      result.push_back(FromValue<T>::Parse(item, errors));
+      result.push_back(FromValue<T>::Parse(*item, errors));
     errors->Pop();
     return result;
   }

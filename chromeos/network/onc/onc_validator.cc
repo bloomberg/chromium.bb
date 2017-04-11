@@ -245,7 +245,7 @@ bool Validator::ValidateRecommendedField(
   std::unique_ptr<base::ListValue> repaired_recommended(new base::ListValue);
   for (const auto& entry : *recommended_list) {
     std::string field_name;
-    if (!entry.GetAsString(&field_name)) {
+    if (!entry->GetAsString(&field_name)) {
       NOTREACHED();  // The types of field values are already verified.
       continue;
     }
@@ -404,7 +404,7 @@ bool Validator::ListFieldContainsValidValues(
     path_.push_back(field_name);
     for (const auto& entry : *list) {
       std::string value;
-      if (!entry.GetAsString(&value)) {
+      if (!entry->GetAsString(&value)) {
         NOTREACHED();  // The types of field values are already verified.
         continue;
       }

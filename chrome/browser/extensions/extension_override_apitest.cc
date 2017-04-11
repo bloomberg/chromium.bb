@@ -50,7 +50,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
     for (const auto& val : *values) {
       const base::DictionaryValue* dict = nullptr;
       std::string entry;
-      if (!val.GetAsDictionary(&dict) || !dict->GetString("entry", &entry) ||
+      if (!val->GetAsDictionary(&dict) || !dict->GetString("entry", &entry) ||
           seen_overrides.count(entry) != 0)
         return false;
       seen_overrides.insert(entry);

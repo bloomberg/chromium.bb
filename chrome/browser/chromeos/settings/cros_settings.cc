@@ -245,7 +245,7 @@ bool CrosSettings::FindEmailInList(const std::string& path,
        entry != list->end();
        ++entry) {
     std::string entry_string;
-    if (!entry->GetAsString(&entry_string)) {
+    if (!(*entry)->GetAsString(&entry_string)) {
       NOTREACHED();
       continue;
     }

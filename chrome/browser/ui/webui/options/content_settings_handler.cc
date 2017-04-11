@@ -941,8 +941,8 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
   settings.exceptions.clear();
   for (base::ListValue::const_iterator entry = exceptions.begin();
        entry != exceptions.end(); ++entry) {
-    const base::DictionaryValue* dict = nullptr;
-    bool valid_dict = entry->GetAsDictionary(&dict);
+    base::DictionaryValue* dict = nullptr;
+    bool valid_dict = (*entry)->GetAsDictionary(&dict);
     DCHECK(valid_dict);
 
     std::string origin;
