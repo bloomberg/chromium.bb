@@ -519,9 +519,8 @@ void SocketReadFunction::OnCompleted(int bytes_read,
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
-    result->Set(kDataKey,
-                base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
-                                                          bytes_read));
+    result->Set(kDataKey, base::Value::CreateWithCopiedBuffer(io_buffer->data(),
+                                                              bytes_read));
   } else {
     result->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
   }
@@ -537,7 +536,7 @@ SocketWriteFunction::~SocketWriteFunction() {}
 
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::BinaryValue* data = NULL;
+  base::Value* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
 
   io_buffer_size_ = data->GetSize();
@@ -597,9 +596,8 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
-    result->Set(kDataKey,
-                base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
-                                                          bytes_read));
+    result->Set(kDataKey, base::Value::CreateWithCopiedBuffer(io_buffer->data(),
+                                                              bytes_read));
   } else {
     result->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
   }
@@ -618,7 +616,7 @@ SocketSendToFunction::~SocketSendToFunction() {}
 
 bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::BinaryValue* data = NULL;
+  base::Value* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
   int port;

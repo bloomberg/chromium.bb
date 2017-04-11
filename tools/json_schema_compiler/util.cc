@@ -69,7 +69,7 @@ bool PopulateItem(const base::Value& from,
 }
 
 bool PopulateItem(const base::Value& from, std::vector<char>* out) {
-  const base::BinaryValue* binary = nullptr;
+  const base::Value* binary = nullptr;
   if (!from.GetAsBinary(&binary))
     return false;
   out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
@@ -79,7 +79,7 @@ bool PopulateItem(const base::Value& from, std::vector<char>* out) {
 bool PopulateItem(const base::Value& from,
                   std::vector<char>* out,
                   base::string16* error) {
-  const base::BinaryValue* binary = nullptr;
+  const base::Value* binary = nullptr;
   if (!from.GetAsBinary(&binary))
     return ReportError(from, base::Value::Type::BINARY, error);
   out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
@@ -134,8 +134,7 @@ void AddItemToList(const std::string& from, base::ListValue* out) {
 }
 
 void AddItemToList(const std::vector<char>& from, base::ListValue* out) {
-  out->Append(
-      base::BinaryValue::CreateWithCopiedBuffer(from.data(), from.size()));
+  out->Append(base::Value::CreateWithCopiedBuffer(from.data(), from.size()));
 }
 
 void AddItemToList(const std::unique_ptr<base::Value>& from,

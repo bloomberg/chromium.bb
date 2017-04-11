@@ -72,7 +72,7 @@ void StoreString(std::string* result,
 void StoreDigest(std::vector<uint8_t>* digest,
                  const base::Closure& callback,
                  const base::Value* value) {
-  const base::BinaryValue* binary = nullptr;
+  const base::Value* binary = nullptr;
   const bool is_binary = value->GetAsBinary(&binary);
   EXPECT_TRUE(is_binary) << "Unexpected value in StoreDigest";
   if (is_binary) {

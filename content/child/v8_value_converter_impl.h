@@ -16,7 +16,6 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
-using BinaryValue = Value;
 }
 
 namespace content {
@@ -56,8 +55,8 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
       v8::Local<v8::Object> creation_context,
       const base::DictionaryValue* dictionary) const;
   v8::Local<v8::Value> ToArrayBuffer(v8::Isolate* isolate,
-                                      v8::Local<v8::Object> creation_context,
-                                      const base::BinaryValue* value) const;
+                                     v8::Local<v8::Object> creation_context,
+                                     const base::Value* value) const;
 
   std::unique_ptr<base::Value> FromV8ValueImpl(FromV8ValueState* state,
                                                v8::Local<v8::Value> value,

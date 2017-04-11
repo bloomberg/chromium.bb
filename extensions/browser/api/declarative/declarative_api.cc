@@ -41,7 +41,7 @@ void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict);
 
 // Encodes |binary| as base64 and returns a new StringValue populated with the
 // encoded string.
-std::unique_ptr<base::Value> ConvertBinaryToBase64(base::BinaryValue* binary) {
+std::unique_ptr<base::Value> ConvertBinaryToBase64(base::Value* binary) {
   std::string binary_data = std::string(binary->GetBuffer(), binary->GetSize());
   std::string data64;
   base::Base64Encode(binary_data, &data64);
@@ -56,7 +56,7 @@ void ConvertBinaryListElementsToBase64(base::ListValue* args) {
   for (base::ListValue::iterator iter = args->begin(); iter != args->end();
        ++iter, ++index) {
     if ((*iter)->IsType(base::Value::Type::BINARY)) {
-      base::BinaryValue* binary = NULL;
+      base::Value* binary = NULL;
       if (args->GetBinary(index, &binary))
         args->Set(index, ConvertBinaryToBase64(binary).release());
     } else if ((*iter)->IsType(base::Value::Type::LIST)) {
@@ -78,7 +78,7 @@ void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict) {
   for (base::DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
        iter.Advance()) {
     if (iter.value().IsType(base::Value::Type::BINARY)) {
-      base::BinaryValue* binary = NULL;
+      base::Value* binary = NULL;
       if (dict->GetBinary(iter.key(), &binary))
         dict->Set(iter.key(), ConvertBinaryToBase64(binary).release());
     } else if (iter.value().IsType(base::Value::Type::LIST)) {

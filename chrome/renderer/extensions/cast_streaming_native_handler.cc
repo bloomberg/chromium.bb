@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/common/extensions/api/cast_streaming_receiver_session.h"
 #include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
 #include "chrome/common/extensions/api/cast_streaming_udp_transport.h"
@@ -695,7 +696,7 @@ void CastStreamingNativeHandler::GetStats(
 
 void CastStreamingNativeHandler::CallGetRawEventsCallback(
     int transport_id,
-    std::unique_ptr<base::BinaryValue> raw_events) {
+    std::unique_ptr<base::Value> raw_events) {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());

@@ -14,6 +14,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "device/base/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
@@ -465,8 +466,8 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
   transfer_info->SetInteger(kResultCodeKey, status);
 
   if (data) {
-    transfer_info->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
-                                     data->data(), length));
+    transfer_info->Set(
+        kDataKey, base::Value::CreateWithCopiedBuffer(data->data(), length));
   } else {
     transfer_info->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
   }
@@ -1239,7 +1240,7 @@ void UsbIsochronousTransferFunction::OnCompleted(
   std::unique_ptr<base::DictionaryValue> transfer_info(
       new base::DictionaryValue());
   transfer_info->SetInteger(kResultCodeKey, status);
-  transfer_info->Set(kDataKey, new base::BinaryValue(std::move(buffer)));
+  transfer_info->Set(kDataKey, new base::Value(std::move(buffer)));
   if (status == device::USB_TRANSFER_COMPLETED) {
     Respond(OneArgument(std::move(transfer_info)));
   } else {

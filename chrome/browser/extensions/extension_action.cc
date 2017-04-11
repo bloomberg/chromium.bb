@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/grit/theme_resources.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_icon_placeholder.h"
@@ -125,7 +126,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     gfx::ImageSkia* icon) {
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
        iter.Advance()) {
-    const base::BinaryValue* image_data;
+    const base::Value* image_data;
     std::string binary_string64;
     IPC::Message pickle;
     if (iter.value().GetAsBinary(&image_data)) {

@@ -163,7 +163,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void MergeMetadataFrom(const VideoFrameMetadata* metadata_source);
 
  private:
-  const base::BinaryValue* GetBinaryValue(Key key) const;
+  const base::Value* GetBinaryValue(Key key) const;
 
   base::DictionaryValue dictionary_;
 

@@ -178,7 +178,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   value_as_list.Set(0, base::MakeUnique<base::Value>(kFileSystemId));
   value_as_list.Set(1, base::MakeUnique<base::Value>(kRequestId));
   value_as_list.Set(
-      2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
+      2, base::Value::CreateWithCopiedBuffer(data.c_str(), data.size()));
   value_as_list.Set(3, base::MakeUnique<base::Value>(has_more));
   value_as_list.Set(4, base::MakeUnique<base::Value>(execution_time));
 

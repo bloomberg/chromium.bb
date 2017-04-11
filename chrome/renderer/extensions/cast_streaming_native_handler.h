@@ -19,7 +19,6 @@ class CastUdpTransport;
 namespace base {
 class DictionaryValue;
 class Value;
-using BinaryValue = Value;
 }
 
 namespace net {
@@ -106,7 +105,7 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
       const std::string& error_message);
 
   void CallGetRawEventsCallback(int transport_id,
-                                std::unique_ptr<base::BinaryValue> raw_events);
+                                std::unique_ptr<base::Value> raw_events);
   void CallGetStatsCallback(int transport_id,
                             std::unique_ptr<base::DictionaryValue> stats);
 

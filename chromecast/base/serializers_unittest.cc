@@ -55,7 +55,7 @@ TEST(DeserializeFromJson, PoorlyFormedJsonObject) {
 }
 
 TEST(SerializeToJson, BadValue) {
-  base::BinaryValue value(std::vector<char>(12));
+  base::Value value(std::vector<char>(12));
   std::unique_ptr<std::string> str = SerializeToJson(value);
   EXPECT_EQ(nullptr, str.get());
 }
@@ -118,7 +118,7 @@ TEST(DeserializeJsonFromFile, PoorlyFormedJsonObject) {
 TEST(SerializeJsonToFile, BadValue) {
   ScopedTempFile temp;
 
-  base::BinaryValue value(std::vector<char>(12));
+  base::Value value(std::vector<char>(12));
   ASSERT_FALSE(SerializeJsonToFile(temp.path(), value));
   std::string str(temp.Read());
   EXPECT_TRUE(str.empty());

@@ -303,18 +303,16 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     {
       // A non-empty (but zero-filled) ArrayBufferView.
       const char kBuffer[] = {0, 0, 0, 0};
-      std::unique_ptr<base::BinaryValue> expected_value =
-          base::BinaryValue::CreateWithCopiedBuffer(kBuffer,
-                                                    arraysize(kBuffer));
+      std::unique_ptr<base::Value> expected_value =
+          base::Value::CreateWithCopiedBuffer(kBuffer, arraysize(kBuffer));
       ASSERT_TRUE(expected_value);
       ExpectSuccessWithNoConversion(spec, "(new Int32Array(2))");
     }
     {
       // Actual data.
       const char kBuffer[] = {'p', 'i', 'n', 'g'};
-      std::unique_ptr<base::BinaryValue> expected_value =
-          base::BinaryValue::CreateWithCopiedBuffer(kBuffer,
-                                                    arraysize(kBuffer));
+      std::unique_ptr<base::Value> expected_value =
+          base::Value::CreateWithCopiedBuffer(kBuffer, arraysize(kBuffer));
       ASSERT_TRUE(expected_value);
       ExpectSuccess(spec,
                     "var b = new ArrayBuffer(4);\n"

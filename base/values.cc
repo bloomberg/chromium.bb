@@ -76,10 +76,9 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 }  // namespace
 
 // static
-std::unique_ptr<BinaryValue> BinaryValue::CreateWithCopiedBuffer(
-    const char* buffer,
-    size_t size) {
-  return MakeUnique<BinaryValue>(std::vector<char>(buffer, buffer + size));
+std::unique_ptr<Value> Value::CreateWithCopiedBuffer(const char* buffer,
+                                                     size_t size) {
+  return MakeUnique<Value>(std::vector<char>(buffer, buffer + size));
 }
 
 Value::Value(const Value& that) {
@@ -298,7 +297,7 @@ bool Value::GetAsString(StringPiece* out_value) const {
   return is_string();
 }
 
-bool Value::GetAsBinary(const BinaryValue** out_value) const {
+bool Value::GetAsBinary(const Value** out_value) const {
   if (out_value && is_blob()) {
     *out_value = this;
     return true;
@@ -795,7 +794,7 @@ bool DictionaryValue::GetStringASCII(StringPiece path,
 }
 
 bool DictionaryValue::GetBinary(StringPiece path,
-                                const BinaryValue** out_value) const {
+                                const Value** out_value) const {
   const Value* value;
   bool result = Get(path, &value);
   if (!result || !value->IsType(Type::BINARY))
@@ -807,10 +806,9 @@ bool DictionaryValue::GetBinary(StringPiece path,
   return true;
 }
 
-bool DictionaryValue::GetBinary(StringPiece path, BinaryValue** out_value) {
+bool DictionaryValue::GetBinary(StringPiece path, Value** out_value) {
   return static_cast<const DictionaryValue&>(*this).GetBinary(
-      path,
-      const_cast<const BinaryValue**>(out_value));
+      path, const_cast<const Value**>(out_value));
 }
 
 bool DictionaryValue::GetDictionary(StringPiece path,
@@ -1156,7 +1154,7 @@ bool ListValue::GetString(size_t index, string16* out_value) const {
   return value->GetAsString(out_value);
 }
 
-bool ListValue::GetBinary(size_t index, const BinaryValue** out_value) const {
+bool ListValue::GetBinary(size_t index, const Value** out_value) const {
   const Value* value;
   bool result = Get(index, &value);
   if (!result || !value->IsType(Type::BINARY))
@@ -1168,10 +1166,9 @@ bool ListValue::GetBinary(size_t index, const BinaryValue** out_value) const {
   return true;
 }
 
-bool ListValue::GetBinary(size_t index, BinaryValue** out_value) {
+bool ListValue::GetBinary(size_t index, Value** out_value) {
   return static_cast<const ListValue&>(*this).GetBinary(
-      index,
-      const_cast<const BinaryValue**>(out_value));
+      index, const_cast<const Value**>(out_value));
 }
 
 bool ListValue::GetDictionary(size_t index,

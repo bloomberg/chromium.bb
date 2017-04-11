@@ -50,8 +50,7 @@ bool WriteFile::Execute(int request_id) {
   DCHECK(buffer_.get());
   std::unique_ptr<base::DictionaryValue> options_as_value = options.ToValue();
   options_as_value->Set(
-      "data",
-      base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), length_));
+      "data", base::Value::CreateWithCopiedBuffer(buffer_->data(), length_));
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
   event_args->Append(std::move(options_as_value));

@@ -29,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -52,7 +53,7 @@
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
-using base::BinaryValue;
+using base::Value;
 using content::BrowserThread;
 
 namespace wallpaper_base = extensions::api::wallpaper;
@@ -698,7 +699,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
 
 void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* data) {
-  SetResult(BinaryValue::CreateWithCopiedBuffer(
+  SetResult(Value::CreateWithCopiedBuffer(
       reinterpret_cast<const char*>(data->front()), data->size()));
   SendResponse(true);
 }
@@ -823,7 +824,7 @@ void WallpaperPrivateGetThumbnailFunction::FileNotLoaded() {
 
 void WallpaperPrivateGetThumbnailFunction::FileLoaded(
     const std::string& data) {
-  SetResult(BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
+  SetResult(Value::CreateWithCopiedBuffer(data.c_str(), data.size()));
   SendResponse(true);
 }
 

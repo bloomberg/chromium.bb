@@ -83,7 +83,7 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
     case common::mojom::ValueDataView::Tag::BINARY_VALUE: {
       mojo::ArrayDataView<uint8_t> binary_data;
       data.GetBinaryValueDataView(&binary_data);
-      *value_out = base::BinaryValue::CreateWithCopiedBuffer(
+      *value_out = base::Value::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(binary_data.data()),
           binary_data.size());
       return true;

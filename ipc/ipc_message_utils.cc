@@ -297,8 +297,8 @@ bool ReadValue(const base::Pickle* m,
       int length;
       if (!iter->ReadData(&data, &length))
         return false;
-      std::unique_ptr<base::BinaryValue> val =
-          base::BinaryValue::CreateWithCopiedBuffer(data, length);
+      std::unique_ptr<base::Value> val =
+          base::Value::CreateWithCopiedBuffer(data, length);
       *value = val.release();
       break;
     }

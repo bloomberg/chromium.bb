@@ -27,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
@@ -66,7 +67,6 @@ namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::api::web_request;
 
-using base::BinaryValue;
 using base::DictionaryValue;
 using base::ListValue;
 using base::Time;
@@ -610,15 +610,13 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   base::ListValue raw;
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
-      BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length),
-      &raw);
+      Value::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawFileKey,
       base::MakeUnique<base::Value>(std::string()), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
-      BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),
-      &raw);
+      Value::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length), &raw);
   // Summary.
   const base::Value* const kExpected[] = {
     form_data.get(),

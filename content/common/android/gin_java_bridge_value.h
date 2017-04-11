@@ -16,7 +16,7 @@
 
 // In Java Bridge, we need to pass some kinds of values that can't
 // be put into base::Value. And since base::Value is not extensible,
-// we transfer these special values via base::BinaryValue.
+// we transfer these special values via base::Value.
 
 namespace content {
 
@@ -34,13 +34,12 @@ class GinJavaBridgeValue {
   };
 
   // Serialization
-  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue>
-  CreateUndefinedValue();
-  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateNonFiniteValue(
+  CONTENT_EXPORT static std::unique_ptr<base::Value> CreateUndefinedValue();
+  CONTENT_EXPORT static std::unique_ptr<base::Value> CreateNonFiniteValue(
       float in_value);
-  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateNonFiniteValue(
+  CONTENT_EXPORT static std::unique_ptr<base::Value> CreateNonFiniteValue(
       double in_value);
-  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateObjectIDValue(
+  CONTENT_EXPORT static std::unique_ptr<base::Value> CreateObjectIDValue(
       int32_t in_value);
 
   // De-serialization
@@ -57,8 +56,8 @@ class GinJavaBridgeValue {
 
  private:
   explicit GinJavaBridgeValue(Type type);
-  explicit GinJavaBridgeValue(const base::BinaryValue* value);
-  std::unique_ptr<base::BinaryValue> SerializeToBinaryValue();
+  explicit GinJavaBridgeValue(const base::Value* value);
+  std::unique_ptr<base::Value> SerializeToBinaryValue();
 
   base::Pickle pickle_;
 

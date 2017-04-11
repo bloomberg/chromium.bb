@@ -20,7 +20,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   float native_float;
   int32_t native_object_id;
 
-  std::unique_ptr<base::BinaryValue> undefined(
+  std::unique_ptr<base::Value> undefined(
       GinJavaBridgeValue::CreateUndefinedValue());
   ASSERT_TRUE(undefined.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(undefined.get()));
@@ -32,7 +32,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   EXPECT_FALSE(undefined_value->GetAsNonFinite(&native_float));
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  std::unique_ptr<base::BinaryValue> float_infinity(
+  std::unique_ptr<base::Value> float_infinity(
       GinJavaBridgeValue::CreateNonFiniteValue(
           std::numeric_limits<float>::infinity()));
   ASSERT_TRUE(float_infinity.get());
@@ -47,7 +47,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  std::unique_ptr<base::BinaryValue> double_infinity(
+  std::unique_ptr<base::Value> double_infinity(
       GinJavaBridgeValue::CreateNonFiniteValue(
           std::numeric_limits<double>::infinity()));
   ASSERT_TRUE(double_infinity.get());
@@ -63,7 +63,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  std::unique_ptr<base::BinaryValue> object_id(
+  std::unique_ptr<base::Value> object_id(
       GinJavaBridgeValue::CreateObjectIDValue(42));
   ASSERT_TRUE(object_id.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(object_id.get()));
@@ -83,9 +83,8 @@ TEST_F(GinJavaBridgeValueTest, BrokenValues) {
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(non_binary.get()));
 
   const char dummy_data[] = "\000\001\002\003\004\005\006\007\010\011\012\013";
-  std::unique_ptr<base::BinaryValue> broken_binary(
-      base::BinaryValue::CreateWithCopiedBuffer(dummy_data,
-                                                sizeof(dummy_data)));
+  std::unique_ptr<base::Value> broken_binary(
+      base::Value::CreateWithCopiedBuffer(dummy_data, sizeof(dummy_data)));
   EXPECT_FALSE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(broken_binary.get()));
 }

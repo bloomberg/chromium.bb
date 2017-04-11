@@ -65,7 +65,7 @@ void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
   const unsigned char defaultPublicExponent[] = {0x01, 0x00, 0x01};
   algorithm->SetWithoutPathExpansion(
       "publicExponent",
-      base::BinaryValue::CreateWithCopiedBuffer(
+      base::Value::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(defaultPublicExponent),
           arraysize(defaultPublicExponent)));
 }

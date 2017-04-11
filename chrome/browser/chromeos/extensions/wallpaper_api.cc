@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -34,7 +35,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-using base::BinaryValue;
+using base::Value;
 using content::BrowserThread;
 
 typedef base::Callback<void(bool success, const std::string&)> FetchCallback;
@@ -227,14 +228,12 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
 void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* original_data,
     base::RefCountedBytes* thumbnail_data) {
-  std::unique_ptr<BinaryValue> original_result =
-      BinaryValue::CreateWithCopiedBuffer(
-          reinterpret_cast<const char*>(original_data->front()),
-          original_data->size());
-  std::unique_ptr<BinaryValue> thumbnail_result =
-      BinaryValue::CreateWithCopiedBuffer(
-          reinterpret_cast<const char*>(thumbnail_data->front()),
-          thumbnail_data->size());
+  std::unique_ptr<Value> original_result = Value::CreateWithCopiedBuffer(
+      reinterpret_cast<const char*>(original_data->front()),
+      original_data->size());
+  std::unique_ptr<Value> thumbnail_result = Value::CreateWithCopiedBuffer(
+      reinterpret_cast<const char*>(thumbnail_data->front()),
+      thumbnail_data->size());
 
   if (params_->details.thumbnail) {
     SetResult(thumbnail_result->CreateDeepCopy());

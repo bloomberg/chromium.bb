@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -537,8 +538,7 @@ struct FuzzTraits<base::ListValue> {
           char tmp[200];
           size_t bin_length = RandInRange(sizeof(tmp));
           fuzzer->FuzzData(tmp, bin_length);
-          p->Set(index,
-                 base::BinaryValue::CreateWithCopiedBuffer(tmp, bin_length));
+          p->Set(index, base::Value::CreateWithCopiedBuffer(tmp, bin_length));
           break;
         }
         case base::Value::Type::DICTIONARY: {
@@ -607,8 +607,7 @@ struct FuzzTraits<base::DictionaryValue> {
           size_t bin_length = RandInRange(sizeof(tmp));
           fuzzer->FuzzData(tmp, bin_length);
           p->SetWithoutPathExpansion(
-              property,
-              base::BinaryValue::CreateWithCopiedBuffer(tmp, bin_length));
+              property, base::Value::CreateWithCopiedBuffer(tmp, bin_length));
           break;
         }
         case base::Value::Type::DICTIONARY: {

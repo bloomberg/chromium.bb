@@ -46,6 +46,7 @@ class _Generator(object):
       .Append('#include "base/memory/ptr_util.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
+      .Append('#include "base/values.h"')
       .Append('#include "%s/%s.h"' %
               (self._namespace.source_file_dir, self._namespace.short_filename))
       .Append('#include <set>')
@@ -638,7 +639,7 @@ class _Generator(object):
         vardot = var + '->'
       else:
         vardot = var + '.'
-      return ('base::BinaryValue::CreateWithCopiedBuffer('
+      return ('base::Value::CreateWithCopiedBuffer('
               '%sdata(), %ssize())' % (vardot, vardot))
     elif underlying_type.property_type == PropertyType.ARRAY:
       return '%s' % self._util_cc_helper.CreateValueFromArray(
@@ -887,7 +888,7 @@ class _Generator(object):
                                                     dst_var,
                                                     failure_value))
     elif underlying_type.property_type == PropertyType.BINARY:
-      (c.Append('const base::BinaryValue* binary_value = NULL;')
+      (c.Append('const base::Value* binary_value = NULL;')
         .Sblock('if (!%(src_var)s->IsType(base::Value::Type::BINARY)) {')
         .Concat(self._GenerateError(
           '"\'%%(key)s\': expected binary, got " + ' +
@@ -898,7 +899,7 @@ class _Generator(object):
       (c.Eblock('}')
         .Sblock('else {')
         .Append(' binary_value =')
-        .Append('   static_cast<const base::BinaryValue*>(%(src_var)s);')
+        .Append('   static_cast<const base::Value*>(%(src_var)s);')
       )
       if is_ptr:
         (c.Append('%(dst_var)s.reset(new std::vector<char>(')

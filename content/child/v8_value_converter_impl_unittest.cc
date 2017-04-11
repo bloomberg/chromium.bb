@@ -1148,8 +1148,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
       converter.FromV8Value(array_buffer, context));
   ASSERT_TRUE(binary_value);
   std::unique_ptr<base::Value> reference_binary_value(
-      base::BinaryValue::CreateWithCopiedBuffer(kExampleData,
-                                                sizeof(kExampleData)));
+      base::Value::CreateWithCopiedBuffer(kExampleData, sizeof(kExampleData)));
   EXPECT_TRUE(
       base::Value::Equals(reference_binary_value.get(), binary_value.get()));
 
@@ -1159,7 +1158,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
       converter.FromV8Value(array_buffer_view, context));
   ASSERT_TRUE(binary_view_value);
   std::unique_ptr<base::Value> reference_binary_view_value(
-      base::BinaryValue::CreateWithCopiedBuffer(&kExampleData[1], 3));
+      base::Value::CreateWithCopiedBuffer(&kExampleData[1], 3));
   EXPECT_TRUE(base::Value::Equals(reference_binary_view_value.get(),
                                   binary_view_value.get()));
 

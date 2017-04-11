@@ -263,7 +263,7 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
 
   std::unique_ptr<base::ListValue> CreateArgs() {
     std::unique_ptr<base::ListValue> args(new base::ListValue);
-    args->Append(base::BinaryValue::CreateWithCopiedBuffer("challenge", 9));
+    args->Append(base::Value::CreateWithCopiedBuffer("challenge", 9));
     return args;
   }
 
@@ -349,7 +349,7 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
   std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
-  const base::BinaryValue* response;
+  const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));
   EXPECT_EQ("response",
             std::string(response->GetBuffer(), response->GetSize()));
@@ -407,7 +407,7 @@ class EPKChallengeUserKeyTest : public EPKChallengeKeyTestBase {
 
   std::unique_ptr<base::ListValue> CreateArgsInternal(bool register_key) {
     std::unique_ptr<base::ListValue> args(new base::ListValue);
-    args->Append(base::BinaryValue::CreateWithCopiedBuffer("challenge", 9));
+    args->Append(base::Value::CreateWithCopiedBuffer("challenge", 9));
     args->AppendBoolean(register_key);
     return args;
   }
@@ -524,7 +524,7 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
   std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
-  const base::BinaryValue* response;
+  const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));
   EXPECT_EQ("response",
             std::string(response->GetBuffer(), response->GetSize()));

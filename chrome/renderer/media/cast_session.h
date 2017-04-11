@@ -18,7 +18,6 @@ namespace base {
 class DictionaryValue;
 class SingleThreadTaskRunner;
 class Value;
-using BinaryValue = Value;
 }  // namespace base
 
 namespace media {
@@ -40,8 +39,7 @@ class CastSession : public base::RefCounted<CastSession> {
   using VideoFrameInputAvailableCallback =
       base::Callback<void(const scoped_refptr<media::cast::VideoFrameInput>&)>;
   using SendPacketCallback = base::Callback<void(const std::vector<char>&)>;
-  using EventLogsCallback =
-      base::Callback<void(std::unique_ptr<base::BinaryValue>)>;
+  using EventLogsCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
   using StatsCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;

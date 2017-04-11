@@ -100,7 +100,7 @@ TEST(ValuesTest, ConstructStringFromStringPiece) {
 }
 
 TEST(ValuesTest, ConstructBinary) {
-  BinaryValue value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
+  Value value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
   EXPECT_EQ(Value::Type::BINARY, value.type());
   EXPECT_EQ(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}), value.GetBlob());
 }
@@ -180,8 +180,8 @@ TEST(ValuesTest, CopyString) {
 }
 
 TEST(ValuesTest, CopyBinary) {
-  BinaryValue value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
-  BinaryValue copied_value(value);
+  Value value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
+  Value copied_value(value);
   EXPECT_EQ(value.type(), copied_value.type());
   EXPECT_EQ(value.GetBlob(), copied_value.GetBlob());
 
@@ -300,14 +300,14 @@ TEST(ValuesTest, MoveString) {
 
 TEST(ValuesTest, MoveBinary) {
   const std::vector<char> buffer = {0xF, 0x0, 0x0, 0xB, 0xA, 0x2};
-  BinaryValue value(buffer);
-  BinaryValue moved_value(std::move(value));
+  Value value(buffer);
+  Value moved_value(std::move(value));
   EXPECT_EQ(Value::Type::BINARY, moved_value.type());
   EXPECT_EQ(buffer, moved_value.GetBlob());
 
   Value blank;
 
-  blank = BinaryValue(buffer);
+  blank = Value(buffer);
   EXPECT_EQ(Value::Type::BINARY, blank.type());
   EXPECT_EQ(buffer, blank.GetBlob());
 }
@@ -451,7 +451,7 @@ TEST(ValuesTest, BinaryValue) {
   // Test the common case of a non-empty buffer
   std::vector<char> buffer(15);
   char* original_buffer = buffer.data();
-  binary.reset(new BinaryValue(std::move(buffer)));
+  binary.reset(new Value(std::move(buffer)));
   ASSERT_TRUE(binary.get());
   ASSERT_TRUE(binary->GetBuffer());
   ASSERT_EQ(original_buffer, binary->GetBuffer());
@@ -459,7 +459,7 @@ TEST(ValuesTest, BinaryValue) {
 
   char stack_buffer[42];
   memset(stack_buffer, '!', 42);
-  binary = BinaryValue::CreateWithCopiedBuffer(stack_buffer, 42);
+  binary = Value::CreateWithCopiedBuffer(stack_buffer, 42);
   ASSERT_TRUE(binary.get());
   ASSERT_TRUE(binary->GetBuffer());
   ASSERT_NE(stack_buffer, binary->GetBuffer());
@@ -468,7 +468,7 @@ TEST(ValuesTest, BinaryValue) {
 
   // Test overloaded GetAsBinary.
   Value* narrow_value = binary.get();
-  const BinaryValue* narrow_binary = NULL;
+  const Value* narrow_binary = NULL;
   ASSERT_TRUE(narrow_value->GetAsBinary(&narrow_binary));
   EXPECT_EQ(binary.get(), narrow_binary);
 }
@@ -674,9 +674,8 @@ TEST(ValuesTest, DeepCopy) {
   original_dict.Set("string16", std::move(scoped_string16));
 
   std::vector<char> original_buffer(42, '!');
-  std::unique_ptr<BinaryValue> scoped_binary(
-      new BinaryValue(std::move(original_buffer)));
-  BinaryValue* original_binary = scoped_binary.get();
+  std::unique_ptr<Value> scoped_binary(new Value(std::move(original_buffer)));
+  Value* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));
 
   std::unique_ptr<ListValue> scoped_list(new ListValue());
@@ -1008,8 +1007,7 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   original_dict.Set("string16", std::move(scoped_string16));
 
   std::vector<char> original_buffer(42, '!');
-  std::unique_ptr<BinaryValue> scoped_binary(
-      new BinaryValue(std::move(original_buffer)));
+  std::unique_ptr<Value> scoped_binary(new Value(std::move(original_buffer)));
   Value* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));
 
@@ -1244,7 +1242,7 @@ TEST(ValuesTest, GetWithNullOutValue) {
   Value int_value(1234);
   Value double_value(12.34567);
   Value string_value("foo");
-  BinaryValue binary_value(Value::Type::BINARY);
+  Value binary_value(Value::Type::BINARY);
   DictionaryValue dict_value;
   ListValue list_value;
 

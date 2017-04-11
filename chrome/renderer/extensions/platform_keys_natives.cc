@@ -61,7 +61,7 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
         rsaHashedKeyGen->PublicExponent();
     dict->SetWithoutPathExpansion(
         "publicExponent",
-        base::BinaryValue::CreateWithCopiedBuffer(
+        base::Value::CreateWithCopiedBuffer(
             reinterpret_cast<const char*>(public_exponent.Data()),
             public_exponent.size()));
 

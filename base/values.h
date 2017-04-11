@@ -40,7 +40,6 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
-using BinaryValue = Value;
 
 // The Value class is the base class for Values. A Value can be instantiated
 // via the Create*Value() factory methods, or by directly creating instances of
@@ -69,8 +68,8 @@ class BASE_EXPORT Value {
   // buffer that's passed in.
   // DEPRECATED, use MakeUnique<Value>(const std::vector<char>&) instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
-  static std::unique_ptr<BinaryValue> CreateWithCopiedBuffer(const char* buffer,
-                                                             size_t size);
+  static std::unique_ptr<Value> CreateWithCopiedBuffer(const char* buffer,
+                                                       size_t size);
 
   Value(const Value& that);
   Value(Value&& that) noexcept;
@@ -145,7 +144,7 @@ class BASE_EXPORT Value {
   bool GetAsString(string16* out_value) const;
   bool GetAsString(const Value** out_value) const;
   bool GetAsString(StringPiece* out_value) const;
-  bool GetAsBinary(const BinaryValue** out_value) const;
+  bool GetAsBinary(const Value** out_value) const;
   // ListValue::From is the equivalent for std::unique_ptr conversions.
   bool GetAsList(ListValue** out_value);
   bool GetAsList(const ListValue** out_value) const;
@@ -289,8 +288,8 @@ class BASE_EXPORT DictionaryValue : public Value {
   bool GetString(StringPiece path, std::string* out_value) const;
   bool GetString(StringPiece path, string16* out_value) const;
   bool GetStringASCII(StringPiece path, std::string* out_value) const;
-  bool GetBinary(StringPiece path, const BinaryValue** out_value) const;
-  bool GetBinary(StringPiece path, BinaryValue** out_value);
+  bool GetBinary(StringPiece path, const Value** out_value) const;
+  bool GetBinary(StringPiece path, Value** out_value);
   bool GetDictionary(StringPiece path,
                      const DictionaryValue** out_value) const;
   bool GetDictionary(StringPiece path, DictionaryValue** out_value);
@@ -421,8 +420,8 @@ class BASE_EXPORT ListValue : public Value {
   bool GetDouble(size_t index, double* out_value) const;
   bool GetString(size_t index, std::string* out_value) const;
   bool GetString(size_t index, string16* out_value) const;
-  bool GetBinary(size_t index, const BinaryValue** out_value) const;
-  bool GetBinary(size_t index, BinaryValue** out_value);
+  bool GetBinary(size_t index, const Value** out_value) const;
+  bool GetBinary(size_t index, Value** out_value);
   bool GetDictionary(size_t index, const DictionaryValue** out_value) const;
   bool GetDictionary(size_t index, DictionaryValue** out_value);
   bool GetList(size_t index, const ListValue** out_value) const;

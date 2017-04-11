@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
@@ -561,7 +562,7 @@ void CastRtpStream::ToggleLogging(bool enable) {
 }
 
 void CastRtpStream::GetRawEvents(
-    const base::Callback<void(std::unique_ptr<base::BinaryValue>)>& callback,
+    const base::Callback<void(std::unique_ptr<base::Value>)>& callback,
     const std::string& extra_data) {
   DVLOG(1) << "CastRtpStream::GetRawEvents = "
            << (is_audio_ ? "audio" : "video");

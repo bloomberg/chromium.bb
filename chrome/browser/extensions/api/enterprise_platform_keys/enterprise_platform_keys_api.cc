@@ -119,7 +119,7 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
        ++it) {
     std::string der_encoding;
     net::X509Certificate::GetDEREncoded((*it)->os_cert_handle(), &der_encoding);
-    client_certs->Append(base::BinaryValue::CreateWithCopiedBuffer(
+    client_certs->Append(base::Value::CreateWithCopiedBuffer(
         der_encoding.data(), der_encoding.size()));
   }
 

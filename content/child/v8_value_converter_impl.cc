@@ -339,7 +339,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
 v8::Local<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
-    const base::BinaryValue* value) const {
+    const base::Value* value) const {
   DCHECK(creation_context->CreationContext() == isolate->GetCurrentContext());
   v8::Local<v8::ArrayBuffer> buffer =
       v8::ArrayBuffer::New(isolate, value->GetSize());
@@ -502,14 +502,14 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ArrayBuffer(
 
   if (val->IsArrayBuffer()) {
     auto contents = val.As<v8::ArrayBuffer>()->GetContents();
-    return base::BinaryValue::CreateWithCopiedBuffer(
+    return base::Value::CreateWithCopiedBuffer(
         static_cast<const char*>(contents.Data()), contents.ByteLength());
   } else if (val->IsArrayBufferView()) {
     v8::Local<v8::ArrayBufferView> view = val.As<v8::ArrayBufferView>();
     size_t byte_length = view->ByteLength();
     std::vector<char> buffer(byte_length);
     view->CopyContents(buffer.data(), buffer.size());
-    return base::MakeUnique<base::BinaryValue>(std::move(buffer));
+    return base::MakeUnique<base::Value>(std::move(buffer));
   } else {
     NOTREACHED() << "Only ArrayBuffer and ArrayBufferView should get here.";
     return nullptr;

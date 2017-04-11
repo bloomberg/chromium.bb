@@ -16,7 +16,6 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request.h"
 
-using base::BinaryValue;
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
@@ -90,7 +89,7 @@ std::unique_ptr<base::Value> RawDataPresenter::Result() {
 
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
   subtle::AppendKeyValuePair(keys::kRequestBodyRawBytesKey,
-                             BinaryValue::CreateWithCopiedBuffer(bytes, size),
+                             Value::CreateWithCopiedBuffer(bytes, size),
                              list_.get());
 }
 
