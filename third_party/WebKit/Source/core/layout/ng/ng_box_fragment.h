@@ -12,6 +12,8 @@
 
 namespace blink {
 
+struct NGLogicalSize;
+
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(NGWritingMode writing_mode,
@@ -19,8 +21,7 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
       : NGFragment(writing_mode, physical_fragment) {}
 
   // Returns the total size, including the contents outside of the border-box.
-  LayoutUnit InlineOverflow() const;
-  LayoutUnit BlockOverflow() const;
+  NGLogicalSize OverflowSize() const;
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const;
 

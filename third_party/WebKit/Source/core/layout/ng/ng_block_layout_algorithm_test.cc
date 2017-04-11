@@ -787,7 +787,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
-  EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->WidthOverflow());
+  EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->OverflowSize().width);
   ASSERT_EQ(1UL, frag->Children().size());
 
   const NGPhysicalFragment* child = frag->Children()[0].Get();

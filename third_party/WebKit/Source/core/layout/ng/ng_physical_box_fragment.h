@@ -29,8 +29,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         RefPtr<NGBreakToken> break_token = nullptr);
 
   // Returns the total size, including the contents outside of the border-box.
-  LayoutUnit WidthOverflow() const { return overflow_.width; }
-  LayoutUnit HeightOverflow() const { return overflow_.height; }
+  NGPhysicalSize OverflowSize() const { return overflow_; }
 
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;

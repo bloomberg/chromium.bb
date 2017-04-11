@@ -9,16 +9,9 @@
 
 namespace blink {
 
-LayoutUnit NGBoxFragment::InlineOverflow() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? ToNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow()
-             : ToNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow();
-}
-
-LayoutUnit NGBoxFragment::BlockOverflow() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? ToNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow()
-             : ToNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow();
+NGLogicalSize NGBoxFragment::OverflowSize() const {
+  auto* physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+  return physical_fragment->OverflowSize().ConvertToLogical(WritingMode());
 }
 
 const WTF::Optional<NGLogicalOffset>& NGBoxFragment::BfcOffset() const {

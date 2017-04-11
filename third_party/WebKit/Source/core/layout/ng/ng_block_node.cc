@@ -175,7 +175,7 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
       layout_result->PhysicalFragment().Get();
   NGBoxFragment min_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
                              ToNGPhysicalBoxFragment(physical_fragment));
-  sizes.min_content = min_fragment.InlineOverflow();
+  sizes.min_content = min_fragment.OverflowSize().inline_size;
 
   // Now, redo with infinite space for max_content
   constraint_space =
@@ -190,7 +190,7 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
   physical_fragment = layout_result->PhysicalFragment().Get();
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
                              ToNGPhysicalBoxFragment(physical_fragment));
-  sizes.max_content = max_fragment.InlineOverflow();
+  sizes.max_content = max_fragment.OverflowSize().inline_size;
   return sizes;
 }
 
@@ -280,8 +280,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
                                   ComputePadding(constraint_space, Style());
   LayoutUnit intrinsic_logical_height =
       layout_box_->Style()->IsHorizontalWritingMode()
-          ? fragment->HeightOverflow()
-          : fragment->WidthOverflow();
+          ? fragment->OverflowSize().height
+          : fragment->OverflowSize().width;
   intrinsic_logical_height -= border_and_padding.BlockSum();
   layout_box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
