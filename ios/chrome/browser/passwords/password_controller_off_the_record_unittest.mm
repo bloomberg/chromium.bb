@@ -21,7 +21,7 @@ namespace {
 class IncognitoPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
-  bool IsOffTheRecord() const override { return true; }
+  bool IsIncognito() const override { return true; }
 };
 
 }  // namespace

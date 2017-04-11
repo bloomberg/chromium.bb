@@ -289,7 +289,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     passwordManager_.reset(new PasswordManager(passwordManagerClient_.get()));
     passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
     if (experimental_flags::IsPasswordGenerationEnabled() &&
-        !passwordManagerClient_->IsOffTheRecord()) {
+        !passwordManagerClient_->IsIncognito()) {
       passwordGenerationManager_.reset(new PasswordGenerationManager(
           passwordManagerClient_.get(), passwordManagerDriver_.get()));
       passwordGenerationAgent_.reset([[PasswordGenerationAgent alloc]

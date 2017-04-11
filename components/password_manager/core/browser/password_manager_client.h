@@ -171,7 +171,7 @@ class PasswordManagerClient {
   virtual bool DidLastPageLoadEncounterSSLErrors() const;
 
   // If this browsing session should not be persisted.
-  virtual bool IsOffTheRecord() const;
+  virtual bool IsIncognito() const;
 
   // Returns the PasswordManager associated with this client. The non-const
   // version calls the const one.

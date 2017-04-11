@@ -292,14 +292,14 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
             client->GetPasswordSyncState());
 }
 
-TEST_F(ChromePasswordManagerClientTest, IsOffTheRecordTest) {
+TEST_F(ChromePasswordManagerClientTest, IsIncognitoTest) {
   ChromePasswordManagerClient* client = GetClient();
 
   profile()->ForceIncognito(true);
-  EXPECT_TRUE(client->IsOffTheRecord());
+  EXPECT_TRUE(client->IsIncognito());
 
   profile()->ForceIncognito(false);
-  EXPECT_FALSE(client->IsOffTheRecord());
+  EXPECT_FALSE(client->IsIncognito());
 }
 
 TEST_F(ChromePasswordManagerClientTest,

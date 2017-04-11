@@ -88,7 +88,7 @@ void IOSChromePasswordManagerClient::AutomaticPasswordSave(
   NOTIMPLEMENTED();
 }
 
-bool IOSChromePasswordManagerClient::IsOffTheRecord() const {
+bool IOSChromePasswordManagerClient::IsIncognito() const {
   return (delegate_.browserState)->IsOffTheRecord();
 }
 
@@ -120,7 +120,7 @@ void IOSChromePasswordManagerClient::ForceSavePassword() {
 
 bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
     const {
-  return *saving_passwords_enabled_ && !IsOffTheRecord() &&
+  return *saving_passwords_enabled_ && !IsIncognito() &&
          !DidLastPageLoadEncounterSSLErrors() &&
          IsFillingEnabledForCurrentPage();
 }

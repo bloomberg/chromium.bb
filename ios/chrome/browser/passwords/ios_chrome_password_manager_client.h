@@ -55,7 +55,7 @@ class IOSChromePasswordManagerClient
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
       override;
-  bool IsOffTheRecord() const override;
+  bool IsIncognito() const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(

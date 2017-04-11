@@ -377,7 +377,7 @@ bool PasswordFormManager::IsBlacklisted() const {
 
 void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  DCHECK(!client_->IsOffTheRecord());
+  DCHECK(!client_->IsIncognito());
 
   if (!new_blacklisted_) {
     new_blacklisted_ = base::MakeUnique<PasswordForm>(observed_form_);
@@ -417,7 +417,7 @@ void PasswordFormManager::ProvisionallySave(
 
 void PasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  DCHECK(!client_->IsOffTheRecord());
+  DCHECK(!client_->IsIncognito());
 
   if ((user_action_ == kUserActionNone) &&
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
@@ -630,7 +630,7 @@ void PasswordFormManager::ProcessFrameInternal(
   // via affiliation-based matching (we want to autofill them).
   // TODO(engedy): Clean this up. See: https://crbug.com/476519.
   bool wait_for_username =
-      client_->IsOffTheRecord() ||
+      client_->IsIncognito() ||
       (!IsValidAndroidFacetURI(preferred_match_->signon_realm) &&
        (observed_form_.action.GetWithEmptyPath() !=
             preferred_match_->action.GetWithEmptyPath() ||
@@ -676,7 +676,7 @@ void PasswordFormManager::ProcessUpdate() {
   // username, or the user selected one of the non-preferred matches,
   // thus requiring a swap of preferred bits.
   DCHECK(!IsNewLogin() && pending_credentials_.preferred);
-  DCHECK(!client_->IsOffTheRecord());
+  DCHECK(!client_->IsIncognito());
 
   UpdateMetadataForUsage(&pending_credentials_);
 

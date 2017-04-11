@@ -59,7 +59,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsFillingEnabledForCurrentPage, bool());
   MOCK_METHOD0(OnCredentialManagerUsed, bool());
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(NotifyUserAutoSigninPtr, bool());
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
                bool(autofill::PasswordForm* form));
@@ -224,7 +224,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, OnCredentialManagerUsed())
         .WillByDefault(testing::Return(true));
-    ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
+    ON_CALL(*client_, IsIncognito()).WillByDefault(testing::Return(false));
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
 
@@ -1298,7 +1298,7 @@ TEST_F(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
 }
 
 TEST_F(CredentialManagerImplTest, NoResetSkipZeroClickAfterPromptInIncognito) {
-  EXPECT_CALL(*client_, IsOffTheRecord()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
   // Turn on the global zero-click flag which should be overriden by Incognito.
   client_->set_zero_click_enabled(true);
   form_.skip_zero_click = true;
@@ -1333,7 +1333,7 @@ TEST_F(CredentialManagerImplTest, NoResetSkipZeroClickAfterPromptInIncognito) {
 }
 
 TEST_F(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {
-  EXPECT_CALL(*client_, IsOffTheRecord()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;

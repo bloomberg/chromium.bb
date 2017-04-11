@@ -48,7 +48,7 @@ bool PasswordManagerClient::DidLastPageLoadEncounterSSLErrors() const {
   return false;
 }
 
-bool PasswordManagerClient::IsOffTheRecord() const {
+bool PasswordManagerClient::IsIncognito() const {
   return false;
 }
 

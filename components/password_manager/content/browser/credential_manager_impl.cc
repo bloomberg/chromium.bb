@@ -200,7 +200,7 @@ void CredentialManagerImpl::Get(bool zero_click_only,
 }
 
 bool CredentialManagerImpl::IsZeroClickAllowed() const {
-  return *auto_signin_enabled_ && !client_->IsOffTheRecord();
+  return *auto_signin_enabled_ && !client_->IsIncognito();
 }
 
 GURL CredentialManagerImpl::GetOrigin() const {
