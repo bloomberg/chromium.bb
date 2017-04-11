@@ -167,6 +167,7 @@
         "didFinishLoading",
         "didReceiveData",
         "didReceiveResourceResponse",
+        "loadEventFired",
         "ParseHTML",
         "willSendRequest",
       ]
