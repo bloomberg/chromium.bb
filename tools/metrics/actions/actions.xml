@@ -16056,6 +16056,54 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TodayExtension.ExtensionDismissed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>Dismissed the Chrome Today extension.</description>
+</action>
+
+<action name="TodayExtension.ExtensionDisplayed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Displayed the notification center and display the Chrome Today extension.
+  </description>
+</action>
+
+<action name="TodayExtension.ExtensionInitialized">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Displayed the notification center and initialize the Chrome Today extension.
+  </description>
+</action>
+
+<action name="TodayExtension.NewTabPressed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Tapped on the &quot;New Tab&quot; button in the Chrome Today extension.
+  </description>
+</action>
+
+<action name="TodayExtension.OpenClipboardPressed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Tapped on the &quot;Open Copied Link&quot; button in the Chrome Today
+    extension.
+  </description>
+</action>
+
+<action name="TodayExtension.PhysicalWebPressed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Tapped on physical web URL in the Chrome Today extension.
+  </description>
+</action>
+
+<action name="TodayExtension.VoiceSearchPressed">
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Tapped on the &quot;Voice Search&quot; button in the Chrome Today extension.
+  </description>
+</action>
+
 <action name="ToggleBold">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
