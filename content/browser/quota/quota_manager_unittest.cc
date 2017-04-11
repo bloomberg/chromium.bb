@@ -168,6 +168,8 @@ class QuotaManagerTest : public testing::Test {
     storage::QuotaSettings settings;
     settings.pool_size = pool_size;
     settings.per_host_quota = per_host_quota;
+    settings.session_only_per_host_quota =
+        (per_host_quota > 0) ? (per_host_quota - 1) : 0;
     settings.must_remain_available = must_remain_available;
     settings.refresh_interval = base::TimeDelta::Max();
     quota_manager_->SetQuotaSettings(settings);
@@ -2251,6 +2253,19 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(available_space() + usage(), quota());
+}
+
+TEST_F(QuotaManagerTest, GetUsageAndQuota_SessionOnly) {
+  const GURL kEpheremalOrigin("http://ephemeral/");
+  mock_special_storage_policy()->AddSessionOnly(kEpheremalOrigin);
+
+  GetUsageAndQuotaForWebApps(kEpheremalOrigin, kTemp);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(quota_manager()->settings().session_only_per_host_quota, quota());
+
+  GetUsageAndQuotaForWebApps(kEpheremalOrigin, kPerm);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, quota());
 }
 
 }  // namespace content

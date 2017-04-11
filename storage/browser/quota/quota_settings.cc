@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/sys_info.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)                                     \
@@ -15,16 +16,35 @@
 
 namespace storage {
 
+namespace {
+
+// Skews |value| by +/- |percent|.
+int64_t RandomizeByPercent(int64_t value, int percent) {
+  double random_percent = (base::RandDouble() - 0.5) * percent * 2;
+  return value + (value * (random_percent / 100.0));
+}
+
+}  // anonymous namespace
+
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito) {
   const int64_t kMBytes = 1024 * 1024;
+  const int kRandomizedPercentage = 10;
 
   if (is_incognito) {
+    // The incognito pool size is a fraction of the amount of system memory,
+    // and the amount is capped to a hard limit.
+    const double kIncognitoPoolSizeRatio = 0.1;  // 10%
+    const int64_t kMaxIncognitoPoolSize = 300 * kMBytes;
+
     storage::QuotaSettings settings;
-    settings.pool_size =
-        std::min(300 * kMBytes, base::SysInfo::AmountOfPhysicalMemory() / 10);
+    settings.pool_size = std::min(
+        RandomizeByPercent(kMaxIncognitoPoolSize, kRandomizedPercentage),
+        static_cast<int64_t>(base::SysInfo::AmountOfPhysicalMemory() *
+                             kIncognitoPoolSizeRatio));
     settings.per_host_quota = settings.pool_size / 3;
+    settings.session_only_per_host_quota = settings.per_host_quota;
     settings.refresh_interval = base::TimeDelta::Max();
     return settings;
   }
@@ -45,6 +65,11 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   // Determines the portion of the temp pool that can be
   // utilized by a single host (ie. 5 for 20%).
   const int kPerHostTemporaryPortion = 5;
+
+  // SessionOnly (or ephemeral) origins are allotted a fraction of what
+  // normal origins are provided, and the amount is capped to a hard limit.
+  const double kSessionOnlyHostQuotaRatio = 0.1;  // 10%
+  const int64_t kMaxSessionOnlyHostQuota = 300 * kMBytes;
 
   // os_accomodation is an estimate of how much storage is needed for
   // the os and essential application code outside of the browser.
@@ -81,6 +106,10 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   settings.should_remain_available = total * kShouldRemainAvailableRatio;
   settings.must_remain_available = total * kMustRemainAvailableRatio;
   settings.per_host_quota = pool_size / kPerHostTemporaryPortion;
+  settings.session_only_per_host_quota = std::min(
+      RandomizeByPercent(kMaxSessionOnlyHostQuota, kRandomizedPercentage),
+      static_cast<int64_t>(settings.per_host_quota *
+                           kSessionOnlyHostQuotaRatio));
   settings.refresh_interval = base::TimeDelta::FromSeconds(60);
   return settings;
 }

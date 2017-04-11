@@ -215,6 +215,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                       const GURL& origin,
                       StorageType type,
                       bool is_unlimited,
+                      bool is_session_only,
                       bool is_incognito,
                       const UsageAndQuotaCallback& callback)
       : QuotaTask(manager),
@@ -222,6 +223,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
         callback_(callback),
         type_(type),
         is_unlimited_(is_unlimited),
+        is_session_only_(is_session_only),
         is_incognito_(is_incognito),
         weak_factory_(this) {}
 
@@ -300,8 +302,10 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
     settings_ = settings;
     barrier_closure.Run();
     if (type_ == kStorageTypeTemporary && !is_unlimited_) {
-      SetDesiredHostQuota(barrier_closure, kQuotaStatusOk,
-                          settings.per_host_quota);
+      int64_t host_quota = is_session_only_
+                               ? settings.session_only_per_host_quota
+                               : settings.per_host_quota;
+      SetDesiredHostQuota(barrier_closure, kQuotaStatusOk, host_quota);
     }
   }
 
@@ -331,6 +335,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   QuotaManager::UsageAndQuotaCallback callback_;
   StorageType type_;
   bool is_unlimited_;
+  bool is_session_only_;
   bool is_incognito_;
   int64_t available_space_ = 0;
   int64_t total_space_ = 0;
@@ -841,9 +846,12 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
     return;
   }
   LazyInitialize();
+
+  bool is_session_only = special_storage_policy_ &&
+                         special_storage_policy_->IsStorageSessionOnly(origin);
   UsageAndQuotaHelper* helper = new UsageAndQuotaHelper(
-      this, origin, type, IsStorageUnlimited(origin, type), is_incognito_,
-      callback);
+      this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
+      is_incognito_, callback);
   helper->Start();
 }
 

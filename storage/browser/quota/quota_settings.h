@@ -24,6 +24,7 @@ struct QuotaSettings {
                 int64_t must_remain_available)
       : pool_size(pool_size),
         per_host_quota(per_host_quota),
+        session_only_per_host_quota(per_host_quota),
         should_remain_available(should_remain_available),
         must_remain_available(must_remain_available) {}
 
@@ -35,6 +36,10 @@ struct QuotaSettings {
   // The amount in bytes of the pool an individual site may consume. The
   // value must be less than or equal to the pool_size.
   int64_t per_host_quota = 0;
+
+  // The amount allotted to origins that are considered session only
+  // according to the SpecialStoragePolicy provided by the embedder.
+  int64_t session_only_per_host_quota = 0;
 
   // The amount of space that should remain available on the storage
   // volume. As the volume approaches this limit, the quota system gets
