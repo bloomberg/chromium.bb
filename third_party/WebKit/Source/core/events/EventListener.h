@@ -49,8 +49,8 @@ class CORE_EXPORT EventListener
   virtual bool BelongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }
+  virtual bool IsAttribute() const { return false; }
 
-  bool IsAttribute() const { return VirtualisAttribute(); }
   ListenerType GetType() const { return type_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -59,8 +59,6 @@ class CORE_EXPORT EventListener
   explicit EventListener(ListenerType type) : type_(type) {}
 
  private:
-  virtual bool VirtualisAttribute() const { return false; }
-
   ListenerType type_;
 };
 

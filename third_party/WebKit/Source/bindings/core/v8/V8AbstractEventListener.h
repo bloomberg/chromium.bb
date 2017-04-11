@@ -106,6 +106,9 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener,
   void ClearListenerObject();
 
   bool BelongsToTheCurrentWorld(ExecutionContext*) const final;
+
+  bool IsAttribute() const final { return is_attribute_; }
+
   v8::Isolate* GetIsolate() const { return isolate_; }
   DOMWrapperWorld& World() const { return *world_; }
 
@@ -128,9 +131,6 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener,
   v8::Local<v8::Object> GetReceiverObject(ScriptState*, Event*);
 
  private:
-  // Implementation of EventListener function.
-  bool VirtualisAttribute() const override { return is_attribute_; }
-
   // This could return an empty handle and callers need to check return value.
   // We don't use v8::MaybeLocal because it can fail without exception.
   virtual v8::Local<v8::Value>
@@ -143,7 +143,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener,
 
   TraceWrapperV8Reference<v8::Object> listener_;
 
-  // Indicates if this is an HTML type listener.
+  // true if the listener is created through a DOM attribute.
   bool is_attribute_;
 
   RefPtr<DOMWrapperWorld> world_;
