@@ -97,7 +97,7 @@ void SetStabilityDataInt(base::StringPiece name, int64_t value) {
   if (!global_tracker)
     return;  // Activity tracking isn't enabled.
 
-  global_tracker->global_data().SetInt(name, value);
+  global_tracker->process_data().SetInt(name, value);
 }
 
 }  // namespace browser_watcher

@@ -306,8 +306,6 @@ TEST_F(ActivityTrackerTest, BasicTest) {
 
   // Ensure the data repositories have backing store, indicated by non-zero ID.
   EXPECT_NE(0U, global->process_data().id());
-  EXPECT_NE(0U, global->global_data().id());
-  EXPECT_NE(global->process_data().id(), global->global_data().id());
 }
 
 class SimpleActivityThread : public SimpleThread {

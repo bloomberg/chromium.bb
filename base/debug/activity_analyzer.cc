@@ -172,25 +172,6 @@ GlobalActivityAnalyzer::GetProcessDataSnapshot(int64_t pid) {
   return iter->second.data;
 }
 
-const ActivityUserData::Snapshot&
-GlobalActivityAnalyzer::GetGlobalDataSnapshot() {
-  global_data_snapshot_.clear();
-
-  PersistentMemoryAllocator::Reference ref =
-      PersistentMemoryAllocator::Iterator(allocator_.get())
-          .GetNextOfType(GlobalActivityTracker::kTypeIdGlobalDataRecord);
-  void* memory = allocator_->GetAsArray<char>(
-      ref, GlobalActivityTracker::kTypeIdGlobalDataRecord,
-      PersistentMemoryAllocator::kSizeAny);
-  if (memory) {
-    size_t size = allocator_->GetAllocSize(ref);
-    const ActivityUserData global_data(memory, size);
-    global_data.CreateSnapshot(&global_data_snapshot_);
-  }
-
-  return global_data_snapshot_;
-}
-
 std::vector<std::string> GlobalActivityAnalyzer::GetLogMessages() {
   std::vector<std::string> messages;
   PersistentMemoryAllocator::Reference ref;

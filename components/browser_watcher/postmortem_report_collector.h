@@ -70,7 +70,7 @@ class PostmortemReportCollector {
       LogCollection);
   FRIEND_TEST_ALL_PREFIXES(
       PostmortemReportCollectorCollectionFromGlobalTrackerTest,
-      GlobalUserDataCollection);
+      ProcessUserDataCollection);
   FRIEND_TEST_ALL_PREFIXES(
       PostmortemReportCollectorCollectionFromGlobalTrackerTest,
       FieldTrialCollection);

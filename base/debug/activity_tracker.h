@@ -764,7 +764,6 @@ class BASE_EXPORT GlobalActivityTracker {
     kTypeIdUserDataRecord = 0x615EDDD7 + 3,    // SHA1(UserDataRecord) v3
     kTypeIdGlobalLogMessage = 0x4CF434F9 + 1,  // SHA1(GlobalLogMessage) v1
     kTypeIdProcessDataRecord = kTypeIdUserDataRecord + 0x100,
-    kTypeIdGlobalDataRecord = kTypeIdUserDataRecord + 0x200,
 
     kTypeIdActivityTrackerFree = ~kTypeIdActivityTracker,
     kTypeIdUserDataRecordFree = ~kTypeIdUserDataRecord,
@@ -826,9 +825,8 @@ class BASE_EXPORT GlobalActivityTracker {
   };
 
   // This is a thin wrapper around the thread-tracker's ScopedActivity that
-  // accesses the global tracker to provide some of the information, notably
-  // which thread-tracker to use. It is safe to create even if activity
-  // tracking is not enabled.
+  // allows thread-safe access to data values. It is safe to use even if
+  // activity tracking is not enabled.
   class BASE_EXPORT ScopedThreadActivity
       : public ThreadActivityTracker::ScopedActivity {
    public:
@@ -1032,10 +1030,6 @@ class BASE_EXPORT GlobalActivityTracker {
   // Updates to this are thread-safe.
   ActivityUserData& process_data() { return process_data_; }
 
-  // Accesses the global data record for storing arbitrary key/value pairs.
-  // Updates to this are thread-safe.
-  ActivityUserData& global_data() { return global_data_; }
-
  private:
   friend class GlobalActivityAnalyzer;
   friend class ScopedThreadActivity;
@@ -1190,7 +1184,6 @@ class BASE_EXPORT GlobalActivityTracker {
 
   // An object for holding arbitrary key value pairs with thread-safe access.
   ThreadSafeUserData process_data_;
-  ThreadSafeUserData global_data_;
 
   // A map of global module information, keyed by module path.
   std::map<const std::string, ModuleInfoRecord*> modules_;

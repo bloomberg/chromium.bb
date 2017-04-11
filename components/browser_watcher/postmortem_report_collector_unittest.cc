@@ -56,6 +56,9 @@ const char kProductName[] = "TestProduct";
 const char kVersionNumber[] = "TestVersionNumber";
 const char kChannelName[] = "TestChannel";
 
+// The tracker creates some data entries internally.
+const size_t kInternalProcessDatums = 1;
+
 void ContainsKeyValue(
     const google::protobuf::Map<std::string, TypedValue>& data,
     const std::string& key,
@@ -578,22 +581,25 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 }
 
 TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
-       GlobalUserDataCollection) {
+       ProcessUserDataCollection) {
   const char string1[] = "foo";
   const char string2[] = "bar";
 
-  // Record some global user data.
+  // Record some process user data.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
                                         "", 3);
-  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
-  global_data.Set("raw", "foo", 3);
-  global_data.SetString("string", "bar");
-  global_data.SetChar("char", '9');
-  global_data.SetInt("int", -9999);
-  global_data.SetUint("uint", 9999);
-  global_data.SetBool("bool", true);
-  global_data.SetReference("ref", string1, strlen(string1));
-  global_data.SetStringReference("sref", string2);
+  ActivityUserData& process_data = GlobalActivityTracker::Get()->process_data();
+  ActivityUserData::Snapshot snapshot;
+  ASSERT_TRUE(process_data.CreateSnapshot(&snapshot));
+  ASSERT_EQ(kInternalProcessDatums, snapshot.size());
+  process_data.Set("raw", "foo", 3);
+  process_data.SetString("string", "bar");
+  process_data.SetChar("char", '9');
+  process_data.SetInt("int", -9999);
+  process_data.SetUint("uint", 9999);
+  process_data.SetBool("bool", true);
+  process_data.SetReference("ref", string1, strlen(string1));
+  process_data.SetStringReference("sref", string2);
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
@@ -603,7 +609,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Validate the report's user data.
   const auto& collected_data = report.global_data();
-  ASSERT_EQ(12U, collected_data.size());
+  ASSERT_EQ(kInternalProcessDatums + 12U, collected_data.size());
 
   ASSERT_TRUE(base::ContainsKey(collected_data, "raw"));
   EXPECT_EQ(TypedValue::kBytesValue, collected_data.at("raw").value_case());
@@ -659,10 +665,10 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Record some data.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
                                         "", 3);
-  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
-  global_data.SetString("string", "bar");
-  global_data.SetString("FieldTrial.string", "bar");
-  global_data.SetString("FieldTrial.foo", "bar");
+  ActivityUserData& process_data = GlobalActivityTracker::Get()->process_data();
+  process_data.SetString("string", "bar");
+  process_data.SetString("FieldTrial.string", "bar");
+  process_data.SetString("FieldTrial.foo", "bar");
 
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
@@ -680,7 +686,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Expect 5 key/value pairs (including product details).
   const auto& collected_data = report.global_data();
-  EXPECT_EQ(5U, collected_data.size());
+  EXPECT_EQ(kInternalProcessDatums + 5U, collected_data.size());
   EXPECT_TRUE(base::ContainsKey(collected_data, "string"));
 }
 
@@ -735,8 +741,8 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Setup.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
                                         "", 3);
-  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
-  global_data.SetInt(kStabilityStartTimestamp, 12345LL);
+  ActivityUserData& process_data = GlobalActivityTracker::Get()->process_data();
+  process_data.SetInt(kStabilityStartTimestamp, 12345LL);
 
   // Collect.
   MockSystemSessionAnalyzer analyzer;

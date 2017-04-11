@@ -164,19 +164,18 @@ void SetupStabilityDebugging() {
                                                 &version_number, &special_build,
                                                 &channel_name);
 
-    base::debug::ActivityUserData& global_data = global_tracker->global_data();
-    global_data.SetString(browser_watcher::kStabilityProduct, product_name);
-    global_data.SetString(browser_watcher::kStabilityVersion, version_number);
-    global_data.SetString(browser_watcher::kStabilityChannel, channel_name);
-    global_data.SetString(browser_watcher::kStabilitySpecialBuild,
-                          special_build);
+    base::debug::ActivityUserData& proc_data = global_tracker->process_data();
+    proc_data.SetString(browser_watcher::kStabilityProduct, product_name);
+    proc_data.SetString(browser_watcher::kStabilityVersion, version_number);
+    proc_data.SetString(browser_watcher::kStabilityChannel, channel_name);
+    proc_data.SetString(browser_watcher::kStabilitySpecialBuild, special_build);
 #if defined(ARCH_CPU_X86)
-    global_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
+    proc_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
 #elif defined(ARCH_CPU_X86_64)
-    global_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
+    proc_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
 #endif
-    global_data.SetInt(browser_watcher::kStabilityStartTimestamp,
-                       base::Time::Now().ToInternalValue());
+    proc_data.SetInt(browser_watcher::kStabilityStartTimestamp,
+                     base::Time::Now().ToInternalValue());
 
     // Record information about chrome's module. We want this to be done early.
     RecordChromeModuleInfo(global_tracker);

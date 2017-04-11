@@ -176,9 +176,6 @@ class BASE_EXPORT GlobalActivityAnalyzer {
   // returned if the process is not known.
   const ActivityUserData::Snapshot& GetProcessDataSnapshot(int64_t pid);
 
-  // Extract the global data.
-  const ActivityUserData::Snapshot& GetGlobalDataSnapshot();
-
   // Gets all log messages stored within.
   std::vector<std::string> GetLogMessages();
 
@@ -235,9 +232,6 @@ class BASE_EXPORT GlobalActivityAnalyzer {
   // first/next iteration.
   AnalyzerMap::iterator analyzers_iterator_;
   int64_t analyzers_iterator_pid_;
-
-  // Snapshot of the global data.
-  ActivityUserData::Snapshot global_data_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalActivityAnalyzer);
 };
