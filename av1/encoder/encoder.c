@@ -3052,7 +3052,7 @@ static int recode_loop_test_global_motion(AV1_COMP *cpi) {
     if (cm->global_motion[i].wmtype != IDENTITY &&
         cpi->global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
             cpi->gmparams_cost[i]) {
-      set_default_gmparams(&cm->global_motion[i]);
+      set_default_warp_params(&cm->global_motion[i]);
       cpi->gmparams_cost[i] = 0;
 #if CONFIG_REF_MV
       recode = 1;
@@ -3839,7 +3839,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
 #if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    set_default_gmparams(&cpi->common.global_motion[i]);
+    set_default_warp_params(&cpi->common.global_motion[i]);
   }
   cpi->global_motion_search_done = 0;
 #endif  // CONFIG_GLOBAL_MOTION

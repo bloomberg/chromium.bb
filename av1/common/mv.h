@@ -86,6 +86,15 @@ typedef enum {
 // GLOBAL_TRANS_TYPES 7 - up to full homography
 #define GLOBAL_TRANS_TYPES 3
 
+typedef struct {
+#if CONFIG_GLOBAL_MOTION
+  int global_warp_allowed;
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+  int local_warp_allowed;
+#endif  // CONFIG_WARPED_MOTION
+} WarpTypesAllowed;
+
 // number of parameters used by each transformation in TransformationTypes
 static const int trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6, 6, 6, 8 };
 
@@ -99,6 +108,15 @@ typedef struct {
   int32_t wmmat[8];
   int16_t alpha, beta, gamma, delta;
 } WarpedMotionParams;
+
+static INLINE void set_default_warp_params(WarpedMotionParams *wm) {
+  static const int32_t default_wm_mat[8] = {
+    0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0
+  };
+  memset(wm, 0, sizeof(*wm));
+  memcpy(wm->wmmat, default_wm_mat, sizeof(wm->wmmat));
+  wm->wmtype = IDENTITY;
+}
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
 #if CONFIG_GLOBAL_MOTION
@@ -239,15 +257,6 @@ static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
     return ROTZOOM;
   else
     return AFFINE;
-}
-
-static INLINE void set_default_gmparams(WarpedMotionParams *wm) {
-  static const int32_t default_wm_mat[8] = {
-    0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0
-  };
-  memcpy(wm->wmmat, default_wm_mat, sizeof(wm->wmmat));
-  wm->alpha = wm->beta = wm->gamma = wm->delta = 0;
-  wm->wmtype = IDENTITY;
 }
 #endif  // CONFIG_GLOBAL_MOTION
 

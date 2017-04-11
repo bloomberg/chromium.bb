@@ -56,6 +56,10 @@ static void temporal_filter_predictors_mb_c(
 #else
   const InterpFilter interp_filter = xd->mi[0]->mbmi.interp_filter;
 #endif  // USE_TEMPORALFILTER_12TAP
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+  WarpTypesAllowed warp_types;
+  memset(&warp_types, 0, sizeof(WarpTypesAllowed));
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
   if (uv_block_width == 8) {
     uv_stride = (stride + 1) >> 1;
@@ -69,50 +73,50 @@ static void temporal_filter_predictors_mb_c(
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     av1_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale,
                                      16, 16, which_mv, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                                     0, x, y,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                                     &warp_types, x, y,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      0, MV_PRECISION_Q3, x, y, xd);
 
     av1_highbd_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256],
                                      uv_block_width, &mv, scale, uv_block_width,
                                      uv_block_height, which_mv, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                                     0, x, y,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                                     &warp_types, x, y,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      1, mv_precision_uv, x, y, xd);
 
     av1_highbd_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512],
                                      uv_block_width, &mv, scale, uv_block_width,
                                      uv_block_height, which_mv, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                                     0, x, y,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                                     &warp_types, x, y,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      2, mv_precision_uv, x, y, xd);
     return;
   }
 #endif  // CONFIG_HIGHBITDEPTH
   av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
                             &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                            0, x, y, 0, 0,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                            &warp_types, x, y, 0, 0,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             MV_PRECISION_Q3, x, y, xd);
 
   av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
                             &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                            0, x, y, 1, 0,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                            &warp_types, x, y, 1, 0,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             mv_precision_uv, x, y, xd);
 
   av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
                             &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-                            0, x, y, 2, 0,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                            &warp_types, x, y, 2, 0,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             mv_precision_uv, x, y, xd);
 }
 

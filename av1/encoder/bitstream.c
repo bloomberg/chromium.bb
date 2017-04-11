@@ -3701,9 +3701,9 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
         if (count[i]) {
 #if CONFIG_MOTION_VAR && (CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION)
 #if CONFIG_WARPED_MOTION
-          if (i == EIGHTTAP_REGULAR || WARP_NEIGHBORS_WITH_OBMC)
+          if (i == EIGHTTAP_REGULAR || WARP_WM_NEIGHBORS_WITH_OBMC)
 #else
-          if (i == EIGHTTAP_REGULAR || WARP_NEIGHBORS_WITH_GM)
+          if (i == EIGHTTAP_REGULAR || WARP_GM_NEIGHBORS_WITH_OBMC)
 #endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR && (CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION)
             cm->interp_filter = i;
@@ -4662,7 +4662,7 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     // unsafe, and we need to rely on the recode loop to do it
     // instead. See av1_find_mv_refs for details.
     if (!cpi->global_motion_used[frame]) {
-      set_default_gmparams(&cm->global_motion[frame]);
+      set_default_warp_params(&cm->global_motion[frame]);
     }
 #endif
     write_global_motion_params(

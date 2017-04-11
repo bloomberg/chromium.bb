@@ -5169,7 +5169,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
           if (cm->global_motion[frame].wmtype <= AFFINE)
             if (!get_shear_params(&cm->global_motion[frame]))
-              set_default_gmparams(&cm->global_motion[frame]);
+              set_default_warp_params(&cm->global_motion[frame]);
 
           if (cm->global_motion[frame].wmtype == TRANSLATION) {
             cm->global_motion[frame].wmmat[0] =
@@ -5189,7 +5189,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                   gm_get_params_cost(&cm->global_motion[frame],
                                      &cm->prev_frame->global_motion[frame],
                                      cm->allow_high_precision_mv))) {
-            set_default_gmparams(&cm->global_motion[frame]);
+            set_default_warp_params(&cm->global_motion[frame]);
           }
 
           if (cm->global_motion[frame].wmtype != IDENTITY) break;
@@ -5908,46 +5908,12 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-#if CONFIG_WARPED_MOTION
-    if (mbmi->motion_mode == WARPED_CAUSAL) {
-      int i;
-      assert_motion_mode_valid(WARPED_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               mi);
-      for (i = 0; i < 3; ++i) {
-        const struct macroblockd_plane *pd = &xd->plane[i];
-        av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_HIGHBITDEPTH
-                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
-                       pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                       pd->pre[0].stride, pd->dst.buf,
-                       ((mi_col * MI_SIZE) >> pd->subsampling_x),
-                       ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                       xd->n8_w * (MI_SIZE >> pd->subsampling_x),
-                       xd->n8_h * (MI_SIZE >> pd->subsampling_y),
-                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
-                       16, 0);
-      }
-    } else {
-#endif  // CONFIG_WARPED_MOTION
-      if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
-        av1_build_inter_predictors_sby(xd, mi_row, mi_col, NULL, block_size);
+    if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
+      av1_build_inter_predictors_sby(xd, mi_row, mi_col, NULL, block_size);
 
-      av1_build_inter_predictors_sbuv(xd, mi_row, mi_col, NULL, block_size);
-#if CONFIG_WARPED_MOTION
-    }
-#endif  // CONFIG_WARPED_MOTION
-
+    av1_build_inter_predictors_sbuv(xd, mi_row, mi_col, NULL, block_size);
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      assert_motion_mode_valid(OBMC_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               mi);
 #if CONFIG_NCOBMC
       if (dry_run == OUTPUT_ENABLED)
         av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);

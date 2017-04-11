@@ -1724,48 +1724,16 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                            "Reference frame has invalid dimensions");
       av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
     }
-#if CONFIG_WARPED_MOTION
-    if (mbmi->motion_mode == WARPED_CAUSAL) {
-      int i;
-      assert_motion_mode_valid(WARPED_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               xd->mi[0]);
-      for (i = 0; i < 3; ++i) {
-        const struct macroblockd_plane *pd = &xd->plane[i];
 
-        av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_HIGHBITDEPTH
-                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
-                       pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                       pd->pre[0].stride, pd->dst.buf,
-                       ((mi_col * MI_SIZE) >> pd->subsampling_x),
-                       ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                       xd->n8_w * (MI_SIZE >> pd->subsampling_x),
-                       xd->n8_h * (MI_SIZE >> pd->subsampling_y),
-                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
-                       16, 0);
-      }
-    } else {
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_CB4X4
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+    av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
 #else
     av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
                                   AOMMAX(bsize, BLOCK_8X8));
 #endif
-#if CONFIG_WARPED_MOTION
-    }
-#endif  // CONFIG_WARPED_MOTION
+
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      assert_motion_mode_valid(OBMC_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               xd->mi[0]);
 #if CONFIG_NCOBMC
       av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 #else
@@ -4426,7 +4394,7 @@ static void read_global_motion_params(WarpedMotionParams *params,
   int trans_bits;
   int trans_dec_factor;
   int trans_prec_diff;
-  set_default_gmparams(params);
+  set_default_warp_params(params);
   params->wmtype = type;
   switch (type) {
     case HOMOGRAPHY:
@@ -4866,8 +4834,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    set_default_gmparams(&cm->global_motion[i]);
-    set_default_gmparams(&cm->cur_frame->global_motion[i]);
+    set_default_warp_params(&cm->global_motion[i]);
+    set_default_warp_params(&cm->cur_frame->global_motion[i]);
   }
   xd->global_motion = cm->global_motion;
 #endif  // CONFIG_GLOBAL_MOTION

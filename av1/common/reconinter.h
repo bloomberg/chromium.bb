@@ -21,11 +21,11 @@
 #include "aom/aom_integer.h"
 
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-#define WARP_NEIGHBORS_WITH_OBMC 0
+#define WARP_WM_NEIGHBORS_WITH_OBMC 0
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #if CONFIG_MOTION_VAR && CONFIG_GLOBAL_MOTION
-#define WARP_NEIGHBORS_WITH_GM 0
+#define WARP_GM_NEIGHBORS_WITH_OBMC 0
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #ifdef __cplusplus
@@ -267,6 +267,108 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
                             int mi_x, int mi_y);
 
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+// This function will determine whether or not to create a warped
+// prediction and return the appropriate motion model depending
+// on the configuration. Behavior will change with different
+// combinations of GLOBAL_MOTION, WARPED_MOTION and MOTION_VAR.
+static INLINE int allow_warp(const MODE_INFO *const mi,
+                             const WarpTypesAllowed *const warp_types,
+#if CONFIG_GLOBAL_MOTION
+                             const WarpedMotionParams *const gm_params,
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_MOTION_VAR
+                             int mi_col_offset, int mi_row_offset,
+#endif  // CONFIG_MOTION_VAR
+                             WarpedMotionParams *final_warp_params) {
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  set_default_warp_params(final_warp_params);
+
+// Only global motion configured
+#if CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR
+  (void)mbmi;
+  if (warp_types->global_warp_allowed) {
+    memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
+    return 1;
+  }
+#endif  // CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR
+
+// Only warped motion configured
+#if CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION && !CONFIG_MOTION_VAR
+  if (warp_types->local_warp_allowed) {
+    memcpy(final_warp_params, &mbmi->wm_params[0], sizeof(*final_warp_params));
+    return 1;
+  }
+#endif  // CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION && !CONFIG_MOTION_VAR
+
+// Warped and global motion configured
+#if CONFIG_GLOBAL_MOTION && CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR
+  // When both are enabled, warped will take priority. The global parameters
+  // will only be used to compute projection samples to find the warped model.
+  // Note that, if SEPARATE_GLOBAL_MOTION is enabled and a block chooses
+  // global, it will not be possible to select WARPED_CAUSAL.
+  if (warp_types->local_warp_allowed) {
+    memcpy(final_warp_params, &mbmi->wm_params[0], sizeof(*final_warp_params));
+    return 1;
+  } else if (warp_types->global_warp_allowed) {
+    memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
+    return 1;
+  }
+#endif  // CONFIG_GLOBAL_MOTION && CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR
+
+// Motion var and global motion configured
+#if CONFIG_GLOBAL_MOTION && CONFIG_MOTION_VAR && !CONFIG_WARPED_MOTION
+  // We warp if either case is true:
+  //   1.) We are predicting a block which uses global motion
+  //   2.) We are predicting a neighboring block of a block using OBMC,
+  //       the neighboring block uses global motion, and we have enabled
+  //       WARP_GM_NEIGHBORS_WITH_OBMC
+  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
+  (void)mbmi;
+  if (warp_types->global_warp_allowed &&
+      (WARP_GM_NEIGHBORS_WITH_OBMC || !build_for_obmc)) {
+    memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
+    return 1;
+  }
+#endif  // CONFIG_GLOBAL_MOTION && CONFIG_MOTION_VAR && !CONFIG_WARPED_MOTION
+
+// Motion var and warped motion configured
+#if CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR && !CONFIG_GLOBAL_MOTION
+  // We warp if either case is true:
+  //   1.) We are predicting a block with motion mode WARPED_CAUSAL
+  //   2.) We are predicting a neighboring block of a block using OBMC,
+  //       the neighboring block has mode WARPED_CAUSAL, and we have enabled
+  //       WARP_WM_NEIGHBORS_WITH_OBMC
+  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
+  if (warp_types->local_warp_allowed) {
+    if ((build_for_obmc && WARP_WM_NEIGHBORS_WITH_OBMC) || (!build_for_obmc)) {
+      memcpy(final_warp_params, &mbmi->wm_params[0],
+             sizeof(*final_warp_params));
+      return 1;
+    }
+  }
+#endif  // CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR && !CONFIG_GLOBAL_MOTION
+
+// Motion var, warped motion and global motion all configured
+#if CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR && CONFIG_GLOBAL_MOTION
+  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
+  if (warp_types->local_warp_allowed) {
+    if ((build_for_obmc && WARP_WM_NEIGHBORS_WITH_OBMC) || (!build_for_obmc)) {
+      memcpy(final_warp_params, &mbmi->wm_params[0],
+             sizeof(*final_warp_params));
+      return 1;
+    }
+  } else if (warp_types->global_warp_allowed &&
+             (WARP_GM_NEIGHBORS_WITH_OBMC || !build_for_obmc)) {
+    memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
+    return 1;
+  }
+#endif  // CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR && CONFIG_GLOBAL_MOTION
+
+  return 0;
+}
+#endif  // CONFIG_GLOBAL_MOTION ||CONFIG_WARPED_MOTION
+
 static INLINE void av1_make_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
@@ -276,30 +378,46 @@ static INLINE void av1_make_inter_predictor(
 #else
     const InterpFilter interp_filter,
 #endif
-#if CONFIG_GLOBAL_MOTION
-    int is_global, int p_col, int p_row, int plane, int ref,
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int plane,
+    int ref,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR
     int mi_col_offset, int mi_row_offset,
 #endif
-#endif  // CONFIG_GLOBAL_MOTION
     int xs, int ys, const MACROBLOCKD *xd) {
   (void)xd;
-#if CONFIG_GLOBAL_MOTION
-  if (is_global
+
 #if CONFIG_MOTION_VAR
-      && (WARP_NEIGHBORS_WITH_GM || (mi_col_offset == 0 && mi_row_offset == 0))
-#endif  // CONFIG_MOTION_VAR
-          ) {
-#if CONFIG_MOTION_VAR
-    const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
+  const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
 #else
-    const MODE_INFO *mi = xd->mi[0];
-#endif
+  const MODE_INFO *mi = xd->mi[0];
+  (void)mi;
+#endif  // CONFIG_MOTION_VAR
+
+// Make sure the selected motion mode is valid for this configuration
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+  assert_motion_mode_valid(mi->mbmi.motion_mode,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                           0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                           mi);
+#endif  // CONFIG MOTION_VAR || CONFIG_WARPED_MOTION
+
+#if CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
+  WarpedMotionParams final_warp_params;
+  const int do_warp = allow_warp(mi, warp_types,
+#if CONFIG_GLOBAL_MOTION
+                                 &xd->global_motion[mi->mbmi.ref_frame[ref]],
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_MOTION_VAR
+                                 mi_col_offset, mi_row_offset,
+#endif  // CONFIG_MOTION_VAR
+                                 &final_warp_params);
+  if (do_warp) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
-    WarpedMotionParams *gm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
-
-    av1_warp_plane(gm,
+    av1_warp_plane(&final_warp_params,
 #if CONFIG_HIGHBITDEPTH
                    xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_HIGHBITDEPTH
@@ -308,7 +426,7 @@ static INLINE void av1_make_inter_predictor(
                    pd->subsampling_x, pd->subsampling_y, xs, ys, ref);
     return;
   }
-#endif  // CONFIG_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
@@ -337,10 +455,10 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
                                      int plane,
-#if CONFIG_GLOBAL_MOTION
-                                     int is_global, int p_col, int p_row,
-                                     int ref,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                                     const WarpTypesAllowed *warp_types,
+                                     int p_col, int p_row, int ref,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      MACROBLOCKD *xd);
 #endif  // CONFIG_EXT_INTER
 
@@ -453,29 +571,27 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 #else
                                const InterpFilter interp_filter,
 #endif
-#if CONFIG_GLOBAL_MOTION
-                               int is_global, int p_col, int p_row, int plane,
-                               int ref,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+                               const WarpTypesAllowed *warp_types, int p_col,
+                               int p_row, int plane, int ref,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                enum mv_precision precision, int x, int y,
                                const MACROBLOCKD *xd);
 
 #if CONFIG_HIGHBITDEPTH
-void av1_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
-                                      uint8_t *dst, int dst_stride,
-                                      const MV *mv_q3,
-                                      const struct scale_factors *sf, int w,
-                                      int h, int do_avg,
+void av1_highbd_build_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
 #if CONFIG_DUAL_FILTER
-                                      const InterpFilter *interp_filter,
+    const InterpFilter *interp_filter,
 #else
-                                      const InterpFilter interp_filter,
+    const InterpFilter interp_filter,
 #endif
-#if CONFIG_GLOBAL_MOTION
-                                      int is_global, int p_col, int p_row,
-#endif  // CONFIG_GLOBAL_MOTION
-                                      int plane, enum mv_precision precision,
-                                      int x, int y, const MACROBLOCKD *xd);
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+    const WarpTypesAllowed *warp_types, int p_col, int p_row,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+    int plane, enum mv_precision precision, int x, int y,
+    const MACROBLOCKD *xd);
 #endif
 
 static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,

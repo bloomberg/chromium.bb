@@ -2009,12 +2009,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
       mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
-    assert_motion_mode_valid(mbmi->motion_mode,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                             0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                             xd->mi[0]);
-
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;

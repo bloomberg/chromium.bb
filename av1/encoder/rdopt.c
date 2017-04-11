@@ -5524,12 +5524,13 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_DUAL_FILTER
   struct scale_factors sf;
   struct macroblockd_plane *const pd = &xd->plane[0];
-#if CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
   // ic and ir are the 4x4 coordiantes of the sub8x8 at index "block"
   const int ic = block & 1;
   const int ir = (block - ic) >> 1;
   const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
   const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
+#if CONFIG_GLOBAL_MOTION
   int is_global[2];
   for (ref = 0; ref < 2; ++ref) {
     WarpedMotionParams *const wm =
@@ -5537,6 +5538,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     is_global[ref] = is_global_mv_block(xd->mi[0], block, wm->wmtype);
   }
 #endif  // CONFIG_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
   // Do joint motion search in compound mode to get more accurate mv.
   struct buf_2d backup_yv12[2][MAX_MB_PLANE];
@@ -5608,6 +5610,15 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                        // found for the 'other' reference frame is factored in.
     const int plane = 0;
     ConvolveParams conv_params = get_conv_params(0, plane);
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+    WarpTypesAllowed warp_types;
+#if CONFIG_GLOBAL_MOTION
+    warp_types.global_warp_allowed = is_global[!id];
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+    warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
+#endif  // CONFIG_WARPED_MOTION
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
     // Initialized here because of compiler problem in Visual Studio.
     ref_yv12[0] = xd->plane[plane].pre[0];
@@ -5628,27 +5639,27 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-          is_global[!id], p_col, p_row,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+          &warp_types, p_col, p_row,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           plane, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
       av1_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-          is_global[!id], p_col, p_row, plane, !id,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+          &warp_types, p_col, p_row, plane, !id,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     }
 #else
     av1_build_inter_predictor(
         ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
         &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION
-        is_global[!id], p_col, p_row, plane, !id,
-#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+        &warp_types, p_col, p_row, plane, !id,
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
         MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
 #endif  // CONFIG_HIGHBITDEPTH
 
@@ -8233,11 +8244,6 @@ static int64_t motion_mode_rd(
     mbmi->motion_mode = motion_mode;
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      assert_motion_mode_valid(OBMC_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               mi);
 #if CONFIG_EXT_INTER
       *mbmi = *best_bmc_mbmi;
       mbmi->motion_mode = OBMC_CAUSAL;
@@ -8282,11 +8288,6 @@ static int64_t motion_mode_rd(
 
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
-      assert_motion_mode_valid(WARPED_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                               mi);
 #if CONFIG_EXT_INTER
       *mbmi = *best_bmc_mbmi;
       mbmi->motion_mode = WARPED_CAUSAL;
@@ -8307,24 +8308,7 @@ static int64_t motion_mode_rd(
       if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
                           mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
                           &mbmi->wm_params[0], mi_row, mi_col) == 0) {
-        int plane;
-        for (plane = 0; plane < 3; ++plane) {
-          const struct macroblockd_plane *pd = &xd->plane[plane];
-
-          av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_HIGHBITDEPTH
-                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
-                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                         pd->pre[0].stride, pd->dst.buf,
-                         (mi_col * MI_SIZE) >> pd->subsampling_x,
-                         (mi_row * MI_SIZE) >> pd->subsampling_y,
-                         (xd->n8_w * MI_SIZE) >> pd->subsampling_x,
-                         (xd->n8_h * MI_SIZE) >> pd->subsampling_y,
-                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
-                         16, 16, 0);
-        }
-
+        av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
         model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
                         &tmp_dist, skip_txfm_sb, skip_sse_sb);
       } else {
@@ -10785,45 +10769,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (is_inter_mode(mbmi->mode)) {
-#if CONFIG_WARPED_MOTION
-      if (mbmi->motion_mode == WARPED_CAUSAL) {
-        assert_motion_mode_valid(WARPED_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                 0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                 xd->mi[0]);
-        assert(!has_second_ref(mbmi));
-
-        int plane;
-        for (plane = 0; plane < 3; ++plane) {
-          const struct macroblockd_plane *pd = &xd->plane[plane];
-
-          av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_HIGHBITDEPTH
-                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
-                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                         pd->pre[0].stride, pd->dst.buf,
-                         ((mi_col * MI_SIZE) >> pd->subsampling_x),
-                         ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                         xd->n8_w * (MI_SIZE >> pd->subsampling_x),
-                         xd->n8_h * (MI_SIZE >> pd->subsampling_y),
-                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
-                         16, 16, 0);
-        }
-      } else {
-#endif  // CONFIG_WARPED_MOTION
-        av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
-#if CONFIG_WARPED_MOTION
-      }
-#endif  // CONFIG_WARPED_MOTION
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
 #if CONFIG_MOTION_VAR
       if (mbmi->motion_mode == OBMC_CAUSAL) {
-        assert_motion_mode_valid(OBMC_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                 0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                 xd->mi[0]);
         av1_build_obmc_inter_prediction(
             cm, xd, mi_row, mi_col, args.above_pred_buf, args.above_pred_stride,
             args.left_pred_buf, args.left_pred_stride);
@@ -12569,11 +12517,6 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
 
   // Check non-causal mode
   mbmi->motion_mode = OBMC_CAUSAL;
-  assert_motion_mode_valid(OBMC_CAUSAL,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                           0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                           xd->mi[0]);
   av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
   av1_subtract_plane(x, bsize, 0);
