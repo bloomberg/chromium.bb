@@ -60,7 +60,7 @@ namespace remoting {
 
 class KeyInputTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     keyInput_ = [[KeyInput allocWithZone:nil] init];
     delegateTester_ = [[KeyInputDelegateTester alloc] init];
     keyInput_.delegate = delegateTester_;
