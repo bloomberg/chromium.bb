@@ -225,7 +225,9 @@ cr.define('settings', function() {
 // </if>
 
   r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+// <if expr="chromeos">
   r.MANAGE_ACCESSIBILITY = r.ACCESSIBILITY.createChild('/manageAccessibility');
+// </if>
 
   r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
   r.RESET = r.ADVANCED.createSection('/reset', 'reset');
