@@ -327,9 +327,7 @@ public class AwSettings {
     public void setAcceptThirdPartyCookies(boolean accept) {
         if (TRACE) Log.d(LOGTAG, "setAcceptThirdPartyCookies=" + accept);
         synchronized (mAwSettingsLock) {
-            if (mAcceptThirdPartyCookies != accept) {
-                mAcceptThirdPartyCookies = accept;
-            }
+            mAcceptThirdPartyCookies = accept;
         }
     }
 
@@ -372,9 +370,7 @@ public class AwSettings {
     public void setAllowFileAccess(boolean allow) {
         if (TRACE) Log.d(LOGTAG, "setAllowFileAccess=" + allow);
         synchronized (mAwSettingsLock) {
-            if (mAllowFileUrlAccess != allow) {
-                mAllowFileUrlAccess = allow;
-            }
+            mAllowFileUrlAccess = allow;
         }
     }
 
@@ -393,9 +389,7 @@ public class AwSettings {
     public void setAllowContentAccess(boolean allow) {
         if (TRACE) Log.d(LOGTAG, "setAllowContentAccess=" + allow);
         synchronized (mAwSettingsLock) {
-            if (mAllowContentUrlAccess != allow) {
-                mAllowContentUrlAccess = allow;
-            }
+            mAllowContentUrlAccess = allow;
         }
     }
 
@@ -414,9 +408,7 @@ public class AwSettings {
     public void setCacheMode(int mode) {
         if (TRACE) Log.d(LOGTAG, "setCacheMode=" + mode);
         synchronized (mAwSettingsLock) {
-            if (mCacheMode != mode) {
-                mCacheMode = mode;
-            }
+            mCacheMode = mode;
         }
     }
 
@@ -525,9 +517,7 @@ public class AwSettings {
     public void setGeolocationEnabled(boolean flag) {
         if (TRACE) Log.d(LOGTAG, "setGeolocationEnabled=" + flag);
         synchronized (mAwSettingsLock) {
-            if (mGeolocationEnabled != flag) {
-                mGeolocationEnabled = flag;
-            }
+            mGeolocationEnabled = flag;
         }
     }
 
@@ -1720,9 +1710,7 @@ public class AwSettings {
 
     public void setDisabledActionModeMenuItems(int menuItems) {
         synchronized (mAwSettingsLock) {
-            if (menuItems != mDisabledMenuItems) {
-                mDisabledMenuItems = menuItems;
-            }
+            mDisabledMenuItems = menuItems;
         }
     }
 
