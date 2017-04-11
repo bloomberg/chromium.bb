@@ -45,10 +45,38 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   // the data returned from GetData will not be valid PDF data.
   CGContextRef context() const override;
 
-  bool RenderPage(unsigned int page_number,
-                  skia::NativeDrawingContext context,
-                  const CGRect rect,
-                  const MacRenderPageParams& params) const override;
+  // |shrink_to_fit| specifies whether the output should be shrunk to fit a
+  // destination page if the source PDF is bigger than the destination page in
+  // any dimension. If this is false, parts of the source PDF page that lie
+  // outside the bounds will be clipped.
+  //
+  // |stretch_to_fit| specifies whether the output should be stretched to fit
+  // the destination page if the source page size is smaller in all dimensions.
+  //
+  // |center_horizontally| specifies whether the output (after any scaling is
+  // done) should be centered horizontally within the destination page.
+  //
+  // |center_vertically| specifies whether the output (after any scaling is
+  // done) should be centered vertically within the destination page.
+  // Note that all scaling preserves the original aspect ratio of the page.
+  //
+  // |autorotate| specifies whether the source PDF should be autorotated to fit
+  // on the destination page.
+  struct RenderPageParams {
+    bool shrink_to_fit = false;
+    bool stretch_to_fit = false;
+    bool center_horizontally = false;
+    bool center_vertically = false;
+    bool autorotate = false;
+  };
+  // Renders the given page from |src_buffer| into |rect| in the given context.
+  // Pages use a 1-based index. The rendering uses the arguments in
+  // |params| to determine scaling, translation, and rotation.
+  static bool RenderPage(const std::vector<char>& src_buffer,
+                         unsigned int page_number,
+                         CGContextRef context,
+                         const CGRect rect,
+                         const RenderPageParams& params);
 
  private:
   // Returns a CGPDFDocumentRef version of |pdf_data_|.

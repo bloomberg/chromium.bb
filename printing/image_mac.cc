@@ -5,11 +5,13 @@
 #include "printing/image.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "printing/metafile.h"
+#include "printing/pdf_metafile_cg_mac.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace printing {
@@ -39,12 +41,13 @@ bool Image::LoadMetafile(const Metafile& metafile) {
                             kCGImageAlphaPremultipliedLast));
   DCHECK(bitmap_context.get());
 
-  struct Metafile::MacRenderPageParams params;
+  PdfMetafileCg::RenderPageParams params;
   params.shrink_to_fit = true;
-  metafile.RenderPage(page_number, bitmap_context,
-                      CGRectMake(0, 0, size_.width(), size_.height()), params);
-
-  return true;
+  CGRect cg_rect = CGRectMake(0, 0, size_.width(), size_.height());
+  std::vector<char> buffer;
+  return metafile.GetDataAsVector(&buffer) &&
+         PdfMetafileCg::RenderPage(buffer, page_number, bitmap_context, cg_rect,
+                                   params);
 }
 
 }  // namespace printing

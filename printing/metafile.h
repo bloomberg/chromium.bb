@@ -16,10 +16,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace base {
@@ -36,36 +32,6 @@ namespace printing {
 // This class plays metafiles from data stream (usually PDF or EMF).
 class PRINTING_EXPORT MetafilePlayer {
  public:
-#if defined(OS_MACOSX)
-  // |shrink_to_fit| specifies whether the output should be shrunk to fit a
-  // destination page if the source PDF is bigger than the destination page in
-  // any dimension. If this is false, parts of the source PDF page that lie
-  // outside the bounds will be clipped.
-  // |stretch_to_fit| specifies whether the output should be stretched to fit
-  // the destination page if the source page size is smaller in all dimensions.
-  // |center_horizontally| specifies whether the output (after any scaling is
-  // done) should be centered horizontally within the destination page.
-  // |center_vertically| specifies whether the output (after any scaling is
-  // done) should be centered vertically within the destination page.
-  // Note that all scaling preserves the original aspect ratio of the page.
-  // |autorotate| specifies whether the source PDF should be autorotated to fit
-  // on the destination page.
-  struct MacRenderPageParams {
-    MacRenderPageParams()
-        : shrink_to_fit(false),
-          stretch_to_fit(false),
-          center_horizontally(false),
-          center_vertically(false),
-          autorotate(false) {
-    }
-
-    bool shrink_to_fit;
-    bool stretch_to_fit;
-    bool center_horizontally;
-    bool center_vertically;
-    bool autorotate;
-  };
-#endif  // defined(OS_MACOSX)
   MetafilePlayer();
   virtual ~MetafilePlayer();
 
@@ -75,15 +41,6 @@ class PRINTING_EXPORT MetafilePlayer {
   // issue with some printers. See Emf::Record::SafePlayback implementation for
   // details.
   virtual bool SafePlayback(skia::NativeDrawingContext hdc) const = 0;
-
-#elif defined(OS_MACOSX)
-  // Renders the given page into |rect| in the given context.
-  // Pages use a 1-based index. The rendering uses the arguments in
-  // |params| to determine scaling, translation, and rotation.
-  virtual bool RenderPage(unsigned int page_number,
-                          skia::NativeDrawingContext context,
-                          const CGRect rect,
-                          const MacRenderPageParams& params) const = 0;
 #endif  // if defined(OS_WIN)
 
   // Populates the buffer with the underlying data. This function should ONLY be

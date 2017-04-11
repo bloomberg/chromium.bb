@@ -157,11 +157,24 @@ bool PdfMetafileCg::FinishDocument() {
   return true;
 }
 
-bool PdfMetafileCg::RenderPage(unsigned int page_number,
+/* TODO(caryclark): The set up of PluginInstance::PrintPDFOutput may result in
+   rasterized output.  Even if that flow uses PdfMetafileCg::RenderPage,
+   the drawing of the PDF into the canvas may result in a rasterized output.
+   PDFMetafileSkia::RenderPage should be not implemented as shown and instead
+   should do something like the following CL in PluginInstance::PrintPDFOutput:
+   http://codereview.chromium.org/7200040/diff/1/webkit/plugins/ppapi/ppapi_plugin_instance.cc
+*/
+bool PdfMetafileCg::RenderPage(const std::vector<char>& src_buffer,
+                               unsigned int page_number,
                                CGContextRef context,
                                const CGRect rect,
-                               const MacRenderPageParams& params) const {
-  CGPDFDocumentRef pdf_doc = GetPDFDocument();
+                               const PdfMetafileCg::RenderPageParams& params) {
+  PdfMetafileCg metafile;
+  if (!metafile.InitFromData(src_buffer.data(), src_buffer.size())) {
+    LOG(ERROR) << "Unable to initialize PDF document from data";
+    return false;
+  }
+  CGPDFDocumentRef pdf_doc = metafile.GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
     return false;
