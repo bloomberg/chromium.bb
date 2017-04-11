@@ -294,8 +294,8 @@ class WTF_EXPORT String {
   String DeprecatedLower() const;
   String DeprecatedUpper() const;
 
-  String Lower(const AtomicString& locale_identifier) const;
-  String Upper(const AtomicString& locale_identifier) const;
+  String LowerUnicode(const AtomicString& locale_identifier) const;
+  String UpperUnicode(const AtomicString& locale_identifier) const;
 
   // Returns a uppercase version of the string.
   // This function converts ASCII characters only.

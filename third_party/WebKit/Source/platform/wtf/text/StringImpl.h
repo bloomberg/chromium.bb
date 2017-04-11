@@ -378,12 +378,12 @@ class WTF_EXPORT StringImpl {
   double ToDouble(bool* ok = 0);
   float ToFloat(bool* ok = 0);
 
-  PassRefPtr<StringImpl> Lower();
+  PassRefPtr<StringImpl> LowerUnicode();
   PassRefPtr<StringImpl> LowerASCII();
-  PassRefPtr<StringImpl> Upper();
+  PassRefPtr<StringImpl> UpperUnicode();
   PassRefPtr<StringImpl> UpperASCII();
-  PassRefPtr<StringImpl> Lower(const AtomicString& locale_identifier);
-  PassRefPtr<StringImpl> Upper(const AtomicString& locale_identifier);
+  PassRefPtr<StringImpl> LowerUnicode(const AtomicString& locale_identifier);
+  PassRefPtr<StringImpl> UpperUnicode(const AtomicString& locale_identifier);
 
   PassRefPtr<StringImpl> Fill(UChar);
   // FIXME: Do we need fill(char) or can we just do the right thing if UChar is

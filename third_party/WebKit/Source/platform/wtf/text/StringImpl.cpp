@@ -633,7 +633,7 @@ PassRefPtr<StringImpl> StringImpl::LowerASCII() {
   return new_impl.Release();
 }
 
-PassRefPtr<StringImpl> StringImpl::Lower() {
+PassRefPtr<StringImpl> StringImpl::LowerUnicode() {
   // Note: This is a hot function in the Dromaeo benchmark, specifically the
   // no-op code path up through the first 'return' statement.
 
@@ -710,9 +710,9 @@ PassRefPtr<StringImpl> StringImpl::Lower() {
   return new_impl.Release();
 }
 
-PassRefPtr<StringImpl> StringImpl::Upper() {
-  // This function could be optimized for no-op cases the way lower() is,
-  // but in empirical testing, few actual calls to upper() are no-ops, so
+PassRefPtr<StringImpl> StringImpl::UpperUnicode() {
+  // This function could be optimized for no-op cases the way LowerUnicode() is,
+  // but in empirical testing, few actual calls to UpperUnicode() are no-ops, so
   // it wouldn't be worth the extra time for pre-scanning.
 
   RELEASE_ASSERT(length_ <=
@@ -871,7 +871,7 @@ static PassRefPtr<StringImpl> CaseConvert(const UChar* source16,
   } while (true);
 }
 
-PassRefPtr<StringImpl> StringImpl::Lower(
+PassRefPtr<StringImpl> StringImpl::LowerUnicode(
     const AtomicString& locale_identifier) {
   // Use the more optimized code path most of the time.
   // Only Turkic (tr and az) languages and Lithuanian requires
@@ -886,7 +886,7 @@ PassRefPtr<StringImpl> StringImpl::Lower(
   else if (LocaleIdMatchesLang(locale_identifier, "lt"))
     locale_for_conversion = "lt";
   else
-    return Lower();
+    return LowerUnicode();
 
   if (length_ > static_cast<unsigned>(numeric_limits<int32_t>::max()))
     CRASH();
@@ -898,7 +898,7 @@ PassRefPtr<StringImpl> StringImpl::Lower(
                      this);
 }
 
-PassRefPtr<StringImpl> StringImpl::Upper(
+PassRefPtr<StringImpl> StringImpl::UpperUnicode(
     const AtomicString& locale_identifier) {
   // Use the more-optimized code path most of the time.
   // Only Turkic (tr and az) languages, Greek and Lithuanian require
@@ -912,7 +912,7 @@ PassRefPtr<StringImpl> StringImpl::Upper(
   else if (LocaleIdMatchesLang(locale_identifier, "lt"))
     locale_for_conversion = "lt";
   else
-    return Upper();
+    return UpperUnicode();
 
   if (length_ > static_cast<unsigned>(numeric_limits<int32_t>::max()))
     CRASH();

@@ -71,7 +71,7 @@ AtomicString AtomicString::DeprecatedLower() const {
   StringImpl* impl = this->Impl();
   if (UNLIKELY(!impl))
     return *this;
-  RefPtr<StringImpl> new_impl = impl->Lower();
+  RefPtr<StringImpl> new_impl = impl->LowerUnicode();
   if (LIKELY(new_impl == impl))
     return *this;
   return AtomicString(new_impl.Release());

@@ -1720,10 +1720,10 @@ void ApplyTextTransform(const ComputedStyle* style,
       MakeCapitalized(&text, previous_character);
       break;
     case ETextTransform::kUppercase:
-      text = text.Upper(style->Locale());
+      text = text.UpperUnicode(style->Locale());
       break;
     case ETextTransform::kLowercase:
-      text = text.Lower(style->Locale());
+      text = text.LowerUnicode(style->Locale());
       break;
   }
 }

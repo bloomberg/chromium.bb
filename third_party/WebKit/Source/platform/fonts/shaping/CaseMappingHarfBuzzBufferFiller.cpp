@@ -32,9 +32,9 @@ CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
   } else {
     String case_mapped_text;
     if (case_map_intend == CaseMapIntend::kUpperCase) {
-      case_mapped_text = String(buffer, buffer_length).Upper(locale);
+      case_mapped_text = String(buffer, buffer_length).UpperUnicode(locale);
     } else {
-      case_mapped_text = String(buffer, buffer_length).Lower(locale);
+      case_mapped_text = String(buffer, buffer_length).LowerUnicode(locale);
     }
 
     if (case_mapped_text.length() != buffer_length) {
@@ -71,9 +71,9 @@ void CaseMappingHarfBuzzBufferFiller::FillSlowCase(
     String char_by_char(&buffer[char_index], new_char_index - char_index);
     String case_mapped_char;
     if (case_map_intend == CaseMapIntend::kUpperCase)
-      case_mapped_char = char_by_char.Upper(locale);
+      case_mapped_char = char_by_char.UpperUnicode(locale);
     else
-      case_mapped_char = char_by_char.Lower(locale);
+      case_mapped_char = char_by_char.LowerUnicode(locale);
 
     for (unsigned j = 0; j < case_mapped_char.length();) {
       UChar32 codepoint = 0;

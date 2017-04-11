@@ -273,25 +273,25 @@ String String::Substring(unsigned pos, unsigned len) const {
 String String::DeprecatedLower() const {
   if (!impl_)
     return String();
-  return impl_->Lower();
+  return impl_->LowerUnicode();
 }
 
 String String::DeprecatedUpper() const {
   if (!impl_)
     return String();
-  return impl_->Upper();
+  return impl_->UpperUnicode();
 }
 
-String String::Lower(const AtomicString& locale_identifier) const {
+String String::LowerUnicode(const AtomicString& locale_identifier) const {
   if (!impl_)
     return String();
-  return impl_->Lower(locale_identifier);
+  return impl_->LowerUnicode(locale_identifier);
 }
 
-String String::Upper(const AtomicString& locale_identifier) const {
+String String::UpperUnicode(const AtomicString& locale_identifier) const {
   if (!impl_)
     return String();
-  return impl_->Upper(locale_identifier);
+  return impl_->UpperUnicode(locale_identifier);
 }
 
 String String::UpperASCII() const {

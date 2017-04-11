@@ -275,7 +275,7 @@ TEST(StringTest, ToUpperLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.Upper(locale).Utf8().Data())
+      EXPECT_STREQ(expected, source.UpperUnicode(locale).Utf8().Data())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }
@@ -335,7 +335,7 @@ TEST(StringTest, ToLowerLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.Lower(locale).Utf8().Data())
+      EXPECT_STREQ(expected, source.LowerUnicode(locale).Utf8().Data())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }

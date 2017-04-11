@@ -55,9 +55,9 @@ TEST(StringImplTest, LowerASCII) {
   EXPECT_TRUE(Equal(test_string_impl.Get(),
                     StringImpl::Create("lInk")->LowerASCII().Get()));
 
-  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->Lower().Get(),
+  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->LowerUnicode().Get(),
                     StringImpl::Create("LINK")->LowerASCII().Get()));
-  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->Lower().Get(),
+  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->LowerUnicode().Get(),
                     StringImpl::Create("lInk")->LowerASCII().Get()));
 
   EXPECT_TRUE(Equal(StringImpl::Create("a\xE1").Get(),
@@ -112,9 +112,9 @@ TEST(StringImplTest, UpperASCII) {
   EXPECT_TRUE(Equal(test_string_impl.Get(),
                     StringImpl::Create("lInk")->UpperASCII().Get()));
 
-  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->Upper().Get(),
+  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->UpperUnicode().Get(),
                     StringImpl::Create("LINK")->UpperASCII().Get()));
-  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->Upper().Get(),
+  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->UpperUnicode().Get(),
                     StringImpl::Create("lInk")->UpperASCII().Get()));
 
   EXPECT_TRUE(Equal(StringImpl::Create("A\xE1").Get(),
