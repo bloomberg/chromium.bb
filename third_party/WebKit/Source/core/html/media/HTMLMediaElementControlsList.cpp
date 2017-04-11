@@ -14,8 +14,8 @@ const char kNoDownload[] = "nodownload";
 const char kNoFullscreen[] = "nofullscreen";
 const char kNoRemotePlayback[] = "noremoteplayback";
 
-const char* g_k_supported_tokens[] = {kNoDownload, kNoFullscreen,
-                                      kNoRemotePlayback};
+const char* const kSupportedTokens[] = {kNoDownload, kNoFullscreen,
+                                        kNoRemotePlayback};
 
 }  // namespace
 
@@ -34,7 +34,7 @@ DEFINE_TRACE(HTMLMediaElementControlsList) {
 bool HTMLMediaElementControlsList::ValidateTokenValue(
     const AtomicString& token_value,
     ExceptionState&) const {
-  for (const char* supported_token : g_k_supported_tokens) {
+  for (const char* supported_token : kSupportedTokens) {
     if (token_value == supported_token)
       return true;
   }

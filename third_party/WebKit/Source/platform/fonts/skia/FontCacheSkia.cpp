@@ -73,7 +73,7 @@ AtomicString ToAtomicString(const SkString& str) {
 // based on the proposed changes in UTR #51 for introducing
 // an Emoji script code:
 // http://www.unicode.org/reports/tr51/proposed.html#Emoji_Script
-static const char* g_k_android_color_emoji_locale = "und-Zsye";
+static const char kAndroidColorEmojiLocale[] = "und-Zsye";
 
 // This function is called on android or when we are emulating android fonts on
 // linux and the embedder has overriden the default fontManager with
@@ -101,7 +101,7 @@ AtomicString FontCache::GetFamilyNameForCharacter(
   if (content_locale)
     bcp47_locales[locale_count++] = content_locale->LocaleForSkFontMgr();
   if (fallback_priority == FontFallbackPriority::kEmojiEmoji)
-    bcp47_locales[locale_count++] = g_k_android_color_emoji_locale;
+    bcp47_locales[locale_count++] = kAndroidColorEmojiLocale;
   SECURITY_DCHECK(locale_count <= kMaxLocales);
   sk_sp<SkTypeface> typeface(fm->matchFamilyStyleCharacter(
       0, SkFontStyle(), bcp47_locales, locale_count, c));

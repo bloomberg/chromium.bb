@@ -24,24 +24,24 @@ class LayoutTextTest : public RenderingTest {
   }
 };
 
-const char* g_k_taco_text = "Los Compadres Taco Truck";
+const char kTacoText[] = "Los Compadres Taco Truck";
 
 }  // namespace
 
 TEST_F(LayoutTextTest, WidthZeroFromZeroLength) {
-  SetBasicBody(g_k_taco_text);
+  SetBasicBody(kTacoText);
   ASSERT_EQ(0, GetBasicText()->Width(0u, 0u, LayoutUnit(), TextDirection::kLtr,
                                      false));
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromZeroLength) {
-  SetBasicBody(g_k_taco_text);
+  SetBasicBody(kTacoText);
   ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(), 0u,
                                      LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
-  SetBasicBody(g_k_taco_text);
+  SetBasicBody(kTacoText);
   float width = GetBasicText()->Width(0u, std::numeric_limits<unsigned>::max(),
                                       LayoutUnit(), TextDirection::kLtr, false);
   // Width may vary by platform and we just want to make sure it's something
@@ -51,7 +51,7 @@ TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
-  SetBasicBody(g_k_taco_text);
+  SetBasicBody(kTacoText);
   ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(),
                                      std::numeric_limits<unsigned>::max(),
                                      LayoutUnit(), TextDirection::kLtr, false));

@@ -59,7 +59,7 @@
 
 namespace blink {
 
-const char* g_k_color_emoji_font_mac = "Apple Color Emoji";
+const char kColorEmojiFontMac[] = "Apple Color Emoji";
 
 // static
 const AtomicString& FontCache::LegacySystemFontFamily() {
@@ -115,7 +115,7 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     FontFallbackPriority fallback_priority) {
   if (fallback_priority == FontFallbackPriority::kEmojiEmoji) {
     RefPtr<SimpleFontData> emoji_font =
-        GetFontData(font_description, AtomicString(g_k_color_emoji_font_mac));
+        GetFontData(font_description, AtomicString(kColorEmojiFontMac));
     if (emoji_font)
       return emoji_font;
   }

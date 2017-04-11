@@ -281,8 +281,8 @@ TEST_P(DecodedImageTypeHistogramTest, ImageType) {
   RunTest("Blink.DecodedImageType");
 }
 
-DecodedImageTypeHistogramTest::ParamType
-    g_k_decoded_image_type_histogram_test_params[] = {
+const DecodedImageTypeHistogramTest::ParamType
+    kDecodedImageTypeHistogramTestparams[] = {
         {"/LayoutTests/images/resources/green.jpg",
          BitmapImageMetrics::kImageJPEG},
         {"/LayoutTests/images/resources/"
@@ -300,7 +300,7 @@ DecodedImageTypeHistogramTest::ParamType
 INSTANTIATE_TEST_CASE_P(
     DecodedImageTypeHistogramTest,
     DecodedImageTypeHistogramTest,
-    ::testing::ValuesIn(g_k_decoded_image_type_histogram_test_params));
+    ::testing::ValuesIn(kDecodedImageTypeHistogramTestparams));
 
 using DecodedImageOrientationHistogramTest =
     BitmapHistogramTest<ImageOrientationEnum>;

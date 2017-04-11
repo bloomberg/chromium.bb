@@ -10,17 +10,17 @@ namespace blink {
 
 namespace {
 
-const char* g_k_supported_tokens[] = {"allow-forms",
-                                      "allow-modals",
-                                      "allow-pointer-lock",
-                                      "allow-popups",
-                                      "allow-popups-to-escape-sandbox",
-                                      "allow-same-origin",
-                                      "allow-scripts",
-                                      "allow-top-navigation"};
+const char* const kSupportedTokens[] = {"allow-forms",
+                                        "allow-modals",
+                                        "allow-pointer-lock",
+                                        "allow-popups",
+                                        "allow-popups-to-escape-sandbox",
+                                        "allow-same-origin",
+                                        "allow-scripts",
+                                        "allow-top-navigation"};
 
 bool IsTokenSupported(const AtomicString& token) {
-  for (const char* supported_token : g_k_supported_tokens) {
+  for (const char* supported_token : kSupportedTokens) {
     if (token == supported_token)
       return true;
   }

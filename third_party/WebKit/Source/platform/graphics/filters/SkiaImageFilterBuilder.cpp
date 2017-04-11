@@ -114,7 +114,7 @@ void BuildSourceGraphic(FilterEffect* source_graphic,
                                     source_graphic->OperatingColorSpace());
 }
 
-static float g_k_max_mask_buffer_size =
+static const float kMaxMaskBufferSize =
     50.f * 1024.f * 1024.f / 4.f;  // 50MB / 4 bytes per pixel
 
 sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
@@ -128,7 +128,7 @@ sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
     const SkRect cull_rect = mask_record->cullRect();
     if (static_cast<float>(cull_rect.width()) *
             static_cast<float>(cull_rect.height()) <
-        g_k_max_mask_buffer_size) {
+        kMaxMaskBufferSize) {
       bitmap.allocPixels(
           SkImageInfo::MakeN32Premul(cull_rect.width(), cull_rect.height()));
       SkiaPaintCanvas canvas(bitmap);

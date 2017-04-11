@@ -16,7 +16,7 @@ namespace blink {
 
 namespace {
 
-const char* g_k_valid_policies[] = {
+const char* const kValidPolicies[] = {
     "{\"vibrate\": []}",
     "{\"vibrate\": [\"self\"]}",
     "{\"vibrate\": [\"*\"]}",
@@ -50,7 +50,7 @@ class FeaturePolicyTest : public ::testing::Test {
 
 TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
-  for (const char* policy_string : g_k_valid_policies) {
+  for (const char* policy_string : kValidPolicies) {
     messages.Clear();
     ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_EQ(0UL, messages.size());

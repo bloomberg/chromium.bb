@@ -23,7 +23,7 @@ namespace blink {
 
 namespace {
 
-const char* g_k_default_mime_type = "video/webm";
+const char kDefaultMimeType[] = "video/webm";
 
 // Boundaries of Opus bitrate from https://www.opus-codec.org/.
 const int kSmallestPossibleOpusBitRate = 6000;
@@ -163,8 +163,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                              ExceptionState& exception_state)
     : SuspendableObject(context),
       stream_(stream),
-      mime_type_(options.hasMimeType() ? options.mimeType()
-                                       : g_k_default_mime_type),
+      mime_type_(options.hasMimeType() ? options.mimeType() : kDefaultMimeType),
       stopped_(true),
       audio_bits_per_second_(0),
       video_bits_per_second_(0),

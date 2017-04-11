@@ -9,13 +9,13 @@
 
 namespace blink {
 
-static const char* g_k_supplement_name = "SourceBufferTrackBaseSupplement";
+static const char kSupplementName[] = "SourceBufferTrackBaseSupplement";
 
 // static
 SourceBufferTrackBaseSupplement* SourceBufferTrackBaseSupplement::FromIfExists(
     TrackBase& track) {
   return static_cast<SourceBufferTrackBaseSupplement*>(
-      Supplement<TrackBase>::From(track, g_k_supplement_name));
+      Supplement<TrackBase>::From(track, kSupplementName));
 }
 
 // static
@@ -24,7 +24,7 @@ SourceBufferTrackBaseSupplement& SourceBufferTrackBaseSupplement::From(
   SourceBufferTrackBaseSupplement* supplement = FromIfExists(track);
   if (!supplement) {
     supplement = new SourceBufferTrackBaseSupplement();
-    Supplement<TrackBase>::ProvideTo(track, g_k_supplement_name, supplement);
+    Supplement<TrackBase>::ProvideTo(track, kSupplementName, supplement);
   }
   return *supplement;
 }

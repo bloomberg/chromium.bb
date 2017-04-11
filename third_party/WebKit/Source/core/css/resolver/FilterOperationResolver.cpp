@@ -39,8 +39,8 @@
 
 namespace blink {
 
-static float g_k_off_screen_canvas_em_font_size = 10.0;
-static float g_k_off_screen_canvas_rem_font_size = 16.0;
+static const float kOffScreenCanvasEmFontSize = 10.0;
+static const float kOffScreenCanvasRemFontSize = 16.0;
 
 FilterOperation::OperationType FilterOperationResolver::FilterOperationForType(
     CSSValueID type) {
@@ -217,8 +217,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
   FontDescription font_description;
   Font font(font_description);
   CSSToLengthConversionData::FontSizes font_sizes(
-      g_k_off_screen_canvas_em_font_size, g_k_off_screen_canvas_rem_font_size,
-      &font);
+      kOffScreenCanvasEmFontSize, kOffScreenCanvasRemFontSize, &font);
   CSSToLengthConversionData::ViewportSize viewport_size(1024, 768);
   CSSToLengthConversionData conversion_data(&ComputedStyle::InitialStyle(),
                                             font_sizes, viewport_size, 1);
