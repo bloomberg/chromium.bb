@@ -426,13 +426,6 @@ TEST_F(TetherConnectorTest,
   // A second operation should have been created.
   EXPECT_EQ(2u, fake_operation_factory_->created_operations().size());
 
-  // The first operation replies successfully, but this response should be
-  // ignored since the active host has changed.
-  fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
-      kSsid, kPassword);
-  EXPECT_EQ(test_devices_[1].GetDeviceId(),
-            fake_active_host_->GetActiveHostDeviceId());
-
   // No connection should have been started.
   EXPECT_TRUE(fake_wifi_hotspot_connector_->most_recent_ssid().empty());
   EXPECT_TRUE(fake_wifi_hotspot_connector_->most_recent_password().empty());

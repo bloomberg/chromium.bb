@@ -547,11 +547,9 @@ TEST_F(BleScannerTest, TestAdapterPoweredChanged) {
   ble_scanner_->AdapterPoweredChanged(mock_adapter_.get(), true);
   InvokeDiscoveryStartedCallback();
 
-  // A new session should have started, so the session objects should not be the
-  // same.
+  // A new session should have started.
   device::MockBluetoothDiscoverySession* session2 = mock_discovery_session_;
   EXPECT_NE(nullptr, session2);
-  EXPECT_NE(session1, session2);
 
   // Unregister device.
   EXPECT_TRUE(ble_scanner_->IsDeviceRegistered(test_devices_[0].GetDeviceId()));
