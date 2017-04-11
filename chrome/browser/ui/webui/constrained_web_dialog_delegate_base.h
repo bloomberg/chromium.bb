@@ -64,7 +64,9 @@ class ConstrainedWebDialogDelegateBase
   // Holds the HTML to display in the constrained dialog.
   std::unique_ptr<content::WebContents> web_contents_holder_;
 
-  // Pointer to |web_contents_| that remains valid until it is destroyed.
+  // Pointer to the WebContents in |web_contents_holder_| for the lifetime of
+  // that object, even if ReleaseWebContents() gets called. If the WebContents
+  // gets destroyed, |web_contents_| will be set to a nullptr.
   content::WebContents* web_contents_;
 
   // Was the dialog closed from WebUI (in which case |web_dialog_delegate_|'s
