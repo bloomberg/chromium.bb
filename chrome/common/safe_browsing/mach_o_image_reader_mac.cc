@@ -9,6 +9,7 @@
 #include <mach-o/loader.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 
 namespace safe_browsing {
@@ -133,7 +134,7 @@ bool MachOImageReader::Initialize(const uint8_t* image, size_t image_size) {
       if (!slice.IsValid())
         return false;
 
-      fat_images_.push_back(new MachOImageReader());
+      fat_images_.push_back(base::MakeUnique<MachOImageReader>());
       if (!fat_images_.back()->Initialize(slice.data(), slice.size()))
         return false;
 
@@ -201,8 +202,8 @@ bool MachOImageReader::IsFat() {
 std::vector<MachOImageReader*> MachOImageReader::GetFatImages() {
   DCHECK(is_fat_);
   std::vector<MachOImageReader*> images;
-  for (auto it = fat_images_.begin(); it != fat_images_.end(); ++it)
-    images.push_back(*it);
+  for (const auto& image : fat_images_)
+    images.push_back(image.get());
   return images;
 }
 

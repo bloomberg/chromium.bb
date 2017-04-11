@@ -4,6 +4,8 @@
 
 #include "chrome/service/service_ipc_server.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram_delta_serialization.h"
 #include "build/build_config.h"
 #include "chrome/common/service_messages.h"
@@ -75,7 +77,7 @@ bool ServiceIPCServer::Send(IPC::Message* msg) {
 
 void ServiceIPCServer::AddMessageHandler(
     std::unique_ptr<MessageHandler> handler) {
-  message_handlers_.push_back(handler.release());
+  message_handlers_.push_back(std::move(handler));
 }
 
 bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
@@ -90,7 +92,11 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
 
   if (!handled) {
     // Make a copy of the handlers to prevent modification during iteration.
-    std::vector<MessageHandler*> temp_handlers = message_handlers_.get();
+    std::vector<MessageHandler*> temp_handlers;
+    temp_handlers.reserve(message_handlers_.size());
+    for (const auto& handler : message_handlers_)
+      temp_handlers.push_back(handler.get());
+
     for (auto* handler : temp_handlers) {
       handled = handler->HandleMessage(msg);
       if (handled)

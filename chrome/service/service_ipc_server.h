@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -93,7 +92,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<IPC::SyncChannel> channel_;
   base::WaitableEvent* shutdown_event_;
-  ScopedVector<MessageHandler> message_handlers_;
+  std::vector<std::unique_ptr<MessageHandler>> message_handlers_;
 
   // Indicates whether an IPC client is currently connected to the channel.
   bool ipc_client_connected_ = false;

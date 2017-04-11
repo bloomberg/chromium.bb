@@ -14,7 +14,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace safe_browsing {
 
@@ -95,7 +94,7 @@ class MachOImageReader {
   std::unique_ptr<ByteSlice> data_;
 
   bool is_fat_;
-  ScopedVector<MachOImageReader> fat_images_;
+  std::vector<std::unique_ptr<MachOImageReader>> fat_images_;
 
   bool is_64_bit_;
   std::vector<LoadCommand> commands_;

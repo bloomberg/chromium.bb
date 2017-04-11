@@ -5,8 +5,10 @@
 #ifndef CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 #define CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/public/utility/content_utility_client.h"
 
 class UtilityMessageHandler;
@@ -26,7 +28,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
  private:
   // IPC message handlers.
-  typedef ScopedVector<UtilityMessageHandler> Handlers;
+  using Handlers = std::vector<std::unique_ptr<UtilityMessageHandler>>;
   Handlers handlers_;
 
   // True if the utility process runs with elevated privileges.

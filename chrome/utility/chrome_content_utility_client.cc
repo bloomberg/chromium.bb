@@ -221,16 +221,16 @@ void CreateResourceUsageReporter(
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  handlers_.push_back(new extensions::ExtensionsHandler());
+  handlers_.push_back(base::MakeUnique<extensions::ExtensionsHandler>());
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
-  handlers_.push_back(new printing::PrintingHandler());
+  handlers_.push_back(base::MakeUnique<printing::PrintingHandler>());
 #endif
 
 #if defined(OS_WIN)
-  handlers_.push_back(new IPCShellHandler());
+  handlers_.push_back(base::MakeUnique<IPCShellHandler>());
 #endif
 }
 
@@ -251,7 +251,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   if (utility_process_running_elevated_)
     return false;
 
-  for (auto* handler : handlers_) {
+  for (const auto& handler : handlers_) {
     if (handler->OnMessageReceived(message))
       return true;
   }

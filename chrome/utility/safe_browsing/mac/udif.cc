@@ -403,7 +403,7 @@ std::unique_ptr<ReadStream> UDIFParser::GetPartitionReadStream(
     size_t part_number) {
   DCHECK_LT(part_number, blocks_.size());
   return base::MakeUnique<UDIFPartitionReadStream>(stream_, block_size_,
-                                                   blocks_[part_number]);
+                                                   blocks_[part_number].get());
 }
 
 bool UDIFParser::ParseBlkx() {
@@ -509,7 +509,7 @@ bool UDIFParser::ParseBlkx() {
     }
 
     // Copy the block table out of the plist.
-    std::unique_ptr<UDIFBlock> block(new UDIFBlock());
+    auto block = base::MakeUnique<UDIFBlock>();
     if (!block->ParseBlockData(
             reinterpret_cast<const UDIFBlockData*>(CFDataGetBytePtr(data)),
             base::checked_cast<size_t>(CFDataGetLength(data)),
