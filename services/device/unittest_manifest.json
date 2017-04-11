@@ -1,0 +1,16 @@
+{
+  "name": "device_unittests",
+  "display_name": "Device Service Unittests",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      },
+      "requires": {
+        "device": [ "device:vibration" ]
+      }
+    }
+  }
+}

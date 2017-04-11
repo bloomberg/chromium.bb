@@ -11,6 +11,9 @@
 
 namespace device {
 
+int64_t VibrationManagerImpl::milli_seconds_for_testing_ = -1;
+bool VibrationManagerImpl::cancelled_for_testing_ = false;
+
 namespace {
 
 class VibrationManagerEmptyImpl : public mojom::VibrationManager {
@@ -19,10 +22,14 @@ class VibrationManagerEmptyImpl : public mojom::VibrationManager {
   ~VibrationManagerEmptyImpl() override {}
 
   void Vibrate(int64_t milliseconds, const VibrateCallback& callback) override {
+    VibrationManagerImpl::milli_seconds_for_testing_ = milliseconds;
     callback.Run();
   }
 
-  void Cancel(const CancelCallback& callback) override { callback.Run(); }
+  void Cancel(const CancelCallback& callback) override {
+    VibrationManagerImpl::cancelled_for_testing_ = true;
+    callback.Run();
+  }
 };
 
 }  // namespace

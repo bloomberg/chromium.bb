@@ -21,4 +21,8 @@ source_set("run_all_service_tests") {
     "//services/catalog:lib",
     "//services/service_manager/background:lib",
   ]
+
+  if (is_android) {
+    deps += [ "//mojo/android:libsystem_java" ]
+  }
 }
