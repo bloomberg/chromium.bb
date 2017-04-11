@@ -333,4 +333,18 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     public AutofillProfile getBillingAddress() {
         return mBillingAddress;
     }
+
+    @Override
+    public String getPreviewString(String labelSeparator, int maxLength) {
+        StringBuilder previewString = new StringBuilder(getLabel());
+        if (maxLength < 0) return previewString.toString();
+
+        int networkNameEndIndex = previewString.indexOf(" ");
+        if (networkNameEndIndex > 0) {
+            // Only display card network name.
+            previewString.delete(networkNameEndIndex, previewString.length());
+        }
+        if (previewString.length() < maxLength) return previewString.toString();
+        return previewString.substring(0, maxLength / 2);
+    }
 }

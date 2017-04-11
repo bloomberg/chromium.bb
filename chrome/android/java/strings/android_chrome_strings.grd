@@ -152,6 +152,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_RESET" desc="Label for a button to reset information you are editing to a default.">
         Reset
       </message>
+      <message name="IDS_CHOOSE" desc="Label for a button to choose something, like a shipping address for a payment request. [CHAR-LIMIT=20]">
+        Choose
+      </message>
       <message name="IDS_TITLE" desc="Text indicating the title of a button or a textfield. Ued in multiple contexts. [CHAR-LIMIT=32]">
         Title
       </message>
@@ -346,6 +349,29 @@ CHAR-LIMIT guidelines:
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance.">
          Copied to Chrome
        </message>
+
+       <!-- Payment Request section preview strings -->
+       <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW" desc="This is a snippet of a payment method a user has saved to Chrome, plus an indication of the number of additional payment methods the user has saved.
+        Its function is to show the user has payment methods that can be used to complete a payment, and thus doesn't have to type the entire payment method. [ICU Syntax]">
+        {PAYMENT_METHOD, plural,
+          =1 {<ph name="PAYMENT_METHOD_PREVIEW">%1$s<ex>VISA ....1234</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS">%2$s<ex>1</ex></ph> more}
+          other {<ph name="PAYMENT_METHOD_PREVIEW">%1$s<ex>VISA ....1234</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS">%2$s<ex>2</ex></ph> more}}
+      </message>
+      <message name="IDS_PAYMENT_REQUEST_SHIPPING_ADDRESSES_PREVIEW" desc="This is a snippet of a shipping address a user has saved to Chrome, plus an indication of the number of additional shipping addresses the user has saved. Its function is to show the user has shipping addresses that can be used to complete a purchase, and thus doesn't have to type the entire address. [ICU Syntax]">
+      {SHIPPING_ADDRESS, plural,
+        =1 {<ph name="SHIPPING_ADDRESS_PREVIEW">%1$s<ex>Jerry, 1253 Mcgill college</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES">%2$s<ex>1</ex></ph> more}
+        other {<ph name="SHIPPING_ADDRESS_PREVIEW">%1$s<ex>Jerry, 1253 Mcgill college</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES">%2$s<ex>2</ex></ph> more}}
+      </message>
+      <message name="IDS_PAYMENT_REQUEST_SHIPPING_OPTIONS_PREVIEW" desc="This is a snippet of a shipping option a merchant supports, plus an indication of the number of additional shipping options the merchant supports. Its function is to show the user can choose different shipping options to complete a purchase. [ICU Syntax]">
+      {SHIPPING_OPTIONS, plural,
+        =1 {<ph name="SHIPPING_OPTION_PREVIEW">%1$s<ex>standard shipping</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS">%2$s<ex>1</ex></ph> more}
+        other {<ph name="SHIPPING_OPTION_PREVIEW">%1$s<ex>standard shipping</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS">%2$s<ex>2</ex></ph> more}}
+      </message>
+      <message name="IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW" desc="This is a snippet of a contact a user has saved to Chrome, plus an indication of the number of additional contacts the user has saved. Its function is to show the user has contacts that can be used to complete a purchase, and thus doesn't have to type the entire contact info. [ICU Syntax]">
+        {CONTACT, plural,
+          =1 {<ph name="CONTACT_PREVIEW">%1$s<ex>Jerry, 438-123-1922</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS">%2$s<ex>1</ex></ph> more}
+          other {<ph name="CONTACT_PREVIEW">%1$s<ex>Jerry, 438-123-1922</ex></ph>\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS">%2$s<ex>2</ex></ph> more}}
+      </message>
 
       <!-- Autofill/Wallet integration preferences -->
       <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information.">

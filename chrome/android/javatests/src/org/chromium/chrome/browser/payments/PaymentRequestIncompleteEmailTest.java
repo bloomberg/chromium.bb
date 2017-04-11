@@ -55,7 +55,7 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
         setTextInEditorAndWait(new String[] {"gmail.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
-        assertEquals(PaymentRequestSection.EDIT_BUTTON_SELECT, getContactDetailsButtonState());
+        assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
@@ -77,9 +77,9 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"gmail.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        // The section collapses and the [SELECT] button is active.
+        // The section collapses and the [CHOOSE] button is active.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
-        assertEquals(PaymentRequestSection.EDIT_BUTTON_SELECT, getContactDetailsButtonState());
+        assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});

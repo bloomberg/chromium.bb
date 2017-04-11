@@ -48,7 +48,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
     public void testAddressNotSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
-        assertEquals(PaymentRequestSection.EDIT_BUTTON_SELECT, getSummarySectionButtonState());
+        assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getSummarySectionButtonState());
     }
 
     /** Expand the shipping address section, select an address, and click "Pay." */

@@ -25,7 +25,6 @@ import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.TextUtils.TruncateAt;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,10 +43,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ShippingStrings;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ShippingSummarySection;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
@@ -322,7 +321,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private View mSpinnyLayout;
 
     private LineItemBreakdownSection mOrderSummarySection;
-    private ExtraTextsSection mShippingSummarySection;
+    private ShippingSummarySection mShippingSummarySection;
     private OptionSection mShippingAddressSection;
     private OptionSection mShippingOptionSection;
     private OptionSection mContactDetailsSection;
@@ -463,52 +462,22 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
                     updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
 
-                    String selectedShippingName = result.getSelectedShippingAddressLabel();
-                    String selectedShippingAddress = result.getSelectedShippingAddressSublabel();
-                    String selectedShippingPhone = result.getSelectedShippingAddressTertiaryLabel();
-                    String selectedShippingOptionLabel = result.getSelectedShippingOptionLabel();
+                    mShippingSummarySection.update(new ShippingSummaryInformation(
+                            result.getShippingAddresses(), result.getShippingOptions()));
 
-                    if (selectedShippingAddress == null || selectedShippingOptionLabel == null) {
-                        // Let the summary display a SELECT/ADD button for the first subsection
-                        // that needs it.
-                        mShippingSummarySection.setSummaryText(null, null);
-                        mShippingSummarySection.setSummaryProperties(null /* leftTruncate */,
-                                false /* leftIsSingleLine */, null /* rightTruncate */,
-                                false /* rightIsSingleLine */);
-
-                        PaymentRequestSection section =
-                                mShippingAddressSection.getEditButtonState() == EDIT_BUTTON_GONE
-                                        ? mShippingOptionSection : mShippingAddressSection;
-                        mShippingSummarySection.setEditButtonState(section.getEditButtonState());
-                    } else {
-                        // Show the shipping name in the summary section.
-                        mShippingSummarySection.setSummaryText(selectedShippingName, null);
-                        mShippingSummarySection.setSummaryProperties(TruncateAt.END,
-                                true /* leftIsSingleLine */, null /* rightTruncate */,
-                                false /* rightIsSingleLine */);
-
-                        // Show the shipping address, phone and option below the summary.
-                        mShippingSummarySection.setExtraTexts(new String[] {selectedShippingAddress,
-                                selectedShippingPhone, selectedShippingOptionLabel});
-                        mShippingSummarySection.setExtraTextsProperties(
-                                new TruncateAt[] {
-                                        TruncateAt.MIDDLE, TruncateAt.END, TruncateAt.END},
-                                new boolean[] {true, true, true});
-                    }
+                    // Let the summary display a CHOOSE/ADD button for the first subsection that
+                    // needs it.
+                    PaymentRequestSection section =
+                            mShippingAddressSection.getEditButtonState() == EDIT_BUTTON_GONE
+                            ? mShippingOptionSection
+                            : mShippingAddressSection;
+                    mShippingSummarySection.setEditButtonState(section.getEditButtonState());
                 }
 
                 if (mRequestContactDetails) {
-                    // Sets the summary of the contact displays in a single line.
-                    mContactDetailsSection.setSummaryProperties(TruncateAt.END,
-                            true /* leftIsSingleLine */, null /* rightTruncate */,
-                            false /* rightIsSingleLine */);
                     updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
                 }
 
-                // Sets the summary of the payment method displays in a single line.
-                mPaymentMethodSection.setSummaryProperties(TruncateAt.END,
-                        true /* leftIsSingleLine */, null /* rightTruncate */,
-                        false /* rightIsSingleLine */);
                 updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
                 updatePayButtonEnabled();
 
@@ -560,7 +529,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mOrderSummarySection = new LineItemBreakdownSection(context,
                 context.getString(R.string.payments_order_summary_label), this,
                 context.getString(R.string.payments_updated_label));
-        mShippingSummarySection = new ExtraTextsSection(
+        mShippingSummarySection = new ShippingSummarySection(
                 context, context.getString(mShippingStrings.getSummaryLabel()), this);
         mShippingAddressSection = new OptionSection(
                 context, context.getString(mShippingStrings.getAddressLabel()), this);
@@ -1024,14 +993,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // Disable all but the first button.
             updateSectionButtons();
-
-            // Sets the summary of the payment method and contact displays in multiple lines.
-            mContactDetailsSection.setSummaryProperties(null /* leftTruncate */,
-                    false /* leftIsSingleLine */, null /* rightTruncate */,
-                    false /* rightIsSingleLine */);
-            mPaymentMethodSection.setSummaryProperties(null /* leftTruncate */,
-                    false /* leftIsSingleLine */, null /* rightTruncate */,
-                    false /* rightIsSingleLine */);
 
             mIsExpandedToFullHeight = true;
         }
