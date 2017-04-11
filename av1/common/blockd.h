@@ -901,11 +901,10 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 
 static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
                                   int block, TX_SIZE tx_size) {
-#if !CONFIG_LV_MAP
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+#if !CONFIG_LV_MAP
 
   if (FIXED_TX_TYPE)
     return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
@@ -956,21 +955,23 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_TX
 #else   // !CONFIG_LV_MAP
   (void)tx_size;
-  const MODE_INFO *const mi = xd->mi[0];
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
-
+  TX_TYPE tx_type;
   if (plane_type != PLANE_TYPE_Y || xd->lossless[mbmi->segment_id] ||
-      mbmi->tx_size >= TX_32X32)
-    return DCT_DCT;
-
-  if (mbmi->sb_type < BLOCK_8X8) {
-    if (mbmi->ref_frame[0] < LAST_FRAME)
-      return intra_mode_to_tx_type_context[mi->bmi[block].as_mode];
-    else
-      return DCT_DCT;
+      mbmi->tx_size >= TX_32X32) {
+    tx_type = DCT_DCT;
+  } else if (mbmi->sb_type < BLOCK_8X8) {
+    if (is_inter_block(mbmi))  // Sub8x8-Inter
+      tx_type = DCT_DCT;
+    else  // Sub8x8 Intra OR UV-Intra
+      tx_type =
+          intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
+                                            ? get_y_mode(mi, block_raster_idx)
+                                            : mbmi->uv_mode];
+  } else {
+    tx_type = mbmi->txk_type[block];
   }
-
-  return mbmi->txk_type[block];
+  assert(tx_type >= DCT_DCT && tx_type < TX_TYPES);
+  return tx_type;
 #endif  // !CONFIG_LV_MAP
 }
 

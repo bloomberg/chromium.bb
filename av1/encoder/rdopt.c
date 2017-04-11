@@ -139,7 +139,6 @@ struct rdcost_block_args {
   int64_t best_rd;
   int exit_early;
   int use_fast_coef_costing;
-  const SCAN_ORDER *scan_order;
 };
 
 #define LAST_NEW_MV_INDEX 6
@@ -1534,15 +1533,6 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 }
 
-#if !CONFIG_PVQ
-static int rate_block(int plane, int block, const ENTROPY_CONTEXT *a,
-                      const ENTROPY_CONTEXT *l, TX_SIZE tx_size,
-                      struct rdcost_block_args *args) {
-  return av1_cost_coeffs(&args->cpi->common, args->x, plane, block, tx_size,
-                         args->scan_order, a, l, args->use_fast_coef_costing);
-}
-#endif  // !CONFIG_PVQ
-
 static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
   struct rdcost_block_args *args = arg;
@@ -1550,6 +1540,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const AV1_COMP *cpi = args->cpi;
+#if !CONFIG_LV_MAP || !CONFIG_PVQ
+  const AV1_COMMON *cm = &cpi->common;
+#endif
   int64_t rd1, rd2, rd;
   int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
                                            *(args->t_left + blk_row));
@@ -1568,7 +1561,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_LV_MAP
   // full forward transform and quantization
-  const AV1_COMMON *cm = &cpi->common;
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
   if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
@@ -1599,7 +1591,12 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #if !CONFIG_PVQ
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
-  this_rd_stats.rate = rate_block(plane, block, a, l, tx_size, args);
+  PLANE_TYPE plane_type = get_plane_type(plane);
+  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const SCAN_ORDER *scan_order =
+      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  this_rd_stats.rate = av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order,
+                                       a, l, args->use_fast_coef_costing);
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
@@ -1731,10 +1728,8 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
                              BLOCK_SIZE bsize, TX_SIZE tx_size,
                              int use_fast_coef_casting) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  TX_TYPE tx_type;
   struct rdcost_block_args args;
   av1_zero(args);
   args.x = x;
@@ -1746,10 +1741,6 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
 
   av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
-
-  tx_type = get_tx_type(pd->plane_type, xd, 0, tx_size);
-  args.scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
 
 #if CONFIG_DAALA_DIST
   if (plane == 0 &&
@@ -1774,12 +1765,9 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
                                   int64_t *sse, int64_t ref_best_rd, int plane,
                                   BLOCK_SIZE bsize, TX_SIZE tx_size,
                                   int use_fast_coef_casting) {
-  const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   struct rdcost_block_args args;
-  TX_TYPE tx_type;
-
   av1_zero(args);
   args.cpi = cpi;
   args.x = x;
@@ -1793,10 +1781,6 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
 
   av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
-
-  tx_type = get_tx_type(pd->plane_type, xd, 0, tx_size);
-  args.scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
 
   block_rd_txfm(plane, 0, 0, 0, get_plane_block_size(bsize, pd), tx_size,
                 &args);
