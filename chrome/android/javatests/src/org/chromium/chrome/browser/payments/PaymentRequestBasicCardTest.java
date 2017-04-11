@@ -77,7 +77,7 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"true"});
 
         clickNodeAndWait("checkBasicMasterCard", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"Query quota exceeded"});
+        expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
         clickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
         expectResultContains(new String[] {"true"});
@@ -91,7 +91,7 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"true"});
 
         clickNodeAndWait("checkBasicDebit", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"Query quota exceeded"});
+        expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
         clickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
         expectResultContains(new String[] {"true"});

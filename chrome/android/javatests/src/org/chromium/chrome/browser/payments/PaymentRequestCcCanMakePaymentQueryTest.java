@@ -49,7 +49,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest extends PaymentRequestTestB
 
         // Different queries are throttled for a period of time.
         clickNodeAndWait("other-buy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"Query quota exceeded"});
+        expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
         // Repeating the same query again does not count against the quota.
         clickNodeAndWait("buy", mCanMakePaymentQueryResponded);

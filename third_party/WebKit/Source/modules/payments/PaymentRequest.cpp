@@ -1061,8 +1061,8 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
       can_make_payment_resolver_->Resolve(false);
       break;
     case CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
-      can_make_payment_resolver_->Reject(
-          DOMException::Create(kQuotaExceededError, "Query quota exceeded"));
+      can_make_payment_resolver_->Reject(DOMException::Create(
+          kNotAllowedError, "Not allowed to check whether can make payment"));
       break;
   }
 

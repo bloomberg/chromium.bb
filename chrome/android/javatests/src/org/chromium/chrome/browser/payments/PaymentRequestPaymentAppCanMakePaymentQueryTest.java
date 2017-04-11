@@ -31,7 +31,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, NotAllowedError"});
     }
 
     @MediumTest
@@ -44,7 +44,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"true, QuotaExceededError"});
+        expectResultContains(new String[] {"true, NotAllowedError"});
     }
 
     @MediumTest
@@ -56,7 +56,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, NotAllowedError"});
     }
 
     @MediumTest
@@ -68,7 +68,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, NotAllowedError"});
     }
 
     @MediumTest
@@ -80,7 +80,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         expectResultContains(new String[] {"true, true"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"true, QuotaExceededError"});
+        expectResultContains(new String[] {"true, NotAllowedError"});
     }
 
     @MediumTest
@@ -92,6 +92,6 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
         expectResultContains(new String[] {"true, true"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[] {"true, QuotaExceededError"});
+        expectResultContains(new String[] {"true, NotAllowedError"});
     }
 }
