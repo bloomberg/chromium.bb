@@ -428,10 +428,10 @@ void StyleSheetContents::CheckLoaded() {
   if (loading_clients_.IsEmpty())
     return;
 
-  // Avoid |CSSSStyleSheet| and |ownerNode| being deleted by scripts that run
-  // via ScriptableDocumentParser::executeScriptsWaitingForResources(). Also
+  // Avoid |CSSSStyleSheet| and |OwnerNode| being deleted by scripts that run
+  // via ScriptableDocumentParser::ExecuteScriptsWaitingForResources(). Also
   // protect the |CSSStyleSheet| from being deleted during iteration via the
-  // |sheetLoaded| method.
+  // |SheetLoaded| method.
   //
   // When a sheet is loaded it is moved from the set of loading clients
   // to the set of completed clients. We therefore need the copy in order to
@@ -568,7 +568,7 @@ void StyleSheetContents::RegisterClient(CSSStyleSheet* sheet) {
   DCHECK(!loading_clients_.Contains(sheet));
   DCHECK(!completed_clients_.Contains(sheet));
 
-  // InspectorCSSAgent::buildObjectForRule creates CSSStyleSheet without any
+  // InspectorCSSAgent::BuildObjectForRule creates CSSStyleSheet without any
   // owner node.
   if (!sheet->OwnerDocument())
     return;
@@ -594,8 +594,8 @@ void StyleSheetContents::UnregisterClient(CSSStyleSheet* sheet) {
 void StyleSheetContents::ClientLoadCompleted(CSSStyleSheet* sheet) {
   DCHECK(loading_clients_.Contains(sheet) || !sheet->OwnerDocument());
   loading_clients_.erase(sheet);
-  // In m_ownerNode->sheetLoaded, the CSSStyleSheet might be detached.
-  // (i.e. clearOwnerNode was invoked.)
+  // In owner_node_->SheetLoaded, the CSSStyleSheet might be detached.
+  // (i.e. ClearOwnerNode was invoked.)
   // In this case, we don't need to add the stylesheet to completed clients.
   if (!sheet->OwnerDocument())
     return;

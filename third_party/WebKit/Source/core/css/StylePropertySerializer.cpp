@@ -854,7 +854,7 @@ String StylePropertySerializer::GetCommonValue(
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
         property_set_.GetPropertyCSSValue(shorthand.properties()[i]);
-    // FIXME: CSSInitialValue::cssText should generate the right value.
+    // FIXME: CSSInitialValue::CssText should generate the right value.
     String text = value->CssText();
     if (res.IsNull())
       res = text;

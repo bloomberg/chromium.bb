@@ -298,7 +298,7 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   CSSValueList* values = CSSValueList::CreateCommaSeparated();
   do {
     if (range.Peek().Id() == CSSValueAll) {
-      // FIXME: CSSPropertyParser::parseFontVariant() implements
+      // FIXME: CSSPropertyParser::ParseFontVariant() implements
       // the old css3 draft:
       // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
       // 'all' is only allowed in @font-face and with no other values.

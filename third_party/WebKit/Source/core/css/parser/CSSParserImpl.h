@@ -132,7 +132,7 @@ class CSSParserImpl {
                                            CSSParserTokenRange block);
   StyleRulePage* ConsumePageRule(CSSParserTokenRange prelude,
                                  CSSParserTokenRange block);
-  // Updates m_parsedProperties
+  // Updates parsed_properties_
   void ConsumeApplyRule(CSSParserTokenRange prelude);
 
   StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,

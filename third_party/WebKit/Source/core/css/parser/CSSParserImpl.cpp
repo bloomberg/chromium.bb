@@ -467,7 +467,7 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenRange& range,
       return ConsumeNamespaceRule(prelude);
     if (allowed_rules == kApplyRules && id == kCSSAtRuleApply) {
       ConsumeApplyRule(prelude);
-      return nullptr;  // consumeApplyRule just updates m_parsedProperties
+      return nullptr;  // ConsumeApplyRule just updates parsed_properties_
     }
     return nullptr;  // Parse error, unrecognised at-rule without block
   }

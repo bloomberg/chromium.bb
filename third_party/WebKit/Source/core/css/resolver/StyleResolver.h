@@ -139,7 +139,7 @@ class CORE_EXPORT StyleResolver final
   void SetResizedForViewportUnits();
   void ClearResizedForViewportUnits();
 
-  // Exposed for ComputedStyle::isStyleAvilable().
+  // Exposed for ComputedStyle::IsStyleAvailable().
   static ComputedStyle* StyleNotYetAvailable() {
     return style_not_yet_available_;
   }

@@ -97,7 +97,7 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(
 
 ImmutableStylePropertySet::~ImmutableStylePropertySet() {}
 
-// Convert property into an uint16_t for comparison with metadata's m_propertyID
+// Convert property into an uint16_t for comparison with metadata's property_id_
 // to avoid the compiler converting it to an int multiple times in a loop.
 static uint16_t GetConvertedCSSPropertyID(CSSPropertyID property_id) {
   return static_cast<uint16_t>(property_id);
@@ -468,7 +468,7 @@ bool MutableStylePropertySet::RemovePropertiesInSet(const CSSPropertyID* set,
     const CSSProperty& property = properties[old_index];
     if (ContainsId(set, length, property.Id()))
       continue;
-    // Modify m_propertyVector in-place since this method is
+    // Modify property_vector_ in-place since this method is
     // performance-sensitive.
     properties[new_index++] = properties[old_index];
   }

@@ -50,7 +50,7 @@ Node* ComputedStylePropertyMap::GetNode() const {
   }
   if (node_->IsElementNode()) {
     // Seems to only support before, after, backdrop, first-letter. See
-    // PseudoElementData::pseudoElement.
+    // PseudoElementData::GetPseudoElement.
     if (PseudoElement* element =
             (ToElement(node_))->GetPseudoElement(pseudo_id_)) {
       return element;
@@ -59,7 +59,7 @@ Node* ComputedStylePropertyMap::GetNode() const {
   return nullptr;
 }
 
-// ComputedStylePropertyMap::getAllInternal/get should return computed styles
+// ComputedStylePropertyMap::GetAllInternal/Get should return computed styles
 // (as opposed to resolved styles a la getComputedStyle()).
 //
 // Property values are read from an up-to-date ComputedStyle and converted into
@@ -83,9 +83,10 @@ CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
     return style_value_vector;
   }
   // I have copied this from
-  // CSSComputedStyleDeclaration::computeComputedStyle(). I don't know if there
-  // is any use in passing m_pseudoId if node is not already a PseudoElement,
-  // but passing pseudo_Id when it IS already a PseudoElement leads to disaster.
+  // CSSComputedStyleDeclaration::ComputeComputedStyle(). I don't know if there
+  // is any use in passing pseudo_id_ if node is not already a PseudoElement,
+  // but passing pseudo_id_ when it IS already a PseudoElement leads to
+  // disaster.
   const ComputedStyle* style = node->EnsureComputedStyle(
       node->IsPseudoElement() ? kPseudoIdNone : pseudo_id_);
   node = this->GetNode();

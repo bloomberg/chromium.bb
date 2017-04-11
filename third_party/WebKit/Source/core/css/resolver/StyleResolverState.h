@@ -221,15 +221,15 @@ class CORE_EXPORT StyleResolverState {
   ElementResolveContext element_context_;
   Member<Document> document_;
 
-  // m_style is the primary output for each element's style resolve.
+  // style_ is the primary output for each element's style resolve.
   RefPtr<ComputedStyle> style_;
 
   CSSToLengthConversionData css_to_length_conversion_data_;
 
-  // m_parentStyle is not always just ElementResolveContext::parentStyle,
+  // parent_style_ is not always just ElementResolveContext::ParentStyle(),
   // so we keep it separate.
   RefPtr<ComputedStyle> parent_style_;
-  // This will almost-always be the same that m_parentStyle, except in the
+  // This will almost-always be the same that parent_style_, except in the
   // presence of display: contents. This is the style against which we have to
   // do adjustment.
   RefPtr<const ComputedStyle> layout_parent_style_;

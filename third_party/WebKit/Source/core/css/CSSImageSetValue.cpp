@@ -108,7 +108,7 @@ StyleImage* CSSImageSetValue::CacheImage(
   if (IsCachePending(device_scale_factor)) {
     // FIXME: In the future, we want to take much more than deviceScaleFactor
     // into acount here. All forms of scale should be included:
-    // Page::pageScaleFactor(), LocalFrame::pageZoomFactor(), and any CSS
+    // Page::PageScaleFactor(), LocalFrame::PageZoomFactor(), and any CSS
     // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));

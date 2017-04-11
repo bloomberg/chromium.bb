@@ -65,7 +65,7 @@ class MediaQueryListEvent final : public Event {
       matches_ = initializer.matches();
   }
 
-  // We have m_media/m_matches for JS-created events; we use m_mediaQueryList
+  // We have media_/matches_ for JS-created events; we use media_query_list_
   // for events that blink generates.
   Member<MediaQueryList> media_query_list_;
   String media_;

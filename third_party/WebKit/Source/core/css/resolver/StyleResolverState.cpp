@@ -38,7 +38,7 @@ StyleResolverState::StyleResolverState(
     : element_context_(element_context),
       document_(document),
       style_(nullptr),
-      // TODO(jchaffraix): We should make m_parentStyle const
+      // TODO(jchaffraix): We should make parent_style_ const
       // (https://crbug.com/468152)
       parent_style_(const_cast<ComputedStyle*>(parent_style)),
       layout_parent_style_(layout_parent_style),
@@ -52,7 +52,7 @@ StyleResolverState::StyleResolverState(
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
-    // TODO(jchaffraix): We should make m_parentStyle const
+    // TODO(jchaffraix): We should make parent_style_ const
     // (https://crbug.com/468152)
     parent_style_ = const_cast<ComputedStyle*>(element_context_.ParentStyle());
   }

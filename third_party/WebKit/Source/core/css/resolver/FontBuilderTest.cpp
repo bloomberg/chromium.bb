@@ -60,7 +60,8 @@ TEST_F(FontBuilderInitTest, NotDirty) {
 }
 
 // This test verifies that when you are setting some field F via FontBuilder,
-// only F is actually modified on the incoming ComputedStyle::fontDescription.
+// only F is actually modified on the incoming
+// ComputedStyle::GetFontDescription.
 TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified) {
   FunctionPair funcs = GetParam();
 

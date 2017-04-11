@@ -103,7 +103,7 @@ FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
       return nullptr;
     fetched_ = FontResourceHelper::Create(resource);
   } else {
-    // FIXME: CSSFontFaceSrcValue::fetch is invoked when @font-face rule
+    // FIXME: CSSFontFaceSrcValue::Fetch is invoked when @font-face rule
     // is processed by StyleResolver / StyleEngine.
     RestoreCachedResourceIfNeeded(document);
   }

@@ -38,7 +38,7 @@ class CSSSelectorList;
 // representative list of selectors is in CSSSelectorTest; run it in a debug
 // build to see useful debugging output.
 //
-// ** tagHistory() and relation():
+// ** TagHistory() and Relation():
 //
 // Selectors are represented as a linked list of simple selectors (defined more
 // or less according to
@@ -47,11 +47,11 @@ class CSSSelectorList;
 // returns the relationship of the current simple selector to the one in
 // tagHistory(). For example, the CSS selector .a.b #c is represented as:
 //
-// selectorText(): .a.b #c
-// --> (relation == Descendant)
-//   selectorText(): .a.b
-//   --> (relation == SubSelector)
-//     selectorText(): .b
+// SelectorText(): .a.b #c
+// --> (relation == kDescendant)
+//   SelectorText(): .a.b
+//   --> (relation == kSubSelector)
+//     SelectorText(): .b
 //
 // The order of tagHistory() varies depending on the situation.
 // * Relations using combinators

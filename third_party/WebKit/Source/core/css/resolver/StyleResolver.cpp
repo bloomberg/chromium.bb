@@ -570,13 +570,13 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForDocument(Document& document) {
                                                         : READ_ONLY);
   // These are designed to match the user-agent stylesheet values for the
   // document element so that the common case doesn't need to create a new
-  // ComputedStyle in Document::inheritHtmlAndBodyElementStyles.
+  // ComputedStyle in Document::InheritHtmlAndBodyElementStyles.
   document_style->SetDisplay(EDisplay::kBlock);
   document_style->SetPosition(EPosition::kAbsolute);
 
-  // Document::inheritHtmlAndBodyElementStyles will set the final overflow
+  // Document::InheritHtmlAndBodyElementStyles will set the final overflow
   // style values, but they should initially be auto to avoid premature
-  // scrollbar removal in PaintLayerScrollableArea::updateAfterStyleChange.
+  // scrollbar removal in PaintLayerScrollableArea::UpdateAfterStyleChange.
   document_style->SetOverflowX(EOverflow::kAuto);
   document_style->SetOverflowY(EOverflow::kAuto);
 
@@ -1009,7 +1009,7 @@ PassRefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
-  // m_rootElementStyle will be set to the document style.
+  // root_element_style_ will be set to the document style.
   StyleResolverState state(GetDocument(), GetDocument().documentElement());
 
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
@@ -1224,7 +1224,7 @@ void StyleResolver::ApplyAnimatedProperties(
     const ActiveInterpolationsMap& active_interpolations_map) {
   // TODO(alancutter): Don't apply presentation attribute animations here,
   // they should instead apply in
-  // SVGElement::collectStyleForPresentationAttribute().
+  // SVGElement::CollectStyleForPresentationAttribute().
   for (const auto& entry : active_interpolations_map) {
     CSSPropertyID property = entry.key.IsCSSProperty()
                                  ? entry.key.CssProperty()

@@ -499,7 +499,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoContent(
   SelectorCheckingContext next_context(context);
   for (const auto& insertion_point : insertion_points) {
     next_context.element = insertion_point;
-    // TODO(esprehn): Why does SharingRules have a special case?
+    // TODO(esprehn): Why does kSharingRules have a special case?
     if (mode_ == kSharingRules)
       next_context.scope = insertion_point->ContainingShadowRoot();
     if (Match(next_context, result))
@@ -707,7 +707,7 @@ bool SelectorChecker::CheckPseudoNot(const SelectorCheckingContext& context,
          sub_context.visited_match_type == kVisitedMatchEnabled))
       return true;
     if (mode_ == kSharingRules) {
-      // context.scope is not available if m_mode == SharingRules.
+      // context.scope is not available if mode_ == kSharingRules.
       // We cannot determine whether :host or :scope matches a given element or
       // not.
       if (sub_context.selector->IsHostPseudoClass() ||

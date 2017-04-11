@@ -35,7 +35,7 @@ struct CSSSyntaxComponent {
       : type_(type), string_(string), repeatable_(repeatable) {}
 
   CSSSyntaxType type_;
-  String string_;  // Only used when m_type is CSSSyntaxType::Ident
+  String string_;  // Only used when type_ is CSSSyntaxType::kIdent
   bool repeatable_;
 };
 

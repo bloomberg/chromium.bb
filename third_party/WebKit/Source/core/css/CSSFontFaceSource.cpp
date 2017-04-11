@@ -58,7 +58,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
   if (!font_data)
     font_data = CreateFontData(font_description);
   // No release, because fontData is a reference to a RefPtr that is held in the
-  // m_fontDataTable.
+  // font_data_table_.
   return font_data;
 }
 

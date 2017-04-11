@@ -490,7 +490,7 @@ void StyleAdjuster::AdjustComputedStyle(
     //
     // If we wouldn't do this, then we'd need to ensure that display: contents
     // doesn't prevent SVG elements from generating a LayoutObject in
-    // SVGElement::layoutObjectIsNeeded.
+    // SVGElement::LayoutObjectIsNeeded.
     //
     // [1]: https://www.w3.org/TR/SVG/painting.html#DisplayProperty
     if (style.Display() == EDisplay::kContents)

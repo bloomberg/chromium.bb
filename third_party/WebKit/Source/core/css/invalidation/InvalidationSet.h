@@ -183,7 +183,7 @@ class CORE_EXPORT InvalidationSet {
   // Implement reference counting manually so we can call a derived
   // class destructor when the reference count decreases to 0.
   // If we use RefCounted instead, at least one of our compilers
-  // requires the ability for RefCounted<InvalidationSet>::deref()
+  // requires the ability for RefCounted<InvalidationSet>::Deref()
   // to call ~InvalidationSet(), but this is not a virtual call.
   int ref_count_;
 

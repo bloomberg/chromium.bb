@@ -158,7 +158,7 @@ AtomicString FontFaceSet::status() const {
 }
 
 void FontFaceSet::HandlePendingEventsAndPromisesSoon() {
-  // m_asyncRunner will be automatically stopped on destruction.
+  // async_runner_ will be automatically stopped on destruction.
   async_runner_->RunAsync();
 }
 
@@ -246,10 +246,10 @@ void FontFaceSet::RemoveFromLoadingFonts(FontFace* font_face) {
 ScriptPromise FontFaceSet::ready(ScriptState* script_state) {
   if (ready_->GetState() != ReadyProperty::kPending &&
       InActiveDocumentContext()) {
-    // |m_ready| is already resolved, but there may be pending stylesheet
+    // |ready_| is already resolved, but there may be pending stylesheet
     // changes and/or layout operations that may cause another font loads.
     // So synchronously update style and layout here.
-    // This may trigger font loads, and replace |m_ready| with a new Promise.
+    // This may trigger font loads, and replace |ready_| with a new Promise.
     GetDocument()->UpdateStyleAndLayout();
   }
   return ready_->Promise(script_state->World());

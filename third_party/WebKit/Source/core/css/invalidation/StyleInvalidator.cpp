@@ -249,7 +249,7 @@ bool StyleInvalidator::SiblingData::MatchCurrentInvalidationSets(
   unsigned index = 0;
   while (index < invalidation_entries_.size()) {
     if (element_index_ > invalidation_entries_[index].invalidation_limit_) {
-      // m_invalidationEntries[index] only applies to earlier siblings. Remove
+      // invalidation_entries_[index] only applies to earlier siblings. Remove
       // it.
       invalidation_entries_[index] = invalidation_entries_.back();
       invalidation_entries_.pop_back();

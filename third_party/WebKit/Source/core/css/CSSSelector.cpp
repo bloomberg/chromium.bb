@@ -394,7 +394,7 @@ class NameToPseudoCompare {
   bool operator()(const NameToPseudoStruct& entry, const NameToPseudoStruct&) {
     DCHECK(entry.string);
     const char* key = reinterpret_cast<const char*>(key_.Characters8());
-    // If strncmp returns 0, then either the keys are equal, or |m_key| sorts
+    // If strncmp returns 0, then either the keys are equal, or |key_| sorts
     // before |entry|.
     return strncmp(entry.string, key, key_.length()) < 0;
   }
@@ -435,30 +435,30 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
 
 #ifndef NDEBUG
 void CSSSelector::Show(int indent) const {
-  printf("%*sselectorText(): %s\n", indent, "", SelectorText().Ascii().Data());
-  printf("%*sm_match: %d\n", indent, "", match_);
+  printf("%*sSelectorText(): %s\n", indent, "", SelectorText().Ascii().Data());
+  printf("%*smatch_: %d\n", indent, "", match_);
   if (match_ != kTag)
-    printf("%*svalue(): %s\n", indent, "", Value().Ascii().Data());
-  printf("%*sgetPseudoType(): %d\n", indent, "", GetPseudoType());
+    printf("%*sValue(): %s\n", indent, "", Value().Ascii().Data());
+  printf("%*sGetPseudoType(): %d\n", indent, "", GetPseudoType());
   if (match_ == kTag)
-    printf("%*stagQName().localName: %s\n", indent, "",
+    printf("%*sTagQName().LocalName(): %s\n", indent, "",
            TagQName().LocalName().Ascii().Data());
-  printf("%*sisAttributeSelector(): %d\n", indent, "", IsAttributeSelector());
+  printf("%*sIsAttributeSelector(): %d\n", indent, "", IsAttributeSelector());
   if (IsAttributeSelector())
-    printf("%*sattribute(): %s\n", indent, "",
+    printf("%*sAttribute(): %s\n", indent, "",
            Attribute().LocalName().Ascii().Data());
-  printf("%*sargument(): %s\n", indent, "", Argument().Ascii().Data());
-  printf("%*sspecificity(): %u\n", indent, "", Specificity());
+  printf("%*sArgument(): %s\n", indent, "", Argument().Ascii().Data());
+  printf("%*sSpecificity(): %u\n", indent, "", Specificity());
   if (TagHistory()) {
-    printf("\n%*s--> (relation == %d)\n", indent, "", Relation());
+    printf("\n%*s--> (Relation() == %d)\n", indent, "", Relation());
     TagHistory()->Show(indent + 2);
   } else {
-    printf("\n%*s--> (relation == %d)\n", indent, "", Relation());
+    printf("\n%*s--> (Relation() == %d)\n", indent, "", Relation());
   }
 }
 
 void CSSSelector::Show() const {
-  printf("\n******* CSSSelector::show(\"%s\") *******\n",
+  printf("\n******* CSSSelector::Show(\"%s\") *******\n",
          SelectorText().Ascii().Data());
   Show(2);
   printf("******* end *******\n");

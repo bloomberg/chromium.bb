@@ -81,7 +81,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
             font_->Url().ElidedString()));
   }
 
-  // Note: this may call notifyFinished() and clear m_font.
+  // Note: this may call notifyFinished() and clear font_.
   font_->AddClient(this);
 }
 
@@ -347,7 +347,7 @@ void RemoteFontFaceSource::FontLoadHistograms::MaySetDataSource(
     DataSource data_source) {
   if (data_source_ != kFromUnknown)
     return;
-  // Classify as memory cache hit if |m_loadStartTime| is not set, i.e.
+  // Classify as memory cache hit if |load_start_time_| is not set, i.e.
   // this RemoteFontFaceSource instance didn't trigger FontResource
   // loading.
   if (load_start_time_ == 0)

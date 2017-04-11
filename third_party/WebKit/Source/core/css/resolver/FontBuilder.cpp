@@ -320,7 +320,7 @@ void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
   // We need to create a temporal Font to get xHeight of a primary font.
   // The aspect value is based on the xHeight of the font for the computed font
   // size, so we need to reset the adjustedSize to computedSize. See
-  // FontDescription::effectiveFontSize.
+  // FontDescription::EffectiveFontSize.
   font_description.SetAdjustedSize(font_description.ComputedSize());
 
   Font font(font_description);

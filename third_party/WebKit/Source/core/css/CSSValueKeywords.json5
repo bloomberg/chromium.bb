@@ -256,7 +256,7 @@
     "-webkit-baseline-middle",
     //
     // text-align
-    // The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
+    // The order of this enum must match the order found in CSSParserFastPaths::IsValidKeywordPropertyAndValue().
     //
     "-webkit-auto",
     "left",
@@ -282,7 +282,7 @@
     "inside",
     //
     // list-style-type
-    // The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
+    // The order of this enum must match the order found in CSSParserFastPaths::IsValidKeywordPropertyAndValue().
     //
     "disc",
     "circle",
@@ -342,7 +342,7 @@
     //none
     //
     // display
-    // The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
+    // The order of this enum must match the order found in CSSParserFastPaths::IsValidKeywordPropertyAndValue().
     //
     "inline",
     "block",
@@ -371,7 +371,7 @@
     "-webkit-inline-flex",
     //
     // cursor
-    // The order of this enum must match the order found in CSSPropertyParser::consumeCursor().
+    // The order of this enum must match the order found in CSSPropertyParser::ConsumeCursor().
     //
     "auto",
     "crosshair",

@@ -155,7 +155,7 @@ class CORE_EXPORT CSSParserToken {
 
   bool ValueDataCharRawEqual(const CSSParserToken& other) const;
 
-  // m_value... is an unpacked StringView so that we can pack it
+  // value_... is an unpacked StringView so that we can pack it
   // tightly with the rest of this object for a smaller object size.
   bool value_is8_bit_ : 1;
   unsigned value_length_;

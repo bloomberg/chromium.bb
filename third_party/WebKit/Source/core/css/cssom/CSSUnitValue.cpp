@@ -11,7 +11,7 @@ namespace blink {
 namespace {
 
 bool IsValidUnit(CSSPrimitiveValue::UnitType unit) {
-  // UserUnits returns true for CSSPrimitiveValue::isLength below.
+  // UserUnits returns true for CSSPrimitiveValue::IsLength below.
   if (unit == CSSPrimitiveValue::UnitType::kUserUnits)
     return false;
   if (unit == CSSPrimitiveValue::UnitType::kNumber ||

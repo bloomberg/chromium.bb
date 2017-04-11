@@ -37,7 +37,7 @@ namespace {
 // Max/min values for CSS, needs to slightly smaller/larger than the true
 // max/min values to allow for rounding without overflowing.
 // Subtract two (rather than one) to allow for values to be converted to float
-// and back without exceeding the LayoutUnit::max.
+// and back without exceeding the LayoutUnit::Max.
 const int kMaxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
 const int kMinValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
 
@@ -414,7 +414,7 @@ double CSSPrimitiveValue::GetDoubleValue() const {
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::CanonicalUnitTypeForCategory(
     UnitCategory category) {
   // The canonical unit type is chosen according to the way
-  // CSSPropertyParser::validUnit() chooses the default unit in each category
+  // CSSPropertyParser::ValidUnit() chooses the default unit in each category
   // (based on unitflags).
   switch (category) {
     case kUNumber:

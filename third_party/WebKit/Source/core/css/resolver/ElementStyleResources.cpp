@@ -153,7 +153,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
   // <div></div>
   //
   // We call styleImage() for both a.png and b.png adding the
-  // CSSPropertyBackgroundImage property to the m_pendingImageProperties set,
+  // CSSPropertyBackgroundImage property to the pending_image_properties_ set,
   // then we null out the background image because of the "none".
   //
   // If we eagerly loaded the images we'd fetch a.png, even though it's not

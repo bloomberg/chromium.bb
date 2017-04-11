@@ -31,7 +31,7 @@ class CSSLazyParsingState
   // know the total number of style rules that deferred parsing.
   void FinishInitialParsing();
 
-  // Helper method used to bump m_totalStyleRules.
+  // Helper method used to bump total_style_rules_.
   CSSLazyPropertyParserImpl* CreateLazyParser(const CSSParserTokenRange& block);
 
   const CSSParserContext* Context();

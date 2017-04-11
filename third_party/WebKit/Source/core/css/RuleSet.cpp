@@ -260,17 +260,17 @@ void RuleSet::AddRule(StyleRule* rule,
 }
 
 void RuleSet::AddPageRule(StyleRulePage* rule) {
-  EnsurePendingRules();  // So that m_pageRules.shrinkToFit() gets called.
+  EnsurePendingRules();  // So that page_rules_.ShrinkToFit() gets called.
   page_rules_.push_back(rule);
 }
 
 void RuleSet::AddFontFaceRule(StyleRuleFontFace* rule) {
-  EnsurePendingRules();  // So that m_fontFaceRules.shrinkToFit() gets called.
+  EnsurePendingRules();  // So that font_face_rules_.ShrinkToFit() gets called.
   font_face_rules_.push_back(rule);
 }
 
 void RuleSet::AddKeyframesRule(StyleRuleKeyframes* rule) {
-  EnsurePendingRules();  // So that m_keyframesRules.shrinkToFit() gets called.
+  EnsurePendingRules();  // So that keyframes_rules_.ShrinkToFit() gets called.
   keyframes_rules_.push_back(rule);
 }
 

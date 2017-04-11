@@ -96,7 +96,7 @@ class CSSSegmentedFontFace final
   FontFaceList::iterator first_non_css_connected_face_;
 
   // Approximate number of characters styled with this CSSSegmentedFontFace.
-  // LayoutText::styleDidChange() increments this on the first
+  // LayoutText::StyleDidChange() increments this on the first
   // CSSSegmentedFontFace in the style's font family list, so this is not
   // counted if this font is used as a fallback font. Also, this may be double
   // counted by style recalcs.

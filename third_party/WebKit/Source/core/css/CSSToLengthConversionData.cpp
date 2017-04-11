@@ -97,7 +97,7 @@ CSSToLengthConversionData::CSSToLengthConversionData(
                                 zoom) {}
 
 double CSSToLengthConversionData::ViewportWidthPercent() const {
-  // FIXME: Remove m_style from this class. Plumb viewport and rem unit
+  // FIXME: Remove style_ from this class. Plumb viewport and rem unit
   // information through as output parameters on functions involved in length
   // resolution.
   const_cast<ComputedStyle*>(style_)->SetHasViewportUnits(true);
@@ -124,9 +124,9 @@ float CSSToLengthConversionData::RemFontSize() const {
 double CSSToLengthConversionData::ZoomedComputedPixels(
     double value,
     CSSPrimitiveValue::UnitType type) const {
-  // The logic in this function is duplicated in MediaValues::computeLength()
-  // because MediaValues::computeLength() needs nearly identical logic, but we
-  // haven't found a way to make zoomedComputedPixels() more generic (to solve
+  // The logic in this function is duplicated in MediaValues::ComputeLength()
+  // because MediaValues::ComputeLength() needs nearly identical logic, but we
+  // haven't found a way to make ZoomedComputedPixels() more generic (to solve
   // both cases) without hurting performance.
   switch (type) {
     case CSSPrimitiveValue::UnitType::kPixels:

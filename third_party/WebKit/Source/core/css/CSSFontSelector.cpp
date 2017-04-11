@@ -47,7 +47,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
       generic_font_family_settings_(
           document->GetFrame()->GetSettings()->GetGenericFontFamilySettings()) {
   // FIXME: An old comment used to say there was no need to hold a reference to
-  // m_document because "we are guaranteed to be destroyed before the document".
+  // document_ because "we are guaranteed to be destroyed before the document".
   // But there does not seem to be any such guarantee.
   DCHECK(document_);
   DCHECK(document_->GetFrame());

@@ -560,7 +560,7 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
       // Check the 3rd '>'.
       if (range.Peek(1).GetType() != kDelimiterToken ||
           range.Peek(1).Delimiter() != '>') {
-        // TODO: Treat '>>' as a CSSSelector::Descendant here.
+        // TODO: Treat '>>' as a CSSSelector::kDescendant here.
         return CSSSelector::kChild;
       }
       range.Consume();

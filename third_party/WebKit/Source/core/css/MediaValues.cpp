@@ -179,9 +179,9 @@ bool MediaValues::ComputeLengthImpl(double value,
                                     double viewport_height,
                                     double& result) {
   // The logic in this function is duplicated from
-  // CSSToLengthConversionData::zoomedComputedPixels() because
-  // MediaValues::computeLength() needs nearly identical logic, but we haven't
-  // found a way to make CSSToLengthConversionData::zoomedComputedPixels() more
+  // CSSToLengthConversionData::ZoomedComputedPixels() because
+  // MediaValues::ComputeLength() needs nearly identical logic, but we haven't
+  // found a way to make CSSToLengthConversionData::ZoomedComputedPixels() more
   // generic (to solve both cases) without hurting performance.
   // FIXME - Unite the logic here with CSSToLengthConversionData in a performant
   // way.

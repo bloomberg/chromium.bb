@@ -239,7 +239,7 @@ StyleRule::StyleRule(const StyleRule& o)
 StyleRule::~StyleRule() {}
 
 MutableStylePropertySet& StyleRule::MutableProperties() {
-  // Ensure m_properties is initialized.
+  // Ensure properties_ is initialized.
   if (!Properties().IsMutable())
     properties_ = properties_->MutableCopy();
   return *ToMutableStylePropertySet(properties_.Get());
@@ -257,7 +257,7 @@ bool StyleRule::ShouldConsiderForMatchingRules(bool include_empty_rules) const {
 }
 
 bool StyleRule::HasParsedProperties() const {
-  // StyleRule should only have one of {m_lazyPropertyParser, m_properties} set.
+  // StyleRule should only have one of {lazy_property_parser_, properties_} set.
   DCHECK(lazy_property_parser_ || properties_);
   DCHECK(!lazy_property_parser_ || !properties_);
   return !lazy_property_parser_;

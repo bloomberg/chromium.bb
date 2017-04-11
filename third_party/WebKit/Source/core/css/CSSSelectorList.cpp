@@ -72,7 +72,7 @@ CSSSelectorList CSSSelectorList::AdoptSelectorVector(
   for (size_t i = 0; i < selector_vector.size(); ++i) {
     CSSParserSelector* current = selector_vector[i].get();
     while (current) {
-      // Move item from the parser selector vector into m_selectorArray without
+      // Move item from the parser selector vector into selector_array_ without
       // invoking destructor (Ugh.)
       CSSSelector* current_selector = current->ReleaseSelector().release();
       memcpy(&list.selector_array_[array_index], current_selector,

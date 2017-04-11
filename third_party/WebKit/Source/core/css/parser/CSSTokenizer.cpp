@@ -23,7 +23,7 @@ CSSTokenizer::CSSTokenizer(const String& string) : input_(string) {
   // However, we can skip this step since:
   // * We're using HTML spaces (which accept \r and \f as a valid white space)
   // * Do not count white spaces
-  // * CSSTokenizerInputStream::nextInputChar() replaces NULLs for replacement
+  // * CSSTokenizerInputStream::NextInputChar() replaces NULLs for replacement
   //   characters
 
   if (string.IsEmpty())
