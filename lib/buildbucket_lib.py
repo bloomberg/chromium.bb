@@ -191,8 +191,6 @@ class BuildbucketClient(object):
                    'with url %s method %s body:\n%s', url, method, body)
       return
 
-    logging.info('Sending a buildbucket request: [url] %s [method] %s '
-                 '[body] %s [dryrun] %s', url, method, body, dryrun)
     def try_method():
       response, content = self.http.request(
           url,
