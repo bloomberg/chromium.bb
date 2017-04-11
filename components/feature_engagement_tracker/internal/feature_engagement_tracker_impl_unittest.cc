@@ -4,77 +4,87 @@
 
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/feature_engagement_tracker/internal/editable_configuration.h"
+#include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
 
 namespace {
-
 const base::Feature kTestFeatureFoo{"test_foo",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTestFeatureBar{"test_bar",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeatureQux{"test_qux",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+void RegisterFeatureConfig(EditableConfiguration* configuration,
+                           const base::Feature& feature,
+                           bool valid) {
+  FeatureConfig config;
+  config.valid = valid;
+  config.feature_used_event = feature.name;
+  configuration->SetConfiguration(&feature, config);
+}
+
+class FeatureEngagementTrackerImplTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
+    std::unique_ptr<EditableConfiguration> configuration =
+        base::MakeUnique<EditableConfiguration>();
+    std::unique_ptr<ConditionValidator> validator =
+        base::MakeUnique<OnceConditionValidator>();
+
+    RegisterFeatureConfig(configuration.get(), kTestFeatureFoo, true);
+    RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
+    RegisterFeatureConfig(configuration.get(), kTestFeatureQux, false);
+
+    scoped_feature_list_.InitWithFeatures(
+        {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
+
+    tracker_.reset(new FeatureEngagementTrackerImpl(
+        std::move(store), std::move(configuration), std::move(validator)));
+  }
+
+ protected:
+  std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 }  // namespace
 
-TEST(FeatureEngagementTrackerImplTest, EnabledFeatureShouldTriggerOnce) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kTestFeatureFoo}, {});
+TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
+  // The first time a feature triggers it should be shown.
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
 
-  // Initialize tracker with one enabled feature.
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
-  FeatureEngagementTrackerImpl tracker(features);
+  // While in-product help is currently showing, no other features should be
+  // shown.
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
 
-  // Only the first call to ShouldTriggerHelpUI() should lead to enlightenment.
-  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
-}
+  // After dismissing the current in-product help, that feature can not be shown
+  // again, but a different feature should.
+  tracker_->Dismissed();
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
 
-TEST(FeatureEngagementTrackerImplTest, OnlyEnabledFeaturesShouldTrigger) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
-
-  // Initialize tracker with one enabled and one disabled feature.
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo,
-                                                &kTestFeatureBar};
-  FeatureEngagementTrackerImpl tracker(features);
-
-  // Only the kTestFeatureFoo feature should lead to enlightenment, since
-  // kTestFeatureBar is disabled. Ordering disabled feature first to ensure this
-  // captures a different behavior than the
-  // OnlyOneFeatureShouldTriggerPerSession test below.
-  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
-  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
-}
-
-TEST(FeatureEngagementTrackerImplTest, OnlyOneFeatureShouldTriggerPerSession) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
-
-  // Initialize tracker with two enabled features.
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo,
-                                                &kTestFeatureBar};
-  FeatureEngagementTrackerImpl tracker(features);
-
-  // Only one feature should get to show enlightenment.
-  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
-}
-
-TEST(FeatureEngagementTrackerImplTest, NeverTriggerWhenAllFeaturesDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({}, {kTestFeatureFoo, kTestFeatureBar});
-
-  // Initialize tracker with two enabled features.
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo,
-                                                &kTestFeatureBar};
-  FeatureEngagementTrackerImpl tracker(features);
-
-  // No features should get to show enlightenment.
-  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
+  // After dismissing the second registered feature, no more in-product help
+  // should be shown, since kTestFeatureQux is invalid.
+  tracker_->Dismissed();
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
 }
 
 }  // namespace feature_engagement_tracker

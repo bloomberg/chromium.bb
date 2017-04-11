@@ -4,11 +4,30 @@
 
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
+#include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/feature_list.h"
-#include "components/feature_engagement_tracker/public/feature_constants.h"
+#include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 
 namespace feature_engagement_tracker {
+
+// Set up all feature configurations.
+// TODO(nyquist): Create FinchConfiguration to parse configuration.
+std::unique_ptr<Configuration> CreateAndParseConfiguration() {
+  std::unique_ptr<EditableConfiguration> configuration =
+      base::MakeUnique<EditableConfiguration>();
+  std::vector<const base::Feature*> features = GetAllFeatures();
+  for (auto* it : features) {
+    FeatureConfig feature_config;
+    feature_config.valid = true;
+    configuration->SetConfiguration(it, feature_config);
+  }
+  return std::move(configuration);
+}
 
 // This method is declared in //components/feature_engagement_tracker/public/
 //     feature_engagement_tracker.h
@@ -17,12 +36,27 @@ namespace feature_engagement_tracker {
 FeatureEngagementTracker* FeatureEngagementTracker::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background__task_runner) {
-  return new FeatureEngagementTrackerImpl(GetAllFeatures());
+  std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
+  std::unique_ptr<Configuration> configuration = CreateAndParseConfiguration();
+  std::unique_ptr<ConditionValidator> validator =
+      base::MakeUnique<OnceConditionValidator>();
+
+  return new FeatureEngagementTrackerImpl(
+      std::move(store), std::move(configuration), std::move(validator));
 }
 
 FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
-    FeatureVector features)
-    : features_(features), has_shown_enlightenment_(false) {}
+    std::unique_ptr<Store> store,
+    std::unique_ptr<Configuration> configuration,
+    std::unique_ptr<ConditionValidator> condition_validator)
+    : condition_validator_(std::move(condition_validator)),
+      weak_ptr_factory_(this) {
+  model_ =
+      base::MakeUnique<ModelImpl>(std::move(store), std::move(configuration));
+  model_->Initialize(
+      base::Bind(&FeatureEngagementTrackerImpl::OnModelInitializationFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
 FeatureEngagementTrackerImpl::~FeatureEngagementTrackerImpl() = default;
 
@@ -32,19 +66,25 @@ void FeatureEngagementTrackerImpl::NotifyEvent(const std::string& event) {
 
 bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
     const base::Feature& feature) {
-  bool should_trigger =
-      !has_shown_enlightenment_ && base::FeatureList::IsEnabled(feature);
-  has_shown_enlightenment_ |= should_trigger;
-  return should_trigger;
+  // TODO(nyquist): Track this event.
+  bool result = condition_validator_->MeetsConditions(feature, *model_);
+  if (result)
+    model_->SetIsCurrentlyShowing(true);
+  return result;
 }
 
 void FeatureEngagementTrackerImpl::Dismissed() {
   // TODO(nyquist): Track this event.
+  model_->SetIsCurrentlyShowing(false);
 }
 
 void FeatureEngagementTrackerImpl::AddOnInitializedCallback(
     OnInitializedCallback callback) {
   // TODO(nyquist): Add support for this.
+}
+
+void FeatureEngagementTrackerImpl::OnModelInitializationFinished(bool result) {
+  // TODO(nyquist): Ensure that all OnInitializedCallbacks are invoked.
 }
 
 }  // namespace feature_engagement_tracker

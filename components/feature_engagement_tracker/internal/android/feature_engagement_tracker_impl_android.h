@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
 
 namespace base {
 struct Feature;
@@ -34,7 +35,7 @@ class FeatureEngagementTrackerImplAndroid
 
   FeatureEngagementTrackerImplAndroid(
       FeatureEngagementTrackerImpl* feature_engagement_tracker_impl,
-      FeatureEngagementTrackerImpl::FeatureVector features);
+      FeatureVector features);
   ~FeatureEngagementTrackerImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();

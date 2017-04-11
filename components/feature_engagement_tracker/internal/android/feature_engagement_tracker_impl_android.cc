@@ -23,7 +23,7 @@ const char kFeatureEngagementTrackerImplAndroidKey[] =
 
 // Create mapping from feature name to base::Feature.
 FeatureEngagementTrackerImplAndroid::FeatureMap CreateMapFromNameToFeature(
-    FeatureEngagementTrackerImpl::FeatureVector features) {
+    FeatureVector features) {
   FeatureEngagementTrackerImplAndroid::FeatureMap feature_map;
   for (auto it = features.begin(); it != features.end(); ++it) {
     feature_map[(*it)->name] = *it;
@@ -76,7 +76,7 @@ FeatureEngagementTracker::GetJavaObject(
 
 FeatureEngagementTrackerImplAndroid::FeatureEngagementTrackerImplAndroid(
     FeatureEngagementTrackerImpl* feature_engagement_tracker_impl,
-    FeatureEngagementTrackerImpl::FeatureVector features)
+    FeatureVector features)
     : features_(CreateMapFromNameToFeature(features)),
       feature_engagement_tracker_impl_(feature_engagement_tracker_impl) {
   JNIEnv* env = base::android::AttachCurrentThread();

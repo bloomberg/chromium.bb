@@ -10,9 +10,10 @@
 #include "base/feature_list.h"
 
 namespace feature_engagement_tracker {
+using FeatureVector = std::vector<const base::Feature*>;
 
 // Returns all the features that are in use for engagement tracking.
-std::vector<const base::Feature*> GetAllFeatures();
+FeatureVector GetAllFeatures();
 
 }  // namespace feature_engagement_tracker
 
