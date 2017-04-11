@@ -1526,6 +1526,9 @@ void LocalDOMWindow::DispatchLoadEvent() {
   if (owner)
     owner->DispatchLoad();
 
+  TRACE_EVENT_INSTANT1("devtools.timeline", "MarkLoad",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorMarkLoadEvent::Data(GetFrame()));
   probe::loadEventFired(GetFrame());
 }
 

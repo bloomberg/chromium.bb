@@ -106,12 +106,6 @@ DEFINE_TRACE(InspectorTraceEvents) {
   InspectorAgent::Trace(visitor);
 }
 
-void InspectorTraceEvents::LoadEventFired(LocalFrame* frame) {
-  TRACE_EVENT_INSTANT1("devtools.timeline", "MarkLoad",
-                      TRACE_EVENT_SCOPE_THREAD, "data",
-                      InspectorMarkLoadEvent::Data(frame));
-}
-
 void InspectorTraceEvents::WillSendRequest(
     LocalFrame* frame,
     unsigned long identifier,

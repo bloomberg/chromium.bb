@@ -76,7 +76,7 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
             protocol::UberDispatcher*,
             protocol::DictionaryValue*) override;
   void Dispose() override;
-  void LoadEventFired(LocalFrame*);
+
   void WillSendRequest(LocalFrame*,
                        unsigned long identifier,
                        DocumentLoader*,
