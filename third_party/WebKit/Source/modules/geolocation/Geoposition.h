@@ -23,24 +23,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Position_h
-#define Position_h
+#ifndef Geoposition_h
+#define Geoposition_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventModules.h"
 #include "modules/geolocation/Coordinates.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
-class Position final : public GarbageCollected<Position>,
-                       public ScriptWrappable {
+class Geoposition final : public GarbageCollected<Geoposition>,
+                          public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Position* Create(Coordinates* coordinates, DOMTimeStamp timestamp) {
-    return new Position(coordinates, timestamp);
+  static Geoposition* Create(Coordinates* coordinates, DOMTimeStamp timestamp) {
+    return new Geoposition(coordinates, timestamp);
   }
 
   DEFINE_INLINE_TRACE() { visitor->Trace(coordinates_); }
@@ -49,7 +49,7 @@ class Position final : public GarbageCollected<Position>,
   Coordinates* coords() const { return coordinates_; }
 
  private:
-  Position(Coordinates* coordinates, DOMTimeStamp timestamp)
+  Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
       : coordinates_(coordinates), timestamp_(timestamp) {
     DCHECK(coordinates_);
   }
@@ -60,4 +60,4 @@ class Position final : public GarbageCollected<Position>,
 
 }  // namespace blink
 
-#endif  // Position_h
+#endif  // Geoposition_h

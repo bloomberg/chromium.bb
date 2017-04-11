@@ -23,11 +23,6 @@
  * DAMAGE.
  */
 
-// https://www.w3.org/TR/geolocation-API/#position-callback
-
-// TODO(mcasas, foolip): PositionCallback should be a callback function, not a
-// callback interface, see https://crbug.com/569301
-
 callback interface PositionCallback {
-    void handleEvent(Position position);
+    void handleEvent(Geoposition position);
 };

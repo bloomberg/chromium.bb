@@ -52,7 +52,8 @@ const char kFailedToStartServiceErrorMessage[] =
 const char kFramelessDocumentErrorMessage[] =
     "Geolocation cannot be used in frameless documents";
 
-Position* CreatePosition(const device::mojom::blink::Geoposition& position) {
+Geoposition* CreateGeoposition(
+    const device::mojom::blink::Geoposition& position) {
   Coordinates* coordinates = Coordinates::Create(
       position.latitude, position.longitude,
       // Lowest point on land is at approximately -400 meters.
@@ -60,8 +61,8 @@ Position* CreatePosition(const device::mojom::blink::Geoposition& position) {
       position.altitude_accuracy >= 0., position.altitude_accuracy,
       position.heading >= 0. && position.heading <= 360., position.heading,
       position.speed >= 0., position.speed);
-  return Position::Create(coordinates,
-                          ConvertSecondsToDOMTimeStamp(position.timestamp));
+  return Geoposition::Create(coordinates,
+                             ConvertSecondsToDOMTimeStamp(position.timestamp));
 }
 
 PositionError* CreatePositionError(
@@ -336,7 +337,7 @@ void Geolocation::SendError(GeoNotifierVector& notifiers,
 }
 
 void Geolocation::SendPosition(GeoNotifierVector& notifiers,
-                               Position* position) {
+                               Geoposition* position) {
   for (GeoNotifier* notifier : notifiers)
     notifier->RunSuccessCallback(position);
 }
@@ -536,7 +537,7 @@ void Geolocation::OnPositionUpdated(
     device::mojom::blink::GeopositionPtr position) {
   disconnected_geolocation_service_ = false;
   if (position->valid) {
-    last_position_ = CreatePosition(*position);
+    last_position_ = CreateGeoposition(*position);
     PositionChanged();
   } else {
     HandleError(

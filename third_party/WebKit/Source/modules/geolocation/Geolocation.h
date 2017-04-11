@@ -34,7 +34,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/GeolocationWatchers.h"
-#include "modules/geolocation/Position.h"
+#include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionErrorCallback.h"
@@ -120,7 +120,7 @@ class MODULES_EXPORT Geolocation final
   }
 
   void SendError(GeoNotifierVector&, PositionError*);
-  void SendPosition(GeoNotifierVector&, Position*);
+  void SendPosition(GeoNotifierVector&, Geoposition*);
 
   // Removes notifiers that use a cached position from |notifiers| and
   // if |cached| is not null they are added to it.
@@ -187,7 +187,7 @@ class MODULES_EXPORT Geolocation final
   GeoNotifierSet one_shots_;
   GeolocationWatchers watchers_;
   GeoNotifierSet pending_for_permission_notifiers_;
-  Member<Position> last_position_;
+  Member<Geoposition> last_position_;
 
   // States of Geolocation permission as granted by the embedder. Unknown
   // means that the embedder still has to be asked for the current permission

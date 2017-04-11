@@ -23,11 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://www.w3.org/TR/geolocation-API/#position_interface
-
 [
     NoInterfaceObject
-] interface Position {
+] interface Geoposition {
     readonly attribute Coordinates coords;
     readonly attribute DOMTimeStamp timestamp;
 };

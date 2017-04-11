@@ -14,7 +14,7 @@
 namespace blink {
 
 class Geolocation;
-class Position;
+class Geoposition;
 class PositionError;
 
 class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
@@ -40,7 +40,7 @@ class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
   // an interval of 0.
   void SetUseCachedPosition();
 
-  void RunSuccessCallback(Position*);
+  void RunSuccessCallback(Geoposition*);
   void RunErrorCallback(PositionError*);
 
   void StartTimer();
