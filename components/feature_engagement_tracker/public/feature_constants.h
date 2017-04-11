@@ -8,7 +8,11 @@
 #include "base/feature_list.h"
 
 namespace feature_engagement_tracker {
-// All the features declared in this file should also be declared in the Java
+
+// A feature for enabling a demonstration mode for In-Product Help.
+extern const base::Feature kIPHDemoMode;
+
+// All the features declared below should also be declared in the Java
 // version: org.chromium.components.feature_engagement_tracker.FeatureConstants.
 
 // A dummy feature until real features start using the backend.

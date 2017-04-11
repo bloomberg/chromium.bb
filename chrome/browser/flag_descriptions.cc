@@ -1951,6 +1951,17 @@ const char kChromeHomeDescription[] = "Enables Chrome Home on Android.";
 
 #endif  // defined(OS_ANDROID)
 
+//  In-Product Help flags
+
+#if defined(OS_ANDROID)
+
+const char kEnableIphDemoMode[] = "In-Product Help Demo Mode";
+
+const char kEnableIphDemoModeDescription[] =
+    "Enables In-Product Help demo mode on Android.";
+
+#endif  // defined(OS_ANDROID)
+
 //  Settings window flags
 
 const char kSettingsWindowName[] = "Show settings in a window";

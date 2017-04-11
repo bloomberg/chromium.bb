@@ -29,8 +29,12 @@ static_library("internal") {
     "model.h",
     "model_impl.cc",
     "model_impl.h",
+    "never_condition_validator.cc",
+    "never_condition_validator.h",
     "once_condition_validator.cc",
     "once_condition_validator.h",
+    "single_invalid_configuration.cc",
+    "single_invalid_configuration.h",
     "store.h",
   ]
 
@@ -61,7 +65,9 @@ source_set("unit_tests") {
     "feature_engagement_tracker_impl_unittest.cc",
     "in_memory_store_unittest.cc",
     "model_impl_unittest.cc",
+    "never_condition_validator_unittest.cc",
     "once_condition_validator_unittest.cc",
+    "single_invalid_configuration_unittest.cc",
   ]
 
   deps = [

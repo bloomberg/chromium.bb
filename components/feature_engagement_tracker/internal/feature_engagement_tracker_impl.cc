@@ -11,23 +11,36 @@
 #include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
+#include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
+#include "components/feature_engagement_tracker/public/feature_constants.h"
 
 namespace feature_engagement_tracker {
 
-// Set up all feature configurations.
-// TODO(nyquist): Create FinchConfiguration to parse configuration.
-std::unique_ptr<Configuration> CreateAndParseConfiguration() {
+namespace {
+
+// Creates a FeatureEngagementTrackerImpl that is usable for a demo mode.
+std::unique_ptr<FeatureEngagementTracker>
+CreateDemoModeFeatureEngagementTracker() {
   std::unique_ptr<EditableConfiguration> configuration =
       base::MakeUnique<EditableConfiguration>();
+
+  // Create valid configurations for all features to ensure that the
+  // OnceConditionValidator acknowledges that thet meet conditions once.
   std::vector<const base::Feature*> features = GetAllFeatures();
-  for (auto* it : features) {
+  for (auto* feature : features) {
     FeatureConfig feature_config;
     feature_config.valid = true;
-    configuration->SetConfiguration(it, feature_config);
+    configuration->SetConfiguration(feature, feature_config);
   }
-  return std::move(configuration);
+
+  return base::MakeUnique<FeatureEngagementTrackerImpl>(
+      base::MakeUnique<InMemoryStore>(), std::move(configuration),
+      base::MakeUnique<OnceConditionValidator>());
 }
+
+}  // namespace
 
 // This method is declared in //components/feature_engagement_tracker/public/
 //     feature_engagement_tracker.h
@@ -36,10 +49,15 @@ std::unique_ptr<Configuration> CreateAndParseConfiguration() {
 FeatureEngagementTracker* FeatureEngagementTracker::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background__task_runner) {
+  if (base::FeatureList::IsEnabled(kIPHDemoMode))
+    return CreateDemoModeFeatureEngagementTracker().release();
+
   std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
-  std::unique_ptr<Configuration> configuration = CreateAndParseConfiguration();
+  // TODO(nyquist): Create FinchConfiguration to parse configuration.
+  std::unique_ptr<Configuration> configuration =
+      base::MakeUnique<SingleInvalidConfiguration>();
   std::unique_ptr<ConditionValidator> validator =
-      base::MakeUnique<OnceConditionValidator>();
+      base::MakeUnique<NeverConditionValidator>();
 
   return new FeatureEngagementTrackerImpl(
       std::move(store), std::move(configuration), std::move(validator));

@@ -52,6 +52,8 @@ class TestModel : public Model {
 
 class OnceConditionValidatorTest : public ::testing::Test {
  public:
+  OnceConditionValidatorTest() = default;
+
   void SetUp() override {
     // By default, model should be ready.
     model_.SetIsReady(true);
@@ -67,6 +69,9 @@ class OnceConditionValidatorTest : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   TestModel model_;
   OnceConditionValidator validator_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OnceConditionValidatorTest);
 };
 
 }  // namespace
@@ -82,7 +87,8 @@ TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
   EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureFoo, model_));
 }
 
-TEST_F(OnceConditionValidatorTest, OnlyEnabledFeaturesShouldTrigger) {
+TEST_F(OnceConditionValidatorTest,
+       BothEnabledAndDisabledFeaturesShouldTrigger) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
 
   // Initialize validator with one enabled and one disabled feature, both valid.
@@ -93,11 +99,11 @@ TEST_F(OnceConditionValidatorTest, OnlyEnabledFeaturesShouldTrigger) {
   // kTestFeatureBar is disabled. Ordering disabled feature first to ensure this
   // captures a different behavior than the
   // OnlyOneFeatureShouldTriggerPerSession test below.
-  EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureBar, model_));
+  EXPECT_TRUE(validator_.MeetsConditions(kTestFeatureBar, model_));
   EXPECT_TRUE(validator_.MeetsConditions(kTestFeatureFoo, model_));
 }
 
-TEST_F(OnceConditionValidatorTest, NeverTriggerWhenAllFeaturesDisabled) {
+TEST_F(OnceConditionValidatorTest, StillTriggerWhenAllFeaturesDisabled) {
   scoped_feature_list_.InitWithFeatures({}, {kTestFeatureFoo, kTestFeatureBar});
 
   // Initialize validator with two enabled features, both valid.
@@ -105,8 +111,8 @@ TEST_F(OnceConditionValidatorTest, NeverTriggerWhenAllFeaturesDisabled) {
   AddFeature(kTestFeatureBar, true);
 
   // No features should get to show enlightenment.
-  EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureFoo, model_));
-  EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureBar, model_));
+  EXPECT_TRUE(validator_.MeetsConditions(kTestFeatureFoo, model_));
+  EXPECT_TRUE(validator_.MeetsConditions(kTestFeatureBar, model_));
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {

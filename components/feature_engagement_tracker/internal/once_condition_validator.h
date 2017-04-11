@@ -20,16 +20,16 @@ namespace feature_engagement_tracker {
 // An ConditionValidator that will ensure that each base::Feature will meet
 // conditions maximum one time for any given session.
 // It has the following requirements:
-// - The base::Feature is enabled
 // - The Model is ready.
 // - No other in-product help is currently showing.
-// - FeatureServerConfig for the feature is valid.
+// - FeatureConfig for the feature is valid.
 // - This is the first time the given base::Feature meets all above stated
 //   conditions.
 //
-// NOTE: This ConditionValidator fully ignores any other configuration specified
-// in the FeatureServerConfig. In practice this leads this ConditionValidator
-// to be well suited for a demonstration mode of in-product help.
+// NOTE: This ConditionValidator fully ignores whether the base::Feature is
+// enabled or not and any other configuration specified in the FeatureConfig.
+// In practice this leads this ConditionValidator to be well suited for a
+// demonstration mode of in-product help.
 class OnceConditionValidator : public ConditionValidator {
  public:
   OnceConditionValidator();

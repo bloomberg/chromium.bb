@@ -2149,6 +2149,18 @@ extern const char kChromeHomeDescription[];
 
 #endif  // defined(OS_ANDROID)
 
+//  In-Product Help flags
+
+#if defined(OS_ANDROID)
+
+// The name of the In-Product Help demo mode in about:flags.
+extern const char kEnableIphDemoMode[];
+
+// Description of the In-Product Help demo mode in about:flags.
+extern const char kEnableIphDemoModeDescription[];
+
+#endif  // defined(OS_ANDROID)
+
 //  Settings window flags
 
 // An about::flags experiment title to show settings in a separate window

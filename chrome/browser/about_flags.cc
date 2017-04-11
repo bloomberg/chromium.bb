@@ -100,6 +100,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_constants.h"
 #else  // OS_ANDROID
 #include "ui/message_center/message_center_switches.h"
 #endif  // OS_ANDROID
@@ -1559,6 +1560,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-home", flag_descriptions::kChromeHomeName,
      flag_descriptions::kChromeHomeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeFeature)},
+#endif  // OS_ANDROID
+#if defined(OS_ANDROID)
+    {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoMode,
+     flag_descriptions::kEnableIphDemoModeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feature_engagement_tracker::kIPHDemoMode)},
 #endif  // OS_ANDROID
     {"num-raster-threads", flag_descriptions::kNumRasterThreadsName,
      flag_descriptions::kNumRasterThreadsDescription, kOsAll,

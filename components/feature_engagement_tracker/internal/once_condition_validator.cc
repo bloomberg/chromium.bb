@@ -16,9 +16,6 @@ OnceConditionValidator::~OnceConditionValidator() = default;
 
 bool OnceConditionValidator::MeetsConditions(const base::Feature& feature,
                                              const Model& model) {
-  if (!base::FeatureList::IsEnabled(feature))
-    return false;
-
   if (!model.IsReady())
     return false;
 
