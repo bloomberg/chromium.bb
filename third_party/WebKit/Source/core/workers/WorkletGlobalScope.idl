@@ -9,9 +9,4 @@
     RuntimeEnabled=Worklet,
     ImmutablePrototype,
 ] interface WorkletGlobalScope {
-    // Console API
-    // https://console.spec.whatwg.org/#console-interface
-    // [Replaceable] readonly attribute Console console;
-    // Console is installed by v8 inspector when context is created
-    // and is left commented here just for documentation.
 };
