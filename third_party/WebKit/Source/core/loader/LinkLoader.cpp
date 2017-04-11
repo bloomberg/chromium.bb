@@ -201,8 +201,6 @@ WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
     return Resource::kTextTrack;
   } else if (as == "font") {
     return Resource::kFont;
-  } else if (as == "track") {
-    return Resource::kTextTrack;
   } else if (as.IsEmpty()) {
     return Resource::kRaw;
   }
