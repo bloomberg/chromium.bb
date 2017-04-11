@@ -38,6 +38,7 @@
     { style: "conic-gradient(at top left from 0, black, white)"            , computed: "none" },
     { style: "conic-gradient(black 10% 20% 30%, white)"                    , computed: "none" },
     { style: "conic-gradient(black, 30% 50%, white)"                       , computed: "none" },
+    { style: "conic-gradient(black, white calc(360deg / 10 + 50%)"         , computed: "none" },
 
     { style: "conic-gradient(black, white)"           , computed: "conic-gradient(black, white)" },
     { style: "conic-gradient(black 0, white)"         , computed: "conic-gradient(black 0deg, white)" },
@@ -90,6 +91,7 @@
     { style: "conic-gradient(white 45deg, black 225deg, white 405deg)"   , computed: "conic-gradient(white 45deg, black 225deg, white 405deg)" },
     { style: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red", computed: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)" },
     { style: "conic-gradient(gold, #f06 20deg)"                          , computed: "conic-gradient(gold, rgb(255, 0, 102) 20deg)" },
+    { style: "conic-gradient(gold calc(100% / 2), #f06 calc(360deg * 4 / 5))"                    , computed: "conic-gradient(gold calc(50%), rgb(255, 0, 102) calc(288deg))" },
   ];
 
   test(function() {

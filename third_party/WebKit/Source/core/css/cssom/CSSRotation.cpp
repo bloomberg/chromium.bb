@@ -18,7 +18,7 @@ bool IsNumberValue(const CSSValue& value) {
 CSSRotation* FromCSSRotate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
   const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
-  if (!primitive_value.IsAngle())
+  if (primitive_value.IsCalculated() || !primitive_value.IsAngle())
     return nullptr;
   return CSSRotation::Create(CSSAngleValue::FromCSSValue(primitive_value));
 }
@@ -29,7 +29,7 @@ CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
   DCHECK(IsNumberValue(value.Item(1)));
   DCHECK(IsNumberValue(value.Item(2)));
   const CSSPrimitiveValue& angle = ToCSSPrimitiveValue(value.Item(3));
-  if (!angle.IsAngle())
+  if (angle.IsCalculated() || !angle.IsAngle())
     return nullptr;
 
   double x = ToCSSPrimitiveValue(value.Item(0)).GetDoubleValue();
@@ -41,9 +41,10 @@ CSSRotation* FromCSSRotate3d(const CSSFunctionValue& value) {
 
 CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
-
-  CSSAngleValue* angle =
-      CSSAngleValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value.Item(0));
+  if (primitive_value.IsCalculated())
+    return nullptr;
+  CSSAngleValue* angle = CSSAngleValue::FromCSSValue(primitive_value);
   switch (value.FunctionType()) {
     case CSSValueRotateX:
       return CSSRotation::Create(1, 0, 0, angle);

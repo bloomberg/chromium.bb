@@ -940,9 +940,19 @@ static CSSPrimitiveValue* ConsumeAngleOrPercent(CSSParserTokenRange& range,
                                                 CSSParserMode,
                                                 ValueRange value_range,
                                                 UnitlessQuirk) {
-  return range.Peek().GetType() == kPercentageToken
-             ? ConsumePercent(range, value_range)
-             : ConsumeAngle(range);
+  const CSSParserToken& token = range.Peek();
+  if (token.GetType() == kDimensionToken || token.GetType() == kNumberToken)
+    return ConsumeAngle(range);
+  if (token.GetType() == kPercentageToken)
+    return ConsumePercent(range, value_range);
+  CalcParser calc_parser(range, value_range);
+  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+    CalculationCategory category = calculation->Category();
+    // TODO(fs): Add and support kCalcPercentAngle?
+    if (category == kCalcAngle || category == kCalcPercent)
+      return calc_parser.ConsumeValue();
+  }
+  return nullptr;
 }
 
 using PositionFunctor = CSSPrimitiveValue* (*)(CSSParserTokenRange&,

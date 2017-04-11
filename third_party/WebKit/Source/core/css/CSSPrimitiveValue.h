@@ -164,7 +164,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return unit == UnitType::kDegrees || unit == UnitType::kRadians ||
            unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
-  bool IsAngle() const { return IsAngle(GetType()); }
+  bool IsAngle() const { return IsAngle(TypeWithCalcResolved()); }
   bool IsFontRelativeLength() const {
     return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
            GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
