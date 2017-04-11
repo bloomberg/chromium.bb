@@ -35,6 +35,19 @@
 
 namespace blink {
 
+static void CopyPixels(void* dst_addr,
+                       size_t dst_row_bytes,
+                       const void* src_addr,
+                       size_t src_row_bytes,
+                       const SkImageInfo& info) {
+  size_t row_bytes = info.bytesPerPixel() * info.width();
+  for (int y = 0; y < info.height(); ++y) {
+    memcpy(dst_addr, src_addr, row_bytes);
+    src_addr = static_cast<const char*>(src_addr) + src_row_bytes;
+    dst_addr = static_cast<char*>(dst_addr) + dst_row_bytes;
+  }
+}
+
 static bool CompatibleInfo(const SkImageInfo& src, const SkImageInfo& dst) {
   if (src == dst)
     return true;
@@ -151,7 +164,7 @@ bool ImageFrameGenerator::DecodeAndScale(SegmentReader* data,
   ASSERT(bitmap.height() == scaled_size.height());
   SkAutoLockPixels bitmap_lock(bitmap);
   if (bitmap.getPixels() != pixels)
-    return bitmap.copyPixelsTo(pixels, row_bytes * info.height(), row_bytes);
+    CopyPixels(pixels, row_bytes, bitmap.getPixels(), bitmap.rowBytes(), info);
   return true;
 }
 
