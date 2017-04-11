@@ -56,9 +56,9 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
             "fill out web forms in a single click.' in Chromium's settings "
             "under 'Passwords and forms'. The feature is enabled by default."
           chrome_policy {
-            AutofillEnabled {
+            AutoFillEnabled {
                 policy_options {mode: MANDATORY}
-                AutofillEnabled: false
+                AutoFillEnabled: false
             }
           }
         })");
@@ -90,9 +90,9 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           "fill out web forms in a single click.' in Chromium's settings "
           "under 'Passwords and forms'. The feature is enabled by default."
         chrome_policy {
-          AutofillEnabled {
+          AutoFillEnabled {
               policy_options {mode: MANDATORY}
-              AutofillEnabled: false
+              AutoFillEnabled: false
           }
         }
       })");
