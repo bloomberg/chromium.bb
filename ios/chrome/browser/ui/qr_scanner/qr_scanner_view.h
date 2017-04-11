@@ -24,7 +24,7 @@
 @interface QRScannerView : UIView
 
 // The delegate which receives button events.
-@property(nonatomic, assign) id<QRScannerViewDelegate> delegate;
+@property(nonatomic, weak) id<QRScannerViewDelegate> delegate;
 
 - (instancetype)initWithFrame:(CGRect)frame
                      delegate:(id<QRScannerViewDelegate>)delegate

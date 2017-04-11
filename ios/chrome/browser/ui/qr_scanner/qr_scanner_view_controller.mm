@@ -7,7 +7,6 @@
 #import <AVFoundation/AVFoundation.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_alerts.h"
@@ -15,6 +14,10 @@
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 
@@ -34,16 +37,16 @@ enum DismissalReason {
 
 @interface QRScannerViewController ()<QRScannerViewDelegate> {
   // The CameraController managing the camera connection.
-  base::scoped_nsobject<CameraController> _cameraController;
+  CameraController* _cameraController;
   // The view displaying the QR scanner.
-  base::scoped_nsobject<QRScannerView> _qrScannerView;
+  QRScannerView* _qrScannerView;
   // The scanned result.
-  base::scoped_nsobject<NSString> _result;
+  NSString* _result;
   // Whether the scanned result should be immediately loaded.
   BOOL _loadResultImmediately;
   // The transitioning delegate used for presenting and dismissing the QR
   // scanner.
-  base::scoped_nsobject<QRScannerTransitioningDelegate> _transitioningDelegate;
+  QRScannerTransitioningDelegate* _transitioningDelegate;
 }
 
 // Dismisses the QRScannerViewController and runs |completion| on completion.
@@ -78,7 +81,7 @@ enum DismissalReason {
   if (self) {
     DCHECK(delegate);
     _delegate = delegate;
-    _cameraController.reset([[CameraController alloc] initWithDelegate:self]);
+    _cameraController = [[CameraController alloc] initWithDelegate:self];
   }
   return self;
 }
@@ -106,8 +109,8 @@ enum DismissalReason {
   [super viewDidLoad];
   DCHECK(_cameraController);
 
-  _qrScannerView.reset(
-      [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self]);
+  _qrScannerView =
+      [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self];
   [self.view addSubview:_qrScannerView];
 
   // Constraints for |_qrScannerView|.
@@ -205,8 +208,7 @@ enum DismissalReason {
   switch ([_cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
     case AVAuthorizationStatusAuthorized:
-      _transitioningDelegate.reset(
-          [[QRScannerTransitioningDelegate alloc] init]);
+      _transitioningDelegate = [[QRScannerTransitioningDelegate alloc] init];
       [self setTransitioningDelegate:_transitioningDelegate];
       return self;
     case AVAuthorizationStatusRestricted:
@@ -300,7 +302,7 @@ enum DismissalReason {
     case qr_scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION:
     case qr_scanner::MULTIPLE_FOREGROUND_APPS:
     case qr_scanner::CAMERA_PERMISSION_DENIED:
-    case qr_scanner::CAMERA_UNAVAILABLE:
+    case qr_scanner::CAMERA_UNAVAILABLE: {
       // Dismiss any presented alerts.
       if ([self presentedViewController]) {
         [self dismissViewControllerAnimated:YES completion:nil];
@@ -314,6 +316,7 @@ enum DismissalReason {
                          animated:YES
                        completion:nil];
       break;
+    }
     case qr_scanner::CAMERA_NOT_LOADED:
       NOTREACHED();
       break;
@@ -333,7 +336,7 @@ enum DismissalReason {
     // Post a notification announcing that a code was scanned. QR scanner will
     // be dismissed when the UIAccessibilityAnnouncementDidFinishNotification is
     // received.
-    _result.reset([result copy]);
+    _result = [result copy];
     _loadResultImmediately = load;
     UIAccessibilityPostNotification(
         UIAccessibilityAnnouncementNotification,

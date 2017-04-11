@@ -4,21 +4,23 @@
 
 #import "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CameraController ()<AVCaptureMetadataOutputObjectsDelegate> {
   // The capture session for recording video and detecting QR codes.
-  base::scoped_nsobject<AVCaptureSession> _captureSession;
+  AVCaptureSession* _captureSession;
   // The metadata output attached to the capture session.
-  base::scoped_nsobject<AVCaptureMetadataOutput> _metadataOutput;
+  AVCaptureMetadataOutput* _metadataOutput;
   // The delegate which receives the scanned result. All methods of this
   // delegate should be called on the main queue.
-  base::WeakNSProtocol<id<CameraControllerDelegate>> _delegate;
+  __weak id<CameraControllerDelegate> _delegate;
   // The queue for dispatching calls to |_captureSession|.
   dispatch_queue_t _sessionQueue;
 }
@@ -61,7 +63,7 @@
   if (self) {
     DCHECK(delegate);
     _cameraState = qr_scanner::CAMERA_NOT_LOADED;
-    _delegate.reset(delegate);
+    _delegate = delegate;
     std::string queueName =
         base::StringPrintf("%s.chrome.ios.QRScannerCaptureSessionQueue",
                            BUILDFLAG(IOS_APP_BUNDLE_ID_PREFIX));
@@ -76,8 +78,6 @@
 
 - (void)dealloc {
   [self stopReceivingNotifications];
-  dispatch_release(_sessionQueue);
-  [super dealloc];
 }
 
 #pragma mark public methods
@@ -199,7 +199,7 @@
       return;
     }
 
-    AVCaptureSession* session = [[[AVCaptureSession alloc] init] autorelease];
+    AVCaptureSession* session = [[AVCaptureSession alloc] init];
     if (![session canAddInput:videoInput]) {
       [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
       return;
@@ -208,7 +208,7 @@
 
     // Configure metadata output.
     AVCaptureMetadataOutput* metadataOutput =
-        [[[AVCaptureMetadataOutput alloc] init] autorelease];
+        [[AVCaptureMetadataOutput alloc] init];
     [metadataOutput setMetadataObjectsDelegate:self
                                          queue:dispatch_get_main_queue()];
     if (![session canAddOutput:metadataOutput]) {
@@ -224,9 +224,9 @@
       return;
     }
     [metadataOutput setMetadataObjectTypes:availableCodeTypes];
-    _metadataOutput.reset([metadataOutput retain]);
+    _metadataOutput = metadataOutput;
 
-    _captureSession.reset([session retain]);
+    _captureSession = session;
     [self setCameraState:qr_scanner::CAMERA_AVAILABLE];
     // Setup torchAvailable.
     [self

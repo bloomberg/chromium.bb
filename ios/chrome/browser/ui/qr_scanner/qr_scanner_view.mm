@@ -6,13 +6,16 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -108,12 +111,12 @@ CGFloat GetViewportSize() {
   // Creates a transparent preview overlay. The overlay is a sublayer of the
   // PreviewOverlayView's view to keep the opacity of the view's layer 1.0,
   // otherwise the viewport border would inherit the opacity of the overlay.
-  base::scoped_nsobject<CALayer> _previewOverlay;
+  CALayer* _previewOverlay;
   // A container for the viewport border to draw a shadow under the border.
   // Sublayer of PreviewOverlayView's layer.
-  base::scoped_nsobject<CALayer> _viewportBorderContainer;
+  CALayer* _viewportBorderContainer;
   // The preview viewport border. Sublayer of |_viewportBorderContainer|.
-  base::scoped_nsobject<CAShapeLayer> _viewportBorder;
+  CAShapeLayer* _viewportBorder;
 }
 
 // Creates a square mask for the overlay to keep the viewport transparent.
@@ -133,12 +136,12 @@ CGFloat GetViewportSize() {
     return nil;
   }
 
-  _previewOverlay.reset([[CALayer alloc] init]);
+  _previewOverlay = [[CALayer alloc] init];
   [_previewOverlay setBackgroundColor:[[UIColor blackColor] CGColor]];
   [_previewOverlay setOpacity:kPreviewOverlayOpacity];
   [[self layer] addSublayer:_previewOverlay];
 
-  _viewportBorderContainer.reset([[CALayer alloc] init]);
+  _viewportBorderContainer = [[CALayer alloc] init];
   [_viewportBorderContainer setShadowColor:[[UIColor blackColor] CGColor]];
   [_viewportBorderContainer setShadowOffset:CGSizeZero];
   [_viewportBorderContainer setShadowRadius:kViewportBorderShadowRadius];
@@ -147,7 +150,7 @@ CGFloat GetViewportSize() {
   [_viewportBorderContainer
       setRasterizationScale:[[UIScreen mainScreen] scale]];
 
-  _viewportBorder.reset([[CAShapeLayer alloc] init]);
+  _viewportBorder = [[CAShapeLayer alloc] init];
   [_viewportBorder setStrokeColor:[[UIColor whiteColor] CGColor]];
   [_viewportBorder setFillColor:nil];
   [_viewportBorder setOpacity:1.0];
@@ -186,7 +189,7 @@ CGFloat GetViewportSize() {
   UIBezierPath* maskPath = [UIBezierPath bezierPathWithRect:frameRect];
   [maskPath appendPath:[UIBezierPath bezierPathWithRect:viewportRect]];
 
-  CAShapeLayer* mask = [[[CAShapeLayer alloc] init] autorelease];
+  CAShapeLayer* mask = [[CAShapeLayer alloc] init];
   [mask setFillColor:[[UIColor blackColor] CGColor]];
   [mask setFillRule:kCAFillRuleEvenOdd];
   [mask setFrame:frameRect];
@@ -215,7 +218,7 @@ CGFloat GetViewportSize() {
   [path appendPath:[UIBezierPath bezierPathWithRect:CGRectMake(offsetX, offsetY,
                                                                sizeX, sizeY)]];
 
-  CAShapeLayer* mask = [[[CAShapeLayer alloc] init] autorelease];
+  CAShapeLayer* mask = [[CAShapeLayer alloc] init];
   [mask setFillColor:[[UIColor blackColor] CGColor]];
   [mask setFrame:CGRectMake(0, 0, frameSize.width, frameSize.height)];
   [mask setPath:path.CGPath];
@@ -226,19 +229,19 @@ CGFloat GetViewportSize() {
 
 @interface QRScannerView () {
   // A button to toggle the torch.
-  base::scoped_nsobject<MDCFlatButton> _torchButton;
+  MDCFlatButton* _torchButton;
   // A view containing the preview layer for camera input.
-  base::scoped_nsobject<VideoPreviewView> _previewView;
+  VideoPreviewView* _previewView;
   // A transparent overlay on top of the preview layer.
-  base::scoped_nsobject<PreviewOverlayView> _previewOverlay;
+  PreviewOverlayView* _previewOverlay;
   // The constraint specifying that the preview overlay should be square.
-  base::scoped_nsobject<NSLayoutConstraint> _overlaySquareConstraint;
+  NSLayoutConstraint* _overlaySquareConstraint;
   // The constraint relating the size of the |_previewOverlay| to the width of
   // the QRScannerView.
-  base::scoped_nsobject<NSLayoutConstraint> _overlayWidthConstraint;
+  NSLayoutConstraint* _overlayWidthConstraint;
   // The constraint relating the size of the |_previewOverlay| to the height of
   // te QRScannerView.
-  base::scoped_nsobject<NSLayoutConstraint> _overlayHeightConstraint;
+  NSLayoutConstraint* _overlayHeightConstraint;
 }
 
 // Creates an image with template rendering mode for use in icons.
@@ -372,7 +375,7 @@ CGFloat GetViewportSize() {
 }
 
 - (void)animateScanningResultWithCompletion:(void (^)(void))completion {
-  UIView* whiteView = [[[UIView alloc] init] autorelease];
+  UIView* whiteView = [[UIView alloc] init];
   whiteView.frame = self.bounds;
   [self addSubview:whiteView];
   whiteView.backgroundColor = [UIColor whiteColor];
@@ -420,8 +423,7 @@ CGFloat GetViewportSize() {
 }
 
 - (void)addCloseButton {
-  MDCFlatButton* closeButton =
-      [[[MDCFlatButton alloc] initWithFrame:CGRectZero] autorelease];
+  MDCFlatButton* closeButton = [[MDCFlatButton alloc] initWithFrame:CGRectZero];
   UIImage* closeIcon = [ChromeIcon closeIcon];
   UIImage* closeButtonIcon =
       [closeIcon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -443,7 +445,7 @@ CGFloat GetViewportSize() {
 
 - (void)addTorchButton {
   DCHECK(!_torchButton);
-  _torchButton.reset([[MDCFlatButton alloc] initWithFrame:CGRectZero]);
+  _torchButton = [[MDCFlatButton alloc] initWithFrame:CGRectZero];
   [_torchButton setEnabled:NO];
   [self configureButton:_torchButton
                withIcon:[self torchOffIcon]
@@ -467,7 +469,7 @@ CGFloat GetViewportSize() {
 }
 
 - (void)addViewportCaptionLabel {
-  UILabel* viewportCaption = [[[UILabel alloc] init] autorelease];
+  UILabel* viewportCaption = [[UILabel alloc] init];
   NSString* label = l10n_util::GetNSString(IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
   [viewportCaption setText:label];
   [viewportCaption setNumberOfLines:0];
@@ -501,37 +503,37 @@ CGFloat GetViewportSize() {
 
 - (void)setupPreviewView {
   DCHECK(!_previewView);
-  _previewView.reset([[VideoPreviewView alloc] initWithFrame:self.frame]);
+  _previewView = [[VideoPreviewView alloc] initWithFrame:self.frame];
   [self insertSubview:_previewView atIndex:0];
 }
 
 - (void)setupPreviewOverlayView {
   DCHECK(!_previewOverlay);
-  _previewOverlay.reset([[PreviewOverlayView alloc] initWithFrame:CGRectZero]);
+  _previewOverlay = [[PreviewOverlayView alloc] initWithFrame:CGRectZero];
   [self addSubview:_previewOverlay];
 
   // Add a multiplier of sqrt(2) to the width and height constraints to make
   // sure that the overlay covers the whole screen during rotation.
-  _overlayWidthConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:_previewOverlay
-                                    attribute:NSLayoutAttributeWidth
-                                    relatedBy:NSLayoutRelationGreaterThanOrEqual
-                                       toItem:self
-                                    attribute:NSLayoutAttributeWidth
-                                   multiplier:sqrt(2)
-                                     constant:0.0] retain]);
+  _overlayWidthConstraint =
+      [NSLayoutConstraint constraintWithItem:_previewOverlay
+                                   attribute:NSLayoutAttributeWidth
+                                   relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                      toItem:self
+                                   attribute:NSLayoutAttributeWidth
+                                  multiplier:sqrt(2)
+                                    constant:0.0];
 
-  _overlayHeightConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:_previewOverlay
-                                    attribute:NSLayoutAttributeHeight
-                                    relatedBy:NSLayoutRelationGreaterThanOrEqual
-                                       toItem:self
-                                    attribute:NSLayoutAttributeHeight
-                                   multiplier:sqrt(2)
-                                     constant:0.0] retain]);
+  _overlayHeightConstraint =
+      [NSLayoutConstraint constraintWithItem:_previewOverlay
+                                   attribute:NSLayoutAttributeHeight
+                                   relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                      toItem:self
+                                   attribute:NSLayoutAttributeHeight
+                                  multiplier:sqrt(2)
+                                    constant:0.0];
 
-  _overlaySquareConstraint.reset([[[_previewOverlay heightAnchor]
-      constraintEqualToAnchor:[_previewOverlay widthAnchor]] retain]);
+  _overlaySquareConstraint = [[_previewOverlay heightAnchor]
+      constraintEqualToAnchor:[_previewOverlay widthAnchor]];
 
   // Constrains the preview overlay to be square, centered, with both width and
   // height greater than or equal to the width and height of the QRScannerView.

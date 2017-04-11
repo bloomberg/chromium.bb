@@ -6,6 +6,10 @@
 
 #include "base/ios/block_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // The default animation duration.
@@ -58,7 +62,7 @@ enum QRScannerTransition { PRESENT, DISMISS };
   ProceduralBlock animations;
 
   switch (_transition) {
-    case PRESENT:
+    case PRESENT: {
       [containerView insertSubview:presentedView belowSubview:presentingView];
       initialFrame = finalFrame;
       finalFrame.origin.y = -finalFrame.size.height;
@@ -66,7 +70,8 @@ enum QRScannerTransition { PRESENT, DISMISS };
         [presentingView setFrame:finalFrame];
       };
       break;
-    case DISMISS:
+    }
+    case DISMISS: {
       [containerView insertSubview:presentedView aboveSubview:presentingView];
       initialFrame = finalFrame;
       initialFrame.origin.y = -initialFrame.size.height;
@@ -74,6 +79,7 @@ enum QRScannerTransition { PRESENT, DISMISS };
         [presentedView setFrame:finalFrame];
       };
       break;
+    }
   }
 
   // Set the frame for the presented view.
@@ -111,14 +117,12 @@ enum QRScannerTransition { PRESENT, DISMISS };
 animationControllerForPresentedController:(UIViewController*)presented
                      presentingController:(UIViewController*)presenting
                          sourceController:(UIViewController*)source {
-  return [[[QRScannerTransitionAnimator alloc] initWithTransition:PRESENT]
-      autorelease];
+  return [[QRScannerTransitionAnimator alloc] initWithTransition:PRESENT];
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)
 animationControllerForDismissedController:(UIViewController*)dismissed {
-  return [[[QRScannerTransitionAnimator alloc] initWithTransition:DISMISS]
-      autorelease];
+  return [[QRScannerTransitionAnimator alloc] initWithTransition:DISMISS];
 }
 
 @end

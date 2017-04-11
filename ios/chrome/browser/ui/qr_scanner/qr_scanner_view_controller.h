@@ -26,7 +26,7 @@
 
 // The delegate which receives the scanned result after the view controller is
 // dismissed.
-@property(nonatomic, assign) id<QRScannerViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<QRScannerViewControllerDelegate> delegate;
 
 - (instancetype)initWithDelegate:(id<QRScannerViewControllerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
