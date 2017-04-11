@@ -27,15 +27,13 @@ suite('<bookmarks-app>', function() {
   }
 
   setup(function() {
+    window.localStorage.clear();
     resetStore();
 
     app = document.createElement('bookmarks-app');
     replaceBody(app);
   });
 
-  teardown(function() {
-    window.localStorage.clear();
-  });
 
   test('write and load closed folder state', function() {
     var closedFoldersList = ['1'];
@@ -54,5 +52,21 @@ suite('<bookmarks-app>', function() {
 
     // Ensure closed folders are read from local storage.
     assertDeepEquals(closedFoldersList, normalizeSet(store.data.closedFolders));
+  });
+
+  test('write and load sidebar width', function() {
+    assertEquals(
+        app.$.sidebar.getComputedStyleValue('width'), app.sidebarWidth_);
+
+    var sidebarWidth = '500px';
+    app.$.sidebar.style.width = sidebarWidth;
+    cr.dispatchSimpleEvent(app.$.splitter, 'resize');
+    assertEquals(
+        sidebarWidth, window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY]);
+
+    app = document.createElement('bookmarks-app');
+    replaceBody(app);
+
+    assertEquals(sidebarWidth, app.$.sidebar.style.width);
   });
 });

@@ -82,18 +82,19 @@ Polymer({
     var splitterTarget = this.$.sidebar;
 
     // The splitter persists the size of the left component in the local store.
-    if ('treeWidth' in window.localStorage) {
-      splitterTarget.style.width = window.localStorage['treeWidth'];
-      this.sidebarWidth_ = splitterTarget.getComputedStyleValue('width');
+    if (LOCAL_STORAGE_TREE_WIDTH_KEY in window.localStorage) {
+      splitterTarget.style.width =
+          window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY];
     }
+    this.sidebarWidth_ = splitterTarget.getComputedStyleValue('width');
 
     splitter.addEventListener('resize', function(e) {
-      window.localStorage['treeWidth'] = splitterTarget.style.width;
-      // TODO(calamity): This only fires when the resize is complete. This
-      // should be updated on every width change.
+      window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY] =
+          splitterTarget.style.width;
       this.updateSidebarWidth_();
     }.bind(this));
 
+    splitter.addEventListener('dragmove', this.boundUpdateSidebarWidth_);
     window.addEventListener('resize', this.boundUpdateSidebarWidth_);
   },
 

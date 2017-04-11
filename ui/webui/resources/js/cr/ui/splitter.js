@@ -249,6 +249,7 @@ cr.define('cr.ui', function() {
       var targetElement = this.getResizeTarget_();
       var newWidth = this.startWidth_ + this.calcDeltaX_(deltaX);
       targetElement.style.width = newWidth + 'px';
+      cr.dispatchSimpleEvent(this, 'dragmove');
     },
 
     /**

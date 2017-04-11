@@ -16,7 +16,10 @@ var DropPosition = {
 };
 
 /** @const */
-var LOCAL_STORAGE_CLOSED_FOLDERS_KEY = 'bookmarkManagerClosedState';
+var LOCAL_STORAGE_CLOSED_FOLDERS_KEY = 'closedState';
+
+/** @const */
+var LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
 
 /** @const */
 var ROOT_NODE_ID = '0';
