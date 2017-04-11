@@ -549,9 +549,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
-// TODO(stevenjb): https://crbug.com/710241
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       DISABLED_PolicyApplicationRunning) {
+TEST_F(ManagedNetworkConfigurationHandlerTest, PolicyApplicationRunning) {
   InitializeStandardProfiles();
   EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _)).Times(AnyNumber());
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _))
@@ -582,9 +580,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   EXPECT_FALSE(managed_handler()->IsAnyPolicyApplicationRunning());
 }
 
-// TODO(stevenjb): https://crbug.com/710241
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       DISABLED_UpdatePolicyAfterFinished) {
+TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyAfterFinished) {
   InitializeStandardProfiles();
   EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _));
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
@@ -690,9 +686,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   base::RunLoop().RunUntilIdle();
 }
 
-// TODO(stevenjb): https://crbug.com/710241
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       DISABLED_SetPolicyUpdateManagedNewGUID) {
+TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_managed_wifi1.json",
              kUser1ProfilePath,
@@ -753,9 +747,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
   VerifyAndClearExpectations();
 }
 
-// TODO(stevenjb): https://crbug.com/710241
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       DISABLED_SetPolicyReapplyToManaged) {
+TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
              kUser1ProfilePath,
