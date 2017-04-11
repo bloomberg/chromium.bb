@@ -18,7 +18,8 @@
 @implementation SCTabGridTestCase
 
 // Tests launching TabGridViewController and tapping a cell.
-- (void)testLaunchAndTappingCell {
+// TODO(crbug.com/710662): re-enable this test.
+- (void)FLAKY_testLaunchAndTappingCell {
   showcase_utils::Open(@"TabGridViewController");
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Tab 0_button")]
       performAction:grey_tap()];

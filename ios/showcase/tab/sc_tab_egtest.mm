@@ -18,13 +18,15 @@
 @implementation SCTabTestCase
 
 // Tests launching TopToolbarTabViewController.
-- (void)testLaunchWithTopToolbar {
+// TODO(crbug.com/710662): re-enable this test.
+- (void)FLAKY_testLaunchWithTopToolbar {
   showcase_utils::Open(@"TopToolbarTabViewController");
   showcase_utils::Close();
 }
 
 // Tests launching BottomToolbarTabViewController.
-- (void)testLaunchWithBottomToolbar {
+// TODO(crbug.com/710662): re-enable this test.
+- (void)FLAKY_testLaunchWithBottomToolbar {
   showcase_utils::Open(@"BottomToolbarTabViewController");
   showcase_utils::Close();
 }
