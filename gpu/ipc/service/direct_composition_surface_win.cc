@@ -7,6 +7,7 @@
 #include <d3d11_1.h>
 #include <dcomptypes.h>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -18,6 +19,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
@@ -41,6 +43,11 @@
 
 namespace gpu {
 namespace {
+
+// Some drivers fail to correctly handle BT.709 video in overlays. This flag
+// converts them to BT.601 in the video processor.
+const base::Feature kFallbackBT709VideoToBT601{
+    "FallbackBT709VideoToBT601", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This class is used to make sure a specified surface isn't current, and upon
 // destruction it will make the surface current again if it had been before.
@@ -179,6 +186,7 @@ class DCLayerTree::SwapChainPresenter {
   gfx::Size swap_chain_size_;
   gfx::Size processor_input_size_;
   gfx::Size processor_output_size_;
+  bool is_yuy2_swapchain_ = false;
 
   // This is the scale from the swapchain size to the size of the contents
   // onscreen.
@@ -327,6 +335,47 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
         out_view_.Receive());
     CHECK(SUCCEEDED(hr));
   }
+
+  // TODO(jbauman): Use correct colorspace.
+  gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
+  base::win::ScopedComPtr<ID3D11VideoContext1> context1;
+  if (SUCCEEDED(video_context_.QueryInterface(context1.Receive()))) {
+    context1->VideoProcessorSetStreamColorSpace1(
+        video_processor_.get(), 0,
+        gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
+  } else {
+    // This can't handle as many different types of color spaces, so use it
+    // only if ID3D11VideoContext1 isn't available.
+    D3D11_VIDEO_PROCESSOR_COLOR_SPACE color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(src_color_space);
+    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.get(), 0,
+                                                      &color_space);
+  }
+
+  gfx::ColorSpace output_color_space =
+      is_yuy2_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
+  if (base::FeatureList::IsEnabled(kFallbackBT709VideoToBT601) &&
+      (output_color_space == gfx::ColorSpace::CreateREC709())) {
+    output_color_space = gfx::ColorSpace::CreateREC601();
+  }
+
+  base::win::ScopedComPtr<IDXGISwapChain3> swap_chain3;
+  if (SUCCEEDED(swap_chain_.QueryInterface(swap_chain3.Receive()))) {
+    DXGI_COLOR_SPACE_TYPE color_space =
+        gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space);
+    HRESULT hr = swap_chain3->SetColorSpace1(color_space);
+    CHECK(SUCCEEDED(hr));
+    if (context1) {
+      context1->VideoProcessorSetOutputColorSpace1(video_processor_.get(),
+                                                   color_space);
+    } else {
+      D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
+          gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
+      video_context_->VideoProcessorSetOutputColorSpace(video_processor_.get(),
+                                                        &d3d11_color_space);
+    }
+  }
+
   {
     D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
     in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
@@ -426,37 +475,28 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
                                   &handle);
   swap_chain_handle_.Set(handle);
 
+  is_yuy2_swapchain_ = true;
   // The composition surface handle isn't actually used, but
   // CreateSwapChainForComposition can't create YUY2 swapchains.
   HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
       d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
       swap_chain_.Receive());
 
-  bool yuy2_swapchain = true;
-
   if (FAILED(hr)) {
     // This should not be hit in production but is a simple fallback for
     // testing on systems without YUY2 swapchain support.
     DLOG(ERROR) << "YUY2 creation failed with " << std::hex << hr
                 << ". Falling back to BGRA";
+    is_yuy2_swapchain_ = false;
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.Receive());
     CHECK(SUCCEEDED(hr));
-    yuy2_swapchain = false;
-  } else {
-    // This is a sensible default colorspace for most videos.
-    // TODO(jbauman): Use correct colorspace.
-    base::win::ScopedComPtr<IDXGISwapChain3> swap_chain3;
-    swap_chain_.QueryInterface(swap_chain3.Receive());
-    hr = swap_chain3->SetColorSpace1(
-        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
-    CHECK(SUCCEEDED(hr));
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
-                        yuy2_swapchain);
+                        is_yuy2_swapchain_);
   out_view_.Reset();
 }
 
