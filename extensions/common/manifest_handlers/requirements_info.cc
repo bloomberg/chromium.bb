@@ -117,7 +117,7 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
       for (base::ListValue::const_iterator feature_iter = features->begin();
            feature_iter != features->end(); ++feature_iter) {
         std::string feature;
-        if ((*feature_iter)->GetAsString(&feature)) {
+        if (feature_iter->GetAsString(&feature)) {
           if (feature == "webgl") {
             requirements->webgl = true;
           } else if (feature == "css3d") {

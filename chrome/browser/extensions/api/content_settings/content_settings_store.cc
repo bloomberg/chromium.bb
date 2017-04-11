@@ -294,8 +294,8 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     const base::ListValue* list,
     ExtensionPrefsScope scope) {
   for (const auto& value : *list) {
-    base::DictionaryValue* dict;
-    if (!value->GetAsDictionary(&dict)) {
+    const base::DictionaryValue* dict = nullptr;
+    if (!value.GetAsDictionary(&dict)) {
       NOTREACHED();
       continue;
     }

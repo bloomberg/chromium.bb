@@ -126,10 +126,10 @@ void ShillIPConfigClientImpl::SetProperty(
       for (base::ListValue::const_iterator it = list_value->begin();
            it != list_value->end();
            ++it) {
-        DLOG_IF(ERROR, (*it)->GetType() != base::Value::Type::STRING)
-            << "Unexpected type " << (*it)->GetType();
+        DLOG_IF(ERROR, it->GetType() != base::Value::Type::STRING)
+            << "Unexpected type " << it->GetType();
         std::string str;
-        (*it)->GetAsString(&str);
+        it->GetAsString(&str);
         array_writer.AppendString(str);
       }
       variant_writer.CloseContainer(&array_writer);

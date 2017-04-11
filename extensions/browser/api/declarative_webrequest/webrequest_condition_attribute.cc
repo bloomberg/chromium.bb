@@ -235,7 +235,7 @@ WebRequestConditionAttributeContentType::Create(
   for (base::ListValue::const_iterator it = value_as_list->begin();
        it != value_as_list->end(); ++it) {
     std::string content_type;
-    if (!(*it)->GetAsString(&content_type)) {
+    if (!it->GetAsString(&content_type)) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
       return scoped_refptr<const WebRequestConditionAttribute>(NULL);
     }
@@ -384,7 +384,7 @@ std::unique_ptr<const HeaderMatcher> HeaderMatcher::Create(
   for (base::ListValue::const_iterator it = tests->begin();
        it != tests->end(); ++it) {
     const base::DictionaryValue* tests = NULL;
-    if (!(*it)->GetAsDictionary(&tests))
+    if (!it->GetAsDictionary(&tests))
       return std::unique_ptr<const HeaderMatcher>();
 
     std::unique_ptr<const HeaderMatchTest> header_test(
@@ -509,7 +509,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
         const base::ListValue* list = NULL;
         CHECK(content->GetAsList(&list));
         for (const auto& it : *list) {
-          tests->push_back(StringMatchTest::Create(*it, match_type, !is_name));
+          tests->push_back(StringMatchTest::Create(it, match_type, !is_name));
         }
         break;
       }
@@ -810,7 +810,7 @@ bool ParseListOfStages(const base::Value& value, int* out_stages) {
   std::string stage_name;
   for (base::ListValue::const_iterator it = list->begin();
        it != list->end(); ++it) {
-    if (!((*it)->GetAsString(&stage_name)))
+    if (!(it->GetAsString(&stage_name)))
       return false;
     if (stage_name == keys::kOnBeforeRequestEnum) {
       stages |= ON_BEFORE_REQUEST;

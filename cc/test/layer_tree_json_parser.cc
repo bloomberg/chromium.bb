@@ -152,7 +152,7 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
 
   success &= dict->GetList("Children", &list);
   for (const auto& value : *list) {
-    new_layer->AddChild(ParseTreeFromValue(*value, content_client));
+    new_layer->AddChild(ParseTreeFromValue(value, content_client));
   }
 
   if (!success)

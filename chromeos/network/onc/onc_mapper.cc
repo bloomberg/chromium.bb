@@ -120,10 +120,9 @@ std::unique_ptr<base::ListValue> Mapper::MapArray(
   int original_index = 0;
   for (const auto& entry : onc_array) {
     std::unique_ptr<base::Value> result_entry;
-    result_entry = MapEntry(original_index,
-                            *array_signature.onc_array_entry_signature,
-                            *entry,
-                            nested_error);
+    result_entry =
+        MapEntry(original_index, *array_signature.onc_array_entry_signature,
+                 entry, nested_error);
     if (result_entry.get() != NULL)
       result_array->Append(std::move(result_entry));
     else

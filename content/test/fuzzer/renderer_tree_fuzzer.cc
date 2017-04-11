@@ -157,7 +157,7 @@ class NodeList : public std::vector<std::unique_ptr<Node>> {
     }
 
     for (const auto& listItem : *list) {
-      std::unique_ptr<Node> node(Node::ParseJson(*listItem));
+      std::unique_ptr<Node> node(Node::ParseJson(listItem));
       if (node) {
         push_back(std::move(node));
       }

@@ -306,7 +306,7 @@ bool NSSDecryptor::ReadAndParseLogins(
   if (password_dict->GetList("disabledHosts", &blacklist_domains)) {
     for (const auto& value : *blacklist_domains) {
       std::string disabled_host;
-      if (!value->GetAsString(&disabled_host))
+      if (!value.GetAsString(&disabled_host))
         continue;
       forms->push_back(CreateBlacklistPasswordForm(disabled_host));
     }
@@ -315,7 +315,7 @@ bool NSSDecryptor::ReadAndParseLogins(
   if (password_dict->GetList("logins", &password_list)) {
     for (const auto& value : *password_list) {
       const base::DictionaryValue* password_detail;
-      if (!value->GetAsDictionary(&password_detail))
+      if (!value.GetAsDictionary(&password_detail))
         continue;
 
       FirefoxRawPasswordInfo raw_password_info;

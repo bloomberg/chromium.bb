@@ -132,7 +132,7 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
     for (base::ListValue::const_iterator it = list->begin(); it != list->end();
          ++it) {
       std::string locale;
-      if (!(*it)->GetAsString(&locale)) {
+      if (!it->GetAsString(&locale)) {
         NOTREACHED();
         new_recommended_locales.clear();
         break;

@@ -262,12 +262,12 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
                                                          kLocationsParam);
   for (const auto& item : *locations) {
-    if (!item->IsType(base::Value::Type::DICTIONARY)) {
+    if (!item.IsType(base::Value::Type::DICTIONARY)) {
       return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
                                                            kLocationsParam);
     }
-    base::DictionaryValue* dictionary =
-        static_cast<base::DictionaryValue*>(item.get());
+    const base::DictionaryValue* dictionary =
+        static_cast<const base::DictionaryValue*>(&item);
     std::string host;
     if (!dictionary->GetStringWithoutPathExpansion(kHostParam, &host)) {
       return DevToolsProtocol::CreateInvalidParamsResponse(command_id,

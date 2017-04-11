@@ -114,10 +114,9 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
 
     base::ListValue* list = nullptr;
     EXPECT_TRUE(result->GetAsList(&list));
-    // Consume the unique_ptr by reference so we don't take ownership.
-    for (const std::unique_ptr<base::Value>& value : (*list)) {
+    for (const base::Value& value : *list) {
       std::string mode;
-      EXPECT_TRUE(value->GetAsString(&mode));
+      EXPECT_TRUE(value.GetAsString(&mode));
       modes.push_back(quick_unlock_private::ParseQuickUnlockMode(mode));
     }
 
@@ -134,9 +133,9 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
 
     base::ListValue* list = nullptr;
     EXPECT_TRUE(result->GetAsList(&list));
-    for (const std::unique_ptr<base::Value>& value : *list) {
+    for (const base::Value& value : *list) {
       std::string mode;
-      EXPECT_TRUE(value->GetAsString(&mode));
+      EXPECT_TRUE(value.GetAsString(&mode));
       modes.push_back(quick_unlock_private::ParseQuickUnlockMode(mode));
     }
 

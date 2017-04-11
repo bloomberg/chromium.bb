@@ -42,9 +42,9 @@ bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   auto info = base::MakeUnique<ActionHandlersInfo>();
-  for (const std::unique_ptr<base::Value>& wrapped_value : *entries) {
+  for (const base::Value& wrapped_value : *entries) {
     std::string value;
-    if (!wrapped_value->GetAsString(&value)) {
+    if (!wrapped_value.GetAsString(&value)) {
       *error = base::ASCIIToUTF16(errors::kInvalidActionHandlersType);
       return false;
     }

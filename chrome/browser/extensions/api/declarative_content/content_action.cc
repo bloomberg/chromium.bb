@@ -170,7 +170,7 @@ static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
        it != append_strings.end();
        ++it) {
     std::string value;
-    if ((*it)->GetAsString(&value)) {
+    if (it->GetAsString(&value)) {
       append_to->push_back(value);
     } else {
       return false;

@@ -947,7 +947,8 @@ class _Generator(object):
       .Concat(self._GenerateStringToEnumConversion(item_type,
                                                    '(it)',
                                                    'tmp',
-                                                   failure_value))
+                                                   failure_value,
+                                                   is_ptr=False))
       .Append('%s%spush_back(tmp);' % (dst_var, accessor))
       .Eblock('}')
     )
@@ -957,7 +958,8 @@ class _Generator(object):
                                       type_,
                                       src_var,
                                       dst_var,
-                                      failure_value):
+                                      failure_value,
+                                      is_ptr=True):
     """Returns Code that converts a string type in |src_var| to an enum with
     type |type_| in |dst_var|. In the generated code, if |src_var| is not
     a valid enum name then the function will return |failure_value|.
@@ -969,11 +971,14 @@ class _Generator(object):
     cpp_type_namespace = ''
     if type_.namespace != self._namespace:
       cpp_type_namespace = '%s::' % type_.namespace.unix_name
+    accessor = '->' if is_ptr else '.'
     (c.Append('std::string %s;' % enum_as_string)
-      .Sblock('if (!%s->GetAsString(&%s)) {' % (src_var, enum_as_string))
+      .Sblock('if (!%s%sGetAsString(&%s)) {' % (src_var,
+                                                accessor,
+                                                enum_as_string))
       .Concat(self._GenerateError(
         '"\'%%(key)s\': expected string, got " + ' +
-        self._util_cc_helper.GetValueTypeString('%%(src_var)s', True)))
+        self._util_cc_helper.GetValueTypeString('%%(src_var)s', is_ptr)))
       .Append('return %s;' % failure_value)
       .Eblock('}')
       .Append('%s = %sParse%s(%s);' % (dst_var,

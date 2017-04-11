@@ -119,7 +119,7 @@ RemoteSuggestion::CreateFromChromeReaderDictionary(
   std::vector<SnippetSource> sources;
   for (const auto& value : *corpus_infos_list) {
     const base::DictionaryValue* dict_value = nullptr;
-    if (!value->GetAsDictionary(&dict_value)) {
+    if (!value.GetAsDictionary(&dict_value)) {
       DLOG(WARNING) << "Invalid source info for article " << primary_id;
       continue;
     }
@@ -228,7 +228,7 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
   std::vector<std::string> parsed_ids;
   for (const auto& value : *ids) {
     std::string id;
-    if (!value->GetAsString(&id)) {
+    if (!value.GetAsString(&id)) {
       return nullptr;
     }
     parsed_ids.push_back(id);

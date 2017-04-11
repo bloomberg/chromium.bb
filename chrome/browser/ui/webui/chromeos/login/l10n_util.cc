@@ -477,9 +477,9 @@ std::string FindMostRelevantLocale(
     for (base::ListValue::const_iterator available_it =
              available_locales.begin();
          available_it != available_locales.end(); ++available_it) {
-      base::DictionaryValue* dict;
+      const base::DictionaryValue* dict;
       std::string available_locale;
-      if (!(*available_it)->GetAsDictionary(&dict) ||
+      if (!available_it->GetAsDictionary(&dict) ||
           !dict->GetString("value", &available_locale)) {
         NOTREACHED();
         continue;

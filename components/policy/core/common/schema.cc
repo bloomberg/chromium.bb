@@ -619,7 +619,7 @@ bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
     int value;
     for (base::ListValue::const_iterator it = possible_values->begin();
          it != possible_values->end(); ++it) {
-      if (!(*it)->GetAsInteger(&value)) {
+      if (!it->GetAsInteger(&value)) {
         *error = "Invalid enumeration member type";
         return false;
       }
@@ -631,7 +631,7 @@ bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
     std::string value;
     for (base::ListValue::const_iterator it = possible_values->begin();
          it != possible_values->end(); ++it) {
-      if (!(*it)->GetAsString(&value)) {
+      if (!it->GetAsString(&value)) {
         *error = "Invalid enumeration member type";
         return false;
       }
@@ -826,10 +826,7 @@ bool Schema::Validate(const base::Value& value,
   } else if (value.GetAsList(&list)) {
     for (base::ListValue::const_iterator it = list->begin(); it != list->end();
          ++it) {
-      if (!*it ||
-          !GetItems().Validate(**it,
-                               StrategyForNextLevel(strategy),
-                               error_path,
+      if (!GetItems().Validate(*it, StrategyForNextLevel(strategy), error_path,
                                error)) {
         // Invalid list item was detected.
         AddListIndexPrefixToPath(it - list->begin(), error_path);

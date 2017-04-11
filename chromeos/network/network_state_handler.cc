@@ -602,7 +602,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   std::set<std::string> list_entries;
   for (auto& iter : entries) {
     std::string path;
-    iter->GetAsString(&path);
+    iter.GetAsString(&path);
     if (path.empty() || path == shill::kFlimflamServicePath) {
       NET_LOG_ERROR(base::StringPrintf("Bad path in list:%d", type), path);
       continue;

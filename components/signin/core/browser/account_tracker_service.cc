@@ -350,7 +350,7 @@ void AccountTrackerService::LoadFromPrefs() {
           contains_deprecated_service_flags = true;
           std::string flag_string;
           for (const auto& flag : *service_flags_list) {
-            if (flag->GetAsString(&flag_string) &&
+            if (flag.GetAsString(&flag_string) &&
                 flag_string == kChildAccountServiceFlag) {
               is_child_account = true;
               break;
@@ -407,6 +407,8 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   if (!dict) {
     dict = new base::DictionaryValue();
     update->Append(base::WrapUnique(dict));
+    // |dict| is invalidated at this point, so it needs to be reset.
+    update->GetDictionary(update->GetSize() - 1, &dict);
     dict->SetString(kAccountKeyPath, account_id_16);
   }
 

@@ -171,8 +171,8 @@ bool GetFirstErrorMessageFromList(const base::ListValue* list,
   for (base::ListValue::const_iterator it = list->begin();
        it != list->end();
        ++it) {
-    base::DictionaryValue* log_entry = NULL;
-    (*it)->GetAsDictionary(&log_entry);
+    const base::DictionaryValue* log_entry = NULL;
+    it->GetAsDictionary(&log_entry);
     if (log_entry != NULL) {
       std::string level;
       if (log_entry->GetString("level", &level))

@@ -68,7 +68,7 @@ bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string name;
-    if (!(*entry)->GetAsString(&name)) {
+    if (!entry->GetAsString(&name)) {
       errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(base::Value::Type::STRING));

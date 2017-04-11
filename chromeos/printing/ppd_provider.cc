@@ -431,11 +431,11 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     // This should just be a simple list of locale strings.
     std::vector<std::string> available_locales;
     bool found_en = false;
-    for (const std::unique_ptr<base::Value>& entry : *top_list) {
+    for (const base::Value& entry : *top_list) {
       std::string tmp;
       // Locales should have at *least* a two-character country code.  100 is an
       // arbitrary upper bound for length to protect against extreme bogosity.
-      if (!entry->GetAsString(&tmp) || tmp.size() < 2 || tmp.size() > 100) {
+      if (!entry.GetAsString(&tmp) || tmp.size() < 2 || tmp.size() > 100) {
         FailQueuedMetadataResolutions(PpdProvider::INTERNAL_ERROR);
         return;
       }
@@ -603,10 +603,10 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
         result = PpdProvider::NOT_FOUND;
         for (const auto& entry : *top_list) {
           int device_id;
-          base::ListValue* sub_list;
+          const base::ListValue* sub_list;
 
           // Each entry should be a size-2 list with an integer and a string.
-          if (!entry->GetAsList(&sub_list) || sub_list->GetSize() != 2 ||
+          if (!entry.GetAsList(&sub_list) || sub_list->GetSize() != 2 ||
               !sub_list->GetInteger(0, &device_id) ||
               !sub_list->GetString(1, &contents) || device_id < 0 ||
               device_id > 0xffff) {
@@ -791,9 +791,9 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       return PpdProvider::INTERNAL_ERROR;
     }
     for (const auto& entry : *top_list) {
-      base::ListValue* sub_list;
+      const base::ListValue* sub_list;
       contents->push_back({});
-      if (!entry->GetAsList(&sub_list) || sub_list->GetSize() != 2 ||
+      if (!entry.GetAsList(&sub_list) || sub_list->GetSize() != 2 ||
           !sub_list->GetString(0, &contents->back().first) ||
           !sub_list->GetString(1, &contents->back().second)) {
         contents->clear();

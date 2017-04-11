@@ -1790,7 +1790,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         for (base::ListValue::const_iterator it = switches->begin();
              it != switches->end(); ++it) {
           std::string switch_to_enable;
-          if ((*it)->GetAsString(&switch_to_enable))
+          if (it->GetAsString(&switch_to_enable))
             command_line->AppendSwitch(switch_to_enable);
         }
       }

@@ -55,17 +55,17 @@ void ConvertBinaryListElementsToBase64(base::ListValue* args) {
   size_t index = 0;
   for (base::ListValue::iterator iter = args->begin(); iter != args->end();
        ++iter, ++index) {
-    if ((*iter)->IsType(base::Value::Type::BINARY)) {
+    if (iter->IsType(base::Value::Type::BINARY)) {
       base::Value* binary = NULL;
       if (args->GetBinary(index, &binary))
         args->Set(index, ConvertBinaryToBase64(binary).release());
-    } else if ((*iter)->IsType(base::Value::Type::LIST)) {
+    } else if (iter->IsType(base::Value::Type::LIST)) {
       base::ListValue* list;
-      (*iter)->GetAsList(&list);
+      iter->GetAsList(&list);
       ConvertBinaryListElementsToBase64(list);
-    } else if ((*iter)->IsType(base::Value::Type::DICTIONARY)) {
+    } else if (iter->IsType(base::Value::Type::DICTIONARY)) {
       base::DictionaryValue* dict;
-      (*iter)->GetAsDictionary(&dict);
+      iter->GetAsDictionary(&dict);
       ConvertBinaryDictionaryValuesToBase64(dict);
     }
   }

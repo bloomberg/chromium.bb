@@ -129,9 +129,9 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
 
   for (const auto& element : *list) {
     const base::DictionaryValue* dict = nullptr;
-    if (!element->GetAsDictionary(&dict)) {
+    if (!element.GetAsDictionary(&dict)) {
       error_builder.Append("expected dictionary, got %s",
-                           base::Value::GetTypeName(element->GetType()));
+                           base::Value::GetTypeName(element.GetType()));
       return std::unique_ptr<DeclarativeManifestData>();
     }
     std::string event;

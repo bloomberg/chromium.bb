@@ -86,7 +86,7 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
     // Each item in the list is a two-element list such that the first element
     // is the font family and the second is the font name.
     const base::ListValue* font_description = NULL;
-    bool success = it->GetAsList(&font_description);
+    bool success = it.GetAsList(&font_description);
     DCHECK(success);
 
     std::string font_name;

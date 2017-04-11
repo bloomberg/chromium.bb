@@ -653,7 +653,7 @@ ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
   ModelTypeSet result;
   for (base::ListValue::const_iterator i = value.begin(); i != value.end();
        ++i) {
-    result.Put(ModelTypeFromValue(**i));
+    result.Put(ModelTypeFromValue(*i));
   }
   return result;
 }

@@ -35,7 +35,7 @@ void GetSecondary(const base::ListValue* list,
   for (base::ListValue::const_iterator it = list->begin(); it != list->end();
        ++it) {
     std::string str;
-    if (!(*it)->GetAsString(&str))
+    if (!it->GetAsString(&str))
       return;
 
     results.push_back(str);

@@ -146,7 +146,7 @@ bool GetExtensionIdSet(const base::DictionaryValue& dictionary,
        i != id_list->end();
        ++i) {
     std::string id;
-    if (!(*i)->GetAsString(&id)) {
+    if (!i->GetAsString(&id)) {
       return false;
     }
     ids->insert(id);

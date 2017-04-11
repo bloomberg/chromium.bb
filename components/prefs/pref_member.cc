@@ -139,7 +139,7 @@ bool PrefMemberVectorStringUpdate(const base::Value& value,
   for (base::ListValue::const_iterator it = list->begin();
        it != list->end(); ++it) {
     std::string string_value;
-    if (!(*it)->GetAsString(&string_value))
+    if (!it->GetAsString(&string_value))
       return false;
 
     local_vector.push_back(string_value);

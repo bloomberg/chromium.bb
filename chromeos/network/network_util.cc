@@ -137,7 +137,7 @@ bool ParseCellularScanResults(const base::ListValue& list,
   scan_results->reserve(list.GetSize());
   for (const auto& value : list) {
     const base::DictionaryValue* dict;
-    if (!value->GetAsDictionary(&dict))
+    if (!value.GetAsDictionary(&dict))
       return false;
     CellularScanResult scan_result;
     // If the network id property is not present then this network cannot be

@@ -2595,7 +2595,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::vector<std::string> federations;
   for (const auto& federation_value : *federations_value) {
     std::string federation;
-    if (!federation_value->GetAsString(&federation)) {
+    if (!federation_value.GetAsString(&federation)) {
       DLOG(WARNING) << "JS message parameter 'federations' contains wrong type";
       return NO;
     }

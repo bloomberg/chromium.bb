@@ -257,7 +257,7 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
   base::ListValue::iterator it = shortcut_list->begin();
   for (; it != shortcut_list->end(); ++it) {
     base::DictionaryValue* dictionary;
-    if (!(*it)->GetAsDictionary(&dictionary))
+    if (!it->GetAsDictionary(&dictionary))
       continue;
     int key_code = 0;
     dictionary->GetInteger("keyCode", &key_code);

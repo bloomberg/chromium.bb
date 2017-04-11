@@ -757,6 +757,9 @@ base::DictionaryValue* AddSuggestionDetailDictionaryToList(
         l10n_util::GetStringUTF16(body_message_id));
   }
   list->Append(base::WrapUnique(suggestion_list_item));
+  // |suggestion_list_item| is invalidated at this point, so it needs to be
+  // reset.
+  list->GetDictionary(list->GetSize() - 1, &suggestion_list_item);
   return suggestion_list_item;
 }
 

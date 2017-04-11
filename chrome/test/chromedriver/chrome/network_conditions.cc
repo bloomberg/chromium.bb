@@ -39,7 +39,7 @@ Status FindPresetNetwork(std::string network_name,
        it != networks->end();
        ++it) {
     base::DictionaryValue* network = NULL;
-    if (!(*it)->GetAsDictionary(&network)) {
+    if (!it->GetAsDictionary(&network)) {
       return Status(kUnknownError,
                     "malformed network in list: should be a dictionary");
     }

@@ -802,7 +802,7 @@ TEST(ExtensionAPITest, TypesHaveNamespace) {
     const base::DictionaryValue* ret = nullptr;
     for (const auto& val : *list) {
       const base::DictionaryValue* dict = nullptr;
-      if (!val->GetAsDictionary(&dict))
+      if (!val.GetAsDictionary(&dict))
         continue;
       std::string str;
       if (dict->GetString(key, &str) && str == value) {

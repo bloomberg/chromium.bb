@@ -96,7 +96,7 @@ void PolicyApplicator::GetProfilePropertiesCallback(
   for (base::ListValue::const_iterator it = entries->begin();
        it != entries->end(); ++it) {
     std::string entry;
-    (*it)->GetAsString(&entry);
+    it->GetAsString(&entry);
 
     pending_get_entry_calls_.insert(entry);
     DBusThreadManager::Get()->GetShillProfileClient()->GetEntry(

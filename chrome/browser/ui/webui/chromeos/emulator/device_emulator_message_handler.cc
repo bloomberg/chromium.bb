@@ -426,7 +426,7 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
       nullptr;
   for (const auto& val : *sources) {
     const base::DictionaryValue* dict;
-    CHECK(val->GetAsDictionary(&dict));
+    CHECK(val.GetAsDictionary(&dict));
     power_manager::PowerSupplyProperties_PowerSource* source =
         props.add_available_external_power_source();
     std::string id;

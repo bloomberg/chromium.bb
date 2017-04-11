@@ -269,13 +269,12 @@ std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
   if (startup_list) {
     base::ListValue::const_iterator it = startup_list->begin();
     int format_version = -1;
-    if (it != startup_list->end() &&
-        (*it)->GetAsInteger(&format_version) &&
+    if (it != startup_list->end() && it->GetAsInteger(&format_version) &&
         format_version == kPredictorStartupFormatVersion) {
       ++it;
       for (; it != startup_list->end(); ++it) {
         std::string url_spec;
-        if (!(*it)->GetAsString(&url_spec)) {
+        if (!it->GetAsString(&url_spec)) {
           LOG(DFATAL);
           break;  // Format incompatibility.
         }

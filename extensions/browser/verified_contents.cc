@@ -43,12 +43,12 @@ const char kWebstoreKId[] = "webstore";
 
 // Helper function to iterate over a list of dictionaries, returning the
 // dictionary that has |key| -> |value| in it, if any, or NULL.
-DictionaryValue* FindDictionaryWithValue(const ListValue* list,
-                                         const std::string& key,
-                                         const std::string& value) {
+const DictionaryValue* FindDictionaryWithValue(const ListValue* list,
+                                               const std::string& key,
+                                               const std::string& value) {
   for (const auto& i : *list) {
-    DictionaryValue* dictionary;
-    if (!i->GetAsDictionary(&dictionary))
+    const DictionaryValue* dictionary;
+    if (!i.GetAsDictionary(&dictionary))
       continue;
     std::string found_value;
     if (dictionary->GetString(key, &found_value) && found_value == value)
@@ -248,20 +248,20 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   //     }
   //   }
   // ]
-  DictionaryValue* dictionary =
+  const DictionaryValue* dictionary =
       FindDictionaryWithValue(top_list, kDescriptionKey, kTreeHashPerFile);
-  DictionaryValue* signed_content = NULL;
+  const DictionaryValue* signed_content = NULL;
   if (!dictionary ||
       !dictionary->GetDictionaryWithoutPathExpansion(kSignedContentKey,
                                                      &signed_content)) {
     return false;
   }
 
-  ListValue* signatures = NULL;
+  const ListValue* signatures = NULL;
   if (!signed_content->GetList(kSignaturesKey, &signatures))
     return false;
 
-  DictionaryValue* signature_dict =
+  const DictionaryValue* signature_dict =
       FindDictionaryWithValue(signatures, kHeaderKidKey, kWebstoreKId);
   if (!signature_dict)
     return false;

@@ -112,7 +112,7 @@ bool AddSuggestionsFromListValue(bool content_suggestions_api,
                                  const base::Time& fetch_time) {
   for (const auto& value : list) {
     const base::DictionaryValue* dict = nullptr;
-    if (!value->GetAsDictionary(&dict)) {
+    if (!value.GetAsDictionary(&dict)) {
       return false;
     }
 
@@ -458,7 +458,7 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
     std::string utf8_title;
     int remote_category_id = -1;
     const base::DictionaryValue* category_value = nullptr;
-    if (!(v->GetAsDictionary(&category_value) &&
+    if (!(v.GetAsDictionary(&category_value) &&
           category_value->GetString("localizedTitle", &utf8_title) &&
           category_value->GetInteger("id", &remote_category_id) &&
           (remote_category_id > 0))) {

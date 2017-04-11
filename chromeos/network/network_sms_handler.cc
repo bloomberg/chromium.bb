@@ -115,8 +115,8 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::ListCallback(
   delete_queue_.clear();
   for (base::ListValue::const_iterator iter = message_list.begin();
        iter != message_list.end(); ++iter) {
-    base::DictionaryValue* message = NULL;
-    if (!(*iter)->GetAsDictionary(&message))
+    const base::DictionaryValue* message = NULL;
+    if (iter->GetAsDictionary(&message))
       continue;
     MessageReceived(*message);
     double index = 0;
@@ -423,7 +423,7 @@ void NetworkSmsHandler::UpdateDevices(const base::ListValue* devices) {
   for (base::ListValue::const_iterator iter = devices->begin();
        iter != devices->end(); ++iter) {
     std::string device_path;
-    (*iter)->GetAsString(&device_path);
+    iter->GetAsString(&device_path);
     if (!device_path.empty()) {
       // Request device properties.
       VLOG(1) << "GetDeviceProperties: " << device_path;
