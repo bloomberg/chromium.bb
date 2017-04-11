@@ -1793,11 +1793,6 @@ void LayerTreeImpl::RemoveSurfaceLayer(LayerImpl* layer) {
   surface_layers_.erase(it);
 }
 
-template <typename LayerType>
-static inline bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || layer->mask_layer();
-}
-
 static bool PointHitsRect(
     const gfx::PointF& screen_space_point,
     const gfx::Transform& local_space_to_screen_space_transform,
