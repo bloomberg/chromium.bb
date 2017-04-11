@@ -474,22 +474,6 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
-  bool DragInputToDelayedNotifyWhenDone(int x,
-                                        int y,
-                                        const base::Closure& task,
-                                        base::TimeDelta delay) {
-    if (input_source() == INPUT_SOURCE_MOUSE)
-      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
-#if defined(OS_CHROMEOS)
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task,
-                                                         delay);
-    event_generator_->MoveTouch(gfx::Point(x, y));
-#else
-    NOTREACHED();
-#endif
-    return true;
-  }
-
   bool DragInput2ToNotifyWhenDone(int x,
                                  int y,
                                  const base::Closure& task) {
@@ -2361,7 +2345,7 @@ IN_PROC_BROWSER_TEST_F(
 // Drags from browser from a second display to primary and releases input.
 IN_PROC_BROWSER_TEST_F(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
-    DISABLED_CancelDragTabToWindowIn1stDisplay) {
+    CancelDragTabToWindowIn1stDisplay) {
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
 
@@ -2406,45 +2390,63 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 namespace {
-
-void PressSecondFingerWhileDetachedStep2(
+void PressSecondFingerWhileDetachedStep3(
     DetachToBrowserTabDragControllerTest* test) {
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, test->browser_list->size());
-  Browser* new_browser = test->browser_list->get(1);
-  ASSERT_TRUE(new_browser->window()->IsActive());
+  ASSERT_TRUE(test->browser_list->get(1)->window()->IsActive());
 
+  ASSERT_TRUE(test->ReleaseInput());
+  ASSERT_TRUE(test->ReleaseInput2());
+}
+
+void PressSecondFingerWhileDetachedStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    const gfx::Point& target_point) {
+  ASSERT_TRUE(TabDragController::IsActive());
+  ASSERT_EQ(2u, test->browser_list->size());
+  ASSERT_TRUE(test->browser_list->get(1)->window()->IsActive());
+
+  // Continue dragging after adding a second finger.
   ASSERT_TRUE(test->PressInput2());
+  ASSERT_TRUE(test->DragInputToNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::Bind(&PressSecondFingerWhileDetachedStep3, test)));
 }
 
 }  // namespace
 
 // Detaches a tab and while detached presses a second finger.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
-                       DISABLED_PressSecondFingerWhileDetached) {
+                       PressSecondFingerWhileDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
 
   // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(PressInput(tab_0_center));
-  ASSERT_TRUE(DragInputToDelayedNotifyWhenDone(
-                  tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
-                  base::Bind(&PressSecondFingerWhileDetachedStep2, this),
-                  base::TimeDelta::FromMilliseconds(60)));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&PressSecondFingerWhileDetachedStep2, this,
+                 gfx::Point(tab_0_center.x(),
+                            tab_0_center.y() + 2 * GetDetachY(tab_strip)))));
   QuitWhenNotDragging();
 
-  // The drag should have been reverted.
-  ASSERT_EQ(1u, browser_list->size());
+  // Should no longer be dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
-  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
 
-  ASSERT_TRUE(ReleaseInput());
-  ASSERT_TRUE(ReleaseInput2());
+  // There should now be another browser.
+  ASSERT_EQ(2u, browser_list->size());
+  Browser* new_browser = browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 #endif  // OS_CHROMEOS
