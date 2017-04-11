@@ -89,9 +89,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
+    private static final String VR_CORE_MARKET_URI =
+            "market://details?id=" + VrCoreVersionChecker.VR_CORE_PACKAGE_ID;
+
     private static VrShellDelegate sInstance;
 
-    private final ChromeActivity mActivity;
+    private ChromeActivity mActivity;
 
     @VrSupportLevel
     private int mVrSupportLevel;
@@ -232,16 +235,22 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     @CalledByNative
     private static VrShellDelegate getInstance() {
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (sInstance != null && activity instanceof ChromeTabbedActivity) return sInstance;
+        return getInstance(ApplicationStatus.getLastTrackedFocusedActivity());
+    }
+
+    private static VrShellDelegate getInstance(Activity activity) {
         if (!LibraryLoader.isInitialized()) return null;
-        // Note that we only support ChromeTabbedActivity for now.
-        if (activity == null || !(activity instanceof ChromeTabbedActivity)) return null;
+        if (activity == null || !isSupportedActivity(activity)) return null;
+        if (sInstance != null) return sInstance;
         VrClassesWrapper wrapper = getVrClassesWrapper();
         if (wrapper == null) return null;
         sInstance = new VrShellDelegate((ChromeActivity) activity, wrapper);
 
         return sInstance;
+    }
+
+    private static boolean isSupportedActivity(Activity activity) {
+        return activity instanceof ChromeTabbedActivity;
     }
 
     /**
@@ -318,19 +327,22 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                         mNativeVrShellDelegate, frameTimeNanos, 1.0d / display.getRefreshRate());
             }
         });
-        ApplicationStatus.registerStateListenerForActivity(this, activity);
+        ApplicationStatus.registerStateListenerForAllActivities(this);
     }
 
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         switch (newState) {
             case ActivityState.DESTROYED:
-                destroy();
+                if (activity == mActivity) destroy();
                 break;
             case ActivityState.PAUSED:
-                pauseVR();
+                if (activity == mActivity) pauseVR();
                 break;
             case ActivityState.RESUMED:
+                assert !mInVr;
+                if (!isSupportedActivity(activity)) return;
+                mActivity = (ChromeActivity) activity;
                 resumeVR();
                 break;
             default:
@@ -642,8 +654,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private void onExitVRResult(boolean success) {
         assert mVrSupportLevel != VR_NOT_AVAILABLE;
         // For now, we don't handle re-entering VR when exit fails, so keep trying to exit.
-        if (!success && sInstance.mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return;
-        sInstance.mVrClassesWrapper.setVrModeEnabled(sInstance.mActivity, false);
+        if (!success && mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return;
+        mVrClassesWrapper.setVrModeEnabled(mActivity, false);
     }
 
     @CalledByNative
@@ -733,19 +745,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             return;
         }
 
-        SimpleConfirmInfoBarBuilder.create(tab,
-                new SimpleConfirmInfoBarBuilder.Listener() {
-                    @Override
-                    public void onInfoBarDismissed() {}
+        SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
+            @Override
+            public void onInfoBarDismissed() {}
 
-                    @Override
-                    public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                        activity.startActivity(new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("market://details?id="
-                                        + VrCoreVersionChecker.VR_CORE_PACKAGE_ID)));
-                        return false;
-                    }
-                },
+            @Override
+            public boolean onInfoBarButtonClicked(boolean isPrimary) {
+                activity.startActivity(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(VR_CORE_MARKET_URI)));
+                return false;
+            }
+        };
+        SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
                 buttonText, null, true);
     }
@@ -845,6 +856,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     private void destroy() {
         if (sInstance == null) return;
+        shutdownVR(true, false);
         if (mNativeVrShellDelegate != 0) nativeDestroy(mNativeVrShellDelegate);
         mNativeVrShellDelegate = 0;
         ApplicationStatus.unregisterActivityStateListener(this);
