@@ -164,7 +164,9 @@ void TestCompositorFrameSink::ForceReclaimResources() {
   }
 }
 
-void TestCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void TestCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
   // In synchronous mode, we manually send acks and this method should not be
   // used.
   if (!display_->has_scheduler())

@@ -462,7 +462,10 @@ bool SynchronousCompositorFrameSink::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-void SynchronousCompositorFrameSink::DidReceiveCompositorFrameAck() {}
+void SynchronousCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
+}
 
 void SynchronousCompositorFrameSink::OnBeginFrame(
     const cc::BeginFrameArgs& args) {}

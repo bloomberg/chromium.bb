@@ -396,7 +396,9 @@ void LaserPointerView::EvictFrame() {
   frame_sink_support_.EvictFrame();
 }
 
-void LaserPointerView::DidReceiveCompositorFrameAck() {
+void LaserPointerView::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&LaserPointerView::OnDidDrawSurface,
                             weak_ptr_factory_.GetWeakPtr()));

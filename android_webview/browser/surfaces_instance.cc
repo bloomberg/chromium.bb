@@ -175,7 +175,10 @@ void SurfacesInstance::SetEmptyRootFrame() {
   support_->SubmitCompositorFrame(root_id_, std::move(empty_frame));
 }
 
-void SurfacesInstance::DidReceiveCompositorFrameAck() {}
+void SurfacesInstance::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
+}
 
 void SurfacesInstance::OnBeginFrame(const cc::BeginFrameArgs& args) {}
 

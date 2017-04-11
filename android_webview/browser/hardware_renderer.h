@@ -50,7 +50,8 @@ class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
 
  private:
   // cc::CompositorFrameSinkSupportClient implementation.
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck(
+      const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,

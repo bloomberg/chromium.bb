@@ -177,7 +177,11 @@ void HardwareRenderer::DestroySurface() {
   child_id_ = cc::LocalSurfaceId();
 }
 
-void HardwareRenderer::DidReceiveCompositorFrameAck() {}
+void HardwareRenderer::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReturnResourcesToCompositor(resources, compositor_id_,
+                              last_submitted_compositor_frame_sink_id_);
+}
 
 void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
   // TODO(tansell): Hook this up.

@@ -65,7 +65,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void DisplayDidDrawAndSwap() override {}
 
   // cc::CompositorFrameSinkSupportClient implementation.
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck(
+      const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;

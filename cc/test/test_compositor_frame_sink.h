@@ -82,7 +82,8 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void ForceReclaimResources() override;
 
   // CompositorFrameSinkSupportClient implementation.
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck(
+      const ReturnedResourceArray& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(const ReturnedResourceArray& resources) override;
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,

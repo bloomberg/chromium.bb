@@ -40,7 +40,9 @@ void CompositorFrameSinkHolder::SetResourceReleaseCallback(
 ////////////////////////////////////////////////////////////////////////////////
 // cc::mojom::MojoCompositorFrameSinkClient overrides:
 
-void CompositorFrameSinkHolder::DidReceiveCompositorFrameAck() {
+void CompositorFrameSinkHolder::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
   if (surface_)
     surface_->DidReceiveCompositorFrameAck();
 }

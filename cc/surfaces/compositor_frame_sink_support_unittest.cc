@@ -21,7 +21,7 @@ using testing::IsEmpty;
 using testing::SizeIs;
 using testing::Invoke;
 using testing::_;
-using testing::InSequence;
+using testing::Eq;
 
 namespace cc {
 namespace test {
@@ -41,6 +41,10 @@ class MockCompositorFrameSinkSupportClient
         .WillByDefault(Invoke(
             this,
             &MockCompositorFrameSinkSupportClient::ReclaimResourcesInternal));
+    ON_CALL(*this, DidReceiveCompositorFrameAck(_))
+        .WillByDefault(Invoke(
+            this,
+            &MockCompositorFrameSinkSupportClient::ReclaimResourcesInternal));
   }
 
   ReturnedResourceArray& last_returned_resources() {
@@ -48,7 +52,8 @@ class MockCompositorFrameSinkSupportClient
   }
 
   // CompositorFrameSinkSupportClient implementation.
-  MOCK_METHOD0(DidReceiveCompositorFrameAck, void());
+  MOCK_METHOD1(DidReceiveCompositorFrameAck,
+               void(const ReturnedResourceArray&));
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
   MOCK_METHOD1(ReclaimResources, void(const ReturnedResourceArray&));
   MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
@@ -1004,19 +1009,19 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   EXPECT_EQ(ack2, begin_frame_source()->LastAckForObserver(&display_support()));
 }
 
-// Checks whether the resources are returned before we send an ack.
-TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesBeforeAck) {
+// Checks that resources and ack are sent together if possible.
+TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesWithAck) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   TransferableResource resource;
   resource.id = 1234;
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
       MakeCompositorFrameWithResources(empty_surface_ids(), {resource}));
-  {
-    InSequence x;
-    EXPECT_CALL(support_client_, ReclaimResources(_));
-    EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck());
-  }
+  ReturnedResourceArray returned_resources;
+  TransferableResource::ReturnResources({resource}, &returned_resources);
+  EXPECT_CALL(support_client_, ReclaimResources(_)).Times(0);
+  EXPECT_CALL(support_client_,
+              DidReceiveCompositorFrameAck(Eq(returned_resources)));
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
                                          MakeCompositorFrame());
 }

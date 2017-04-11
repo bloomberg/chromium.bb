@@ -55,9 +55,10 @@ void GpuCompositorFrameSink::BeginFrameDidNotSwap(
   support_->BeginFrameDidNotSwap(begin_frame_ack);
 }
 
-void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void GpuCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
   if (client_)
-    client_->DidReceiveCompositorFrameAck();
+    client_->DidReceiveCompositorFrameAck(resources);
 }
 
 void GpuCompositorFrameSink::ClaimTemporaryReference(

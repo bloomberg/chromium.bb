@@ -67,10 +67,12 @@ void DisplayClientCompositorFrameSink::SubmitCompositorFrame(
   last_submitted_frame_size_ = frame_size;
 }
 
-void DisplayClientCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void DisplayClientCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
     return;
+  client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 

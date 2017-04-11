@@ -112,11 +112,13 @@ ClientCompositorFrameSink::ClientCompositorFrameSink(
           cc::switches::kEnableSurfaceSynchronization);
 }
 
-void ClientCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void ClientCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
     return;
+  client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 

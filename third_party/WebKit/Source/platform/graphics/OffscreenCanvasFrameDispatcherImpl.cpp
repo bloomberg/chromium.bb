@@ -402,7 +402,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   sink_->SubmitCompositorFrame(current_local_surface_id_, std::move(frame));
 }
 
-void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
+void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  ReclaimResources(resources);
   // TODO(fsamuel): Implement this.
 }
 

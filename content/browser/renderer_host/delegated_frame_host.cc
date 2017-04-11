@@ -492,9 +492,10 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
   EvictDelegatedFrame();
 }
 
-void DelegatedFrameHost::DidReceiveCompositorFrameAck() {
+void DelegatedFrameHost::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
   client_->DelegatedFrameHostSendReclaimCompositorResources(
-      true /* is_swap_ack */, cc::ReturnedResourceArray());
+      true /* is_swap_ack */, resources);
 }
 
 void DelegatedFrameHost::ReclaimResources(

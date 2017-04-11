@@ -347,11 +347,11 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     frame_connector_->BubbleScrollEvent(event);
 }
 
-void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck() {
+void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
   if (!host_)
     return;
-  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
-                                        cc::ReturnedResourceArray());
+  host_->SendReclaimCompositorResources(true /* is_swap_ack */, resources);
 }
 
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink() {

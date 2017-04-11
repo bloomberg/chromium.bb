@@ -53,8 +53,9 @@ void CompositorFrameSink::EvictFrame() {
 ////////////////////////////////////////////////////////////////////////////////
 // cc::CompositorFrameSinkSupportClient overrides:
 
-void CompositorFrameSink::DidReceiveCompositorFrameAck() {
-  client_->DidReceiveCompositorFrameAck();
+void CompositorFrameSink::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  client_->DidReceiveCompositorFrameAck(resources);
 }
 
 void CompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {

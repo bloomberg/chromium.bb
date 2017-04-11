@@ -212,17 +212,10 @@ void CompositorFrameSinkSupport::RemoveTopLevelRootReference(
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
   DCHECK_GT(ack_pending_count_, 0);
   ack_pending_count_--;
-
   if (!client_)
     return;
-
-  // We return the resources before sending an ack so they can be reused in
-  // making the next CompositorFrame.
-  if (!surface_returned_resources_.empty()) {
-    client_->ReclaimResources(surface_returned_resources_);
-    surface_returned_resources_.clear();
-  }
-  client_->DidReceiveCompositorFrameAck();
+  client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
+  surface_returned_resources_.clear();
 }
 
 void CompositorFrameSinkSupport::ForceReclaimResources() {

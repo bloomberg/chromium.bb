@@ -52,7 +52,7 @@ interface MojoCompositorFrameSinkClient {
   // TODO(fsamuel): This method ought not be necessary with unified BeginFrame.
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
-  DidReceiveCompositorFrameAck();
+  DidReceiveCompositorFrameAck(ReturnedResourceArray resources);
 
   // Notification for the client to generate a CompositorFrame.
   OnBeginFrame(BeginFrameArgs args);

@@ -48,7 +48,8 @@ class ClientCompositorFrameSink
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request);
 
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck(
+      const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 

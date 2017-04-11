@@ -160,7 +160,9 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
   registered_parent_compositor_ = nullptr;
 }
 
-void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck() {
+void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
+    const cc::ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 

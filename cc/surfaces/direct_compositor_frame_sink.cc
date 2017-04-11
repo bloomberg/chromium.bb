@@ -131,7 +131,9 @@ void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
   // be drawn.
 }
 
-void DirectCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void DirectCompositorFrameSink::DidReceiveCompositorFrameAck(
+    const ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 

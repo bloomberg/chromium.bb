@@ -40,7 +40,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void Reshape(int width, int height) final;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
-  void DidReceiveCompositorFrameAck() final;
+  void DidReceiveCompositorFrameAck(
+      const cc::ReturnedResourceArray& resources) final;
   void OnBeginFrame(const cc::BeginFrameArgs&) final;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) final;
 

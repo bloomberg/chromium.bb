@@ -26,7 +26,8 @@ class CompositorFrameSinkSupportClient {
   // TODO(fsamuel): This method ought not be necessary with unified BeginFrame.
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
-  virtual void DidReceiveCompositorFrameAck() = 0;
+  virtual void DidReceiveCompositorFrameAck(
+      const ReturnedResourceArray& resources) = 0;
 
   // Notification for the client to generate a CompositorFrame.
   virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
