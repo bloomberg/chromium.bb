@@ -624,6 +624,7 @@ back_selectRule ()
 		    case CTO_EndCompRule:
 		      return;
 		    case CTO_LetterRule:
+		    case CTO_NoContractRule:
 		      if (!(beforeAttributes &
 			    CTC_Letter) && (afterAttributes & CTC_Letter))
 			return;
@@ -1078,6 +1079,7 @@ backTranslateString ()
 	  continue;
 	  break;
 	case CTO_LetterRule:
+	case CTO_NoContractRule:
 	  itsALetter = 1;
 	  itsANumber = 0;
 	  src += currentDotslen;
