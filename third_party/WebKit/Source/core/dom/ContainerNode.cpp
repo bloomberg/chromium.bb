@@ -279,11 +279,6 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   if (!ref_child)
     return AppendChild(new_child, exception_state);
 
-  // Make sure adding the new child is OK.
-  if (!CheckAcceptChild(new_child, 0, exception_state))
-    return new_child;
-  DCHECK(new_child);
-
   // NotFoundError: Raised if refChild is not a child of this node
   if (ref_child->parentNode() != this) {
     exception_state.ThrowDOMException(
@@ -300,6 +295,11 @@ Node* ContainerNode::InsertBefore(Node* new_child,
     if (!ref_child)
       return AppendChild(new_child, exception_state);
   }
+
+  // Make sure adding the new child is OK.
+  if (!CheckAcceptChild(new_child, 0, exception_state))
+    return new_child;
+  DCHECK(new_child);
 
   NodeVector targets;
   if (!CollectChildrenAndRemoveFromOldParentWithCheck(
