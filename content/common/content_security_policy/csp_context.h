@@ -40,7 +40,8 @@ class CONTENT_EXPORT CSPContext {
 
   void SetSelf(const url::Origin origin);
   bool AllowSelf(const GURL& url);
-  bool ProtocolMatchesSelf(const GURL& url);
+  bool ProtocolIsSelf(const GURL& url);
+  const std::string& GetSelfScheme();
 
   virtual void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params);

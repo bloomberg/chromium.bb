@@ -45,7 +45,7 @@ bool CSPSourceList::Allow(const CSPSourceList& source_list,
   if (source_list.allow_star) {
     if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsSuborigin() ||
         url.SchemeIsWSOrWSS() || url.SchemeIs("ftp") ||
-        context->ProtocolMatchesSelf(url))
+        context->ProtocolIsSelf(url))
       return true;
 
     return AllowFromSources(url, source_list.sources, context, is_redirect);

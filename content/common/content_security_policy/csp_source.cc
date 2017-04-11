@@ -24,16 +24,46 @@ int DefaultPortForScheme(const std::string& scheme) {
   return url::DefaultPortForScheme(scheme.data(), scheme.size());
 }
 
-bool SourceAllowScheme(const CSPSource& source,
-                       const GURL& url,
-                       CSPContext* context) {
-  if (source.scheme.empty())
-    return context->ProtocolMatchesSelf(url);
-  if (source.scheme == url::kHttpScheme)
-    return url.SchemeIsHTTPOrHTTPS();
-  if (source.scheme == url::kWsScheme)
-    return url.SchemeIsWSOrWSS();
-  return url.SchemeIs(source.scheme);
+// NotMatching is the only negative member, the rest are different types of
+// matches. NotMatching should always be 0 to let if statements work nicely
+enum class PortMatchingResult {
+  NotMatching,
+  MatchingWildcard,
+  MatchingUpgrade,
+  MatchingExact
+};
+enum class SchemeMatchingResult { NotMatching, MatchingUpgrade, MatchingExact };
+
+SchemeMatchingResult SourceAllowScheme(const CSPSource& source,
+                                       const GURL& url,
+                                       CSPContext* context) {
+  const std::string& source_scheme =
+      source.scheme.empty() ? context->GetSelfScheme() : source.scheme;
+
+  if (source_scheme.empty()) {
+    if (context->ProtocolIsSelf(url))
+      return SchemeMatchingResult::MatchingExact;
+    return SchemeMatchingResult::NotMatching;
+  }
+
+  if (url.SchemeIs(source_scheme))
+    return SchemeMatchingResult::MatchingExact;
+
+  if ((source_scheme == url::kHttpScheme && url.SchemeIs(url::kHttpsScheme)) ||
+      (source_scheme == url::kHttpScheme &&
+       url.SchemeIs(url::kHttpsSuboriginScheme)) ||
+      (source_scheme == url::kWsScheme && url.SchemeIs(url::kWssScheme))) {
+    return SchemeMatchingResult::MatchingUpgrade;
+  }
+
+  if ((source_scheme == url::kHttpScheme &&
+       url.SchemeIs(url::kHttpSuboriginScheme)) ||
+      (source_scheme == url::kHttpsScheme &&
+       url.SchemeIs(url::kHttpsSuboriginScheme))) {
+    return SchemeMatchingResult::MatchingExact;
+  }
+
+  return SchemeMatchingResult::NotMatching;
 }
 
 bool SourceAllowHost(const CSPSource& source, const GURL& url) {
@@ -50,22 +80,33 @@ bool SourceAllowHost(const CSPSource& source, const GURL& url) {
     return url.host() == source.host;
 }
 
-bool SourceAllowPort(const CSPSource& source, const GURL& url) {
+PortMatchingResult SourceAllowPort(const CSPSource& source, const GURL& url) {
   int url_port = url.EffectiveIntPort();
 
   if (source.is_port_wildcard)
-    return true;
+    return PortMatchingResult::MatchingWildcard;
 
-  if (source.port == url::PORT_UNSPECIFIED)
-    return DefaultPortForScheme(url.scheme()) == url_port;
+  if (source.port == url_port) {
+    if (source.port == url::PORT_UNSPECIFIED)
+      return PortMatchingResult::MatchingWildcard;
+    return PortMatchingResult::MatchingExact;
+  }
 
-  if (source.port == url_port)
-    return true;
+  if (source.port == url::PORT_UNSPECIFIED) {
+    if (DefaultPortForScheme(url.scheme()) == url_port) {
+      return PortMatchingResult::MatchingWildcard;
+    }
+    return PortMatchingResult::NotMatching;
+  }
 
-  if (source.port == 80 && url_port == 443)
-    return true;
+  int source_port = source.port;
+  if (source_port == url::PORT_UNSPECIFIED)
+    source_port = DefaultPortForScheme(source.scheme);
 
-  return false;
+  if (source_port == 80 && url_port == 443)
+    return PortMatchingResult::MatchingUpgrade;
+
+  return PortMatchingResult::NotMatching;
 }
 
 bool SourceAllowPath(const CSPSource& source,
@@ -91,6 +132,20 @@ bool SourceAllowPath(const CSPSource& source,
 
   // The path represents a file.
   return source.path == url_path;
+}
+
+bool inline requiresUpgrade(const PortMatchingResult result) {
+  return result == PortMatchingResult::MatchingUpgrade;
+}
+bool inline requiresUpgrade(const SchemeMatchingResult result) {
+  return result == SchemeMatchingResult::MatchingUpgrade;
+}
+bool inline canUpgrade(const PortMatchingResult result) {
+  return result == PortMatchingResult::MatchingUpgrade ||
+         result == PortMatchingResult::MatchingWildcard;
+}
+bool inline canUpgrade(const SchemeMatchingResult result) {
+  return result == SchemeMatchingResult::MatchingUpgrade;
 }
 
 }  // namespace
@@ -129,10 +184,20 @@ bool CSPSource::Allow(const CSPSource& source,
                       CSPContext* context,
                       bool is_redirect) {
   if (source.IsSchemeOnly())
-    return SourceAllowScheme(source, url, context);
+    return SourceAllowScheme(source, url, context) !=
+           SchemeMatchingResult::NotMatching;
 
-  return SourceAllowScheme(source, url, context) &&
-         SourceAllowHost(source, url) && SourceAllowPort(source, url) &&
+  PortMatchingResult portResult = SourceAllowPort(source, url);
+  SchemeMatchingResult schemeResult = SourceAllowScheme(source, url, context);
+
+  if (requiresUpgrade(schemeResult) && !canUpgrade(portResult))
+    return false;
+  if (requiresUpgrade(portResult) && !canUpgrade(schemeResult))
+    return false;
+
+  return schemeResult != SchemeMatchingResult::NotMatching &&
+         SourceAllowHost(source, url) &&
+         portResult != PortMatchingResult::NotMatching &&
          SourceAllowPath(source, url, is_redirect);
 }
 

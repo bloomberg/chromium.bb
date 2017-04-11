@@ -46,8 +46,8 @@ TEST(CSPSourceTest, AllowScheme) {
     CSPSource source("http", "", false, url::PORT_UNSPECIFIED, false, "");
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
-    // TODO(mkwst, arthursonzogni): It is weird to upgrade the scheme without
-    // the port. See http://crbug.com/692499
+    // This passes because the source is "scheme only" so the upgrade is
+    // allowed.
     EXPECT_TRUE(Allow(source, GURL("https://a.com:80"), &context));
     EXPECT_FALSE(Allow(source, GURL("ftp://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ws://a.com"), &context));
@@ -103,9 +103,8 @@ TEST(CSPSourceTest, AllowScheme) {
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("http-so://a.com"), &context));
-    // TODO(mkwst, arthursonzogni): Maybe it should return true.
-    // See http://crbug.com/692442:
-    EXPECT_FALSE(Allow(source, GURL("https-so://a.com"), &context));
+    // TODO(jochen): Maybe it should return false?
+    EXPECT_TRUE(Allow(source, GURL("https-so://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ftp://a.com"), &context));
 
     // Self's scheme is not in the http familly.
@@ -203,9 +202,9 @@ TEST(CSPSourceTest, AllowPort) {
   {
     CSPSource source("", "a.com", false, 80, false, "");
     EXPECT_TRUE(Allow(source, GURL("https://a.com:443"), &context));
-    // TODO(mkwst, arthursonzogni): It is weird to upgrade the port without the
-    // sheme. See http://crbug.com/692499
-    EXPECT_TRUE(Allow(source, GURL("http://a.com:443"), &context));
+    // Should not allow scheme upgrades unless both port and scheme are
+    // upgraded.
+    EXPECT_FALSE(Allow(source, GURL("http://a.com:443"), &context));
   }
 
   // Host is * but port is specified
@@ -284,7 +283,7 @@ TEST(CSPSourceTest, RedirectMatching) {
   CSPSource source("http", "a.com", false, 8000, false, "/bar/");
   EXPECT_TRUE(Allow(source, GURL("http://a.com:8000/"), &context, true));
   EXPECT_TRUE(Allow(source, GURL("http://a.com:8000/foo"), &context, true));
-  EXPECT_TRUE(Allow(source, GURL("https://a.com:8000/foo"), &context, true));
+  EXPECT_FALSE(Allow(source, GURL("https://a.com:8000/foo"), &context, true));
   EXPECT_FALSE(
       Allow(source, GURL("http://not-a.com:8000/foo"), &context, true));
   EXPECT_FALSE(Allow(source, GURL("http://a.com:9000/foo/"), &context, false));
@@ -323,6 +322,16 @@ TEST(CSPSourceTest, ToString) {
     CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "/path");
     EXPECT_EQ("a.com/path", source.ToString());
   }
+}
+
+TEST(CSPSourceTest, UpgradeRequests) {
+  CSPContext context;
+  CSPSource source("http", "a.com", false, 80, false, "");
+  EXPECT_TRUE(Allow(source, GURL("http://a.com:80"), &context, true));
+  EXPECT_FALSE(Allow(source, GURL("https://a.com:80"), &context, true));
+  EXPECT_FALSE(Allow(source, GURL("http://a.com:443"), &context, true));
+  EXPECT_TRUE(Allow(source, GURL("https://a.com:443"), &context, true));
+  EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context, true));
 }
 
 }  // namespace content

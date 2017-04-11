@@ -52,12 +52,14 @@ bool CSPContext::AllowSelf(const GURL& url) {
   return has_self_ && CSPSource::Allow(self_source_, url, this);
 }
 
-bool CSPContext::ProtocolMatchesSelf(const GURL& url) {
+bool CSPContext::ProtocolIsSelf(const GURL& url) {
   if (!has_self_)
     return false;
-  if (self_scheme_ == url::kHttpScheme)
-    return url.SchemeIsHTTPOrHTTPS() || url.SchemeIsSuborigin();
   return url.SchemeIs(self_scheme_);
+}
+
+const std::string& CSPContext::GetSelfScheme() {
+  return self_scheme_;
 }
 
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
