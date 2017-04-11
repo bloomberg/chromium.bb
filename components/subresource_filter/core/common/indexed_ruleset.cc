@@ -124,10 +124,6 @@ class UrlRuleFlatBufferConverter {
     static_assert(
         proto::ELEMENT_TYPE_ALL <= std::numeric_limits<uint16_t>::max(),
         "Element types can not be stored in uint16_t.");
-    if ((rule_.element_types() & proto::ELEMENT_TYPE_ALL) !=
-        rule_.element_types()) {
-      return false;  // Unsupported element types.
-    }
     element_types_ = static_cast<uint16_t>(rule_.element_types());
 
     // Note: Normally we can not distinguish between the main plugin resource
@@ -135,6 +131,8 @@ class UrlRuleFlatBufferConverter {
     if (element_types_ & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
       element_types_ |= proto::ELEMENT_TYPE_OBJECT;
 
+    // Ignore unknown element types.
+    element_types_ &= proto::ELEMENT_TYPE_ALL;
     // Filtering popups is not supported.
     element_types_ &= ~proto::ELEMENT_TYPE_POPUP;
 
@@ -145,12 +143,10 @@ class UrlRuleFlatBufferConverter {
     static_assert(
         proto::ACTIVATION_TYPE_ALL <= std::numeric_limits<uint8_t>::max(),
         "Activation types can not be stored in uint8_t.");
-    if ((rule_.activation_types() & proto::ACTIVATION_TYPE_ALL) !=
-        rule_.activation_types()) {
-      return false;  // Unsupported activation types.
-    }
     activation_types_ = static_cast<uint8_t>(rule_.activation_types());
 
+    // Ignore unknown activation types.
+    activation_types_ &= proto::ACTIVATION_TYPE_ALL;
     // No need in CSS activation, because the CSS rules are not supported.
     activation_types_ &=
         ~(proto::ACTIVATION_TYPE_ELEMHIDE | proto::ACTIVATION_TYPE_GENERICHIDE);

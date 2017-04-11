@@ -28,6 +28,14 @@ constexpr proto::SourceType kAnyParty = proto::SOURCE_TYPE_ANY;
 constexpr proto::SourceType kFirstParty = proto::SOURCE_TYPE_FIRST_PARTY;
 constexpr proto::SourceType kThirdParty = proto::SOURCE_TYPE_THIRD_PARTY;
 
+constexpr proto::ElementType kAllElementTypes = proto::ELEMENT_TYPE_ALL;
+constexpr proto::ElementType kOther = proto::ELEMENT_TYPE_OTHER;
+constexpr proto::ElementType kImage = proto::ELEMENT_TYPE_IMAGE;
+constexpr proto::ElementType kFont = proto::ELEMENT_TYPE_FONT;
+constexpr proto::ElementType kScript = proto::ELEMENT_TYPE_SCRIPT;
+constexpr proto::ElementType kPopup = proto::ELEMENT_TYPE_POPUP;
+constexpr proto::ElementType kWebSocket = proto::ELEMENT_TYPE_WEBSOCKET;
+
 constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
 constexpr proto::ActivationType kGenericBlock =
     proto::ACTIVATION_TYPE_GENERICBLOCK;
@@ -50,7 +58,7 @@ class UrlRuleBuilder {
                                      : proto::RULE_SEMANTICS_BLACKLIST);
 
     rule_.set_source_type(source_type);
-    rule_.set_element_types(proto::ELEMENT_TYPE_ALL);
+    rule_.set_element_types(kAllElementTypes);
 
     rule_.set_url_pattern_type(url_pattern.type());
     rule_.set_anchor_left(url_pattern.anchor_left());
@@ -94,7 +102,7 @@ class SubresourceFilterIndexedRulesetTest : public testing::Test {
  protected:
   bool ShouldAllow(const char* url,
                    const char* document_origin = nullptr,
-                   proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER,
+                   proto::ElementType element_type = kOther,
                    bool disable_generic_rules = false) const {
     DCHECK_NE(matcher_.get(), nullptr);
     url::Origin origin = GetOrigin(document_origin);
@@ -106,8 +114,7 @@ class SubresourceFilterIndexedRulesetTest : public testing::Test {
   bool ShouldAllow(const char* url,
                    const char* document_origin,
                    bool disable_generic_rules) const {
-    return ShouldAllow(url, document_origin, proto::ELEMENT_TYPE_OTHER,
-                       disable_generic_rules);
+    return ShouldAllow(url, document_origin, kOther, disable_generic_rules);
   }
 
   bool ShouldDeactivate(const char* document_url,
@@ -464,13 +471,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithElementTypes) {
-  constexpr proto::ElementType kAll = proto::ELEMENT_TYPE_ALL;
-  constexpr proto::ElementType kImage = proto::ELEMENT_TYPE_IMAGE;
-  constexpr proto::ElementType kFont = proto::ELEMENT_TYPE_FONT;
-  constexpr proto::ElementType kScript = proto::ELEMENT_TYPE_SCRIPT;
-  constexpr proto::ElementType kPopup = proto::ELEMENT_TYPE_POPUP;
-  constexpr proto::ElementType kWebSocket = proto::ELEMENT_TYPE_WEBSOCKET;
-
+  constexpr auto kAll = kAllElementTypes;
   const struct {
     const char* url_pattern;
     int32_t element_types;
@@ -706,7 +707,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistAndActivationType) {
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedOptions) {
+TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedTypes) {
   const struct {
     int element_types;
     int activation_types;
@@ -715,7 +716,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedOptions) {
       {0, proto::ACTIVATION_TYPE_MAX << 1},
       {proto::ELEMENT_TYPE_MAX << 1, proto::ACTIVATION_TYPE_MAX << 1},
 
-      {proto::ELEMENT_TYPE_POPUP, 0},
+      {kPopup, 0},
       {0, proto::ACTIVATION_TYPE_ELEMHIDE},
       {0, proto::ACTIVATION_TYPE_GENERICHIDE},
       {0, proto::ACTIVATION_TYPE_ELEMHIDE | proto::ACTIVATION_TYPE_GENERICHIDE},
@@ -733,6 +734,35 @@ TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedOptions) {
   Finish();
   EXPECT_TRUE(ShouldAllow("http://example.com/"));
   EXPECT_FALSE(ShouldAllow("https://exmpl.com/"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest,
+       RuleWithSupportedAndUnsupportedTypes) {
+  const struct {
+    int element_types;
+    int activation_types;
+  } kRules[] = {
+      {kImage | (proto::ELEMENT_TYPE_MAX << 1), 0},
+      {kScript | kPopup, 0},
+      {0, kDocument | (proto::ACTIVATION_TYPE_MAX << 1)},
+  };
+
+  for (const auto& rule : kRules) {
+    UrlRuleBuilder builder(UrlPattern("example.com"));
+    builder.rule().set_element_types(rule.element_types);
+    builder.rule().set_activation_types(rule.activation_types);
+    if (rule.activation_types)
+      builder.rule().set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    EXPECT_TRUE(indexer_.AddUrlRule(builder.rule()));
+  }
+  Finish();
+
+  EXPECT_FALSE(ShouldAllow("http://example.com/", nullptr, kImage));
+  EXPECT_FALSE(ShouldAllow("http://example.com/", nullptr, kScript));
+  EXPECT_TRUE(ShouldAllow("http://example.com/"));
+
+  EXPECT_TRUE(ShouldDeactivate("http://example.com", nullptr, kDocument));
+  EXPECT_FALSE(ShouldDeactivate("http://example.com", nullptr, kGenericBlock));
 }
 
 }  // namespace subresource_filter
