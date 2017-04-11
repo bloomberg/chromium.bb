@@ -47,8 +47,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "vr_gl_util.h",
       "vr_input_manager.cc",
       "vr_input_manager.h",
-      "vr_math.cc",
-      "vr_math.h",
       "vr_omnibox.cc",
       "vr_omnibox.h",
       "vr_shell.cc",
@@ -128,9 +126,8 @@ if (enable_vr) {
 
     # Ensure libgvr static library appears before gcc library in linking order.
     # See https://crbug.com/704305 for details.
-    libs = [
-      "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
-    ]
+    libs =
+        [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
 
     data = [
       "test/data/sample_inline.gltf",

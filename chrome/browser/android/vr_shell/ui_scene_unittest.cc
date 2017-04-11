@@ -14,15 +14,16 @@
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
+#include "device/vr/vr_math.h"
+#include "device/vr/vr_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define TOLERANCE 0.0001
 
-#define EXPECT_VEC3F_NEAR(a, b)     \
-  EXPECT_NEAR(a.x, b.x, TOLERANCE); \
-  EXPECT_NEAR(a.y, b.y, TOLERANCE); \
-  EXPECT_NEAR(a.z, b.z, TOLERANCE);
+#define EXPECT_VEC3F_NEAR(a, b)         \
+  EXPECT_NEAR(a.x(), b.x(), TOLERANCE); \
+  EXPECT_NEAR(a.y(), b.y(), TOLERANCE); \
+  EXPECT_NEAR(a.z(), b.z(), TOLERANCE);
 
 namespace vr_shell {
 
@@ -132,14 +133,14 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   scene.AddUiElement(std::move(element));
   const ContentRectangle* child = scene.GetUiElementById(1);
 
-  const gvr::Vec3f origin({0, 0, 0});
-  const gvr::Vec3f point({1, 0, 0});
+  const gfx::Vector3dF origin(0, 0, 0);
+  const gfx::Vector3dF point(1, 0, 0);
 
   scene.UpdateTransforms(usToTicks(0));
-  auto new_origin = MatrixVectorMul(child->TransformMatrix(), origin);
-  auto new_point = MatrixVectorMul(child->TransformMatrix(), point);
-  EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 10, 0}), new_origin);
-  EXPECT_VEC3F_NEAR(gvr::Vec3f({0, 10, 0}), new_point);
+  auto new_origin = vr::MatrixVectorMul(child->TransformMatrix(), origin);
+  auto new_point = vr::MatrixVectorMul(child->TransformMatrix(), point);
+  EXPECT_VEC3F_NEAR(gfx::Vector3dF(6, 10, 0), new_origin);
+  EXPECT_VEC3F_NEAR(gfx::Vector3dF(0, 10, 0), new_point);
 }
 
 TEST(UiScene, Opacity) {
@@ -209,8 +210,8 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
 
   scene.UpdateTransforms(usToTicks(0));
   const ContentRectangle* child = scene.GetUiElementById(1);
-  EXPECT_NEAR(child->GetCenter().x, GetParam().expected_x, TOLERANCE);
-  EXPECT_NEAR(child->GetCenter().y, GetParam().expected_y, TOLERANCE);
+  EXPECT_NEAR(child->GetCenter().x(), GetParam().expected_x, TOLERANCE);
+  EXPECT_NEAR(child->GetCenter().y(), GetParam().expected_y, TOLERANCE);
   scene.RemoveUiElement(1);
 }
 
@@ -278,27 +279,27 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_EQ(element->y_anchoring, YAnchoring::YTOP);
   EXPECT_FLOAT_EQ(element->opacity, 0.357);
 
-  EXPECT_EQ(element->copy_rect.x, 100);
-  EXPECT_EQ(element->copy_rect.y, 101);
-  EXPECT_EQ(element->copy_rect.width, 102);
-  EXPECT_EQ(element->copy_rect.height, 103);
+  EXPECT_EQ(element->copy_rect.x(), 100);
+  EXPECT_EQ(element->copy_rect.y(), 101);
+  EXPECT_EQ(element->copy_rect.width(), 102);
+  EXPECT_EQ(element->copy_rect.height(), 103);
 
-  EXPECT_FLOAT_EQ(element->size.x, 200);
-  EXPECT_FLOAT_EQ(element->size.y, 201);
-  EXPECT_FLOAT_EQ(element->size.z, 1);
+  EXPECT_FLOAT_EQ(element->size.x(), 200);
+  EXPECT_FLOAT_EQ(element->size.y(), 201);
+  EXPECT_FLOAT_EQ(element->size.z(), 1);
 
-  EXPECT_FLOAT_EQ(element->scale.x, 300);
-  EXPECT_FLOAT_EQ(element->scale.y, 301);
-  EXPECT_FLOAT_EQ(element->scale.z, 302);
+  EXPECT_FLOAT_EQ(element->scale.x(), 300);
+  EXPECT_FLOAT_EQ(element->scale.y(), 301);
+  EXPECT_FLOAT_EQ(element->scale.z(), 302);
 
   EXPECT_FLOAT_EQ(element->rotation.x, 400);
   EXPECT_FLOAT_EQ(element->rotation.y, 401);
   EXPECT_FLOAT_EQ(element->rotation.z, 402);
   EXPECT_FLOAT_EQ(element->rotation.angle, 403);
 
-  EXPECT_FLOAT_EQ(element->translation.x, 500);
-  EXPECT_FLOAT_EQ(element->translation.y, 501);
-  EXPECT_FLOAT_EQ(element->translation.z, 502);
+  EXPECT_FLOAT_EQ(element->translation.x(), 500);
+  EXPECT_FLOAT_EQ(element->translation.y(), 501);
+  EXPECT_FLOAT_EQ(element->translation.z(), 502);
 
   dict.Clear();
   dict.SetInteger("id", 12);
@@ -340,10 +341,10 @@ TEST(UiScene, AddUiElementFromDictionary_Fill) {
   const auto* element = scene.GetUiElementById(9);
 
   EXPECT_EQ(element->fill, Fill::SPRITE);
-  EXPECT_EQ(element->copy_rect.x, 1);
-  EXPECT_EQ(element->copy_rect.y, 2);
-  EXPECT_EQ(element->copy_rect.width, 3);
-  EXPECT_EQ(element->copy_rect.height, 4);
+  EXPECT_EQ(element->copy_rect.x(), 1);
+  EXPECT_EQ(element->copy_rect.y(), 2);
+  EXPECT_EQ(element->copy_rect.width(), 3);
+  EXPECT_EQ(element->copy_rect.height(), 4);
 
   // Test OPAQUE_GRADIENT filling.
   dict.Clear();

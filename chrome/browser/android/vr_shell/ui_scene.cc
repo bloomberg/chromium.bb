@@ -13,6 +13,7 @@
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "device/vr/vr_math.h"
 
 namespace vr_shell {
 
@@ -46,7 +47,7 @@ bool ParseFloat(const base::DictionaryValue& dict,
 
 bool ParseColorf(const base::DictionaryValue& dict,
                  const std::string& key,
-                 Colorf* output) {
+                 vr::Colorf* output) {
   const base::DictionaryValue* item_dict;
   if (dict.GetDictionary(key, &item_dict)) {
     double value;
@@ -149,10 +150,10 @@ void ApplyAnchoring(const ContentRectangle& parent,
   float x_offset;
   switch (x_anchoring) {
     case XLEFT:
-      x_offset = -0.5f * parent.size.x;
+      x_offset = -0.5f * parent.size.x();
       break;
     case XRIGHT:
-      x_offset = 0.5f * parent.size.x;
+      x_offset = 0.5f * parent.size.x();
       break;
     case XNONE:
       x_offset = 0.0f;
@@ -161,16 +162,16 @@ void ApplyAnchoring(const ContentRectangle& parent,
   float y_offset;
   switch (y_anchoring) {
     case YTOP:
-      y_offset = 0.5f * parent.size.y;
+      y_offset = 0.5f * parent.size.y();
       break;
     case YBOTTOM:
-      y_offset = -0.5f * parent.size.y;
+      y_offset = -0.5f * parent.size.y();
       break;
     case YNONE:
       y_offset = 0.0f;
       break;
   }
-  transform->Translate(x_offset, y_offset, 0);
+  transform->Translate(gfx::Vector3dF(x_offset, y_offset, 0));
 }
 
 }  // namespace
@@ -373,7 +374,7 @@ bool UiScene::HasVisibleHeadLockedElements() const {
   return !GetHeadLockedElements().empty();
 }
 
-const Colorf& UiScene::GetBackgroundColor() const {
+const vr::Colorf& UiScene::GetBackgroundColor() const {
   return background_color_;
 }
 
@@ -406,7 +407,7 @@ void UiScene::ApplyRecursiveTransforms(ContentRectangle* element) {
 
   Transform* transform = element->mutable_transform();
   transform->MakeIdentity();
-  transform->Scale(element->size.x, element->size.y, element->size.z);
+  transform->Scale(element->size);
   element->computed_opacity = element->opacity;
   element->computed_lock_to_fov = element->lock_to_fov;
 
@@ -414,23 +415,22 @@ void UiScene::ApplyRecursiveTransforms(ContentRectangle* element) {
   // and it's children, if applicable.
   Transform* inheritable = &element->inheritable_transform;
   inheritable->MakeIdentity();
-  inheritable->Scale(element->scale.x, element->scale.y, element->scale.z);
-  inheritable->Rotate(element->rotation.x, element->rotation.y,
-                      element->rotation.z, element->rotation.angle);
-  inheritable->Translate(element->translation.x, element->translation.y,
-                         element->translation.z);
+  inheritable->Scale(element->scale);
+  inheritable->Rotate(element->rotation);
+  inheritable->Translate(element->translation);
   if (parent) {
     ApplyAnchoring(*parent, element->x_anchoring, element->y_anchoring,
                    inheritable);
     ApplyRecursiveTransforms(parent);
-    inheritable->to_world = MatrixMul(parent->inheritable_transform.to_world,
-                                      inheritable->to_world);
+    vr::MatrixMul(parent->inheritable_transform.to_world, inheritable->to_world,
+                  &inheritable->to_world);
 
     element->computed_opacity *= parent->opacity;
     element->computed_lock_to_fov = parent->lock_to_fov;
   }
 
-  transform->to_world = MatrixMul(inheritable->to_world, transform->to_world);
+  vr::MatrixMul(inheritable->to_world, transform->to_world,
+                &transform->to_world);
   element->dirty = false;
 }
 
@@ -452,19 +452,27 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   ParseFloat(dict, "opacity", &element->opacity);
 
   DCHECK(!(element->lock_to_fov && element->parent_id != -1));
-
-  ParseFloat(dict, "sizeX", &element->size.x);
-  ParseFloat(dict, "sizeY", &element->size.y);
-  ParseFloat(dict, "scaleX", &element->scale.x);
-  ParseFloat(dict, "scaleY", &element->scale.y);
-  ParseFloat(dict, "scaleZ", &element->scale.z);
+  float val;
+  ParseFloat(dict, "sizeX", &val);
+  element->size.set_x(val);
+  ParseFloat(dict, "sizeY", &val);
+  element->size.set_y(val);
+  ParseFloat(dict, "scaleX", &val);
+  element->scale.set_x(val);
+  ParseFloat(dict, "scaleY", &val);
+  element->scale.set_y(val);
+  ParseFloat(dict, "scaleZ", &val);
+  element->scale.set_z(val);
+  ParseFloat(dict, "translationX", &val);
+  element->translation.set_x(val);
+  ParseFloat(dict, "translationY", &val);
+  element->translation.set_y(val);
+  ParseFloat(dict, "translationZ", &val);
+  element->translation.set_z(val);
   ParseFloat(dict, "rotationX", &element->rotation.x);
   ParseFloat(dict, "rotationY", &element->rotation.y);
   ParseFloat(dict, "rotationZ", &element->rotation.z);
   ParseFloat(dict, "rotationAngle", &element->rotation.angle);
-  ParseFloat(dict, "translationX", &element->translation.x);
-  ParseFloat(dict, "translationY", &element->translation.y);
-  ParseFloat(dict, "translationZ", &element->translation.z);
 
   if (ParseInt(dict, "xAnchoring", &element->x_anchoring)) {
     CHECK_GE(element->parent_id, 0);
@@ -481,12 +489,17 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
       content_element_ = nullptr;
     }
 
+    int val;
     switch (element->fill) {
       case Fill::SPRITE:
-        CHECK(ParseInt(dict, "copyRectX", &element->copy_rect.x));
-        CHECK(ParseInt(dict, "copyRectY", &element->copy_rect.y));
-        CHECK(ParseInt(dict, "copyRectWidth", &element->copy_rect.width));
-        CHECK(ParseInt(dict, "copyRectHeight", &element->copy_rect.height));
+        CHECK(ParseInt(dict, "copyRectX", &val));
+        element->copy_rect.set_x(val);
+        CHECK(ParseInt(dict, "copyRectY", &val));
+        element->copy_rect.set_y(val);
+        CHECK(ParseInt(dict, "copyRectWidth", &val));
+        element->copy_rect.set_width(val);
+        CHECK(ParseInt(dict, "copyRectHeight", &val));
+        element->copy_rect.set_height(val);
         break;
       case Fill::OPAQUE_GRADIENT:
         CHECK(ParseColorf(dict, "edgeColor", &element->edge_color));

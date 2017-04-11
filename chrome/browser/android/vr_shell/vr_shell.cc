@@ -370,9 +370,9 @@ void VrShell::SubmitControllerModel(std::unique_ptr<VrControllerModel> model) {
 }
 
 void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
-                                       const gvr::Rectf& left_bounds,
-                                       const gvr::Rectf& right_bounds,
-                                       const gvr::Sizei& source_size) {
+                                       const gfx::RectF& left_bounds,
+                                       const gfx::RectF& right_bounds,
+                                       const gfx::Size& source_size) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
                                      gl_thread_->GetVrShellGl(), frame_index,
                                      left_bounds, right_bounds, source_size));

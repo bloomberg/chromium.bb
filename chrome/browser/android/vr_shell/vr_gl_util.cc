@@ -7,7 +7,7 @@
 namespace vr_shell {
 
 // This code is adapted from the GVR Treasure Hunt demo source.
-std::array<float, 16> MatrixToGLArray(const gvr::Mat4f& matrix) {
+std::array<float, 16> MatrixToGLArray(const vr::Mat4f& matrix) {
   // Note that this performs a *transpose* to a column-major matrix array, as
   // expected by GL. The input matrix has translation components at [i][3] for
   // use with row vectors and premultiplied transforms. In the output, the
@@ -15,29 +15,19 @@ std::array<float, 16> MatrixToGLArray(const gvr::Mat4f& matrix) {
   std::array<float, 16> result;
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
-      result[j * 4 + i] = matrix.m[i][j];
+      result[j * 4 + i] = matrix[i][j];
     }
   }
   return result;
 }
 
 // This code is adapted from the GVR Treasure Hunt demo source.
-gvr::Rectf ModulateRect(const gvr::Rectf& rect, float width, float height) {
-  gvr::Rectf result = {rect.left * width, rect.right * width,
-                       rect.bottom * height, rect.top * height};
-  return result;
-}
-
-// This code is adapted from the GVR Treasure Hunt demo source.
-gvr::Recti CalculatePixelSpaceRect(const gvr::Sizei& texture_size,
-                                   const gvr::Rectf& texture_rect) {
-  float width = static_cast<float>(texture_size.width);
-  float height = static_cast<float>(texture_size.height);
-  gvr::Rectf rect = ModulateRect(texture_rect, width, height);
-  gvr::Recti result = {
-      static_cast<int>(rect.left), static_cast<int>(rect.right),
-      static_cast<int>(rect.bottom), static_cast<int>(rect.top)};
-  return result;
+gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
+                                  const gfx::RectF& texture_rect) {
+  const gfx::RectF rect =
+      ScaleRect(texture_rect, static_cast<float>(texture_size.width()),
+                static_cast<float>(texture_size.height()));
+  return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 GLuint CompileShader(GLenum shader_type,

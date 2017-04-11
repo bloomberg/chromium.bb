@@ -155,9 +155,9 @@ void NonPresentingGvrDelegate::CreateVRDisplayInfo(
     return;
   }
 
-  gvr::Sizei webvr_size = GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
-  DVLOG(1) << __FUNCTION__ << ": resize recommended to " << webvr_size.width
-           << "x" << webvr_size.height;
+  gfx::Size webvr_size = GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
+  DVLOG(1) << __FUNCTION__ << ": resize recommended to " << webvr_size.width()
+           << "x" << webvr_size.height();
   callback.Run(
       GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(), webvr_size, device_id));
 }

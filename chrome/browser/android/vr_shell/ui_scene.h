@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
+#include "device/vr/vr_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -73,7 +73,7 @@ class UiScene {
   std::vector<const ContentRectangle*> GetHeadLockedElements() const;
   bool HasVisibleHeadLockedElements() const;
 
-  const Colorf& GetBackgroundColor() const;
+  const vr::Colorf& GetBackgroundColor() const;
   float GetBackgroundDistance() const;
   bool GetWebVrRenderingEnabled() const;
 
@@ -84,7 +84,7 @@ class UiScene {
 
   std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
   ContentRectangle* content_element_ = nullptr;
-  Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
+  vr::Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
   float background_distance_ = 10.0f;
   bool webvr_rendering_enabled_ = true;
 

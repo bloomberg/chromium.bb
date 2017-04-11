@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "device/vr/vr_types.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -52,9 +53,9 @@ class VrController {
 
   float TouchPosY();
 
-  gvr::Quatf Orientation() const;
+  vr::Quatf Orientation() const;
 
-  gvr::Mat4f GetTransform() const;
+  void GetTransform(vr::Mat4f* out) const;
 
   VrControllerModel::State GetModelState() const;
 
@@ -76,7 +77,7 @@ class VrController {
   };
 
   struct TouchPoint {
-    gvr::Vec2f position;
+    gfx::Vector2dF position;
     int64_t timestamp;
   };
 
@@ -111,7 +112,7 @@ class VrController {
 
   // Returns true if the touch position is within the slop of the initial touch
   // point, false otherwise.
-  bool InSlop(const gvr::Vec2f touch_position);
+  bool InSlop(const gfx::Vector2dF touch_position);
 
   // Returns true if the gesture is in horizontal direction.
   bool IsHorizontalGesture();
@@ -155,13 +156,13 @@ class VrController {
   std::unique_ptr<TouchPoint> init_touch_point_;
 
   // Overall velocity
-  gvr::Vec2f overall_velocity_;
+  gfx::Vector2dF overall_velocity_;
 
   // Last velocity that is used for fling and direction detection
-  gvr::Vec2f last_velocity_;
+  gfx::Vector2dF last_velocity_;
 
   // Displacement of the touch point from the previews to the current touch
-  gvr::Vec2f displacement_;
+  gfx::Vector2dF displacement_;
 
   int64_t last_touch_timestamp_ = 0;
   int64_t last_timestamp_nanos_ = 0;

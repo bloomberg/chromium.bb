@@ -11,8 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "device/vr/vr_types.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace vr_shell {
@@ -47,6 +46,13 @@ struct Vertex3d {
   float z;
 };
 
+struct RectF {
+  float x;
+  float y;
+  float width;
+  float height;
+};
+
 struct Line3d {
   Vertex3d start;
   Vertex3d end;
@@ -54,8 +60,8 @@ struct Line3d {
 
 struct TexturedQuad {
   int texture_data_handle;
-  gvr::Mat4f view_proj_matrix;
-  Rectf copy_rect;
+  vr::Mat4f view_proj_matrix;
+  RectF copy_rect;
   float opacity;
 };
 
@@ -82,7 +88,7 @@ class BaseQuadRenderer : public BaseRenderer {
 
  protected:
   void PrepareToDraw(GLuint view_proj_matrix_handle,
-                     const gvr::Mat4f& view_proj_matrix);
+                     const vr::Mat4f& view_proj_matrix);
 
   static GLuint vertex_buffer_;
 
@@ -96,8 +102,8 @@ class TexturedQuadRenderer : public BaseQuadRenderer {
 
   // Draw the content rect in the texture quad.
   void AddQuad(int texture_data_handle,
-               const gvr::Mat4f& view_proj_matrix,
-               const Rectf& copy_rect,
+               const vr::Mat4f& view_proj_matrix,
+               const gfx::RectF& copy_rect,
                float opacity);
 
   void Flush();
@@ -132,7 +138,7 @@ class ReticleRenderer : public BaseQuadRenderer {
   ReticleRenderer();
   ~ReticleRenderer() override;
 
-  void Draw(const gvr::Mat4f& view_proj_matrix);
+  void Draw(const vr::Mat4f& view_proj_matrix);
 
  private:
   GLuint model_view_proj_matrix_handle_;
@@ -152,7 +158,7 @@ class LaserRenderer : public BaseQuadRenderer {
   LaserRenderer();
   ~LaserRenderer() override;
 
-  void Draw(const gvr::Mat4f& view_proj_matrix);
+  void Draw(const vr::Mat4f& view_proj_matrix);
 
  private:
   GLuint model_view_proj_matrix_handle_;
@@ -171,7 +177,7 @@ class ControllerRenderer : public BaseRenderer {
   ~ControllerRenderer() override;
 
   void SetUp(std::unique_ptr<VrControllerModel> model);
-  void Draw(VrControllerModel::State state, const gvr::Mat4f& view_proj_matrix);
+  void Draw(VrControllerModel::State state, const vr::Mat4f& view_proj_matrix);
   bool IsSetUp() const { return setup_; }
 
  private:
@@ -202,9 +208,9 @@ class GradientQuadRenderer : public BaseQuadRenderer {
   GradientQuadRenderer();
   ~GradientQuadRenderer() override;
 
-  void Draw(const gvr::Mat4f& view_proj_matrix,
-            const Colorf& edge_color,
-            const Colorf& center_color,
+  void Draw(const vr::Mat4f& view_proj_matrix,
+            const vr::Colorf& edge_color,
+            const vr::Colorf& center_color,
             float opacity);
 
  private:
@@ -222,9 +228,9 @@ class GradientGridRenderer : public BaseRenderer {
   GradientGridRenderer();
   ~GradientGridRenderer() override;
 
-  void Draw(const gvr::Mat4f& view_proj_matrix,
-            const Colorf& edge_color,
-            const Colorf& center_color,
+  void Draw(const vr::Mat4f& view_proj_matrix,
+            const vr::Colorf& edge_color,
+            const vr::Colorf& center_color,
             int gridline_count,
             float opacity);
 

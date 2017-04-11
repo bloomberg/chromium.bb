@@ -267,7 +267,7 @@ GLuint BaseQuadRenderer::vertex_buffer_ = 0;
 BaseQuadRenderer::~BaseQuadRenderer() = default;
 
 void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
-                                     const gvr::Mat4f& view_proj_matrix) {
+                                     const vr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
@@ -311,13 +311,14 @@ TexturedQuadRenderer::TexturedQuadRenderer()
 }
 
 void TexturedQuadRenderer::AddQuad(int texture_data_handle,
-                                   const gvr::Mat4f& view_proj_matrix,
-                                   const Rectf& copy_rect,
+                                   const vr::Mat4f& view_proj_matrix,
+                                   const gfx::RectF& copy_rect,
                                    float opacity) {
   TexturedQuad quad;
   quad.texture_data_handle = texture_data_handle;
   quad.view_proj_matrix = view_proj_matrix;
-  quad.copy_rect = copy_rect;
+  quad.copy_rect = {copy_rect.x(), copy_rect.y(), copy_rect.width(),
+                    copy_rect.height()};
   quad.opacity = opacity;
   quad_queue_.push(quad);
 }
@@ -461,7 +462,7 @@ ReticleRenderer::ReticleRenderer()
       glGetUniformLocation(program_handle_, "mid_ring_opacity");
 }
 
-void ReticleRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
+void ReticleRenderer::Draw(const vr::Mat4f& view_proj_matrix) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   glUniform4f(color_handle_, kReticleColor[0], kReticleColor[1],
@@ -502,7 +503,7 @@ LaserRenderer::LaserRenderer()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void LaserRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
+void LaserRenderer::Draw(const vr::Mat4f& view_proj_matrix) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Link texture data with texture unit.
@@ -577,7 +578,7 @@ void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
 }
 
 void ControllerRenderer::Draw(VrControllerModel::State state,
-                              const gvr::Mat4f& view_proj_matrix) {
+                              const vr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
@@ -617,9 +618,9 @@ GradientQuadRenderer::GradientQuadRenderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
 
-void GradientQuadRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
-                                const Colorf& edge_color,
-                                const Colorf& center_color,
+void GradientQuadRenderer::Draw(const vr::Mat4f& view_proj_matrix,
+                                const vr::Colorf& edge_color,
+                                const vr::Colorf& center_color,
                                 float opacity) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
@@ -651,9 +652,9 @@ GradientGridRenderer::GradientGridRenderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
 
-void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
-                                const Colorf& edge_color,
-                                const Colorf& center_color,
+void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
+                                const vr::Colorf& edge_color,
+                                const vr::Colorf& center_color,
                                 int gridline_count,
                                 float opacity) {
   // In case the tile number changed we have to regenerate the grid lines.

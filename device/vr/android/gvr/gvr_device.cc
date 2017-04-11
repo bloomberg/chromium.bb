@@ -13,8 +13,7 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_device_manager.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "device/vr/vr_types.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -69,19 +68,11 @@ void GvrDevice::UpdateLayerBounds(int16_t frame_index,
   if (!delegate)
     return;
 
-  gvr::Rectf left_gvr_bounds;
-  left_gvr_bounds.left = left_bounds->left;
-  left_gvr_bounds.top = 1.0f - left_bounds->top;
-  left_gvr_bounds.right = left_bounds->left + left_bounds->width;
-  left_gvr_bounds.bottom = 1.0f - (left_bounds->top + left_bounds->height);
-
-  gvr::Rectf right_gvr_bounds;
-  right_gvr_bounds.left = right_bounds->left;
-  right_gvr_bounds.top = 1.0f - right_bounds->top;
-  right_gvr_bounds.right = right_bounds->left + right_bounds->width;
-  right_gvr_bounds.bottom = 1.0f - (right_bounds->top + right_bounds->height);
-
-  gvr::Sizei source_size = {source_width, source_height};
+  gfx::RectF left_gvr_bounds(left_bounds->left, left_bounds->top,
+                             left_bounds->width, left_bounds->height);
+  gfx::RectF right_gvr_bounds(right_bounds->left, right_bounds->top,
+                              right_bounds->width, right_bounds->height);
+  gfx::Size source_size(source_width, source_height);
   delegate->UpdateWebVRTextureBounds(frame_index, left_gvr_bounds,
                                      right_gvr_bounds, source_size);
 }

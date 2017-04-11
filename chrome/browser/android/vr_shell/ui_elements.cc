@@ -10,25 +10,23 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
+#include "device/vr/vr_math.h"
 
 namespace vr_shell {
 
 namespace {
 
-bool GetRayPlaneDistance(const gvr::Vec3f& ray_origin,
-                         const gvr::Vec3f& ray_vector,
-                         const gvr::Vec3f& plane_origin,
-                         const gvr::Vec3f& plane_normal,
+bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
+                         const gfx::Vector3dF& ray_vector,
+                         const gfx::Point3F& plane_origin,
+                         const gfx::Vector3dF& plane_normal,
                          float* distance) {
-  float denom = vr_shell::VectorDot(ray_vector, plane_normal);
+  float denom = gfx::DotProduct(ray_vector, plane_normal);
   if (denom == 0) {
     return false;
   }
-  gvr::Vec3f rel;
-  rel.x = ray_origin.x - plane_origin.x;
-  rel.y = ray_origin.y - plane_origin.y;
-  rel.z = ray_origin.z - plane_origin.z;
-  *distance = -vr_shell::VectorDot(plane_normal, rel) / denom;
+  gfx::Vector3dF rel = ray_origin - plane_origin;
+  *distance = -gfx::DotProduct(plane_normal, rel) / denom;
   return true;
 }
 
@@ -39,59 +37,65 @@ Transform::Transform() {
 }
 
 void Transform::MakeIdentity() {
-  SetIdentityM(to_world);
+  vr::SetIdentityM(&to_world);
 }
 
-void Transform::Rotate(gvr::Quatf quat) {
+void Transform::Rotate(const vr::Quatf& quat) {
   // TODO(klausw): use specialized rotation code? Constructing the matrix
   // via axis-angle quaternion is inefficient.
-  gvr::Mat4f forward = QuatToMatrix(quat);
-  to_world = MatrixMul(forward, to_world);
+  vr::Mat4f forward;
+  vr::QuatToMatrix(quat, &forward);
+  vr::MatrixMul(forward, to_world, &to_world);
 }
 
-void Transform::Rotate(float ax, float ay, float az, float rad) {
-  Rotate(QuatFromAxisAngle({ax, ay, az}, rad));
+void Transform::Rotate(const vr::RotationAxisAngle& axis_angle) {
+  Rotate(vr::QuatFromAxisAngle(axis_angle));
 }
 
-void Transform::Translate(float tx, float ty, float tz) {
-  TranslateM(to_world, to_world, tx, ty, tz);
+void Transform::Translate(const gfx::Vector3dF& translation) {
+  vr::TranslateM(to_world, translation, &to_world);
 }
 
-void Transform::Scale(float sx, float sy, float sz) {
-  ScaleM(to_world, to_world, sx, sy, sz);
+void Transform::Scale(const gfx::Vector3dF& scale) {
+  vr::ScaleM(to_world, scale, &to_world);
 }
 
-const gvr::Mat4f& WorldRectangle::TransformMatrix() const {
+const vr::Mat4f& WorldRectangle::TransformMatrix() const {
   return transform_.to_world;
 }
 
-gvr::Vec3f WorldRectangle::GetCenter() const {
-  const gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
-  return MatrixVectorMul(transform_.to_world, kOrigin);
+gfx::Point3F WorldRectangle::GetCenter() const {
+  const gfx::Point3F kOrigin(0.0f, 0.0f, 0.0f);
+  return kOrigin + vr::GetTranslation(transform_.to_world);
 }
 
-gvr::Vec2f WorldRectangle::GetUnitRectangleCoordinates(
-    const gvr::Vec3f& world_point) {
-  const gvr::Mat4f& transform = transform_.to_world;
-  gvr::Vec3f origin = MatrixVectorMul(transform, gvr::Vec3f({0, 0, 0}));
-  gvr::Vec3f xAxis = MatrixVectorMul(transform, gvr::Vec3f({1, 0, 0}));
-  gvr::Vec3f yAxis = MatrixVectorMul(transform, gvr::Vec3f({0, 1, 0}));
-  xAxis = VectorSubtract(xAxis, origin);
-  yAxis = VectorSubtract(yAxis, origin);
-  gvr::Vec3f point = VectorSubtract(world_point, origin);
+gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
+    const gfx::Point3F& world_point) {
+  // TODO(acondor): Simplify the math in this function.
+  const vr::Mat4f& transform = transform_.to_world;
+  gfx::Vector3dF origin =
+      vr::MatrixVectorMul(transform, gfx::Vector3dF(0, 0, 0));
+  gfx::Vector3dF x_axis =
+      vr::MatrixVectorMul(transform, gfx::Vector3dF(1, 0, 0));
+  gfx::Vector3dF y_axis =
+      vr::MatrixVectorMul(transform, gfx::Vector3dF(0, 1, 0));
+  x_axis.Subtract(origin);
+  y_axis.Subtract(origin);
+  gfx::Point3F point = world_point - origin;
+  gfx::Vector3dF v_point(point.x(), point.y(), point.z());
 
-  float x = VectorDot(point, xAxis) / VectorDot(xAxis, xAxis);
-  float y = VectorDot(point, yAxis) / VectorDot(yAxis, yAxis);
-  return {x, y};
+  float x = gfx::DotProduct(v_point, x_axis) / gfx::DotProduct(x_axis, x_axis);
+  float y = gfx::DotProduct(v_point, y_axis) / gfx::DotProduct(y_axis, y_axis);
+  return gfx::PointF(x, y);
 }
 
-gvr::Vec3f WorldRectangle::GetNormal() const {
-  const gvr::Vec3f kNormalOrig = {0.0f, 0.0f, -1.0f};
-  return MatrixVectorRotate(transform_.to_world, kNormalOrig);
+gfx::Vector3dF WorldRectangle::GetNormal() const {
+  const gfx::Vector3dF kNormalOrig = {0.0f, 0.0f, -1.0f};
+  return vr::MatrixVectorRotate(transform_.to_world, kNormalOrig);
 }
 
-bool WorldRectangle::GetRayDistance(const gvr::Vec3f& ray_origin,
-                                    const gvr::Vec3f& ray_vector,
+bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
+                                    const gfx::Vector3dF& ray_vector,
                                     float* distance) const {
   return GetRayPlaneDistance(ray_origin, ray_vector, GetCenter(), GetNormal(),
                              distance);
@@ -111,19 +115,19 @@ void ContentRectangle::Animate(const base::TimeTicks& time) {
     if (animation.from.size() == 0) {
       switch (animation.property) {
         case Animation::COPYRECT:
-          animation.from.push_back(copy_rect.x);
-          animation.from.push_back(copy_rect.y);
-          animation.from.push_back(copy_rect.width);
-          animation.from.push_back(copy_rect.height);
+          animation.from.push_back(copy_rect.x());
+          animation.from.push_back(copy_rect.y());
+          animation.from.push_back(copy_rect.width());
+          animation.from.push_back(copy_rect.height());
           break;
         case Animation::SIZE:
-          animation.from.push_back(size.x);
-          animation.from.push_back(size.y);
+          animation.from.push_back(size.x());
+          animation.from.push_back(size.y());
           break;
         case Animation::SCALE:
-          animation.from.push_back(scale.x);
-          animation.from.push_back(scale.y);
-          animation.from.push_back(scale.z);
+          animation.from.push_back(scale.x());
+          animation.from.push_back(scale.y());
+          animation.from.push_back(scale.z());
           break;
         case Animation::ROTATION:
           animation.from.push_back(rotation.x);
@@ -132,9 +136,9 @@ void ContentRectangle::Animate(const base::TimeTicks& time) {
           animation.from.push_back(rotation.angle);
           break;
         case Animation::TRANSLATION:
-          animation.from.push_back(translation.x);
-          animation.from.push_back(translation.y);
-          animation.from.push_back(translation.z);
+          animation.from.push_back(translation.x());
+          animation.from.push_back(translation.y());
+          animation.from.push_back(translation.z());
           break;
         case Animation::OPACITY:
           animation.from.push_back(opacity);
@@ -159,21 +163,16 @@ void ContentRectangle::Animate(const base::TimeTicks& time) {
     switch (animation.property) {
       case Animation::COPYRECT:
         CHECK_EQ(animation.from.size(), 4u);
-        copy_rect.x = values[0];
-        copy_rect.y = values[1];
-        copy_rect.width = values[2];
-        copy_rect.height = values[3];
+        copy_rect.SetRect(values[0], values[1], values[2], values[3]);
         break;
       case Animation::SIZE:
         CHECK_EQ(animation.from.size(), 2u);
-        size.x = values[0];
-        size.y = values[1];
+        size.set_x(values[0]);
+        size.set_y(values[1]);
         break;
       case Animation::SCALE:
         CHECK_EQ(animation.from.size(), 3u);
-        scale.x = values[0];
-        scale.y = values[1];
-        scale.z = values[2];
+        scale = {values[0], values[1], values[2]};
         break;
       case Animation::ROTATION:
         CHECK_EQ(animation.from.size(), 4u);
@@ -184,9 +183,7 @@ void ContentRectangle::Animate(const base::TimeTicks& time) {
         break;
       case Animation::TRANSLATION:
         CHECK_EQ(animation.from.size(), 3u);
-        translation.x = values[0];
-        translation.y = values[1];
-        translation.z = values[2];
+        translation = {values[0], values[1], values[2]};
         break;
       case Animation::OPACITY:
         CHECK_EQ(animation.from.size(), 1u);

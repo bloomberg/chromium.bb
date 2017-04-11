@@ -8,17 +8,15 @@
 #include <array>
 #include <string>
 
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "device/vr/vr_types.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace vr_shell {
 
-std::array<float, 16> MatrixToGLArray(const gvr::Mat4f& matrix);
+std::array<float, 16> MatrixToGLArray(const vr::Mat4f& matrix);
 
-gvr::Rectf ModulateRect(const gvr::Rectf& rect, float width, float height);
-
-gvr::Recti CalculatePixelSpaceRect(const gvr::Sizei& texture_size,
-                                   const gvr::Rectf& texture_rect);
+gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
+                                  const gfx::RectF& texture_rect);
 
 // Compile a shader.
 GLuint CompileShader(GLenum shader_type,

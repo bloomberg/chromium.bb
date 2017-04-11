@@ -5,7 +5,7 @@
 #ifndef DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
 #define DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
 
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "device/vr/vr_types.h"
 
 namespace device {
 
@@ -15,10 +15,10 @@ class GvrGamepadDataFetcher;
 // by vr_shell's VrController and consumed by GvrGamepadDataFetcher.
 struct GvrGamepadData {
   int64_t timestamp;
-  gvr_vec2f touch_pos;
-  gvr_quatf orientation;
-  gvr_vec3f accel;
-  gvr_vec3f gyro;
+  gfx::Vector2dF touch_pos;
+  vr::Quatf orientation;
+  gfx::Vector3dF accel;
+  gfx::Vector3dF gyro;
   bool is_touching;
   bool controller_button_pressed;
   bool right_handed;

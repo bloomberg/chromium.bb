@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "device/vr/vr_types.h"
 
 namespace base {
 class TimeTicks;
@@ -53,27 +52,27 @@ struct Transform {
   Transform();
 
   void MakeIdentity();
-  void Rotate(gvr::Quatf quat);
-  void Rotate(float ax, float ay, float az, float rad);
-  void Translate(float tx, float ty, float tz);
-  void Scale(float sx, float sy, float sz);
+  void Rotate(const vr::Quatf& quat);
+  void Rotate(const vr::RotationAxisAngle& axis_angle);
+  void Translate(const gfx::Vector3dF& translation);
+  void Scale(const gfx::Vector3dF& scale);
 
-  gvr::Mat4f to_world;
+  vr::Mat4f to_world;
 };
 
 class WorldRectangle {
  public:
-  const gvr::Mat4f& TransformMatrix() const;
+  const vr::Mat4f& TransformMatrix() const;
   Transform* mutable_transform() { return &transform_; }
 
-  gvr::Vec3f GetCenter() const;
-  gvr::Vec3f GetNormal() const;
+  gfx::Point3F GetCenter() const;
+  gfx::Vector3dF GetNormal() const;
 
   // Computes the distance from |ray_origin| to this rectangles's plane, along
   // |ray_vector|. Returns true and populates |distance| if the calculation is
   // possible, and false if the ray is parallel to the plane.
-  bool GetRayDistance(const gvr::Vec3f& ray_origin,
-                      const gvr::Vec3f& ray_vector,
+  bool GetRayDistance(const gfx::Point3F& ray_origin,
+                      const gfx::Vector3dF& ray_vector,
                       float* distance) const;
 
   // Projects a 3D world point onto the X and Y axes of the transformed
@@ -81,7 +80,7 @@ class WorldRectangle {
   // rectangle. This allows beam intersection points to be mapped to sprite
   // pixel coordinates. Points that fall onto the rectangle will generate X and
   // Y values on the interval [-0.5, 0.5].
-  gvr::Vec2f GetUnitRectangleCoordinates(const gvr::Vec3f& world_point);
+  gfx::PointF GetUnitRectangleCoordinates(const gfx::Point3F& world_point);
 
  private:
   Transform transform_;
@@ -120,20 +119,20 @@ struct ContentRectangle : public WorldRectangle {
   bool lock_to_fov = false;
 
   // Specifies the region (in pixels) of a texture to render.
-  Recti copy_rect = {0, 0, 0, 0};
+  gfx::Rect copy_rect = {0, 0, 0, 0};
 
   // The size of the object.  This does not affect children.
-  gvr::Vec3f size = {1.0f, 1.0f, 1.0f};
+  gfx::Vector3dF size = {1.0f, 1.0f, 1.0f};
 
   // The scale of the object, and its children.
-  gvr::Vec3f scale = {1.0f, 1.0f, 1.0f};
+  gfx::Vector3dF scale = {1.0f, 1.0f, 1.0f};
 
   // The rotation of the object, and its children.
-  RotationAxisAngle rotation = {1.0f, 0.0f, 0.0f, 0.0f};
+  vr::RotationAxisAngle rotation = {1.0f, 0.0f, 0.0f, 0.0f};
 
   // The translation of the object, and its children.  Translation is applied
   // after rotation and scaling.
-  gvr::Vec3f translation = {0.0f, 0.0f, 0.0f};
+  gfx::Vector3dF translation = {0.0f, 0.0f, 0.0f};
 
   // The opacity of the object (between 0.0 and 1.0).
   float opacity = 1.0f;
@@ -155,8 +154,8 @@ struct ContentRectangle : public WorldRectangle {
 
   Fill fill = Fill::NONE;
 
-  Colorf edge_color = {1.0f, 1.0f, 1.0f, 1.0f};
-  Colorf center_color = {1.0f, 1.0f, 1.0f, 1.0f};
+  vr::Colorf edge_color = {1.0f, 1.0f, 1.0f, 1.0f};
+  vr::Colorf center_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
   int gridline_count = 1;
 

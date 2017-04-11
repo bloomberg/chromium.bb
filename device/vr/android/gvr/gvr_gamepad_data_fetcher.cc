@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "device/vr/vr_types.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace device {
@@ -106,9 +106,9 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   pad.timestamp = provided_data.timestamp;
 
   if (provided_data.is_touching) {
-    gvr_vec2f touch_position = provided_data.touch_pos;
-    pad.axes[0] = (touch_position.x * 2.0f) - 1.0f;
-    pad.axes[1] = (touch_position.y * 2.0f) - 1.0f;
+    gfx::Vector2dF touch_position = provided_data.touch_pos;
+    pad.axes[0] = (touch_position.x() * 2.0f) - 1.0f;
+    pad.axes[1] = (touch_position.y() * 2.0f) - 1.0f;
   } else {
     pad.axes[0] = 0.0f;
     pad.axes[1] = 0.0f;
@@ -122,24 +122,24 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   pad.pose.has_orientation = true;
   pad.pose.has_position = false;
 
-  gvr_quatf orientation = provided_data.orientation;
+  vr::Quatf orientation = provided_data.orientation;
   pad.pose.orientation.not_null = true;
   pad.pose.orientation.x = orientation.qx;
   pad.pose.orientation.y = orientation.qy;
   pad.pose.orientation.z = orientation.qz;
   pad.pose.orientation.w = orientation.qw;
 
-  gvr_vec3f accel = provided_data.accel;
+  gfx::Vector3dF accel = provided_data.accel;
   pad.pose.linear_acceleration.not_null = true;
-  pad.pose.linear_acceleration.x = accel.x;
-  pad.pose.linear_acceleration.y = accel.y;
-  pad.pose.linear_acceleration.z = accel.z;
+  pad.pose.linear_acceleration.x = accel.x();
+  pad.pose.linear_acceleration.y = accel.y();
+  pad.pose.linear_acceleration.z = accel.z();
 
-  gvr_vec3f gyro = provided_data.gyro;
+  gfx::Vector3dF gyro = provided_data.gyro;
   pad.pose.angular_velocity.not_null = true;
-  pad.pose.angular_velocity.x = gyro.x;
-  pad.pose.angular_velocity.y = gyro.y;
-  pad.pose.angular_velocity.z = gyro.z;
+  pad.pose.angular_velocity.x = gyro.x();
+  pad.pose.angular_velocity.y = gyro.y();
+  pad.pose.angular_velocity.z = gyro.z();
 }
 
 void GvrGamepadDataFetcher::PauseHint(bool paused) {}

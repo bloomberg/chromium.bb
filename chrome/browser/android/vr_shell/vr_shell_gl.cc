@@ -19,12 +19,12 @@
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "device/vr/vr_math.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -48,11 +48,11 @@ static constexpr float kLaserWidth = 0.01f;
 // Angle (radians) the beam down from the controller axis, for wrist comfort.
 static constexpr float kErgoAngleOffset = 0.26f;
 
-static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
+static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
 
 // In lieu of an elbow model, we assume a position for the user's hand.
 // TODO(mthiesse): Handedness options.
-static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
+static constexpr gfx::Point3F kHandPosition = {0.2f, -0.5f, -0.2f};
 
 // Fraction of the distance to the object the cursor is drawn at to avoid
 // rounding errors drawing the cursor behind the object.
@@ -68,7 +68,7 @@ static constexpr int kFrameHeadlockedBuffer = 1;
 // Pixel dimensions and field of view for the head-locked content. This
 // is currently sized to fit the WebVR "insecure transport" warnings,
 // adjust it as needed if there is additional content.
-static constexpr gvr::Sizei kHeadlockedBufferDimensions = {1024, 1024};
+static constexpr gfx::Size kHeadlockedBufferDimensions = {1024, 1024};
 static constexpr gvr::Rectf kHeadlockedBufferFov = {20.f, 20.f, 20.f, 20.f};
 
 // The GVR viewport list has two entries (left eye and right eye) for each
@@ -87,10 +87,10 @@ static constexpr float kMinAppButtonGestureAngleRad = 0.25;
 // Generate a quaternion representing the rotation from the negative Z axis
 // (0, 0, -1) to a specified vector. This is an optimized version of a more
 // general vector-to-vector calculation.
-gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
-  vr_shell::NormalizeVector(vec);
-  gvr::Quatf quat;
-  quat.qw = 1.0f - vec.z;
+vr::Quatf GetRotationFromZAxis(gfx::Vector3dF vec) {
+  vr::NormalizeVector(&vec);
+  vr::Quatf quat;
+  quat.qw = 1.0f - vec.z();
   if (quat.qw < 1e-6f) {
     // Degenerate case: vectors are exactly opposite. Replace by an
     // arbitrary 180 degree rotation to avoid invalid normalization.
@@ -99,10 +99,10 @@ gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
     quat.qz = 0.0f;
     quat.qw = 0.0f;
   } else {
-    quat.qx = vec.y;
-    quat.qy = -vec.x;
+    quat.qx = vec.y();
+    quat.qy = -vec.x();
     quat.qz = 0.0f;
-    vr_shell::NormalizeQuat(quat);
+    vr::NormalizeQuat(&quat);
   }
   return quat;
 }
@@ -131,6 +131,22 @@ void RunVRDisplayInfoCallback(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     device::mojom::VRDisplayInfoPtr info) {
   callback.Run(std::move(info));
+}
+
+void MatfToGvrMat(const vr::Mat4f& in, gvr::Mat4f* out) {
+  // If our std::array implementation doesn't have any non-data members, we can
+  // just cast the gvr matrix to an std::array.
+  static_assert(sizeof(in) == sizeof(*out),
+                "Cannot reinterpret gvr::Mat4f as vr::Matf");
+  *out = *reinterpret_cast<gvr::Mat4f*>(const_cast<vr::Mat4f*>(&in));
+}
+
+void GvrMatToMatf(const gvr::Mat4f& in, vr::Mat4f* out) {
+  // If our std::array implementation doesn't have any non-data members, we can
+  // just cast the gvr matrix to an std::array.
+  static_assert(sizeof(in) == sizeof(*out),
+                "Cannot reinterpret gvr::Mat4f as vr::Matf");
+  *out = *reinterpret_cast<vr::Mat4f*>(const_cast<gvr::Mat4f*>(&in));
 }
 
 }  // namespace
@@ -229,16 +245,16 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   webvr_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-  ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width,
-                                            ui_tex_physical_size_.height);
+  ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width(),
+                                            ui_tex_physical_size_.height());
   content_surface_texture_->SetDefaultBufferSize(
-      content_tex_physical_size_.width, content_tex_physical_size_.height);
+      content_tex_physical_size_.width(), content_tex_physical_size_.height());
   InitializeRenderer();
 
-  gvr::Sizei webvr_size =
+  gfx::Size webvr_size =
       device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
-  DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width << "x"
-           << webvr_size.height;
+  DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width()
+           << "x" << webvr_size.height();
 
   CreateOrResizeWebVRSurface(webvr_size);
 
@@ -264,7 +280,7 @@ void VrShellGl::CreateUiSurface() {
                             ui_surface_->j_surface().obj()));
 }
 
-void VrShellGl::CreateOrResizeWebVRSurface(const gvr::Sizei& size) {
+void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   if (!webvr_surface_texture_) {
     DLOG(ERROR) << "No WebVR surface texture available";
     return;
@@ -276,16 +292,16 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gvr::Sizei& size) {
     return;
   }
 
-  if (!size.width || !size.height) {
+  if (!size.width() || !size.height()) {
     // Invalid size, defer until a new size arrives on a future bounds update.
     return;
   }
 
-  webvr_surface_texture_->SetDefaultBufferSize(size.width, size.height);
+  webvr_surface_texture_->SetDefaultBufferSize(size.width(), size.height());
   webvr_surface_size_ = size;
 
   if (mailbox_bridge_) {
-    mailbox_bridge_->ResizeSurface(size.width, size.height);
+    mailbox_bridge_->ResizeSurface(size.width(), size.height());
   } else {
     mailbox_bridge_ = base::MakeUnique<MailboxToSurfaceBridge>();
     mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
@@ -389,21 +405,26 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 
 void VrShellGl::InitializeRenderer() {
   gvr_api_->InitializeGl();
-  webvr_head_pose_.assign(kPoseRingBufferSize,
-                          gvr_api_->GetHeadSpaceFromStartSpaceRotation(
-                              gvr::GvrApi::GetTimePointNow()));
+  vr::Mat4f head_pose;
+  device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
+  webvr_head_pose_.assign(kPoseRingBufferSize, head_pose);
 
   std::vector<gvr::BufferSpec> specs;
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs.push_back(gvr_api_->CreateBufferSpec());
-  render_size_primary_ = specs[kFramePrimaryBuffer].GetSize();
+  gvr::Sizei render_size_primary = specs[kFramePrimaryBuffer].GetSize();
+  render_size_primary_ = {render_size_primary.width,
+                          render_size_primary.height};
   render_size_vrshell_ = render_size_primary_;
 
   // For kFrameHeadlockedBuffer (for WebVR insecure content warning).
   // Set this up at fixed resolution, the (smaller) FOV gets set below.
   specs.push_back(gvr_api_->CreateBufferSpec());
-  specs.back().SetSize(kHeadlockedBufferDimensions);
-  render_size_headlocked_ = specs[kFrameHeadlockedBuffer].GetSize();
+  specs.back().SetSize({kHeadlockedBufferDimensions.width(),
+                        kHeadlockedBufferDimensions.height()});
+  gvr::Sizei render_size_headlocked = specs[kFrameHeadlockedBuffer].GetSize();
+  render_size_headlocked_ = {render_size_headlocked.width,
+                             render_size_headlocked.height};
 
   swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
 
@@ -468,7 +489,7 @@ void VrShellGl::UpdateController() {
       FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
 }
 
-void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
+void VrShellGl::HandleControllerInput(const gfx::Vector3dF& forward_vector) {
   if (ShouldDrawWebVr()) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
@@ -487,7 +508,7 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
     }
   }
 
-  gvr::Vec3f ergo_neutral_pose;
+  gfx::Vector3dF ergo_neutral_pose;
   if (!controller_->IsConnected()) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
@@ -498,8 +519,10 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
     controller_quat_ = controller_->Orientation();
   }
 
-  gvr::Mat4f mat = QuatToMatrix(controller_quat_);
-  gvr::Vec3f controller_direction = MatrixVectorMul(mat, ergo_neutral_pose);
+  vr::Mat4f mat;
+  QuatToMatrix(controller_quat_, &mat);
+  gfx::Vector3dF controller_direction =
+      vr::MatrixVectorMul(mat, ergo_neutral_pose);
 
   HandleControllerAppButtonActivity(controller_direction);
 
@@ -522,13 +545,14 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
   // that the sphere is centered at the controller, rather than the eye, for
   // simplicity.
   float distance = scene_->GetBackgroundDistance();
-  target_point_ = GetRayPoint(kHandPosition, controller_direction, distance);
-  gvr::Vec3f eye_to_target = target_point_;
-  NormalizeVector(eye_to_target);
+  target_point_ =
+      vr::GetRayPoint(kHandPosition, controller_direction, distance);
+  gfx::Vector3dF eye_to_target = target_point_ - kOrigin;
+  vr::NormalizeVector(&eye_to_target);
 
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
-  float closest_element_distance = VectorLength(target_point_);
+  float closest_element_distance = (target_point_ - kOrigin).Length();
   target_element_ = nullptr;
   float target_x;
   float target_y;
@@ -544,13 +568,13 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
     if (distance_to_plane < 0 || distance_to_plane >= closest_element_distance)
       continue;
 
-    gvr::Vec3f plane_intersection_point =
-        GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
-    gvr::Vec2f unit_xy_point =
+    gfx::Point3F plane_intersection_point =
+        vr::GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
+    gfx::PointF unit_xy_point =
         plane->GetUnitRectangleCoordinates(plane_intersection_point);
 
-    float x = 0.5f + unit_xy_point.x;
-    float y = 0.5f - unit_xy_point.y;
+    float x = 0.5f + unit_xy_point.x();
+    float y = 0.5f - unit_xy_point.y();
     if (x < 0.0f || x >= 1.0f || y < 0.0f || y >= 1.0f)
       continue;
 
@@ -568,16 +592,17 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
   int pixel_y = 0;
 
   if (target_element_ != nullptr) {
-    Rectf pixel_rect;
+    gfx::RectF pixel_rect;
     if (target_element_->fill == Fill::CONTENT) {
-      pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
+      pixel_rect.SetRect(0, 0, content_tex_css_width_, content_tex_css_height_);
     } else {
-      pixel_rect = {target_element_->copy_rect.x, target_element_->copy_rect.y,
-                    target_element_->copy_rect.width,
-                    target_element_->copy_rect.height};
+      pixel_rect.SetRect(target_element_->copy_rect.x(),
+                         target_element_->copy_rect.y(),
+                         target_element_->copy_rect.width(),
+                         target_element_->copy_rect.height());
     }
-    pixel_x = pixel_rect.x + pixel_rect.width * target_x;
-    pixel_y = pixel_rect.y + pixel_rect.height * target_y;
+    pixel_x = pixel_rect.x() + pixel_rect.width() * target_x;
+    pixel_y = pixel_rect.y() + pixel_rect.height() * target_y;
 
     switch (target_element_->fill) {
       case Fill::CONTENT:
@@ -594,7 +619,7 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
 }
 
 void VrShellGl::HandleControllerAppButtonActivity(
-    const gvr::Vec3f& controller_direction) {
+    const gfx::Vector3dF& controller_direction) {
   // Note that button up/down state is transient, so ButtonDownHappened only
   // returns true for a single frame (and we're guaranteed not to miss it).
   if (controller_->ButtonDownHappened(
@@ -610,8 +635,8 @@ void VrShellGl::HandleControllerAppButtonActivity(
     // VrShellGl.
     UiInterface::Direction direction = UiInterface::NONE;
     float gesture_xz_angle;
-    if (XZAngle(controller_start_direction_, controller_direction,
-                &gesture_xz_angle)) {
+    if (vr::XZAngle(controller_start_direction_, controller_direction,
+                    &gesture_xz_angle)) {
       if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
         direction =
             gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
@@ -746,10 +771,17 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
         break;
 
       const WebVrBounds& bounds = pending_bounds_.front().second;
-      webvr_left_viewport_->SetSourceUv(bounds.left_bounds);
-      webvr_right_viewport_->SetSourceUv(bounds.right_bounds);
+      const gfx::RectF& left = bounds.left_bounds;
+      const gfx::RectF& right = bounds.right_bounds;
+      gvr::Rectf gvr_left_bounds = {left.x(), left.x() + left.width(),
+                                    left.y() + left.height(), left.y()};
+      webvr_left_viewport_->SetSourceUv(gvr_left_bounds);
+      gvr::Rectf gvr_right_bounds = {right.x(), right.x() + right.width(),
+                                     right.y() + right.height(), right.y()};
+      webvr_right_viewport_->SetSourceUv(gvr_right_bounds);
       DVLOG(1) << __FUNCTION__ << ": resize from pending_bounds to "
-               << bounds.source_size.width << "x" << bounds.source_size.height;
+               << bounds.source_size.width() << "x"
+               << bounds.source_size.height();
       CreateOrResizeWebVRSurface(bounds.source_size);
       pending_bounds_.pop();
     }
@@ -758,7 +790,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     buffer_viewport_list_->SetBufferViewport(GVR_RIGHT_EYE,
                                              *webvr_right_viewport_);
     if (render_size_primary_ != webvr_surface_size_) {
-      if (!webvr_surface_size_.width) {
+      if (!webvr_surface_size_.width()) {
         // Don't try to resize to 0x0 pixels, drop frames until we get a
         // valid size.
         return;
@@ -766,14 +798,18 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
 
       render_size_primary_ = webvr_surface_size_;
       DVLOG(1) << __FUNCTION__ << ": resize GVR to "
-               << render_size_primary_.width << "x"
-               << render_size_primary_.height;
-      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+               << render_size_primary_.width() << "x"
+               << render_size_primary_.height();
+      swap_chain_->ResizeBuffer(
+          kFramePrimaryBuffer,
+          {render_size_primary_.width(), render_size_primary_.height()});
     }
   } else {
     if (render_size_primary_ != render_size_vrshell_) {
       render_size_primary_ = render_size_vrshell_;
-      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+      swap_chain_->ResizeBuffer(
+          kFramePrimaryBuffer,
+          {render_size_primary_.width(), render_size_primary_.height()});
     }
   }
 
@@ -789,7 +825,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     DrawWebVr();
   }
 
-  gvr::Mat4f head_pose;
+  vr::Mat4f head_pose;
 
   // When using async reprojection, we need to know which pose was
   // used in the WebVR app for drawing this frame and supply it when
@@ -801,7 +837,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
   } else {
-    head_pose = device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get());
+    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   }
 
   // Update the render position of all UI elements (including desktop).
@@ -812,7 +848,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     // for both the gamepad API and UI input handling.
     TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
     UpdateController();
-    HandleControllerInput(GetForwardVector(head_pose));
+    HandleControllerInput(vr::GetForwardVector(head_pose));
   }
 
   DrawWorldElements(head_pose);
@@ -828,7 +864,9 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
 
   {
     TRACE_EVENT0("gpu", "VrShellGl::Submit");
-    frame.Submit(*buffer_viewport_list_, head_pose);
+    gvr::Mat4f mat;
+    MatfToGvrMat(head_pose, &mat);
+    frame.Submit(*buffer_viewport_list_, mat);
   }
 
   // No need to swap buffers for surfaceless rendering.
@@ -839,7 +877,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 }
 
-void VrShellGl::DrawWorldElements(const gvr::Mat4f& head_pose) {
+void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawWorldElements");
 
   if (ShouldDrawWebVr()) {
@@ -856,7 +894,7 @@ void VrShellGl::DrawWorldElements(const gvr::Mat4f& head_pose) {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    const Colorf& backgroundColor = scene_->GetBackgroundColor();
+    const vr::Colorf& backgroundColor = scene_->GetBackgroundColor();
     glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b,
                  backgroundColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -881,15 +919,15 @@ void VrShellGl::DrawHeadLockedElements() {
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  gvr::Mat4f identity_matrix;
-  SetIdentityM(identity_matrix);
+  vr::Mat4f identity_matrix;
+  vr::SetIdentityM(&identity_matrix);
   DrawUiView(identity_matrix, elements, render_size_headlocked_,
              kViewportListHeadlockedOffset, false);
 }
 
-void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
+void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
                            const std::vector<const ContentRectangle*>& elements,
-                           const gvr::Sizei& render_size,
+                           const gfx::Size& render_size,
                            int viewport_offset,
                            bool draw_cursor) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
@@ -900,19 +938,25 @@ void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
                                              buffer_viewport_.get());
 
-    const gvr::Mat4f eye_view_matrix =
-        MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), head_pose);
+    vr::Mat4f eye_view_matrix;
+    vr::Mat4f eye_matrix;
+    GvrMatToMatf(gvr_api_->GetEyeFromHeadMatrix(eye), &eye_matrix);
+    vr::MatrixMul(eye_matrix, head_pose, &eye_view_matrix);
 
-    gvr::Recti pixel_rect =
-        CalculatePixelSpaceRect(render_size, buffer_viewport_->GetSourceUv());
-    glViewport(pixel_rect.left, pixel_rect.bottom,
-               pixel_rect.right - pixel_rect.left,
-               pixel_rect.top - pixel_rect.bottom);
+    gvr::Rectf gvr_rect = buffer_viewport_->GetSourceUv();
+    gfx::RectF rect(gvr_rect.left, gvr_rect.top, gvr_rect.right - gvr_rect.left,
+                    gvr_rect.bottom - gvr_rect.top);
+    gfx::Rect pixel_rect = CalculatePixelSpaceRect(render_size, rect);
+    glViewport(pixel_rect.x(), pixel_rect.y(), pixel_rect.width(),
+               pixel_rect.height());
 
-    const gvr::Mat4f render_matrix =
-        MatrixMul(PerspectiveMatrixFromView(buffer_viewport_->GetSourceFov(),
-                                            kZNear, kZFar),
-                  eye_view_matrix);
+    vr::Mat4f render_matrix;
+    vr::Mat4f perspective_matrix;
+    gvr::Rectf fov = buffer_viewport_->GetSourceFov();
+    vr::PerspectiveMatrixFromView(
+        {fov.left, fov.top, fov.right - fov.left, fov.bottom - fov.top}, kZNear,
+        kZFar, &perspective_matrix);
+    vr::MatrixMul(perspective_matrix, eye_view_matrix, &render_matrix);
 
     DrawElements(render_matrix, elementsInDrawOrder);
     if (draw_cursor) {
@@ -923,21 +967,19 @@ void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
 }
 
 void VrShellGl::DrawElements(
-    const gvr::Mat4f& view_proj_matrix,
+    const vr::Mat4f& view_proj_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   for (const auto* rect : elements) {
-    gvr::Mat4f transform = MatrixMul(view_proj_matrix, rect->TransformMatrix());
+    vr::Mat4f transform;
+    vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
 
     switch (rect->fill) {
       case Fill::SPRITE: {
-        Rectf copy_rect;
-        copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_css_width_;
-        copy_rect.y =
-            static_cast<float>(rect->copy_rect.y) / ui_tex_css_height_;
-        copy_rect.width =
-            static_cast<float>(rect->copy_rect.width) / ui_tex_css_width_;
-        copy_rect.height =
-            static_cast<float>(rect->copy_rect.height) / ui_tex_css_height_;
+        gfx::RectF copy_rect(
+            static_cast<float>(rect->copy_rect.x()) / ui_tex_css_width_,
+            static_cast<float>(rect->copy_rect.y()) / ui_tex_css_height_,
+            static_cast<float>(rect->copy_rect.width()) / ui_tex_css_width_,
+            static_cast<float>(rect->copy_rect.height()) / ui_tex_css_height_);
         jint texture_handle = ui_texture_id_;
         vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
             texture_handle, transform, copy_rect, rect->computed_opacity);
@@ -958,7 +1000,7 @@ void VrShellGl::DrawElements(
         break;
       }
       case Fill::CONTENT: {
-        Rectf copy_rect = {0, 0, 1, 1};
+        gfx::RectF copy_rect = {0, 0, 1, 1};
         jint texture_handle = content_texture_id_;
         vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
             texture_handle, transform, copy_rect, rect->computed_opacity);
@@ -973,7 +1015,7 @@ void VrShellGl::DrawElements(
 }
 
 std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
-    const gvr::Mat4f& view_matrix,
+    const vr::Mat4f& view_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   typedef std::pair<float, const ContentRectangle*> DistanceElementPair;
   std::vector<DistanceElementPair> zOrderedElementPairs;
@@ -981,9 +1023,11 @@ std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
 
   for (const auto* element : elements) {
     // Distance is the abs(z) value in view space.
-    gvr::Vec3f element_position = GetTranslation(element->TransformMatrix());
+    gfx::Vector3dF element_position =
+        vr::GetTranslation(element->TransformMatrix());
+
     float distance =
-        std::fabs(MatrixVectorMul(view_matrix, element_position).z);
+        std::fabs(vr::MatrixVectorMul(view_matrix, element_position).z());
     zOrderedElementPairs.push_back(std::make_pair(distance, element));
   }
 
@@ -1007,81 +1051,90 @@ std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
   return zOrderedElements;
 }
 
-void VrShellGl::DrawCursor(const gvr::Mat4f& render_matrix) {
-  gvr::Mat4f mat;
-  SetIdentityM(mat);
+void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
+  vr::Mat4f mat;
+  vr::SetIdentityM(&mat);
 
   // Draw the reticle.
 
   // Scale the pointer to have a fixed FOV size at any distance.
-  const float eye_to_target = Distance(target_point_, kOrigin);
-  ScaleM(mat, mat, kReticleWidth * eye_to_target,
-         kReticleHeight * eye_to_target, 1.0f);
+  const float eye_to_target =
+      std::sqrt(target_point_.SquaredDistanceTo(kOrigin));
+  vr::ScaleM(
+      mat,
+      {kReticleWidth * eye_to_target, kReticleHeight * eye_to_target, 1.0f},
+      &mat);
 
-  gvr::Quatf rotation;
+  vr::Quatf rotation;
   if (target_element_ != nullptr) {
     // Make the reticle planar to the element it's hitting.
     rotation = GetRotationFromZAxis(target_element_->GetNormal());
   } else {
     // Rotate the cursor to directly face the eyes.
-    rotation = GetRotationFromZAxis(target_point_);
+    rotation = GetRotationFromZAxis(target_point_ - kOrigin);
   }
-  mat = MatrixMul(QuatToMatrix(rotation), mat);
+  vr::Mat4f rotation_mat;
+  vr::QuatToMatrix(rotation, &rotation_mat);
+  vr::MatrixMul(rotation_mat, mat, &mat);
 
+  gfx::Point3F target_point = ScalePoint(target_point_, kReticleOffset);
   // Place the pointer slightly in front of the plane intersection point.
-  TranslateM(mat, mat, target_point_.x * kReticleOffset,
-             target_point_.y * kReticleOffset,
-             target_point_.z * kReticleOffset);
+  vr::TranslateM(mat, target_point - kOrigin, &mat);
 
-  gvr::Mat4f transform = MatrixMul(render_matrix, mat);
+  vr::Mat4f transform;
+  vr::MatrixMul(render_matrix, mat, &transform);
   vr_shell_renderer_->GetReticleRenderer()->Draw(transform);
 
   // Draw the laser.
 
   // Find the length of the beam (from hand to target).
-  const float laser_length = Distance(kHandPosition, target_point_);
+  const float laser_length =
+      std::sqrt(kHandPosition.SquaredDistanceTo(target_point));
 
   // Build a beam, originating from the origin.
-  SetIdentityM(mat);
+  vr::SetIdentityM(&mat);
 
   // Move the beam half its height so that its end sits on the origin.
-  TranslateM(mat, mat, 0.0f, 0.5f, 0.0f);
-  ScaleM(mat, mat, kLaserWidth, laser_length, 1);
+  vr::TranslateM(mat, {0.0f, 0.5f, 0.0f}, &mat);
+  vr::ScaleM(mat, {kLaserWidth, laser_length, 1}, &mat);
 
   // Tip back 90 degrees to flat, pointing at the scene.
-  const gvr::Quatf q = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, -M_PI / 2);
-  mat = MatrixMul(QuatToMatrix(q), mat);
+  const vr::Quatf quat = vr::QuatFromAxisAngle({1.0f, 0.0f, 0.0f, -M_PI / 2});
+  vr::QuatToMatrix(quat, &rotation_mat);
+  vr::MatrixMul(rotation_mat, mat, &mat);
 
-  const gvr::Vec3f beam_direction = {target_point_.x - kHandPosition.x,
-                                     target_point_.y - kHandPosition.y,
-                                     target_point_.z - kHandPosition.z};
-  const gvr::Mat4f beam_direction_mat =
-      QuatToMatrix(GetRotationFromZAxis(beam_direction));
+  const gfx::Vector3dF beam_direction = target_point_ - kHandPosition;
+
+  vr::Mat4f beam_direction_mat;
+  vr::QuatToMatrix(GetRotationFromZAxis(beam_direction), &beam_direction_mat);
 
   // Render multiple faces to make the laser appear cylindrical.
   const int faces = 4;
   for (int i = 0; i < faces; i++) {
     // Rotate around Z.
     const float angle = M_PI * 2 * i / faces;
-    const gvr::Quatf rot = QuatFromAxisAngle({0.0f, 0.0f, 1.0f}, angle);
-    gvr::Mat4f face_transform = MatrixMul(QuatToMatrix(rot), mat);
-
+    const vr::Quatf rot = vr::QuatFromAxisAngle({0.0f, 0.0f, 1.0f, angle});
+    vr::Mat4f face_transform;
+    vr::QuatToMatrix(rot, &face_transform);
+    vr::MatrixMul(face_transform, mat, &face_transform);
     // Orient according to target direction.
-    face_transform = MatrixMul(beam_direction_mat, face_transform);
+    vr::MatrixMul(beam_direction_mat, face_transform, &face_transform);
 
     // Move the beam origin to the hand.
-    TranslateM(face_transform, face_transform, kHandPosition.x, kHandPosition.y,
-               kHandPosition.z);
+    vr::TranslateM(face_transform, kHandPosition - kOrigin, &face_transform);
 
-    transform = MatrixMul(render_matrix, face_transform);
+    vr::MatrixMul(render_matrix, face_transform, &transform);
     vr_shell_renderer_->GetLaserRenderer()->Draw(transform);
   }
 }
 
-void VrShellGl::DrawController(const gvr::Mat4f& view_proj_matrix) {
+void VrShellGl::DrawController(const vr::Mat4f& view_proj_matrix) {
   if (!vr_shell_renderer_->GetControllerRenderer()->IsSetUp())
     return;
-  auto transform = MatrixMul(view_proj_matrix, controller_->GetTransform());
+  vr::Mat4f controller_transform;
+  controller_->GetTransform(&controller_transform);
+  vr::Mat4f transform;
+  vr::MatrixMul(view_proj_matrix, controller_transform, &transform);
   auto state = controller_->GetModelState();
   vr_shell_renderer_->GetControllerRenderer()->Draw(state, transform);
 }
@@ -1108,7 +1161,7 @@ void VrShellGl::DrawWebVr() {
   // it's not supported on older devices such as Nexus 5X.
   glClear(GL_COLOR_BUFFER_BIT);
 
-  glViewport(0, 0, webvr_surface_size_.width, webvr_surface_size_.height);
+  glViewport(0, 0, webvr_surface_size_.width(), webvr_surface_size_.height());
   vr_shell_renderer_->GetWebVrRenderer()->Draw(webvr_texture_id_);
 }
 
@@ -1138,12 +1191,16 @@ void VrShellGl::SetWebVrMode(bool enabled) {
 }
 
 void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
-                                         const gvr::Rectf& left_bounds,
-                                         const gvr::Rectf& right_bounds,
-                                         const gvr::Sizei& source_size) {
+                                         const gfx::RectF& left_bounds,
+                                         const gfx::RectF& right_bounds,
+                                         const gfx::Size& source_size) {
   if (frame_index < 0) {
-    webvr_left_viewport_->SetSourceUv(left_bounds);
-    webvr_right_viewport_->SetSourceUv(right_bounds);
+    gvr::Rectf left = {left_bounds.x(), left_bounds.right(),
+                       left_bounds.bottom(), left_bounds.y()};
+    webvr_left_viewport_->SetSourceUv(left);
+    gvr::Rectf right = {right_bounds.x(), right_bounds.right(),
+                        right_bounds.bottom(), right_bounds.y()};
+    webvr_right_viewport_->SetSourceUv(right);
     CreateOrResizeWebVRSurface(source_size);
   } else {
     pending_bounds_.emplace(
@@ -1160,8 +1217,8 @@ void VrShellGl::ContentBoundsChanged(int width, int height) {
 void VrShellGl::ContentPhysicalBoundsChanged(int width, int height) {
   if (content_surface_texture_.get())
     content_surface_texture_->SetDefaultBufferSize(width, height);
-  content_tex_physical_size_.width = width;
-  content_tex_physical_size_.height = height;
+  content_tex_physical_size_.set_width(width);
+  content_tex_physical_size_.set_height(height);
 }
 
 void VrShellGl::UIBoundsChanged(int width, int height) {
@@ -1172,8 +1229,8 @@ void VrShellGl::UIBoundsChanged(int width, int height) {
 void VrShellGl::UIPhysicalBoundsChanged(int width, int height) {
   if (ui_surface_texture_.get())
     ui_surface_texture_->SetDefaultBufferSize(width, height);
-  ui_tex_physical_size_.width = width;
-  ui_tex_physical_size_.height = height;
+  ui_tex_physical_size_.set_width(width);
+  ui_tex_physical_size_.set_height(height);
 }
 
 base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
@@ -1259,7 +1316,7 @@ void VrShellGl::SendVSync(base::TimeDelta time,
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
 
-  gvr::Mat4f head_mat;
+  vr::Mat4f head_mat;
   device::mojom::VRPosePtr pose =
       device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat);
 
