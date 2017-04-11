@@ -1347,7 +1347,7 @@ void SimpleEntryImpl::DoomOperationComplete(
 }
 
 void SimpleEntryImpl::ChecksumOperationComplete(
-    int orig_result,
+    int original_result,
     int stream_index,
     const CompletionCallback& completion_callback,
     std::unique_ptr<int> result) {
@@ -1362,8 +1362,8 @@ void SimpleEntryImpl::ChecksumOperationComplete(
   }
 
   if (*result == net::OK) {
-    *result = orig_result;
-    if (orig_result >= 0)
+    *result = original_result;
+    if (original_result >= 0)
       RecordReadResult(cache_type_, READ_RESULT_SUCCESS);
     else
       RecordReadResult(cache_type_, READ_RESULT_SYNC_READ_FAILURE);

@@ -280,8 +280,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // Called after validating the checksums on an entry. Passes through the
   // original result if successful, propagates the error if the checksum does
   // not validate.
-  void ChecksumOperationComplete(int stream_index,
-                                 int orig_result,
+  void ChecksumOperationComplete(int original_result,
+                                 int stream_index,
                                  const CompletionCallback& completion_callback,
                                  std::unique_ptr<int> result);
 
