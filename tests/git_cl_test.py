@@ -68,6 +68,7 @@ class RietveldMock(object):
       'messages': [
         {
           'approval': True,
+          'disapproval': False,
           'sender': 'john@chromium.org',
         },
       ],

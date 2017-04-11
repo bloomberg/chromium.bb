@@ -1730,9 +1730,6 @@ class Changelist(object):
     """Get owner from codereview, which may differ from this checkout."""
     return self._codereview_impl.GetIssueOwner()
 
-  def GetApprovingReviewers(self):
-    return self._codereview_impl.GetApprovingReviewers()
-
   def GetMostRecentPatchset(self):
     return self._codereview_impl.GetMostRecentPatchset()
 
@@ -1824,13 +1821,6 @@ class _ChangelistCodereviewBase(object):
 
   def CloseIssue(self):
     """Closes the issue."""
-    raise NotImplementedError()
-
-  def GetApprovingReviewers(self):
-    """Returns a list of reviewers approving the change.
-
-    Note: not necessarily committers.
-    """
     raise NotImplementedError()
 
   def GetMostRecentPatchset(self):
@@ -1995,9 +1985,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       'rietveld': self.GetCodereviewServer(),
     }
 
-  def GetApprovingReviewers(self):
-    return get_approving_reviewers(self.GetIssueProperties())
-
   def GetIssueOwner(self):
     return (self.GetIssueProperties() or {}).get('owner_email')
 
@@ -2022,13 +2009,14 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     or CQ status, assuming adherence to a common workflow.
 
     Returns None if no issue for this branch, or one of the following keywords:
-      * 'error'   - error from review tool (including deleted issues)
-      * 'unsent'  - not sent for review
-      * 'waiting' - waiting for review
-      * 'reply'   - waiting for owner to reply to review
-      * 'lgtm'    - LGTM from at least one approved reviewer
-      * 'commit'  - in the commit queue
-      * 'closed'  - closed
+      * 'error'    - error from review tool (including deleted issues)
+      * 'unsent'   - not sent for review
+      * 'waiting'  - waiting for review
+      * 'reply'    - waiting for owner to reply to review
+      * 'not lgtm' - Code-Review label has been set negatively
+      * 'lgtm'     - LGTM from at least one approved reviewer
+      * 'commit'   - in the commit queue
+      * 'closed'   - closed
     """
     if not self.GetIssue():
       return None
@@ -2045,16 +2033,15 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       # Issue is in the commit queue.
       return 'commit'
 
-    try:
-      reviewers = self.GetApprovingReviewers()
-    except urllib2.HTTPError:
-      return 'error'
-
-    if reviewers:
-      # Was LGTM'ed.
-      return 'lgtm'
-
     messages = props.get('messages') or []
+    if not messages:
+      # No message was sent.
+      return 'unsent'
+
+    if get_approving_reviewers(props):
+      return 'lgtm'
+    elif get_approving_reviewers(props, disapproval=True):
+      return 'not lgtm'
 
     # Skip CQ messages that don't require owner's action.
     while messages and messages[-1]['sender'] == COMMIT_BOT_EMAIL:
@@ -2068,9 +2055,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         # This is probably a CQ messages warranting user attention.
         break
 
-    if not messages:
-      # No message was sent.
-      return 'unsent'
     if messages[-1]['sender'] != props.get('owner_email'):
       # Non-LGTM reply from non-owner and not CQ bot.
       return 'reply'
@@ -2616,13 +2600,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
-
-  def GetApprovingReviewers(self):
-    """Returns a list of reviewers approving the change.
-
-    Note: not necessarily committers.
-    """
-    raise NotImplementedError()
 
   def SubmitIssue(self, wait_for_merge=True):
     gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
@@ -3428,18 +3405,21 @@ class ChangeDescription(object):
     self._description_lines.extend('%s: %s' % kv for kv in parsed_footers)
 
 
-def get_approving_reviewers(props):
+def get_approving_reviewers(props, disapproval=False):
   """Retrieves the reviewers that approved a CL from the issue properties with
   messages.
 
   Note that the list may contain reviewers that are not committer, thus are not
   considered by the CQ.
+
+  If disapproval is True, instead returns reviewers who 'not lgtm'd the CL.
   """
+  approval_type = 'disapproval' if disapproval else 'approval'
   return sorted(
       set(
         message['sender']
         for message in props['messages']
-        if message['approval'] and message['sender'] in props['reviewers']
+        if message[approval_type] and message['sender'] in props['reviewers']
       )
   )
 
@@ -3942,7 +3922,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
 
   if not fine_grained:
     # Fast path which doesn't involve querying codereview servers.
-    # Do not use GetApprovingReviewers(), since it requires an HTTP request.
+    # Do not use get_approving_reviewers(), since it requires an HTTP request.
     for cl in changes:
       yield (cl, 'waiting' if cl.GetIssueURL() else 'error')
     return
@@ -4909,7 +4889,8 @@ def CMDland(parser, args):
   # contains the link to the Rietveld issue, while the Rietveld message contains
   # the commit viewvc url.
   if cl.GetIssue():
-    change_desc.update_reviewers(cl.GetApprovingReviewers())
+    change_desc.update_reviewers(
+        get_approving_reviewers(cl.GetIssueProperties()))
 
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
