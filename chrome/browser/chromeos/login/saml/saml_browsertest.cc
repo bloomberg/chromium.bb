@@ -1346,9 +1346,18 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesAffiliated) {
   EXPECT_EQ(kSAMLIdPCookieValue2, GetCookieValue(kSAMLIdPCookieName));
 }
 
-// Flaky on Debug, ASan and MSan bots: crbug.com/683161.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest,
-                       DISABLED_PRE_TransferCookiesUnaffiliated) {
+// PRE_TransferCookiesUnaffiliated and TransferCookiesUnaffiliated are flaky on
+// MSAN and ASAN, most probably timing out. See crbug.com/683161.
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_PRE_TransferCookiesUnaffiliated \
+  DISABLED_PRE_TransferCookiesUnaffiliated
+#define MAYBE_TransferCookiesUnaffiliated DISABLED_TransferCookiesUnaffiliated
+#else
+#define MAYBE_PRE_TransferCookiesUnaffiliated PRE_TransferCookiesUnaffiliated
+#define MAYBE_TransferCookiesUnaffiliated TransferCookiesUnaffiliated
+#endif
+
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, MAYBE_PRE_TransferCookiesUnaffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
   LogInWithSAML(kDifferentDomainSAMLUserEmail,
                 kTestAuthSIDCookie1,
@@ -1364,8 +1373,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest,
 // IdP are not transferred to a user's profile on subsequent login if the user
 // does not belong to the domain that the device is enrolled into. Also verifies
 // that GAIA cookies are not transferred.
-// Flaky on Debug, ASan and MSan bots: crbug.com/683161.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_TransferCookiesUnaffiliated) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, MAYBE_TransferCookiesUnaffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue2);
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   ShowGAIALoginForm();
