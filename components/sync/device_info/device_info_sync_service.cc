@@ -285,12 +285,18 @@ void DeviceInfoSyncService::SendLocalData(
 
   const DeviceInfo* device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  const SyncData& data = CreateLocalData(device_info);
-  StoreSyncData(device_info->guid(), data);
 
-  SyncChangeList change_list;
-  change_list.push_back(SyncChange(FROM_HERE, change_type, data));
-  sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+  // While the |pulse_timer_| is shutdown eventually in StopSyncing(), our
+  // device info provider is ripped out from underneath us before that happens,
+  // and we need to guard against this.
+  if (device_info != nullptr) {
+    const SyncData& data = CreateLocalData(device_info);
+    StoreSyncData(device_info->guid(), data);
+
+    SyncChangeList change_list;
+    change_list.push_back(SyncChange(FROM_HERE, change_type, data));
+    sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+  }
 
   pulse_timer_.Start(
       FROM_HERE, DeviceInfoUtil::kPulseInterval,
