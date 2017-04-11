@@ -263,7 +263,6 @@ EXPERIMENT_LIST="
     interintra
     wedge
     compound_segment
-    compound_singleref
     ext_refs
     global_motion
     new_quant
