@@ -437,7 +437,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_RETRY, request_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, NoNextOnInternetDisconnected) {
