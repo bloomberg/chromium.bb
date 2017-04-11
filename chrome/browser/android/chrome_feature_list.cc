@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &data_reduction_proxy::features::kDataReductionMainMenu,
+    &kFullscreenActivity,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNewPhotoPicker,
@@ -140,6 +141,9 @@ const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kFullscreenActivity{"FullscreenActivity",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
