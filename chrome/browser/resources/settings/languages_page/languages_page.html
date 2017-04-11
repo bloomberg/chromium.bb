@@ -71,7 +71,8 @@
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
     </settings-languages>
-    <settings-animated-pages id="pages" section="languages">
+    <settings-animated-pages id="pages" section="languages"
+        focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div class$="settings-box first [[getLanguageListTwoLine_()]]"
             actionable on-tap="toggleExpandButton_">

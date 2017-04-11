@@ -95,7 +95,8 @@
         padding-top: 10px;
       }
     </style>
-    <settings-animated-pages id="pages" section="people">
+    <settings-animated-pages id="pages" section="people"
+        focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div id="picture-subpage-trigger" class="settings-box first two-line">
           <template is="dom-if" if="[[syncStatus]]">
@@ -213,8 +214,8 @@
                                     prefs.settings.enable_screen_lock.value)]]
               </div>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                aria-label="$i18n{lockScreenTitle}"
+            <button id="lockScreenSubpageTrigger" class="subpage-arrow"
+                is="paper-icon-button-light" aria-label="$i18n{lockScreenTitle}"
                 aria-describedby="lockScrenSecondary"></button>
           </div>
         </template>

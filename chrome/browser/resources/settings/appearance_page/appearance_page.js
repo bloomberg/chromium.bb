@@ -89,6 +89,18 @@ Polymer({
       type: Boolean,
       value: false,  // Can only be true on Linux, but value exists everywhere.
     },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+        map.set(
+            settings.Route.FONTS.path,
+            '#customize-fonts-subpage-trigger .subpage-arrow');
+        return map;
+      },
+    },
   },
 
   /** @private {?settings.AppearanceBrowserProxy} */

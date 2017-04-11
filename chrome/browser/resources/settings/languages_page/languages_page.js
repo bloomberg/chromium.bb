@@ -58,6 +58,25 @@ Polymer({
 
     /** @private */
     showAddLanguagesDialog_: Boolean,
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+// <if expr="not is_macosx">
+        map.set(
+            settings.Route.EDIT_DICTIONARY.path,
+            '#spellCheckCollapse .subpage-arrow');
+// </if>
+// <if expr="chromeos">
+        map.set(
+            settings.Route.INPUT_METHODS.path,
+            '#inputMethodsCollapse .subpage-arrow');
+// </if>
+        return map;
+      },
+    },
   },
 
   /**

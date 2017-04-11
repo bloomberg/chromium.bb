@@ -34,6 +34,22 @@ Polymer({
     searchTerm: {
       type: String,
     },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+        map.set(
+            settings.Route.CLOUD_PRINTERS.path,
+            '#cloudPrinters .subpage-arrow');
+// <if expr="chromeos">
+        map.set(
+            settings.Route.CUPS_PRINTERS.path, '#cupsPrinters .subpage-arrow');
+// </if>
+        return map;
+      },
+    },
   },
 
   listeners: {

@@ -14,7 +14,8 @@
 <dom-module id="settings-printing-page">
   <template>
     <style include="settings-shared"></style>
-    <settings-animated-pages id="pages" section="printing">
+    <settings-animated-pages id="pages" section="printing"
+        focus-config="[[focusConfig_]]">
       <array-selector id="arraySelector" items="{{cupsPrinters}}"
           selected="{{detailPrinter_}}">
       </array-selector>

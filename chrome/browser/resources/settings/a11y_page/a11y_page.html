@@ -16,7 +16,7 @@
     <style include="settings-shared"></style>
 <if expr="chromeos">
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-        section="a11y">
+        section="a11y" focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div class="settings-box">
           <settings-toggle-button id="optionsInMenuToggle"

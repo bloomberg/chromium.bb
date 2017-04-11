@@ -1162,7 +1162,7 @@ CrSettingsRouteDynamicParametersTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/people?guid=a%2Fb&foo=42',
+  browsePreload: 'chrome://md-settings/search?guid=a%2Fb&foo=42',
 
   /** @override */
   runAccessibilityChecks: false,
@@ -1171,22 +1171,22 @@ CrSettingsRouteDynamicParametersTest.prototype = {
 TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
   suite('DynamicParameters', function() {
     test('get parameters from URL and navigation', function(done) {
-      assertEquals(settings.Route.PEOPLE, settings.getCurrentRoute());
+      assertEquals(settings.Route.SEARCH, settings.getCurrentRoute());
       assertEquals('a/b', settings.getQueryParameters().get('guid'));
       assertEquals('42', settings.getQueryParameters().get('foo'));
 
       var params = new URLSearchParams();
       params.set('bar', 'b=z');
       params.set('biz', '3');
-      settings.navigateTo(settings.Route.SYNC, params);
-      assertEquals(settings.Route.SYNC, settings.getCurrentRoute());
+      settings.navigateTo(settings.Route.SEARCH_ENGINES, params);
+      assertEquals(settings.Route.SEARCH_ENGINES, settings.getCurrentRoute());
       assertEquals('b=z', settings.getQueryParameters().get('bar'));
       assertEquals('3', settings.getQueryParameters().get('biz'));
       assertEquals('?bar=b%3Dz&biz=3', window.location.search);
 
       window.addEventListener('popstate', function(event) {
-        assertEquals('/people', settings.getCurrentRoute().path);
-        assertEquals(settings.Route.PEOPLE, settings.getCurrentRoute());
+        assertEquals('/search', settings.getCurrentRoute().path);
+        assertEquals(settings.Route.SEARCH, settings.getCurrentRoute());
         assertEquals('a/b', settings.getQueryParameters().get('guid'));
         assertEquals('42', settings.getQueryParameters().get('foo'));
         done();
