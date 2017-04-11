@@ -52,6 +52,11 @@ Polymer({
     this.$.addUserDialog.open();
   },
 
+  /** @private */
+  onAddUserDialogClose_: function() {
+    this.$$('#add-user-button a').focus();
+  },
+
   /**
    * @param {boolean} isOwner
    * @param {boolean} isWhitelistManaged

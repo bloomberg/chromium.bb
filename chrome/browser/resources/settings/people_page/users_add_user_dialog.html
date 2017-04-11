@@ -20,13 +20,15 @@
       <div class="title">$i18n{addUsers}</div>
       <div class="body">
         <paper-input id="addUserInput" label="$i18n{addUsersEmail}" autofocus
-            on-input="validate_">
+            on-input="validate_" invalid="[[!isValid_]]">
         </paper-input>
       </div>
       <div class="button-container">
-        <paper-button class="cancel-button" on-tap="onCancelTap_"
-            id="cancel">$i18n{cancel}</paper-button>
-        <paper-button id="add" on-tap="addUser_" class="action-button" disabled>
+        <paper-button class="cancel-button" on-tap="onCancelTap_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button on-tap="addUser_" class="action-button"
+            disabled$="[[!isValid_]]">
           $i18n{add}
         </paper-button>
       </div>
