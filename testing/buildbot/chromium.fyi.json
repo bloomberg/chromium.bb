@@ -11788,10 +11788,12 @@
           "--mus",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_mus_unittests.filter"
         ],
+        "name": "ash_mus_unittests",
+        "override_isolate_target": "ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ash_mus_unittests"
+        "test": "ash_unittests"
       },
       {
         "args": [
