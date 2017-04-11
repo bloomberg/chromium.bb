@@ -87,6 +87,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   //     "auto_login_enabled": true  //
   //   }
   static const char kKioskDictionaryName[];
+  static const char kKeyApps[];
   static const char kKeyAutoLoginState[];
 
   // Sub directory under DIR_USER_DATA to store cached icon files.
