@@ -42,6 +42,9 @@ const base::FilePath& GetDriveGrandRootPath();
 // Returns the path of the directory representing "My Drive".
 const base::FilePath& GetDriveMyDriveRootPath();
 
+// Returns the path of the directory representing "Team Drives".
+const base::FilePath& GetDriveTeamDrivesRootPath();
+
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
 std::string EscapeCacheFileName(const std::string& filename);

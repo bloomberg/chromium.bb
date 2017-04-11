@@ -81,8 +81,7 @@ ChangeList::ChangeList(const google_apis::ChangeList& change_list)
   size_t entries_index = 0;
   for (size_t i = 0; i < items.size(); ++i) {
     if (ConvertChangeResourceToResourceEntry(
-            *items[i],
-            &entries_[entries_index],
+            *items[i], &entries_[entries_index],
             &parent_resource_ids_[entries_index])) {
       ++entries_index;
     }
@@ -348,6 +347,7 @@ FileError ChangeListProcessor::ApplyEntryMap(
 
 FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   DCHECK(!entry.deleted());
+  DCHECK(!entry.resource_id().empty());
   DCHECK(parent_resource_id_map_.count(entry.resource_id()));
   const std::string& parent_resource_id =
       parent_resource_id_map_[entry.resource_id()];
@@ -465,6 +465,11 @@ FileError ChangeListProcessor::SetParentLocalIdOfEntry(
     ResourceMetadata* resource_metadata,
     ResourceEntry* entry,
     const std::string& parent_resource_id) {
+  if (entry->parent_local_id() == util::kDriveTeamDrivesDirLocalId) {
+    // When |entry| is a root directory of a Team Drive, the parent directory
+    // of it is "/team_drives", which doesn't have resource ID.
+    return FILE_ERROR_OK;
+  }
   std::string parent_local_id;
   if (parent_resource_id.empty()) {
     // Entries without parents should go under "other" directory.

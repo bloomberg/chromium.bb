@@ -6,11 +6,8 @@
 #include "google_apis/drive/drive_switches.h"
 
 namespace google_apis {
-namespace {
 // Enables or disables Team Drives integration.
-constexpr char kEnableTeamDrives[] = "team-drives";
-
-}
+const char kEnableTeamDrives[] = "team-drives";
 
 TeamDrivesIntegrationStatus GetTeamDrivesIntegrationSwitch() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableTeamDrives) ?

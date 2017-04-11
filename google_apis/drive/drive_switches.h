@@ -15,6 +15,9 @@ enum TeamDrivesIntegrationStatus {
 // Whether Team Drives integration is enabled or not.
 TeamDrivesIntegrationStatus GetTeamDrivesIntegrationSwitch();
 
+// For tests which require specific commandline switch settings.
+extern const char kEnableTeamDrives[];
+
 }  // namespace switches
 
 #endif  // GOOGLE_APIS_DRIVE_DRIVE_SWITHES_H_

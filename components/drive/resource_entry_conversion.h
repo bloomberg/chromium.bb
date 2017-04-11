@@ -12,6 +12,7 @@
 namespace google_apis {
 class ChangeResource;
 class FileResource;
+class TeamDriveResource;
 }
 
 namespace drive {
@@ -43,6 +44,11 @@ bool ConvertFileResourceToResourceEntry(
     const google_apis::FileResource& input,
     ResourceEntry* out_entry,
     std::string* out_parent_resource_id);
+
+// Converts a TeamDriveResource into a drive::ResourceEntry.
+void ConvertTeamDriveResourceToResourceEntry(
+    const google_apis::TeamDriveResource& input,
+    ResourceEntry* out_entry);
 
 // Converts the resource entry to the platform file info.
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,

@@ -80,6 +80,13 @@ const base::FilePath& GetDriveMyDriveRootPath() {
   return drive_root_path;
 }
 
+const base::FilePath& GetDriveTeamDrivesRootPath() {
+  CR_DEFINE_STATIC_LOCAL(
+      base::FilePath, team_drives_root_path,
+      (GetDriveGrandRootPath().AppendASCII(kDriveTeamDrivesDirName)));
+  return team_drives_root_path;
+}
+
 std::string EscapeCacheFileName(const std::string& filename) {
   // This is based on net/base/escape.cc: net::(anonymous namespace)::Escape
   std::string escaped;

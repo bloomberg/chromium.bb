@@ -411,8 +411,10 @@ class TeamDriveResource {
   // The ID of this Team Drive. The ID is the same as the top-level folder for
   // this Team Drive.
   const std::string& id() const { return id_; }
+  void set_id(const std::string& id) { id_ = id; }
   // The name of this Team Drive.
   const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
   // Capabilities the current user has on this Team Drive.
   const TeamDriveCapabilities& capabilities() const { return capabilities_; }
 
@@ -874,6 +876,9 @@ class ChangeResource {
   void set_file(std::unique_ptr<FileResource> file) { file_ = std::move(file); }
   void set_team_drive(std::unique_ptr<TeamDriveResource> team_drive) {
     team_drive_ = std::move(team_drive);
+  }
+  void set_team_drive_id(const std::string& team_drive_id) {
+    team_drive_id_ = team_drive_id;
   }
   void set_modification_date(const base::Time& modification_date) {
     modification_date_ = modification_date;

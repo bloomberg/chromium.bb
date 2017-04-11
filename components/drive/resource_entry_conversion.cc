@@ -26,12 +26,18 @@ bool ConvertChangeResourceToResourceEntry(
 
   ResourceEntry converted;
   std::string parent_resource_id;
-  if (input.file() &&
-      !ConvertFileResourceToResourceEntry(*input.file(), &converted,
-                                          &parent_resource_id))
+  if (input.type() == google_apis::ChangeResource::TEAM_DRIVE) {
+    converted.mutable_file_info()->set_is_directory(true);
+    converted.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+    if (input.team_drive())
+      ConvertTeamDriveResourceToResourceEntry(*input.team_drive(), &converted);
+    converted.set_resource_id(input.team_drive_id());
+  } else {
+    if (input.file() && !ConvertFileResourceToResourceEntry(
+                            *input.file(), &converted, &parent_resource_id))
       return false;
-
-  converted.set_resource_id(input.file_id());
+    converted.set_resource_id(input.file_id());
+  }
   converted.set_deleted(converted.deleted() || input.is_deleted());
   converted.set_modification_date(input.modification_date().ToInternalValue());
 
@@ -126,6 +132,14 @@ bool ConvertFileResourceToResourceEntry(
   out_entry->Swap(&converted);
   swap(*out_parent_resource_id, parent_resource_id);
   return true;
+}
+
+void ConvertTeamDriveResourceToResourceEntry(
+    const google_apis::TeamDriveResource& input,
+    ResourceEntry* out_entry) {
+  DCHECK(out_entry);
+  out_entry->set_title(input.name());
+  out_entry->set_base_name(input.name());
 }
 
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,

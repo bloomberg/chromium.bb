@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -22,6 +23,7 @@
 #include "components/drive/file_system_core_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_switches.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,9 +119,11 @@ class ChangeListProcessorTest : public testing::Test {
                                fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
-    metadata_.reset(new internal::ResourceMetadata(
-        metadata_storage_.get(), cache_.get(),
-        base::ThreadTaskRunnerHandle::Get()));
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        google_apis::kEnableTeamDrives);
+    metadata_.reset(
+        new internal::ResourceMetadata(metadata_storage_.get(), cache_.get(),
+                                       base::ThreadTaskRunnerHandle::Get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
   }
 
@@ -656,6 +660,73 @@ TEST_F(ChangeListProcessorTest, ModificationDate) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryById(local_id, &entry));
   EXPECT_EQ(new_file_local.title(), entry.title());
+}
+
+TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
+  const char kTeamDriveId[] = "ID_OF_TEAM_DRIVE";
+  const char kOldName[] = "Old Name";
+  const char kNewName[] = "New Name";
+
+  ResourceEntry team_drive;
+  team_drive.set_title(kOldName);
+  team_drive.set_resource_id(kTeamDriveId);
+  team_drive.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists[0]->mutable_entries()->push_back(team_drive);
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
+  change_lists[0]->mutable_parent_resource_ids()->push_back("");
+
+  // Apply the changelist and check the effect.
+  EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
+
+  FileChange changed_files;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(std::move(change_lists), &changed_files));
+
+  int64_t changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_EQ(kBaseResourceListChangestamp + 1, changestamp);
+
+  ResourceEntry entry;
+  EXPECT_EQ(
+      FILE_ERROR_OK,
+      metadata_->GetResourceEntryByPath(
+          util::GetDriveTeamDrivesRootPath().AppendASCII(kOldName), &entry));
+  EXPECT_EQ(kTeamDriveId, entry.resource_id());
+
+  // Change to Team Drive entry is also conted as a file change.
+  EXPECT_EQ(1U, changed_files.size());
+
+  // Second change, which updates Team Drive name
+  change_lists.clear();
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+  team_drive.set_title(kNewName);
+  change_lists[0]->mutable_entries()->push_back(team_drive);
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 2);
+  change_lists[0]->mutable_parent_resource_ids()->push_back("");
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(std::move(change_lists), &changed_files));
+  EXPECT_EQ(
+      FILE_ERROR_OK,
+      metadata_->GetResourceEntryByPath(
+          util::GetDriveTeamDrivesRootPath().AppendASCII(kNewName), &entry));
+  EXPECT_EQ(kTeamDriveId, entry.resource_id());
+
+  // Delete the team drive.
+  change_lists.clear();
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 3);
+  team_drive.set_deleted(true);
+  change_lists[0]->mutable_parent_resource_ids()->push_back("");
+  change_lists[0]->mutable_entries()->push_back(team_drive);
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(std::move(change_lists), &changed_files));
+  EXPECT_EQ(
+      FILE_ERROR_NOT_FOUND,
+      metadata_->GetResourceEntryByPath(
+          util::GetDriveTeamDrivesRootPath().AppendASCII(kNewName), &entry));
 }
 
 }  // namespace internal
