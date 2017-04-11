@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('selection state', function() {
-  var state;
+  var selection;
   var action;
 
   function select(items, anchor, add) {
@@ -16,7 +16,7 @@ suite('selection state', function() {
   }
 
   setup(function() {
-    state = {
+    selection = {
       anchor: null,
       items: {},
     };
@@ -24,68 +24,68 @@ suite('selection state', function() {
 
   test('can select an item', function() {
     action = select(['1'], '1', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
-    assertDeepEquals(['1'], normalizeSet(state.items));
-    assertEquals('1', state.anchor);
+    assertDeepEquals(['1'], normalizeSet(selection.items));
+    assertEquals('1', selection.anchor);
 
     // Replace current selection.
     action = select(['2'], '2', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals(['2'], normalizeSet(state.items));
-    assertEquals('2', state.anchor);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals(['2'], normalizeSet(selection.items));
+    assertEquals('2', selection.anchor);
 
     // Add to current selection.
     action = select(['3'], '3', true);
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals(['2', '3'], normalizeSet(state.items));
-    assertEquals('3', state.anchor);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals(['2', '3'], normalizeSet(selection.items));
+    assertEquals('3', selection.anchor);
   });
 
   test('can select multiple items', function() {
     action = select(['1', '2', '3'], '3', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals(['1', '2', '3'], normalizeSet(state.items));
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals(['1', '2', '3'], normalizeSet(selection.items));
 
     action = select(['3', '4'], '4', true);
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals(['1', '2', '3', '4'], normalizeSet(state.items));
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals(['1', '2', '3', '4'], normalizeSet(selection.items));
   });
 
   test('is cleared when selected folder changes', function() {
     action = select(['1', '2', '3'], '3', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     action = bookmarks.actions.selectFolder('2');
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({}, state.items);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals({}, selection.items);
   });
 
   test('is cleared when search finished', function() {
     action = select(['1', '2', '3'], '3', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     action = bookmarks.actions.setSearchResults(['2']);
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({}, state.items);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals({}, selection.items);
   });
 
   test('is cleared when search cleared', function() {
     action = select(['1', '2', '3'], '3', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     action = bookmarks.actions.clearSearch();
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({}, state.items);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals({}, selection.items);
   });
 
   test('deselect items', function() {
     action = select(['1', '2', '3'], '3', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     action = bookmarks.actions.deselectItems();
-    state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({}, state.items);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+    assertDeepEquals({}, selection.items);
   });
 
   test('deselects items when they are deleted', function() {
@@ -101,19 +101,19 @@ suite('selection state', function() {
     ]));
 
     action = select(['2', '4', '5'], '4', false);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     action = bookmarks.actions.removeBookmark('1', '0', 0, nodeList);
-    state = bookmarks.SelectionState.updateSelection(state, action);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
 
-    assertDeepEquals(['5'], normalizeSet(state.items));
-    assertEquals(null, state.anchor);
+    assertDeepEquals(['5'], normalizeSet(selection.items));
+    assertEquals(null, selection.anchor);
   });
 });
 
 suite('closed folder state', function() {
   var nodes;
-  var state;
+  var closedFolders;
   var action;
 
   setup(function() {
@@ -125,54 +125,54 @@ suite('closed folder state', function() {
               createItem('3'),
             ]),
         createFolder('4', []));
-    state = new Set();
+    closedFolders = new Set();
   });
 
   test('toggle folder open state', function() {
     action = bookmarks.actions.changeFolderOpen('2', false);
-    state =
-        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(state.has('1'));
-    assertTrue(state.has('2'));
+    closedFolders = bookmarks.ClosedFolderState.updateClosedFolders(
+        closedFolders, action, nodes);
+    assertFalse(closedFolders.has('1'));
+    assertTrue(closedFolders.has('2'));
   });
 
   test('select folder with closed parent', function() {
     // Close '1'
     action = bookmarks.actions.changeFolderOpen('1', false);
-    state =
-        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertTrue(state.has('1'));
-    assertFalse(state.has('2'));
+    closedFolders = bookmarks.ClosedFolderState.updateClosedFolders(
+        closedFolders, action, nodes);
+    assertTrue(closedFolders.has('1'));
+    assertFalse(closedFolders.has('2'));
 
     // Should re-open when '2' is selected.
     action = bookmarks.actions.selectFolder('2');
-    state =
-        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(state.has('1'));
+    closedFolders = bookmarks.ClosedFolderState.updateClosedFolders(
+        closedFolders, action, nodes);
+    assertFalse(closedFolders.has('1'));
   });
 
   test('move nodes in a closed folder', function() {
     // Moving bookmark items should not open folders.
-    state = new Set(['1']);
+    closedFolders = new Set(['1']);
     action = bookmarks.actions.moveBookmark('3', '1', 1, '1', 0);
-    state =
-        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+    closedFolders = bookmarks.ClosedFolderState.updateClosedFolders(
+        closedFolders, action, nodes);
 
-    assertTrue(state.has('1'));
+    assertTrue(closedFolders.has('1'));
 
     // Moving folders should open their parents.
-    state = new Set(['1', '2']);
+    closedFolders = new Set(['1', '2']);
     action = bookmarks.actions.moveBookmark('4', '2', 0, '0', 1);
-    state =
-        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(state.has('1'));
-    assertFalse(state.has('2'));
+    closedFolders = bookmarks.ClosedFolderState.updateClosedFolders(
+        closedFolders, action, nodes);
+    assertFalse(closedFolders.has('1'));
+    assertFalse(closedFolders.has('2'));
   });
 });
 
 suite('selected folder', function() {
   var nodes;
-  var state;
+  var selectedFolder;
   var action;
 
   setup(function() {
@@ -185,58 +185,58 @@ suite('selected folder', function() {
           ]),
     ]));
 
-    state = '1';
+    selectedFolder = '1';
   });
 
   test('updates from selectFolder action', function() {
     action = bookmarks.actions.selectFolder('2');
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
-    assertEquals('2', state);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
+    assertEquals('2', selectedFolder);
   });
 
   test('updates when parent of selected folder is closed', function() {
     action = bookmarks.actions.selectFolder('2');
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
 
     action = bookmarks.actions.changeFolderOpen('1', false);
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
-    assertEquals('1', state);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
+    assertEquals('1', selectedFolder);
   });
 
   test('selects ancestor when selected folder is deleted', function() {
     action = bookmarks.actions.selectFolder('3');
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
 
     // Delete the selected folder:
     action = bookmarks.actions.removeBookmark('3', '2', 0, nodes);
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
 
-    assertEquals('2', state);
+    assertEquals('2', selectedFolder);
 
     action = bookmarks.actions.selectFolder('4');
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
 
     // Delete an ancestor of the selected folder:
     action = bookmarks.actions.removeBookmark('2', '1', 0, nodes);
-    state = bookmarks.SelectedFolderState.updateSelectedFolder(
-        state, action, nodes);
+    selectedFolder = bookmarks.SelectedFolderState.updateSelectedFolder(
+        selectedFolder, action, nodes);
 
-    assertEquals('1', state);
+    assertEquals('1', selectedFolder);
   });
 });
 
 suite('node state', function() {
-  var state;
+  var nodes;
   var action;
 
   setup(function() {
-    state = testTree(
+    nodes = testTree(
         createFolder(
             '1',
             [
@@ -249,29 +249,29 @@ suite('node state', function() {
 
   test('updates when a node is edited', function() {
     action = bookmarks.actions.editBookmark('2', {title: 'b'});
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('b', state['2'].title);
-    assertEquals('a.com', state['2'].url);
+    assertEquals('b', nodes['2'].title);
+    assertEquals('a.com', nodes['2'].url);
 
     action = bookmarks.actions.editBookmark('2', {title: 'c', url: 'c.com'});
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('c', state['2'].title);
-    assertEquals('c.com', state['2'].url);
+    assertEquals('c', nodes['2'].title);
+    assertEquals('c.com', nodes['2'].url);
 
     action = bookmarks.actions.editBookmark('4', {title: 'folder'});
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('folder', state['4'].title);
-    assertEquals(undefined, state['4'].url);
+    assertEquals('folder', nodes['4'].title);
+    assertEquals(undefined, nodes['4'].url);
 
     // Cannot edit URL of a folder:
     action = bookmarks.actions.editBookmark('4', {url: 'folder.com'});
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('folder', state['4'].title);
-    assertEquals(undefined, state['4'].url);
+    assertEquals('folder', nodes['4'].title);
+    assertEquals(undefined, nodes['4'].url);
   });
 
   test('updates when a node is created', function() {
@@ -282,11 +282,11 @@ suite('node state', function() {
       index: 2,
     };
     action = bookmarks.actions.createBookmark(folder.id, folder);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('1', state['6'].parentId);
-    assertDeepEquals([], state['6'].children);
-    assertDeepEquals(['2', '3', '6', '4'], state['1'].children);
+    assertEquals('1', nodes['6'].parentId);
+    assertDeepEquals([], nodes['6'].children);
+    assertDeepEquals(['2', '3', '6', '4'], nodes['1'].children);
 
     // Add a new item to that folder.
     var item = {
@@ -297,56 +297,56 @@ suite('node state', function() {
     };
 
     action = bookmarks.actions.createBookmark(item.id, item);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertEquals('6', state['7'].parentId);
-    assertEquals(undefined, state['7'].children);
-    assertDeepEquals(['7'], state['6'].children);
+    assertEquals('6', nodes['7'].parentId);
+    assertEquals(undefined, nodes['7'].children);
+    assertDeepEquals(['7'], nodes['6'].children);
   });
 
   test('updates when a node is deleted', function() {
-    action = bookmarks.actions.removeBookmark('3', '1', 1, state);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    action = bookmarks.actions.removeBookmark('3', '1', 1, nodes);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['2', '4'], state['1'].children);
+    assertDeepEquals(['2', '4'], nodes['1'].children);
 
-    assertDeepEquals(['2', '4'], state['1'].children);
-    assertEquals(undefined, state['3']);
+    assertDeepEquals(['2', '4'], nodes['1'].children);
+    assertEquals(undefined, nodes['3']);
   });
 
   test('removes all children of deleted nodes', function() {
-    action = bookmarks.actions.removeBookmark('1', '0', 0, state);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    action = bookmarks.actions.removeBookmark('1', '0', 0, nodes);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['0', '5'], Object.keys(state).sort());
+    assertDeepEquals(['0', '5'], Object.keys(nodes).sort());
   });
 
   test('updates when a node is moved', function() {
     // Move within the same folder backwards.
     action = bookmarks.actions.moveBookmark('3', '1', 0, '1', 1);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['3', '2', '4'], state['1'].children);
+    assertDeepEquals(['3', '2', '4'], nodes['1'].children);
 
     // Move within the same folder forwards.
     action = bookmarks.actions.moveBookmark('3', '1', 2, '1', 0);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['2', '4', '3'], state['1'].children);
+    assertDeepEquals(['2', '4', '3'], nodes['1'].children);
 
     // Move between different folders.
     action = bookmarks.actions.moveBookmark('4', '5', 0, '1', 1);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['2', '3'], state['1'].children);
-    assertDeepEquals(['4'], state['5'].children);
+    assertDeepEquals(['2', '3'], nodes['1'].children);
+    assertDeepEquals(['4'], nodes['5'].children);
   });
 
   test('updates when children of a node are reordered', function() {
     action = bookmarks.actions.reorderChildren('1', ['4', '2', '3']);
-    state = bookmarks.NodeState.updateNodes(state, action);
+    nodes = bookmarks.NodeState.updateNodes(nodes, action);
 
-    assertDeepEquals(['4', '2', '3'], state['1'].children);
+    assertDeepEquals(['4', '2', '3'], nodes['1'].children);
   });
 });
 
@@ -354,7 +354,7 @@ suite('search state', function() {
   var state;
 
   setup(function() {
-    // Search touches a few different things, so we test using the entire state:
+    // Search touches a few different things, so we test using the entire state.
     state = bookmarks.util.createEmptyState();
     state.nodes = testTree(createFolder('1', [
       createFolder(
