@@ -491,8 +491,8 @@ class DistributedBuilder(SimpleBuilder):
                       updateEbuild_successful and
                       was_build_successful and
                       build_finished)
-        self._RunStage(completion_stages.PublishUprevChangesStage, publish,
-                       stage_push)
+        self._RunStage(completion_stages.PublishUprevChangesStage,
+                       self.sync_stage, publish, stage_push)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""

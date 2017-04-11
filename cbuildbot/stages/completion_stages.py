@@ -963,16 +963,19 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 class PublishUprevChangesStage(generic_stages.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
 
-  def __init__(self, builder_run, success, stage_push=False, **kwargs):
+  def __init__(self, builder_run, sync_stage, success, stage_push=False,
+               **kwargs):
     """Constructor.
 
     Args:
       builder_run: BuilderRun object.
+      sync_stage: An instance of sync stage.
       success: Boolean indicating whether the build succeeded.
       stage_push: Indicating whether to stage the push instead of pushing
                   it to master, default to False.
     """
     super(PublishUprevChangesStage, self).__init__(builder_run, **kwargs)
+    self.sync_stage = sync_stage
     self.success = success
     self.stage_push = stage_push
 
@@ -1068,6 +1071,12 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       return False
 
   def PerformStage(self):
+    if (config_lib.IsMasterCQ(self._run.config) and
+        not self.sync_stage.pool.HasPickedUpCLs()):
+      logging.info('No CLs have been picked up and no slaves have been '
+                   'scheduled in this run. Will not publish uprevs.')
+      return
+
     overlays, push_overlays = self._ExtractOverlays()
 
     staging_branch = None

@@ -17,6 +17,7 @@ from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
@@ -875,10 +876,6 @@ class PublishUprevChangesStageTest(
   def _Prepare(self, bot_id=None, **kwargs):
     super(PublishUprevChangesStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self._run.config['manifest_version'] = True
-    self._run.config['build_type'] = self.build_type
-    self._run.config['master'] = True
-
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
                      '_GetPortageEnvVar')
@@ -886,18 +883,21 @@ class PublishUprevChangesStageTest(
                      '_ExtractOverlays', return_value=[['foo'], ['bar']])
     self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
-    self.build_type = constants.CHROME_PFQ_TYPE
+    self.PatchObject(commands, 'BuildRootGitCleanup')
+    self.PatchObject(generic_stages.BuilderStage, 'GetRepoRepository')
+    self.PatchObject(commands, 'UprevPackages')
 
     self._Prepare()
 
   def ConstructStage(self):
-    return completion_stages.PublishUprevChangesStage(self._run, success=True)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage.pool = mock.MagicMock()
+    return completion_stages.PublishUprevChangesStage(
+        self._run, sync_stage, success=True)
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
-    self._Prepare(extra_config={'build_type': constants.BUILD_FROM_SOURCE_TYPE,
-                                'push_overlays': constants.PUBLIC_OVERLAYS,
-                                'master': True},
+    self._Prepare(extra_config={'push_overlays': constants.PUBLIC_OVERLAYS},
                   extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
     self._run.options.prebuilts = True
     self.RunStage()
@@ -969,11 +969,8 @@ class PublishUprevChangesStageTest(
 
   def testAndroidPush(self):
     """Test values for PublishUprevChanges with Android PFQ."""
-    self.build_type = constants.ANDROID_PFQ_TYPE
     self._Prepare(bot_id=constants.ANDROID_PFQ_MASTER,
-                  extra_config={'build_type': constants.BUILD_FROM_SOURCE_TYPE,
-                                'push_overlays': constants.PUBLIC_OVERLAYS,
-                                'master': True},
+                  extra_config={'push_overlays': constants.PUBLIC_OVERLAYS},
                   extra_cmd_args=['--android_rev',
                                   constants.ANDROID_REV_LATEST])
     self._run.options.prebuilts = True
@@ -983,3 +980,28 @@ class PublishUprevChangesStageTest(
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedAndroid'))
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertFalse(metadata_dict.has_key('UprevvedChrome'))
+
+  def testPerformStageOnChromePFQ(self):
+    """Test PerformStage on ChromePFQ."""
+    stage = self.ConstructStage()
+    stage.sync_stage.pool.HasPickedUpCLs.return_value = True
+    stage.PerformStage()
+    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
+                                           staging_branch=None)
+
+  def testPerformStageOnCQMasterWithPickedUpCLs(self):
+    """Test PerformStage on CQ-master with picked up CLs."""
+    self._Prepare(bot_id=constants.CQ_MASTER)
+    stage = self.ConstructStage()
+    stage.sync_stage.pool.HasPickedUpCLs.return_value = True
+    stage.PerformStage()
+    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
+                                           staging_branch=None)
+
+  def testPerformStageOnCQMasterWithoutPickedUpCLs(self):
+    """Test PerformStage on CQ-master without picked up CLs."""
+    self._Prepare(bot_id=constants.CQ_MASTER)
+    stage = self.ConstructStage()
+    stage.sync_stage.pool.HasPickedUpCLs.return_value = False
+    stage.PerformStage()
+    self.push_mock.assert_not_called()
