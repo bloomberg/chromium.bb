@@ -19,6 +19,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +55,7 @@ ContentSuggestionsService::ContentSuggestionsService(
   }
 
   RestoreDismissedCategoriesFromPrefs();
+  metrics::RecordRemoteSuggestionsProviderState(AreRemoteSuggestionsEnabled());
 }
 
 ContentSuggestionsService::~ContentSuggestionsService() = default;
@@ -345,21 +347,19 @@ void ContentSuggestionsService::ReloadSuggestions() {
   }
 }
 
-void ContentSuggestionsService::SetRemoteSuggestionsServiceEnabled(
-    bool enabled) {
+void ContentSuggestionsService::SetRemoteSuggestionsEnabled(bool enabled) {
   pref_service_->SetBoolean(prefs::kEnableSnippets, enabled);
 }
 
-bool ContentSuggestionsService::IsRemoteSuggestionsServiceEnabled() const {
+bool ContentSuggestionsService::AreRemoteSuggestionsEnabled() const {
   return pref_service_->GetBoolean(prefs::kEnableSnippets);
 }
 
-bool ContentSuggestionsService::IsRemoteSuggestionsServiceManaged() const {
+bool ContentSuggestionsService::AreRemoteSuggestionsManaged() const {
   return pref_service_->IsManagedPreference(prefs::kEnableSnippets);
 }
 
-bool ContentSuggestionsService::IsRemoteSuggestionsServiceManagedByCustodian()
-    const {
+bool ContentSuggestionsService::AreRemoteSuggestionsManagedByCustodian() const {
   return pref_service_->IsPreferenceManagedByCustodian(prefs::kEnableSnippets);
 }
 

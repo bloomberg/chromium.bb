@@ -58,6 +58,8 @@ void OnMoreButtonClicked(Category category, int position);
 
 void OnCategoryDismissed(Category category);
 
+void RecordRemoteSuggestionsProviderState(bool enabled);
+
 }  // namespace metrics
 }  // namespace ntp_snippets
 

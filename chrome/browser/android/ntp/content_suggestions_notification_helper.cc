@@ -110,6 +110,20 @@ bool ContentSuggestionsNotificationHelper::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+static void RecordNotificationOptOut(JNIEnv* env,
+                                     const JavaParamRef<jclass>& class_object,
+                                     jint reason) {
+  RecordContentSuggestionsNotificationOptOut(
+      static_cast<ContentSuggestionsNotificationOptOut>(reason));
+}
+
+static void RecordNotificationAction(JNIEnv* env,
+                                     const JavaParamRef<jclass>& class_object,
+                                     jint action) {
+  RecordContentSuggestionsNotificationAction(
+      static_cast<ContentSuggestionsNotificationAction>(action));
+}
+
 static void ReceiveFlushedMetrics(JNIEnv* env,
                                   const JavaParamRef<jclass>& class_object,
                                   jint tap_count,

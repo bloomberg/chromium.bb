@@ -12,7 +12,10 @@ enum ContentSuggestionsNotificationImpression {
   MAX_CONTENT_SUGGESTIONS_NOTIFICATION_IMPRESSION
 };
 
+// TODO(https://crbug.com/710254) Switch to enum class to remove need for
+// prefix strip.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
+// GENERATED_JAVA_PREFIX_TO_STRIP: CONTENT_SUGGESTIONS_
 enum ContentSuggestionsNotificationAction {
   CONTENT_SUGGESTIONS_TAP = 0,    // User tapped notification to open article.
   CONTENT_SUGGESTIONS_DISMISSAL,  // User swiped notification to dismiss it.
@@ -23,9 +26,13 @@ enum ContentSuggestionsNotificationAction {
   CONTENT_SUGGESTIONS_HIDE_DISABLED,   // NTP no longer shows whole category.
   CONTENT_SUGGESTIONS_HIDE_SHUTDOWN,   // Content sugg service is shutting down.
 
+  CONTENT_SUGGESTIONS_OPEN_SETTINGS,  // User opened settings from notification.
+
   MAX_CONTENT_SUGGESTIONS_NOTIFICATION_ACTION
 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
+// GENERATED_JAVA_PREFIX_TO_STRIP: CONTENT_SUGGESTIONS_
 enum ContentSuggestionsNotificationOptOut {
   CONTENT_SUGGESTIONS_IMPLICIT = 0,  // User ignored notifications.
   CONTENT_SUGGESTIONS_EXPLICIT,      // User explicitly opted-out.

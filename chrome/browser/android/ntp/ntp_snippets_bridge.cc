@@ -157,20 +157,19 @@ static void OnSuggestionTargetVisited(JNIEnv* env,
       base::TimeDelta::FromMilliseconds(visit_time_ms));
 }
 
-static void SetRemoteSuggestionsServiceEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
-    jboolean enabled) {
+static void SetRemoteSuggestionsEnabled(JNIEnv* env,
+                                        const JavaParamRef<jclass>& caller,
+                                        jboolean enabled) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
       ContentSuggestionsServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());
   if (!content_suggestions_service)
     return;
 
-  content_suggestions_service->SetRemoteSuggestionsServiceEnabled(enabled);
+  content_suggestions_service->SetRemoteSuggestionsEnabled(enabled);
 }
 
-static jboolean IsRemoteSuggestionsServiceEnabled(
+static jboolean AreRemoteSuggestionsEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
@@ -179,11 +178,11 @@ static jboolean IsRemoteSuggestionsServiceEnabled(
   if (!content_suggestions_service)
     return false;
 
-  return content_suggestions_service->IsRemoteSuggestionsServiceEnabled();
+  return content_suggestions_service->AreRemoteSuggestionsEnabled();
 }
 
-// Returns true if the remote service is managed by an adminstrator's policy.
-static jboolean IsRemoteSuggestionsServiceManaged(
+// Returns true if the remote provider is managed by an adminstrator's policy.
+static jboolean AreRemoteSuggestionsManaged(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
@@ -192,11 +191,11 @@ static jboolean IsRemoteSuggestionsServiceManaged(
   if (!content_suggestions_service)
     return false;
 
-  return content_suggestions_service->IsRemoteSuggestionsServiceManaged();
+  return content_suggestions_service->AreRemoteSuggestionsManaged();
 }
 
-// Returns true if the remote service is managed by a supervisor
-static jboolean IsRemoteSuggestionsServiceManagedByCustodian(
+// Returns true if the remote provider is managed by a supervisor
+static jboolean AreRemoteSuggestionsManagedByCustodian(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
@@ -205,8 +204,7 @@ static jboolean IsRemoteSuggestionsServiceManagedByCustodian(
   if (!content_suggestions_service)
     return false;
 
-  return content_suggestions_service
-      ->IsRemoteSuggestionsServiceManagedByCustodian();
+  return content_suggestions_service->AreRemoteSuggestionsManagedByCustodian();
 }
 
 static void SetContentSuggestionsNotificationsEnabled(

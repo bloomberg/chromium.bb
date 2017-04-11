@@ -3347,6 +3347,38 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ContentSuggestions.NotificationsPreferenceOff">
+  <owner>dgn@chromium.org</owner>
+  <owner>finkm@chromium.org</owner>
+  <description>
+    The user turned off the content suggestions notifications in the settings.
+  </description>
+</action>
+
+<action name="ContentSuggestions.NotificationsPreferenceOn">
+  <owner>dgn@chromium.org</owner>
+  <owner>finkm@chromium.org</owner>
+  <description>
+    The user turned on the content suggestions notifications in the settings.
+  </description>
+</action>
+
+<action name="ContentSuggestions.RemoteSuggestionsPreferenceOff">
+  <owner>dgn@chromium.org</owner>
+  <owner>finkm@chromium.org</owner>
+  <description>
+    The user turned off remote content suggestions in the settings.
+  </description>
+</action>
+
+<action name="ContentSuggestions.RemoteSuggestionsPreferenceOn">
+  <owner>dgn@chromium.org</owner>
+  <owner>finkm@chromium.org</owner>
+  <description>
+    The user turned on remote content suggestions in the settings.
+  </description>
+</action>
+
 <action name="ContextualSearch.BackPressClose">
   <owner>donnd@chromium.org</owner>
   <description>

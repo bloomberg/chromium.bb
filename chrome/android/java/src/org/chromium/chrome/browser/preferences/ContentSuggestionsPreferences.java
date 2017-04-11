@@ -4,19 +4,29 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
+import android.support.annotation.IntDef;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Settings fragment that allows the user to configure content suggestions.
@@ -27,6 +37,14 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
     private static final String PREF_CAVEATS = "suggestions_caveats";
     private static final String PREF_LEARN_MORE = "suggestions_learn_more";
 
+    private static final String LAUNCH_SOURCE_EXTRA = "source";
+
+    @IntDef({LAUNCH_SOURCE_SETTINGS, LAUNCH_SOURCE_NOTIFICATION})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LaunchSource {}
+    public static final int LAUNCH_SOURCE_SETTINGS = 0;
+    public static final int LAUNCH_SOURCE_NOTIFICATION = 1;
+
     private boolean mIsEnabled;
 
     // Preferences, modified as the state of the screen changes.
@@ -34,6 +52,18 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
     private ChromeSwitchPreference mNotificationsSwitch;
     private Preference mCaveatsDescription;
     private Preference mLearnMoreButton;
+
+    /**
+     * Creates an intent for launching the content suggestions settings page.
+     * @param context The current Activity, or an application context if no Activity is available.
+     * @param source Where the intent is going to be launched from. See {@link LaunchSource}
+     */
+    public static Intent createLaunchIntent(Context context, @LaunchSource int source) {
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                context, ContentSuggestionsPreferences.class.getName());
+        intent.putExtra(LAUNCH_SOURCE_EXTRA, source);
+        return intent;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,9 +73,17 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         setHasOptionsMenu(true);
         finishSwitchInitialisation();
 
-        boolean isEnabled = SnippetsBridge.isRemoteSuggestionsServiceEnabled();
+        boolean isEnabled = SnippetsBridge.areRemoteSuggestionsEnabled();
         mIsEnabled = !isEnabled; // Opposite so that we trigger side effects below.
         updatePreferences(isEnabled);
+
+        @LaunchSource
+        int launchSource =
+                getActivity().getIntent().getIntExtra(LAUNCH_SOURCE_EXTRA, LAUNCH_SOURCE_SETTINGS);
+        if (launchSource == LAUNCH_SOURCE_NOTIFICATION) {
+            ContentSuggestionsNotificationHelper.recordNotificationAction(
+                    ContentSuggestionsNotificationAction.OPEN_SETTINGS);
+        }
     }
 
     @Override
@@ -102,7 +140,6 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         if (visible) {
             if (findPreference(PREF_NOTIFICATIONS_SWITCH) != null) return;
             getPreferenceScreen().addPreference(mNotificationsSwitch);
-
         } else {
             getPreferenceScreen().removePreference(mNotificationsSwitch);
         }
@@ -128,29 +165,47 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         mFeatureSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                SnippetsBridge.setRemoteSuggestionsServiceEnabled((boolean) newValue);
+                boolean isEnabled = (boolean) newValue;
+                SnippetsBridge.setRemoteSuggestionsEnabled(isEnabled);
                 // TODO(dgn): Is there a way to have a visual feedback of when the remote
                 // suggestions service has completed being turned on or off?
-                ContentSuggestionsPreferences.this.updatePreferences((boolean) newValue);
+                updatePreferences(isEnabled);
+
+                if (isEnabled) {
+                    RecordUserAction.record("ContentSuggestions.RemoteSuggestionsPreferenceOn");
+                } else {
+                    RecordUserAction.record("ContentSuggestions.RemoteSuggestionsPreferenceOff");
+                }
+
                 return true;
             }
         });
         mFeatureSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return SnippetsBridge.isRemoteSuggestionsServiceManaged();
+                return SnippetsBridge.areRemoteSuggestionsManaged();
             }
 
             @Override
             public boolean isPreferenceControlledByCustodian(Preference preference) {
-                return SnippetsBridge.isRemoteSuggestionsServiceManagedByCustodian();
+                return SnippetsBridge.areRemoteSuggestionsManagedByCustodian();
             }
         });
 
         mNotificationsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                SnippetsBridge.setContentSuggestionsNotificationsEnabled((boolean) newValue);
+                boolean isEnabled = (boolean) newValue;
+                SnippetsBridge.setContentSuggestionsNotificationsEnabled(isEnabled);
+
+                if (isEnabled) {
+                    RecordUserAction.record("ContentSuggestions.NotificationsPreferenceOn");
+                } else {
+                    RecordUserAction.record("ContentSuggestions.NotificationsPreferenceOff");
+                    ContentSuggestionsNotificationHelper.recordNotificationOptOut(
+                            ContentSuggestionsNotificationOptOut.EXPLICIT);
+                }
+
                 return true;
             }
         });

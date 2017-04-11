@@ -23,6 +23,7 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -141,6 +142,8 @@ class ContentSuggestionsServiceTest : public testing::Test {
  protected:
   void RegisterPrefs() {
     ContentSuggestionsService::RegisterProfilePrefs(pref_service_->registry());
+    RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
+        pref_service_->registry());
     UserClassifier::RegisterProfilePrefs(pref_service_->registry());
   }
 

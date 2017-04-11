@@ -88,20 +88,20 @@ public class SnippetsBridge
         nativeRemoteSuggestionsSchedulerOnFetchDue();
     }
 
-    public static void setRemoteSuggestionsServiceEnabled(boolean enabled) {
-        nativeSetRemoteSuggestionsServiceEnabled(enabled);
+    public static void setRemoteSuggestionsEnabled(boolean enabled) {
+        nativeSetRemoteSuggestionsEnabled(enabled);
     }
 
-    public static boolean isRemoteSuggestionsServiceEnabled() {
-        return nativeIsRemoteSuggestionsServiceEnabled();
+    public static boolean areRemoteSuggestionsEnabled() {
+        return nativeAreRemoteSuggestionsEnabled();
     }
 
-    public static boolean isRemoteSuggestionsServiceManaged() {
-        return nativeIsRemoteSuggestionsServiceManaged();
+    public static boolean areRemoteSuggestionsManaged() {
+        return nativeAreRemoteSuggestionsManaged();
     }
 
-    public static boolean isRemoteSuggestionsServiceManagedByCustodian() {
-        return nativeIsRemoteSuggestionsServiceManagedByCustodian();
+    public static boolean areRemoteSuggestionsManagedByCustodian() {
+        return nativeAreRemoteSuggestionsManagedByCustodian();
     }
 
     public static void setContentSuggestionsNotificationsEnabled(boolean enabled) {
@@ -361,10 +361,10 @@ public class SnippetsBridge
     private native void nativeReloadSuggestions(long nativeNTPSnippetsBridge);
     private static native void nativeRemoteSuggestionsSchedulerOnFetchDue();
     private static native void nativeRemoteSuggestionsSchedulerRescheduleFetching();
-    private static native void nativeSetRemoteSuggestionsServiceEnabled(boolean enabled);
-    private static native boolean nativeIsRemoteSuggestionsServiceEnabled();
-    private static native boolean nativeIsRemoteSuggestionsServiceManaged();
-    private static native boolean nativeIsRemoteSuggestionsServiceManagedByCustodian();
+    private static native void nativeSetRemoteSuggestionsEnabled(boolean enabled);
+    private static native boolean nativeAreRemoteSuggestionsEnabled();
+    private static native boolean nativeAreRemoteSuggestionsManaged();
+    private static native boolean nativeAreRemoteSuggestionsManagedByCustodian();
     private static native void nativeSetContentSuggestionsNotificationsEnabled(boolean enabled);
     private static native boolean nativeAreContentSuggestionsNotificationsEnabled();
     private native int[] nativeGetCategories(long nativeNTPSnippetsBridge);

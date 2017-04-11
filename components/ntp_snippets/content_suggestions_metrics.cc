@@ -361,5 +361,10 @@ void OnCategoryDismissed(Category category) {
                             HistogramCategories::COUNT);
 }
 
+void RecordRemoteSuggestionsProviderState(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "NewTabPage.ContentSuggestions.Preferences.RemoteSuggestions", enabled);
+}
+
 }  // namespace metrics
 }  // namespace ntp_snippets

@@ -145,7 +145,7 @@ public class MainPreferences extends PreferenceFragment
 
         Preference suggestionsPref = findPreference(PREF_SUGGESTIONS);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
-            setOnOffSummary(suggestionsPref, SnippetsBridge.isRemoteSuggestionsServiceEnabled());
+            setOnOffSummary(suggestionsPref, SnippetsBridge.areRemoteSuggestionsEnabled());
         } else {
             getPreferenceScreen().removePreference(suggestionsPref);
         }

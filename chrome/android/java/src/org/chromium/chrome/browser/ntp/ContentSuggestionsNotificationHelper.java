@@ -30,8 +30,9 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut.ContentSuggestionsNotificationOptOutEnum;
 import org.chromium.chrome.browser.preferences.ContentSuggestionsPreferences;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -74,6 +75,24 @@ public class ContentSuggestionsNotificationHelper {
     private ContentSuggestionsNotificationHelper() {} // Prevent instantiation
 
     /**
+     * Records the reason why Content Suggestions notifications have been opted out.
+     * @see ContentSuggestionsNotificationOptOutEnum;
+     */
+    public static void recordNotificationOptOut(
+            @ContentSuggestionsNotificationOptOutEnum int reason) {
+        nativeRecordNotificationOptOut(reason);
+    }
+
+    /**
+     * Records an action performed on a Content Suggestions notification.
+     * @see ContentSuggestionsNotificationActionEnum;
+     */
+    public static void recordNotificationAction(
+            @ContentSuggestionsNotificationActionEnum int action) {
+        nativeRecordNotificationAction(action);
+    }
+
+    /**
      * Opens the content suggestion when notification is tapped.
      */
     public static final class OpenUrlReceiver extends BroadcastReceiver {
@@ -82,7 +101,7 @@ public class ContentSuggestionsNotificationHelper {
             int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
             String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
             openUrl(intent.getData());
-            recordCachedActionMetric(ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP);
+            recordCachedActionMetric(ContentSuggestionsNotificationAction.TAP);
             removeActiveNotification(category, idWithinCategory);
         }
     }
@@ -95,8 +114,7 @@ public class ContentSuggestionsNotificationHelper {
         public void onReceive(Context context, Intent intent) {
             int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
             String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
-            recordCachedActionMetric(
-                    ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL);
+            recordCachedActionMetric(ContentSuggestionsNotificationAction.DISMISSAL);
             removeActiveNotification(category, idWithinCategory);
         }
     }
@@ -113,8 +131,8 @@ public class ContentSuggestionsNotificationHelper {
                 return; // tapped or swiped
             }
 
-            hideNotification(category, idWithinCategory,
-                    ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE);
+            hideNotification(
+                    category, idWithinCategory, ContentSuggestionsNotificationAction.HIDE_DEADLINE);
         }
     }
 
@@ -173,8 +191,8 @@ public class ContentSuggestionsNotificationHelper {
                         .setSmallIcon(R.drawable.ic_chrome);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
             PendingIntent settingsIntent = PendingIntent.getActivity(context, 0,
-                    PreferencesLauncher.createIntentForSettingsPage(
-                            context, ContentSuggestionsPreferences.class.getName()),
+                    ContentSuggestionsPreferences.createLaunchIntent(
+                            context, ContentSuggestionsPreferences.LAUNCH_SOURCE_NOTIFICATION),
                     0);
             builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
                     settingsIntent);
@@ -349,22 +367,21 @@ public class ContentSuggestionsNotificationHelper {
     }
 
     private static String cachedMetricNameForAction(
-            @ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum
-            int action) {
+            @ContentSuggestionsNotificationActionEnum int action) {
         switch (action) {
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP:
+            case ContentSuggestionsNotificationAction.TAP:
                 return PREF_CACHED_ACTION_TAP;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL:
+            case ContentSuggestionsNotificationAction.DISMISSAL:
                 return PREF_CACHED_ACTION_DISMISSAL;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE:
+            case ContentSuggestionsNotificationAction.HIDE_DEADLINE:
                 return PREF_CACHED_ACTION_HIDE_DEADLINE;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_EXPIRY:
+            case ContentSuggestionsNotificationAction.HIDE_EXPIRY:
                 return PREF_CACHED_ACTION_HIDE_EXPIRY;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_FRONTMOST:
+            case ContentSuggestionsNotificationAction.HIDE_FRONTMOST:
                 return PREF_CACHED_ACTION_HIDE_FRONTMOST;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DISABLED:
+            case ContentSuggestionsNotificationAction.HIDE_DISABLED:
                 return PREF_CACHED_ACTION_HIDE_DISABLED;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_SHUTDOWN:
+            case ContentSuggestionsNotificationAction.HIDE_SHUTDOWN:
                 return PREF_CACHED_ACTION_HIDE_SHUTDOWN;
         }
         return "";
@@ -383,8 +400,7 @@ public class ContentSuggestionsNotificationHelper {
      * @param action The action to update the pref for.
      */
     private static void recordCachedActionMetric(
-            @ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum
-            int action) {
+            @ContentSuggestionsNotificationActionEnum int action) {
         String prefName = cachedMetricNameForAction(action);
         assert !prefName.isEmpty();
 
@@ -393,17 +409,17 @@ public class ContentSuggestionsNotificationHelper {
 
         int consecutiveIgnored = prefs.getInt(PREF_CACHED_CONSECUTIVE_IGNORED, 0);
         switch (action) {
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP:
+            case ContentSuggestionsNotificationAction.TAP:
                 consecutiveIgnored = 0;
                 break;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL:
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE:
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_EXPIRY:
+            case ContentSuggestionsNotificationAction.DISMISSAL:
+            case ContentSuggestionsNotificationAction.HIDE_DEADLINE:
+            case ContentSuggestionsNotificationAction.HIDE_EXPIRY:
                 ++consecutiveIgnored;
                 break;
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_FRONTMOST:
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DISABLED:
-            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_SHUTDOWN:
+            case ContentSuggestionsNotificationAction.HIDE_FRONTMOST:
+            case ContentSuggestionsNotificationAction.HIDE_DISABLED:
+            case ContentSuggestionsNotificationAction.HIDE_SHUTDOWN:
                 break; // no change
         }
 
@@ -457,4 +473,8 @@ public class ContentSuggestionsNotificationHelper {
     private static native void nativeReceiveFlushedMetrics(int tapCount, int dismissalCount,
             int hideDeadlineCount, int hideExpiryCount, int hideFrontmostCount,
             int hideDisabledCount, int hideShutdownCount, int consecutiveIgnored);
+    private static native void nativeRecordNotificationOptOut(
+            @ContentSuggestionsNotificationOptOutEnum int reason);
+    private static native void nativeRecordNotificationAction(
+            @ContentSuggestionsNotificationActionEnum int action);
 }
