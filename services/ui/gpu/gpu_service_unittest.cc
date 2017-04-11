@@ -78,8 +78,8 @@ TEST_F(GpuServiceTest, ServiceDestroyedBeforeBind) {
   // the binding happens on the IO thread.
   BlockIOThread();
   gpu_service()->Bind(std::move(request));
-  DestroyService();
   UnblockIOThread();
+  DestroyService();
 }
 
 // Tests ghat GpuService can be destroyed after Bind() succeeds on the IO

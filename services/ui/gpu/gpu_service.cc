@@ -76,9 +76,10 @@ const base::Callback<void(const Param&)> WrapCallback(
       runner, callback);
 }
 
-void DestroyBinding(
-    std::unique_ptr<mojo::BindingSet<mojom::GpuService>> binding) {
+void DestroyBinding(mojo::BindingSet<mojom::GpuService>* binding,
+                    base::WaitableEvent* wait) {
   binding->CloseAllBindings();
+  wait->Signal();
 }
 
 }  // namespace
@@ -97,6 +98,7 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
       sync_point_manager_(nullptr),
       bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
+  DCHECK(!io_runner_->BelongsToCurrentThread());
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -106,6 +108,12 @@ GpuService::~GpuService() {
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get() =
       base::Callback<void(int, size_t, const std::string&)>();
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  if (io_runner_->PostTask(
+          FROM_HERE, base::Bind(&DestroyBinding, bindings_.get(), &wait))) {
+    wait.Wait();
+  }
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -116,8 +124,6 @@ GpuService::~GpuService() {
   // process begins waiting for them to exit.
   if (owned_shutdown_event_)
     owned_shutdown_event_->Signal();
-  io_runner_->PostTask(FROM_HERE,
-                       base::Bind(&DestroyBinding, base::Passed(&bindings_)));
 }
 
 void GpuService::UpdateGPUInfoFromPreferences(

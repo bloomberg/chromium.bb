@@ -44,24 +44,29 @@ class TestGpuHostDelegate : public GpuHostDelegate {
 // GpuClient
 class TestGpuService : public GpuService {
  public:
-  TestGpuService();
+  explicit TestGpuService(
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner);
   ~TestGpuService() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestGpuService);
 };
 
-TestGpuService::TestGpuService()
+TestGpuService::TestGpuService(
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
     : GpuService(gpu::GPUInfo(),
                  nullptr /* watchdog_thread */,
-                 base::ThreadTaskRunnerHandle::Get(),
+                 std::move(io_runner),
                  gpu::GpuFeatureInfo()) {}
 
 }  // namespace
 
 class GpuHostTest : public testing::Test {
  public:
-  GpuHostTest() {}
+  GpuHostTest() : io_thread_("IOThread") {
+    CHECK(io_thread_.Start());
+    gpu_service_ = base::MakeUnique<TestGpuService>(io_thread_.task_runner());
+  }
   ~GpuHostTest() override {}
 
   GpuHost* gpu_host() { return gpu_host_.get(); }
@@ -77,8 +82,9 @@ class GpuHostTest : public testing::Test {
 
   base::WeakPtr<GpuClient> client_ref_;
 
+  base::Thread io_thread_;
   TestGpuHostDelegate gpu_host_delegate_;
-  TestGpuService gpu_service_;
+  std::unique_ptr<TestGpuService> gpu_service_;
   ui::mojom::GpuServicePtr gpu_service_ptr_;
   std::unique_ptr<GpuHost> gpu_host_;
 
@@ -100,7 +106,7 @@ void GpuHostTest::SetUp() {
   gpu_host_ = base::MakeUnique<GpuHost>(&gpu_host_delegate_);
 
   ui::mojom::GpuServiceRequest request(&gpu_service_ptr_);
-  gpu_service_.Bind(std::move(request));
+  gpu_service_->Bind(std::move(request));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }
 
