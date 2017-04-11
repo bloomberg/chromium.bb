@@ -591,6 +591,11 @@ const char kDownloadInterruptedLearnMoreURL[] =
 const char kSyncEverythingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sync_all";
 
+#if defined(OS_CHROMEOS)
+const char kCrosPrintingLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_printing";
+#endif
+
 const char kCloudPrintLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_cloud_print";

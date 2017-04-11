@@ -581,6 +581,11 @@ extern const char kCrosScheme[];
 extern const char kAndroidAppScheme[];
 #endif
 
+#if defined(OS_CHROMEOS)
+// "Learn more" URL for the Printing section under Options.
+extern const char kCrosPrintingLearnMoreURL[];
+#endif
+
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];
 
