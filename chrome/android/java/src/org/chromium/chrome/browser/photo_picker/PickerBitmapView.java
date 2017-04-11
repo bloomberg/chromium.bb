@@ -13,6 +13,9 @@ import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,6 +30,12 @@ import java.util.List;
  * A container class for a view showing a photo in the Photo Picker.
  */
 public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
+    // The length of the image selection animation (in ms).
+    private static final int ANIMATION_DURATION = 100;
+
+    // The length of the fade in animation (in ms).
+    private static final int IMAGE_FADE_IN_DURATION = 200;
+
     // Our context.
     private Context mContext;
 
@@ -57,6 +66,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     // Whether the image has been loaded already.
     private boolean mImageLoaded;
+
+    // The amount to use for the border.
+    private int mBorder;
 
     /**
      * Constructor for inflating from XML.
@@ -121,6 +133,34 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     @Override
     public void onSelectionStateChange(List<PickerBitmap> selectedItems) {
         updateSelectionState();
+
+        if (!isPictureTile()) return;
+
+        boolean selected = selectedItems.contains(mBitmapDetails);
+        boolean checked = super.isChecked();
+        boolean needsResize = selected != checked;
+        int size = selected && !checked ? mCategoryView.getImageSize() - 2 * mBorder
+                                        : mCategoryView.getImageSize();
+        if (needsResize) {
+            float start;
+            float end;
+            if (size != mCategoryView.getImageSize()) {
+                start = 1f;
+                end = 0.8f;
+            } else {
+                start = 0.8f;
+                end = 1f;
+            }
+
+            Animation animation = new ScaleAnimation(
+                    start, end, // Values for x axis.
+                    start, end, // Values for y axis.
+                    Animation.RELATIVE_TO_SELF, 0.5f, // Pivot X-axis type and value.
+                    Animation.RELATIVE_TO_SELF, 0.5f); // Pivot Y-axis type and value.
+            animation.setDuration(ANIMATION_DURATION);
+            animation.setFillAfter(true); // Keep the results of the animation.
+            mIconView.startAnimation(animation);
+        }
     }
 
     /**
@@ -132,6 +172,8 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mCategoryView = categoryView;
         mSelectionDelegate = mCategoryView.getSelectionDelegate();
         setSelectionDelegate(mSelectionDelegate);
+
+        mBorder = (int) getResources().getDimension(R.dimen.photo_picker_selected_padding);
     }
 
     /**
@@ -182,18 +224,41 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     }
 
     /**
-     * Sets a thumbnail bitmap for the current view.
+     * Sets a thumbnail bitmap for the current view and ensures the selection border is showing, if
+     * the image has already been selected.
      * @param thumbnail The Bitmap to use for the icon ImageView.
      * @return True if no image was loaded before (e.g. not even a low-res image).
      */
     public boolean setThumbnailBitmap(Bitmap thumbnail) {
         mIconView.setImageBitmap(thumbnail);
 
+        // If the tile has been selected before the bitmap has loaded, make sure it shows up with
+        // a selection border on load.
+        if (super.isChecked()) {
+            mIconView.getLayoutParams().height = imageSizeWithBorders();
+            mIconView.getLayoutParams().width = imageSizeWithBorders();
+            addPaddingToParent(mIconView, mBorder);
+        }
+
         boolean noImageWasLoaded = !mImageLoaded;
         mImageLoaded = true;
         updateSelectionState();
 
         return noImageWasLoaded;
+    }
+
+    /** Returns the size of the image plus the pre-determined border on each side. */
+    private int imageSizeWithBorders() {
+        return mCategoryView.getImageSize() - 2 * mBorder;
+    }
+
+    /**
+     * Initiates fading in of the thumbnail. Note, this should not be called if a grainy version of
+     * the thumbnail was loaded from cache. Otherwise a flash will appear.
+     */
+    public void fadeInThumbnail() {
+        mIconView.setAlpha(0.0f);
+        mIconView.animate().alpha(1.0f).setDuration(IMAGE_FADE_IN_DURATION).start();
     }
 
     /**
@@ -205,6 +270,17 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSelectedView.setVisibility(View.GONE);
         mScrim.setVisibility(View.GONE);
         mSpecialTile.setVisibility(View.GONE);
+    }
+
+    /**
+     * Adds padding to the parent of the |view|.
+     * @param view The child view of the view to receive the padding.
+     * @param padding The amount of padding to use (in pixels).
+     */
+    private static void addPaddingToParent(View view, int padding) {
+        ViewGroup layout = (ViewGroup) view.getParent();
+        layout.setPadding(padding, padding, padding, padding);
+        layout.requestLayout();
     }
 
     /**

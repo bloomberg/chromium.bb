@@ -112,7 +112,8 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mContext, mColumns);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        // TODO(finnur): Implement grid spacing.
+        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(mColumns, mPadding));
+
         // TODO(finnur): Implement caching.
         // TODO(finnur): Remove this once the decoder service is in place.
         prepareBitmaps();
@@ -225,5 +226,42 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
         }
 
         mListener.onPickerUserAction(PhotoPickerListener.Action.PHOTOS_SELECTED, photos);
+    }
+
+    /**
+     * A class for implementing grid spacing between items.
+     */
+    private class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+        // The number of spans to account for.
+        private int mSpanCount;
+
+        // The amount of spacing to use.
+        private int mSpacing;
+
+        public GridSpacingItemDecoration(int spanCount, int spacing) {
+            mSpanCount = spanCount;
+            mSpacing = spacing;
+        }
+
+        @Override
+        public void getItemOffsets(
+                Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            int left = 0, right = 0, top = 0, bottom = 0;
+            int position = parent.getChildAdapterPosition(view);
+
+            if (position >= 0) {
+                int column = position % mSpanCount;
+
+                left = mSpacing - ((column * mSpacing) / mSpanCount);
+                right = (column + 1) * mSpacing / mSpanCount;
+
+                if (position < mSpanCount) {
+                    top = mSpacing;
+                }
+                bottom = mSpacing;
+            }
+
+            outRect.set(left, top, right, bottom);
+        }
     }
 }
