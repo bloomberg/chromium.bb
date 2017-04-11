@@ -422,7 +422,7 @@ bool TCPSocketPosix::SetKeepAlive(bool enable, int delay) {
 
 bool TCPSocketPosix::SetNoDelay(bool no_delay) {
   DCHECK(socket_);
-  return SetTCPNoDelay(socket_->socket_fd(), no_delay);
+  return SetTCPNoDelay(socket_->socket_fd(), no_delay) == OK;
 }
 
 void TCPSocketPosix::Close() {
