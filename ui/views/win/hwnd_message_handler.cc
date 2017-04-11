@@ -1690,6 +1690,13 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   // We are now creating a fake mouse event with pointer type of pen from
   // the WM_POINTER message and then setting up an associated pointer
   // details in the MouseEvent which contains the pen's information.
+  ui::EventPointerType input_type = ui::EventPointerType::POINTER_TYPE_PEN;
+  // TODO(lanwei): penFlags of PEN_FLAG_INVERTED may also indicate we are using
+  // an eraser, but it is under debate. Please see
+  // https://github.com/w3c/pointerevents/issues/134/.
+  if (pointer_pen_info.penFlags & PEN_FLAG_ERASER)
+    input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
+
   float pressure = static_cast<float>(pointer_pen_info.pressure) / 1024;
   float rotation = pointer_pen_info.rotation;
   int tilt_x = pointer_pen_info.tiltX;
@@ -1745,9 +1752,8 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   ui::MouseEvent event(event_type, point, point, base::TimeTicks::Now(), flag,
                        flag);
   ui::PointerDetails pointer_details(
-      ui::EventPointerType::POINTER_TYPE_PEN, pointer_id,
-      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure, tilt_x, tilt_y,
-      /* tangential_pressure */ 0.0f, rotation);
+      input_type, pointer_id, /* radius_x */ 0.0f, /* radius_y */ 0.0f,
+      pressure, tilt_x, tilt_y, /* tangential_pressure */ 0.0f, rotation);
   event.set_pointer_details(pointer_details);
   event.SetClickCount(click_count);
 
