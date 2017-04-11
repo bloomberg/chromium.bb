@@ -10402,6 +10402,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_EXT_INTER
 
           av1_invalid_rd_stats(&tmp_rd_stats);
+          x->skip = 0;
 
           mbmi->ref_mv_idx = 1 + ref_idx;
 
