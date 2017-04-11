@@ -75,7 +75,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
                         HitTestAction) override;
   PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;

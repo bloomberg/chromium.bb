@@ -2228,7 +2228,7 @@ void Document::UpdateStyleAndLayout() {
     return;
 
   if (frame_view->NeedsLayout())
-    frame_view->Layout();
+    frame_view->UpdateLayout();
 
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
@@ -3038,7 +3038,7 @@ void Document::ImplicitClose() {
     if (View() && !GetLayoutViewItem().IsNull() &&
         (!GetLayoutViewItem().FirstChild() ||
          GetLayoutViewItem().NeedsLayout()))
-      View()->Layout();
+      View()->UpdateLayout();
   }
 
   load_event_progress_ = kLoadEventCompleted;

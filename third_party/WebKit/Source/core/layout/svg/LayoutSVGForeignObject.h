@@ -50,7 +50,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   FloatRect ObjectBoundingBox() const override {
     return FloatRect(FrameRect());

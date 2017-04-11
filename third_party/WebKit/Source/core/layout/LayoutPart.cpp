@@ -271,7 +271,7 @@ void LayoutPart::StyleDidChange(StyleDifference diff,
   }
 }
 
-void LayoutPart::GetLayout() {
+void LayoutPart::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   ClearNeedsLayout();
@@ -358,7 +358,7 @@ void LayoutPart::UpdateGeometry() {
   // FrameViewBase size.
   if (frame_view && frame_view->NeedsLayout() &&
       frame_view->GetFrame().GetPage())
-    frame_view->Layout();
+    frame_view->UpdateLayout();
 
   frame_view_base->GeometryMayHaveChanged();
 }

@@ -56,7 +56,7 @@ class LayoutRubyRun final : public LayoutBlockFlow {
 
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
   void AddChild(LayoutObject* child,

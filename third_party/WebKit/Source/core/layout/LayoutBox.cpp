@@ -485,7 +485,7 @@ void LayoutBox::UpdateFromStyle() {
   SetHasReflection(style_to_use.BoxReflect());
 }
 
-void LayoutBox::GetLayout() {
+void LayoutBox::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
@@ -2608,7 +2608,7 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
       LayoutBox* item_marker = ToLayoutBox(item_child);
       // Make sure to compute the autosized width.
       if (item_marker->NeedsLayout())
-        item_marker->GetLayout();
+        item_marker->UpdateLayout();
       max_width = std::max<float>(
           max_width, ToLayoutListMarker(item_marker)->LogicalWidth().ToFloat());
       break;

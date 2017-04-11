@@ -135,7 +135,7 @@ class CORE_EXPORT FrameView final
 
   void SetContentsSize(const IntSize&);
 
-  void Layout();
+  void UpdateLayout();
   bool DidFirstLayout() const;
   void ScheduleRelayout();
   void ScheduleRelayoutOfSubtree(LayoutObject*);

@@ -105,7 +105,7 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::MaxPreferredLogicalWidth()
   return layout_object_in_flow_thread_->MaxPreferredLogicalWidth();
 }
 
-void LayoutMultiColumnSpannerPlaceholder::GetLayout() {
+void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
   DCHECK(NeedsLayout());
 
   // The placeholder, like any other block level object, has its logical top

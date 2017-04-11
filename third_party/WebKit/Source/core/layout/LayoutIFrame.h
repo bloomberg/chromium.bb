@@ -40,7 +40,7 @@ class LayoutIFrame final : public LayoutPart {
   bool ShouldComputeSizeAsReplaced() const override;
   bool IsInlineBlockOrInlineTable() const override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutIFrame || LayoutPart::IsOfType(type);

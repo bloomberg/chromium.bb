@@ -31,7 +31,7 @@ class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
   const char* GetName() const override { return "LayoutPagedFlowThread"; }
   bool NeedsNewWidth() const override;
   void UpdateLogicalWidth() override;
-  virtual void GetLayout();
+  void UpdateLayout() override;
 
  private:
   bool DescendantIsValidColumnSpanner(

@@ -59,7 +59,7 @@ class LayoutMedia : public LayoutImage {
   const char* GetName() const override { return "LayoutMedia"; }
 
  protected:
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectMedia || LayoutImage::IsOfType(type);

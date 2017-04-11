@@ -1089,7 +1089,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // In some cases, layout has to force laying out more children. An example is
   // when the width of the LayoutObject changes as this impacts children with
   // 'width' set to auto.
-  virtual void GetLayout() = 0;
+  virtual void UpdateLayout() = 0;
   virtual bool UpdateImageLoadingPriorities() { return false; }
 
   void HandleSubtreeModifications();
@@ -1120,7 +1120,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   /* This function performs a layout only if one is needed. */
   DISABLE_CFI_PERF void LayoutIfNeeded() {
     if (NeedsLayout())
-      GetLayout();
+      UpdateLayout();
   }
 
   void ForceLayout();

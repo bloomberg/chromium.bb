@@ -40,7 +40,7 @@ class LayoutSVGGradientStop final : public LayoutObject {
            LayoutObject::IsOfType(type);
   }
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   // These overrides are needed to prevent NOTREACHED on <svg><stop /></svg> in
   // LayoutObject's default implementations.

@@ -86,7 +86,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
   void UpdateLogicalWidth() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,

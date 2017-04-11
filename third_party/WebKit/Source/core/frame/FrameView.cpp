@@ -755,7 +755,7 @@ void FrameView::AdjustViewSizeAndLayout() {
   if (NeedsLayout()) {
     AutoReset<bool> suppress_adjust_view_size(&suppress_adjust_view_size_,
                                               true);
-    Layout();
+    UpdateLayout();
   }
 }
 
@@ -988,7 +988,7 @@ inline void FrameView::ForceLayoutParentViewIfNeeded() {
   // Synchronously enter layout, to layout the view containing the host
   // object/embed/iframe.
   ASSERT(frame_view);
-  frame_view->Layout();
+  frame_view->UpdateLayout();
 }
 
 void FrameView::PerformPreLayoutTasks() {
@@ -1046,7 +1046,7 @@ bool FrameView::ShouldPerformScrollAnchoring() const {
 
 static inline void LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  root.GetLayout();
+  root.UpdateLayout();
 }
 
 void FrameView::PrepareLayoutAnalyzer() {
@@ -1135,7 +1135,7 @@ void FrameView::PerformLayout(bool in_subtree_layout) {
     if (HasOrthogonalWritingModeRoots() &&
         !RuntimeEnabledFeatures::layoutNGEnabled())
       LayoutOrthogonalWritingModeRoots();
-    GetLayoutView()->GetLayout();
+    GetLayoutView()->UpdateLayout();
   }
 
   frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
@@ -1170,11 +1170,11 @@ void FrameView::ScheduleOrPerformPostLayoutTasks() {
     // here.
     post_layout_tasks_timer_.StartOneShot(0, BLINK_FROM_HERE);
     if (NeedsLayout())
-      Layout();
+      UpdateLayout();
   }
 }
 
-void FrameView::Layout() {
+void FrameView::UpdateLayout() {
   // We should never layout a Document which is not in a LocalFrame.
   ASSERT(frame_);
   ASSERT(frame_->View() == this);
@@ -1955,7 +1955,7 @@ void FrameView::SetFragmentAnchor(Node* anchor_node) {
   // scroll immediately.
   LayoutViewItem layout_view_item = this->GetLayoutViewItem();
   if (!layout_view_item.IsNull() && layout_view_item.NeedsLayout())
-    Layout();
+    UpdateLayout();
   else
     ScrollToFragmentAnchor();
 }
@@ -2164,7 +2164,7 @@ void FrameView::ScrollbarExistenceDidChange() {
   // but before performLayout(), causing double-layout. See also
   // crbug.com/429242.
   if (!uses_overlay_scrollbars && NeedsLayout())
-    Layout();
+    UpdateLayout();
 
   if (!GetLayoutViewItem().IsNull() && GetLayoutViewItem().UsesCompositing()) {
     GetLayoutViewItem().Compositor()->FrameViewScrollbarsExistenceDidChange();
@@ -3340,7 +3340,7 @@ void FrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   CHECK(!nested_layout_count_);
 
   if (NeedsLayout())
-    Layout();
+    UpdateLayout();
 
   CheckDoesNotNeedLayout();
 
@@ -3489,7 +3489,7 @@ void FrameView::ForceLayoutForPagination(const FloatSize& page_size,
     layout_view->SetPageLogicalHeight(floored_page_logical_height);
     layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         LayoutInvalidationReason::kPrintingChanged);
-    Layout();
+    UpdateLayout();
 
     // If we don't fit in the given page width, we'll lay out again. If we don't
     // fit in the page width when shrunk, we will lay out at maximum shrink and
@@ -3523,7 +3523,7 @@ void FrameView::ForceLayoutForPagination(const FloatSize& page_size,
       layout_view->SetPageLogicalHeight(floored_page_logical_height);
       layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::kPrintingChanged);
-      Layout();
+      UpdateLayout();
 
       const LayoutRect& updated_document_rect =
           LayoutRect(layout_view->DocumentRect());

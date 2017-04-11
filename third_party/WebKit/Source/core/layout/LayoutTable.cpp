@@ -461,7 +461,7 @@ void LayoutTable::LayoutSection(
     MarkChildForPaginationRelayoutIfNeeded(section, layouter);
   bool needed_layout = section.NeedsLayout();
   if (needed_layout)
-    section.GetLayout();
+    section.UpdateLayout();
   if (needed_layout || table_height_changing == kTableHeightChanging)
     section.SetLogicalHeight(LayoutUnit(section.CalcRowLogicalHeight()));
 
@@ -559,7 +559,7 @@ bool LayoutTable::RecalcChildOverflowAfterStyleChange() {
          children_overflow_changed;
 }
 
-void LayoutTable::GetLayout() {
+void LayoutTable::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
@@ -597,7 +597,7 @@ void LayoutTable::GetLayout() {
     // layout that tells us if something has changed in the min max
     // calculations to do it correctly.
     // if ( oldWidth != width() || columns.size() + 1 != columnPos.size() )
-    table_layout_->GetLayout();
+    table_layout_->UpdateLayout();
 
     // Lay out top captions.
     // FIXME: Collapse caption margin.

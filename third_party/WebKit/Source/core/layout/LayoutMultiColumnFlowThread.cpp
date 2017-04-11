@@ -567,7 +567,7 @@ void LayoutMultiColumnFlowThread::LayoutColumns(
 
   column_heights_changed_ = false;
   InvalidateColumnSets();
-  GetLayout();
+  UpdateLayout();
   ValidateColumnSets();
 }
 
@@ -1313,12 +1313,12 @@ void LayoutMultiColumnFlowThread::UpdateLogicalWidth() {
   SetLogicalWidth(column_width);
 }
 
-void LayoutMultiColumnFlowThread::GetLayout() {
+void LayoutMultiColumnFlowThread::UpdateLayout() {
   DCHECK(!last_set_worked_on_);
   last_set_worked_on_ = FirstMultiColumnSet();
   if (last_set_worked_on_)
     last_set_worked_on_->BeginFlow(LayoutUnit());
-  LayoutFlowThread::GetLayout();
+  LayoutFlowThread::UpdateLayout();
   if (LayoutMultiColumnSet* last_set = LastMultiColumnSet()) {
     DCHECK_EQ(last_set, last_set_worked_on_);
     if (!last_set->NextSiblingMultiColumnSet()) {

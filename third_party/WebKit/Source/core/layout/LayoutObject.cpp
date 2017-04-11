@@ -3031,7 +3031,7 @@ void LayoutObject::ScheduleRelayout() {
 void LayoutObject::ForceLayout() {
   SetSelfNeedsLayout(true);
   SetShouldDoFullPaintInvalidation();
-  GetLayout();
+  UpdateLayout();
 }
 
 // FIXME: Does this do anything different than forceLayout given that we don't
@@ -3039,7 +3039,7 @@ void LayoutObject::ForceLayout() {
 // forceLayout.
 void LayoutObject::ForceChildLayout() {
   SetNormalChildNeedsLayout(true);
-  GetLayout();
+  UpdateLayout();
 }
 
 enum StyleCacheState { kCached, kUncached };

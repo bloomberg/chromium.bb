@@ -35,7 +35,7 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
   const char* GetName() const override { return "LayoutSVGHiddenContainer"; }
 
  protected:
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGHiddenContainer ||

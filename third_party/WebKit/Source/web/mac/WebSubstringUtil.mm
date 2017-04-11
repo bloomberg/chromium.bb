@@ -200,7 +200,7 @@ NSAttributedString* WebSubstringUtil::AttributedSubstringInRange(
     WebPoint* baseline_point) {
   LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
   if (frame->View()->NeedsLayout())
-    frame->View()->Layout();
+    frame->View()->UpdateLayout();
 
   Element* editable = frame->Selection().RootEditableElementOrDocumentElement();
   if (!editable)

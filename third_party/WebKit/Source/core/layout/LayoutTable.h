@@ -481,7 +481,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   }
 
   void PaintObject(const PaintInfo&, const LayoutPoint&) const override;
-  void GetLayout() override;
+  void UpdateLayout() override;
   void ComputeIntrinsicLogicalWidths(LayoutUnit& min_width,
                                      LayoutUnit& max_width) const override;
   void ComputePreferredLogicalWidths() override;

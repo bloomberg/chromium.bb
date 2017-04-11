@@ -42,7 +42,7 @@ LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
 
 LayoutSVGContainer::~LayoutSVGContainer() {}
 
-void LayoutSVGContainer::GetLayout() {
+void LayoutSVGContainer::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

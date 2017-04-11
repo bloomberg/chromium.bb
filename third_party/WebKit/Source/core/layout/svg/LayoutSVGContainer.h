@@ -74,7 +74,7 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
     return type == kLayoutObjectSVGContainer ||
            LayoutSVGModelObject::IsOfType(type);
   }
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) final;

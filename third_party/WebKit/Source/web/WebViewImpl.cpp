@@ -3752,7 +3752,7 @@ void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
   // Relayout immediately to avoid violating the rule that needsLayout()
   // isn't set at the end of a layout.
   if (view->NeedsLayout())
-    view->Layout();
+    view->UpdateLayout();
 
   UpdatePageOverlays();
 

@@ -171,7 +171,7 @@ void LayoutSVGShape::UpdateLocalTransform() {
   }
 }
 
-void LayoutSVGShape::GetLayout() {
+void LayoutSVGShape::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   // Invalidate all resources of this client if our layout changed.

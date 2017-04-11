@@ -360,7 +360,7 @@ void LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths(
   min_logical_width += scrollbar_width;
 }
 
-void LayoutDeprecatedFlexibleBox::GetLayoutBlock(bool relayout_children) {
+void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
 
   if (!relayout_children && SimplifiedLayout())

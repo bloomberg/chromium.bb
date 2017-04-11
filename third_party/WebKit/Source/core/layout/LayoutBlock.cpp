@@ -418,7 +418,7 @@ void LayoutBlock::UpdateAfterLayout() {
     Layer()->GetScrollableArea()->UpdateAfterLayout();
 }
 
-void LayoutBlock::GetLayout() {
+void LayoutBlock::UpdateLayout() {
   DCHECK(!GetScrollableArea() || GetScrollableArea()->GetScrollAnchor());
 
   LayoutAnalyzer::Scope analyzer(*this);
@@ -430,7 +430,7 @@ void LayoutBlock::GetLayout() {
 
   // Table cells call layoutBlock directly, so don't add any logic here.  Put
   // code into layoutBlock().
-  GetLayoutBlock(false);
+  UpdateBlockLayout(false);
 
   // It's safe to check for control clip here, since controls can never be table
   // cells. If we have a lightweight clip, there can never be any overflow from
@@ -467,7 +467,7 @@ bool LayoutBlock::UpdateLogicalWidthAndColumnWidth() {
   return old_width != LogicalWidth() || WidthAvailableToChildrenHasChanged();
 }
 
-void LayoutBlock::GetLayoutBlock(bool) {
+void LayoutBlock::UpdateBlockLayout(bool) {
   NOTREACHED();
   ClearNeedsLayout();
 }

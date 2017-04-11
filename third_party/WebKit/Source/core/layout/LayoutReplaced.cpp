@@ -76,7 +76,7 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
     IntrinsicSizeChanged();
 }
 
-void LayoutReplaced::GetLayout() {
+void LayoutReplaced::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

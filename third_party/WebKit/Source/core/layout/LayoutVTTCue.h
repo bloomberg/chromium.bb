@@ -41,7 +41,7 @@ class LayoutVTTCue final : public LayoutBlockFlow {
   float SnapToLinesPosition() { return snap_to_lines_position_; }
 
  private:
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   IntRect ComputeControlsRect() const;
   void RepositionCueSnapToLinesNotSet();

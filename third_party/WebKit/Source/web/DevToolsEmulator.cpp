@@ -317,7 +317,7 @@ void DevToolsEmulator::EnableMobileEmulation() {
   // TODO(dgozman): mainFrameImpl() is null when it's remote. Figure out how
   // we end up with enabling emulation in this case.
   if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->Layout();
+    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 void DevToolsEmulator::DisableMobileEmulation() {
@@ -361,7 +361,7 @@ void DevToolsEmulator::DisableMobileEmulation() {
       original_default_maximum_page_scale_factor_);
   // mainFrameImpl() could be null during cleanup or remote <-> local swap.
   if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->Layout();
+    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 float DevToolsEmulator::CompositorDeviceScaleFactor() const {
@@ -508,7 +508,7 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
   // We should instead route emulation from browser through the WebViewImpl
   // to the local main frame, and remove InspectorEmulationAgent entirely.
   if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->Layout();
+    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 void DevToolsEmulator::SetScriptExecutionDisabled(

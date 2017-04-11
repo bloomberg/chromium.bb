@@ -949,7 +949,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
   return row_pos_[grid_.size()];
 }
 
-void LayoutTableSection::GetLayout() {
+void LayoutTableSection::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   CHECK(!NeedsCellRecalc());

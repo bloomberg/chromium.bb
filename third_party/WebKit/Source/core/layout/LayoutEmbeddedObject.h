@@ -56,7 +56,7 @@ class LayoutEmbeddedObject final : public LayoutPart {
   PaintInvalidationReason InvalidatePaintIfNeeded(
       const PaintInvalidatorContext&) const final;
 
-  void GetLayout() final;
+  void UpdateLayout() final;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectEmbeddedObject || LayoutPart::IsOfType(type);

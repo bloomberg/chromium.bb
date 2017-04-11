@@ -215,8 +215,8 @@ LayoutObject* LayoutRubyRun::LayoutSpecialExcludedChild(
   return rt;
 }
 
-void LayoutRubyRun::GetLayout() {
-  LayoutBlockFlow::GetLayout();
+void LayoutRubyRun::UpdateLayout() {
+  LayoutBlockFlow::UpdateLayout();
 
   LayoutRubyText* rt = RubyText();
   if (!rt)

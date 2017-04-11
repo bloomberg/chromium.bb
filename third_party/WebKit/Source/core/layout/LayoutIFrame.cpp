@@ -45,7 +45,7 @@ PaintLayerType LayoutIFrame::LayerTypeRequired() const {
   return LayoutPart::LayerTypeRequired();
 }
 
-void LayoutIFrame::GetLayout() {
+void LayoutIFrame::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

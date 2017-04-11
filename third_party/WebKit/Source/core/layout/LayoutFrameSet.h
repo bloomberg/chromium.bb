@@ -125,7 +125,7 @@ class LayoutFrameSet final : public LayoutBox {
     return type == kLayoutObjectFrameSet || LayoutBox::IsOfType(type);
   }
 
-  void GetLayout() override;
+  void UpdateLayout() override;
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
   void ComputePreferredLogicalWidths() override;
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;

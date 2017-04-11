@@ -116,7 +116,7 @@ bool LayoutSVGImage::UpdateBoundingBox() {
   return old_object_bounding_box.size() != object_bounding_box_.size();
 }
 
-void LayoutSVGImage::GetLayout() {
+void LayoutSVGImage::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

@@ -67,7 +67,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
  private:
-  void GetLayout() override;
+  void UpdateLayout() override;
   SVGTransformChange CalculateLocalTransform() final;
 
   AffineTransform local_to_parent_transform_;

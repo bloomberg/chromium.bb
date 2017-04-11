@@ -32,7 +32,7 @@ LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGSVGElement* node)
       is_layout_size_changed_(false),
       needs_transform_update_(true) {}
 
-void LayoutSVGViewportContainer::GetLayout() {
+void LayoutSVGViewportContainer::UpdateLayout() {
   DCHECK(NeedsLayout());
   DCHECK(isSVGSVGElement(GetElement()));
 
@@ -53,7 +53,7 @@ void LayoutSVGViewportContainer::GetLayout() {
     }
   }
 
-  LayoutSVGContainer::GetLayout();
+  LayoutSVGContainer::UpdateLayout();
 }
 
 void LayoutSVGViewportContainer::SetNeedsTransformUpdate() {

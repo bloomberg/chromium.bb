@@ -695,7 +695,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                      MapCoordinatesFlags mode = 0) const override;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,

@@ -350,7 +350,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   bool IsRepeatingHeaderGroup() const;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   CellSpan FullSectionRowSpan() const { return CellSpan(0, grid_.size()); }
   CellSpan FullTableEffectiveColumnSpan() const {

@@ -290,7 +290,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
     progression_is_inline_ = is_inline;
   }
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
  private:
   void CalculateColumnHeightAvailable();

@@ -96,7 +96,7 @@ void LayoutSliderContainer::ComputeLogicalHeight(
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
-void LayoutSliderContainer::GetLayout() {
+void LayoutSliderContainer::UpdateLayout() {
   HTMLInputElement* input = toHTMLInputElement(GetNode()->OwnerShadowHost());
   bool is_vertical = HasVerticalAppearance(input);
   MutableStyleRef().SetFlexDirection(is_vertical ? kFlowColumn : kFlowRow);
@@ -123,7 +123,7 @@ void LayoutSliderContainer::GetLayout() {
   if (track)
     layout_scope.SetChildNeedsLayout(track);
 
-  LayoutFlexibleBox::GetLayout();
+  LayoutFlexibleBox::UpdateLayout();
 
   MutableStyleRef().SetDirection(old_text_direction);
   // These should always exist, unless someone mutates the shadow DOM (e.g., in

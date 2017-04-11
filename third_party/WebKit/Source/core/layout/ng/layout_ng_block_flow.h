@@ -16,7 +16,7 @@ class LayoutNGBlockFlow final : public LayoutBlockFlow {
   explicit LayoutNGBlockFlow(Element*);
   ~LayoutNGBlockFlow() override = default;
 
-  void GetLayoutBlock(bool relayout_children) override;
+  void UpdateBlockLayout(bool relayout_children) override;
   NGBlockNode* BoxForTesting() const { return box_.Get(); }
 
  private:

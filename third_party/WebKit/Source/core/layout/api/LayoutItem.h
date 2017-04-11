@@ -81,7 +81,7 @@ class LayoutItem {
 
   bool NeedsLayout() { return layout_object_->NeedsLayout(); }
 
-  void GetLayout() { layout_object_->GetLayout(); }
+  void UpdateLayout() { layout_object_->UpdateLayout(); }
 
   LayoutItem Container() const {
     return LayoutItem(layout_object_->Container());

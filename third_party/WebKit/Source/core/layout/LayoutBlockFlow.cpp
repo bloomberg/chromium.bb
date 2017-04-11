@@ -397,7 +397,7 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
 }
 
 DISABLE_CFI_PERF
-void LayoutBlockFlow::GetLayoutBlock(bool relayout_children) {
+void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
   DCHECK(IsInlineBlockOrInlineTable() || !IsInline());
 
@@ -740,7 +740,7 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
 
   bool needed_layout = child.NeedsLayout();
   if (needed_layout)
-    child.GetLayout();
+    child.UpdateLayout();
   if (View()->GetLayoutState()->IsPaginated())
     UpdateFragmentationInfoForChild(child);
   return needed_layout;
@@ -3734,14 +3734,14 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
       // adjacent floats which we don't fit beside, or pushed by fragmentation
       // if we need to break before the top margin edge of the float.
       SetLogicalTopForChild(child, logical_top_margin_edge + margin_before);
-      child.GetLayout();
+      child.UpdateLayout();
 
       // May need to push the float to the next fragmentainer before attempting
       // to place it.
       logical_top_margin_edge =
           AdjustFloatLogicalTopForPagination(child, logical_top_margin_edge);
     } else {
-      child.GetLayout();
+      child.UpdateLayout();
     }
   }
 

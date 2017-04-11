@@ -39,7 +39,7 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;
 
-  void GetLayoutBlock(bool relayout_children) override;
+  void UpdateBlockLayout(bool relayout_children) override;
   void LayoutHorizontalBox(bool relayout_children);
   void LayoutVerticalBox(bool relayout_children);
 

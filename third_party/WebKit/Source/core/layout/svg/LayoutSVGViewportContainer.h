@@ -48,7 +48,7 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
            LayoutSVGContainer::IsOfType(type);
   }
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   AffineTransform LocalToSVGParentTransform() const override {
     return local_to_parent_transform_;

@@ -48,7 +48,7 @@ class LayoutSliderContainer final : public LayoutFlexibleBox {
                             LogicalExtentComputedValues&) const override;
 
  private:
-  void GetLayout() override;
+  void UpdateLayout() override;
 };
 
 }  // namespace blink

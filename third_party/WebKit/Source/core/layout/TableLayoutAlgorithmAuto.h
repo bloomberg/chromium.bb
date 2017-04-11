@@ -49,7 +49,7 @@ class TableLayoutAlgorithmAuto final : public TableLayoutAlgorithm {
   }
   void ApplyPreferredLogicalWidthQuirks(LayoutUnit& min_width,
                                         LayoutUnit& max_width) const override;
-  void GetLayout() override;
+  void UpdateLayout() override;
   void WillChangeTableLayout() override {}
 
  private:

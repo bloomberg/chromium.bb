@@ -354,7 +354,7 @@ void LayoutFlexibleBox::StyleDidChange(StyleDifference diff,
   }
 }
 
-void LayoutFlexibleBox::GetLayoutBlock(bool relayout_children) {
+void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
 
   if (!relayout_children && SimplifiedLayout())

@@ -51,7 +51,7 @@ class LayoutGrid final : public LayoutBlock {
   static LayoutGrid* CreateAnonymous(Document*);
   const char* GetName() const override { return "LayoutGrid"; }
 
-  void GetLayoutBlock(bool relayout_children) override;
+  void UpdateBlockLayout(bool relayout_children) override;
 
   void DirtyGrid();
 

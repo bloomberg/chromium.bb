@@ -115,7 +115,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
       ShouldComputePreferred = kComputeActual) const override;
   LayoutUnit ComputeReplacedLogicalHeight(
       LayoutUnit estimated_used_width = LayoutUnit()) const override;
-  void GetLayout() override;
+  void UpdateLayout() override;
   void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
   void WillBeDestroyed() override;

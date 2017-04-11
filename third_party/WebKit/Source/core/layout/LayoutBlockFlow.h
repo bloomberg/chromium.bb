@@ -99,7 +99,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   bool IsLayoutBlockFlow() const final { return true; }
 
-  void GetLayoutBlock(bool relayout_children) override;
+  void UpdateBlockLayout(bool relayout_children) override;
 
   void ComputeOverflow(LayoutUnit old_client_after_edge,
                        bool recompute_floats = false) override;

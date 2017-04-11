@@ -55,7 +55,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   bool NeedsPreferredWidthsRecalculation() const override;
   LayoutUnit MinPreferredLogicalWidth() const override;
   LayoutUnit MaxPreferredLogicalWidth() const override;
-  void GetLayout() override;
+  void UpdateLayout() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;

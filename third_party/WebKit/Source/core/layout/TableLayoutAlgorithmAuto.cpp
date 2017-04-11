@@ -635,7 +635,7 @@ void TableLayoutAlgorithmAuto::InsertSpanCell(LayoutTableCell* cell) {
   span_cells_[pos] = cell;
 }
 
-void TableLayoutAlgorithmAuto::GetLayout() {
+void TableLayoutAlgorithmAuto::UpdateLayout() {
   // table layout based on the values collected in the layout structure.
   int table_logical_width = (table_->LogicalWidth() -
                              table_->BordersPaddingAndSpacingInRowDirection())

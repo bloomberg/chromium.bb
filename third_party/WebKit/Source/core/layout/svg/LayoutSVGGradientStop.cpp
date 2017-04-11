@@ -52,7 +52,7 @@ void LayoutSVGGradientStop::StyleDidChange(StyleDifference diff,
   container->RemoveAllClientsFromCache();
 }
 
-void LayoutSVGGradientStop::GetLayout() {
+void LayoutSVGGradientStop::UpdateLayout() {
   ClearNeedsLayout();
 }
 

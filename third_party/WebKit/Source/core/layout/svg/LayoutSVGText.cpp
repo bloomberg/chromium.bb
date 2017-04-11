@@ -173,7 +173,7 @@ static inline void CheckDescendantTextNodeConsistency(
 #endif
 }
 
-void LayoutSVGText::GetLayout() {
+void LayoutSVGText::UpdateLayout() {
   DCHECK(NeedsLayout());
   // This flag is set and reset as needed only within this function.
   DCHECK(!needs_reordering_);

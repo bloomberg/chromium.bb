@@ -31,7 +31,7 @@ LayoutSVGResourceMarker::LayoutSVGResourceMarker(SVGMarkerElement* node)
 
 LayoutSVGResourceMarker::~LayoutSVGResourceMarker() {}
 
-void LayoutSVGResourceMarker::GetLayout() {
+void LayoutSVGResourceMarker::UpdateLayout() {
   DCHECK(NeedsLayout());
   if (is_in_layout_)
     return;
@@ -41,7 +41,7 @@ void LayoutSVGResourceMarker::GetLayout() {
   // LayoutSVGHiddenContainer overwrites layout(). We need the
   // layouting of LayoutSVGContainer for calculating  local
   // transformations and paint invalidation.
-  LayoutSVGContainer::GetLayout();
+  LayoutSVGContainer::UpdateLayout();
 
   ClearInvalidationMask();
 }

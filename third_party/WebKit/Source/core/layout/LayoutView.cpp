@@ -219,7 +219,7 @@ bool LayoutView::CanHaveChildren() const {
 void LayoutView::LayoutContent() {
   DCHECK(NeedsLayout());
 
-  LayoutBlockFlow::GetLayout();
+  LayoutBlockFlow::UpdateLayout();
 
 #if DCHECK_IS_ON()
   CheckLayoutState();
@@ -250,7 +250,7 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
   }
 }
 
-void LayoutView::GetLayout() {
+void LayoutView::UpdateLayout() {
   if (!GetDocument().Paginated())
     SetPageLogicalHeight(LayoutUnit());
 

@@ -44,7 +44,7 @@ class TableLayoutAlgorithm {
   virtual void ApplyPreferredLogicalWidthQuirks(
       LayoutUnit& min_width,
       LayoutUnit& max_width) const = 0;
-  virtual void GetLayout() = 0;
+  virtual void UpdateLayout() = 0;
   virtual void WillChangeTableLayout() = 0;
 
  protected:

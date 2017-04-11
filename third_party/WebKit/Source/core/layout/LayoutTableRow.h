@@ -154,7 +154,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   PaintLayerType LayerTypeRequired() const override {
     if (HasTransformRelatedProperty() || HasHiddenBackface() || HasClipPath() ||

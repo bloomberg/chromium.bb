@@ -300,12 +300,12 @@ void LayoutTableCell::SetCellLogicalWidth(int table_layout_logical_width,
   SetCellWidthChanged(true);
 }
 
-void LayoutTableCell::GetLayout() {
+void LayoutTableCell::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   int old_cell_baseline = CellBaselinePosition();
-  GetLayoutBlock(CellWidthChanged());
+  UpdateBlockLayout(CellWidthChanged());
 
   // If we have replaced content, the intrinsic height of our content may have
   // changed since the last time we laid out. If that's the case the intrinsic
@@ -324,7 +324,7 @@ void LayoutTableCell::GetLayout() {
     SetIntrinsicPaddingBefore(new_intrinsic_padding_before);
     SubtreeLayoutScope layouter(*this);
     layouter.SetNeedsLayout(this, LayoutInvalidationReason::kTableChanged);
-    GetLayoutBlock(CellWidthChanged());
+    UpdateBlockLayout(CellWidthChanged());
   }
 
   // FIXME: This value isn't the intrinsic content logical height, but we need

@@ -46,7 +46,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
 
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   // Scrollbar parts needs to be rendered at device pixel boundaries.
   LayoutRectOutsets MarginBoxOutsets() const override {

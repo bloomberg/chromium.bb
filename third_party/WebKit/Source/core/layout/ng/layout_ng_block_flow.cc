@@ -17,7 +17,7 @@ bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGBlockFlow || LayoutBlockFlow::IsOfType(type);
 }
 
-void LayoutNGBlockFlow::GetLayoutBlock(bool relayout_children) {
+void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
   RefPtr<NGConstraintSpace> constraint_space =

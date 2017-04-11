@@ -190,7 +190,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void CollectBorderValues(LayoutTable::CollapsedBorderValues&);
   static void SortBorderValues(LayoutTable::CollapsedBorderValues&);
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
 

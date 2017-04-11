@@ -154,7 +154,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
 
-  virtual void GetLayoutBlock(bool relayout_children);
+  virtual void UpdateBlockLayout(bool relayout_children);
 
   void InsertPositionedObject(LayoutBox*);
   static void RemovePositionedObject(LayoutBox*);
@@ -350,7 +350,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   void DirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   enum PositionedLayoutBehavior {
     kDefaultLayout,

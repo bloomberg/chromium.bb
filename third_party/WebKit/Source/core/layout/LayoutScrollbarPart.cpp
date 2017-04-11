@@ -93,7 +93,7 @@ LayoutScrollbarPart* LayoutScrollbarPart::CreateAnonymous(
   return layout_object;
 }
 
-void LayoutScrollbarPart::GetLayout() {
+void LayoutScrollbarPart::UpdateLayout() {
   // We don't worry about positioning ourselves. We're just determining our
   // minimum width/height.
   SetLocation(LayoutPoint());

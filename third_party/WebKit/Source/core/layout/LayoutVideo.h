@@ -63,7 +63,7 @@ class LayoutVideo final : public LayoutMedia {
 
   void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   LayoutUnit ComputeReplacedLogicalWidth(
       ShouldComputePreferred = kComputeActual) const override;

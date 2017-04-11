@@ -49,7 +49,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   const char* GetName() const override { return "LayoutFlexibleBox"; }
 
   bool IsFlexibleBox() const final { return true; }
-  void GetLayoutBlock(bool relayout_children) final;
+  void UpdateBlockLayout(bool relayout_children) final;
 
   int BaselinePosition(
       FontBaseline,

@@ -126,7 +126,7 @@ PaintInvalidationReason LayoutEmbeddedObject::InvalidatePaintIfNeeded(
       .InvalidatePaintIfNeeded();
 }
 
-void LayoutEmbeddedObject::GetLayout() {
+void LayoutEmbeddedObject::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

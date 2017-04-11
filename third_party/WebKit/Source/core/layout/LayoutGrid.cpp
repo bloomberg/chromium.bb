@@ -211,7 +211,7 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   }
 }
 
-void LayoutGrid::GetLayoutBlock(bool relayout_children) {
+void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
 
   // We cannot perform a simplifiedLayout() on a dirty grid that

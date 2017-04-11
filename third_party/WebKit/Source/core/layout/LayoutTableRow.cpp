@@ -186,7 +186,7 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
     Section()->SetNeedsCellRecalc();
 }
 
-void LayoutTableRow::GetLayout() {
+void LayoutTableRow::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   bool paginated = View()->GetLayoutState()->IsPaginated();
@@ -197,7 +197,7 @@ void LayoutTableRow::GetLayout() {
     if (!cell->NeedsLayout())
       Section()->MarkChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->NeedsLayout())
-      cell->GetLayout();
+      cell->UpdateLayout();
     if (paginated)
       Section()->UpdateFragmentationInfoForChild(*cell);
   }

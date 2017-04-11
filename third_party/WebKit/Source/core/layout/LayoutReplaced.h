@@ -97,7 +97,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
  protected:
   void WillBeDestroyed() override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   LayoutSize IntrinsicSize() const final { return intrinsic_size_; }
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;

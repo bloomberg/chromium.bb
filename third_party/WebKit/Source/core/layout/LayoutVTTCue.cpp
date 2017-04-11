@@ -46,7 +46,7 @@ class SnapToLinesLayouter {
       margin_ = settings->GetTextTrackMarginPercentage() / 100.0;
   }
 
-  void GetLayout();
+  void UpdateLayout();
 
  private:
   bool IsOutside(const IntRect&) const;
@@ -166,7 +166,7 @@ bool SnapToLinesLayouter::ShouldSwitchDirection(InlineFlowBox* first_line_box,
   return false;
 }
 
-void SnapToLinesLayouter::GetLayout() {
+void SnapToLinesLayouter::UpdateLayout() {
   // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
   // Step 13, "If cue's text track cue snap-to-lines flag is set".
 
@@ -359,8 +359,8 @@ IntRect LayoutVTTCue::ComputeControlsRect() const {
       ToLayoutBox(*controls->ContainerLayoutObject()));
 }
 
-void LayoutVTTCue::GetLayout() {
-  LayoutBlockFlow::GetLayout();
+void LayoutVTTCue::UpdateLayout() {
+  LayoutBlockFlow::UpdateLayout();
 
   DCHECK(FirstChild());
 
@@ -368,7 +368,7 @@ void LayoutVTTCue::GetLayout() {
 
   // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
   if (!std::isnan(snap_to_lines_position_))
-    SnapToLinesLayouter(*this, ComputeControlsRect()).GetLayout();
+    SnapToLinesLayouter(*this, ComputeControlsRect()).UpdateLayout();
   else
     RepositionCueSnapToLinesNotSet();
 }

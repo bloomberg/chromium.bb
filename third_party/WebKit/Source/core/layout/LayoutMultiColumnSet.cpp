@@ -443,10 +443,10 @@ void LayoutMultiColumnSet::StyleDidChange(StyleDifference diff,
   SetHasBoxDecorationBackground(true);
 }
 
-void LayoutMultiColumnSet::GetLayout() {
+void LayoutMultiColumnSet::UpdateLayout() {
   if (RecalculateColumnHeight())
     MultiColumnFlowThread()->SetColumnHeightsChanged();
-  LayoutBlockFlow::GetLayout();
+  LayoutBlockFlow::UpdateLayout();
 }
 
 void LayoutMultiColumnSet::ComputeIntrinsicLogicalWidths(

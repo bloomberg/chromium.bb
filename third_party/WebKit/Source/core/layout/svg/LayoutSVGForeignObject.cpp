@@ -86,7 +86,7 @@ void LayoutSVGForeignObject::ComputeLogicalHeight(
   computed_values.position_ = logical_top;
 }
 
-void LayoutSVGForeignObject::GetLayout() {
+void LayoutSVGForeignObject::UpdateLayout() {
   DCHECK(NeedsLayout());
 
   SVGForeignObjectElement* foreign = toSVGForeignObjectElement(GetNode());
@@ -110,7 +110,7 @@ void LayoutSVGForeignObject::GetLayout() {
   SetY(ElementY());
 
   bool layout_changed = EverHadLayout() && SelfNeedsLayout();
-  LayoutBlock::GetLayout();
+  LayoutBlock::UpdateLayout();
   DCHECK(!NeedsLayout());
 
   // If our bounds changed, notify the parents.

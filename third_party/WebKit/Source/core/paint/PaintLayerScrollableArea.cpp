@@ -804,9 +804,9 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
           LayoutBlock& block = ToLayoutBlock(Box());
           block.ScrollbarsChanged(horizontal_scrollbar_should_change,
                                   vertical_scrollbar_should_change);
-          block.GetLayoutBlock(true);
+          block.UpdateBlockLayout(true);
         } else {
-          Box().GetLayout();
+          Box().UpdateLayout();
         }
         in_overflow_relayout_ = false;
         scrollbar_manager_.DestroyDetachedScrollbars();

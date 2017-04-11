@@ -350,7 +350,7 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
   }
 
   if (layout_box_->IsLayoutNGBlockFlow() && layout_box_->NeedsLayout()) {
-    ToLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::GetLayoutBlock(true);
+    ToLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::UpdateBlockLayout(true);
   } else {
     layout_box_->ForceLayout();
   }

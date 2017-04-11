@@ -44,10 +44,10 @@ HTMLMediaElement* LayoutMedia::MediaElement() const {
   return ToHTMLMediaElement(GetNode());
 }
 
-void LayoutMedia::GetLayout() {
+void LayoutMedia::UpdateLayout() {
   LayoutSize old_size = ContentBoxRect().size();
 
-  LayoutImage::GetLayout();
+  LayoutImage::UpdateLayout();
 
   LayoutRect new_rect = ContentBoxRect();
 

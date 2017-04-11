@@ -222,7 +222,7 @@ void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
     max_width = LayoutUnit(kTableMaxWidth);
 }
 
-void TableLayoutAlgorithmFixed::GetLayout() {
+void TableLayoutAlgorithmFixed::UpdateLayout() {
   int table_logical_width = (table_->LogicalWidth() -
                              table_->BordersPaddingAndSpacingInRowDirection())
                                 .ToInt();

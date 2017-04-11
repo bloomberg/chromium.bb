@@ -205,7 +205,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   void EndFlow(LayoutUnit offset_in_flow_thread);
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
                                      LayoutUnit& max_logical_width) const final;

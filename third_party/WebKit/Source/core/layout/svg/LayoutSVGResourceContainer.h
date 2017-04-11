@@ -45,7 +45,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   virtual void RemoveClientFromCache(LayoutObject*,
                                      bool mark_for_invalidation = true) = 0;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGResourceContainer ||

@@ -94,10 +94,10 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
   }
 }
 
-void LayoutTextControlSingleLine::GetLayout() {
+void LayoutTextControlSingleLine::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
-  LayoutBlockFlow::GetLayoutBlock(true);
+  LayoutBlockFlow::UpdateBlockLayout(true);
 
   LayoutBox* inner_editor_layout_object = InnerEditorElement()->GetLayoutBox();
   Element* container = ContainerElement();

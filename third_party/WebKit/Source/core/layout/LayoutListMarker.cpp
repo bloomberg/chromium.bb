@@ -135,7 +135,7 @@ void LayoutListMarker::Paint(const PaintInfo& paint_info,
   ListMarkerPainter(*this).Paint(paint_info, paint_offset);
 }
 
-void LayoutListMarker::GetLayout() {
+void LayoutListMarker::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

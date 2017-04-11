@@ -109,9 +109,9 @@ bool LayoutFlowThread::MapToVisualRectInAncestorSpaceInternal(
       ancestor, transform_state, visual_rect_flags);
 }
 
-void LayoutFlowThread::GetLayout() {
+void LayoutFlowThread::UpdateLayout() {
   page_logical_size_changed_ = column_sets_invalidated_ && EverHadLayout();
-  LayoutBlockFlow::GetLayout();
+  LayoutBlockFlow::UpdateLayout();
   page_logical_size_changed_ = false;
 }
 

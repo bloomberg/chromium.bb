@@ -137,7 +137,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
   return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
 }
 
-void LayoutSVGRoot::GetLayout() {
+void LayoutSVGRoot::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 

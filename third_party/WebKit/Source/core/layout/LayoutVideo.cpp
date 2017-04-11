@@ -132,9 +132,9 @@ void LayoutVideo::PaintReplaced(const PaintInfo& paint_info,
   VideoPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
-void LayoutVideo::GetLayout() {
+void LayoutVideo::UpdateLayout() {
   UpdatePlayer();
-  LayoutMedia::GetLayout();
+  LayoutMedia::UpdateLayout();
 }
 
 HTMLVideoElement* LayoutVideo::VideoElement() const {

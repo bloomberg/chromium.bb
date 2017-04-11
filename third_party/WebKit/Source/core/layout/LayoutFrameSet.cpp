@@ -353,7 +353,7 @@ FrameEdgeInfo LayoutFrameSet::EdgeInfo() const {
   return result;
 }
 
-void LayoutFrameSet::GetLayout() {
+void LayoutFrameSet::UpdateLayout() {
   DCHECK(NeedsLayout());
 
   if (!Parent()->IsFrameSet() && !GetDocument().Printing()) {
@@ -377,7 +377,7 @@ void LayoutFrameSet::GetLayout() {
 
   PositionFrames();
 
-  LayoutBox::GetLayout();
+  LayoutBox::UpdateLayout();
 
   ComputeEdgeInfo();
 
@@ -422,7 +422,7 @@ void LayoutFrameSet::PositionFrames() {
         child->SetSize(size);
         child->SetNeedsLayoutAndFullPaintInvalidation(
             LayoutInvalidationReason::kSizeChanged);
-        child->GetLayout();
+        child->UpdateLayout();
       }
 
       position.SetX(position.X() + size.Width() + border_thickness);

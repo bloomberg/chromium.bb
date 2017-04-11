@@ -54,7 +54,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   }
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,

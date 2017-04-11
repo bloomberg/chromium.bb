@@ -36,11 +36,11 @@ void LayoutPagedFlowThread::UpdateLogicalWidth() {
   LayoutFlowThread::UpdateLogicalWidth();
 }
 
-void LayoutPagedFlowThread::GetLayout() {
+void LayoutPagedFlowThread::UpdateLayout() {
   // There should either be zero or one of those for paged layout.
   DCHECK_EQ(FirstMultiColumnBox(), LastMultiColumnBox());
   SetProgressionIsInline(PagedBlockFlow()->Style()->HasInlinePaginationAxis());
-  LayoutMultiColumnFlowThread::GetLayout();
+  LayoutMultiColumnFlowThread::UpdateLayout();
 
   LayoutMultiColumnSet* column_set = FirstMultiColumnSet();
   if (!column_set)

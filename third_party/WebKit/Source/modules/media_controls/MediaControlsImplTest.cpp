@@ -79,7 +79,7 @@ class MockLayoutObject : public LayoutObject {
   MockLayoutObject() : LayoutObject(nullptr) {}
 
   const char* GetName() const override { return "MockLayoutObject"; }
-  void GetLayout() override {}
+  void UpdateLayout() override {}
   FloatRect LocalBoundingBoxRectForAccessibility() const override {
     return FloatRect();
   }

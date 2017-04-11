@@ -78,7 +78,7 @@ class LayoutListMarker final : public LayoutBox {
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
 
-  void GetLayout() override;
+  void UpdateLayout() override;
 
   void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 

@@ -606,7 +606,7 @@ void LocalFrame::SetPrinting(bool printing,
       layout_view->SetNeedsLayout(LayoutInvalidationReason::kPrintingChanged);
       layout_view->SetShouldDoFullPaintInvalidationForViewAndAllDescendants();
     }
-    View()->Layout();
+    View()->UpdateLayout();
     View()->AdjustViewSize();
   }
 
