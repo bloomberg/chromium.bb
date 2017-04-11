@@ -56,6 +56,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
                                            bool* main_frame_will_happen);
 
+  NOINLINE void DumpForBeginMainFrameHang();
+
  private:
   // The members of this struct should be accessed on the impl thread only when
   // the main thread is blocked for a commit.

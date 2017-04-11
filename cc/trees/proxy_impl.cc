@@ -4,10 +4,14 @@
 
 #include "cc/trees/proxy_impl.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/auto_reset.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -221,6 +225,28 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
     *main_frame_will_happen = false;
   }
   completion->Signal();
+}
+
+// TODO(sunnyps): Remove this code once crbug.com/668892 is fixed.
+NOINLINE void ProxyImpl::DumpForBeginMainFrameHang() {
+  DCHECK(IsImplThread());
+  DCHECK(scheduler_);
+
+  char stack_string[20000] = "";
+  base::debug::Alias(&stack_string);
+
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> scheduler_state =
+      scheduler_->AsValue();
+  strncat(stack_string, scheduler_state->ToString().c_str(),
+          arraysize(stack_string) - strlen(stack_string) - 1);
+
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+      tile_manager_state =
+          layer_tree_host_impl_->tile_manager()->ActivationStateAsValue();
+  strncat(stack_string, tile_manager_state->ToString().c_str(),
+          arraysize(stack_string) - strlen(stack_string) - 1);
+
+  base::debug::DumpWithoutCrashing();
 }
 
 void ProxyImpl::NotifyReadyToCommitOnImpl(
