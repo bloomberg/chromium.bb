@@ -90,7 +90,11 @@ class LocationBar {
                                          content::WebContents* web_contents);
 
  private:
+  class ExtensionLoadObserver;
+
   Profile* profile_;
+
+  std::unique_ptr<ExtensionLoadObserver> extension_load_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBar);
 };

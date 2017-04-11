@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,42 +35,23 @@ size_t GetPageActionCount(content::WebContents* web_contents,
   DCHECK(web_contents);
   size_t count = 0u;
   int tab_id = SessionTabHelper::IdForTab(web_contents);
-  // Page actions are either stored in the location bar (and provided by the
-  // LocationBarController), or in the main toolbar (and provided by the
-  // ToolbarActionsModel), depending on whether or not the extension action
-  // redesign is enabled.
-  if (!FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    std::vector<ExtensionAction*> page_actions =
-        TabHelper::FromWebContents(web_contents)->
-            location_bar_controller()->GetCurrentActions();
-    count = page_actions.size();
-    // Trim any invisible page actions, if necessary.
-    if (only_count_visible) {
-      for (std::vector<ExtensionAction*>::iterator iter = page_actions.begin();
-           iter != page_actions.end(); ++iter) {
-        if (!(*iter)->GetIsVisible(tab_id))
-          --count;
-      }
-    }
-  } else {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    ToolbarActionsModel* toolbar_model = ToolbarActionsModel::Get(profile);
-    const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
-        toolbar_model->toolbar_items();
-    ExtensionActionManager* action_manager =
-        ExtensionActionManager::Get(web_contents->GetBrowserContext());
-    for (const ToolbarActionsModel::ToolbarItem& item : toolbar_items) {
-      if (item.type == ToolbarActionsModel::EXTENSION_ACTION) {
-        const Extension* extension =
-            ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-                item.id);
-        ExtensionAction* extension_action =
-            action_manager->GetPageAction(*extension);
-        if (extension_action &&
-            (!only_count_visible || extension_action->GetIsVisible(tab_id)))
-          ++count;
-      }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  ToolbarActionsModel* toolbar_model = ToolbarActionsModel::Get(profile);
+  const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
+      toolbar_model->toolbar_items();
+  ExtensionActionManager* action_manager =
+      ExtensionActionManager::Get(web_contents->GetBrowserContext());
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (const ToolbarActionsModel::ToolbarItem& item : toolbar_items) {
+    if (item.type == ToolbarActionsModel::EXTENSION_ACTION) {
+      const Extension* extension = enabled_extensions.GetByID(item.id);
+      ExtensionAction* extension_action =
+          action_manager->GetPageAction(*extension);
+      if (extension_action &&
+          (!only_count_visible || extension_action->GetIsVisible(tab_id)))
+        ++count;
     }
   }
 

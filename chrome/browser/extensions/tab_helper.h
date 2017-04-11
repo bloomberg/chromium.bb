@@ -38,7 +38,6 @@ namespace extensions {
 class ExtensionActionRunner;
 class BookmarkAppHelper;
 class Extension;
-class LocationBarController;
 class WebstoreInlineInstallerFactory;
 
 // Per-tab extension helper. Also handles non-extension apps.
@@ -93,10 +92,6 @@ class TabHelper : public content::WebContentsObserver,
 
   ScriptExecutor* script_executor() {
     return script_executor_.get();
-  }
-
-  LocationBarController* location_bar_controller() {
-    return location_bar_controller_.get();
   }
 
   ExtensionActionRunner* extension_action_runner() {
@@ -243,8 +238,6 @@ class TabHelper : public content::WebContentsObserver,
   content::NotificationRegistrar registrar_;
 
   std::unique_ptr<ScriptExecutor> script_executor_;
-
-  std::unique_ptr<LocationBarController> location_bar_controller_;
 
   std::unique_ptr<ExtensionActionRunner> extension_action_runner_;
 

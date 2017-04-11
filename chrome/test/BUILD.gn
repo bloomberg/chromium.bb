@@ -4003,7 +4003,6 @@ test("unit_tests") {
       "../browser/extensions/external_provider_impl_unittest.cc",
       "../browser/extensions/favicon_downloader_unittest.cc",
       "../browser/extensions/install_tracker_unittest.cc",
-      "../browser/extensions/location_bar_controller_unittest.cc",
       "../browser/extensions/menu_manager_unittest.cc",
       "../browser/extensions/pack_extension_unittest.cc",
       "../browser/extensions/permission_message_combinations_unittest.cc",

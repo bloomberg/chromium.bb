@@ -677,8 +677,6 @@ static_library("extensions") {
     "installed_loader.h",
     "launch_util.cc",
     "launch_util.h",
-    "location_bar_controller.cc",
-    "location_bar_controller.h",
     "menu_manager.cc",
     "menu_manager.h",
     "menu_manager_factory.cc",

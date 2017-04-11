@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -157,7 +156,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       update_shortcut_on_load_complete_(false),
       script_executor_(
           new ScriptExecutor(web_contents, &script_execution_observers_)),
-      location_bar_controller_(new LocationBarController(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()),
       registry_observer_(this),
