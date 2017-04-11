@@ -63,14 +63,12 @@ class NativeWidgetDelegate;
 }
 
 enum class InsetsMetric {
-  // The margins that should be applied around a bubble dialog.
-  BUBBLE_DIALOG,
-  // The insets that should be applied around a DialogClientView. Note that
-  // the top inset is used for the distance between the buttons and the
-  // DialogClientView's content view.
+  // The margins around the contents area of a bubble (popover)-style dialog.
+  BUBBLE_CONTENTS,
+  // The margins around the button row of a dialog.
   DIALOG_BUTTON,
-  // The insets that should be applied around a dialog's frame view.
-  DIALOG_FRAME_VIEW,
+  // The margins around the icon/title of a dialog.
+  DIALOG_TITLE,
   // The margins that should be applied around a panel GridLayout.
   PANEL,
   // Padding to add to vector image buttons to increase their click and touch

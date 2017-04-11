@@ -128,14 +128,14 @@ scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
 
 gfx::Insets ViewsDelegate::GetInsetsMetric(InsetsMetric metric) const {
   switch (metric) {
+    case InsetsMetric::BUBBLE_CONTENTS:
+      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
     case InsetsMetric::DIALOG_BUTTON:
       return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
                          kButtonHEdgeMarginNew);
-    case InsetsMetric::DIALOG_FRAME_VIEW:
+    case InsetsMetric::DIALOG_TITLE:
       return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
                          kButtonHEdgeMarginNew);
-    case InsetsMetric::BUBBLE_DIALOG:
-      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
     case InsetsMetric::PANEL:
       return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew);
     case InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING:

@@ -213,6 +213,9 @@ gfx::Insets ChromeViewsDelegate::GetInsetsMetric(
     views::InsetsMetric metric) const {
   const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
   switch (metric) {
+    case views::InsetsMetric::BUBBLE_CONTENTS:
+      return gfx::Insets(layout_delegate->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
     case views::InsetsMetric::DIALOG_BUTTON: {
       const int top = layout_delegate->GetMetric(
           LayoutDelegate::Metric::DIALOG_BUTTON_TOP_SPACING);
@@ -220,7 +223,7 @@ gfx::Insets ChromeViewsDelegate::GetInsetsMetric(
           LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
       return gfx::Insets(top, margin, margin, margin);
     }
-    case views::InsetsMetric::DIALOG_FRAME_VIEW: {
+    case views::InsetsMetric::DIALOG_TITLE: {
       const int top = layout_delegate->GetMetric(
           LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
       const int side = layout_delegate->GetMetric(
@@ -228,9 +231,6 @@ gfx::Insets ChromeViewsDelegate::GetInsetsMetric(
       // Titles are inset at the top and sides, but not at the bottom.
       return gfx::Insets(top, side, 0, side);
     }
-    case views::InsetsMetric::BUBBLE_DIALOG:
-      return gfx::Insets(layout_delegate->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
     case views::InsetsMetric::PANEL:
       return gfx::Insets(layout_delegate->GetMetric(
                              LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
