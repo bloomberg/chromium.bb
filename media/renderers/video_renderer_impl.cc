@@ -31,7 +31,7 @@ VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     VideoRendererSink* sink,
-    ScopedVector<VideoDecoder> decoders,
+    const CreateVideoDecodersCB& create_video_decoders_cb,
     bool drop_frames,
     GpuVideoAcceleratorFactories* gpu_factories,
     const scoped_refptr<MediaLog>& media_log)
@@ -39,15 +39,15 @@ VideoRendererImpl::VideoRendererImpl(
       sink_(sink),
       sink_started_(false),
       client_(nullptr),
-      video_frame_stream_(new VideoFrameStream(media_task_runner,
-                                               std::move(decoders),
-                                               media_log)),
       gpu_memory_buffer_pool_(nullptr),
       media_log_(media_log),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       state_(kUninitialized),
+      create_video_decoders_cb_(create_video_decoders_cb),
+      gpu_factories_(gpu_factories),
+      worker_task_runner_(worker_task_runner),
       pending_read_(false),
       drop_frames_(drop_frames),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -63,11 +63,7 @@ VideoRendererImpl::VideoRendererImpl(
       max_buffered_frames_(limits::kMaxVideoFrames),
       weak_factory_(this),
       frame_callback_weak_factory_(this) {
-  if (gpu_factories &&
-      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
-    gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
-        media_task_runner, worker_task_runner, gpu_factories));
-  }
+  DCHECK(create_video_decoders_cb_);
 }
 
 VideoRendererImpl::~VideoRendererImpl() {
@@ -150,10 +146,24 @@ void VideoRendererImpl::Initialize(
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
   DCHECK(!init_cb.is_null());
   DCHECK(!wall_clock_time_cb.is_null());
-  DCHECK_EQ(kUninitialized, state_);
+  DCHECK(kUninitialized == state_ || kFlushed == state_);
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
-  DCHECK(!have_renderered_frames_);
+
+  ScopedVector<VideoDecoder> decoders = create_video_decoders_cb_.Run();
+  video_frame_stream_.reset(
+      new VideoFrameStream(task_runner_, std::move(decoders), media_log_));
+
+  // Always re-initialize or reset the |gpu_memory_buffer_pool_| in case we are
+  // switching between video tracks with incompatible video formats (e.g. 8-bit
+  // H.264 to 10-bit H264 or vice versa).
+  if (gpu_factories_ &&
+      gpu_factories_->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+    gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
+        task_runner_, worker_task_runner_, gpu_factories_));
+  } else {
+    gpu_memory_buffer_pool_.reset();
+  }
 
   low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
   UMA_HISTOGRAM_BOOLEAN("Media.VideoRenderer.LowDelay", low_delay_);

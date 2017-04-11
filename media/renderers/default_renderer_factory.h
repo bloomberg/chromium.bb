@@ -23,6 +23,11 @@ class MediaLog;
 class VideoDecoder;
 class VideoRendererSink;
 
+using CreateAudioDecodersCB =
+    base::RepeatingCallback<ScopedVector<AudioDecoder>()>;
+using CreateVideoDecodersCB =
+    base::RepeatingCallback<ScopedVector<VideoDecoder>()>;
+
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
  public:

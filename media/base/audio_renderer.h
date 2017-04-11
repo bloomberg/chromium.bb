@@ -32,6 +32,11 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |cdm_context| can be used to handle encrypted streams. May be null if the
   // stream is not encrypted.
+  //
+  // AudioRenderer may be reinitialized for playback of a different demuxer
+  // stream by calling Initialize again when the renderer is in a flushed
+  // state (i.e. after Flush call, but before StartPlaying). This is used for
+  // media track switching.
   virtual void Initialize(DemuxerStream* stream,
                           CdmContext* cdm_context,
                           RendererClient* client,

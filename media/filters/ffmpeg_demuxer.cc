@@ -1338,6 +1338,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       track_label = streams_[i]->GetMetadata("title");
     }
 
+    if (codec_type == AVMEDIA_TYPE_AUDIO) {
+      streams_[i]->set_enabled(detected_audio_track_count == 1,
+                               base::TimeDelta());
+    } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      streams_[i]->set_enabled(detected_video_track_count == 1,
+                               base::TimeDelta());
+    }
+
     if ((codec_type == AVMEDIA_TYPE_AUDIO &&
          media_tracks->getAudioConfig(track_id).IsValidConfig()) ||
         (codec_type == AVMEDIA_TYPE_VIDEO &&
@@ -1656,6 +1664,13 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     FFmpegDemuxerStream* stream = track_id_to_demux_stream_map_[id];
     DCHECK(stream);
     DCHECK_EQ(DemuxerStream::AUDIO, stream->type());
+    // TODO(servolk): Remove after multiple enabled audio tracks are supported
+    // by the media::RendererImpl.
+    if (!enabled_streams.empty()) {
+      MEDIA_LOG(INFO, media_log_)
+          << "Only one enabled audio track is supported, ignoring track " << id;
+      continue;
+    }
     enabled_streams.insert(stream);
   }
 

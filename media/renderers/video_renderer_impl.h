@@ -28,6 +28,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/filters/decoder_stream.h"
 #include "media/filters/video_renderer_algorithm.h"
+#include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
@@ -56,7 +57,7 @@ class MEDIA_EXPORT VideoRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       VideoRendererSink* sink,
-      ScopedVector<VideoDecoder> decoders,
+      const CreateVideoDecodersCB& create_video_decoders_cb,
       bool drop_frames,
       GpuVideoAcceleratorFactories* gpu_factories,
       const scoped_refptr<MediaLog>& media_log);
@@ -220,20 +221,22 @@ class MEDIA_EXPORT VideoRendererImpl
   // Important detail: being in kPlaying doesn't imply that video is being
   // rendered. Rather, it means that the renderer is ready to go. The actual
   // rendering of video is controlled by time advancing via |get_time_cb_|.
+  // Video renderer can be reinitialized completely by calling Initialize again
+  // when it is in a kFlushed state with video sink stopped.
   //
-  //   kUninitialized
-  //         | Initialize()
-  //         |
-  //         V
-  //    kInitializing
-  //         | Decoders initialized
-  //         |
-  //         V            Decoders reset
-  //      kFlushed <------------------ kFlushing
-  //         | StartPlayingFrom()         ^
-  //         |                            |
-  //         |                            | Flush()
-  //         `---------> kPlaying --------'
+  //    kUninitialized
+  //  +------> | Initialize()
+  //  |        |
+  //  |        V
+  //  |   kInitializing
+  //  |        | Decoders initialized
+  //  |        |
+  //  |        V            Decoders reset
+  //  ---- kFlushed <------------------ kFlushing
+  //           | StartPlayingFrom()         ^
+  //           |                            |
+  //           |                            | Flush()
+  //           `---------> kPlaying --------'
   enum State {
     kUninitialized,
     kInitializing,
@@ -242,6 +245,12 @@ class MEDIA_EXPORT VideoRendererImpl
     kPlaying
   };
   State state_;
+
+  // TODO(servolk): Consider using DecoderFactory here instead of the
+  // CreateVideoDecodersCB.
+  CreateVideoDecodersCB create_video_decoders_cb_;
+  GpuVideoAcceleratorFactories* gpu_factories_;
+  scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   // Keep track of the outstanding read on the VideoFrameStream. Flushing can
   // only complete once the read has completed.

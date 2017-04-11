@@ -135,8 +135,8 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
     std::unique_ptr<DataSource> data_source,
     CdmContext* cdm_context,
     uint8_t test_type,
-    ScopedVector<VideoDecoder> prepend_video_decoders,
-    ScopedVector<AudioDecoder> prepend_audio_decoders) {
+    CreateVideoDecodersCB prepend_video_decoders_cb,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
   hashing_enabled_ = test_type & kHashed;
   clockless_playback_ = test_type & kClockless;
 
@@ -179,10 +179,11 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
 
   pipeline_->Start(
-      demuxer_.get(), CreateRenderer(std::move(prepend_video_decoders),
-                                     std::move(prepend_audio_decoders)),
-      this, base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                       base::Unretained(this)));
+      demuxer_.get(),
+      CreateRenderer(prepend_video_decoders_cb, prepend_audio_decoders_cb),
+      this,
+      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   return pipeline_status_;
 }
@@ -191,15 +192,14 @@ PipelineStatus PipelineIntegrationTestBase::StartWithFile(
     const std::string& filename,
     CdmContext* cdm_context,
     uint8_t test_type,
-    ScopedVector<VideoDecoder> prepend_video_decoders,
-    ScopedVector<AudioDecoder> prepend_audio_decoders) {
+    CreateVideoDecodersCB prepend_video_decoders_cb,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
   std::unique_ptr<FileDataSource> file_data_source(new FileDataSource());
   base::FilePath file_path(GetTestDataFilePath(filename));
   CHECK(file_data_source->Initialize(file_path)) << "Is " << file_path.value()
                                                  << " missing?";
   return StartInternal(std::move(file_data_source), cdm_context, test_type,
-                       std::move(prepend_video_decoders),
-                       std::move(prepend_audio_decoders));
+                       prepend_video_decoders_cb, prepend_audio_decoders_cb);
 }
 
 PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename) {
@@ -214,11 +214,10 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
 PipelineStatus PipelineIntegrationTestBase::Start(
     const std::string& filename,
     uint8_t test_type,
-    ScopedVector<VideoDecoder> prepend_video_decoders,
-    ScopedVector<AudioDecoder> prepend_audio_decoders) {
-  return StartWithFile(filename, nullptr, test_type,
-                       std::move(prepend_video_decoders),
-                       std::move(prepend_audio_decoders));
+    CreateVideoDecodersCB prepend_video_decoders_cb,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
+  return StartWithFile(filename, nullptr, test_type, prepend_video_decoders_cb,
+                       prepend_audio_decoders_cb);
 }
 
 PipelineStatus PipelineIntegrationTestBase::Start(const uint8_t* data,
@@ -324,10 +323,15 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 #endif
 }
 
-std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
-    ScopedVector<VideoDecoder> prepend_video_decoders,
-    ScopedVector<AudioDecoder> prepend_audio_decoders) {
-  ScopedVector<VideoDecoder> video_decoders = std::move(prepend_video_decoders);
+ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
+    CreateVideoDecodersCB prepend_video_decoders_cb) {
+  ScopedVector<VideoDecoder> video_decoders;
+
+  if (!prepend_video_decoders_cb.is_null()) {
+    video_decoders = prepend_video_decoders_cb.Run();
+    DCHECK(!video_decoders.empty());
+  }
+
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder());
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
@@ -337,7 +341,29 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   video_decoders.push_back(
       new FFmpegVideoDecoder(make_scoped_refptr(new MediaLog())));
 #endif
+  return video_decoders;
+}
 
+ScopedVector<AudioDecoder> CreateAudioDecodersForTest(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
+  ScopedVector<AudioDecoder> audio_decoders;
+
+  if (!prepend_audio_decoders_cb.is_null()) {
+    audio_decoders = prepend_audio_decoders_cb.Run();
+    DCHECK(!audio_decoders.empty());
+  }
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
+  audio_decoders.push_back(
+      new FFmpegAudioDecoder(media_task_runner, new MediaLog()));
+#endif
+  return audio_decoders;
+}
+
+std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
+    CreateVideoDecodersCB prepend_video_decoders_cb,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
   // Simulate a 60Hz rendering sink.
   video_sink_.reset(new NullVideoSink(
       clockless_playback_, base::TimeDelta::FromSecondsD(1.0 / 60),
@@ -348,15 +374,9 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   // Disable frame dropping if hashing is enabled.
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       message_loop_.task_runner(), message_loop_.task_runner().get(),
-      video_sink_.get(), std::move(video_decoders), false, nullptr,
-      new MediaLog()));
-
-  ScopedVector<AudioDecoder> audio_decoders = std::move(prepend_audio_decoders);
-
-#if !defined(MEDIA_DISABLE_FFMPEG)
-  audio_decoders.push_back(
-      new FFmpegAudioDecoder(message_loop_.task_runner(), new MediaLog()));
-#endif
+      video_sink_.get(),
+      base::Bind(&CreateVideoDecodersForTest, prepend_video_decoders_cb), false,
+      nullptr, new MediaLog()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.task_runner());
@@ -376,7 +396,9 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
-      std::move(audio_decoders), new MediaLog()));
+      base::Bind(&CreateAudioDecodersForTest, message_loop_.task_runner(),
+                 prepend_audio_decoders_cb),
+      new MediaLog()));
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

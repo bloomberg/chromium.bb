@@ -36,6 +36,7 @@
 #include "media/base/time_source.h"
 #include "media/filters/audio_renderer_algorithm.h"
 #include "media/filters/decoder_stream.h"
+#include "media/renderers/default_renderer_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -62,7 +63,7 @@ class MEDIA_EXPORT AudioRendererImpl
   AudioRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
-      ScopedVector<AudioDecoder> decoders,
+      const CreateAudioDecodersCB& create_audio_decoders_cb,
       const scoped_refptr<MediaLog>& media_log);
   ~AudioRendererImpl() override;
 
@@ -96,16 +97,18 @@ class MEDIA_EXPORT AudioRendererImpl
   // Important detail: being in kPlaying doesn't imply that audio is being
   // rendered. Rather, it means that the renderer is ready to go. The actual
   // rendering of audio is controlled via Start/StopRendering().
+  // Audio renderer can be reinitialized completely by calling Initialize again
+  // when it is in a kFlushed state.
   //
   //   kUninitialized
-  //         | Initialize()
-  //         |
-  //         V
-  //    kInitializing
-  //         | Decoders initialized
-  //         |
-  //         V            Decoders reset
-  //      kFlushed <------------------ kFlushing
+  //  +----> | Initialize()
+  //  |      |
+  //  |      V
+  //  | kInitializing
+  //  |      | Decoders initialized
+  //  |      |
+  //  |      V            Decoders reset
+  //  +-  kFlushed <------------------ kFlushing
   //         | StartPlaying()             ^
   //         |                            |
   //         |                            | Flush()
@@ -252,6 +255,10 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Simple state tracking variable.
   State state_;
+
+  // TODO(servolk): Consider using DecoderFactory here instead of the
+  // CreateAudioDecodersCB.
+  CreateAudioDecodersCB create_audio_decoders_cb_;
 
   BufferingState buffering_state_;
 

@@ -80,6 +80,8 @@ RendererImpl::RendererImpl(
       task_runner_(task_runner),
       audio_renderer_(std::move(audio_renderer)),
       video_renderer_(std::move(video_renderer)),
+      current_audio_stream_(nullptr),
+      current_video_stream_(nullptr),
       time_source_(NULL),
       time_ticking_(false),
       playback_rate_(0.0),
@@ -197,10 +199,19 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   flush_cb_ = flush_cb;
   state_ = STATE_FLUSHING;
 
-  if (time_ticking_)
-    PausePlayback();
+  // If we are currently handling a media stream status change, then postpone
+  // Flush until after that's done (because stream status changes also flush
+  // audio_renderer_/video_renderer_ and they need to be restarted before they
+  // can be flushed again). OnStreamRestartCompleted will resume Flush
+  // processing after audio/video restart has completed and there are no other
+  // pending stream status changes.
+  if (restarting_audio_ || restarting_video_) {
+    pending_actions_.push_back(
+        base::Bind(&RendererImpl::FlushInternal, weak_this_));
+    return;
+  }
 
-  FlushAudioRenderer();
+  FlushInternal();
 }
 
 void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
@@ -219,64 +230,6 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
     audio_renderer_->StartPlaying();
   if (video_renderer_)
     video_renderer_->StartPlayingFrom(time);
-}
-
-void RendererImpl::OnStreamStatusChanged(DemuxerStream* stream,
-                                         bool enabled,
-                                         base::TimeDelta time) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(stream);
-  bool video = (stream->type() == DemuxerStream::VIDEO);
-  DVLOG(1) << __func__ << (video ? " video" : " audio") << " stream=" << stream
-           << " enabled=" << enabled << " time=" << time.InSecondsF();
-  if ((state_ != STATE_PLAYING) || (audio_ended_ && video_ended_))
-    return;
-  if (restarting_audio_ || restarting_video_) {
-    DVLOG(3) << __func__ << ": postponed stream " << stream
-             << " status change handling.";
-    pending_stream_status_notifications_.push_back(
-        base::Bind(&RendererImpl::OnStreamStatusChanged, weak_this_, stream,
-                   enabled, time));
-    return;
-  }
-  if (stream->type() == DemuxerStream::VIDEO) {
-    DCHECK(video_renderer_);
-    restarting_video_ = true;
-    video_renderer_->Flush(
-        base::Bind(&RendererImpl::RestartVideoRenderer, weak_this_, time));
-  } else if (stream->type() == DemuxerStream::AUDIO) {
-    DCHECK(audio_renderer_);
-    DCHECK(time_source_);
-    restarting_audio_ = true;
-    // Stop ticking (transition into paused state) in audio renderer before
-    // calling Flush, since after Flush we are going to restart playback by
-    // calling audio renderer StartPlaying which would fail in playing state.
-    if (time_ticking_) {
-      time_ticking_ = false;
-      time_source_->StopTicking();
-    }
-    audio_renderer_->Flush(
-        base::Bind(&RendererImpl::RestartAudioRenderer, weak_this_, time));
-  }
-}
-
-void RendererImpl::RestartVideoRenderer(base::TimeDelta time) {
-  DVLOG(3) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(video_renderer_);
-  DCHECK_EQ(state_, STATE_PLAYING);
-  video_ended_ = false;
-  video_renderer_->StartPlayingFrom(time);
-}
-
-void RendererImpl::RestartAudioRenderer(base::TimeDelta time) {
-  DVLOG(3) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_PLAYING);
-  DCHECK(time_source_);
-  DCHECK(audio_renderer_);
-  audio_ended_ = false;
-  audio_renderer_->StartPlaying();
 }
 
 void RendererImpl::SetPlaybackRate(double playback_rate) {
@@ -400,6 +353,8 @@ void RendererImpl::InitializeAudioRenderer() {
     return;
   }
 
+  current_audio_stream_ = audio_stream;
+
   audio_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::AUDIO, this));
   // Note: After the initialization of a renderer, error events from it may
@@ -448,6 +403,8 @@ void RendererImpl::InitializeVideoRenderer() {
     return;
   }
 
+  current_video_stream_ = video_stream;
+
   video_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::VIDEO, this));
   video_renderer_->Initialize(
@@ -491,6 +448,18 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
   DCHECK(audio_renderer_ || video_renderer_);
 
   FinishInitialization(PIPELINE_OK);
+}
+
+void RendererImpl::FlushInternal() {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, STATE_FLUSHING);
+  DCHECK(!flush_cb_.is_null());
+
+  if (time_ticking_)
+    PausePlayback();
+
+  FlushAudioRenderer();
 }
 
 void RendererImpl::FlushAudioRenderer() {
@@ -560,6 +529,168 @@ void RendererImpl::OnVideoRendererFlushDone() {
   video_ended_ = false;
   state_ = STATE_FLUSHED;
   base::ResetAndReturn(&flush_cb_).Run();
+
+  if (!pending_actions_.empty()) {
+    base::Closure closure = pending_actions_.front();
+    pending_actions_.pop_front();
+    closure.Run();
+  }
+}
+
+void RendererImpl::OnStreamStatusChanged(DemuxerStream* stream,
+                                         bool enabled,
+                                         base::TimeDelta time) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(stream);
+  bool video = (stream->type() == DemuxerStream::VIDEO);
+  DVLOG(1) << __func__ << (video ? " video" : " audio") << " stream=" << stream
+           << " enabled=" << enabled << " time=" << time.InSecondsF();
+
+  if ((state_ != STATE_PLAYING && state_ != STATE_FLUSHING &&
+       state_ != STATE_FLUSHED) ||
+      (audio_ended_ && video_ended_))
+    return;
+
+  if (restarting_audio_ || restarting_video_ || state_ == STATE_FLUSHING) {
+    DVLOG(3) << __func__ << ": postponed stream " << stream
+             << " status change handling.";
+    pending_actions_.push_back(base::Bind(&RendererImpl::OnStreamStatusChanged,
+                                          weak_this_, stream, enabled, time));
+    return;
+  }
+
+  DCHECK(state_ == STATE_PLAYING || state_ == STATE_FLUSHED);
+  if (stream->type() == DemuxerStream::VIDEO) {
+    DCHECK(video_renderer_);
+    restarting_video_ = true;
+    base::Closure handle_track_status_cb =
+        base::Bind(stream == current_video_stream_
+                       ? &RendererImpl::RestartVideoRenderer
+                       : &RendererImpl::ReinitializeVideoRenderer,
+                   weak_this_, stream, time);
+    if (state_ == STATE_FLUSHED)
+      handle_track_status_cb.Run();
+    else
+      video_renderer_->Flush(handle_track_status_cb);
+  } else if (stream->type() == DemuxerStream::AUDIO) {
+    DCHECK(audio_renderer_);
+    DCHECK(time_source_);
+    restarting_audio_ = true;
+    base::Closure handle_track_status_cb =
+        base::Bind(stream == current_audio_stream_
+                       ? &RendererImpl::RestartAudioRenderer
+                       : &RendererImpl::ReinitializeAudioRenderer,
+                   weak_this_, stream, time);
+    if (state_ == STATE_FLUSHED) {
+      handle_track_status_cb.Run();
+      return;
+    }
+    // Stop ticking (transition into paused state) in audio renderer before
+    // calling Flush, since after Flush we are going to restart playback by
+    // calling audio renderer StartPlaying which would fail in playing state.
+    if (time_ticking_) {
+      time_ticking_ = false;
+      time_source_->StopTicking();
+    }
+    audio_renderer_->Flush(handle_track_status_cb);
+  }
+}
+
+void RendererImpl::ReinitializeAudioRenderer(DemuxerStream* stream,
+                                             base::TimeDelta time) {
+  DVLOG(2) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(stream, current_audio_stream_);
+
+  current_audio_stream_ = stream;
+  audio_renderer_->Initialize(
+      stream, cdm_context_, audio_renderer_client_.get(),
+      base::Bind(&RendererImpl::OnAudioRendererReinitialized, weak_this_,
+                 stream, time));
+}
+
+void RendererImpl::OnAudioRendererReinitialized(DemuxerStream* stream,
+                                                base::TimeDelta time,
+                                                PipelineStatus status) {
+  DVLOG(2) << __func__ << ": status=" << status;
+  DCHECK_EQ(stream, current_audio_stream_);
+
+  if (status != PIPELINE_OK) {
+    OnError(status);
+    return;
+  }
+  RestartAudioRenderer(stream, time);
+}
+
+void RendererImpl::ReinitializeVideoRenderer(DemuxerStream* stream,
+                                             base::TimeDelta time) {
+  DVLOG(2) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(stream, current_video_stream_);
+
+  current_video_stream_ = stream;
+  video_renderer_->OnTimeStopped();
+  video_renderer_->Initialize(
+      stream, cdm_context_, video_renderer_client_.get(),
+      base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
+      base::Bind(&RendererImpl::OnVideoRendererReinitialized, weak_this_,
+                 stream, time));
+}
+
+void RendererImpl::OnVideoRendererReinitialized(DemuxerStream* stream,
+                                                base::TimeDelta time,
+                                                PipelineStatus status) {
+  DVLOG(2) << __func__ << ": status=" << status;
+  DCHECK_EQ(stream, current_video_stream_);
+
+  if (status != PIPELINE_OK) {
+    OnError(status);
+    return;
+  }
+  RestartVideoRenderer(stream, time);
+}
+
+void RendererImpl::RestartAudioRenderer(DemuxerStream* stream,
+                                        base::TimeDelta time) {
+  DVLOG(2) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == STATE_PLAYING || state_ == STATE_FLUSHED ||
+         state_ == STATE_FLUSHING);
+  DCHECK(time_source_);
+  DCHECK(audio_renderer_);
+  DCHECK_EQ(stream, current_audio_stream_);
+
+  audio_ended_ = false;
+  if (state_ == STATE_FLUSHED) {
+    // If we are in the FLUSHED state, then we are done. The audio renderer will
+    // be restarted by a subsequent RendererImpl::StartPlayingFrom call.
+    OnStreamRestartCompleted();
+  } else {
+    // Stream restart will be completed when the audio renderer decodes enough
+    // data and reports HAVE_ENOUGH to HandleRestartedStreamBufferingChanges.
+    audio_renderer_->StartPlaying();
+  }
+}
+
+void RendererImpl::RestartVideoRenderer(DemuxerStream* stream,
+                                        base::TimeDelta time) {
+  DVLOG(2) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(video_renderer_);
+  DCHECK(state_ == STATE_PLAYING || state_ == STATE_FLUSHED ||
+         state_ == STATE_FLUSHING);
+  DCHECK_EQ(stream, current_video_stream_);
+
+  video_ended_ = false;
+  if (state_ == STATE_FLUSHED) {
+    // If we are in the FLUSHED state, then we are done. The video renderer will
+    // be restarted by a subsequent RendererImpl::StartPlayingFrom call.
+    OnStreamRestartCompleted();
+  } else {
+    // Stream restart will be completed when the video renderer decodes enough
+    // data and reports HAVE_ENOUGH to HandleRestartedStreamBufferingChanges.
+    video_renderer_->StartPlayingFrom(time);
+  }
 }
 
 void RendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
@@ -634,12 +765,16 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
 }
 
 void RendererImpl::OnStreamRestartCompleted() {
+  DVLOG(3) << __func__ << " restarting_audio_=" << restarting_audio_
+           << " restarting_video_=" << restarting_video_;
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(restarting_audio_ || restarting_video_);
   restarting_audio_ = false;
   restarting_video_ = false;
-  if (!pending_stream_status_notifications_.empty()) {
-    pending_stream_status_notifications_.front().Run();
-    pending_stream_status_notifications_.pop_front();
+  if (!pending_actions_.empty()) {
+    base::Closure closure = pending_actions_.front();
+    pending_actions_.pop_front();
+    closure.Run();
   }
 }
 

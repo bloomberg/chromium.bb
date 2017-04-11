@@ -715,6 +715,13 @@ void ChunkDemuxer::OnEnabledAudioTracksChanged(
     ChunkDemuxerStream* stream = track_id_to_demux_stream_map_[id];
     DCHECK(stream);
     DCHECK_EQ(DemuxerStream::AUDIO, stream->type());
+    // TODO(servolk): Remove after multiple enabled audio tracks are supported
+    // by the media::RendererImpl.
+    if (!enabled_streams.empty()) {
+      MEDIA_LOG(INFO, media_log_)
+          << "Only one enabled audio track is supported, ignoring track " << id;
+      continue;
+    }
     enabled_streams.insert(stream);
   }
 
@@ -1227,6 +1234,7 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
          track_id_to_demux_stream_map_.end());
   track_id_to_demux_stream_map_[media_track_id] = stream.get();
   id_to_streams_map_[source_id].push_back(stream.get());
+  stream->set_enabled(owning_vector->empty(), base::TimeDelta());
   owning_vector->push_back(std::move(stream));
   return owning_vector->back().get();
 }

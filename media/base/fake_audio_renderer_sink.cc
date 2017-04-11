@@ -32,7 +32,7 @@ FakeAudioRendererSink::~FakeAudioRendererSink() {
 
 void FakeAudioRendererSink::Initialize(const AudioParameters& params,
                                        RenderCallback* callback) {
-  DCHECK_EQ(state_, kUninitialized);
+  DCHECK(state_ == kUninitialized || state_ == kStopped);
   DCHECK(!callback_);
   DCHECK(callback);
 

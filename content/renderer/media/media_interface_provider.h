@@ -7,7 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -21,7 +22,7 @@ namespace content {
 
 // MediaInterfaceProvider is an implementation of mojo InterfaceProvider that
 // provides media related services and handles disconnection automatically.
-// This class is single threaded.
+// The GetInterface can be called on any thread.
 class CONTENT_EXPORT MediaInterfaceProvider
     : public service_manager::mojom::InterfaceProvider {
  public:
@@ -37,9 +38,12 @@ class CONTENT_EXPORT MediaInterfaceProvider
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
   void OnConnectionError();
 
-  base::ThreadChecker thread_checker_;
   service_manager::InterfaceProvider* remote_interfaces_;
   media::mojom::InterfaceFactoryPtr media_interface_factory_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<MediaInterfaceProvider> weak_this_;
+  base::WeakPtrFactory<MediaInterfaceProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProvider);
 };

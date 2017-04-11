@@ -16,16 +16,26 @@ namespace content {
 
 MediaInterfaceProvider::MediaInterfaceProvider(
     service_manager::InterfaceProvider* remote_interfaces)
-    : remote_interfaces_(remote_interfaces) {}
+    : remote_interfaces_(remote_interfaces), weak_factory_(this) {
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
 
 MediaInterfaceProvider::~MediaInterfaceProvider() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
                                           mojo::ScopedMessagePipeHandle pipe) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&MediaInterfaceProvider::GetInterface, weak_this_,
+                              interface_name, base::Passed(&pipe)));
+    return;
+  }
+
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (interface_name == media::mojom::ContentDecryptionModule::Name_) {
     GetMediaInterfaceFactory()->CreateCdm(
@@ -49,7 +59,7 @@ void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
 media::mojom::InterfaceFactory*
 MediaInterfaceProvider::GetMediaInterfaceFactory() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!media_interface_factory_) {
     remote_interfaces_->GetInterface(&media_interface_factory_);
@@ -62,7 +72,7 @@ MediaInterfaceProvider::GetMediaInterfaceFactory() {
 
 void MediaInterfaceProvider::OnConnectionError() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   media_interface_factory_.reset();
 }

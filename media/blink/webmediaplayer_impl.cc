@@ -1025,20 +1025,25 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   DCHECK(demuxer_.get());
   DCHECK(!chunk_demuxer_);
 
-  // Report the media track information to blink.
+  // Report the media track information to blink. Only the first audio track and
+  // the first video track are enabled by default to match blink logic.
+  bool is_first_audio_track = true;
+  bool is_first_video_track = true;
   for (const auto& track : tracks->tracks()) {
     if (track->type() == MediaTrack::Audio) {
       client_->AddAudioTrack(blink::WebString::FromUTF8(track->id()),
                              blink::WebMediaPlayerClient::kAudioTrackKindMain,
                              blink::WebString::FromUTF8(track->label()),
                              blink::WebString::FromUTF8(track->language()),
-                             /*enabled*/ true);
+                             is_first_audio_track);
+      is_first_audio_track = false;
     } else if (track->type() == MediaTrack::Video) {
       client_->AddVideoTrack(blink::WebString::FromUTF8(track->id()),
                              blink::WebMediaPlayerClient::kVideoTrackKindMain,
                              blink::WebString::FromUTF8(track->label()),
                              blink::WebString::FromUTF8(track->language()),
-                             /*selected*/ true);
+                             is_first_video_track);
+      is_first_video_track = false;
     } else {
       // Text tracks are not supported through this code path yet.
       NOTREACHED();

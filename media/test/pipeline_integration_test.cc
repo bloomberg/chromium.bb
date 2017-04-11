@@ -685,8 +685,8 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
 
  protected:
   std::unique_ptr<Renderer> CreateRenderer(
-      ScopedVector<VideoDecoder> prepend_video_decoders,
-      ScopedVector<AudioDecoder> prepend_audio_decoders) override {
+      CreateVideoDecodersCB prepend_video_decoders_cb,
+      CreateAudioDecodersCB prepend_audio_decoders_cb) override {
     connector()->BindInterface("media", &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;
@@ -1131,6 +1131,30 @@ TEST_F(PipelineIntegrationTest, PipelineStoppedWhileVideoRestartPending) {
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
 
   pipeline_->OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
+  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kHashed));
+  Play();
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
+  // The first audio track (TrackId=4) is enabled by default. This should
+  // disable TrackId=4 and enable TrackId=5.
+  std::vector<MediaTrack::Id> track_ids;
+  track_ids.push_back("5");
+  pipeline_->OnEnabledAudioTracksChanged(track_ids);
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, SwitchVideoTrackDuringPlayback) {
+  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kHashed));
+  Play();
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
+  // The first video track (TrackId=1) is enabled by default. This should
+  // disable TrackId=1 and enable TrackId=2.
+  pipeline_->OnSelectedVideoTrackChanged(MediaTrack::Id("2"));
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
   Stop();
 }
 
@@ -1658,12 +1682,15 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-TEST_F(PipelineIntegrationTest, BasicFallback) {
+ScopedVector<VideoDecoder> CreateFailingVideoDecoder() {
   ScopedVector<VideoDecoder> failing_video_decoder;
   failing_video_decoder.push_back(new FailingVideoDecoder());
+  return failing_video_decoder;
+}
 
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bear.mp4", kClockless, std::move(failing_video_decoder)));
+TEST_F(PipelineIntegrationTest, BasicFallback) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear.mp4", kClockless,
+                               base::Bind(&CreateFailingVideoDecoder)));
 
   Play();
 

@@ -36,13 +36,11 @@ namespace media {
 AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
-    ScopedVector<AudioDecoder> decoders,
+    const CreateAudioDecodersCB& create_audio_decoders_cb,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
-      audio_buffer_stream_(
-          new AudioBufferStream(task_runner, std::move(decoders), media_log)),
       media_log_(media_log),
       client_(nullptr),
       tick_clock_(new base::DefaultTickClock()),
@@ -51,6 +49,7 @@ AudioRendererImpl::AudioRendererImpl(
       last_decoded_channel_layout_(CHANNEL_LAYOUT_NONE),
       playback_rate_(0.0),
       state_(kUninitialized),
+      create_audio_decoders_cb_(create_audio_decoders_cb),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       rendering_(false),
       sink_playing_(false),
@@ -59,9 +58,7 @@ AudioRendererImpl::AudioRendererImpl(
       rendered_end_of_stream_(false),
       is_suspending_(false),
       weak_factory_(this) {
-  audio_buffer_stream_->set_config_change_observer(base::Bind(
-      &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
-
+  DCHECK(create_audio_decoders_cb_);
   // Tests may not have a power monitor.
   base::PowerMonitor* monitor = base::PowerMonitor::Get();
   if (!monitor)
@@ -340,8 +337,15 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
   DCHECK(!init_cb.is_null());
-  DCHECK_EQ(kUninitialized, state_);
+  DCHECK(state_ == kUninitialized || state_ == kFlushed);
   DCHECK(sink_.get());
+
+  // If we are re-initializing playback (e.g. switching media tracks), stop the
+  // sink first.
+  if (state_ == kFlushed) {
+    sink_->Stop();
+    audio_clock_.reset();
+  }
 
   // Trying to track down AudioClock crash, http://crbug.com/674856.
   // AudioRenderImpl should only be initialized once to avoid destroying
@@ -350,6 +354,12 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   state_ = kInitializing;
   client_ = client;
+
+  audio_buffer_stream_ = base::MakeUnique<AudioBufferStream>(
+      task_runner_, create_audio_decoders_cb_.Run(), media_log_);
+
+  audio_buffer_stream_->set_config_change_observer(base::Bind(
+      &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
   // failed.

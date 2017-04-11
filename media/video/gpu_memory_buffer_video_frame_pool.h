@@ -24,6 +24,11 @@ class GpuVideoAcceleratorFactories;
 // The pool recycles resources to a void unnecessarily allocating and
 // destroying textures, images and GpuMemoryBuffer that could result
 // in a round trip to the browser/GPU process.
+// NOTE: Destroying the pool will not immediately invalidate outstanding video
+// frames. GPU memory buffers will be kept alive by video frames indirectly
+// referencing them. Video frames themselves are ref-counted and will be
+// released when they are no longer needed, potentially after the pool is
+// destroyed.
 class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
  public:
   GpuMemoryBufferVideoFramePool();
