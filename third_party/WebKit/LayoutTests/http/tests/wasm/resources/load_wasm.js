@@ -14,8 +14,5 @@ function createWasmModule() {
             if (!response.ok) throw new Error(response.statusText);
             return response.arrayBuffer();
         })
-        .then(data => {
-            var mod = new WebAssembly.Module(data);
-            return mod;
-        });
+        .then(WebAssembly.compile);
 }

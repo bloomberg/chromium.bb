@@ -18,7 +18,10 @@
     promise_test(TestWorkerCompileAndInstantiate, "wasm worker compile test");
     promise_test(TestPromiseCompileSyncInstantiate, "wasm sync instantiate");
     promise_test(TestPromiseCompileAsyncInstantiateFromBuffer, "wasm async instantiate from buffer");
-    promise_test(TestPromiseCompileAsyncInstantiateFromModule, "wasm async instantiate from module"); 
+    promise_test(TestPromiseCompileAsyncInstantiateFromModule, "wasm async instantiate from module");
+    promise_test(TestCompileFromPromise, "wasm async compile from promised bytes");
+    promise_test(TestInstantiateFromPromise, "wasm async instantiate from promised bytes");
+    promise_test(TestInstantiateFromPromiseChain, "wasm async compile, then async instantiate from promised bytes");
   </script>
 </body>
 </html>

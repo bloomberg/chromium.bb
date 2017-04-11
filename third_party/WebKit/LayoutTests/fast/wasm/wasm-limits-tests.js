@@ -93,3 +93,26 @@ function TestPromiseCompileAsyncInstantiateFromModule() {
     },
     assert_unreached);
 }
+
+
+function TestCompileFromPromise() {
+  return Promise.resolve(createTestBuffers(limit).large)
+    .then(WebAssembly.compile)
+    .then(m => assert_true(m instanceof WebAssembly.Module))
+}
+
+function TestInstantiateFromPromise() {
+  return Promise.resolve(createTestBuffers(limit).large)
+    .then(WebAssembly.instantiate)
+    .then(pair => {
+      assert_true(pair.module instanceof WebAssembly.Module);
+      assert_true(pair.instance instanceof WebAssembly.Instance);
+    });
+}
+
+function TestInstantiateFromPromiseChain() {
+  return Promise.resolve(createTestBuffers(limit).large)
+    .then(WebAssembly.compile)
+    .then(WebAssembly.instantiate)
+    .then(i => assert_true(i instanceof WebAssembly.Instance))
+}
