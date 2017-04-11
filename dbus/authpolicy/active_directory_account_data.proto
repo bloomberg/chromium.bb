@@ -12,12 +12,16 @@ package authpolicy;
 // AuthenticateUser call. Contains information about authenticated user fetched
 // from Active Directory server.
 message ActiveDirectoryAccountData {
-  // Unique id of the user account. Active Directory Object GUID is used.
+  // Unique id of the user account. Taken from the objectGUID property of the
+  // Active Directory user account information.
   optional string account_id = 1;
-  // Display name of the user. |displayName| key of the Active Directory user
-  // account information is used.
+  // Display name of the user. Taken from the displayName property of the Active
+  // account information.
   optional string display_name = 2;
-  // Given name of the user. AKA first name. |givenName| key of the Active
-  // Directory user account information is used.
+  // Given name of the user. AKA first name. Taken from givenName property of
+  // the Active Directory user account information.
   optional string given_name = 3;
+  // Logon name of the user (without @realm). Taken from the sAMAccountName
+  // property of the Active Directory user account information.
+  optional string sam_account_name = 4;
 }
