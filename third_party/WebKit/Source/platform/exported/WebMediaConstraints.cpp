@@ -527,25 +527,25 @@ bool WebMediaConstraints::IsEmpty() const {
 }
 
 void WebMediaConstraints::Initialize() {
-  ASSERT(IsNull());
+  DCHECK(IsNull());
   private_ = WebMediaConstraintsPrivate::Create();
 }
 
 void WebMediaConstraints::Initialize(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
-  ASSERT(IsNull());
+  DCHECK(IsNull());
   private_ = WebMediaConstraintsPrivate::Create(basic, advanced);
 }
 
 const WebMediaTrackConstraintSet& WebMediaConstraints::Basic() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->Basic();
 }
 
 const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::Advanced()
     const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->Advanced();
 }
 

@@ -51,7 +51,7 @@ class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
         extractable(extractable),
         algorithm(algorithm),
         usages(usages) {
-    ASSERT(!algorithm.IsNull());
+    DCHECK(!algorithm.IsNull());
   }
 
   const std::unique_ptr<WebCryptoKeyHandle> handle;
@@ -77,27 +77,27 @@ WebCryptoKey WebCryptoKey::CreateNull() {
 }
 
 WebCryptoKeyHandle* WebCryptoKey::Handle() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->handle.get();
 }
 
 WebCryptoKeyType WebCryptoKey::GetType() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->type;
 }
 
 bool WebCryptoKey::Extractable() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->extractable;
 }
 
 const WebCryptoKeyAlgorithm& WebCryptoKey::Algorithm() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->algorithm;
 }
 
 WebCryptoKeyUsageMask WebCryptoKey::Usages() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->usages;
 }
 

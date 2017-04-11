@@ -75,13 +75,13 @@ void WebFileSystemCallbacks::Assign(const WebFileSystemCallbacks& other) {
 }
 
 void WebFileSystemCallbacks::DidSucceed() {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->DidSucceed();
   private_.Reset();
 }
 
 void WebFileSystemCallbacks::DidReadMetadata(const WebFileInfo& web_file_info) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   FileMetadata file_metadata;
   file_metadata.modification_time = web_file_info.modification_time;
   file_metadata.length = web_file_info.length;
@@ -93,7 +93,7 @@ void WebFileSystemCallbacks::DidReadMetadata(const WebFileInfo& web_file_info) {
 
 void WebFileSystemCallbacks::DidCreateSnapshotFile(
     const WebFileInfo& web_file_info) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   // It's important to create a BlobDataHandle that refers to the platform file
   // path prior to return from this method so the underlying file will not be
   // deleted.
@@ -115,7 +115,7 @@ void WebFileSystemCallbacks::DidCreateSnapshotFile(
 void WebFileSystemCallbacks::DidReadDirectory(
     const WebVector<WebFileSystemEntry>& entries,
     bool has_more) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   for (size_t i = 0; i < entries.size(); ++i)
     private_->Callbacks()->DidReadDirectoryEntry(entries[i].name,
                                                  entries[i].is_directory);
@@ -125,7 +125,7 @@ void WebFileSystemCallbacks::DidReadDirectory(
 
 void WebFileSystemCallbacks::DidOpenFileSystem(const WebString& name,
                                                const WebURL& root_url) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->DidOpenFileSystem(name, root_url);
   private_.Reset();
 }
@@ -135,7 +135,7 @@ void WebFileSystemCallbacks::DidResolveURL(const WebString& name,
                                            WebFileSystemType type,
                                            const WebString& file_path,
                                            bool is_directory) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->DidResolveURL(name, root_url,
                                        static_cast<FileSystemType>(type),
                                        file_path, is_directory);
@@ -144,20 +144,20 @@ void WebFileSystemCallbacks::DidResolveURL(const WebString& name,
 
 void WebFileSystemCallbacks::DidCreateFileWriter(WebFileWriter* web_file_writer,
                                                  long long length) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->DidCreateFileWriter(WTF::WrapUnique(web_file_writer),
                                              length);
   private_.Reset();
 }
 
 void WebFileSystemCallbacks::DidFail(WebFileError error) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->DidFail(error);
   private_.Reset();
 }
 
 bool WebFileSystemCallbacks::ShouldBlockUntilCompletion() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Callbacks()->ShouldBlockUntilCompletion();
 }
 

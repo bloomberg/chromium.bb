@@ -95,32 +95,32 @@ void WebRTCICECandidate::Initialize(const WebString& candidate,
 }
 
 WebString WebRTCICECandidate::Candidate() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Candidate();
 }
 
 WebString WebRTCICECandidate::SdpMid() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->SdpMid();
 }
 
 unsigned short WebRTCICECandidate::SdpMLineIndex() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->SdpMLineIndex();
 }
 
 void WebRTCICECandidate::SetCandidate(WebString candidate) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->SetCandidate(candidate);
 }
 
 void WebRTCICECandidate::SetSdpMid(WebString sdp_mid) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->SetSdpMid(sdp_mid);
 }
 
 void WebRTCICECandidate::SetSdpMLineIndex(unsigned short sdp_m_line_index) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->SetSdpMLineIndex(sdp_m_line_index);
 }
 

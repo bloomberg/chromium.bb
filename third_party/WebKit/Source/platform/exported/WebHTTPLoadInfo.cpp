@@ -56,22 +56,22 @@ WebHTTPLoadInfo::operator WTF::PassRefPtr<ResourceLoadInfo>() const {
 }
 
 int WebHTTPLoadInfo::HttpStatusCode() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->http_status_code;
 }
 
 void WebHTTPLoadInfo::SetHTTPStatusCode(int status_code) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->http_status_code = status_code;
 }
 
 WebString WebHTTPLoadInfo::HttpStatusText() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->http_status_text;
 }
 
 void WebHTTPLoadInfo::SetHTTPStatusText(const WebString& status_text) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->http_status_text = status_text;
 }
 
@@ -88,44 +88,44 @@ static void AddHeader(HTTPHeaderMap* map,
 
 void WebHTTPLoadInfo::AddRequestHeader(const WebString& name,
                                        const WebString& value) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   AddHeader(&private_->request_headers, name, value);
 }
 
 void WebHTTPLoadInfo::AddResponseHeader(const WebString& name,
                                         const WebString& value) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   AddHeader(&private_->response_headers, name, value);
 }
 
 WebString WebHTTPLoadInfo::RequestHeadersText() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->request_headers_text;
 }
 
 void WebHTTPLoadInfo::SetRequestHeadersText(const WebString& headers_text) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->request_headers_text = headers_text;
 }
 
 WebString WebHTTPLoadInfo::ResponseHeadersText() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->response_headers_text;
 }
 
 void WebHTTPLoadInfo::SetResponseHeadersText(const WebString& headers_text) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->response_headers_text = headers_text;
 }
 
 WebString WebHTTPLoadInfo::NpnNegotiatedProtocol() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->npn_negotiated_protocol;
 }
 
 void WebHTTPLoadInfo::SetNPNNegotiatedProtocol(
     const WebString& npn_negotiated_protocol) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->npn_negotiated_protocol = npn_negotiated_protocol;
 }
 

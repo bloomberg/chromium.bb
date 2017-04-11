@@ -90,22 +90,22 @@ void WebMediaDeviceInfo::Initialize(const WebString& device_id,
 }
 
 WebString WebMediaDeviceInfo::DeviceId() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->DeviceId();
 }
 
 WebMediaDeviceInfo::MediaDeviceKind WebMediaDeviceInfo::Kind() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Kind();
 }
 
 WebString WebMediaDeviceInfo::Label() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Label();
 }
 
 WebString WebMediaDeviceInfo::GroupId() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->GroupId();
 }
 

@@ -53,12 +53,12 @@ void WebHTTPBody::Assign(const WebHTTPBody& other) {
 }
 
 size_t WebHTTPBody::ElementCount() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->Elements().size();
 }
 
 bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
 
   if (index >= private_->Elements().size())
     return false;
@@ -96,7 +96,7 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       result.modification_time = element.expected_file_modification_time_;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 
@@ -129,7 +129,7 @@ void WebHTTPBody::AppendFileSystemURLRange(const WebURL& url,
                                            long long length,
                                            double modification_time) {
   // Currently we only support filesystem URL.
-  ASSERT(KURL(url).ProtocolIs("filesystem"));
+  DCHECK(KURL(url).ProtocolIs("filesystem"));
   EnsureMutable();
   private_->AppendFileSystemURLRange(url, start, length, modification_time);
 }
@@ -140,7 +140,7 @@ void WebHTTPBody::AppendBlob(const WebString& uuid) {
 }
 
 long long WebHTTPBody::Identifier() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->Identifier();
 }
 
@@ -161,7 +161,7 @@ WebHTTPBody::WebHTTPBody(PassRefPtr<EncodedFormData> data)
     : private_(static_cast<WebHTTPBodyPrivate*>(data.LeakRef())) {}
 
 WebHTTPBody& WebHTTPBody::operator=(PassRefPtr<EncodedFormData> data) {
-  Assign(static_cast<WebHTTPBodyPrivate*>(data.LeakRef()));
+  DCHECK(static_cast<WebHTTPBodyPrivate*>(data.LeakRef()));
   return *this;
 }
 
@@ -177,7 +177,7 @@ void WebHTTPBody::Assign(WebHTTPBodyPrivate* p) {
 }
 
 void WebHTTPBody::EnsureMutable() {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (!private_->HasOneRef())
     Assign(static_cast<WebHTTPBodyPrivate*>(private_->Copy().LeakRef()));
 }

@@ -121,12 +121,12 @@ WebMediaStreamTrack WebMediaStream::GetVideoTrack(
 }
 
 void WebMediaStream::AddTrack(const WebMediaStreamTrack& track) {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   private_->AddRemoteTrack(track);
 }
 
 void WebMediaStream::RemoveTrack(const WebMediaStreamTrack& track) {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   private_->RemoveRemoteTrack(track);
 }
 

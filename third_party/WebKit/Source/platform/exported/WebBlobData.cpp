@@ -41,12 +41,12 @@ WebBlobData::WebBlobData() {}
 WebBlobData::~WebBlobData() {}
 
 size_t WebBlobData::ItemCount() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->Items().size();
 }
 
 bool WebBlobData::ItemAt(size_t index, Item& result) const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
 
   if (index >= private_->Items().size())
     return false;
@@ -77,12 +77,12 @@ bool WebBlobData::ItemAt(size_t index, Item& result) const {
       result.file_system_url = item.file_system_url;
       return true;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
 WebString WebBlobData::ContentType() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->ContentType();
 }
 

@@ -21,7 +21,7 @@ std::unique_ptr<WebCredential> WebCredential::Create(
     return WTF::MakeUnique<WebFederatedCredential>(credential);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

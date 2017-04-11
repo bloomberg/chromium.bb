@@ -62,7 +62,7 @@ void WebCryptoResult::CompleteWithBoolean(bool b) {
 }
 
 void WebCryptoResult::CompleteWithKey(const WebCryptoKey& key) {
-  ASSERT(!key.IsNull());
+  DCHECK(!key.IsNull());
   if (!Cancelled())
     impl_->CompleteWithKey(key);
   Reset();
@@ -70,8 +70,8 @@ void WebCryptoResult::CompleteWithKey(const WebCryptoKey& key) {
 
 void WebCryptoResult::CompleteWithKeyPair(const WebCryptoKey& public_key,
                                           const WebCryptoKey& private_key) {
-  ASSERT(!public_key.IsNull());
-  ASSERT(!private_key.IsNull());
+  DCHECK(!public_key.IsNull());
+  DCHECK(!private_key.IsNull());
   if (!Cancelled())
     impl_->CompleteWithKeyPair(public_key, private_key);
   Reset();
@@ -84,8 +84,8 @@ bool WebCryptoResult::Cancelled() const {
 WebCryptoResult::WebCryptoResult(CryptoResult* impl,
                                  PassRefPtr<CryptoResultCancel> cancel)
     : impl_(impl), cancel_(cancel) {
-  ASSERT(impl_.Get());
-  ASSERT(cancel_.Get());
+  DCHECK(impl_.Get());
+  DCHECK(cancel_.Get());
 }
 
 void WebCryptoResult::Reset() {

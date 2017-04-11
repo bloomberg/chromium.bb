@@ -45,7 +45,7 @@ WebRTCStatsResponse::operator RTCStatsResponseBase*() const {
 }
 
 void WebRTCStatsResponse::AddStats(const WebRTCLegacyStats& stats) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->AddStats(stats);
 }
 

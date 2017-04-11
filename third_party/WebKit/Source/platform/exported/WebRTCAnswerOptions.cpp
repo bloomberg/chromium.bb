@@ -20,7 +20,7 @@ void WebRTCAnswerOptions::Reset() {
 }
 
 bool WebRTCAnswerOptions::VoiceActivityDetection() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->VoiceActivityDetection();
 }
 

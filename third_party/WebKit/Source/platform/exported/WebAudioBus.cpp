@@ -48,9 +48,9 @@ void WebAudioBus::Initialize(unsigned number_of_channels,
 }
 
 void WebAudioBus::ResizeSmaller(size_t new_length) {
-  ASSERT(private_);
+  DCHECK(private_);
   if (private_) {
-    ASSERT(new_length <= length());
+    DCHECK_LE(new_length, length());
     private_->ResizeSmaller(new_length);
   }
 }
@@ -83,7 +83,7 @@ double WebAudioBus::SampleRate() const {
 float* WebAudioBus::ChannelData(unsigned channel_index) {
   if (!private_)
     return 0;
-  ASSERT(channel_index < NumberOfChannels());
+  DCHECK_LT(channel_index, NumberOfChannels());
   return private_->Channel(channel_index)->MutableData();
 }
 

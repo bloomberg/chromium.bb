@@ -51,13 +51,13 @@ void WebRTCSessionDescriptionRequest::Reset() {
 
 void WebRTCSessionDescriptionRequest::RequestSucceeded(
     const WebRTCSessionDescription& session_description) const {
-  ASSERT(private_.Get());
+  DCHECK(private_.Get());
   private_->RequestSucceeded(session_description);
 }
 
 void WebRTCSessionDescriptionRequest::RequestFailed(
     const WebString& error) const {
-  ASSERT(private_.Get());
+  DCHECK(private_.Get());
   private_->RequestFailed(error);
 }
 

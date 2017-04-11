@@ -43,13 +43,13 @@ void WebContentSettingCallbacks::Assign(
 }
 
 void WebContentSettingCallbacks::DoAllow() {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->OnAllowed();
   private_.Reset();
 }
 
 void WebContentSettingCallbacks::DoDeny() {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->Callbacks()->OnDenied();
   private_.Reset();
 }

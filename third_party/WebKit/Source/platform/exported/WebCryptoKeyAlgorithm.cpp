@@ -122,26 +122,26 @@ bool WebCryptoKeyAlgorithm::IsNull() const {
 }
 
 WebCryptoAlgorithmId WebCryptoKeyAlgorithm::Id() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->id;
 }
 
 WebCryptoKeyAlgorithmParamsType WebCryptoKeyAlgorithm::ParamsType() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (!private_->params.get())
     return kWebCryptoKeyAlgorithmParamsTypeNone;
   return private_->params->GetType();
 }
 
 WebCryptoAesKeyAlgorithmParams* WebCryptoKeyAlgorithm::AesParams() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeAes)
     return static_cast<WebCryptoAesKeyAlgorithmParams*>(private_->params.get());
   return 0;
 }
 
 WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::HmacParams() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeHmac)
     return static_cast<WebCryptoHmacKeyAlgorithmParams*>(
         private_->params.get());
@@ -150,7 +150,7 @@ WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::HmacParams() const {
 
 WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::RsaHashedParams()
     const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeRsaHashed)
     return static_cast<WebCryptoRsaHashedKeyAlgorithmParams*>(
         private_->params.get());
@@ -158,7 +158,7 @@ WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::RsaHashedParams()
 }
 
 WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::EcParams() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeEc)
     return static_cast<WebCryptoEcKeyAlgorithmParams*>(private_->params.get());
   return 0;
@@ -166,7 +166,7 @@ WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::EcParams() const {
 
 void WebCryptoKeyAlgorithm::WriteToDictionary(
     WebCryptoKeyAlgorithmDictionary* dict) const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   dict->SetString("name", WebCryptoAlgorithm::LookupAlgorithmInfo(Id())->name);
   if (private_->params.get())
     private_->params.get()->WriteToDictionary(dict);

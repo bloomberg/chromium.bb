@@ -81,22 +81,22 @@ void WebRTCSessionDescription::Initialize(const WebString& type,
 }
 
 WebString WebRTCSessionDescription::GetType() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->GetType();
 }
 
 void WebRTCSessionDescription::SetType(const WebString& type) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->SetType(type);
 }
 
 WebString WebRTCSessionDescription::Sdp() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Sdp();
 }
 
 void WebRTCSessionDescription::SetSDP(const WebString& sdp) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->SetSdp(sdp);
 }
 

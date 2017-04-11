@@ -93,8 +93,8 @@ Platform::Platform() : main_thread_(0) {
 }
 
 void Platform::Initialize(Platform* platform) {
-  ASSERT(!g_platform);
-  ASSERT(platform);
+  DCHECK(!g_platform);
+  DCHECK(platform);
   g_platform = platform;
   g_platform->main_thread_ = platform->CurrentThread();
 
@@ -111,7 +111,7 @@ void Platform::Initialize(Platform* platform) {
 
   // TODO(ssid): remove this check after fixing crbug.com/486782.
   if (g_platform->main_thread_) {
-    ASSERT(!g_gc_task_runner);
+    DCHECK(!g_gc_task_runner);
     g_gc_task_runner = new GCTaskRunner(g_platform->main_thread_);
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         PartitionAllocMemoryDumpProvider::Instance(), "PartitionAlloc",
@@ -126,7 +126,7 @@ void Platform::Initialize(Platform* platform) {
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {
-  ASSERT(platform);
+  DCHECK(platform);
   g_platform = platform;
   g_platform->main_thread_ = platform->CurrentThread();
 }

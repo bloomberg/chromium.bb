@@ -36,7 +36,7 @@ void WebContentDecryptionModuleResult::CompleteWithError(
 WebContentDecryptionModuleResult::WebContentDecryptionModuleResult(
     ContentDecryptionModuleResult* impl)
     : impl_(impl) {
-  ASSERT(impl_.Get());
+  DCHECK(impl_.Get());
 }
 
 void WebContentDecryptionModuleResult::Reset() {

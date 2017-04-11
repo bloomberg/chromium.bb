@@ -13,11 +13,11 @@
 namespace blink {
 
 WebDataConsumerHandle::WebDataConsumerHandle() {
-  ASSERT(ThreadState::Current());
+  DCHECK(ThreadState::Current());
 }
 
 WebDataConsumerHandle::~WebDataConsumerHandle() {
-  ASSERT(ThreadState::Current());
+  DCHECK(ThreadState::Current());
 }
 
 WebDataConsumerHandle::Result WebDataConsumerHandle::Reader::Read(

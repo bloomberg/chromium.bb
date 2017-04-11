@@ -108,7 +108,7 @@ void WebServiceWorkerRequest::SetReferrer(const WebString& web_referrer,
                                           WebReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
   // the null WTFString for referrer.
-  ASSERT(Referrer::NoReferrer() == String());
+  DCHECK_EQ(Referrer::NoReferrer(), String());
   String referrer =
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   private_->referrer_ =

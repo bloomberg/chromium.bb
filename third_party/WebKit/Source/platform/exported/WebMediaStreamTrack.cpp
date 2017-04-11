@@ -82,12 +82,12 @@ WebMediaStreamTrack::operator MediaStreamComponent*() const {
 }
 
 bool WebMediaStreamTrack::IsEnabled() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Enabled();
 }
 
 bool WebMediaStreamTrack::IsMuted() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Muted();
 }
 
@@ -97,12 +97,12 @@ WebMediaStreamTrack::ContentHintType WebMediaStreamTrack::ContentHint() const {
 }
 
 WebString WebMediaStreamTrack::Id() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return private_->Id();
 }
 
 WebMediaStreamSource WebMediaStreamTrack::Source() const {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   return WebMediaStreamSource(private_->Source());
 }
 
@@ -114,14 +114,14 @@ WebMediaStreamTrack::TrackData* WebMediaStreamTrack::GetTrackData() const {
 }
 
 void WebMediaStreamTrack::SetTrackData(TrackData* extra_data) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
 
   private_->SetTrackData(
       WTF::WrapUnique(new TrackDataContainer(WTF::WrapUnique(extra_data))));
 }
 
 void WebMediaStreamTrack::SetSourceProvider(WebAudioSourceProvider* provider) {
-  ASSERT(!private_.IsNull());
+  DCHECK(!private_.IsNull());
   private_->SetSourceProvider(provider);
 }
 

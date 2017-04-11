@@ -29,22 +29,22 @@ void WebRTCOfferOptions::Reset() {
 }
 
 int32_t WebRTCOfferOptions::OfferToReceiveVideo() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->OfferToReceiveVideo();
 }
 
 int32_t WebRTCOfferOptions::OfferToReceiveAudio() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->OfferToReceiveAudio();
 }
 
 bool WebRTCOfferOptions::VoiceActivityDetection() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->VoiceActivityDetection();
 }
 
 bool WebRTCOfferOptions::IceRestart() const {
-  ASSERT(!IsNull());
+  DCHECK(!IsNull());
   return private_->IceRestart();
 }
 

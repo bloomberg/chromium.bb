@@ -162,7 +162,7 @@ WebString WebURLRequest::HttpHeaderField(const WebString& name) const {
 
 void WebURLRequest::SetHTTPHeaderField(const WebString& name,
                                        const WebString& value) {
-  RELEASE_ASSERT(!DeprecatedEqualIgnoringCase(name, "referer"));
+  CHECK(!DeprecatedEqualIgnoringCase(name, "referer"));
   resource_request_->SetHTTPHeaderField(name, value);
 }
 
@@ -170,7 +170,7 @@ void WebURLRequest::SetHTTPReferrer(const WebString& web_referrer,
                                     WebReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
   // the null WTFString for referrer.
-  ASSERT(Referrer::NoReferrer() == String());
+  DCHECK_EQ(Referrer::NoReferrer(), String());
   String referrer =
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   resource_request_->SetHTTPReferrer(

@@ -65,19 +65,19 @@ IntPoint WebScrollbarThemeClientImpl::Location() const {
 
 FrameViewBase* WebScrollbarThemeClientImpl::Parent() const {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
 FrameViewBase* WebScrollbarThemeClientImpl::Root() const {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
 void WebScrollbarThemeClientImpl::SetFrameRect(const IntRect&) {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 IntRect WebScrollbarThemeClientImpl::FrameRect() const {
@@ -86,12 +86,12 @@ IntRect WebScrollbarThemeClientImpl::FrameRect() const {
 
 void WebScrollbarThemeClientImpl::Invalidate() {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void WebScrollbarThemeClientImpl::InvalidateRect(const IntRect&) {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 ScrollbarOverlayColorTheme
@@ -116,7 +116,7 @@ bool WebScrollbarThemeClientImpl::IsScrollableAreaActive() const {
 IntPoint WebScrollbarThemeClientImpl::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   // Unused by Chromium scrollbar themes.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return point_in_root_frame;
 }
 
@@ -165,11 +165,11 @@ ScrollbarPart WebScrollbarThemeClientImpl::HoveredPart() const {
 }
 
 void WebScrollbarThemeClientImpl::StyleChanged() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void WebScrollbarThemeClientImpl::SetScrollbarsHidden(bool hidden) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 bool WebScrollbarThemeClientImpl::Enabled() const {
@@ -177,7 +177,7 @@ bool WebScrollbarThemeClientImpl::Enabled() const {
 }
 
 void WebScrollbarThemeClientImpl::SetEnabled(bool) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 bool WebScrollbarThemeClientImpl::IsOverlayScrollbar() const {
