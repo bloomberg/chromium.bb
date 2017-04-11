@@ -41,7 +41,7 @@ class JingleSessionManager : public SessionManager,
   void set_protocol_config(
       std::unique_ptr<CandidateSessionConfig> config) override;
   std::unique_ptr<Session> Connect(
-      const std::string& host_jid,
+      const SignalingAddress& peer_address,
       std::unique_ptr<Authenticator> authenticator) override;
   void set_authenticator_factory(
       std::unique_ptr<AuthenticatorFactory> authenticator_factory) override;

@@ -17,6 +17,7 @@
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -65,7 +66,7 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
 
     request_ = iq_sender_->SendIq(
         buzz::STR_SET, directory_bot_jid_,
-        CreateRegistrationRequest(signal_strategy_->GetLocalJid()),
+        CreateRegistrationRequest(signal_strategy_->GetLocalAddress().jid()),
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));
   } else if (state == SignalStrategy::DISCONNECTED) {

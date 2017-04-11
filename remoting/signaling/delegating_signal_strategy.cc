@@ -14,10 +14,10 @@
 namespace remoting {
 
 DelegatingSignalStrategy::DelegatingSignalStrategy(
-    std::string local_jid,
+    const SignalingAddress& local_address,
     scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
     const IqCallback& send_iq_callback)
-    : local_jid_(local_jid),
+    : local_address_(local_address),
       delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       client_task_runner_(client_task_runner),
       send_iq_callback_(send_iq_callback),
@@ -83,9 +83,9 @@ SignalStrategy::Error DelegatingSignalStrategy::GetError() const {
   return OK;
 }
 
-std::string DelegatingSignalStrategy::GetLocalJid() const {
+const SignalingAddress& DelegatingSignalStrategy::GetLocalAddress() const {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  return local_jid_;
+  return local_address_;
 }
 
 void DelegatingSignalStrategy::AddListener(Listener* listener) {
@@ -101,7 +101,7 @@ void DelegatingSignalStrategy::RemoveListener(Listener* listener) {
 bool DelegatingSignalStrategy::SendStanza(
     std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  stanza->SetAttr(buzz::QN_FROM, GetLocalJid());
+  GetLocalAddress().SetInMessage(stanza.get(), SignalingAddress::FROM);
   delegate_task_runner_->PostTask(FROM_HERE,
                                   base::Bind(send_iq_callback_, stanza->Str()));
   return true;

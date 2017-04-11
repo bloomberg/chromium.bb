@@ -50,7 +50,7 @@ class XmppSignalStrategy : public SignalStrategy {
   void Disconnect() override;
   State GetState() const override;
   Error GetError() const override;
-  std::string GetLocalJid() const override;
+  const SignalingAddress& GetLocalAddress() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;

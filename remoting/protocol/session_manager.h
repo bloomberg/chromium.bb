@@ -62,6 +62,7 @@
 
 namespace remoting {
 
+class SignalingAddress;
 class SignalStrategy;
 
 namespace protocol {
@@ -108,12 +109,12 @@ class SessionManager : public base::NonThreadSafe {
   virtual void set_protocol_config(
       std::unique_ptr<CandidateSessionConfig> config) = 0;
 
-  // Tries to create a session to the host |jid|.
+  // Creates a new outgoing session.
   //
-  // |host_jid| is the full jid of the host to connect to.
-  // |authenticator| is a client authenticator for the session.
+  // |peer_address| - full SignalingAddress to connect to.
+  // |authenticator| - client authenticator for the session.
   virtual std::unique_ptr<Session> Connect(
-      const std::string& host_jid,
+      const SignalingAddress& peer_address,
       std::unique_ptr<Authenticator> authenticator) = 0;
 
   // Set authenticator factory that should be used to authenticate

@@ -675,7 +675,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(
-      local_jid, plugin_task_runner_,
+      SignalingAddress(local_jid), plugin_task_runner_,
       base::Bind(&ChromotingInstance::SendOutgoingIq,
                  weak_factory_.GetWeakPtr())));
 

@@ -28,9 +28,9 @@ void FakeSignalStrategy::Connect(FakeSignalStrategy* peer1,
   peer2->ConnectTo(peer1);
 }
 
-FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
+FakeSignalStrategy::FakeSignalStrategy(const SignalingAddress& address)
     : main_thread_(base::ThreadTaskRunnerHandle::Get()),
-      jid_(jid),
+      address_(address),
       last_id_(0),
       weak_factory_(this) {
   DetachFromThread();
@@ -59,9 +59,9 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
   }
 }
 
-void FakeSignalStrategy::SetLocalJid(const std::string& jid) {
+void FakeSignalStrategy::SetLocalAddress(const SignalingAddress& address) {
   DCHECK(CalledOnValidThread());
-  jid_ = jid;
+  address_ = address;
 }
 
 void FakeSignalStrategy::SimulateMessageReordering() {
@@ -89,9 +89,9 @@ SignalStrategy::Error FakeSignalStrategy::GetError() const {
   return OK;
 }
 
-std::string FakeSignalStrategy::GetLocalJid() const {
+const SignalingAddress& FakeSignalStrategy::GetLocalAddress() const {
   DCHECK(CalledOnValidThread());
-  return jid_;
+  return address_;
 }
 
 void FakeSignalStrategy::AddListener(Listener* listener) {
@@ -107,7 +107,7 @@ void FakeSignalStrategy::RemoveListener(Listener* listener) {
 bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
 
-  stanza->SetAttr(buzz::QN_FROM, jid_);
+  address_.SetInMessage(stanza.get(), SignalingAddress::FROM);
 
   if (peer_callback_.is_null())
     return false;
@@ -164,10 +164,12 @@ void FakeSignalStrategy::NotifyListeners(
   buzz::XmlElement* stanza_ptr = stanza.get();
   received_messages_.push_back(stanza.release());
 
-  const std::string& to_field = stanza_ptr->Attr(buzz::QN_TO);
-  if (NormalizeJid(to_field) != NormalizeJid(jid_)) {
-    LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
-                 << ". Local jid: " << jid_
+  std::string to_error;
+  SignalingAddress to =
+      SignalingAddress::Parse(stanza_ptr, SignalingAddress::TO, &to_error);
+  if (to != address_) {
+    LOG(WARNING) << "Dropping stanza that is addressed to " << to.id()
+                 << ". Local address: " << address_.id()
                  << ". Message content: " << stanza_ptr->Str();
     return;
   }

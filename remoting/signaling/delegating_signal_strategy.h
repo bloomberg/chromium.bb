@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -35,7 +36,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   typedef base::RepeatingCallback<void(const std::string&)> IqCallback;
 
   DelegatingSignalStrategy(
-      std::string local_jid,
+      const SignalingAddress& local_address,
       scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
       const IqCallback& send_iq_callback);
   ~DelegatingSignalStrategy() override;
@@ -47,7 +48,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   void Disconnect() override;
   State GetState() const override;
   Error GetError() const override;
-  std::string GetLocalJid() const override;
+  const SignalingAddress& GetLocalAddress() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
@@ -61,7 +62,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
   void OnIncomingMessage(const std::string& message);
 
-  std::string local_jid_;
+  SignalingAddress local_address_;
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 

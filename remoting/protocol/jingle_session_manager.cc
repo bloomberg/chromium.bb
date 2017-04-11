@@ -46,10 +46,10 @@ void JingleSessionManager::set_protocol_config(
 }
 
 std::unique_ptr<Session> JingleSessionManager::Connect(
-    const std::string& host_jid,
+    const SignalingAddress& peer_address,
     std::unique_ptr<Authenticator> authenticator) {
   std::unique_ptr<JingleSession> session(new JingleSession(this));
-  session->StartConnection(host_jid, std::move(authenticator));
+  session->StartConnection(peer_address, std::move(authenticator));
   sessions_[session->session_id_] = session.get();
   return std::move(session);
 }
@@ -84,7 +84,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
     std::unique_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
-            signal_strategy_->GetLocalJid(), message->from.id());
+            signal_strategy_->GetLocalAddress().id(), message->from.id());
 
     JingleSession* session = new JingleSession(this);
     session->InitializeIncomingConnection(*message,

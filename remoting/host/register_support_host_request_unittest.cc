@@ -18,6 +18,7 @@
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/mock_signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -54,6 +55,9 @@ ACTION_P(RemoveListener, list) {
 class RegisterSupportHostRequestTest : public testing::Test {
  public:
  protected:
+  RegisterSupportHostRequestTest()
+      : signal_strategy_(SignalingAddress(kTestJid)) {}
+
   void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
@@ -62,8 +66,6 @@ class RegisterSupportHostRequestTest : public testing::Test {
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
     EXPECT_CALL(signal_strategy_, RemoveListener(NotNull()))
         .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kTestJid));
   }
 
   base::MessageLoop message_loop_;

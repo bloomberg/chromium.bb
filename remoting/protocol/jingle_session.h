@@ -53,7 +53,7 @@ class JingleSession : public Session {
   explicit JingleSession(JingleSessionManager* session_manager);
 
   // Start connection by sending session-initiate message.
-  void StartConnection(const std::string& peer_jid,
+  void StartConnection(const SignalingAddress& peer_address,
                        std::unique_ptr<Authenticator> authenticator);
 
   // Called by JingleSessionManager for incoming connections.

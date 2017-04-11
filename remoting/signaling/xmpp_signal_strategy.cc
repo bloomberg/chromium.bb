@@ -30,6 +30,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/logging.h"
+#include "remoting/signaling/signaling_address.h"
 #include "remoting/signaling/xmpp_login_handler.h"
 #include "remoting/signaling/xmpp_stream_parser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -67,7 +68,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
   void Disconnect();
   State GetState() const;
   Error GetError() const;
-  std::string GetLocalJid() const;
+  const SignalingAddress& GetLocalAddress() const;
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
   bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza);
@@ -135,7 +136,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
 
   std::unique_ptr<XmppLoginHandler> login_handler_;
   std::unique_ptr<XmppStreamParser> stream_parser_;
-  std::string jid_;
+  SignalingAddress local_address_;
 
   Error error_ = OK;
 
@@ -226,9 +227,9 @@ SignalStrategy::Error XmppSignalStrategy::Core::GetError() const {
   return error_;
 }
 
-std::string XmppSignalStrategy::Core::GetLocalJid() const {
+const SignalingAddress& XmppSignalStrategy::Core::GetLocalAddress() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return jid_;
+  return local_address_;
 }
 
 void XmppSignalStrategy::Core::AddListener(Listener* listener) {
@@ -327,7 +328,7 @@ void XmppSignalStrategy::Core::OnHandshakeDone(
     std::unique_ptr<XmppStreamParser> parser) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  jid_ = jid;
+  local_address_ = SignalingAddress(jid);
   stream_parser_ = std::move(parser);
   stream_parser_->SetCallbacks(
       base::Bind(&Core::OnStanza, base::Unretained(this)),
@@ -532,8 +533,8 @@ SignalStrategy::Error XmppSignalStrategy::GetError() const {
   return core_->GetError();
 }
 
-std::string XmppSignalStrategy::GetLocalJid() const {
-  return core_->GetLocalJid();
+const SignalingAddress& XmppSignalStrategy::GetLocalAddress() const {
+  return core_->GetLocalAddress();
 }
 
 void XmppSignalStrategy::AddListener(Listener* listener) {

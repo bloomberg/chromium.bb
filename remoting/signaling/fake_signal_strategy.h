@@ -15,6 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -29,7 +30,7 @@ class FakeSignalStrategy : public SignalStrategy,
   // must belong to the current thread.
   static void Connect(FakeSignalStrategy* peer1, FakeSignalStrategy* peer2);
 
-  FakeSignalStrategy(const std::string& jid);
+  FakeSignalStrategy(const SignalingAddress& address);
   ~FakeSignalStrategy() override;
 
   const std::list<buzz::XmlElement*>& received_messages() {
@@ -43,7 +44,7 @@ class FakeSignalStrategy : public SignalStrategy,
   // Connects current FakeSignalStrategy to receive messages from |peer|.
   void ConnectTo(FakeSignalStrategy* peer);
 
-  void SetLocalJid(const std::string& jid);
+  void SetLocalAddress(const SignalingAddress& address);
 
   // Simulate IQ messages re-ordering by swapping the delivery order of
   // next pair of messages.
@@ -54,7 +55,7 @@ class FakeSignalStrategy : public SignalStrategy,
   void Disconnect() override;
   State GetState() const override;
   Error GetError() const override;
-  std::string GetLocalJid() const override;
+  const SignalingAddress& GetLocalAddress() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
@@ -76,7 +77,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
-  std::string jid_;
+  SignalingAddress address_;
   PeerCallback peer_callback_;
   base::ObserverList<Listener, true> listeners_;
 

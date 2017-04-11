@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
+#include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +39,7 @@ MATCHER_P2(IsLogEntry, key, value, "") {
 
 class LogToServerTest : public testing::Test {
  public:
-  LogToServerTest() {}
+  LogToServerTest() : signal_strategy_(SignalingAddress(kClientJid)) {}
   void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
@@ -56,8 +57,6 @@ class LogToServerTest : public testing::Test {
 TEST_F(LogToServerTest, LogWhenConnected) {
   {
     InSequence s;
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kClientJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(IsLogEntry("a", "1")))
@@ -80,8 +79,6 @@ TEST_F(LogToServerTest, LogWhenConnected) {
 }
 
 TEST_F(LogToServerTest, DontLogWhenDisconnected) {
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kClientJid));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(_)).Times(0);
 
   ServerLogEntry entry;

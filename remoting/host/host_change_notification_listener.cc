@@ -55,9 +55,13 @@ bool HostChangeNotificationListener::OnSignalStrategyIncomingStanza(
   const std::string& host_id =
       host_changed_element->Attr(QName(kChromotingXmlNamespace, "hostid"));
   const std::string& from = stanza->Attr(buzz::QN_FROM);
-  const std::string& to = stanza->Attr(buzz::QN_TO);
+
+  std::string to_error;
+  SignalingAddress to =
+      SignalingAddress::Parse(stanza, SignalingAddress::TO, &to_error);
+
   if (host_id == host_id_ && from == directory_bot_jid_ &&
-      to == signal_strategy_->GetLocalJid()) {
+      to == signal_strategy_->GetLocalAddress()) {
     const std::string& operation =
         host_changed_element->Attr(QName(kChromotingXmlNamespace, "operation"));
     if (operation == "delete") {

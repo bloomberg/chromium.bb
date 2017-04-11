@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
+#include "remoting/signaling/signaling_address.h"
 
 namespace remoting {
 
@@ -79,7 +80,7 @@ void GcdStateUpdater::OnPatchStateResult(GcdRestClient::Result result) {
   }
 
   if (result == GcdRestClient::NETWORK_ERROR ||
-      pending_request_jid_ != signal_strategy_->GetLocalJid()) {
+      pending_request_jid_ != signal_strategy_->GetLocalAddress().jid()) {
     // Continue exponential backoff.
     return;
   }
@@ -115,7 +116,7 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
   // Construct an update to the remote state.
   std::unique_ptr<base::DictionaryValue> patch(new base::DictionaryValue);
   std::unique_ptr<base::DictionaryValue> base_state(new base::DictionaryValue);
-  pending_request_jid_ = signal_strategy_->GetLocalJid();
+  pending_request_jid_ = signal_strategy_->GetLocalAddress().jid();
   base_state->SetString("_jabberId", pending_request_jid_);
   base_state->SetString("_hostVersion", STRINGIZE(VERSION));
   patch->Set("base", std::move(base_state));

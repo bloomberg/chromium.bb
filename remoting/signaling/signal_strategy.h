@@ -16,6 +16,8 @@ class XmlElement;
 
 namespace remoting {
 
+class SignalingAddress;
+
 class SignalStrategy {
  public:
   enum State {
@@ -75,8 +77,8 @@ class SignalStrategy {
   // Returns the last error. Set when state changes to DISCONNECT.
   virtual Error GetError() const = 0;
 
-  // Returns local JID or an empty string when not connected.
-  virtual std::string GetLocalJid() const = 0;
+  // Local address. An empty value is returned when not connected.
+  virtual const SignalingAddress& GetLocalAddress() const = 0;
 
   // Add a |listener| that can listen to all incoming
   // messages. Doesn't take ownership of the |listener|. All listeners

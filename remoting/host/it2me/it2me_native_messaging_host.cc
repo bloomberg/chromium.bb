@@ -298,7 +298,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
 
     auto delegating_signal_strategy =
         base::MakeUnique<DelegatingSignalStrategy>(
-            local_jid, host_context_->network_task_runner(),
+            SignalingAddress(local_jid), host_context_->network_task_runner(),
             base::Bind(&It2MeNativeMessagingHost::SendOutgoingIq,
                        weak_factory_.GetWeakPtr()));
     incoming_message_callback_ =

@@ -6,6 +6,7 @@
 
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
@@ -13,14 +14,13 @@ namespace remoting {
 
 class MockSignalStrategy : public SignalStrategy {
  public:
-  MockSignalStrategy();
+  MockSignalStrategy(const SignalingAddress& address);
   ~MockSignalStrategy() override;
 
   MOCK_METHOD0(Connect, void());
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(GetState, State());
   MOCK_CONST_METHOD0(GetError, Error());
-  MOCK_CONST_METHOD0(GetLocalJid, std::string());
   MOCK_METHOD1(AddListener, void(Listener* listener));
   MOCK_METHOD1(RemoveListener, void(Listener* listener));
   MOCK_METHOD0(GetNextId, std::string());
@@ -31,6 +31,11 @@ class MockSignalStrategy : public SignalStrategy {
   bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override {
     return SendStanzaPtr(stanza.release());
   }
+
+  const SignalingAddress& GetLocalAddress() const override;
+
+ private:
+  SignalingAddress local_address_;
 };
 
 }  // namespace remoting

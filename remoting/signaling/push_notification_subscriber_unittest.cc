@@ -5,6 +5,7 @@
 #include "remoting/signaling/push_notification_subscriber.h"
 
 #include "remoting/signaling/mock_signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -16,7 +17,7 @@ using testing::SaveArg;
 namespace remoting {
 
 TEST(PushNotificationSubscriberTest, Create) {
-  MockSignalStrategy signal_strategy;
+  MockSignalStrategy signal_strategy(SignalingAddress("user@domain/resource"));
   EXPECT_CALL(signal_strategy, AddListener(_));
   EXPECT_CALL(signal_strategy, RemoveListener(_));
 
@@ -25,9 +26,7 @@ TEST(PushNotificationSubscriberTest, Create) {
 }
 
 TEST(PushNotificationSubscriberTest, Subscribe) {
-  MockSignalStrategy signal_strategy;
-  EXPECT_CALL(signal_strategy, GetLocalJid())
-      .WillRepeatedly(Return("user@domain/resource"));
+  MockSignalStrategy signal_strategy(SignalingAddress("user@domain/resource"));
   EXPECT_CALL(signal_strategy, GetNextId()).WillOnce(Return("next_id"));
   EXPECT_CALL(signal_strategy, AddListener(_)).Times(AtLeast(1));
   EXPECT_CALL(signal_strategy, RemoveListener(_)).Times(AtLeast(1));

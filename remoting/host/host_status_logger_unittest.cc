@@ -124,7 +124,7 @@ MATCHER(IsClientDisconnected, "") {
 
 class HostStatusLoggerTest : public testing::Test {
  public:
-  HostStatusLoggerTest() {}
+  HostStatusLoggerTest() : signal_strategy_(SignalingAddress(kHostJid)) {}
   void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     host_status_logger_.reset(
@@ -146,8 +146,6 @@ TEST_F(HostStatusLoggerTest, SendNow) {
   base::RunLoop run_loop;
   {
     InSequence s;
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kHostJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(IsClientConnected("direct")))
@@ -174,10 +172,9 @@ TEST_F(HostStatusLoggerTest, SendLater) {
   host_status_logger_->OnClientRouteChange(kClientJid1, "video", route);
   host_status_logger_->OnClientAuthenticated(kClientJid1);
   host_status_logger_->OnClientConnected(kClientJid1);
+
   {
     InSequence s;
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kHostJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(IsClientConnected("direct")))
@@ -203,10 +200,9 @@ TEST_F(HostStatusLoggerTest, SendTwoEntriesLater) {
   host_status_logger_->OnClientRouteChange(kClientJid2, "video", route2);
   host_status_logger_->OnClientAuthenticated(kClientJid2);
   host_status_logger_->OnClientConnected(kClientJid2);
+
   {
     InSequence s;
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kHostJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_,
@@ -223,10 +219,9 @@ TEST_F(HostStatusLoggerTest, SendTwoEntriesLater) {
 
 TEST_F(HostStatusLoggerTest, HandleRouteChangeInUnusualOrder) {
   base::RunLoop run_loop;
+
   {
     InSequence s;
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kHostJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(IsClientConnected("direct")))

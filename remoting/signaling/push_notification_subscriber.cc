@@ -10,6 +10,7 @@
 #include "remoting/base/logging.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/jid_util.h"
+#include "remoting/signaling/signaling_address.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -20,11 +21,8 @@ const char kGooglePushNamespace[] = "google:push";
 
 }  // namespace
 
-PushNotificationSubscriber::Subscription::Subscription() {
-}
-
-PushNotificationSubscriber::Subscription::~Subscription() {
-}
+PushNotificationSubscriber::Subscription::Subscription() {}
+PushNotificationSubscriber::Subscription::~Subscription() {}
 
 PushNotificationSubscriber::PushNotificationSubscriber(
     SignalStrategy* signal_strategy,
@@ -58,7 +56,8 @@ void PushNotificationSubscriber::Subscribe(const Subscription& subscription) {
           << subscription.channel << ".";
 
   std::string bare_jid;
-  SplitJidResource(signal_strategy_->GetLocalJid(), &bare_jid, nullptr);
+  SplitJidResource(signal_strategy_->GetLocalAddress().jid(), &bare_jid,
+                   nullptr);
 
   // Build a subscription request.
   buzz::XmlElement* subscribe_element =

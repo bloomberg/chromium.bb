@@ -57,6 +57,8 @@ ACTION_P(RemoveListener, list) {
 class HeartbeatSenderTest
     : public testing::Test {
  protected:
+  HeartbeatSenderTest() : signal_strategy_(SignalingAddress(kTestJid)) {}
+
   void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
@@ -66,8 +68,6 @@ class HeartbeatSenderTest
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
     EXPECT_CALL(signal_strategy_, RemoveListener(NotNull()))
         .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kTestJid));
     EXPECT_CALL(mock_unknown_host_id_error_callback_, Run())
         .Times(0);
 
@@ -102,8 +102,6 @@ class HeartbeatSenderTest
 // Call Start() followed by Stop(), and make sure a valid heartbeat is sent.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
   XmlElement* sent_iq = nullptr;
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -126,8 +124,6 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 // are sent, with the correct sequence IDs.
 TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
   XmlElement* sent_iq = nullptr;
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -145,8 +141,6 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId + 1));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -167,8 +161,6 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
 // are sent, with the correct sequence IDs.
 TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   XmlElement* sent_iq = nullptr;
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -184,8 +176,6 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
   XmlElement* sent_iq2 = nullptr;
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId + 1));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -248,8 +238,6 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
   XmlElement* sent_iq = nullptr;
   base::MockCallback<base::Callback<void(bool success)>> mock_ack_callback;
 
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -276,8 +264,6 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
 TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
   base::MockCallback<base::Callback<void(bool success)>> mock_ack_callback;
 
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
@@ -321,8 +307,6 @@ TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
 // The first heartbeat should include host OS information.
 TEST_F(HeartbeatSenderTest, HostOsInfo) {
   XmlElement* sent_iq = nullptr;
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))

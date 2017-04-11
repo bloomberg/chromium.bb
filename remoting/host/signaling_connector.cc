@@ -14,6 +14,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/dns_blackhole_checker.h"
+#include "remoting/signaling/signaling_address.h"
 
 namespace remoting {
 
@@ -70,7 +71,7 @@ void SignalingConnector::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
-             << signal_strategy_->GetLocalJid();
+             << signal_strategy_->GetLocalAddress().jid();
     reconnect_attempts_ = 0;
   } else if (state == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Signaling disconnected. error="

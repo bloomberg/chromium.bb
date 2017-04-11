@@ -47,7 +47,7 @@ MATCHER_P(XmlEq, expected, "") {
 
 class IqSenderTest : public testing::Test {
  public:
-  IqSenderTest() {
+  IqSenderTest() : signal_strategy_(SignalingAddress("local_jid@domain.com")) {
     EXPECT_CALL(signal_strategy_, AddListener(NotNull()));
     sender_.reset(new IqSender(&signal_strategy_));
     EXPECT_CALL(signal_strategy_, RemoveListener(

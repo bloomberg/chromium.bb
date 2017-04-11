@@ -233,7 +233,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state == SignalStrategy::CONNECTED) {
-    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
+    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalAddress().jid();
     // After signaling has been connected we can try connecting to the host.
     if (connection_ &&
         connection_->state() == protocol::ConnectionToHost::INITIALIZING) {
@@ -255,9 +255,10 @@ bool ChromotingClient::OnSignalStrategyIncomingStanza(
 void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto session = session_manager_->Connect(
-      host_jid_, base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
-                     NormalizeJid(signal_strategy_->GetLocalJid()), host_jid_,
-                     client_auth_config_));
+      SignalingAddress(host_jid_),
+      base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
+          signal_strategy_->GetLocalAddress().id(), host_jid_,
+          client_auth_config_));
   if (host_experiment_sender_) {
     session->AddPlugin(host_experiment_sender_.get());
   }

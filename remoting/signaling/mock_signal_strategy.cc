@@ -6,7 +6,12 @@
 
 namespace remoting {
 
-MockSignalStrategy::MockSignalStrategy() { }
-MockSignalStrategy::~MockSignalStrategy() { }
+MockSignalStrategy::MockSignalStrategy(const SignalingAddress& address)
+    : local_address_(address) {}
+MockSignalStrategy::~MockSignalStrategy() {}
+
+const SignalingAddress& MockSignalStrategy::GetLocalAddress() const {
+  return local_address_;
+}
 
 }  // namespace remoting

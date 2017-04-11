@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/signaling/mock_signal_strategy.h"
+#include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -45,6 +46,8 @@ ACTION_P(RemoveListener, list) {
 
 class HostChangeNotificationListenerTest : public testing::Test {
  protected:
+  HostChangeNotificationListenerTest()
+      : signal_strategy_(SignalingAddress(kTestJid)) {}
   class MockListener : public HostChangeNotificationListener::Listener {
    public:
     MOCK_METHOD0(OnHostDeleted, void());
@@ -55,8 +58,6 @@ class HostChangeNotificationListenerTest : public testing::Test {
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
     EXPECT_CALL(signal_strategy_, RemoveListener(NotNull()))
         .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
-    EXPECT_CALL(signal_strategy_, GetLocalJid())
-        .WillRepeatedly(Return(kTestJid));
 
     host_change_notification_listener_.reset(new HostChangeNotificationListener(
         &mock_listener_, kHostId, &signal_strategy_, kTestBotJid));

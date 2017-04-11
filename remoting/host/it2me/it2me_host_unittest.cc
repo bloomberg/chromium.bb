@@ -188,11 +188,12 @@ void It2MeHostTest::SetUp() {
   std::unique_ptr<FakeIt2MeDialogFactory> dialog_factory(
       new FakeIt2MeDialogFactory());
   dialog_factory_ = dialog_factory.get();
-  it2me_host_ =
-      new It2MeHost(std::move(host_context), /*policy_watcher=*/nullptr,
-                    std::move(dialog_factory), weak_factory_.GetWeakPtr(),
-                    base::WrapUnique(new FakeSignalStrategy("fake_local_jid")),
-                    "fake_user_name", "fake_bot_jid");
+  it2me_host_ = new It2MeHost(
+      std::move(host_context), /*policy_watcher=*/nullptr,
+      std::move(dialog_factory), weak_factory_.GetWeakPtr(),
+      base::WrapUnique(
+          new FakeSignalStrategy(SignalingAddress("fake_local_jid"))),
+      "fake_user_name", "fake_bot_jid");
 }
 
 void It2MeHostTest::TearDown() {
