@@ -44,26 +44,26 @@
     </div>
     <div class="settings-box continuation block">
       <h2>$i18n{customDictionaryWords}</h2>
-      <div class="list-frame">
-        <template is="dom-if" if="[[hasWords_(words_.length)]]">
-          <iron-list id="list" items="{{words_}}"
-              scroll-target="[[subpageScrollTarget]]">
-            <template>
-              <div class="list-item">
-                <div class="word text-elide">[[item]]</div>
-                <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
-                    tabindex$="[[tabIndex]]">
-                </paper-icon-button>
-              </div>
-            </template>
-          </iron-list>
-        </template>
-        <template is="dom-if" if="[[!hasWords_(words_.length)]]">
-          <div id="noWordsLabel" class="list-item">
-            $i18n{noCustomDictionaryWordsFound}
-          </div>
-        </template>
-      </div>
+    </div>
+    <div class="list-frame">
+      <template is="dom-if" if="[[hasWords_(words_.length)]]">
+        <iron-list id="list" items="{{words_}}"
+            scroll-target="[[subpageScrollTarget]]">
+          <template>
+            <div class="list-item">
+              <div class="word text-elide">[[item]]</div>
+              <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
+                  tabindex$="[[tabIndex]]">
+              </paper-icon-button>
+            </div>
+          </template>
+        </iron-list>
+      </template>
+      <template is="dom-if" if="[[!hasWords_(words_.length)]]">
+        <div id="noWordsLabel" class="list-item">
+          $i18n{noCustomDictionaryWordsFound}
+        </div>
+      </template>
     </div>
   </template>
   <script src="edit_dictionary_page.js"></script>
