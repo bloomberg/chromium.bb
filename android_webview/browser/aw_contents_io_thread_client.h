@@ -99,6 +99,9 @@ class AwContentsIoThreadClient {
 
   // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
   virtual bool ShouldAcceptThirdPartyCookies() const = 0;
+
+  // Retrieve the SafeBrowsingEnabled setting value of this AwContents.
+  virtual bool GetSafeBrowsingEnabled() const = 0;
 };
 
 } // namespace android_webview

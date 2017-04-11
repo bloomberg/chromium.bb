@@ -103,6 +103,16 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getLoadWithOverviewMode();
     }
 
+    // TODO(ntfschr): add @Override once Android O is released (crbug/706631)
+    public void setSafeBrowsingEnabled(boolean accept) {
+        mAwSettings.setSafeBrowsingEnabled(accept);
+    }
+
+    // TODO(ntfschr): add @Override once Android O is released (crbug/706631)
+    public boolean getSafeBrowsingEnabled() {
+        return mAwSettings.getSafeBrowsingEnabled();
+    }
+
     @Override
     public void setAcceptThirdPartyCookies(boolean accept) {
         mAwSettings.setAcceptThirdPartyCookies(accept);

@@ -88,6 +88,7 @@ public class AwContentsStatics {
         nativeSetServiceWorkerIoThreadClient(ioThreadClient, browserContext);
     }
 
+    // Can be called from any thread.
     public static boolean getSafeBrowsingEnabled() {
         return nativeGetSafeBrowsingEnabled();
     }

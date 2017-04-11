@@ -16,6 +16,10 @@
     public *;
 }
 
+-keep class com.android.webview.chromium.ContentSettingsAdapter {
+    public *;
+}
+
 -keep class com.android.webview.chromium.WebViewChromiumFactoryProviderFor* {
     public *;
 }

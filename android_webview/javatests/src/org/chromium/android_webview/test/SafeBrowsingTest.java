@@ -313,4 +313,42 @@ public class SafeBrowsingTest extends AwTestBase {
         assertEquals(subresourceUrl, errorHelper.getRequest().url);
         assertFalse(errorHelper.getRequest().isMainFrame);
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingCanBeDisabledPerWebview() throws Throwable {
+        getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
+
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
+        waitForVisualStateCallback(mAwContents);
+        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingCanBeEnabledPerWebview() throws Throwable {
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
+        waitForVisualStateCallback(mAwContents);
+        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+
+        getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(true);
+
+        loadGreenPage();
+        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
+        assertTrue("Original page should not be showing",
+                GREEN_PAGE_BACKGROUND_COLOR
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
+        assertTrue("Target page should not be visible",
+                MALWARE_PAGE_BACKGROUND_COLOR
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
+    }
 }

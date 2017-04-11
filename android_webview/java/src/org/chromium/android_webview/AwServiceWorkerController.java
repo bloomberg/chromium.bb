@@ -81,6 +81,11 @@ public class AwServiceWorkerController {
             // see e.g. AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies.
             return false;
         }
+
+        @Override
+        public boolean getSafeBrowsingEnabled() {
+            return AwContentsStatics.getSafeBrowsingEnabled();
+        }
     }
 
     private class ServiceWorkerBackgroundThreadClientImpl

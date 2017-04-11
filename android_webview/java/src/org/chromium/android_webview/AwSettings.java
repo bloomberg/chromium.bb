@@ -92,6 +92,9 @@ public class AwSettings {
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
     private boolean mAcceptThirdPartyCookies;
 
+    // if null, default to AwContentsStatics.getSafeBrowsingEnabled()
+    private Boolean mSafeBrowsingEnabled;
+
     private final boolean mSupportLegacyQuirks;
     private final boolean mAllowEmptyDocumentPersistence;
     private final boolean mAllowGeolocationOnInsecureOrigins;
@@ -331,12 +334,35 @@ public class AwSettings {
     }
 
     /**
+     * Enable/Disable SafeBrowsing per WebView
+     * @param enabled true if this WebView should have SafeBrowsing
+     */
+    public void setSafeBrowsingEnabled(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            mSafeBrowsingEnabled = enabled;
+        }
+    }
+
+    /**
      * Return whether third party cookies are enabled for an AwContents
      * @return true if accept third party cookies
      */
     public boolean getAcceptThirdPartyCookies() {
         synchronized (mAwSettingsLock) {
             return mAcceptThirdPartyCookies;
+        }
+    }
+
+    /**
+     * Return whether Safe Browsing has been enabled for the current WebView
+     * @return true if SafeBrowsing is enabled
+     */
+    public boolean getSafeBrowsingEnabled() {
+        synchronized (mAwSettingsLock) {
+            if (mSafeBrowsingEnabled == null) {
+                return AwContentsStatics.getSafeBrowsingEnabled();
+            }
+            return mSafeBrowsingEnabled;
         }
     }
 

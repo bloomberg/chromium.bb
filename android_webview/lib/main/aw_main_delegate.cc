@@ -161,12 +161,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   android_webview::RegisterPathProvider();
 
-  if (AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled()) {
-    safe_browsing_api_handler_.reset(
-        new safe_browsing::SafeBrowsingApiHandlerBridge());
-    safe_browsing::SafeBrowsingApiHandler::SetInstance(
-        safe_browsing_api_handler_.get());
-  }
+  safe_browsing_api_handler_.reset(
+      new safe_browsing::SafeBrowsingApiHandlerBridge());
+  safe_browsing::SafeBrowsingApiHandler::SetInstance(
+      safe_browsing_api_handler_.get());
 
   return false;
 }

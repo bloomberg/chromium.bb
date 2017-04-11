@@ -475,6 +475,11 @@ public class AwContents implements SmartClipProvider {
         public boolean shouldAcceptThirdPartyCookies() {
             return mSettings.getAcceptThirdPartyCookies();
         }
+
+        @Override
+        public boolean getSafeBrowsingEnabled() {
+            return mSettings.getSafeBrowsingEnabled();
+        }
     }
 
     private class BackgroundThreadClientImpl extends AwContentsBackgroundThreadClient {

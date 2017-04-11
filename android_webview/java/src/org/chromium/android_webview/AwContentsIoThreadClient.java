@@ -31,5 +31,8 @@ public abstract class AwContentsIoThreadClient {
     public abstract boolean shouldAcceptThirdPartyCookies();
 
     @CalledByNative
+    public abstract boolean getSafeBrowsingEnabled();
+
+    @CalledByNative
     public abstract AwContentsBackgroundThreadClient getBackgroundThreadClient();
 }

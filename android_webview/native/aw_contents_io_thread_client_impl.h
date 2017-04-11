@@ -54,6 +54,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   bool ShouldBlockContentUrls() const override;
   bool ShouldBlockFileUrls() const override;
   bool ShouldAcceptThirdPartyCookies() const override;
+  bool GetSafeBrowsingEnabled() const override;
   bool ShouldBlockNetworkLoads() const override;
 
  private:

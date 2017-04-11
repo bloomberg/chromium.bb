@@ -32,9 +32,7 @@ public class AwBrowserContext {
         mSharedPreferences = sharedPreferences;
         mApplicationContext = applicationContext;
 
-        if (AwContentsStatics.getSafeBrowsingEnabled()) {
-            initSafeBrowsingApiHandler();
-        }
+        initSafeBrowsingApiHandler();
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {

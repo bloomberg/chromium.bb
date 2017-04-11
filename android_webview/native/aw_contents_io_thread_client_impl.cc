@@ -394,6 +394,16 @@ bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
       env, java_object_);
 }
 
+bool AwContentsIoThreadClientImpl::GetSafeBrowsingEnabled() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (java_object_.is_null())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_AwContentsIoThreadClient_getSafeBrowsingEnabled(env,
+                                                              java_object_);
+}
+
 bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
