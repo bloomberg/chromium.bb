@@ -239,9 +239,7 @@ public class SnippetsBridge
         }
     }
 
-    /**
-     * Notifies the scheduler to adjust the plan due to a newly opened NTP.
-     */
+    @Override
     public void onNtpInitialized() {
         assert mNativeSnippetsBridge != 0;
         nativeOnNTPInitialized(mNativeSnippetsBridge);

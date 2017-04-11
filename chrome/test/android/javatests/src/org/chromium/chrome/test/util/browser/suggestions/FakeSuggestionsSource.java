@@ -213,4 +213,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         List<SnippetArticle> result = mSuggestions.get(category);
         return result == null ? Collections.<SnippetArticle>emptyList() : new ArrayList<>(result);
     }
+
+    @Override
+    public void onNtpInitialized() {}
 }

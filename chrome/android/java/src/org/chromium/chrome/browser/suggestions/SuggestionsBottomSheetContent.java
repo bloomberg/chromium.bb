@@ -76,15 +76,18 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.init(uiConfig, mContextMenuManager, adapter);
 
+        final SuggestionsSource suggestionsSource = mSuggestionsManager.getSuggestionsSource();
         activity.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened() {
                 // TODO(https://crbug.com/689962) Ensure this call does not discard all suggestions
                 // every time the sheet is opened.
                 adapter.refreshSuggestions();
+                suggestionsSource.onNtpInitialized();
             }
         });
         adapter.refreshSuggestions();
+        suggestionsSource.onNtpInitialized();
 
         mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
         mShadowView.init(
