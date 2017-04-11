@@ -433,6 +433,7 @@
     'official.desktop': {
       'linux64': 'official',
       'mac64': 'official',
+      'mac64-recipes': 'official',
       'precise64': 'official_six_concurrent_links',
 
       # Currently the official bots set mini_installer_official_deps=1
