@@ -36,10 +36,6 @@ namespace content {
 
 namespace {
 
-MATCHER_P2(EqualsCaptureCapability, width, height, "") {
-  return arg.width == width && arg.height == height;
-}
-
 const int kTestFrameWidth1 = 500;
 const int kTestFrameHeight1 = 500;
 const int kTestFrameWidth2 = 400;
