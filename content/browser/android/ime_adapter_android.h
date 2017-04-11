@@ -26,6 +26,7 @@ namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewAndroid;
+struct TextInputState;
 
 // This class is in charge of dispatching key events from the java side
 // and forward to renderer along with input method results via
@@ -104,6 +105,8 @@ class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void WebContentsDestroyed() override;
+
+  void UpdateState(const TextInputState& state);
 
  private:
   RenderWidgetHostImpl* GetFocusedWidget();

@@ -718,13 +718,10 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
           ? *GetTextInputManager()->GetTextInputState()
           : TextInputState();
 
-  if (!content_view_core_ || is_in_vr_)
+  if (!ime_adapter_android_ || is_in_vr_)
     return;
 
-  content_view_core_->UpdateImeAdapter(
-      static_cast<int>(state.type), state.flags, state.mode, state.value,
-      state.selection_start, state.selection_end, state.composition_start,
-      state.composition_end, state.show_ime_if_needed, state.reply_to_request);
+  ime_adapter_android_->UpdateState(state);
 }
 
 void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
