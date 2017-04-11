@@ -1044,6 +1044,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (!this.navigation_.refreshVisible && !this.navigation_.closeVisible)
         return;
 
+      if (this.screenMode_ == ScreenMode.AD_AUTH)
+        chrome.send('cancelAdAuthentication');
+
       if (this.closable)
         Oobe.showUserPods();
       else

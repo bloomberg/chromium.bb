@@ -285,6 +285,24 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     js_checker().Evaluate(JSElement(kAdButton) + ".fire('tap')");
   }
 
+  void SetupActiveDirectoryJSNotifications() {
+    js_checker().Evaluate(
+        "var testInvalidateAd = login.GaiaSigninScreen.invalidateAd;"
+        "login.GaiaSigninScreen.invalidateAd = function(user, errorState) {"
+        "  testInvalidateAd(user, errorState);"
+        "  window.domAutomationController.setAutomationId(0);"
+        "  window.domAutomationController.send('ShowAuthError');"
+        "}");
+  }
+
+  void WaitForMessage(content::DOMMessageQueue* message_queue,
+                      const std::string& expected_message) {
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue->WaitForMessage(&message));
+    } while (message != expected_message);
+  }
+
  protected:
   // Returns string representing element with id=|element_id| inside Active
   // Directory login element.
@@ -434,8 +452,11 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginErrors) {
 
 // Test different UI errors for Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
+  SetupActiveDirectoryJSNotifications();
   TestLoginVisible();
   TestDomainVisible();
+
+  content::DOMMessageQueue message_queue;
 
   SubmitActiveDirectoryCredentials("", "");
   TestUserError();
@@ -445,14 +466,21 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   TestPasswordError();
   TestDomainVisible();
 
-  fake_auth_policy_client_->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
   SubmitActiveDirectoryCredentials(std::string(kTestActiveDirectoryUser) + "@",
                                    kPassword);
   TestUserError();
   TestDomainHidden();
 
+  fake_auth_policy_client_->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
+  SubmitActiveDirectoryCredentials(
+      std::string(kTestActiveDirectoryUser) + "@" + kTestRealm, kPassword);
+  WaitForMessage(&message_queue, "\"ShowAuthError\"");
+  TestUserError();
+  TestDomainVisible();
+
   fake_auth_policy_client_->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
   SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser, kPassword);
+  WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestPasswordError();
   TestDomainVisible();
 }

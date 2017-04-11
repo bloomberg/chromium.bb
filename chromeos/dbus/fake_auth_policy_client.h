@@ -26,18 +26,20 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& user_principal_name,
                     int password_fd,
-                    const JoinCallback& callback) override;
+                    JoinCallback callback) override;
   void AuthenticateUser(const std::string& user_principal_name,
                         int password_fd,
-                        const AuthCallback& callback) override;
-  void RefreshDevicePolicy(const RefreshPolicyCallback& calllback) override;
+                        AuthCallback callback) override;
+  void RefreshDevicePolicy(RefreshPolicyCallback calllback) override;
   void RefreshUserPolicy(const AccountId& account_id,
-                         const RefreshPolicyCallback& callback) override;
+                         RefreshPolicyCallback callback) override;
 
   // Mark service as started. It's getting started by the
   // UpstartClient::StartAuthPolicyService on the Active Directory managed
   // devices.
   void set_started(bool started) { started_ = started; }
+
+  bool started() const { return started_; }
 
   void set_auth_error(authpolicy::ErrorType auth_error) {
     auth_error_ = auth_error;

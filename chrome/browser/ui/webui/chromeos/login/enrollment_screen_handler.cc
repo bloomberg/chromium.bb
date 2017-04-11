@@ -12,12 +12,12 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -25,8 +25,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
@@ -180,6 +179,8 @@ void EnrollmentScreenHandler::ShowSigninScreen() {
 
 void EnrollmentScreenHandler::ShowAdJoin() {
   observe_network_failure_ = false;
+  if (!authpolicy_login_helper_)
+    authpolicy_login_helper_ = base::MakeUnique<AuthPolicyLoginHelper>();
   ShowStep(kEnrollmentStepAdJoin);
 }
 
@@ -515,12 +516,15 @@ void EnrollmentScreenHandler::HandleToggleFakeEnrollment() {
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
 
-  if (reason == "cancel")
+  if (reason == "cancel") {
+    if (authpolicy_login_helper_)
+      authpolicy_login_helper_->CancelRequestsAndRestart();
     controller_->OnCancel();
-  else if (reason == "done")
+  } else if (reason == "done") {
     controller_->OnConfirmationClosed();
-  else
+  } else {
     NOTREACHED();
+  }
 }
 
 void EnrollmentScreenHandler::HandleCompleteLogin(
@@ -537,31 +541,11 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& password) {
   observe_network_failure_ = false;
   DCHECK(controller_);
-  login::GetPipeReadEnd(
-      password,
-      base::Bind(&EnrollmentScreenHandler::OnPasswordPipeReady,
-                 weak_ptr_factory_.GetWeakPtr(), machine_name, user_name));
-}
-
-void EnrollmentScreenHandler::OnPasswordPipeReady(
-    const std::string& machine_name,
-    const std::string& user_name,
-    base::ScopedFD password_fd) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!password_fd.is_valid()) {
-    DLOG(ERROR) << "Got invalid password_fd";
-    return;
-  }
-  chromeos::AuthPolicyClient* client =
-      chromeos::DBusThreadManager::Get()->GetAuthPolicyClient();
-
-  client->JoinAdDomain(machine_name,
-                       user_name,
-                       password_fd.get(),
-                       base::Bind(&EnrollmentScreenHandler::HandleAdDomainJoin,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  machine_name,
-                                  user_name));
+  DCHECK(authpolicy_login_helper_);
+  authpolicy_login_helper_->JoinAdDomain(
+      machine_name, user_name, password,
+      base::BindOnce(&EnrollmentScreenHandler::HandleAdDomainJoin,
+                     weak_ptr_factory_.GetWeakPtr(), machine_name, user_name));
 }
 
 void EnrollmentScreenHandler::HandleAdDomainJoin(

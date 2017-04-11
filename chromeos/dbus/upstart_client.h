@@ -24,6 +24,9 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // Starts authpolicyd.
   virtual void StartAuthPolicyService() = 0;
 
+  // Restarts authpolicyd.
+  virtual void RestartAuthPolicyService() = 0;
+
  protected:
   // Create() should be used instead.
   UpstartClient();

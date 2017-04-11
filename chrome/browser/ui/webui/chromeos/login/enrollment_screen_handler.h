@@ -20,6 +20,7 @@
 
 namespace chromeos {
 
+class AuthPolicyLoginHelper;
 class ErrorScreensHistogramHelper;
 class HelpAppLauncher;
 
@@ -153,6 +154,10 @@ class EnrollmentScreenHandler
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
+
+  // Helper to call AuthPolicyClient and cancel calls if needed. Used to join
+  // Active Directory domain.
+  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
 
   base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_;
 

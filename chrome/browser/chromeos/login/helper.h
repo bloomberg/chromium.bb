@@ -108,12 +108,6 @@ content::StoragePartition* GetSigninPartition();
 // flow, the context of the sign-in webview storage partition is returned.
 net::URLRequestContextGetter* GetSigninContext();
 
-using OnPipeReadyCallback = base::Callback<void(base::ScopedFD fd)>;
-// Returns file descriptor of a pipe, open for reading. Pipe keeps the passed
-// data.
-void GetPipeReadEnd(const std::string& data,
-                    const OnPipeReadyCallback& callback);
-
 }  // namespace login
 
 }  // namespace chromeos

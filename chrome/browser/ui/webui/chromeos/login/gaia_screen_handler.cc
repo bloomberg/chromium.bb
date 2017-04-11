@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -35,8 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicetype.h"
@@ -294,6 +292,10 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   GaiaScreenMode screen_mode = GetGaiaScreenMode(context.email,
                                                  context.use_offline);
   params.SetInteger("screenMode", screen_mode);
+
+  if (screen_mode == GAIA_SCREEN_MODE_AD && !authpolicy_login_helper_)
+    authpolicy_login_helper_ = base::MakeUnique<AuthPolicyLoginHelper>();
+
   if (screen_mode != GAIA_SCREEN_MODE_OFFLINE) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     if (!app_locale.empty())
@@ -449,6 +451,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleCompleteAdAuthentication);
   AddCallback("completeAdPasswordChange",
               &GaiaScreenHandler::HandleCompleteAdPasswordChange);
+  AddCallback("cancelAdAuthentication",
+              &GaiaScreenHandler::HandleCancelActiveDirectoryAuth);
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(
@@ -592,11 +596,11 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
     const std::string& password) {
   Delegate()->SetDisplayEmail(username);
   set_populated_email(username);
-
-  login::GetPipeReadEnd(
-      password,
-      base::Bind(&GaiaScreenHandler::OnPasswordPipeReady,
-                 weak_factory_.GetWeakPtr(), username, Key(password)));
+  DCHECK(authpolicy_login_helper_);
+  authpolicy_login_helper_->AuthenticateUser(
+      username, password,
+      base::BindOnce(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
+                     username, Key(password)));
 }
 
 void GaiaScreenHandler::HandleCompleteAdPasswordChange(
@@ -606,26 +610,16 @@ void GaiaScreenHandler::HandleCompleteAdPasswordChange(
   Delegate()->SetDisplayEmail(username);
   set_populated_email(username);
 
-  login::GetPipeReadEnd(
-      old_password + "\n" + new_password + "\n" + new_password,
-      base::Bind(&GaiaScreenHandler::OnPasswordPipeReady,
-                 weak_factory_.GetWeakPtr(), username, Key(new_password)));
+  DCHECK(authpolicy_login_helper_);
+  authpolicy_login_helper_->AuthenticateUser(
+      username, old_password + "\n" + new_password + "\n" + new_password,
+      base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
+                 username, Key(new_password)));
 }
 
-void GaiaScreenHandler::OnPasswordPipeReady(const std::string& username,
-                                            const Key& key,
-                                            base::ScopedFD password_fd) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!password_fd.is_valid()) {
-    DLOG(ERROR) << "Got invalid password_fd";
-    return;
-  }
-  chromeos::AuthPolicyClient* client =
-      chromeos::DBusThreadManager::Get()->GetAuthPolicyClient();
-  client->AuthenticateUser(
-      username, password_fd.get(),
-      base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
-                 username, key));
+void GaiaScreenHandler::HandleCancelActiveDirectoryAuth() {
+  DCHECK(authpolicy_login_helper_);
+  authpolicy_login_helper_->CancelRequestsAndRestart();
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(

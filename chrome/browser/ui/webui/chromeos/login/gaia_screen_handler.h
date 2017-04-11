@@ -26,6 +26,7 @@ class ActiveDirectoryAccountData;
 
 namespace chromeos {
 
+class AuthPolicyLoginHelper;
 class Key;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
@@ -108,6 +109,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleCompleteAdPasswordChange(const std::string& username,
                                       const std::string& old_password,
                                       const std::string& new_password);
+
+  void HandleCancelActiveDirectoryAuth();
 
   void HandleUsingSAMLAPI();
   void HandleScrapedPasswordCount(int password_count);
@@ -274,6 +277,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // True if the authentication extension is still loading.
   bool auth_extension_being_loaded_ = false;
+
+  // Helper to call AuthPolicyClient and cancel calls if needed. Used to
+  // authenticate users against Active Directory server.
+  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

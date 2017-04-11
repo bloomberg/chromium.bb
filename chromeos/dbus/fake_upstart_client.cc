@@ -21,4 +21,12 @@ void FakeUpstartClient::StartAuthPolicyService() {
       ->set_started(true);
 }
 
+void FakeUpstartClient::RestartAuthPolicyService() {
+  FakeAuthPolicyClient* authpolicy_client = static_cast<FakeAuthPolicyClient*>(
+      DBusThreadManager::Get()->GetAuthPolicyClient());
+  DLOG_IF(WARNING, !authpolicy_client->started())
+      << "Trying to restart authpolicyd which is not started";
+  authpolicy_client->set_started(true);
+}
+
 }  // namespace chromeos
