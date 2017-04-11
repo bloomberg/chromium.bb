@@ -6,16 +6,23 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_usage_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -29,7 +36,28 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using data_reduction_proxy::DataReductionProxySettings;
 
-DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {
+namespace {
+
+constexpr size_t kBucketsPerDay =
+    24 * 60 / data_reduction_proxy::kDataUsageBucketLengthInMinutes;
+
+struct DataUsageForHost {
+  DataUsageForHost() : data_used(0), original_size(0) {}
+
+  int64_t data_used;
+  int64_t original_size;
+};
+
+}  // namespace
+
+DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid()
+    : weak_factory_(this) {}
+
+DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj)
+    : weak_factory_(this) {
+  j_settings_obj_ = JavaObjectWeakGlobalRef(env, obj);
 }
 
 DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
@@ -64,6 +92,12 @@ jlong DataReductionProxySettingsAndroid::GetDataReductionLastUpdateTime(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return Settings()->GetDataReductionLastUpdateTime();
+}
+
+void DataReductionProxySettingsAndroid::ClearDataSavingStatistics(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  Settings()->ClearDataSavingStatistics();
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -174,7 +208,63 @@ DataReductionProxySettingsAndroid::GetLastBypassEvent(
   return ConvertUTF8ToJavaString(env, event_store->SanitizedLastBypassEvent());
 }
 
+void DataReductionProxySettingsAndroid::QueryDataUsage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj,
+    jint num_days) {
+  DCHECK(num_days <= data_reduction_proxy::kDataUsageHistoryNumDays);
+  j_query_result_obj_.Reset(env, j_result_obj);
+  num_day_for_query_ = num_days;
+  Settings()
+      ->data_reduction_proxy_service()
+      ->compression_stats()
+      ->GetHistoricalDataUsage(base::Bind(
+          &DataReductionProxySettingsAndroid::OnQueryDataUsageComplete,
+          weak_factory_.GetWeakPtr()));
+}
+
+void DataReductionProxySettingsAndroid::OnQueryDataUsageComplete(
+    std::unique_ptr<std::vector<data_reduction_proxy::DataUsageBucket>>
+        data_usage) {
+  if (j_query_result_obj_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  std::map<base::StringPiece, DataUsageForHost> per_site_usage_map;
+
+  // Data usage is sorted chronologically with the last entry corresponding to
+  // |base::Time::Now()|.
+  const size_t num_buckets_to_display = num_day_for_query_ * kBucketsPerDay;
+  for (auto data_usage_it = data_usage->size() > num_buckets_to_display
+                                ? data_usage->end() - num_buckets_to_display
+                                : data_usage->begin();
+       data_usage_it != data_usage->end(); ++data_usage_it) {
+    for (const auto& connection_usage : data_usage_it->connection_usage()) {
+      for (const auto& site_usage : connection_usage.site_usage()) {
+        DataUsageForHost& usage = per_site_usage_map[site_usage.hostname()];
+        usage.data_used += site_usage.data_used();
+        usage.original_size += site_usage.original_size();
+      }
+    }
+  }
+
+  for (const auto& site_bucket : per_site_usage_map) {
+    Java_DataReductionProxySettings_createDataUseItemAndAddToList(
+        env, j_query_result_obj_.obj(),
+        ConvertUTF8ToJavaString(env, site_bucket.first),
+        site_bucket.second.data_used, site_bucket.second.original_size);
+  }
+
+  Java_DataReductionProxySettings_onQueryDataUsageComplete(
+      env, j_settings_obj_.get(env), j_query_result_obj_.obj());
+
+  j_query_result_obj_.Release();
+}
+
 // Used by generated jni code.
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  return reinterpret_cast<intptr_t>(new DataReductionProxySettingsAndroid());
+  return reinterpret_cast<intptr_t>(
+      new DataReductionProxySettingsAndroid(env, obj));
 }

@@ -978,6 +978,41 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY" desc="Summary text for data reduction menu item.">
         <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
       </message>
+      <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics data savings label">
+        Data Savings:
+      </message>
+      <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics data usage label">
+        Data Usage:
+      </message>
+      <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
+        Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
+      </message>
+      <message name="IDS_DATA_REDUCTION_DATA_USAGE_BREAKDOWN_TITLE" desc="Title for the data usage breakdown on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
+        Data Usage Breakdown
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SITE_TITLE" desc="Title for the sites column on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
+        Site
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_USED_TITLE" desc="Title for the data used column on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
+        Used
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_TITLE" desc="Title for the data saved column on the Data Reduction statistics page. The breakdown lists for the top ten sites with the greatest amount of data usage or mobile data that was saved. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
+        Saved
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_REMAINING_SITES_LABEL" desc="Title for the the remaining sites on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved and then groups the remaining sites together.">
+        Remaining sites (<ph name="NUMBER_OF_SITES">%1$d<ex>35</ex></ph>)
+      </message>
+      <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_BUTTON" desc="Text to be displayed on the button to reset the Data Reduction statistics.">
+        Reset Statistics
+      </message>
+      <message name="IDS_SAFE_BROWSING_DESCRIPTION" desc="Description text for safe browsing">
+        Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware, and harmful downloads.
+      </message>
+      <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
+        This feature may interfere with access to premium data services provided by your carrier.
+      </message>
+      
+      <!-- Old Data Saver stats page strings-->
       <message name="IDS_DATA_REDUCTION_STATS_TITLE" desc="Data reduction statistics title.">
         Data savings
       </message>
@@ -986,15 +1021,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DATA_REDUCTION_COMPRESSED_SIZE_LABEL" desc="Data Reduction statistics compressed size label">
         After compression
-      </message>
-      <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
-        Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
-      </message>
-      <message name="IDS_SAFE_BROWSING_DESCRIPTION" desc="Description text for safe browsing">
-        Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware, and harmful downloads.
-      </message>
-      <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
-        This feature may interfere with access to premium data services provided by your carrier.
       </message>
 
       <!-- Data Saver Promo and FRE card -->

@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &data_reduction_proxy::features::kDataReductionMainMenu,
+    &data_reduction_proxy::features::kDataReductionSiteBreakdown,
     &kFullscreenActivity,
     &kImportantSitesInCBD,
     &kImprovedA2HS,

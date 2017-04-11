@@ -9,15 +9,20 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -68,6 +73,8 @@ public class DataReductionProxySettings {
     private static final String WEBLITE_HOSTNAME = "googleweblight.com";
 
     private static final String WEBLITE_QUERY_PARAM = "lite_url";
+
+    private Callback<List<DataReductionDataUseItem>> mQueryDataUsageCallback;
 
     /**
      * Returns whether the data reduction proxy is enabled.
@@ -196,6 +203,16 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Clears all data saving statistics.
+     */
+    public void clearDataSavingStatistics() {
+        // When the data saving statistics are cleared, reset the snackbar promo that tells the user
+        // how much data they have saved using Data Saver so far.
+        DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
+        nativeClearDataSavingStatistics(mNativeDataReductionProxySettings);
+    }
+
+    /**
      * Returns aggregate original and received content lengths.
      * @return The content lengths.
      */
@@ -304,6 +321,35 @@ public class DataReductionProxySettings {
         return nativeAreLoFiPreviewsEnabled(mNativeDataReductionProxySettings);
     }
 
+    /**
+     * Queries native Data Reduction Proxy to get data use statistics. On query completion provides
+     * a list of DataReductionDataUseItem to the callback.
+     *
+     * @param numDays Number of days to get stats for.
+     * @param queryDataUsageCallback Callback to give the list of DataReductionDataUseItems on query
+     *            completion.
+     */
+    public void queryDataUsage(
+            int numDays, Callback<List<DataReductionDataUseItem>> queryDataUsageCallback) {
+        mQueryDataUsageCallback = queryDataUsageCallback;
+        nativeQueryDataUsage(mNativeDataReductionProxySettings,
+                new ArrayList<DataReductionDataUseItem>(), numDays);
+    }
+
+    @CalledByNative
+    public static void createDataUseItemAndAddToList(List<DataReductionDataUseItem> items,
+            String hostname, long dataUsed, long originalSize) {
+        items.add(new DataReductionDataUseItem(hostname, dataUsed, originalSize));
+    }
+
+    @CalledByNative
+    public void onQueryDataUsageComplete(List<DataReductionDataUseItem> items) {
+        if (mQueryDataUsageCallback != null) {
+            mQueryDataUsageCallback.onResult(items);
+        }
+        mQueryDataUsageCallback = null;
+    }
+
     private native long nativeInit();
     private native boolean nativeIsDataReductionProxyPromoAllowed(
             long nativeDataReductionProxySettingsAndroid);
@@ -314,6 +360,8 @@ public class DataReductionProxySettings {
     private native void nativeSetDataReductionProxyEnabled(
             long nativeDataReductionProxySettingsAndroid, boolean enabled);
     private native long nativeGetDataReductionLastUpdateTime(
+            long nativeDataReductionProxySettingsAndroid);
+    private native void nativeClearDataSavingStatistics(
             long nativeDataReductionProxySettingsAndroid);
     private native ContentLengths nativeGetContentLengths(
             long nativeDataReductionProxySettingsAndroid);
@@ -329,4 +377,6 @@ public class DataReductionProxySettings {
             long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetHttpProxyList(long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetLastBypassEvent(long nativeDataReductionProxySettingsAndroid);
+    private native void nativeQueryDataUsage(long nativeDataReductionProxySettingsAndroid,
+            List<DataReductionDataUseItem> items, int numDays);
 }

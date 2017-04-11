@@ -426,7 +426,7 @@ Still reading?
   </issue>
   <issue id="UselessParent">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml"/>
-    <ignore regexp="chrome/android/java/res/layout/data_reduction_promo_screen.xml"/>
+    <ignore regexp="chrome/android/java/res/layout/data_usage_breakdown.xml"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="tools/android/kerberos/SpnegoAuthenticator/res/layout/activity_account_authenticator.xml"/>
   </issue>

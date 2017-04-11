@@ -138,6 +138,7 @@ public abstract class ChromeFeatureList {
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on
     // Android.
     public static final String DATA_REDUCTION_MAIN_MENU = "DataReductionProxyMainMenu";
+    public static final String DATA_REDUCTION_SITE_BREAKDOWN = "DataReductionProxySiteBreakdown";
     // When enabled, fullscreen WebContents will be moved to a new Activity. Coming soon...
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     // Whether we show an important sites dialog in the "Clear Browsing Data" flow.

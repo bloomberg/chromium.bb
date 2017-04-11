@@ -4,14 +4,11 @@
 
 package org.chromium.chrome.browser.preferences.datareduction;
 
-import static org.chromium.third_party.android.datausagechart.ChartDataUsageView.DAYS_IN_CHART;
-
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
-import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,8 +23,6 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.third_party.android.datausagechart.NetworkStats;
-import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
 
 /**
  * Settings fragment that allows the user to configure Data Saver.
@@ -36,7 +31,6 @@ public class DataReductionPreferences extends PreferenceFragment {
     public static final String FROM_MAIN_MENU = "FromMainMenu";
 
     public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
-    private static final String PREF_DATA_REDUCTION_STATS = "data_reduction_stats";
 
     // This is the same as Chromium data_reduction_proxy::switches::kEnableDataReductionProxy.
     private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
@@ -132,27 +126,10 @@ public class DataReductionPreferences extends PreferenceFragment {
         createDataReductionSwitch(isEnabled);
         if (isEnabled) {
             addPreferencesFromResource(R.xml.data_reduction_preferences);
-            updateReductionStatistics();
         } else {
             addPreferencesFromResource(R.xml.data_reduction_preferences_off);
         }
         mIsEnabled = isEnabled;
-    }
-
-    /**
-     * Updates the preference screen to convey current statistics on data reduction.
-     */
-    public void updateReductionStatistics() {
-        DataReductionProxySettings config = DataReductionProxySettings.getInstance();
-
-        DataReductionStatsPreference statsPref = (DataReductionStatsPreference)
-                getPreferenceScreen().findPreference(PREF_DATA_REDUCTION_STATS);
-        long original[] = config.getOriginalNetworkStatsHistory();
-        long received[] = config.getReceivedNetworkStatsHistory();
-        statsPref.setReductionStats(
-                config.getDataReductionLastUpdateTime(),
-                getNetworkStatsHistory(original, DAYS_IN_CHART),
-                getNetworkStatsHistory(received, DAYS_IN_CHART));
     }
 
     /**
@@ -167,25 +144,6 @@ public class DataReductionPreferences extends PreferenceFragment {
         } else {
             return (String) resources.getText(R.string.text_off);
         }
-    }
-
-    private static NetworkStatsHistory getNetworkStatsHistory(long[] history, int days) {
-        if (days > history.length) days = history.length;
-        NetworkStatsHistory networkStatsHistory =
-                new NetworkStatsHistory(
-                        DateUtils.DAY_IN_MILLIS, days, NetworkStatsHistory.FIELD_RX_BYTES);
-
-        DataReductionProxySettings config = DataReductionProxySettings.getInstance();
-        long time = config.getDataReductionLastUpdateTime() - days * DateUtils.DAY_IN_MILLIS;
-        for (int i = history.length - days, bucket = 0; i < history.length; i++, bucket++) {
-            NetworkStats.Entry entry = new NetworkStats.Entry();
-            entry.rxBytes = history[i];
-            long startTime = time + (DateUtils.DAY_IN_MILLIS * bucket);
-            // Spread each day's record over the first hour of the day.
-            networkStatsHistory.recordData(
-                    startTime, startTime + DateUtils.HOUR_IN_MILLIS, entry);
-        }
-        return networkStatsHistory;
     }
 
     private void createDataReductionSwitch(boolean isEnabled) {
