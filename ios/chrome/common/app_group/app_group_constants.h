@@ -54,6 +54,12 @@ extern const char kChromeAppGroupNewTabCommand[];
 // The command to focus the omnibox.
 extern const char kChromeAppGroupFocusOmniboxCommand[];
 
+// The command to open an incognito search.
+extern const char kChromeAppGroupIncognitoSearchCommand[];
+
+// The command to open the QR Code scanner.
+extern const char kChromeAppGroupQRScannerCommand[];
+
 // The key in kChromeAppGroupCommandPreference containing a NSDate at which
 // |kChromeAppGroupCommandAppPreference| issued the command.
 extern const char kChromeAppGroupCommandTimePreference[];

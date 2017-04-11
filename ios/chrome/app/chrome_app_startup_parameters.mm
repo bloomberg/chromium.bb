@@ -286,6 +286,33 @@ enum MobileSessionStartAction {
                                                     completeURL:url];
   }
 
+  if ([command
+          isEqualToString:base::SysUTF8ToNSString(
+                              app_group::kChromeAppGroupQRScannerCommand)]) {
+    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+        initWithExternalURL:GURL(kChromeUINewTabURL)
+        xCallbackParameters:nil
+          declaredSourceApp:appId
+            secureSourceApp:secureSourceApp
+                completeURL:url];
+    [params setLaunchQRScanner:YES];
+    return params;
+  }
+
+  if ([command isEqualToString:
+                   base::SysUTF8ToNSString(
+                       app_group::kChromeAppGroupIncognitoSearchCommand)]) {
+    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+        initWithExternalURL:GURL(kChromeUINewTabURL)
+        xCallbackParameters:nil
+          declaredSourceApp:appId
+            secureSourceApp:secureSourceApp
+                completeURL:url];
+    [params setLaunchInIncognito:YES];
+    [params setLaunchFocusOmnibox:YES];
+    return params;
+  }
+
   return nil;
 }
 

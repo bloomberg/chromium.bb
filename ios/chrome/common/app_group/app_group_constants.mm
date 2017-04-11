@@ -32,6 +32,8 @@ const char kChromeAppGroupOpenURLCommand[] = "openurl";
 const char kChromeAppGroupVoiceSearchCommand[] = "voicesearch";
 const char kChromeAppGroupNewTabCommand[] = "newtab";
 const char kChromeAppGroupFocusOmniboxCommand[] = "focusomnibox";
+const char kChromeAppGroupIncognitoSearchCommand[] = "incognitosearch";
+const char kChromeAppGroupQRScannerCommand[] = "qrscanner";
 
 const char kChromeAppClientID[] = "ClientID";
 const char kUserMetricsEnabledDate[] = "UserMetricsEnabledDate";
