@@ -56,10 +56,6 @@ ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-ACTION_P(SaveChangeProcessor, scoped_change_processor) {
-  scoped_change_processor->reset(arg2);
-}
-
 class SharedChangeProcessorMock : public SharedChangeProcessor {
  public:
   explicit SharedChangeProcessorMock(ModelType type)
