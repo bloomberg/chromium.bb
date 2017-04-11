@@ -30,8 +30,9 @@
 extern const int OD_DIRECTION_OFFSETS_TABLE[8][3];
 
 typedef struct {
-  unsigned char by;
-  unsigned char bx;
+  uint8_t by;
+  uint8_t bx;
+  uint8_t skip;
 } dering_list;
 
 typedef void (*od_filter_dering_direction_func)(uint16_t *y, int ystride,
