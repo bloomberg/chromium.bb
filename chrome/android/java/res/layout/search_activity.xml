@@ -7,7 +7,7 @@
         android:id="@+id/control_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#9affffff" >
+        android:background="@color/google_grey_500" >
 
     <!-- This view is unnecessary visually, but required for the LocationBarLayout. -->
     <org.chromium.chrome.browser.searchwidget.SearchActivityFadingBackgroundView
@@ -43,9 +43,9 @@
                 android:id="@+id/search_location_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginStart="@dimen/tablet_toolbar_start_padding_no_buttons"
-                android:layout_marginEnd="@dimen/tablet_toolbar_start_padding_no_buttons"
-                android:layout_marginTop="@dimen/tablet_toolbar_start_padding_no_buttons" />
+                android:layout_marginEnd="@dimen/tablet_toolbar_start_padding_no_buttons" />
 
     </FrameLayout>
 

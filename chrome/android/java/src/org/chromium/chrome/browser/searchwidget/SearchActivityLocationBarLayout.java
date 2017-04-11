@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.UiUtils;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
 public class SearchActivityLocationBarLayout extends LocationBarLayout {
@@ -26,8 +29,16 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setUrlBarFocusable(true);
+
+        // TODO(dfalcantara): Get rid of any possibility of inflating the G in a layout.
         View gContainer = findViewById(R.id.google_g_container);
         if (gContainer != null) gContainer.setVisibility(View.GONE);
+
+        // TODO(dfalcantara): Find the correct way to do this.
+        int spacingLarge =
+                getResources().getDimensionPixelSize(R.dimen.contextual_search_peek_promo_padding);
+        setPadding(spacingLarge, 0, spacingLarge, 0);
     }
 
     /** Set the {@link Delegate}. */
@@ -53,5 +64,43 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     @Override
     public void setUrlToPageUrl() {
         // Explicitly do nothing.  The tab is invisible, so showing its URL would be confusing.
+    }
+
+    @Override
+    public void onNativeLibraryReady() {
+        super.onNativeLibraryReady();
+        setAutocompleteProfile(Profile.getLastUsedProfile().getOriginalProfile());
+        setShowCachedZeroSuggestResults(true);
+    }
+
+    /** Called when the SearchActivity has finished initialization. */
+    void onDeferredStartup(boolean isVoiceSearchIntent) {
+        if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
+    }
+
+    /** Begins a new query. */
+    void beginQuery(boolean isVoiceSearchIntent) {
+        if (isVoiceSearchIntent) {
+            startVoiceRecognition();
+        } else {
+            focusTextBox();
+        }
+    }
+
+    private void focusTextBox() {
+        if (mNativeInitialized) onUrlFocusChange(true);
+
+        mUrlBar.setIgnoreTextChangesForAutocomplete(true);
+        mUrlBar.setUrl("", null);
+        mUrlBar.setIgnoreTextChangesForAutocomplete(false);
+
+        mUrlBar.setCursorVisible(true);
+        mUrlBar.setSelection(0, mUrlBar.getText().length());
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                UiUtils.showKeyboard(mUrlBar);
+            }
+        });
     }
 }

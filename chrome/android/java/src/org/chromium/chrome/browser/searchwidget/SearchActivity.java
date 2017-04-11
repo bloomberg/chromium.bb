@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Intent;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.customtabs.CustomTabsIntent;
@@ -16,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -27,8 +24,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
-import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,23 +33,12 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 /** Prototype that queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate,
                    View.OnLayoutChangeListener {
-    private static final String TAG = "searchwidget";
-
-    /** Padding gleaned from the background Drawable of the search box. */
-    private final Rect mSearchBoxPadding = new Rect();
-
-    /** Medium margin/padding used for the search box. */
-    private int mSpacingMedium;
-
-    /** Large margin/padding used for the search box. */
-    private int mSpacingLarge;
 
     /** Main content view. */
     private ViewGroup mContentView;
@@ -68,29 +52,14 @@ public class SearchActivity extends AsyncInitializationActivity
     /** The View that represents the search box. */
     private SearchActivityLocationBarLayout mSearchBox;
 
-    private UrlBar mUrlBar;
-
-    private SearchBoxDataProvider mSearchBoxDataProvider;
-
-    private SnackbarManager mSnackbarManager;
     private ActivityWindowAndroid mWindowAndroid;
+    private SnackbarManager mSnackbarManager;
+    private SearchBoxDataProvider mSearchBoxDataProvider;
     private Tab mTab;
 
     @Override
     public void backKeyPressed() {
-        finish();
-    }
-
-    @Override
-    public void onStop() {
-        finish();
-        super.onStop();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(0, android.R.anim.fade_out);
+        cancelSearch();
     }
 
     @Override
@@ -101,43 +70,39 @@ public class SearchActivity extends AsyncInitializationActivity
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        boolean result = mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
+        return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
+    }
 
-        // The voice query should have completed.  If the voice recognition isn't confident about
-        // what it heard, it puts the query into the omnibox.  We need to focus it at that point.
-        if (mUrlBar != null) focusTextBox(false);
-
-        return result;
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        // TODO(dfalcantara): This is from ChromeWindow.  It should be moved into the
+        //                    AsyncInitializationActivity, but that has a lot of subclasses that
+        //                    don't need a WindowAndroid.
+        if (mWindowAndroid != null) {
+            if (mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+                return;
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     protected void setContentView() {
-        initializeDimensions();
-
         mWindowAndroid = new ActivityWindowAndroid(this);
         mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
-        mContentView = createContentView(mSearchBox);
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Finish the Activity if the user clicks on the scrim.
-                finish();
-            }
-        });
+        mContentView = createContentView();
 
         // Build the search box.
         mSearchBox = (SearchActivityLocationBarLayout) mContentView.findViewById(
                 R.id.search_location_bar);
         mSearchBox.setDelegate(this);
-        mSearchBox.setPadding(mSpacingLarge, mSpacingMedium, mSpacingLarge, mSpacingMedium);
-        mSearchBox.initializeControls(new WindowDelegate(getWindow()), mWindowAndroid);
-        mSearchBox.setUrlBarFocusable(true);
         mSearchBox.setToolbarDataProvider(mSearchBoxDataProvider);
+        mSearchBox.initializeControls(new WindowDelegate(getWindow()), mWindowAndroid);
 
         setContentView(mContentView);
-        mUrlBar = (UrlBar) mSearchBox.findViewById(R.id.url_bar);
     }
 
     @Override
@@ -151,10 +116,9 @@ public class SearchActivity extends AsyncInitializationActivity
         mTab.initialize(WebContentsFactory.createWebContents(false, false), null,
                 new TabDelegateFactory(), false, false);
         mTab.loadUrl(new LoadUrlParams("about:blank"));
+
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);
         mSearchBox.onNativeLibraryReady();
-        mSearchBox.setAutocompleteProfile(Profile.getLastUsedProfile().getOriginalProfile());
-        mSearchBox.setShowCachedZeroSuggestResults(true);
 
         if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
@@ -172,8 +136,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
         AutocompleteController.nativePrefetchZeroSuggestResults();
         CustomTabsConnection.getInstance(getApplication()).warmup(0);
-
-        if (!isVoiceSearchIntent() && mUrlBar.isFocused()) mSearchBox.onUrlFocusChange(true);
+        mSearchBox.onDeferredStartup(isVoiceSearchIntent());
     }
 
     @Override
@@ -199,11 +162,7 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     private void beginQuery() {
-        if (isVoiceSearchIntent()) {
-            mSearchBox.startVoiceRecognition();
-        } else {
-            focusTextBox(true);
-        }
+        mSearchBox.beginQuery(isVoiceSearchIntent());
     }
 
     @Override
@@ -215,24 +174,6 @@ public class SearchActivity extends AsyncInitializationActivity
     @Override
     public boolean shouldStartGpuProcess() {
         return true;
-    }
-
-    private void focusTextBox(boolean clearQuery) {
-        if (mIsNativeReady) mSearchBox.onUrlFocusChange(true);
-
-        if (clearQuery) {
-            mUrlBar.setIgnoreTextChangesForAutocomplete(true);
-            mUrlBar.setUrl("", null);
-            mUrlBar.setIgnoreTextChangesForAutocomplete(false);
-        }
-        mUrlBar.setCursorVisible(true);
-        mUrlBar.setSelection(0, mUrlBar.getText().length());
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                UiUtils.showKeyboard(mUrlBar);
-            }
-        });
     }
 
     @Override
@@ -263,20 +204,25 @@ public class SearchActivity extends AsyncInitializationActivity
             IntentHandler.addTrustedIntentExtras(intent);
         }
 
-        // TODO(dfalcantara): Make IntentUtils take in an ActivityOptions bundle once public.
-        startActivity(intent,
+        IntentUtils.safeStartActivity(this, intent,
                 ActivityOptionsCompat
                         .makeCustomAnimation(this, android.R.anim.fade_in, android.R.anim.fade_out)
                         .toBundle());
         finish();
     }
 
-    private ViewGroup createContentView(final View searchBox) {
+    private ViewGroup createContentView() {
         assert mContentView == null;
 
         ViewGroup contentView = (ViewGroup) LayoutInflater.from(this).inflate(
                 R.layout.search_activity, null, false);
         contentView.addOnLayoutChangeListener(this);
+        contentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelSearch();
+            }
+        });
         return contentView;
     }
 
@@ -285,19 +231,6 @@ public class SearchActivity extends AsyncInitializationActivity
             int oldTop, int oldRight, int oldBottom) {
         mContentView.removeOnLayoutChangeListener(this);
         beginLoadingLibrary();
-    }
-
-    private void initializeDimensions() {
-        // Cache the padding of the Drawable that is used as the background for the search box.
-        Drawable searchBackground =
-                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.card_single);
-        searchBackground.getPadding(mSearchBoxPadding);
-
-        // TODO(dfalcantara): Add values to the XML files instead of reusing random ones.
-        mSpacingMedium =
-                getResources().getDimensionPixelSize(R.dimen.location_bar_incognito_badge_padding);
-        mSpacingLarge =
-                getResources().getDimensionPixelSize(R.dimen.contextual_search_peek_promo_padding);
     }
 
     private void beginLoadingLibrary() {
@@ -310,5 +243,10 @@ public class SearchActivity extends AsyncInitializationActivity
         });
         ChromeBrowserInitializer.getInstance(getApplicationContext())
                 .handlePreNativeStartup(SearchActivity.this);
+    }
+
+    private void cancelSearch() {
+        finish();
+        overridePendingTransition(0, R.anim.activity_close_exit);
     }
 }

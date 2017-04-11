@@ -729,7 +729,7 @@ by a child template that "extends" this file.
         <receiver android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
             android:exported="false" />
 
-        {% if channel in ['default'] %}
+        {% if channel in ['canary', 'default'] %}
         <!-- Search widget -->
         <receiver android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider"
             android:process=":search_widget">
@@ -748,10 +748,10 @@ by a child template that "extends" this file.
 
         <!-- Search Activity -->
         <activity android:name="org.chromium.chrome.browser.searchwidget.SearchActivity"
-            android:theme="@style/OverlayTheme"
+            android:theme="@style/MainTheme"
             android:label="Search"
             android:exported="false"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:taskAffinity=""
             android:clearTaskOnLaunch="true"
             android:excludeFromRecents="true"
