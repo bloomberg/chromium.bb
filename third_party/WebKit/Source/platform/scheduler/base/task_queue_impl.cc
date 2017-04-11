@@ -102,7 +102,6 @@ TaskQueueImpl::~TaskQueueImpl() {
   // destructor calls UnregisterTaskQueue on all task queues.
   DCHECK(any_thread().task_queue_manager == nullptr)
       << "UnregisterTaskQueue must be called first!";
-
 #endif
 }
 
@@ -147,7 +146,9 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
 
 TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
                                     TimeDomain* time_domain)
-    : task_queue_manager(task_queue_manager), time_domain(time_domain) {}
+    : task_queue_manager(task_queue_manager),
+      time_domain(time_domain),
+      observer(nullptr) {}
 
 TaskQueueImpl::AnyThread::~AnyThread() {}
 
@@ -157,6 +158,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager),
       time_domain(time_domain),
+      observer(nullptr),
       delayed_work_queue(
           new WorkQueue(task_queue, "delayed", WorkQueue::QueueType::DELAYED)),
       immediate_work_queue(new WorkQueue(task_queue,
@@ -183,6 +185,8 @@ void TaskQueueImpl::UnregisterTaskQueue() {
 
   any_thread().task_queue_manager = nullptr;
   main_thread_only().task_queue_manager = nullptr;
+  any_thread().observer = nullptr;
+  main_thread_only().observer = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
   immediate_incoming_queue().Clear();
   main_thread_only().immediate_work_queue.reset();
@@ -277,7 +281,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task, base::TimeTicks now) {
-  base::TimeTicks delayed_run_time = pending_task.delayed_run_time;
+  DelayedWakeUp wake_up = pending_task.delayed_wake_up();
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
@@ -285,11 +289,11 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   // is requested if the queue is enabled.  Note we still want to schedule a
   // wake-up even if blocked by a fence, because we'd break throttling logic
   // otherwise.
-  base::TimeTicks next_delayed_task =
-      main_thread_only().delayed_incoming_queue.top().delayed_run_time;
-  if (next_delayed_task == delayed_run_time && IsQueueEnabled()) {
-    main_thread_only().time_domain->ScheduleDelayedWork(
-        this, {delayed_run_time, pending_task.sequence_num}, now);
+  DelayedWakeUp new_wake_up =
+      main_thread_only().delayed_incoming_queue.top().delayed_wake_up();
+  if (wake_up.time == new_wake_up.time &&
+      wake_up.sequence_num == new_wake_up.sequence_num) {
+    ScheduleDelayedWorkInTimeDomain(now);
   }
 
   TraceQueueSize();
@@ -358,7 +362,8 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
         (!IsQueueEnabled() || main_thread_only().current_fence);
     any_thread().task_queue_manager->OnQueueHasIncomingImmediateWork(
         this, sequence_number, queue_is_blocked);
-    any_thread().time_domain->OnQueueHasImmediateWork(this);
+    if (any_thread().observer)
+      any_thread().observer->OnQueueNextWakeUpChanged(this, desired_run_time);
   }
 
   TraceQueueSize();
@@ -449,9 +454,7 @@ TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
 
   // Make sure the next wake up is scheduled.
   if (!main_thread_only().delayed_incoming_queue.empty()) {
-    return DelayedWakeUp{
-        main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-        main_thread_only().delayed_incoming_queue.top().sequence_num};
+    return main_thread_only().delayed_incoming_queue.top().delayed_wake_up();
   }
 
   return base::nullopt;
@@ -598,13 +601,7 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
   main_thread_only().time_domain = time_domain;
   time_domain->RegisterQueue(this);
 
-  if (IsQueueEnabled() && !main_thread_only().delayed_incoming_queue.empty()) {
-    time_domain->ScheduleDelayedWork(
-        this,
-        {main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-         main_thread_only().delayed_incoming_queue.top().sequence_num},
-        time_domain->Now());
-  }
+  ScheduleDelayedWorkInTimeDomain(time_domain->Now());
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
@@ -816,24 +813,11 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
     return;
 
   if (enable) {
-    // Check if there's any immediate work on either queue.
-    bool immediate_queues_empty =
-        main_thread_only().immediate_work_queue->Empty();
-    if (immediate_queues_empty) {
-      base::AutoLock lock(immediate_incoming_queue_lock_);
-      immediate_queues_empty = immediate_incoming_queue().empty();
-    }
-    // Avoid holding the lock while we fire the notification.
-    if (!immediate_queues_empty)
-      main_thread_only().time_domain->OnQueueHasImmediateWork(this);
+    if (HasPendingImmediateWork())
+      NotifyWakeUpChangedOnMainThread(base::TimeTicks());
 
-    if (!main_thread_only().delayed_incoming_queue.empty()) {
-      main_thread_only().time_domain->ScheduleDelayedWork(
-          this,
-          {main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-           main_thread_only().delayed_incoming_queue.top().sequence_num},
-          main_thread_only().time_domain->Now());
-    }
+    ScheduleDelayedWorkInTimeDomain(main_thread_only().time_domain->Now());
+
     // Note the selector calls TaskQueueManager::OnTaskQueueEnabled which posts
     // a DoWork if needed.
     main_thread_only().task_queue_manager->selector_.EnableQueue(this);
@@ -875,13 +859,7 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
     main_thread_only().time_domain->CancelDelayedWork(this);
   } else if (first_task_runtime !=
              main_thread_only().delayed_incoming_queue.top().delayed_run_time) {
-    if (IsQueueEnabled()) {
-      main_thread_only().time_domain->ScheduleDelayedWork(
-          this,
-          {main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-           main_thread_only().delayed_incoming_queue.top().sequence_num},
-          main_thread_only().time_domain->Now());
-    }
+    ScheduleDelayedWorkInTimeDomain(main_thread_only().time_domain->Now());
   }
 }
 
@@ -889,6 +867,40 @@ void TaskQueueImpl::PushImmediateIncomingTaskForTest(
     TaskQueueImpl::Task&& task) {
   base::AutoLock lock(immediate_incoming_queue_lock_);
   immediate_incoming_queue().push_back(std::move(task));
+}
+
+void TaskQueueImpl::SetObserver(Observer* observer) {
+#if DCHECK_IS_ON()
+  if (observer) {
+    DCHECK(!main_thread_only().observer) << "Can't assign two different "
+                                            "observers to "
+                                            "blink::scheduler::TaskQueue";
+  }
+#endif
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().observer = observer;
+  main_thread_only().observer = observer;
+}
+
+void TaskQueueImpl::ScheduleDelayedWorkInTimeDomain(base::TimeTicks now) {
+  if (!IsQueueEnabled())
+    return;
+  if (main_thread_only().delayed_incoming_queue.empty())
+    return;
+
+  main_thread_only().time_domain->ScheduleDelayedWork(
+      this, main_thread_only().delayed_incoming_queue.top().delayed_wake_up(),
+      now);
+
+  if (!HasPendingImmediateWork()) {
+    NotifyWakeUpChangedOnMainThread(
+        main_thread_only().delayed_incoming_queue.top().delayed_run_time);
+  }
+}
+
+void TaskQueueImpl::NotifyWakeUpChangedOnMainThread(base::TimeTicks wake_up) {
+  if (main_thread_only().observer)
+    main_thread_only().observer->OnQueueNextWakeUpChanged(this, wake_up);
 }
 
 }  // namespace internal

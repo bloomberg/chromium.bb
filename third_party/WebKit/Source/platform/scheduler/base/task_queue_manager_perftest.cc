@@ -29,7 +29,7 @@ namespace scheduler {
 // fast forward the timers.
 class PerfTestTimeDomain : public VirtualTimeDomain {
  public:
-  PerfTestTimeDomain() : VirtualTimeDomain(nullptr, base::TimeTicks::Now()) {}
+  PerfTestTimeDomain() : VirtualTimeDomain(base::TimeTicks::Now()) {}
   ~PerfTestTimeDomain() override {}
 
   base::Optional<base::TimeDelta> DelayTillNextTask(

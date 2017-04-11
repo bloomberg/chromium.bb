@@ -275,7 +275,8 @@ TEST_F(TaskQueueThrottlerTest,
 }
 
 TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_EnabledQueue) {
-  task_queue_throttler_->OnTimeDomainHasImmediateWork(timer_queue_.get());
+  task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
+                                                  base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was called.
   EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
 }
@@ -285,7 +286,8 @@ TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_DisabledQueue) {
       timer_queue_->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
 
-  task_queue_throttler_->OnTimeDomainHasImmediateWork(timer_queue_.get());
+  task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
+                                                  base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was not called.
   EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
 }

@@ -1316,13 +1316,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                                .size());
 }
 
-// TODO(701223): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_VirtualTimeTest DISABLED_VirtualTimeTest
-#else
-#define MAYBE_VirtualTimeTest VirtualTimeTest
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, MAYBE_VirtualTimeTest) {
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
@@ -1330,16 +1324,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, MAYBE_VirtualTimeTest) {
   params->SetString("policy", "pause");
   SendCommand("Emulation.setVirtualTimePolicy", std::move(params), true);
 
+  // TODO(scheduler-dev): Revisit timing when we have strict ordering
+  // guarantees.
   params.reset(new base::DictionaryValue());
   params->SetString("expression",
                     "setTimeout(function(){console.log('before')}, 1000);"
-                    "setTimeout(function(){console.log('after')}, 1001);");
+                    "setTimeout(function(){console.log('after')}, 1002);");
   SendCommand("Runtime.evaluate", std::move(params), true);
 
   // Let virtual time advance for one second.
   params.reset(new base::DictionaryValue());
   params->SetString("policy", "advance");
-  params->SetInteger("budget", 1000);
+  params->SetInteger("budget", 1001);
   SendCommand("Emulation.setVirtualTimePolicy", std::move(params), true);
 
   WaitForNotification("Emulation.virtualTimeBudgetExpired");

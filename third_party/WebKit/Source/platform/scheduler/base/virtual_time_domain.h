@@ -14,8 +14,7 @@ namespace scheduler {
 
 class BLINK_PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
-  VirtualTimeDomain(TimeDomain::Observer* observer,
-                    base::TimeTicks initial_time);
+  VirtualTimeDomain(base::TimeTicks initial_time);
   ~VirtualTimeDomain() override;
 
   // TimeDomain implementation:

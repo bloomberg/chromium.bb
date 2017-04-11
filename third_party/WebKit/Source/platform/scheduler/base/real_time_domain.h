@@ -17,7 +17,6 @@ namespace scheduler {
 class BLINK_PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
  public:
   explicit RealTimeDomain(const char* tracing_category);
-  RealTimeDomain(TimeDomain::Observer* observer, const char* tracing_category);
   ~RealTimeDomain() override;
 
   // TimeDomain implementation:

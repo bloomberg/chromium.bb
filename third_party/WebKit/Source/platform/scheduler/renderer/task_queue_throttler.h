@@ -80,7 +80,7 @@ class BLINK_PLATFORM_EXPORT BudgetPoolController {
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
+class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
                                                  public BudgetPoolController {
  public:
   // TODO(altimin): Do not pass tracing category as const char*,
@@ -90,9 +90,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
 
   ~TaskQueueThrottler() override;
 
-  // TimeDomain::Observer implementation:
-  void OnTimeDomainHasImmediateWork(TaskQueue*) override;
-  void OnTimeDomainHasDelayedWork(TaskQueue*) override;
+  // TaskQueue::Observer implementation:
+  void OnQueueNextWakeUpChanged(TaskQueue* queue,
+                                base::TimeTicks wake_up) override;
 
   // BudgetPoolController implementation:
   void AddQueueToBudgetPool(TaskQueue* queue, BudgetPool* budget_pool) override;
@@ -172,7 +172,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
                          TaskQueue* queue);
 
   TaskQueueMap queue_details_;
-  base::Callback<void(TaskQueue*)> forward_immediate_work_callback_;
+  base::Callback<void(TaskQueue*, base::TimeTicks)>
+      forward_immediate_work_callback_;
   scoped_refptr<TaskQueue> task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED

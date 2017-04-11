@@ -36,22 +36,7 @@ class TaskQueueManager;
 // changes.
 class BLINK_PLATFORM_EXPORT TimeDomain {
  public:
-  class BLINK_PLATFORM_EXPORT Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called when an empty TaskQueue registered with this TimeDomain has a task
-    // enqueued.
-    // |task_queue| - task queue which has immediate work scheduled.
-    virtual void OnTimeDomainHasImmediateWork(TaskQueue* task_queue) = 0;
-
-    // Called when a TaskQueue registered with this TimeDomain has a delayed
-    // task enqueued.
-    // |task_queue| - task queue which has delayed work scheduled.
-    virtual void OnTimeDomainHasDelayedWork(TaskQueue* task_queue) = 0;
-  };
-
-  explicit TimeDomain(Observer* observer);
+  TimeDomain();
   virtual ~TimeDomain();
 
   // Returns a LazyNow that evaluate this TimeDomain's Now.  Can be called from
@@ -85,10 +70,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // If there is a scheduled delayed task, |out_task_queue| is set to the queue
   // the next task was posted to and it returns true.  Returns false otherwise.
   bool NextScheduledTaskQueue(TaskQueue** out_task_queue) const;
-
-  // Notifies the time domain observer (if any) that |queue| has incoming
-  // immediate work.
-  void OnQueueHasImmediateWork(internal::TaskQueueImpl* queue);
 
   // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
@@ -160,8 +141,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   };
 
   IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
-
-  Observer* const observer_;  // NOT OWNED.
 
   base::ThreadChecker main_thread_checker_;
 

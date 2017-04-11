@@ -27,6 +27,20 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
   TaskQueue() {}
 
+  class BLINK_PLATFORM_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Notify observer that the time at which this queue wants to run
+    // the next task has changed. |next_wakeup| can be in the past
+    // (e.g. base::TimeTicks() can be used to notify about immediate work).
+    // Can be called on any thread
+    // All methods but SetObserver, SetTimeDomain and GetTimeDomain can be
+    // called on |queue|.
+    virtual void OnQueueNextWakeUpChanged(TaskQueue* queue,
+                                          base::TimeTicks next_wake_up) = 0;
+  };
+
   // Unregisters the task queue after which no tasks posted to it will run and
   // the TaskQueueManager's reference to it will be released soon.
   virtual void UnregisterTaskQueue() = 0;
@@ -207,6 +221,8 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   virtual void RemoveFence() = 0;
 
   virtual bool BlockedByFence() const = 0;
+
+  virtual void SetObserver(Observer* observer) = 0;
 
  protected:
   ~TaskQueue() override {}

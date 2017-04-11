@@ -15,8 +15,7 @@ namespace scheduler {
 // relies on the owner (TaskQueueThrottler) to schedule wake-ups.
 class BLINK_PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
  public:
-  ThrottledTimeDomain(TimeDomain::Observer* observer,
-                      const char* tracing_category);
+  ThrottledTimeDomain(const char* tracing_category);
   ~ThrottledTimeDomain() override;
 
   // TimeDomain implementation:

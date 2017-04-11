@@ -9,8 +9,7 @@ namespace scheduler {
 
 AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
     base::TimeTicks initial_time)
-    : VirtualTimeDomain(nullptr, initial_time),
-      can_advance_virtual_time_(true) {}
+    : VirtualTimeDomain(initial_time), can_advance_virtual_time_(true) {}
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {}
 

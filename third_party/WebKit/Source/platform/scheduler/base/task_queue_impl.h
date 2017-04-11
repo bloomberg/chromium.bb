@@ -65,6 +65,21 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
                 const char* disabled_by_default_tracing_category,
                 const char* disabled_by_default_verbose_tracing_category);
 
+  // Represents a time at which a task wants to run. Tasks scheduled for the
+  // same point in time will be ordered by their sequence numbers.
+  struct DelayedWakeUp {
+    base::TimeTicks time;
+    int sequence_num;
+
+    bool operator<=(const DelayedWakeUp& other) const {
+      if (time == other.time) {
+        DCHECK_NE(sequence_num, other.sequence_num);
+        return (sequence_num - other.sequence_num) < 0;
+      }
+      return time < other.time;
+    }
+  };
+
   class BLINK_PLATFORM_EXPORT Task : public base::PendingTask {
    public:
     Task();
@@ -80,6 +95,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
          EnqueueOrder sequence_number,
          bool nestable,
          EnqueueOrder enqueue_order);
+
+    DelayedWakeUp delayed_wake_up() const {
+      return DelayedWakeUp{delayed_run_time, sequence_num};
+    }
 
     EnqueueOrder enqueue_order() const {
 #ifndef NDEBUG
@@ -112,21 +131,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     EnqueueOrder enqueue_order_;
   };
 
-  // Represents a time at which a task wants to run. Tasks scheduled for the
-  // same point in time will be ordered by their sequence numbers.
-  struct DelayedWakeUp {
-    base::TimeTicks time;
-    int sequence_num;
-
-    bool operator<=(const DelayedWakeUp& other) const {
-      if (time == other.time) {
-        DCHECK_NE(sequence_num, other.sequence_num);
-        return (sequence_num - other.sequence_num) < 0;
-      }
-      return time < other.time;
-    }
-  };
-
   // TaskQueue implementation.
   void UnregisterTaskQueue() override;
   bool RunsTasksOnCurrentThread() const override;
@@ -155,6 +159,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool BlockedByFence() const override;
   const char* GetName() const override;
   QueueType GetQueueType() const override;
+  void SetObserver(Observer* observer) override;
 
   // Returns true if a (potentially hypothetical) task with the specified
   // |enqueue_order| could run on the queue. Must be called from the main
@@ -249,11 +254,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     AnyThread(TaskQueueManager* task_queue_manager, TimeDomain* time_domain);
     ~AnyThread();
 
-    // TaskQueueManager and TimeDomain are maintained in two copies:
+    // TaskQueueManager, TimeDomain and Observer are maintained in two copies:
     // inside AnyThread and inside MainThreadOnly. They can be changed only from
     // main thread, so it should be locked before accessing from other threads.
     TaskQueueManager* task_queue_manager;
     TimeDomain* time_domain;
+    Observer* observer;
   };
 
   struct MainThreadOnly {
@@ -262,10 +268,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
                    TimeDomain* time_domain);
     ~MainThreadOnly();
 
-    // Another copy of TaskQueueManager and TimeDomain for lock-free access from
-    // the main thread. See description inside struct AnyThread for details.
+    // Another copy of TaskQueueManager, TimeDomain and Observer
+    // for lock-free access from the main thread.
+    // See description inside struct AnyThread for details.
     TaskQueueManager* task_queue_manager;
     TimeDomain* time_domain;
+    Observer* observer;
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
@@ -328,6 +336,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void RemoveQueueEnabledVoter(const QueueEnabledVoterImpl* voter);
   void OnQueueEnabledVoteChanged(bool enabled);
   void EnableOrDisableWithSelector(bool enable);
+
+  // Schedules delayed work on time domain and calls the observer.
+  void ScheduleDelayedWorkInTimeDomain(base::TimeTicks now);
+
+  void NotifyWakeUpChangedOnMainThread(base::TimeTicks wake_up);
 
   const base::PlatformThreadId thread_id_;
 

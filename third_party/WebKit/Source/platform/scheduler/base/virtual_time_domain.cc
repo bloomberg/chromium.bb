@@ -12,9 +12,8 @@
 namespace blink {
 namespace scheduler {
 
-VirtualTimeDomain::VirtualTimeDomain(TimeDomain::Observer* observer,
-                                     base::TimeTicks initial_time)
-    : TimeDomain(observer), now_(initial_time), task_queue_manager_(nullptr) {}
+VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time)
+    : now_(initial_time), task_queue_manager_(nullptr) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() {}
 

@@ -13,15 +13,7 @@ namespace blink {
 namespace scheduler {
 
 RealTimeDomain::RealTimeDomain(const char* tracing_category)
-    : TimeDomain(nullptr),
-      tracing_category_(tracing_category),
-      task_queue_manager_(nullptr) {}
-
-RealTimeDomain::RealTimeDomain(TimeDomain::Observer* observer,
-                               const char* tracing_category)
-    : TimeDomain(observer),
-      tracing_category_(tracing_category),
-      task_queue_manager_(nullptr) {}
+    : tracing_category_(tracing_category), task_queue_manager_(nullptr) {}
 
 RealTimeDomain::~RealTimeDomain() {}
 

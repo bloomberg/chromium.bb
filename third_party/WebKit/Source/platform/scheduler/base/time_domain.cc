@@ -13,7 +13,7 @@
 namespace blink {
 namespace scheduler {
 
-TimeDomain::TimeDomain(Observer* observer) : observer_(observer) {}
+TimeDomain::TimeDomain() {}
 
 TimeDomain::~TimeDomain() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -55,14 +55,6 @@ void TimeDomain::ScheduleDelayedWork(
   // If |queue| is the first wake-up then request the wake-up.
   if (delayed_wake_up_queue_.Min().queue == queue)
     RequestWakeUpAt(now, wake_up.time);
-
-  if (observer_)
-    observer_->OnTimeDomainHasDelayedWork(queue);
-}
-
-void TimeDomain::OnQueueHasImmediateWork(internal::TaskQueueImpl* queue) {
-  if (observer_)
-    observer_->OnTimeDomainHasImmediateWork(queue);
 }
 
 void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {

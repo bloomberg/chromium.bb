@@ -7,9 +7,8 @@
 namespace blink {
 namespace scheduler {
 
-ThrottledTimeDomain::ThrottledTimeDomain(TimeDomain::Observer* observer,
-                                         const char* tracing_category)
-    : RealTimeDomain(observer, tracing_category) {}
+ThrottledTimeDomain::ThrottledTimeDomain(const char* tracing_category)
+    : RealTimeDomain(tracing_category) {}
 
 ThrottledTimeDomain::~ThrottledTimeDomain() {}
 

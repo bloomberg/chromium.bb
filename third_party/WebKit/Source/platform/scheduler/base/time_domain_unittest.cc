@@ -24,16 +24,14 @@ namespace scheduler {
 
 class MockTimeDomain : public TimeDomain {
  public:
-  explicit MockTimeDomain(TimeDomain::Observer* observer)
-      : TimeDomain(observer),
-        now_(base::TimeTicks() + base::TimeDelta::FromSeconds(1)) {}
+  MockTimeDomain()
+      : now_(base::TimeTicks() + base::TimeDelta::FromSeconds(1)) {}
 
   ~MockTimeDomain() override {}
 
   using TimeDomain::CancelDelayedWork;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
-  using TimeDomain::OnQueueHasImmediateWork;
   using TimeDomain::ScheduleDelayedWork;
   using TimeDomain::UnregisterQueue;
   using TimeDomain::WakeUpReadyDelayedQueues;
@@ -82,7 +80,7 @@ class TimeDomainTest : public testing::Test {
   }
 
   virtual MockTimeDomain* CreateMockTimeDomain() {
-    return new MockTimeDomain(nullptr);
+    return new MockTimeDomain();
   }
 
   std::unique_ptr<MockTimeDomain> time_domain_;
@@ -124,7 +122,7 @@ TEST_F(TimeDomainTest, ScheduleDelayedWorkSupersedesPreviousWakeUp) {
 
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
-  // Now scheduler a later wake-up, which should replace the previously
+  // Now schedule a later wake_up, which should replace the previously
   // requested one.
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, delayed_runtime2));
   time_domain_->ScheduleDelayedWork(task_queue_.get(), {delayed_runtime2, 0},
@@ -328,39 +326,6 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
 
   // Tidy up.
   task_queue2->UnregisterTaskQueue();
-}
-
-namespace {
-class MockObserver : public TimeDomain::Observer {
- public:
-  ~MockObserver() override {}
-
-  MOCK_METHOD1(OnTimeDomainHasImmediateWork, void(TaskQueue*));
-  MOCK_METHOD1(OnTimeDomainHasDelayedWork, void(TaskQueue*));
-};
-}  // namespace
-
-class TimeDomainWithObserverTest : public TimeDomainTest {
- public:
-  MockTimeDomain* CreateMockTimeDomain() override {
-    observer_.reset(new MockObserver());
-    return new MockTimeDomain(observer_.get());
-  }
-
-  std::unique_ptr<MockObserver> observer_;
-};
-
-TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {
-  EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork(task_queue_.get()));
-  time_domain_->OnQueueHasImmediateWork(task_queue_.get());
-}
-
-TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {
-  EXPECT_CALL(*observer_, OnTimeDomainHasDelayedWork(task_queue_.get()));
-  EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, _));
-  base::TimeTicks now = time_domain_->Now();
-  time_domain_->ScheduleDelayedWork(
-      task_queue_.get(), {now + base::TimeDelta::FromMilliseconds(10), 0}, now);
 }
 
 }  // namespace scheduler
