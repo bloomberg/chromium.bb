@@ -17,10 +17,13 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+
+#if defined(USE_AURA)
+#include "ui/keyboard/keyboard_util.h"
+#endif
 
 namespace {
 
@@ -36,6 +39,14 @@ class KeyboardKeyView : public views::Label {
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardKeyView);
 };
+
+bool IsVirtualKeyboardVisible() {
+#if defined(USE_AURA)
+  return keyboard::IsKeyboardVisible();
+#else
+  return false;
+#endif
+}
 
 KeyboardKeyView::KeyboardKeyView(const gfx::FontList& font_list)
     : views::Label(base::string16(), {font_list}) {
@@ -99,7 +110,7 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
   base::string16 short_name(
       url_service->GetKeywordShortName(keyword, &is_extension_keyword));
 
-  if (keyboard::IsKeyboardVisible()) {
+  if (IsVirtualKeyboardVisible()) {
     int message_id = is_extension_keyword
                          ? IDS_OMNIBOX_EXTENSION_KEYWORD_HINT_TOUCH
                          : IDS_OMNIBOX_KEYWORD_HINT_TOUCH;
