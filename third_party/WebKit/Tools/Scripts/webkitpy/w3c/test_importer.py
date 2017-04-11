@@ -352,7 +352,9 @@ class TestImporter(object):
 
         if try_results and self.git_cl.has_failing_try_results(try_results):
             self.fetch_new_expectations_and_baselines()
-            self._upload_patchset('Update test expectations and baselines.')
+            message = 'Update test expectations and baselines.'
+            self.check_run(['git', 'commit', '-a', '-m', message])
+            self._upload_patchset(message)
 
         # Trigger CQ and wait for CQ try jobs to finish.
         self.git_cl.run(['set-commit', '--gerrit'])
