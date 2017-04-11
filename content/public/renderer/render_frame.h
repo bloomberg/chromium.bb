@@ -58,6 +58,7 @@ class AssociatedInterfaceRegistry;
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
+class RenderFrameVisitor;
 class RenderView;
 struct ContextMenuParams;
 struct WebPluginInfo;
@@ -97,6 +98,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the RenderFrame given a routing id.
   static RenderFrame* FromRoutingID(int routing_id);
+
+  // Visit all live RenderFrames.
+  static void ForEach(RenderFrameVisitor* visitor);
 
   // Returns the RenderView associated with this frame.
   virtual RenderView* GetRenderView() = 0;

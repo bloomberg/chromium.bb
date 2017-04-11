@@ -49,6 +49,7 @@ target(link_target_type, "renderer_sources") {
     "render_frame_observer.cc",
     "render_frame_observer.h",
     "render_frame_observer_tracker.h",
+    "render_frame_visitor.h",
     "render_thread.cc",
     "render_thread.h",
     "render_thread_observer.cc",

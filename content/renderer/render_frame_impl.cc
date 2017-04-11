@@ -90,6 +90,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -1048,6 +1049,15 @@ void RenderFrameImpl::CreateFrame(
 // static
 RenderFrame* RenderFrame::FromWebFrame(blink::WebFrame* web_frame) {
   return RenderFrameImpl::FromWebFrame(web_frame);
+}
+
+// static
+void RenderFrame::ForEach(RenderFrameVisitor* visitor) {
+  FrameMap* frames = g_frame_map.Pointer();
+  for (FrameMap::iterator it = frames->begin(); it != frames->end(); ++it) {
+    if (!visitor->Visit(it->second))
+      return;
+  }
 }
 
 // static
