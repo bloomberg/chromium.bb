@@ -171,6 +171,11 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   // priorities.
   bool ProxyServerSupportsPriorities(const ProxyInfo& proxy_info) const;
 
+  // Adds the count of JobControllers that are not completed to UMA histogram if
+  // the count is a multiple of 100: 100, 200, 400, etc. Break down
+  // JobControllers count based on the type of JobController.
+  void AddJobControllerCountToHistograms() const;
+
   HttpNetworkSession* const session_;
 
   // All Requests/Preconnects are assigned with a JobController to manage

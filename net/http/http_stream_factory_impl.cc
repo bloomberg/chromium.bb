@@ -107,28 +107,8 @@ HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
   DCHECK(spdy_session_request_map_.empty());
-  int alt_job_count = 0;
-  int main_job_count = 0;
-  int preconnect_controller_count = 0;
-  for (const auto& it : job_controller_set_) {
-    DCHECK(it->HasPendingAltJob() || it->HasPendingMainJob());
-    // For a preconnect controller, it should have exactly the main job.
-    if (it->is_preconnect()) {
-      preconnect_controller_count++;
-      continue;
-    }
-    // For non-preconnects.
-    if (it->HasPendingAltJob())
-      alt_job_count++;
-    if (it->HasPendingMainJob())
-      main_job_count++;
-  }
-  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfPreconnect",
-                          preconnect_controller_count);
-  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfNonPreconnectAltJob",
-                          alt_job_count);
-  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfNonPreconnectMainJob",
-                          main_job_count);
+  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfJobControllerAtShutDown",
+                          job_controller_set_.size());
 }
 
 HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
@@ -195,6 +175,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
     const NetLogWithSource& net_log) {
+  AddJobControllerCountToHistograms();
+
   auto job_controller = base::MakeUnique<JobController>(
       this, delegate, session_, job_factory_.get(), request_info,
       /* is_preconnect = */ false, enable_ip_based_pooling,
@@ -211,6 +193,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
 void HttpStreamFactoryImpl::PreconnectStreams(
     int num_streams,
     const HttpRequestInfo& request_info) {
+  AddJobControllerCountToHistograms();
+
   SSLConfig server_ssl_config;
   SSLConfig proxy_ssl_config;
   session_->GetSSLConfig(request_info, &server_ssl_config, &proxy_ssl_config);
@@ -370,6 +354,40 @@ bool HttpStreamFactoryImpl::ProxyServerSupportsPriorities(
 
   return session_->http_server_properties()->SupportsRequestPriority(
       scheme_host_port);
+}
+
+void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() const {
+  // Only log the count of JobControllers when the count is hitting one of the
+  // boundaries which is a multiple of 100: 100, 200, 300, etc.
+  if (job_controller_set_.size() < 100 || job_controller_set_.size() % 100 != 0)
+    return;
+
+  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfJobController",
+                          job_controller_set_.size());
+
+  int alt_job_count = 0;
+  int main_job_count = 0;
+  int preconnect_controller_count = 0;
+  for (const auto& job_controller : job_controller_set_) {
+    DCHECK(job_controller->HasPendingAltJob() ||
+           job_controller->HasPendingMainJob());
+    // For a preconnect controller, it should have exactly the main job.
+    if (job_controller->is_preconnect()) {
+      preconnect_controller_count++;
+      continue;
+    }
+    // For non-preconnects.
+    if (job_controller->HasPendingAltJob())
+      alt_job_count++;
+    if (job_controller->HasPendingMainJob())
+      main_job_count++;
+  }
+  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfPreconnect",
+                          preconnect_controller_count);
+  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfNonPreconnectAltJob",
+                          alt_job_count);
+  UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfNonPreconnectMainJob",
+                          main_job_count);
 }
 
 void HttpStreamFactoryImpl::DumpMemoryStats(
