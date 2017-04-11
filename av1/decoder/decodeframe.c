@@ -2360,7 +2360,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
           aom_read_literal(r, cm->cdef_bits, ACCT_STR);
     } else {
       cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.cdef_strength =
-          0;
+          -1;
     }
   }
 #endif  // CONFIG_CDEF

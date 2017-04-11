@@ -224,8 +224,12 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       int uv_level, uv_clpf_strength;
       int nhb, nvb;
       int cstart = 0;
+      curr_row_dering[sbc] = 0;
       if (cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                              MAX_MIB_SIZE * sbc] == NULL) {
+                              MAX_MIB_SIZE * sbc] == NULL ||
+          cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc]
+                  ->mbmi.cdef_strength == -1) {
         dering_left = 0;
         continue;
       }
@@ -266,7 +270,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       uv_clpf_strength =
           cm->cdef_uv_strengths[mbmi_cdef_strength] % CLPF_STRENGTHS;
       uv_clpf_strength += uv_clpf_strength == 3;
-      curr_row_dering[sbc] = 0;
       if ((level == 0 && clpf_strength == 0 && uv_level == 0 &&
            uv_clpf_strength == 0) ||
           (dering_count = sb_compute_dering_list(
