@@ -59,6 +59,7 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
+#include "modules/presentation/PresentationReceiver.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
@@ -159,6 +160,11 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
       if (RuntimeEnabledFeatures::webVREnabled() ||
           OriginTrials::webVREnabled(document->GetExecutionContext()))
         NavigatorVR::From(*document);
+      if (RuntimeEnabledFeatures::presentationEnabled() &&
+          web_frame_->GetFrame()->GetSettings()->GetPresentationReceiver()) {
+        // Call this in order to ensure the object is created.
+        PresentationReceiver::From(*document);
+      }
     }
   }
   // FIXME: when extensions go out of process, this whole concept stops working.

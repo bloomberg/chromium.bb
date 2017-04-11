@@ -23,7 +23,9 @@ class PresentationConnectionList;
 class WebPresentationClient;
 
 // Implements the PresentationReceiver interface from the Presentation API from
-// which websites can implement the receiving side of a presentation.
+// which websites can implement the receiving side of a presentation. This needs
+// to be eagerly created in order to have the receiver associated with the
+// client.
 class MODULES_EXPORT PresentationReceiver final
     : public GarbageCollectedFinalized<PresentationReceiver>,
       public ScriptWrappable,
@@ -37,8 +39,10 @@ class MODULES_EXPORT PresentationReceiver final
                             Member<DOMException>>;
 
  public:
-  explicit PresentationReceiver(LocalFrame*, WebPresentationClient*);
+  PresentationReceiver(LocalFrame*, WebPresentationClient*);
   ~PresentationReceiver() = default;
+
+  static PresentationReceiver* From(Document&);
 
   // PresentationReceiver.idl implementation
   ScriptPromise connectionList(ScriptState*);

@@ -11,7 +11,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"
+#include "modules/presentation/NavigatorPresentation.h"
+#include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationConnectionList.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
@@ -26,6 +29,18 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame,
 
   if (client)
     client->SetReceiver(this);
+}
+
+// static
+PresentationReceiver* PresentationReceiver::From(Document& document) {
+  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
+    return nullptr;
+  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
+  Presentation* presentation = NavigatorPresentation::presentation(navigator);
+  if (!presentation)
+    return nullptr;
+
+  return presentation->receiver();
 }
 
 ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {

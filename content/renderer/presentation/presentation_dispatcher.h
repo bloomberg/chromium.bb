@@ -153,6 +153,7 @@ class CONTENT_EXPORT PresentationDispatcher
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
+  void DidFinishDocumentLoad() override;
   void OnDestruct() override;
   void WidgetWillClose() override;
 

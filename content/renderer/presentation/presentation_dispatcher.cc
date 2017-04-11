@@ -384,8 +384,13 @@ void PresentationDispatcher::SetDefaultPresentationUrls(
 
 void PresentationDispatcher::SetReceiver(
     blink::WebPresentationReceiver* receiver) {
-  ConnectToPresentationServiceIfNeeded();
   receiver_ = receiver;
+
+  // Create receiver PSImpl after loading document.
+  if (render_frame() && render_frame()->GetWebFrame() &&
+      !render_frame()->GetWebFrame()->IsLoading()) {
+    ConnectToPresentationServiceIfNeeded();
+  }
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
@@ -399,6 +404,11 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   // Remove all pending send message requests.
   MessageRequestQueue empty;
   std::swap(message_request_queue_, empty);
+}
+
+void PresentationDispatcher::DidFinishDocumentLoad() {
+  if (receiver_)
+    ConnectToPresentationServiceIfNeeded();
 }
 
 void PresentationDispatcher::OnDestruct() {
