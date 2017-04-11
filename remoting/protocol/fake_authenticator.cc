@@ -89,11 +89,25 @@ void FakeChannelAuthenticator::CallDoneCallback() {
   base::ResetAndReturn(&done_callback_).Run(result_, std::move(socket_));
 }
 
+FakeAuthenticator::Config::Config() {}
+FakeAuthenticator::Config::Config(Action action) : action(action) {}
+FakeAuthenticator::Config::Config(int round_trips, Action action, bool async)
+    : round_trips(round_trips), action(action), async(async) {}
+
 FakeAuthenticator::FakeAuthenticator(Type type,
-                                     int round_trips,
-                                     Action action,
-                                     bool async)
-    : type_(type), round_trips_(round_trips), action_(action), async_(async) {}
+                                     FakeAuthenticator::Config config,
+                                     const std::string& local_id,
+                                     const std::string& remote_id)
+    : type_(type), config_(config), local_id_(local_id), remote_id_(remote_id) {
+  EXPECT_TRUE((!local_id_.empty() && !remote_id_.empty()) ||
+              config.round_trips == 0);
+}
+
+FakeAuthenticator::FakeAuthenticator(Action action)
+    : FakeAuthenticator(CLIENT,
+                        FakeAuthenticator::Config(0, action, true),
+                        std::string(),
+                        std::string()) {}
 
 FakeAuthenticator::~FakeAuthenticator() {}
 
@@ -106,13 +120,13 @@ void FakeAuthenticator::Resume() {
 }
 
 Authenticator::State FakeAuthenticator::state() const {
-  EXPECT_LE(messages_, round_trips_ * 2);
+  EXPECT_LE(messages_, config_.round_trips * 2);
 
   if (messages_ == pause_message_index_ && !resume_closure_.is_null())
     return PROCESSING_MESSAGE;
 
-  if (messages_ >= round_trips_ * 2) {
-    if (action_ == REJECT) {
+  if (messages_ >= config_.round_trips * 2) {
+    if (config_.action == REJECT) {
       return REJECTED;
     } else {
       return ACCEPTED;
@@ -121,8 +135,8 @@ Authenticator::State FakeAuthenticator::state() const {
 
   // Don't send the last message if this is a host that wants to
   // reject a connection.
-  if (messages_ == round_trips_ * 2 - 1 &&
-      type_ == HOST && action_ == REJECT) {
+  if (messages_ == config_.round_trips * 2 - 1 && type_ == HOST &&
+      config_.action == REJECT) {
     return REJECTED;
   }
 
@@ -152,11 +166,16 @@ void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message,
   EXPECT_EQ(id, base::IntToString(messages_));
 
   // On the client receive the key in the last message.
-  if (type_ == CLIENT && messages_ == round_trips_ * 2 - 1) {
+  if (type_ == CLIENT && messages_ == config_.round_trips * 2 - 1) {
     std::string key_base64 =
         message->TextNamed(buzz::QName(kChromotingXmlNamespace, "key"));
     EXPECT_TRUE(!key_base64.empty());
     EXPECT_TRUE(base::Base64Decode(key_base64, &auth_key_));
+  }
+
+  // Receive peer's id.
+  if (messages_ < 2) {
+    EXPECT_EQ(remote_id_, message->Attr(buzz::QName("", "id")));
   }
 
   ++messages_;
@@ -177,8 +196,13 @@ std::unique_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
   id->AddText(base::IntToString(messages_));
   result->AddElement(id);
 
+  // Send local id in the first outgoing message.
+  if (messages_ < 2) {
+    result->AddAttr(buzz::QName("", "id"), local_id_);
+  }
+
   // Add authentication key in the last message sent from host to client.
-  if (type_ == HOST && messages_ == round_trips_ * 2 - 1) {
+  if (type_ == HOST && messages_ == config_.round_trips * 2 - 1) {
     auth_key_ =  base::RandBytesAsString(16);
     buzz::XmlElement* key = new buzz::XmlElement(
         buzz::QName(kChromotingXmlNamespace, "key"));
@@ -201,19 +225,14 @@ const std::string& FakeAuthenticator::GetAuthKey() const {
 std::unique_ptr<ChannelAuthenticator>
 FakeAuthenticator::CreateChannelAuthenticator() const {
   EXPECT_EQ(ACCEPTED, state());
-  return base::MakeUnique<FakeChannelAuthenticator>(action_ != REJECT_CHANNEL,
-                                                    async_);
+  return base::MakeUnique<FakeChannelAuthenticator>(
+      config_.action != REJECT_CHANNEL, config_.async);
 }
 
 FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
-    int round_trips,
     int messages_till_started,
-    FakeAuthenticator::Action action,
-    bool async)
-    : round_trips_(round_trips),
-      messages_till_started_(messages_till_started),
-      action_(action),
-      async_(async) {}
+    FakeAuthenticator::Config config)
+    : messages_till_started_(messages_till_started), config_(config) {}
 FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {}
 
 std::unique_ptr<Authenticator>
@@ -221,7 +240,7 @@ FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid) {
   std::unique_ptr<FakeAuthenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::HOST, round_trips_, action_, async_));
+      FakeAuthenticator::HOST, config_, local_jid, remote_jid));
   authenticator->set_messages_till_started(messages_till_started_);
   return std::move(authenticator);
 }

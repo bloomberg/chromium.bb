@@ -52,8 +52,11 @@ namespace protocol {
 
 namespace {
 
-const char kHostJid[] = "host@gmail.com/123";
-const char kClientJid[] = "client@gmail.com/321";
+const char kHostJid[] = "Host@gmail.com/123";
+const char kClientJid[] = "Client@gmail.com/321";
+
+// kHostJid the way it would be stored in the directory.
+const char kNormalizedHostJid[] = "host@gmail.com/123";
 
 class MockSessionManagerListener {
  public:
@@ -182,16 +185,13 @@ class JingleSessionTest : public testing::Test {
     client_session_.reset();
   }
 
-  void CreateSessionManagers(int auth_round_trips, int messages_till_start,
-                             FakeAuthenticator::Action auth_action) {
-    if (!host_signal_strategy_) {
-      host_signal_strategy_.reset(
-          new FakeSignalStrategy(SignalingAddress(kHostJid)));
-    }
-    if (!client_signal_strategy_) {
-      client_signal_strategy_.reset(
-          new FakeSignalStrategy(SignalingAddress(kClientJid)));
-    }
+  void CreateSessionManagers(FakeAuthenticator::Config auth_config,
+                             int messages_till_start) {
+    host_signal_strategy_ =
+        base::MakeUnique<FakeSignalStrategy>(SignalingAddress(kHostJid));
+    client_signal_strategy_ =
+        base::MakeUnique<FakeSignalStrategy>(SignalingAddress(kClientJid));
+
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
@@ -201,17 +201,15 @@ class JingleSessionTest : public testing::Test {
                    base::Unretained(&host_server_listener_)));
 
     std::unique_ptr<AuthenticatorFactory> factory(
-        new FakeHostAuthenticatorFactory(auth_round_trips, messages_till_start,
-                                         auth_action, true));
+        new FakeHostAuthenticatorFactory(messages_till_start, auth_config));
     host_server_->set_authenticator_factory(std::move(factory));
 
     client_server_.reset(
         new JingleSessionManager(client_signal_strategy_.get()));
   }
 
-  void CreateSessionManagers(int auth_round_trips,
-                             FakeAuthenticator::Action auth_action) {
-    CreateSessionManagers(auth_round_trips, 0, auth_action);
+  void CreateSessionManagers(FakeAuthenticator::Config auth_config) {
+    CreateSessionManagers(auth_config, 0);
   }
 
   void CloseSessionManager() {
@@ -277,21 +275,25 @@ class JingleSessionTest : public testing::Test {
   }
 
   void ConnectClient(std::unique_ptr<Authenticator> authenticator) {
-    client_session_ = client_server_->Connect(SignalingAddress(host_jid_),
-                                              std::move(authenticator));
+    client_session_ = client_server_->Connect(
+        SignalingAddress(kNormalizedHostJid), std::move(authenticator));
     client_session_->SetEventHandler(&client_session_event_handler_);
     client_session_->SetTransport(&client_transport_);
     client_session_->AddPlugin(&client_plugin_);
     base::RunLoop().RunUntilIdle();
   }
 
-  void InitiateConnection(int auth_round_trips,
-                          FakeAuthenticator::Action auth_action,
+  void ConnectClient(FakeAuthenticator::Config auth_config) {
+    ConnectClient(base::MakeUnique<FakeAuthenticator>(
+        FakeAuthenticator::CLIENT, auth_config,
+        client_signal_strategy_->GetLocalAddress().id(), kNormalizedHostJid));
+  }
+
+  void InitiateConnection(FakeAuthenticator::Config auth_config,
                           bool expect_fail) {
     SetHostExpectation(expect_fail);
     SetClientExpectation(expect_fail);
-    ConnectClient(base::MakeUnique<FakeAuthenticator>(
-        FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true));
+    ConnectClient(auth_config);
   }
 
   void ExpectRouteChange(const std::string& channel_name) {
@@ -326,8 +328,6 @@ class JingleSessionTest : public testing::Test {
   std::unique_ptr<FakeSignalStrategy> host_signal_strategy_;
   std::unique_ptr<FakeSignalStrategy> client_signal_strategy_;
 
-  std::string host_jid_ = kHostJid;
-
   std::unique_ptr<JingleSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
   std::unique_ptr<JingleSessionManager> client_server_;
@@ -347,13 +347,13 @@ class JingleSessionTest : public testing::Test {
 // Verify that we can create and destroy session managers without a
 // connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 }
 
 // Verify that an incoming session can be rejected, and that the
 // status of the connection is set to FAILED in this case.
 TEST_F(JingleSessionTest, RejectConnection) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 
   // Reject incoming session.
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
@@ -366,10 +366,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
         .Times(1);
   }
 
-  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
-  client_session_ = client_server_->Connect(SignalingAddress(kHostJid),
-                                            std::move(authenticator));
+  ConnectClient(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
   client_session_->SetEventHandler(&client_session_event_handler_);
 
   base::RunLoop().RunUntilIdle();
@@ -377,8 +374,8 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
 // Verify that we can connect two endpoints with single-step authentication.
 TEST_F(JingleSessionTest, Connect) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
+  InitiateConnection(FakeAuthenticator::Config(), false);
 
   // Verify that the client specified correct initiator value.
   ASSERT_GT(host_signal_strategy_->received_messages().size(), 0U);
@@ -387,38 +384,22 @@ TEST_F(JingleSessionTest, Connect) {
   const buzz::XmlElement* jingle_element =
       initiate_xml->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   ASSERT_TRUE(jingle_element);
-  ASSERT_EQ(kClientJid,
+  ASSERT_EQ(client_signal_strategy_->GetLocalAddress().id(),
             jingle_element->Attr(buzz::QName(std::string(), "initiator")));
-}
-
-TEST_F(JingleSessionTest, MixedCaseHostJid) {
-  std::string host_jid = std::string("A") + kHostJid;
-  host_signal_strategy_.reset(
-      new FakeSignalStrategy(SignalingAddress(host_jid)));
-
-  // Imitate host JID being lower-cased when stored in the directory.
-  host_jid_ = base::ToLowerASCII(host_jid);
-
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
-}
-
-TEST_F(JingleSessionTest, MixedCaseClientJid) {
-  client_signal_strategy_.reset(
-      new FakeSignalStrategy(SignalingAddress(std::string("A") + kClientJid)));
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.
 TEST_F(JingleSessionTest, ConnectWithMultistep) {
-  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
-  InitiateConnection(3, FakeAuthenticator::ACCEPT, false);
+  const int kAuthRoundtrips = 3;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(auth_config);
+  InitiateConnection(auth_config, false);
 }
 
 TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqs) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
+  InitiateConnection(FakeAuthenticator::Config(), false);
   client_signal_strategy_->SimulateMessageReordering();
 
   // Verify that out of order transport messages are received correctly.
@@ -434,8 +415,8 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqs) {
 // Verify that out-of-order messages are handled correctly when the session is
 // torn down after the first message.
 TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqsDestroyOnFirstMessage) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
+  InitiateConnection(FakeAuthenticator::Config(), false);
   client_signal_strategy_->SimulateMessageReordering();
 
   // Verify that out of order transport messages are received correctly.
@@ -454,19 +435,23 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqsDestroyOnFirstMessage) {
 
 // Verify that connection is terminated when single-step auth fails.
 TEST_F(JingleSessionTest, ConnectWithBadAuth) {
-  CreateSessionManagers(1, FakeAuthenticator::REJECT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::REJECT));
+  InitiateConnection(FakeAuthenticator::Config(), true);
 }
 
 // Verify that connection is terminated when multi-step auth fails.
 TEST_F(JingleSessionTest, ConnectWithBadMultistepAuth) {
-  CreateSessionManagers(3, FakeAuthenticator::REJECT);
-  InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
+  const int kAuthRoundtrips = 3;
+  CreateSessionManagers(FakeAuthenticator::Config(
+      kAuthRoundtrips, FakeAuthenticator::REJECT, false));
+  InitiateConnection(FakeAuthenticator::Config(
+                         kAuthRoundtrips, FakeAuthenticator::ACCEPT, false),
+                     true);
 }
 
 // Verify that incompatible protocol configuration is handled properly.
 TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _)).Times(0);
 
@@ -474,19 +459,12 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
               OnSessionStateChange(Session::FAILED))
       .Times(1);
 
-  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
-
   std::unique_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   // Disable all video codecs so the host will reject connection.
   config->mutable_video_configs()->clear();
   client_server_->set_protocol_config(std::move(config));
-  client_session_ = client_server_->Connect(SignalingAddress(kHostJid),
-                                            std::move(authenticator));
-  client_session_->SetEventHandler(&client_session_event_handler_);
-
-  base::RunLoop().RunUntilIdle();
+  ConnectClient(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 
   EXPECT_EQ(INCOMPATIBLE_PROTOCOL, client_session_->error());
   EXPECT_FALSE(host_session_);
@@ -494,7 +472,7 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
 
 // Verify that GICE-only client is rejected with an appropriate error code.
 TEST_F(JingleSessionTest, TestLegacyIceConnection) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _)).Times(0);
 
@@ -502,25 +480,21 @@ TEST_F(JingleSessionTest, TestLegacyIceConnection) {
               OnSessionStateChange(Session::FAILED))
       .Times(1);
 
-  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
-
   std::unique_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   config->set_ice_supported(false);
   client_server_->set_protocol_config(std::move(config));
-  client_session_ = client_server_->Connect(SignalingAddress(kHostJid),
-                                            std::move(authenticator));
-  client_session_->SetEventHandler(&client_session_event_handler_);
-
-  base::RunLoop().RunUntilIdle();
+  ConnectClient(FakeAuthenticator::Config(FakeAuthenticator::ACCEPT));
 
   EXPECT_EQ(INCOMPATIBLE_PROTOCOL, client_session_->error());
   EXPECT_FALSE(host_session_);
 }
 
 TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
-  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
+  const int kAuthRoundtrips = 3;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(auth_config);
 
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
       .WillOnce(DoAll(
@@ -535,20 +509,19 @@ TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
               OnSessionStateChange(Session::AUTHENTICATING))
       .WillOnce(InvokeWithoutArgs(this, &JingleSessionTest::DeleteHostSession));
 
-  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
-
-  client_session_ = client_server_->Connect(SignalingAddress(kHostJid),
-                                            std::move(authenticator));
-
-  base::RunLoop().RunUntilIdle();
+  ConnectClient(auth_config);
 }
 
 TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
   // Same as the previous test, but set messages_till_started to 2 in
   // CreateSessionManagers so that the session will goes into the
   // AUTHENTICATING state after two message exchanges.
-  CreateSessionManagers(3, 2, FakeAuthenticator::ACCEPT);
+  const int kMessagesTillStarted = 2;
+
+  const int kAuthRoundtrips = 3;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(auth_config, kMessagesTillStarted);
 
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
       .WillOnce(
@@ -563,25 +536,17 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
               OnSessionStateChange(Session::AUTHENTICATING))
       .WillOnce(InvokeWithoutArgs(this, &JingleSessionTest::DeleteHostSession));
 
-  std::unique_ptr<Authenticator> authenticator(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
-
-  client_session_ = client_server_->Connect(SignalingAddress(kHostJid),
-                                            std::move(authenticator));
-  base::RunLoop().RunUntilIdle();
-}
-
-// Verify that we can connect with multistep authentication.
-TEST_F(JingleSessionTest, TestMultistepAuth) {
-  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
+  ConnectClient(auth_config);
 }
 
 // Verify that incoming transport-info messages are handled correctly while in
 // AUTHENTICATING state.
 TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
-  CreateSessionManagers(2, FakeAuthenticator::ACCEPT);
+  const int kAuthRoundtrips = 2;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+
+  CreateSessionManagers(auth_config);
 
   SetHostExpectation(false);
   {
@@ -597,7 +562,8 @@ TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
 
   // Create connection and pause it before authentication is finished.
   FakeAuthenticator* authenticator = new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 2, FakeAuthenticator::ACCEPT, true);
+      FakeAuthenticator::CLIENT, auth_config,
+      client_signal_strategy_->GetLocalAddress().id(), kNormalizedHostJid);
   authenticator->set_pause_message_index(4);
   ConnectClient(base::WrapUnique(authenticator));
 
@@ -628,17 +594,21 @@ TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
 TEST_F(JingleSessionTest, TestSessionPlugin) {
   host_plugin_.Clear();
   client_plugin_.Clear();
-  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
+
+  const int kAuthRoundtrips = 3;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+
+  CreateSessionManagers(auth_config);
+  ASSERT_NO_FATAL_FAILURE(InitiateConnection(auth_config, false));
   ExpectPluginMessagesEqual();
 }
 
 TEST_F(JingleSessionTest, SessionPluginShouldNotBeInvolvedInSessionTerminate) {
   host_plugin_.Clear();
   client_plugin_.Clear();
-  CreateSessionManagers(1, FakeAuthenticator::REJECT);
-  InitiateConnection(1, FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(FakeAuthenticator::Config(FakeAuthenticator::REJECT));
+  InitiateConnection(FakeAuthenticator::Config(), true);
   // It's expected the client sends one more plugin message than host, the host
   // won't send plugin message in the SESSION_TERMINATE message.
   ASSERT_EQ(client_plugin_.outgoing_messages().size() - 1,
@@ -647,11 +617,16 @@ TEST_F(JingleSessionTest, SessionPluginShouldNotBeInvolvedInSessionTerminate) {
 }
 
 TEST_F(JingleSessionTest, ImmediatelyCloseSessionAfterConnect) {
-  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
+  const int kAuthRoundtrips = 3;
+  FakeAuthenticator::Config auth_config(kAuthRoundtrips,
+                                        FakeAuthenticator::ACCEPT, true);
+  CreateSessionManagers(auth_config);
   client_session_ = client_server_->Connect(
-      SignalingAddress(host_jid_),
-      base::MakeUnique<FakeAuthenticator>(FakeAuthenticator::CLIENT, 3,
-                                          FakeAuthenticator::ACCEPT, true));
+      SignalingAddress(kNormalizedHostJid),
+      base::MakeUnique<FakeAuthenticator>(
+          FakeAuthenticator::CLIENT, auth_config,
+          client_signal_strategy_->GetLocalAddress().id(), kNormalizedHostJid));
+
   client_session_->Close(HOST_OVERLOAD);
   base::RunLoop().RunUntilIdle();
   // We should only send a SESSION_TERMINATE message if the session has been

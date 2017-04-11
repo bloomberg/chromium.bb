@@ -34,16 +34,14 @@ void FakeSession::SimulateConnection(FakeSession* peer) {
   peer->event_handler_->OnSessionStateChange(AUTHENTICATING);
 
   // Initialize transport and authenticator on the client.
-  authenticator_.reset(new FakeAuthenticator(FakeAuthenticator::CLIENT, 0,
-                                             FakeAuthenticator::ACCEPT, false));
+  authenticator_.reset(new FakeAuthenticator(FakeAuthenticator::ACCEPT));
   authenticator_->set_auth_key(kTestAuthKey);
   transport_->Start(authenticator_.get(),
                     base::Bind(&FakeSession::SendTransportInfo,
                                weak_factory_.GetWeakPtr()));
 
   // Initialize transport and authenticator on the host.
-  peer->authenticator_.reset(new FakeAuthenticator(
-      FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
+  peer->authenticator_.reset(new FakeAuthenticator(FakeAuthenticator::ACCEPT));
   peer->authenticator_->set_auth_key(kTestAuthKey);
   peer->transport_->Start(peer->authenticator_.get(),
                           base::Bind(&FakeSession::SendTransportInfo, peer_));
