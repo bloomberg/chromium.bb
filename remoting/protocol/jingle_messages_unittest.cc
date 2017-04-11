@@ -342,25 +342,26 @@ TEST(JingleMessageTest, SessionAcceptNoIce) {
 
 TEST(JingleMessageTest, IceTransportInfo) {
   const char* kTestIceTransportInfoMessage =
-      "<cli:iq to='user@gmail.com/chromoting016DBB07' type='set' "
-              "xmlns:cli='jabber:client'>"
-        "<jingle xmlns='urn:xmpp:jingle:1' action='transport-info' "
-                "sid='2227053353'>"
-          "<content name='chromoting' creator='initiator'>"
-            "<transport xmlns='google:remoting:ice'>"
-              "<credentials channel='event' ufrag='tPUyEAmQrEw3y7hi' "
-                           "password='2iRdhLfawKZC5ydJ'/>"
-              "<credentials channel='video' ufrag='EPK3CXo5sTLJSez0' "
-                           "password='eM0VUfUkZ+1Pyi0M'/>"
-              "<candidate name='event' foundation='725747215' "
-                         "address='172.23.164.186' port='59089' type='local' "
-                         "protocol='udp' priority='2122194688' generation='0'/>"
-              "<candidate name='video' foundation='3623806809' "
-                         "address='172.23.164.186' port='57040' type='local' "
-                         "protocol='udp' priority='2122194688' generation='0'/>"
-            "</transport>"
-          "</content>"
-        "</jingle>"
+      "<cli:iq to='user@gmail.com/chromoting016DBB07' "
+      "        from='foo@bar.com/resource' "
+      "        type='set' xmlns:cli='jabber:client'>"
+      "  <jingle xmlns='urn:xmpp:jingle:1' action='transport-info' "
+      "          sid='2227053353'>"
+      "    <content name='chromoting' creator='initiator'>"
+      "      <transport xmlns='google:remoting:ice'>"
+      "        <credentials channel='event' ufrag='tPUyEAmQrEw3y7hi' "
+      "                     password='2iRdhLfawKZC5ydJ'/>"
+      "        <credentials channel='video' ufrag='EPK3CXo5sTLJSez0' "
+      "                     password='eM0VUfUkZ+1Pyi0M'/>"
+      "        <candidate name='event' foundation='725747215' "
+      "                   address='172.23.164.186' port='59089' type='local' "
+      "                   protocol='udp' priority='2122194688' generation='0'/>"
+      "        <candidate name='video' foundation='3623806809' "
+      "                   address='172.23.164.186' port='57040' type='local' "
+      "                   protocol='udp' priority='2122194688' generation='0'/>"
+      "      </transport>"
+      "    </content>"
+      "  </jingle>"
       "</cli:iq>";
 
   JingleMessage message;
@@ -403,35 +404,6 @@ TEST(JingleMessageTest, SessionInfo) {
   EXPECT_TRUE(message.info->Name() ==
               buzz::QName("urn:xmpp:jingle:1", "test-info"));
 }
-
-TEST(JingleMessageTest, ParseAddress) {
-  const char* kTestSessionInfoMessage =
-      "<cli:iq from='remoting@bot.talk.google.com' "
-              "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
-              "xmlns:cli='jabber:client'>"
-        "<jingle action='session-info' "
-                "sid='2227053353' xmlns='urn:xmpp:jingle:1' "
-                "from-channel='lcs' "
-                "from-endpoint-id='user@gmail.com/xBrnereror='>"
-          "<test-info>TestMessage</test-info>"
-        "</jingle>"
-      "</cli:iq>";
-
-  JingleMessage message;
-  ParseFormatAndCompare(kTestSessionInfoMessage, &message);
-  EXPECT_EQ(message.from.jid(), "remoting@bot.talk.google.com");
-  EXPECT_EQ(message.from.channel(), SignalingAddress::Channel::LCS);
-  EXPECT_EQ(message.from.endpoint_id(), "user@gmail.com/xBrnereror=");
-  EXPECT_EQ(message.from.id(), "user@gmail.com/xBrnereror=");
-
-  EXPECT_EQ(message.to.jid(), "user@gmail.com/chromiumsy5C6A652D");
-  EXPECT_EQ(message.to.channel(), SignalingAddress::Channel::XMPP);
-  EXPECT_EQ(message.to.endpoint_id(), "");
-  EXPECT_EQ(message.to.id(), "user@gmail.com/chromiumsy5C6A652D");
-
-  EXPECT_EQ(message.action, JingleMessage::SESSION_INFO);
-}
-
 
 TEST(JingleMessageTest, IgnoreInvalidAddress) {
   const char* kInvalidFromField =
