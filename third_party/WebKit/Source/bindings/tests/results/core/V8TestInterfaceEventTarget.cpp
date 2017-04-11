@@ -161,8 +161,10 @@ TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Is
 
 TestInterfaceEventTarget* NativeValueTraits<TestInterfaceEventTarget>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceEventTarget* nativeValue = V8TestInterfaceEventTarget::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceEventTarget.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceEventTarget"));
+  }
   return nativeValue;
 }
 

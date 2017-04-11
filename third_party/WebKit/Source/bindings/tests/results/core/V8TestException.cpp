@@ -172,8 +172,10 @@ TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
 
 TestException* NativeValueTraits<TestException>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestException* nativeValue = V8TestException::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestException.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestException"));
+  }
   return nativeValue;
 }
 

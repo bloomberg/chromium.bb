@@ -317,8 +317,10 @@ TestInterfaceOriginTrialEnabled* V8TestInterfaceOriginTrialEnabled::toImplWithTy
 
 TestInterfaceOriginTrialEnabled* NativeValueTraits<TestInterfaceOriginTrialEnabled>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceOriginTrialEnabled* nativeValue = V8TestInterfaceOriginTrialEnabled::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceOriginTrialEnabled.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceOriginTrialEnabled"));
+  }
   return nativeValue;
 }
 

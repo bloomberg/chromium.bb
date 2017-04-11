@@ -236,8 +236,10 @@ TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::toImplWithTypeCheck(v8::Is
 
 TestIntegerIndexedGlobal* NativeValueTraits<TestIntegerIndexedGlobal>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestIntegerIndexedGlobal* nativeValue = V8TestIntegerIndexedGlobal::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestIntegerIndexedGlobal.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestIntegerIndexedGlobal"));
+  }
   return nativeValue;
 }
 

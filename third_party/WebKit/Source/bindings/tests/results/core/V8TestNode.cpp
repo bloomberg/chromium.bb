@@ -257,8 +257,10 @@ TestNode* V8TestNode::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Va
 
 TestNode* NativeValueTraits<TestNode>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestNode* nativeValue = V8TestNode::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestNode.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestNode"));
+  }
   return nativeValue;
 }
 

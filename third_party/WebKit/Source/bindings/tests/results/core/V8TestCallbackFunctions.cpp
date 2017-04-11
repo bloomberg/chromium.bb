@@ -336,8 +336,10 @@ TestCallbackFunctions* V8TestCallbackFunctions::toImplWithTypeCheck(v8::Isolate*
 
 TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestCallbackFunctions* nativeValue = V8TestCallbackFunctions::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestCallbackFunctions.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestCallbackFunctions"));
+  }
   return nativeValue;
 }
 

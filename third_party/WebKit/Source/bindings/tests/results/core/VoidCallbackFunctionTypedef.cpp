@@ -83,8 +83,10 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
 
 VoidCallbackFunctionTypedef* NativeValueTraits<VoidCallbackFunctionTypedef>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   VoidCallbackFunctionTypedef* nativeValue = VoidCallbackFunctionTypedef::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to VoidCallbackFunctionTypedef.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "VoidCallbackFunctionTypedef"));
+  }
   return nativeValue;
 }
 

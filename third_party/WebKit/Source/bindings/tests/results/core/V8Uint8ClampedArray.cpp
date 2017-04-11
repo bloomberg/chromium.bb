@@ -74,8 +74,10 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* iso
 
 TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestUint8ClampedArray* nativeValue = V8Uint8ClampedArray::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to Uint8ClampedArray.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "Uint8ClampedArray"));
+  }
   return nativeValue;
 }
 

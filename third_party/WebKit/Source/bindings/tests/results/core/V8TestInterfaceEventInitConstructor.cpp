@@ -164,8 +164,10 @@ TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::toImplWi
 
 TestInterfaceEventInitConstructor* NativeValueTraits<TestInterfaceEventInitConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceEventInitConstructor* nativeValue = V8TestInterfaceEventInitConstructor::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceEventInitConstructor.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceEventInitConstructor"));
+  }
   return nativeValue;
 }
 

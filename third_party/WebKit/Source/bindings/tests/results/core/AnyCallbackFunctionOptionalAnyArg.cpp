@@ -84,8 +84,10 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
 
 AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<AnyCallbackFunctionOptionalAnyArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   AnyCallbackFunctionOptionalAnyArg* nativeValue = AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to AnyCallbackFunctionOptionalAnyArg.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "AnyCallbackFunctionOptionalAnyArg"));
+  }
   return nativeValue;
 }
 

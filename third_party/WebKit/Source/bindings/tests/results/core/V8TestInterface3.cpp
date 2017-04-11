@@ -222,8 +222,10 @@ TestInterface3* V8TestInterface3::toImplWithTypeCheck(v8::Isolate* isolate, v8::
 
 TestInterface3* NativeValueTraits<TestInterface3>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterface3* nativeValue = V8TestInterface3::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterface3.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterface3"));
+  }
   return nativeValue;
 }
 

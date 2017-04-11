@@ -444,8 +444,10 @@ TestInterfaceConstructor* V8TestInterfaceConstructor::toImplWithTypeCheck(v8::Is
 
 TestInterfaceConstructor* NativeValueTraits<TestInterfaceConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceConstructor* nativeValue = V8TestInterfaceConstructor::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceConstructor.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceConstructor"));
+  }
   return nativeValue;
 }
 

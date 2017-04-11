@@ -82,8 +82,10 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
 
 VoidCallbackFunctionInterfaceArg* NativeValueTraits<VoidCallbackFunctionInterfaceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   VoidCallbackFunctionInterfaceArg* nativeValue = VoidCallbackFunctionInterfaceArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to VoidCallbackFunctionInterfaceArg.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "VoidCallbackFunctionInterfaceArg"));
+  }
   return nativeValue;
 }
 

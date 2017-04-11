@@ -80,8 +80,10 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
 
 VoidCallbackFunctionModules* NativeValueTraits<VoidCallbackFunctionModules>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   VoidCallbackFunctionModules* nativeValue = VoidCallbackFunctionModules::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to VoidCallbackFunctionModules.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "VoidCallbackFunctionModules"));
+  }
   return nativeValue;
 }
 

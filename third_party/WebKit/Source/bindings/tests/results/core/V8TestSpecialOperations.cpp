@@ -214,8 +214,10 @@ TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate*
 
 TestSpecialOperations* NativeValueTraits<TestSpecialOperations>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestSpecialOperations* nativeValue = V8TestSpecialOperations::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestSpecialOperations.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestSpecialOperations"));
+  }
   return nativeValue;
 }
 

@@ -54,6 +54,8 @@ class CORE_EXPORT ExceptionMessages {
                                             const String& expected_type);
   static String ConstructorNotCallableAsFunction(const char* type);
 
+  static String FailedToConvertJSValue(const char* type);
+
   static String FailedToConstruct(const char* type, const String& detail);
   static String FailedToEnumerate(const char* type, const String& detail);
   static String FailedToExecute(const char* method,

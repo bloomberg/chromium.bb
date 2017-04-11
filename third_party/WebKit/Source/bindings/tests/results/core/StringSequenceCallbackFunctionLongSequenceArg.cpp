@@ -87,8 +87,10 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
 
 StringSequenceCallbackFunctionLongSequenceArg* NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   StringSequenceCallbackFunctionLongSequenceArg* nativeValue = StringSequenceCallbackFunctionLongSequenceArg::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to StringSequenceCallbackFunctionLongSequenceArg.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "StringSequenceCallbackFunctionLongSequenceArg"));
+  }
   return nativeValue;
 }
 

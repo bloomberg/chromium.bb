@@ -132,8 +132,10 @@ SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, 
 
 SVGTestInterface* NativeValueTraits<SVGTestInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   SVGTestInterface* nativeValue = V8SVGTestInterface::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to SVGTestInterface.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "SVGTestInterface"));
+  }
   return nativeValue;
 }
 

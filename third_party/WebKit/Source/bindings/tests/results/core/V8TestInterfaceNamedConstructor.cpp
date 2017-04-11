@@ -237,8 +237,10 @@ TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::toImplWithTypeCh
 
 TestInterfaceNamedConstructor* NativeValueTraits<TestInterfaceNamedConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceNamedConstructor* nativeValue = V8TestInterfaceNamedConstructor::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceNamedConstructor.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceNamedConstructor"));
+  }
   return nativeValue;
 }
 

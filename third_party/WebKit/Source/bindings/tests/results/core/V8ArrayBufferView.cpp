@@ -101,8 +101,10 @@ TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate
 
 TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestArrayBufferView* nativeValue = V8ArrayBufferView::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to ArrayBufferView.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "ArrayBufferView"));
+  }
   return nativeValue;
 }
 

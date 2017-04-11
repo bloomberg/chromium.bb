@@ -88,8 +88,10 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
 
 LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongCallbackFunction* nativeValue = LongCallbackFunction::Create(ScriptState::Current(isolate), value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to LongCallbackFunction.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "LongCallbackFunction"));
+  }
   return nativeValue;
 }
 

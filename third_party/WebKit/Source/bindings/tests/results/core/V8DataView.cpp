@@ -81,8 +81,10 @@ TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8
 
 TestDataView* NativeValueTraits<TestDataView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestDataView* nativeValue = V8DataView::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to DataView.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "DataView"));
+  }
   return nativeValue;
 }
 

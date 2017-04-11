@@ -31,7 +31,7 @@ TEST(NativeValueTraitsImplTest, IDLInterface) {
         scope.GetIsolate(), v8::Number::New(scope.GetIsolate(), 42),
         exception_state);
     EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ("Unable to convert value to Internals.",
+    EXPECT_EQ("Failed to convert value to 'Internals'.",
               exception_state.Message());
     EXPECT_EQ(nullptr, internals);
   }
@@ -42,7 +42,7 @@ TEST(NativeValueTraitsImplTest, IDLInterface) {
             scope.GetIsolate(), v8::Undefined(scope.GetIsolate()),
             exception_state);
     EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ("Unable to convert value to TestSequenceCallback.",
+    EXPECT_EQ("Failed to convert value to 'TestSequenceCallback'.",
               exception_state.Message());
     EXPECT_EQ(nullptr, callback_function);
   }

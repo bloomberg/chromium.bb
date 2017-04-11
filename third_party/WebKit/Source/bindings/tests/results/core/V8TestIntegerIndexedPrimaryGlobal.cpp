@@ -236,8 +236,10 @@ TestIntegerIndexedPrimaryGlobal* V8TestIntegerIndexedPrimaryGlobal::toImplWithTy
 
 TestIntegerIndexedPrimaryGlobal* NativeValueTraits<TestIntegerIndexedPrimaryGlobal>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestIntegerIndexedPrimaryGlobal* nativeValue = V8TestIntegerIndexedPrimaryGlobal::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestIntegerIndexedPrimaryGlobal.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestIntegerIndexedPrimaryGlobal"));
+  }
   return nativeValue;
 }
 

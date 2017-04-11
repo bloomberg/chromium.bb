@@ -215,8 +215,10 @@ TestIntegerIndexed* V8TestIntegerIndexed::toImplWithTypeCheck(v8::Isolate* isola
 
 TestIntegerIndexed* NativeValueTraits<TestIntegerIndexed>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestIntegerIndexed* nativeValue = V8TestIntegerIndexed::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestIntegerIndexed.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestIntegerIndexed"));
+  }
   return nativeValue;
 }
 

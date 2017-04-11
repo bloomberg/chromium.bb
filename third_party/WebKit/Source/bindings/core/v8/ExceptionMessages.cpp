@@ -35,6 +35,10 @@
 
 namespace blink {
 
+String ExceptionMessages::FailedToConvertJSValue(const char* type) {
+  return String::Format("Failed to convert value to '%s'.", type);
+}
+
 String ExceptionMessages::FailedToConstruct(const char* type,
                                             const String& detail) {
   return "Failed to construct '" + String(type) +

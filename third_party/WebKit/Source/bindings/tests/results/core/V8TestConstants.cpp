@@ -199,8 +199,10 @@ TestConstants* V8TestConstants::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
 
 TestConstants* NativeValueTraits<TestConstants>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestConstants* nativeValue = V8TestConstants::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestConstants.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestConstants"));
+  }
   return nativeValue;
 }
 

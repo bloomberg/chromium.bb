@@ -134,8 +134,10 @@ TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate*
 
 TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
-  if (!nativeValue)
-    exceptionState.ThrowTypeError("Unable to convert value to TestInterfaceDocument.");
+  if (!nativeValue) {
+    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        "TestInterfaceDocument"));
+  }
   return nativeValue;
 }
 
