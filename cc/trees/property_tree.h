@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "cc/base/filter_operations.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -113,8 +114,8 @@ class CC_EXPORT PropertyTree {
   }
 
   int FindNodeIndexFromOwningLayerId(int id) const {
-    auto iter = owning_layer_id_to_node_index.find(id);
-    if (iter == owning_layer_id_to_node_index.end())
+    auto iter = owning_layer_id_to_node_index_.find(id);
+    if (iter == owning_layer_id_to_node_index_.end())
       return kInvalidNodeId;
     else
       return iter->second;
@@ -122,19 +123,21 @@ class CC_EXPORT PropertyTree {
 
   void SetOwningLayerIdForNode(const T* node, int id) {
     if (!node) {
-      owning_layer_id_to_node_index[id] = kInvalidNodeId;
+      owning_layer_id_to_node_index_[id] = kInvalidNodeId;
       return;
     }
 
     DCHECK(node == Node(node->id));
-    owning_layer_id_to_node_index[id] = node->id;
+    owning_layer_id_to_node_index_[id] = node->id;
   }
 
  private:
   std::vector<T> nodes_;
 
-  // These maps map from layer id to the property tree node index.
-  std::unordered_map<int, int> owning_layer_id_to_node_index;
+  // Maps from layer id to the property tree node index. This container is
+  // typically very small and the memory overhead of unordered_map will
+  // dominate so use a flat_map. See http://crbug.com/709243
+  base::flat_map<int, int> owning_layer_id_to_node_index_;
 
   bool needs_update_;
   PropertyTrees* property_trees_;

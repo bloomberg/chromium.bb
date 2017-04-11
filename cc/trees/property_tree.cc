@@ -70,7 +70,7 @@ void PropertyTree<T>::clear() {
   nodes_.push_back(T());
   back()->id = kRootNodeId;
   back()->parent_id = kInvalidNodeId;
-  owning_layer_id_to_node_index.clear();
+  owning_layer_id_to_node_index_.clear();
 
 #if DCHECK_IS_ON()
   PropertyTree<T> tree;
@@ -81,7 +81,7 @@ void PropertyTree<T>::clear() {
 template <typename T>
 bool PropertyTree<T>::operator==(const PropertyTree<T>& other) const {
   return nodes_ == other.nodes() && needs_update_ == other.needs_update() &&
-         owning_layer_id_to_node_index == other.owning_layer_id_to_node_index;
+         owning_layer_id_to_node_index_ == other.owning_layer_id_to_node_index_;
 }
 
 template <typename T>
