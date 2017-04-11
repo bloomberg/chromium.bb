@@ -11,11 +11,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -67,6 +72,11 @@ public class BluetoothChooserDialog
     // bluetooth devices. For valid values see SecurityStateModel::SecurityLevel.
     int mSecurityLevel;
 
+    @VisibleForTesting
+    Drawable mConnectedIcon;
+    @VisibleForTesting
+    String mConnectedIconDescription;
+
     // A pointer back to the native part of the implementation for this dialog.
     long mNativeBluetoothChooserDialogPtr;
 
@@ -117,6 +127,17 @@ public class BluetoothChooserDialog
         mSecurityLevel = securityLevel;
         mNativeBluetoothChooserDialogPtr = nativeBluetoothChooserDialogPtr;
         mAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Resources res = mActivity.getResources();
+
+        // Initialize icons.
+        mConnectedIcon = VectorDrawableCompat.create(
+                res, R.drawable.ic_bluetooth_connected, mActivity.getTheme());
+        DrawableCompat.setTintList(mConnectedIcon,
+                ApiCompatibilityUtils.getColorStateList(res, R.color.item_chooser_row_icon_color));
+
+        mConnectedIconDescription = mActivity.getString(R.string.bluetooth_device_connected);
+
         if (mAdapter == null) {
             Log.i(TAG, "BluetoothChooserDialog: Default Bluetooth adapter not found.");
         }
@@ -351,9 +372,21 @@ public class BluetoothChooserDialog
     }
 
     @VisibleForTesting
+    Drawable getConnectedIcon() {
+        return mConnectedIcon.getConstantState().newDrawable().mutate();
+    }
+
+    @VisibleForTesting
     @CalledByNative
-    void addOrUpdateDevice(String deviceId, String deviceName) {
-        mItemChooserDialog.addOrUpdateItem(deviceId, deviceName);
+    void addOrUpdateDevice(String deviceId, String deviceName, boolean isGATTConnected) {
+        Drawable icon = null;
+        String iconDescription = null;
+        if (isGATTConnected) {
+            icon = getConnectedIcon();
+            iconDescription = mConnectedIconDescription;
+        }
+
+        mItemChooserDialog.addOrUpdateItem(deviceId, deviceName, icon, iconDescription);
     }
 
     @VisibleForTesting

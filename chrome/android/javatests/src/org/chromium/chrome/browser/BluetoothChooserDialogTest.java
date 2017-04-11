@@ -8,6 +8,7 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.support.test.filters.LargeTest;
 import android.test.MoreAsserts;
@@ -49,6 +50,11 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         BluetoothChooserDialogWithFakeNatives(WindowAndroid windowAndroid, String origin,
                 int securityLevel, long nativeBluetoothChooserDialogPtr) {
             super(windowAndroid, origin, securityLevel, nativeBluetoothChooserDialogPtr);
+        }
+
+        @Override
+        Drawable getConnectedIcon() {
+            return super.mConnectedIcon;
         }
 
         @Override
@@ -226,8 +232,8 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mChooserDialog.addOrUpdateDevice("id-1", "Name 1");
-                mChooserDialog.addOrUpdateDevice("id-2", "Name 2");
+                mChooserDialog.addOrUpdateDevice("id-1", "Name 1", false /* isGATTConnected */);
+                mChooserDialog.addOrUpdateDevice("id-2", "Name 2", true /* isGATTConnected */);
             }
         });
 
@@ -240,6 +246,13 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         assertFalse(button.isEnabled());
         assertEquals(View.VISIBLE, items.getVisibility());
         assertEquals(View.GONE, progress.getVisibility());
+
+        ItemChooserDialog.ItemAdapter itemAdapter =
+                mChooserDialog.mItemChooserDialog.getItemAdapterForTesting();
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "id-1", "Name 1", null /* icon */, null /* iconDescription */));
+        assertTrue(itemAdapter.getItem(1).hasSameContents("id-2", "Name 2",
+                mChooserDialog.getConnectedIcon(), mChooserDialog.mConnectedIconDescription));
 
         selectItem(mChooserDialog, 2);
 

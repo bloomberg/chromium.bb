@@ -1376,6 +1376,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BLUETOOTH_NEED_LOCATION_PERMISSION_HELP" desc="The status message to get more information about why Chrome needs the Location permission in order to scan for Bluetooth devices.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
+      <message name="IDS_BLUETOOTH_DEVICE_CONNECTED" desc="Content description for the connected icon next to connected Bluetooth devices.">
+        Connected Device
+      </message>
 
       <!-- Hint of sync error solution strings -->
       <message name="IDS_SYNC_ERROR_CARD_TITLE" desc="Title of the Sync Error Card. [CHAR-LIMIT=32]">

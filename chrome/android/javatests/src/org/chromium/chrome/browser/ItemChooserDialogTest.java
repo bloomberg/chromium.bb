@@ -5,14 +5,18 @@
 package org.chromium.chrome.browser;
 
 import android.app.Dialog;
+import android.graphics.drawable.Drawable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.test.filters.LargeTest;
 import android.test.UiThreadTest;
 import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -35,6 +39,12 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     String mLastSelectedId = "None";
 
+    Drawable mTestDrawable1;
+    String mTestDrawableDescription1;
+
+    Drawable mTestDrawable2;
+    String mTestDrawableDescription2;
+
     public ItemChooserDialogTest() {
         super(ChromeActivity.class);
     }
@@ -45,6 +55,14 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     protected void setUp() throws Exception {
         super.setUp();
         mChooserDialog = createDialog();
+
+        mTestDrawable1 = getNewTestDrawable();
+        mTestDrawableDescription1 = "icon1 description";
+
+        mTestDrawable2 = getNewTestDrawable();
+        mTestDrawableDescription2 = "icon2 description";
+
+        assertFalse(ApiCompatibilityUtils.objectEquals(mTestDrawable1, mTestDrawable2));
     }
 
     @Override
@@ -57,6 +75,15 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     @Override
     public void onItemSelected(String id) {
         mLastSelectedId = id;
+    }
+
+    private Drawable getNewTestDrawable() {
+        Drawable drawable = VectorDrawableCompat.create(
+                getActivity().getResources(), R.drawable.ic_bluetooth_connected, null);
+        // Calling mutate() on a Drawable should typically create a new ConstantState
+        // for that Drawable. Ensure the new drawable doesn't share a state with other
+        // drwables.
+        return drawable.mutate();
     }
 
     private ItemChooserDialog createDialog() {
@@ -118,17 +145,326 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
                 }));
     }
 
-    private TextView getDescriptionTextView(Dialog dialog, int position) {
-        final ListView items = (ListView) dialog.findViewById(R.id.items);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return items.getChildAt(0) != null;
-            }
-        });
+    private View getRowView(Dialog dialog, int position) {
+        ListView items = (ListView) dialog.findViewById(R.id.items);
+        int actualPosition = position - 1;
+        int first = items.getFirstVisiblePosition();
+        int last = items.getLastVisiblePosition();
 
-        View item = items.getChildAt(position - 1);
-        return (TextView) item.findViewById(R.id.description);
+        if (actualPosition < first || actualPosition > last) {
+            return items.getAdapter().getView(actualPosition, null, items);
+        } else {
+            final int visiblePos = actualPosition - first;
+            return items.getChildAt(visiblePos);
+        }
+    }
+
+    private ImageView getIconImageView(Dialog dialog, int position) {
+        return (ImageView) getRowView(dialog, position).findViewById(R.id.icon);
+    }
+
+    private TextView getDescriptionTextView(Dialog dialog, int position) {
+        return (TextView) getRowView(dialog, position).findViewById(R.id.description);
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testAddItemsWithNoIcons() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with no icon.
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon1.getVisibility());
+            assertEquals(null, icon1.getDrawable());
+        }
+
+        {
+            // Add item 2 with no icon.
+            mChooserDialog.addOrUpdateItem("key2", "desc2");
+            ImageView icon2 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon2.getVisibility());
+            assertEquals(null, icon2.getDrawable());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testAddItemsWithIcons() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+            assertEquals(mTestDrawableDescription1, icon1.getContentDescription());
+        }
+
+        {
+            // Add item 2 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key2", "desc2", mTestDrawable2, mTestDrawableDescription2);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+            assertEquals(mTestDrawableDescription1, icon1.getContentDescription());
+            ImageView icon2 = getIconImageView(dialog, 2);
+            assertEquals(View.VISIBLE, icon2.getVisibility());
+            assertEquals(mTestDrawable2, icon2.getDrawable());
+            assertEquals(mTestDrawableDescription2, icon2.getContentDescription());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testAddItemWithIconAfterItemWithNoIcon() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with no icon.
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon1.getVisibility());
+            assertEquals(null, icon1.getDrawable());
+        }
+
+        {
+            // Add item 2 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key2", "desc2", mTestDrawable2, mTestDrawableDescription2);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            ImageView icon2 = getIconImageView(dialog, 2);
+            assertEquals(View.INVISIBLE, icon1.getVisibility());
+            assertEquals(View.VISIBLE, icon2.getVisibility());
+            assertEquals(mTestDrawable2, icon2.getDrawable());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testAddItemWithNoIconAfterItemWithIcon() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+        }
+
+        {
+            // Add item 2 with no icon.
+            mChooserDialog.addOrUpdateItem("key2", "desc2");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            ImageView icon2 = getIconImageView(dialog, 2);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+            assertEquals(View.INVISIBLE, icon2.getVisibility());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testRemoveItemWithIconNoItemsWithIconsLeft() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+        }
+
+        {
+            // Add item 2 with no icon.
+            mChooserDialog.addOrUpdateItem("key2", "desc2");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            ImageView icon2 = getIconImageView(dialog, 2);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(View.INVISIBLE, icon2.getVisibility());
+        }
+
+        {
+            // Remove item 1 with icon. No items with icons left.
+            mChooserDialog.removeItemFromList("key1");
+            ImageView icon2 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon2.getVisibility());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testRemoveItemWithIconOneItemWithIconLeft() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        {
+            // Add item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+        }
+
+        {
+            // Add item 2 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key2", "desc2", mTestDrawable2, mTestDrawableDescription2);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            ImageView icon2 = getIconImageView(dialog, 2);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(View.VISIBLE, icon2.getVisibility());
+        }
+
+        {
+            // Add item 3 with no icon.
+            mChooserDialog.addOrUpdateItem("key3", "desc3");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            ImageView icon2 = getIconImageView(dialog, 2);
+            ImageView icon3 = getIconImageView(dialog, 3);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(View.VISIBLE, icon2.getVisibility());
+            assertEquals(View.INVISIBLE, icon3.getVisibility());
+        }
+
+        {
+            mChooserDialog.removeItemFromList("key1");
+            ImageView icon2 = getIconImageView(dialog, 1);
+            ImageView icon3 = getIconImageView(dialog, 2);
+            assertEquals(View.VISIBLE, icon2.getVisibility());
+            assertEquals(mTestDrawable2, icon2.getDrawable());
+            assertEquals(View.INVISIBLE, icon3.getVisibility());
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testUpdateItemWithIconToNoIcon() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        {
+            // Add item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawableDescription1, icon1.getContentDescription());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1));
+        }
+
+        {
+            // Update item 1 to no icon.
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon1.getVisibility());
+            assertEquals(null, icon1.getContentDescription());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", null /* icon */, null /* iconDescription */));
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testUpdateItemWithNoIconToIcon() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        {
+            // Add item 1 to no icon.
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.GONE, icon1.getVisibility());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", null /* icon */, null /* iconDescription */));
+        }
+
+        {
+            // Update item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+            assertEquals(mTestDrawableDescription1, icon1.getContentDescription());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1));
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testUpdateItemIcon() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        {
+            // Update item 1 with icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable1, icon1.getDrawable());
+            assertEquals(mTestDrawableDescription1, icon1.getContentDescription());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", mTestDrawable1, mTestDrawableDescription1));
+        }
+
+        {
+            // Update item 1 with different icon.
+            mChooserDialog.addOrUpdateItem(
+                    "key1", "desc1", mTestDrawable2, mTestDrawableDescription2);
+            ImageView icon1 = getIconImageView(dialog, 1);
+            assertEquals(View.VISIBLE, icon1.getVisibility());
+            assertEquals(mTestDrawable2, icon1.getDrawable());
+            assertEquals(mTestDrawableDescription2, icon1.getContentDescription());
+            assertTrue(itemAdapter.getItem(0).hasSameContents(
+                    "key1", "desc1", mTestDrawable2, mTestDrawableDescription2));
+        }
+
+        mChooserDialog.setIdleState();
+        mChooserDialog.dismiss();
     }
 
     @LargeTest
@@ -358,12 +694,14 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Add item 1.
         mChooserDialog.addOrUpdateItem("key1", "desc1");
         assertEquals(1, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
 
         // Update item 1 with different description.
         mChooserDialog.addOrUpdateItem("key1", "desc2");
         assertEquals(1, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc2"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc2", null /* icon */, null /* iconDescription */));
 
         mChooserDialog.setIdleState();
 
@@ -406,13 +744,16 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Add item 1.
         mChooserDialog.addOrUpdateItem("key1", "desc1");
         assertEquals(1, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
 
         // Add item 2.
         mChooserDialog.addOrUpdateItem("key2", "desc2");
         assertEquals(2, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
-        assertTrue(itemAdapter.getItem(1).hasSameContents("key2", "desc2"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
+        assertTrue(itemAdapter.getItem(1).hasSameContents(
+                "key2", "desc2", null /* icon */, null /* iconDescription */));
 
         mChooserDialog.setIdleState();
 
@@ -423,7 +764,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Remove item 2.
         mChooserDialog.removeItemFromList("key2");
         assertEquals(1, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
 
         // The list should be visible with one item, it should not show
         // the empty view and the button should not be enabled.
@@ -465,9 +807,12 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Add item 3 with same description as item 1.
         mChooserDialog.addOrUpdateItem("key3", "desc1");
         assertEquals(3, itemAdapter.getCount());
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
-        assertTrue(itemAdapter.getItem(1).hasSameContents("key2", "desc2"));
-        assertTrue(itemAdapter.getItem(2).hasSameContents("key3", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
+        assertTrue(itemAdapter.getItem(1).hasSameContents(
+                "key2", "desc2", null /* icon */, null /* iconDescription */));
+        assertTrue(itemAdapter.getItem(2).hasSameContents(
+                "key3", "desc1", null /* icon */, null /* iconDescription */));
 
         // Since two items have the same name, their display text should have their unique
         // keys appended.
@@ -479,8 +824,10 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.removeItemFromList("key2");
         assertEquals(2, itemAdapter.getCount());
         // Make sure the remaining items are item 1 and item 3.
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
-        assertTrue(itemAdapter.getItem(1).hasSameContents("key3", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key1", "desc1", null /* icon */, null /* iconDescription */));
+        assertTrue(itemAdapter.getItem(1).hasSameContents(
+                "key3", "desc1", null /* icon */, null /* iconDescription */));
         assertEquals("desc1 (key1)", itemAdapter.getDisplayText(0));
         assertEquals("desc1 (key3)", itemAdapter.getDisplayText(1));
 
@@ -488,7 +835,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.removeItemFromList("key1");
         assertEquals(1, itemAdapter.getCount());
         // Make sure the remaining item is item 3.
-        assertTrue(itemAdapter.getItem(0).hasSameContents("key3", "desc1"));
+        assertTrue(itemAdapter.getItem(0).hasSameContents(
+                "key3", "desc1", null /* icon */, null /* iconDescription */));
         // After removing item 1, item 3 is the only remaining item, so its display text
         // also changed to its original description.
         assertEquals("desc1", itemAdapter.getDisplayText(0));

@@ -183,6 +183,7 @@ Still reading?
   <issue id="NewApi">
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
     <ignore regexp="chrome/android/java/res/drawable/downloads_big.xml"/>
+    <ignore regexp="chrome/android/java/res/drawable/ic_bluetooth_connected.xml"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="com/android/tv"/>
