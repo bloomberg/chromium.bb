@@ -10,6 +10,19 @@ Polymer({
   properties: {
     /** @private Filter applied to passwords and password exceptions. */
     passwordFilter_: String,
+
+    /** @type {?Map<string, string>} */
+    focusConfig: Object,
+  },
+
+  /** @override */
+  ready: function() {
+    this.focusConfig_ = new Map();
+    this.focusConfig_.set(
+        settings.Route.AUTOFILL.path, '#autofillManagerButton .subpage-arrow');
+    this.focusConfig_.set(
+        settings.Route.MANAGE_PASSWORDS.path,
+        '#passwordManagerButton .subpage-arrow');
   },
 
   /**

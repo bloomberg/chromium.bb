@@ -39,6 +39,9 @@ Polymer({
 
     /** @private */
     googleNowAvailable_: Boolean,
+
+    /** @type {?Map<string, string>} */
+    focusConfig_: Object,
   },
 
   /** @private {?settings.SearchEnginesBrowserProxy} */
@@ -70,6 +73,10 @@ Polymer({
     this.browserProxy_.getGoogleNowAvailability().then(function(available) {
         this.googleNowAvailabilityUpdate_(available);
     }.bind(this));
+
+    this.focusConfig_ = new Map();
+    this.focusConfig_.set(
+        settings.Route.SEARCH_ENGINES.path, '#subpage-trigger .subpage-arrow');
   },
 
   /** @private */

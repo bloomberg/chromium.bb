@@ -64,3 +64,26 @@ CrSettingsFocusRowBehavior.prototype = {
 TEST_F('CrSettingsFocusRowBehavior', 'FocusTest', function() {
   mocha.run();
 });
+
+
+/**
+ * @constructor
+ * @extends {CrSettingsInteractiveUITest}
+ */
+function CrSettingsAnimatedPagesTest() {}
+
+CrSettingsAnimatedPagesTest.prototype = {
+  __proto__: CrSettingsInteractiveUITest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/settings_page/settings_animated_pages.html',
+
+  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    'settings_animated_pages_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsAnimatedPagesTest', 'All', function() {
+  mocha.run()
+});
