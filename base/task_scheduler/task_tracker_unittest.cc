@@ -43,7 +43,7 @@ namespace internal {
 
 namespace {
 
-constexpr size_t kLoadTestNumIterations = 100;
+constexpr size_t kLoadTestNumIterations = 75;
 
 // Invokes a closure asynchronously.
 class CallbackThread : public SimpleThread {
