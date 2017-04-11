@@ -262,7 +262,8 @@ bool VerifyUsingPathBuilder(
   net::SimpleSignaturePolicy signature_policy(2048);
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(target_cert, &trust_store,
-                                    &signature_policy, time, &result);
+                                    &signature_policy, time,
+                                    net::KeyPurpose::SERVER_AUTH, &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
 #if defined(USE_NSS_CERTS)
   net::CertIssuerSourceNSS cert_issuer_source_nss;

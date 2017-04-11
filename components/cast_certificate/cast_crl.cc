@@ -147,7 +147,7 @@ bool VerifyCRL(const Crl& crl,
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(parsed_cert.get(), trust_store,
                                     signature_policy.get(), verification_time,
-                                    &result);
+                                    net::KeyPurpose::ANY_EKU, &result);
   path_builder.Run();
   if (!result.HasValidPath()) {
     VLOG(2) << "CRL - Issuer certificate verification failed.";

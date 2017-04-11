@@ -160,19 +160,9 @@ bool GetCommonNameFromSubject(const net::der::Input& subject_tlv,
   return false;
 }
 
-// Returns true if the extended key usage list |ekus| contains client auth.
-bool HasClientAuth(const std::vector<net::der::Input>& ekus) {
-  for (const auto& oid : ekus) {
-    if (oid == net::ClientAuth())
-      return true;
-  }
-  return false;
-}
-
 // Checks properties on the target certificate.
 //
 //   * The Key Usage must include Digital Signature
-//   * The Extended Key Usage must include TLS Client Auth
 //   * May have the policy 1.3.6.1.4.1.11129.2.5.2 to indicate it
 //     is an audio-only device.
 WARN_UNUSED_RESULT bool CheckTargetCertificate(
@@ -185,11 +175,6 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
 
   // Ensure Key Usage contains digitalSignature.
   if (!cert->key_usage().AssertsBit(net::KEY_USAGE_BIT_DIGITAL_SIGNATURE))
-    return false;
-
-  // Ensure Extended Key Usage contains client auth.
-  if (!cert->has_extended_key_usage() ||
-      !HasClientAuth(cert->extended_key_usage()))
     return false;
 
   // Check for an optional audio-only policy extension.
@@ -283,7 +268,7 @@ bool VerifyDeviceCertUsingCustomTrustStore(
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(target_cert.get(), trust_store,
                                     signature_policy.get(), verification_time,
-                                    &result);
+                                    net::KeyPurpose::CLIENT_AUTH, &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
   path_builder.Run();
   if (!result.HasValidPath()) {

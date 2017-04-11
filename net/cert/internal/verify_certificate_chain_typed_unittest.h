@@ -8,6 +8,7 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,6 +103,17 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyUsage) {
   this->RunTest("target-has-keycertsign-but-not-ca.pem");
 }
 
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
+  this->RunTest("target-lacks-eku.pem");
+  this->RunTest("target-restricts-eku-fail.pem");
+  this->RunTest("intermediate-restricts-eku-fail.pem");
+  this->RunTest("intermediate-restricts-eku-ok.pem");
+  this->RunTest("intermediate-sets-eku-any.pem");
+  this->RunTest("target-sets-eku-any.pem");
+  this->RunTest("constrained-root-bad-eku.pem");
+  this->RunTest("unconstrained-root-bad-eku.pem");
+}
+
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
              IssuerAndSubjectNotByteForByteEqual) {
   this->RunTest("issuer-and-subject-not-byte-for-byte-equal.pem");
@@ -136,6 +148,7 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            Expired,
                            TargetNotEndEntity,
                            KeyUsage,
+                           ExtendedKeyUsage,
                            IssuerAndSubjectNotByteForByteEqual,
                            TrustAnchorNotSelfSigned,
                            KeyRollover);

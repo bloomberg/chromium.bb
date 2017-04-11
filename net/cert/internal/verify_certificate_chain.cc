@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/name_constraints.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
@@ -55,11 +56,17 @@ DEFINE_CERT_ERROR_ID(kVerifySignedDataFailed, "VerifySignedData failed");
 DEFINE_CERT_ERROR_ID(kSignatureAlgorithmsDifferentEncoding,
                      "Certificate.signatureAlgorithm is encoded differently "
                      "than TBSCertificate.signature");
+DEFINE_CERT_ERROR_ID(kEkuLacksServerAuth,
+                     "The extended key usage does not include server auth");
+DEFINE_CERT_ERROR_ID(kEkuLacksClientAuth,
+                     "The extended key usage does not include client auth");
 
 bool IsHandledCriticalExtensionOid(const der::Input& oid) {
   if (oid == BasicConstraintsOid())
     return true;
   if (oid == KeyUsageOid())
+    return true;
+  if (oid == ExtKeyUsageOid())
     return true;
   if (oid == NameConstraintsOid())
     return true;
@@ -163,6 +170,46 @@ void VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
       kSignatureAlgorithmMismatch,
       CreateCertErrorParams2Der("Certificate.algorithm", alg1_tlv,
                                 "TBSCertificate.signature", alg2_tlv));
+}
+
+// Verify that |cert| can be used for |required_key_purpose|.
+void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
+                            KeyPurpose required_key_purpose,
+                            CertErrors* errors) {
+  switch (required_key_purpose) {
+    case KeyPurpose::ANY_EKU:
+      return;
+    case KeyPurpose::SERVER_AUTH: {
+      // TODO(eroman): Is it OK for the target certificate to omit the EKU?
+      if (!cert.has_extended_key_usage())
+        return;
+
+      for (const auto& key_purpose_oid : cert.extended_key_usage()) {
+        if (key_purpose_oid == AnyEKU())
+          return;
+        if (key_purpose_oid == ServerAuth())
+          return;
+      }
+
+      errors->AddError(kEkuLacksServerAuth);
+      break;
+    }
+    case KeyPurpose::CLIENT_AUTH: {
+      // TODO(eroman): Is it OK for the target certificate to omit the EKU?
+      if (!cert.has_extended_key_usage())
+        return;
+
+      for (const auto& key_purpose_oid : cert.extended_key_usage()) {
+        if (key_purpose_oid == AnyEKU())
+          return;
+        if (key_purpose_oid == ClientAuth())
+          return;
+      }
+
+      errors->AddError(kEkuLacksClientAuth);
+      break;
+    }
+  }
 }
 
 // This function corresponds to RFC 5280 section 6.1.3's "Basic Certificate
@@ -395,6 +442,7 @@ void WrapUp(const ParsedCertificate& cert, CertErrors* errors) {
 // follows the description in RFC 5937
 void ProcessTrustAnchorConstraints(
     const TrustAnchor& trust_anchor,
+    KeyPurpose required_key_purpose,
     size_t* max_path_length_ptr,
     std::vector<const NameConstraints*>* name_constraints_list,
     CertErrors* errors) {
@@ -407,6 +455,10 @@ void ProcessTrustAnchorConstraints(
 
   // Anchor constraints are encoded via the attached certificate.
   const ParsedCertificate& cert = *trust_anchor.cert();
+
+  // This is not part of RFC 5937 nor RFC 5280, but matches the EKU handling
+  // done for intermediates (described in Web PKI's Baseline Requirements).
+  VerifyExtendedKeyUsage(cert, required_key_purpose, errors);
 
   // The following enforcements follow from RFC 5937 (primarily section 3.2):
 
@@ -452,6 +504,7 @@ void VerifyCertificateChainNoReturnValue(
     const TrustAnchor* trust_anchor,
     const SignaturePolicy* signature_policy,
     const der::GeneralizedTime& time,
+    KeyPurpose required_key_purpose,
     CertPathErrors* errors) {
   DCHECK(trust_anchor);
   DCHECK(signature_policy);
@@ -507,8 +560,8 @@ void VerifyCertificateChainNoReturnValue(
   // TODO(eroman): Errors on the trust anchor are put into a certificate bucket
   //               GetErrorsForCert(certs.size()). This is a bit magical, and
   //               has some integration issues.
-  ProcessTrustAnchorConstraints(*trust_anchor, &max_path_length,
-                                &name_constraints_list,
+  ProcessTrustAnchorConstraints(*trust_anchor, required_key_purpose,
+                                &max_path_length, &name_constraints_list,
                                 errors->GetErrorsForCert(certs.size()));
 
   // Iterate over all the certificates in the reverse direction: starting from
@@ -541,12 +594,21 @@ void VerifyCertificateChainNoReturnValue(
     BasicCertificateProcessing(cert, is_target_cert, signature_policy, time,
                                working_spki, working_normalized_issuer_name,
                                name_constraints_list, cert_errors);
+
+    // The key purpose is checked not just for the end-entity certificate, but
+    // also interpreted as a constraint when it appears in intermediates. This
+    // goes beyond what RFC 5280 describes, but is the de-facto standard. See
+    // https://wiki.mozilla.org/CA:CertificatePolicyV2.1#Frequently_Asked_Questions
+    VerifyExtendedKeyUsage(cert, required_key_purpose, cert_errors);
+
     if (!is_target_cert) {
       PrepareForNextCertificate(cert, &max_path_length, &working_spki,
                                 &working_normalized_issuer_name,
                                 &name_constraints_list, cert_errors);
     } else {
       WrapUp(cert, cert_errors);
+      // TODO(eroman): Verify the Key Usage on target is consistent with
+      //               key_purpose.
     }
   }
 
@@ -562,12 +624,13 @@ bool VerifyCertificateChain(const ParsedCertificateList& certs,
                             const TrustAnchor* trust_anchor,
                             const SignaturePolicy* signature_policy,
                             const der::GeneralizedTime& time,
+                            KeyPurpose required_key_purpose,
                             CertPathErrors* errors) {
   // TODO(eroman): This function requires that |errors| is empty upon entry,
   // which is not part of the API contract.
   DCHECK(!errors->ContainsHighSeverityErrors());
   VerifyCertificateChainNoReturnValue(certs, trust_anchor, signature_policy,
-                                      time, errors);
+                                      time, required_key_purpose, errors);
   return !errors->ContainsHighSeverityErrors();
 }
 

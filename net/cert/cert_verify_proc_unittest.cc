@@ -49,6 +49,9 @@
 #include "base/win/windows_version.h"
 #endif
 
+// TODO(crbug.com/649017): Add tests that only certificates with
+// serverAuth are accepted.
+
 using net::test::IsError;
 using net::test::IsOk;
 

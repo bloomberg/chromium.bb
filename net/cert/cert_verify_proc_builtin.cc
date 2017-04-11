@@ -359,7 +359,8 @@ void DoVerify(X509Certificate* input_cert,
   // Initialize the path builder.
   CertPathBuilder::Result result;
   CertPathBuilder path_builder(target, trust_store->GetTrustStore(),
-                               &signature_policy, verification_time, &result);
+                               &signature_policy, verification_time,
+                               KeyPurpose::SERVER_AUTH, &result);
 
   // Allow the path builder to discover intermediates from the trust store.
   if (trust_store->GetCertIssuerSource())

@@ -23,6 +23,13 @@ struct GeneralizedTime;
 class SignaturePolicy;
 class TrustAnchor;
 
+// The key purpose (extended key usage) to check for during verification.
+enum class KeyPurpose {
+  ANY_EKU,
+  SERVER_AUTH,
+  CLIENT_AUTH,
+};
+
 // VerifyCertificateChain() verifies a certificate path (chain) based on the
 // rules in RFC 5280. The caller is responsible for building the path and
 // finding the trust anchor.
@@ -56,6 +63,9 @@ class TrustAnchor;
 //   time:
 //     The UTC time to use for expiration checks.
 //
+//   key_purpose:
+//     The key purpose that the target certificate needs to be valid for.
+//
 // ---------
 // Outputs
 // ---------
@@ -72,6 +82,7 @@ NET_EXPORT bool VerifyCertificateChain(const ParsedCertificateList& certs,
                                        const TrustAnchor* trust_anchor,
                                        const SignaturePolicy* signature_policy,
                                        const der::GeneralizedTime& time,
+                                       KeyPurpose required_key_purpose,
                                        CertPathErrors* errors);
 
 // TODO(crbug.com/634443): Move exported errors to a central location?
