@@ -3056,6 +3056,8 @@ split_static_library("browser") {
       "media/android/remote/remote_media_player_manager.h",
       "media/android/router/media_router_android.cc",
       "media/android/router/media_router_android.h",
+      "media/android/router/media_router_android_bridge.cc",
+      "media/android/router/media_router_android_bridge.h",
       "media/android/router/media_router_dialog_controller_android.cc",
       "media/android/router/media_router_dialog_controller_android.h",
       "media/midi_permission_infobar_delegate_android.cc",

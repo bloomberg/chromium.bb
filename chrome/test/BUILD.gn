@@ -4419,6 +4419,7 @@ test("unit_tests") {
 
   if (enable_media_router) {
     sources += [
+      "../browser/media/android/router/media_router_android_unittest.cc",
       "../browser/media/cast_remoting_connector_unittest.cc",
       "../browser/media/router/browser_presentation_connection_proxy_unittest.cc",
       "../browser/media/router/create_presentation_connection_request_unittest.cc",

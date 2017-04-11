@@ -212,6 +212,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             Log.e(TAG, "Launch application failed with status: %s, %d, %s",
                     mSource.getApplicationId(), status.getStatusCode(), status.getStatusMessage());
             reportError();
+            return;
         }
 
         mState = STATE_LAUNCH_SUCCEEDED;

@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_
 
-#include <jni.h>
 #include <stdint.h>
 
 #include <memory>
 #include <unordered_map>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chrome/browser/media/android/router/media_router_android_bridge.h"
 #include "chrome/browser/media/router/media_router_base.h"
 
 namespace content {
@@ -23,12 +22,10 @@ class BrowserContext;
 
 namespace media_router {
 
-// A stub implementation of MediaRouter interface on Android.
+// An implementation of MediaRouter interface on Android.
 class MediaRouterAndroid : public MediaRouterBase {
  public:
   ~MediaRouterAndroid() override;
-
-  static bool Register(JNIEnv* env);
 
   const MediaRoute* FindRouteBySource(const MediaSource::Id& source_id) const;
 
@@ -76,60 +73,43 @@ class MediaRouterAndroid : public MediaRouterBase {
   void ProvideSinks(const std::string& provider_name,
                     const std::vector<MediaSinkInternal>& sinks) override;
 
-  // The methods called by the Java counterpart.
-
+  // The methods called by the Java bridge.
   // Notifies the media router that information about sinks is received for
-  // a specific source URN.
-  void OnSinksReceived(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jstring>& jsource_urn,
-                       jint jcount);
+  // a specific source id.
+  void OnSinksReceived(const MediaSource::Id& source_id,
+                       const std::vector<MediaSink>& sinks);
 
   // Notifies the media router about a successful route creation.
-  void OnRouteCreated(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jmedia_route_id,
-      const base::android::JavaParamRef<jstring>& jmedia_sink_id,
-      jint jroute_request_id,
-      jboolean jis_local);
+  void OnRouteCreated(const MediaRoute::Id& route_id,
+                      const MediaSink::Id& sink_id,
+                      int request_id,
+                      bool is_local);
 
   // Notifies the media router that route creation or joining failed.
-  void OnRouteRequestError(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jerror_text,
-      jint jroute_request_id);
+  void OnRouteRequestError(const std::string& error_text, int request_id);
 
   // Notifies the media router when the route was closed.
-  void OnRouteClosed(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jmedia_route_id);
+  void OnRouteClosed(const MediaRoute::Id& route_id);
 
   // Notifies the media router when the route was closed with an error.
-  void OnRouteClosedWithError(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jmedia_route_id,
-      const base::android::JavaParamRef<jstring>& jmessage);
+  void OnRouteClosedWithError(const MediaRoute::Id& route_id,
+                              const std::string& message);
 
   // Notifies the media router about the result of sending a message.
-  void OnMessageSentResult(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jboolean jsuccess,
-                           jint jcallback_id);
+  void OnMessageSentResult(bool success, int callback_id);
 
   // Notifies the media router about a message received from the media route.
-  void OnMessage(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 const base::android::JavaParamRef<jstring>& jmedia_route_id,
-                 const base::android::JavaParamRef<jstring>& jmessage);
+  void OnMessage(const MediaRoute::Id& route_id, const std::string& message);
 
  private:
   friend class MediaRouterFactory;
+  friend class MediaRouterAndroidTest;
 
   explicit MediaRouterAndroid(content::BrowserContext*);
+
+  // Removes the route with the given id from |active_routes_| and updates the
+  // registered route observers.
+  void RemoveRoute(const MediaRoute::Id& route_id);
 
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -141,7 +121,11 @@ class MediaRouterAndroid : public MediaRouterBase {
   void RegisterRouteMessageObserver(RouteMessageObserver* observer) override;
   void UnregisterRouteMessageObserver(RouteMessageObserver* observer) override;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
+  void SetMediaRouterBridgeForTest(MediaRouterAndroidBridge* bridge) {
+    bridge_.reset(bridge);
+  }
+
+  std::unique_ptr<MediaRouterAndroidBridge> bridge_;
 
   using MediaSinkObservers = std::unordered_map<
       MediaSource::Id,
@@ -179,6 +163,6 @@ class MediaRouterAndroid : public MediaRouterBase {
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);
 };
 
-} // namespace media_router
+}  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_

@@ -118,6 +118,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         if (mSession == null) return;
 
         if (mClientRecords.isEmpty()) {
+            for (String routeId : mRoutes.keySet()) mManager.onRouteClosed(routeId);
             mRoutes.clear();
         } else {
             mLastRemovedRouteRecord = mClientRecords.values().iterator().next();
@@ -321,11 +322,11 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     @Override
     public void closeRoute(String routeId) {
         MediaRoute route = mRoutes.get(routeId);
-
         if (route == null) return;
 
         if (mSession == null) {
             mRoutes.remove(routeId);
+            mManager.onRouteClosed(routeId);
             return;
         }
 
@@ -511,7 +512,8 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         return null;
     }
 
-    private void addRoute(MediaRoute route, String origin, int tabId) {
+    @VisibleForTesting
+    void addRoute(MediaRoute route, String origin, int tabId) {
         mRoutes.put(route.id, route);
 
         MediaSource source = MediaSource.from(route.sourceId);

@@ -18,6 +18,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
+import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -61,5 +62,38 @@ public class CastMediaRouteProviderTest {
         verify(mockManager, timeout(100))
                 .onSinksReceived(
                         eq(UNSUPPORTED_SOURCE), same(provider), eq(new ArrayList<MediaSink>()));
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testOnSessionClosedNoClientRecord() {
+        ChromeMediaRouter.setAndroidMediaRouterForTest(mock(MediaRouter.class));
+
+        MediaRouteManager mockManager = mock(MediaRouteManager.class);
+        CastMediaRouteProvider provider = CastMediaRouteProvider.create(mockManager);
+
+        CastSession mockSession = mock(CastSession.class);
+        provider.onSessionCreated(mockSession);
+
+        MediaRoute route = new MediaRoute("sink", SUPPORTED_SOURCE, "");
+        provider.addRoute(route, "", -1);
+        provider.onSessionClosed();
+
+        verify(mockManager).onRouteClosed(route.id);
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testCloseRouteWithNoSession() {
+        ChromeMediaRouter.setAndroidMediaRouterForTest(mock(MediaRouter.class));
+
+        MediaRouteManager mockManager = mock(MediaRouteManager.class);
+        CastMediaRouteProvider provider = CastMediaRouteProvider.create(mockManager);
+
+        MediaRoute route = new MediaRoute("sink", SUPPORTED_SOURCE, "");
+        provider.addRoute(route, "", -1);
+        provider.closeRoute(route.id);
+
+        verify(mockManager).onRouteClosed(route.id);
     }
 }

@@ -269,7 +269,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
 #if defined(ENABLE_MEDIA_ROUTER)
-    {"ChromeMediaRouter", media_router::MediaRouterAndroid::Register},
+    {"ChromeMediaRouter", media_router::MediaRouterAndroidBridge::Register},
     {"ChromeMediaRouterDialogController",
      media_router::MediaRouterDialogControllerAndroid::Register},
 #endif
