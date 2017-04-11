@@ -304,10 +304,10 @@ cr.define('bookmarks', function() {
   };
 
   /**
-   * @param {?string} selectedFolder
+   * @param {string} selectedFolder
    * @param {Action} action
    * @param {NodeList} nodes
-   * @return {?string}
+   * @return {string}
    */
   SelectedFolderState.updateSelectedFolder = function(
       selectedFolder, action, nodes) {
@@ -324,12 +324,6 @@ cr.define('bookmarks', function() {
           return action.id;
         }
         return selectedFolder;
-      case 'finish-search':
-        return null;
-      case 'clear-search':
-        // TODO(tsergeant): Return to the folder that was selected before the
-        // search.
-        return nodes[ROOT_NODE_ID].children[0];
       case 'remove-bookmark':
         // When deleting the selected folder (or its ancestor), select the
         // parent of the deleted node.

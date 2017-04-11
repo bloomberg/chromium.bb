@@ -30,11 +30,14 @@ Polymer({
     selectedFolder_: String,
 
     /** @private */
+    searchActive_: Boolean,
+
+    /** @private */
     isSelectedFolder_: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
-      computed: 'computeIsSelected_(itemId, selectedFolder_)'
+      computed: 'computeIsSelected_(itemId, selectedFolder_, searchActive_)'
     },
   },
 
@@ -48,6 +51,9 @@ Polymer({
     }.bind(this));
     this.watch('selectedFolder_', function(state) {
       return state.selectedFolder;
+    });
+    this.watch('searchActive_', function(state) {
+      return bookmarks.util.isShowingSearch(state);
     });
 
     this.updateFromStore();
@@ -88,8 +94,8 @@ Polymer({
    * @param {string} selectedFolder
    * @return {boolean}
    */
-  computeIsSelected_: function(itemId, selectedFolder) {
-    return itemId == selectedFolder;
+  computeIsSelected_: function(itemId, selectedFolder, searchActive) {
+    return itemId == selectedFolder && !searchActive;
   },
 
   /**

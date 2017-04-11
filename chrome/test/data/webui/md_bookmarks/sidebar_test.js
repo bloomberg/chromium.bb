@@ -70,5 +70,25 @@ suite('<bookmarks-sidebar>', function() {
       assertEquals(2, f.depth);
       assertEquals('2', f.style.getPropertyValue('--node-depth'));
     });
-  })
+  });
+
+  test('doesn\'t highlight selected folder while searching', function() {
+    var rootFolders =
+        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
+
+    store.data.selectedFolder = '1';
+    store.notifyObservers();
+
+    assertEquals('1', rootFolders['0'].itemId);
+    assertTrue(rootFolders['0'].isSelectedFolder_);
+
+    store.data.search = {
+      term: 'test',
+      inProgress: false,
+      results: ['3'],
+    };
+    store.notifyObservers();
+
+    assertFalse(rootFolders['0'].isSelectedFolder_);
+  });
 });

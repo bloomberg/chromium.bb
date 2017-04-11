@@ -13,7 +13,7 @@ suite('<bookmarks-router>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      selectedId: '1',
+      selectedFolder: '1',
       search: {
         term: '',
       },

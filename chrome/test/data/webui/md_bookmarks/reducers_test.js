@@ -377,8 +377,8 @@ suite('search state', function() {
     assertEquals('test', state.search.term);
     assertTrue(state.search.inProgress);
 
-    // UI should not have changed yet:
-    assertEquals('2', state.selectedFolder);
+    // UI should not have changed yet.
+    assertFalse(bookmarks.util.isShowingSearch(state));
     assertDeepEquals(['3'], bookmarks.util.getDisplayedList(state));
 
     action = bookmarks.actions.setSearchResults(['2', '3']);
@@ -386,8 +386,8 @@ suite('search state', function() {
 
     assertFalse(searchedState.search.inProgress);
 
-    // UI changes once search results arrive:
-    assertEquals(null, searchedState.selectedFolder);
+    // UI changes once search results arrive.
+    assertTrue(bookmarks.util.isShowingSearch(searchedState));
     assertDeepEquals(
         ['2', '3'], bookmarks.util.getDisplayedList(searchedState));
 
@@ -395,17 +395,21 @@ suite('search state', function() {
     action = bookmarks.actions.setSearchTerm('');
     var clearedState = bookmarks.reduceAction(searchedState, action);
 
-    assertEquals('1', clearedState.selectedFolder);
-    assertDeepEquals(['2'], bookmarks.util.getDisplayedList(clearedState));
+    // Should go back to displaying the contents of '2', which was shown before
+    // the search.
+    assertEquals('2', clearedState.selectedFolder);
+    assertFalse(bookmarks.util.isShowingSearch(clearedState));
+    assertDeepEquals(['3'], bookmarks.util.getDisplayedList(clearedState));
     assertEquals('', clearedState.search.term);
     assertDeepEquals([], clearedState.search.results);
 
     // Case 2: Clear search by selecting a new folder.
-    action = bookmarks.actions.selectFolder('2');
+    action = bookmarks.actions.selectFolder('1');
     var selectedState = bookmarks.reduceAction(searchedState, action);
 
-    assertEquals('2', selectedState.selectedFolder);
-    assertDeepEquals(['3'], bookmarks.util.getDisplayedList(selectedState));
+    assertEquals('1', selectedState.selectedFolder);
+    assertFalse(bookmarks.util.isShowingSearch(selectedState));
+    assertDeepEquals(['2'], bookmarks.util.getDisplayedList(selectedState));
     assertEquals('', selectedState.search.term);
     assertDeepEquals([], selectedState.search.results);
   });

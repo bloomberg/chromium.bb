@@ -8,12 +8,14 @@
 
 cr.define('bookmarks.util', function() {
   /**
+   * Returns the list of bookmark IDs to be displayed in the UI, taking into
+   * account search and the currently selected folder.
    * @param {!BookmarksPageState} state
    * @return {!Array<string>}
    */
   function getDisplayedList(state) {
     if (!isShowingSearch(state))
-      return assert(state.nodes[assert(state.selectedFolder)].children);
+      return assert(state.nodes[state.selectedFolder].children);
 
     return state.search.results;
   }
@@ -82,10 +84,10 @@ cr.define('bookmarks.util', function() {
 
   /**
    * @param {BookmarksPageState} state
-   * @return boolean
+   * @return {boolean}
    */
   function isShowingSearch(state) {
-    return !state.selectedFolder;
+    return !!state.search.term && !state.search.inProgress;
   }
 
   /**

@@ -51,7 +51,7 @@ var ClosedFolderState;
 /**
  * @typedef {{
  *   nodes: NodeList,
- *   selectedFolder: ?string,
+ *   selectedFolder: string,
  *   closedFolders: ClosedFolderState,
  *   search: SearchState,
  *   selection: SelectionState,
