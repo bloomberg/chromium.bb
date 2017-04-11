@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -272,11 +273,20 @@ bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                bool landscape_layout,
                int event_flags) {
+  Profile* const profile = Profile::FromBrowserContext(context);
+
+  // Even when ARC is not allowed for the profile, ARC apps may still show up
+  // as a placeholder to show the guide notification for proper configuration.
+  // Handle such a case here and shows the desired notification.
+  if (IsArcAllowedInAppListForProfile(profile) &&
+      !IsArcAllowedForProfile(profile)) {
+    arc::ShowArcMigrationGuideNotification(profile);
+    return false;
+  }
+
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
-    Profile* profile = Profile::FromBrowserContext(context);
-
     if (!IsArcPlayStoreEnabledForProfile(profile)) {
       if (prefs->IsDefault(app_id)) {
         // The setting can fail if the preference is managed.  However, the
