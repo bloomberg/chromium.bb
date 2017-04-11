@@ -564,9 +564,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Map from QuicServerId to a set of non-owning QuicStreamRequest pointers.
   ServerIDRequestsMap job_requests_map_;
 
+  // Map of QuicServerId to owning CertVerifierJob.
   CertVerifierJobMap active_cert_verifier_jobs_;
 
-  QuicVersionVector supported_versions_;
+  const QuicVersionVector supported_versions_;
 
   // Set if we always require handshake confirmation. If true, this will
   // introduce at least one RTT for the handshake before the client sends data.

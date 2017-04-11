@@ -38,6 +38,7 @@ class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfo
   bool IsReadyToPersist() override;
   void Persist() override;
   void OnExternalCacheHit() override;
+  size_t EstimateMemoryUsage() const override;
 
  private:
   HttpServerProperties* http_server_properties_;

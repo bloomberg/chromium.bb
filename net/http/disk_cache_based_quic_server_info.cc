@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -185,6 +186,15 @@ void DiskCacheBasedQuicServerInfo::OnExternalCacheHit() {
   backend_->OnExternalCacheHit(key());
 }
 
+size_t DiskCacheBasedQuicServerInfo::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(new_data_) +
+         base::trace_event::EstimateMemoryUsage(pending_write_data_) +
+         base::trace_event::EstimateMemoryUsage(server_id_) +
+         (read_buffer_ == nullptr ? 0 : read_buffer_->size()) +
+         (write_buffer_ == nullptr ? 0 : write_buffer_->size()) +
+         base::trace_event::EstimateMemoryUsage(data_);
+}
+
 std::string DiskCacheBasedQuicServerInfo::key() const {
   return "quicserverinfo:" + server_id_.ToString();
 }
@@ -335,14 +345,14 @@ int DiskCacheBasedQuicServerInfo::DoRead() {
     return OK;
   }
 
-  read_buffer_ = new IOBuffer(size);
+  read_buffer_ = new IOBufferWithSize(size);
   state_ = READ_COMPLETE;
   return entry_->ReadData(
       0 /* index */, 0 /* offset */, read_buffer_.get(), size, io_callback_);
 }
 
 int DiskCacheBasedQuicServerInfo::DoWrite() {
-  write_buffer_ = new IOBuffer(new_data_.size());
+  write_buffer_ = new IOBufferWithSize(new_data_.size());
   memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
   state_ = WRITE_COMPLETE;
 

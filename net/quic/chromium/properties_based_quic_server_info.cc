@@ -94,6 +94,10 @@ void PropertiesBasedQuicServerInfo::OnExternalCacheHit() {
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_EXTERNAL_CACHE_HIT);
 }
 
+size_t PropertiesBasedQuicServerInfo::EstimateMemoryUsage() const {
+  return 0;
+}
+
 PropertiesBasedQuicServerInfoFactory::PropertiesBasedQuicServerInfoFactory(
     HttpServerProperties* http_server_properties)
     : http_server_properties_(http_server_properties) {}

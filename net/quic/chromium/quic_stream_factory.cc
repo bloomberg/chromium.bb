@@ -67,6 +67,12 @@ using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
 
+// Returns the estimate of dynamically allocated memory of an IPEndPoint in
+// bytes. Used in tracking IPAliasMap.
+size_t EstimateMemoryUsage(const IPEndPoint& end_point) {
+  return 0;
+}
+
 namespace {
 
 enum CreateSessionFailure {
@@ -290,6 +296,12 @@ class QuicStreamFactory::CertVerifierJob {
 
   const QuicServerId& server_id() const { return server_id_; }
 
+  size_t EstimateMemoryUsage() const {
+    // TODO(xunjieli): crbug.com/669108. Track |verify_context_| and
+    // |verify_details_|.
+    return base::trace_event::EstimateMemoryUsage(verify_error_details_);
+  }
+
  private:
   const QuicServerId server_id_;
   ProofVerifierCallbackImpl* verify_callback_;
@@ -348,6 +360,9 @@ class QuicStreamFactory::Job {
   const NetLogWithSource& net_log() const { return net_log_; }
 
   base::WeakPtr<Job> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
 
  private:
   enum IoState {
@@ -493,6 +508,11 @@ void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
     return;
   server_info_->CancelWaitForDataReadyCallback();
   OnIOComplete(OK);
+}
+
+size_t QuicStreamFactory::Job::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(key_) +
+         base::trace_event::EstimateMemoryUsage(server_info_);
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
@@ -926,19 +946,32 @@ void QuicStreamFactory::set_quic_server_info_factory(
 void QuicStreamFactory::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {
-  if (all_sessions_.empty())
+  if (all_sessions_.empty() && active_jobs_.empty())
     return;
   base::trace_event::MemoryAllocatorDump* factory_dump =
       pmd->CreateAllocatorDump(parent_absolute_name + "/quic_stream_factory");
   size_t memory_estimate =
-      base::trace_event::EstimateMemoryUsage(all_sessions_);
+      base::trace_event::EstimateMemoryUsage(all_sessions_) +
+      base::trace_event::EstimateMemoryUsage(active_sessions_) +
+      base::trace_event::EstimateMemoryUsage(session_aliases_) +
+      base::trace_event::EstimateMemoryUsage(ip_aliases_) +
+      base::trace_event::EstimateMemoryUsage(session_peer_ip_) +
+      base::trace_event::EstimateMemoryUsage(gone_away_aliases_) +
+      base::trace_event::EstimateMemoryUsage(active_jobs_) +
+      base::trace_event::EstimateMemoryUsage(job_requests_map_) +
+      base::trace_event::EstimateMemoryUsage(active_cert_verifier_jobs_);
   factory_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           memory_estimate);
-  factory_dump->AddScalar(
-      base::trace_event::MemoryAllocatorDump::kNameObjectCount,
-      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-      all_sessions_.size());
+  factory_dump->AddScalar("all_sessions",
+                          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                          all_sessions_.size());
+  factory_dump->AddScalar("active_jobs",
+                          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                          active_jobs_.size());
+  factory_dump->AddScalar("active_cert_jobs",
+                          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                          active_cert_verifier_jobs_.size());
 }
 
 bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,

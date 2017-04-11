@@ -102,6 +102,9 @@ class QUIC_EXPORT_PRIVATE QuicServerInfo {
   // Called whenever an external cache reuses quic server config.
   virtual void OnExternalCacheHit() = 0;
 
+  // Returns the size of dynamically allocated memory in bytes.
+  virtual size_t EstimateMemoryUsage() const = 0;
+
   struct State {
     State();
     ~State();

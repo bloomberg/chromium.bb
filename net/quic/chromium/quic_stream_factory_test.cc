@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -195,6 +196,11 @@ class MockQuicServerInfo : public QuicServerInfo {
   void Persist() override {}
 
   void OnExternalCacheHit() override {}
+
+  size_t EstimateMemoryUsage() const override {
+    NOTREACHED();
+    return 0;
+  }
 };
 
 class MockQuicServerInfoFactory : public QuicServerInfoFactory {
